@@ -39,7 +39,7 @@ Alignment::~Alignment()
         delete (*it);
 }
 
-void Alignment::processSeq(string &sequence, string &line, int line_num) {
+void Alignment::processSeq(string &sequence, string &line, PositionType line_num) {
     for (string::iterator it = line.begin(); it != line.end(); it++) {
         if ((*it) <= ' ') continue;
         if (isalnum(*it) || (*it) == '-' || (*it) == '?'|| (*it) == '.' || (*it) == '*' || (*it) == '~')
@@ -61,7 +61,7 @@ void Alignment::processSeq(string &sequence, string &line, int line_num) {
 void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
     ostringstream err_str;
     igzstream in;
-    int line_num = 1;
+    PositionType line_num = 1;
     string line;
 
     // set the failbit and badbit
@@ -105,7 +105,7 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
         throw "There must be at least " + convertIntToString(MIN_NUM_TAXA) + " sequences";
 
     // now try to cut down sequence name if possible
-    int i, step = 0;
+    PositionType i, step = 0;
     StrVector new_seq_names, remain_seq_names;
     new_seq_names.resize(seq_names.size());
     remain_seq_names = seq_names;
@@ -154,14 +154,14 @@ void Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_
 {
     ostringstream err_str;
     igzstream in;
-    int line_num = 1;
+    PositionType line_num = 1;
     
     // set the failbit and badbit
     in.exceptions(ios::failbit | ios::badbit);
     in.open(aln_path);
-    int seq_id = 0;
-    int nseq = 0;
-    int nsite = 0;
+    PositionType seq_id = 0;
+    PositionType nseq = 0;
+    PositionType nsite = 0;
     string line;
     
     // remove the failbit
@@ -193,7 +193,7 @@ void Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_
                 line.erase(0, pos);
             }
             
-            int old_len = sequences[seq_id].length();
+            PositionType old_len = sequences[seq_id].length();
             processSeq(sequences[seq_id], line, line_num);
             
             if (sequences[seq_id].length() != sequences[0].length()) {
@@ -251,16 +251,16 @@ string Alignment::generateRef(StrVector sequences, StrVector seq_names, bool onl
     string ref_str (sequences[0].length(), NULL_CHAR);
     
     // determine a character for each site one by one
-    int threshold = sequences.size()/2;
-    for (int i = 0; i < ref_str.length(); i++)
+    PositionType threshold = sequences.size()/2;
+    for (PositionType i = 0; i < ref_str.length(); i++)
     {
         // Init a map to count the number of times each character appears
-        std::map<char, int> num_appear;
+        std::map<char, PositionType> num_appear;
         
-        for (int j = 0; j < sequences.size(); j++)
+        for (PositionType j = 0; j < sequences.size(); j++)
         {
             // update num_appear for the current character
-            int count = num_appear[sequences[j][i]] + 1;
+            PositionType count = num_appear[sequences[j][i]] + 1;
             num_appear[sequences[j][i]] = count;
             
             // stop counting if a character appear in more than 1/2 sequences at the current site
@@ -274,7 +274,7 @@ string Alignment::generateRef(StrVector sequences, StrVector seq_names, bool onl
         // manually determine the most popular charater for the current site (if no character dominates all the others)
         if (ref_str[i] == NULL_CHAR)
         {
-            for (const std::pair<const char, int>& character : num_appear)
+            for (const std::pair<const char, PositionType>& character : num_appear)
                 if (ref_str[i] == NULL_CHAR || character.second > num_appear[ref_str[i]])
                     ref_str[i] = character.first;
         }
@@ -319,7 +319,7 @@ string Alignment::readRef(char* ref_path, bool only_extract_diff)
 void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length)
 {
     // output the mutation into a Diff file
-    out << state_char << "\t" << pos;
+    out << state_char << "\t" << (pos + 1);
     if (length != -1)
         out << "\t" << length;
     out << endl;
@@ -341,7 +341,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
     Sequence* sequence = NULL;
     
     // extract mutations of sequences one by one
-    for (int i = 0; i < str_sequences.size(); i++)
+    for (PositionType i = 0; i < str_sequences.size(); i++)
     {
         // validate the sequence length
         string str_sequence = str_sequences[i];
@@ -360,8 +360,8 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
         
         // init dummy variables
         int state = 0;
-        int length = 0;
-        for (int pos = 0; pos < ref_sequence.length(); pos++)
+        PositionType length = 0;
+        for (PositionType pos = 0; pos < ref_sequence.length(); pos++)
         {
             switch (state)
             {
@@ -378,7 +378,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
                             state = 2;
                         // output a mutation
                         else
-                            outputMutation(out, sequence, str_sequence[pos], pos + 1);
+                            outputMutation(out, sequence, str_sequence[pos], pos);
                     }
                     break;
                 case 1: // previous character is 'N'
@@ -388,7 +388,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
                     else
                     {
                         // output the previous sequence of 'N'
-                        outputMutation(out, sequence, str_sequence[pos-1], pos + 1 - length, length);
+                        outputMutation(out, sequence, str_sequence[pos-1], pos - length, length);
                         
                         // reset state
                         state = 0;
@@ -403,7 +403,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
                             // output a mutation
                             else
                             {
-                                outputMutation(out, sequence, str_sequence[pos], pos + 1);
+                                outputMutation(out, sequence, str_sequence[pos], pos);
                                 state = 0;
                             }
                         }
@@ -416,7 +416,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
                     else
                     {
                         // output the previous sequence of '-'
-                        outputMutation(out, sequence, str_sequence[pos-1], pos + 1 - length, length);
+                        outputMutation(out, sequence, str_sequence[pos-1], pos - length, length);
                         
                         // reset state
                         state = 0;
@@ -431,7 +431,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
                             // output a mutation
                             else
                             {
-                                outputMutation(out, sequence, str_sequence[pos], pos + 1);
+                                outputMutation(out, sequence, str_sequence[pos], pos);
                                 state = 0;
                             }
                         }
@@ -442,7 +442,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
         
         //  output the last sequence of 'N' or '-' (if any)
         if (state != 0)
-            outputMutation(out, sequence, str_sequence[str_sequence.length() - 1], str_sequence.length() + 1 - length, length);
+            outputMutation(out, sequence, str_sequence[str_sequence.length() - 1], str_sequence.length() - length, length);
     }
 }
 
@@ -475,7 +475,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     vector<Mutation*> regions;
     PositionType current_pos = 1;
     ifstream in = ifstream(diff_path);
-    int line_num = 1;
+    PositionType line_num = 1;
     string line;
 
     // set the failbit and badbit
@@ -536,7 +536,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             {
                 // insert a Region type R (if necessary)
                 if (current_pos <= ref_seq.size())
-                    regions.push_back(new Region(TYPE_R, current_pos, seq_type, num_states));
+                    regions.push_back(new Region(TYPE_R, current_pos - 1, seq_type, num_states));
                 
                 push_back(new Sequence(seq_name, regions));
                 
@@ -594,10 +594,10 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             
             // insert a Region type R (if necessary)
             if (current_pos < pos)
-                regions.push_back(new Region(TYPE_R, current_pos, seq_type, num_states));
+                regions.push_back(new Region(TYPE_R, current_pos - 1, seq_type, num_states));
             
             // add a new region into regions
-            regions.push_back(new Region(state, pos, seq_type, num_states));
+            regions.push_back(new Region(state, pos - 1, seq_type, num_states));
             
             // update current_pos
             current_pos = pos + length;
@@ -609,7 +609,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     {
         // insert a Region type R (if necessary)
         if (current_pos <= ref_seq.size())
-            regions.push_back(new Region(TYPE_R, current_pos, seq_type, num_states));
+            regions.push_back(new Region(TYPE_R, current_pos - 1, seq_type, num_states));
         
         push_back(new Sequence(seq_name, regions));
     }
@@ -676,7 +676,7 @@ char Alignment::convertState2Char(StateType state) {
         return state;
     case SEQ_PROTEIN: // Protein
         if (state < 20)
-            return symbols_protein[(int)state];
+            return symbols_protein[(StateType)state];
         else if (state == 20) return 'B';
         else if (state == 21) return 'Z';
         else if (state == 22) return 'J';
@@ -827,17 +827,17 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
     
     // init dummy variables
     PositionType seq_length = ref_seq.size();
-    int num_seqs = size();
+    PositionType num_seqs = size();
     PositionType *distances = new PositionType[num_seqs];
-    int *sequence_indexes = new int[num_seqs];
+    PositionType *sequence_indexes = new PositionType[num_seqs];
     
     // calculate the distance for genomelist
     for (PositionType i = 0; i < num_seqs; i++)
     {
         // dummy variables
         Sequence* sequence = at(i);
-        int num_ambiguities = 0;
-        int num_diffs = 0;
+        PositionType num_ambiguities = 0;
+        PositionType num_diffs = 0;
         sequence_indexes[i] = i;
         
         // browse regions one by one
@@ -871,11 +871,116 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
     // re-order sequences by distances
     Sequence** tmp_sequences = new Sequence*[size()];
     memcpy(tmp_sequences, this->data(), sizeof(Sequence*)*size());
-    for (int i = 0; i < num_seqs; i++)
+    for (PositionType i = 0; i < num_seqs; i++)
         at(i) = tmp_sequences[sequence_indexes[i]];
     
     // delete distances, sequence_indexes
     delete[] tmp_sequences;
     delete[] distances;
     delete[] sequence_indexes;
+}
+
+int Alignment::compareSequences(vector<Mutation*> sequence1, vector<Mutation*> sequence2)
+{
+    ASSERT(ref_seq.size() > 0);
+    
+    // init dummy variables
+    PositionType seq1_index = -1;
+    PositionType seq2_index = -1;
+    bool seq1_more_info = false;
+    bool seq2_more_info = false;
+    PositionType pos = 0;
+    Mutation *seq1_mutation, *seq2_mutation;
+    PositionType seq1_end = -1, seq2_end = -1;
+    PositionType length;
+
+    while (pos < ref_seq.size() && (!seq1_more_info || !seq2_more_info))
+    {
+        // get the next shared segment in the two sequences
+        getNextSharedSegment(pos, sequence1, sequence2, seq1_index, seq2_index, seq1_mutation, seq2_mutation, seq1_end, seq2_end, length);
+        
+        // The two mutations have different types from each other
+        if (seq1_mutation->type != seq2_mutation->type)
+        {
+            if (seq1_mutation->type == TYPE_N)
+                seq2_more_info = true;
+            else
+                if (seq2_mutation->type == TYPE_N)
+                    seq1_more_info = true;
+                else if (seq1_mutation->type == TYPE_O)
+                        seq2_more_info = true;
+                    else
+                        if (seq2_mutation->type == TYPE_O)
+                            seq1_more_info = true;
+                        else
+                        {
+                            seq1_more_info = true;
+                            seq2_more_info = true;
+                        }
+        }
+        // Both mutations are type O
+        else if (seq1_mutation->type == TYPE_O)
+        {
+            for (StateType i = 0; i < num_states; i++)
+            {
+                if (seq1_mutation->getLikelihood()[i] > seq2_mutation->getLikelihood()[i] + 1e-2)
+                    seq2_more_info = true;
+                else if (seq2_mutation->getLikelihood()[i] > seq1_mutation->getLikelihood()[i] + 1e-2)
+                        seq1_more_info = true;
+            }
+        }
+
+        // update pos
+        pos += length;
+    }
+
+    // return result
+    if (seq1_more_info)
+        if (seq2_more_info)
+            return 0;
+        else
+            return 1;
+    else
+        if (seq2_more_info)
+            return -1;
+        else
+            return 1;
+    
+    return 0;
+}
+
+void Alignment::move2NextMutation(vector<Mutation*> sequence, PositionType mutation_index, Mutation* &mutation, PositionType &current_pos, PositionType &end_pos)
+{
+    ASSERT(mutation_index < sequence.size());
+    
+    // get the current mutation
+    mutation = sequence[mutation_index];
+    
+    // get the current position and end position
+    current_pos = mutation->position;
+    PositionType length = (mutation_index < sequence.size() - 1 ? sequence[mutation_index + 1]->position : ref_seq.size()) - current_pos;
+    end_pos = current_pos + length - 1;
+}
+
+void Alignment::getNextSharedSegment(PositionType current_pos, vector<Mutation*> sequence1, vector<Mutation*> sequence2, PositionType &seq1_index, PositionType &seq2_index, Mutation* &seq1_mutation, Mutation* &seq2_mutation, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length)
+{
+    PositionType seq1_pos, seq2_pos, end_pos;
+    
+    // move to the next mutation in sequence 1
+    if (current_pos > seq1_end_pos)
+    {
+        seq1_index++;
+        move2NextMutation(sequence1, seq1_index, seq1_mutation, seq1_pos, seq1_end_pos);
+    }
+    
+    // move to the next mutation in sequence 2
+    if (current_pos > seq2_end_pos)
+    {
+        seq2_index++;
+        move2NextMutation(sequence2, seq2_index, seq2_mutation, seq2_pos, seq2_end_pos);
+    }
+    
+    // compute the end_pos for the shared segment
+    end_pos = seq1_end_pos < seq2_end_pos ? seq1_end_pos : seq2_end_pos;
+    length = end_pos + 1 - current_pos;
 }

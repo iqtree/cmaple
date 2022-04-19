@@ -178,7 +178,7 @@ typedef unsigned int UINT;
 
 typedef uint16_t StateType;
 
-typedef uint32_t PositionType;
+typedef int32_t PositionType;
 
 /**
  *  Specify region types
@@ -263,6 +263,11 @@ public:
     *  weight to calculate the hamming distance
     */
     double hamming_weight;
+    
+    /**
+        name of the substitution model (e.g., HKY, GTR, TN+I+G, JC+G, etc.)
+     */
+    string model_name;
     
     /**
     *  fastLK: threshold
@@ -440,6 +445,12 @@ double convert_double(const char *str);
         @return the double
  */
 double convert_double(const char *str, int &end_pos);
+
+/**
+        parse an array of doubles (double*) from a tring
+        @param input_str: a string of  doubles; arr: the output array of doubles
+ */
+void convert_doubles(double* &arr, string input_str);
 
 /**
         convert string to double, or generate it from a distribution

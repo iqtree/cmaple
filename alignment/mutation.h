@@ -31,5 +31,15 @@ public:
     *  return Length of the current mutation, default: 1
     */
     virtual PositionType getLength() { return 1;};
+    
+    /**
+    *  return plength of the current mutation, default: 0
+    */
+    virtual double getPlength() { return 0;};
+    
+    /**
+    *  return the likelihood of the current mutation, default: NULL
+    */
+    virtual double* getLikelihood() { return NULL;};
 };
 #endif

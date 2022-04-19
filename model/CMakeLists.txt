@@ -1,6 +1,6 @@
 add_library(model
-modelsubst.h
-modelsubst.cpp
+model.h
+model.cpp
 )
 
 target_link_libraries(model utils)

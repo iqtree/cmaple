@@ -40,6 +40,16 @@ public:
     Region(Mutation* n_mutation, SeqType seq_type, int max_num_states, double n_plength = 0, double* n_likelihood = NULL);
     
     /**
+    *  return plength of the current mutation, default: 0
+    */
+    virtual double getPlength() { return plength;};
+    
+    /**
+    *  return the likelihood of the current mutation, default: NULL
+    */
+    virtual double* getLikelihood() { return likelihood;};
+    
+    /**
     *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R
     */
     void convertAmbiguiousState(SeqType seq_type, int max_num_states);

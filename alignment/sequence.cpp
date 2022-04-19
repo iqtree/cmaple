@@ -27,7 +27,7 @@ Sequence::~Sequence()
 
 void Sequence::convertMutation2Region(PositionType sequence_length, SeqType seq_type, int max_num_states)
 {
-    PositionType pos = 1;
+    PositionType pos = 0;
     vector<Mutation*> regions;
     
     for (Mutation* mutation: mutations)
@@ -42,7 +42,7 @@ void Sequence::convertMutation2Region(PositionType sequence_length, SeqType seq_
     }
     
     // insert the last Region of type R (if necessary)
-    if (pos <= sequence_length)
+    if (pos < sequence_length)
         regions.push_back(new Region(TYPE_R, pos, seq_type, max_num_states));
     
     // replace mutations by regions

@@ -313,6 +313,24 @@ double convert_double(const char *str, int &end_pos) {
 	return d;
 }
 
+void convert_doubles(double* &arr, string input_str)
+{
+    // count the number of input doubles
+    int num_doubles = count(input_str.begin(), input_str.end(), ' ') + 1;
+    
+    // init mutation_mat
+    arr = new double[num_doubles];
+    
+    // parse rates
+    stringstream ss(input_str);
+    int index = 0;
+    while (ss.good())
+    {
+        ss >> arr[index];
+        index++;
+    }
+}
+
 void convert_double_vec(const char *str, DoubleVector &vec, char separator) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
@@ -499,6 +517,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.ref_path = NULL;
     params.only_extract_diff = false;
     params.hamming_weight = 1.0;
+    params.model_name = "JC";
     params.fastLK_threshold_prob = 1e-7;
     params.fastLK_blen_adjustment = 1;
     params.fastLK_failure_limit = 3;
@@ -543,7 +562,6 @@ void parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            
             if (strcmp(argv[cnt], "--hamming-weight") == 0) {
                 
                 cnt++;
@@ -555,6 +573,14 @@ void parseArg(int argc, char *argv[], Params &params) {
                 if (params.hamming_weight < 0)
                     throw "<WEIGHT> must not be negative!";
 
+                continue;
+            }
+            if (strcmp(argv[cnt], "--model") == 0 || strcmp(argv[cnt], "-m") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    throw "Use --model <model_name>";
+                
+                params.model_name = argv[cnt];
                 continue;
             }
         }

@@ -11,12 +11,20 @@ CMaple::CMaple()
 {
     params = NULL;
     aln = new Alignment();
+    model = new Model();
+    
+    cumulative_rate = NULL;
+    pseu_mutation_count = NULL;
 }
 
 CMaple::CMaple(Params *n_params)
 {
     params = n_params;
     aln = new Alignment();
+    model = new Model();
+    
+    cumulative_rate = NULL;
+    pseu_mutation_count = NULL;
 }
 
 CMaple::~CMaple()
@@ -25,6 +33,24 @@ CMaple::~CMaple()
     {
         delete aln;
         aln = NULL;
+    }
+    
+    if (cumulative_rate)
+    {
+        delete[] cumulative_rate;
+        cumulative_rate = NULL;
+    }
+    
+    if (model)
+    {
+        delete model;
+        model = NULL;
+    }
+    
+    if (pseu_mutation_count)
+    {
+        delete[] pseu_mutation_count;
+        pseu_mutation_count = NULL;
     }
 }
 
@@ -44,7 +70,7 @@ void CMaple::extractDiffFile()
         outError("Empty input sequences. Please check and try again!");
     // make sure all sequences have the same length
     if (detectInputFile(params->aln_path) == IN_FASTA)
-        for (int i = 0; i < sequences.size(); i++)
+        for (PositionType i = 0; i < sequences.size(); i++)
         {
             if (sequences[i].length() != sequences[0].length())
                 outError("Sequence " + seq_names[i] + " has a different length compared to the first sequence.");
@@ -90,30 +116,94 @@ void CMaple::extractDiffFile()
     cout << " - Converting time: " << end-start << endl;
 }
 
-void runCMaple(Params &params)
+void CMaple::loadInput()
 {
-    
-    CMaple cmaple = CMaple(&params);
-    
     // extract sequences (in vectors of regions) from an input alignment (in PHYLIP or FASTA format)
-    if (params.aln_path)
+    if (params->aln_path)
     {
-        cmaple.extractDiffFile();
-        
-        // stop if the user only wants to extract diff file
-        if (params.only_extract_diff)
-            return;
+        extractDiffFile();
         
         // convert Sequences (from vector of Mutations into vector Regions) for further inference
-        cmaple.aln->convertSequences();
+        if (!params->only_extract_diff)
+            aln->convertSequences();
     }
     // or read sequences (in vectors of regions) from a DIFF file
     else
-        cmaple.aln->readDiff(params.diff_path, params.ref_path);
+    {
+        if (params->only_extract_diff)
+            outError("To export a Diff file, please supple an alignment via --aln <ALIGNMENT>");
+        
+        aln->readDiff(params->diff_path, params->ref_path);
+    }
+}
+
+void CMaple::computeCumulativeRate()
+{
+    PositionType sequence_length = aln->ref_seq.size();
+    ASSERT(sequence_length > 0);
+    cumulative_rate = new double[sequence_length];
     
+    cumulative_rate[0] = model->mutation_mat[aln->ref_seq[0] * (aln->num_states + 1)];
+    
+    for (PositionType i = 1; i < sequence_length; i++)
+        cumulative_rate[i] = cumulative_rate[i - 1] + model->mutation_mat[aln->ref_seq[i] * (aln->num_states + 1)];
+        
+}
+
+void CMaple::preInference()
+{
     // sort sequences by their distances to the reference sequence
-    cmaple.aln->sortSeqsByDistances(params.hamming_weight);
+    aln->sortSeqsByDistances(params->hamming_weight);
     
-    cout << "dsfds" << endl;
+    // extract related info (freqs, log_freqs) of the ref sequence
+    model->extractRefInfo(aln->ref_seq, aln->num_states);
     
+    // init the mutation matrix from a model name
+    model->initMutationMat(params->model_name, aln->num_states, pseu_mutation_count);
+    
+    // compute cummulative rates of the ref sequence
+    computeCumulativeRate();
+}
+
+void CMaple::tmpTestingMethod()
+{
+    // show a comparison matrix
+    for (PositionType i = 0; i < aln->size(); i++)
+        cout << "\t" << aln->data()[i]->seq_name;
+    for (PositionType i = 0; i < aln->size(); i++)
+    {
+        Sequence* seq1 = aln->data()[i];
+        cout << endl;
+        cout << seq1->seq_name << "\t";
+        
+        for (PositionType j = 0; j < aln->size(); j++)
+        {
+            Sequence* seq2 = aln->data()[j];
+            cout << aln->compareSequences(seq1->mutations, seq2->mutations) << "\t";
+        }
+    }
+    cout << endl;
+}
+
+void runCMaple(Params &params)
+{
+    auto start = getRealTime();
+    CMaple cmaple = CMaple(&params);
+    
+    // load input data
+    cmaple.loadInput();
+    
+    // terminate if the user only wants to export a Diff file from an alignment
+    if (params.only_extract_diff)
+        return;
+    
+    // prepare for the inference
+    cmaple.preInference();
+    
+    // just test new method
+    cmaple.tmpTestingMethod();
+    
+    // show runtime
+    auto end = getRealTime();
+    cout << "Runtime: " << end - start << "s" << endl;
 }
