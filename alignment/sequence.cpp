@@ -25,10 +25,10 @@ Sequence::~Sequence()
         delete mutation;
 }
 
-void Sequence::convertMutation2Region(PositionType sequence_length, SeqType seq_type, int max_num_states)
+vector<Region*> Sequence::getRegionsFromMutations(PositionType sequence_length, SeqType seq_type, int max_num_states)
 {
     PositionType pos = 0;
-    vector<Mutation*> regions;
+    vector<Region*> regions;
     
     for (Mutation* mutation: mutations)
     {
@@ -45,10 +45,6 @@ void Sequence::convertMutation2Region(PositionType sequence_length, SeqType seq_
     if (pos < sequence_length)
         regions.push_back(new Region(TYPE_R, pos, seq_type, max_num_states));
     
-    // replace mutations by regions
-    for (Mutation *mutation:mutations)
-        delete mutation;
-    mutations.clear();
     
-    mutations = regions;
+    return regions;
 }

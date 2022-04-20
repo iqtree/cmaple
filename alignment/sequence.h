@@ -37,8 +37,8 @@ public:
     Sequence(string n_seq_name, vector<Mutation*> n_mutations);
     
     /**
-    *  Convert vector of Mutations into vector of Regions (for inference)
+    *  get a vector of Regions from a vector of Mutations
     */
-    void convertMutation2Region(PositionType sequence_length, SeqType seq_type, int max_num_states);
+    vector<Region*> getRegionsFromMutations(PositionType sequence_length, SeqType seq_type, int max_num_states);
 };
 #endif

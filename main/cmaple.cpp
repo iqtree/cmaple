@@ -5,7 +5,6 @@
  */
 
 #include "cmaple.h"
-#include "utils/timeutil.h"
 
 CMaple::CMaple()
 {
@@ -15,6 +14,9 @@ CMaple::CMaple()
     
     cumulative_rate = NULL;
     pseu_mutation_count = NULL;
+    
+    tree = NULL;
+    default_blength = 0;
 }
 
 CMaple::CMaple(Params *n_params)
@@ -25,6 +27,9 @@ CMaple::CMaple(Params *n_params)
     
     cumulative_rate = NULL;
     pseu_mutation_count = NULL;
+    
+    tree = NULL;
+    default_blength = 0;
 }
 
 CMaple::~CMaple()
@@ -51,6 +56,12 @@ CMaple::~CMaple()
     {
         delete[] pseu_mutation_count;
         pseu_mutation_count = NULL;
+    }
+    
+    if (tree)
+    {
+        delete tree;
+        tree = NULL;
     }
 }
 
@@ -94,9 +105,11 @@ void CMaple::extractDiffFile()
         params->diff_path = new char[diff_path_str.length() + 1];
         strcpy(params->diff_path, diff_path_str.c_str());
     }
-    // ask for overwriting existing file (if necessary)
-    if (fileExists(params->diff_path) && !overwriteFile(params->diff_path))
-        exit(EXIT_SUCCESS);
+    // check whether the Diff file already exists
+    string diff_file(params->diff_path);
+    if (!params->redo_inference && fileExists(diff_file))
+        outError("File " + diff_file + " already exists. Use `-redo` option if you want overwrite it.\n");
+    
     // open the output file
     ofstream out = ofstream(params->diff_path);
     
@@ -118,16 +131,10 @@ void CMaple::extractDiffFile()
 
 void CMaple::loadInput()
 {
-    // extract sequences (in vectors of regions) from an input alignment (in PHYLIP or FASTA format)
+    // extract sequences (in vectors of mutations) from an input alignment (in PHYLIP or FASTA format)
     if (params->aln_path)
-    {
         extractDiffFile();
-        
-        // convert Sequences (from vector of Mutations into vector Regions) for further inference
-        if (!params->only_extract_diff)
-            aln->convertSequences();
-    }
-    // or read sequences (in vectors of regions) from a DIFF file
+    // or read sequences (in vectors of mutations) from a DIFF file
     else
     {
         if (params->only_extract_diff)
@@ -152,6 +159,14 @@ void CMaple::computeCumulativeRate()
 
 void CMaple::preInference()
 {
+    // validate input
+    ASSERT(aln->ref_seq.size() > 0);
+    if (aln->size() < 3)
+        outError("The number of input sequences must be at least 3! Please check and try again!");
+    
+    // check whether output file is already exists
+    checkRedoInference();
+    
     // sort sequences by their distances to the reference sequence
     aln->sortSeqsByDistances(params->hamming_weight);
     
@@ -163,6 +178,24 @@ void CMaple::preInference()
     
     // compute cummulative rates of the ref sequence
     computeCumulativeRate();
+    
+    // compute the default initial branch length
+    default_blength = 1.0 / aln->ref_seq.size();
+}
+
+void CMaple::doInference()
+{
+    // do something
+    tree = new Tree(new Node(aln->at(8), aln));
+}
+
+void CMaple::checkRedoInference()
+{
+    string output_file(params->diff_path);
+    output_file += ".treefile";
+    
+    if (!params->redo_inference && fileExists(output_file))
+        outError("File " + output_file + " already exists. Use `-redo` option if you really want to redo the analysis and overwrite all output files.\n");
 }
 
 void CMaple::tmpTestingMethod()
@@ -199,6 +232,9 @@ void runCMaple(Params &params)
     
     // prepare for the inference
     cmaple.preInference();
+    
+    // inference trees and model params
+    cmaple.doInference();
     
     // just test new method
     cmaple.tmpTestingMethod();

@@ -17,6 +17,16 @@ private:
     */
     void computeLhAmbiguity(IntVector entries);
     
+    /**
+    *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R
+    */
+    void convertAmbiguiousState(SeqType seq_type, int max_num_states);
+    
+    /**
+    *  Convert Ambiguious state (of DNA data) into typical states: A/C/G/T; N; O; R
+    */
+    void convertAmbiguiousStateDNA(int max_num_states);
+    
 public:
     // length of the path between the current phylo node and the node where the likelihood is calculated
     double plength;
@@ -38,25 +48,5 @@ public:
     *  Region constructor
     */
     Region(Mutation* n_mutation, SeqType seq_type, int max_num_states, double n_plength = 0, double* n_likelihood = NULL);
-    
-    /**
-    *  return plength of the current mutation, default: 0
-    */
-    virtual double getPlength() { return plength;};
-    
-    /**
-    *  return the likelihood of the current mutation, default: NULL
-    */
-    virtual double* getLikelihood() { return likelihood;};
-    
-    /**
-    *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R
-    */
-    void convertAmbiguiousState(SeqType seq_type, int max_num_states);
-    
-    /**
-    *  Convert Ambiguious state (of DNA data) into typical states: A/C/G/T; N; O; R
-    */
-    void convertAmbiguiousStateDNA(int max_num_states);
 };
 #endif

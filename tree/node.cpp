@@ -5,16 +5,34 @@ Node::Node()
     id = -1;
     seq_name = "";
     length = 0;
-    parent = NULL;
+    circle = NULL;
+    next = NULL;
 }
 
-Node::Node(string n_seq_name, Sequence sequence)
+Node::Node(Sequence* sequence, Alignment* aln)
 {
     id = -1;
-    seq_name = n_seq_name;
+    seq_name = sequence->seq_name;
     length = 0;
-    parent = NULL;
+    circle = NULL;
+    next = NULL;
     
-    // convert sequence (vector of mutations) into genome list (vector of regions)
+    // convert vector of mutations into vector of regions
+    lower_lh_seq = sequence->getRegionsFromMutations(aln->ref_seq.size(), aln->seq_type, aln->num_states);
+}
+
+Node::~Node()
+{
+    // delete lower_lh_seq
+    for (Region* region:lower_lh_seq)
+        delete region;
+    lower_lh_seq.resize(0);
+    
+    // delete overall_lh_seq
+    for (Region* region:overall_lh_seq)
+        delete region;
+    overall_lh_seq.resize(0);
+        
+    // delete other neighbors
     // NHANLT: TODO
 }

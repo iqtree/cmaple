@@ -472,7 +472,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     
     // init dummy variables
     string seq_name = "";
-    vector<Mutation*> regions;
+    vector<Mutation*> mutations;
     PositionType current_pos = 1;
     ifstream in = ifstream(diff_path);
     PositionType line_num = 1;
@@ -534,16 +534,12 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             // record the sequence of the previous taxon
             if (seq_name.length() > 0)
             {
-                // insert a Region type R (if necessary)
-                if (current_pos <= ref_seq.size())
-                    regions.push_back(new Region(TYPE_R, current_pos - 1, seq_type, num_states));
-                
-                push_back(new Sequence(seq_name, regions));
+                push_back(new Sequence(seq_name, mutations));
                 
                 // reset dummy variables
                 seq_name = "";
                 current_pos = 1;
-                regions.clear();
+                mutations.clear();
             }
             
             // Read new sequence name
@@ -592,12 +588,11 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
                     outWarning("Ignoring <Length> of " + tmp + ". <Length> is only appliable for 'N' or '-'.");
             }
             
-            // insert a Region type R (if necessary)
-            if (current_pos < pos)
-                regions.push_back(new Region(TYPE_R, current_pos - 1, seq_type, num_states));
-            
-            // add a new region into regions
-            regions.push_back(new Region(state, pos - 1, seq_type, num_states));
+            // add a new mutation into mutations
+            if (state == TYPE_N || state == TYPE_DEL)
+                mutations.push_back(new MutationIndel(state, pos - 1, length));
+            else
+                mutations.push_back(new Mutation(state, pos - 1));
             
             // update current_pos
             current_pos = pos + length;
@@ -606,13 +601,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     
     // Record the sequence of  the last taxon
     if (seq_name.length() > 0)
-    {
-        // insert a Region type R (if necessary)
-        if (current_pos <= ref_seq.size())
-            regions.push_back(new Region(TYPE_R, current_pos - 1, seq_type, num_states));
-        
-        push_back(new Sequence(seq_name, regions));
-    }
+        push_back(new Sequence(seq_name, mutations));
     
     // validate the input
     if (ref_seq.size() == 0)
@@ -815,12 +804,6 @@ StateType Alignment::convertChar2State(char state) {
     }
 }
 
-void Alignment::convertSequences()
-{
-    for (iterator it = begin(); it != end(); it++)
-        (*it)->convertMutation2Region(ref_seq.size(), seq_type, num_states);
-}
-
 void Alignment::sortSeqsByDistances(double hamming_weight)
 {
     ASSERT(ref_seq.size() > 0);
@@ -840,23 +823,24 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
         PositionType num_diffs = 0;
         sequence_indexes[i] = i;
         
-        // browse regions one by one
-        for (Mutation* region: sequence->mutations)
+        // browse mutations one by one
+        for (Mutation* mutation: sequence->mutations)
         {
-            switch (region->type)
+            switch (mutation->type)
             {
-                case TYPE_R: // handle sites in the sequence that are identical to the reference genome
+                case TYPE_R: // Type R does not exist in Mutations (only in Regions)
+                    outError("Sorry! Something went wrong. Invalid mutation type (type R).");
                     break;
                 case TYPE_N: // handle unsequenced sites ('-' or 'N')
                 case TYPE_O: // handle ambiguity
-                    num_ambiguities += region->getLength();
+                    num_ambiguities += mutation->getLength();
                     break;
                 default:
                     // handle normal character
-                    if (region->type < num_states)
+                    if (mutation->type < num_states)
                         num_diffs++;
                     else
-                        outError("Invalid entry type!");
+                        num_ambiguities++;
                     break;
             }
         }

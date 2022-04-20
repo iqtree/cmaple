@@ -102,7 +102,7 @@ public:
     void extractMutations(StrVector sequences, StrVector seq_names, string ref_sequence, ofstream &out, bool only_extract_diff);
     
     /**
-            Read Diff file to load reference sequence and vector of Sequence (represented by vector of Regions)
+            Read Diff file to load reference sequence and vector of Sequence (represented by vector of Mutations)
             @param diff_path path to the Diff file; ref_path path to the reference sequence
      */
     void readDiff(char* diff_path, char* ref_path);
@@ -126,11 +126,6 @@ public:
         @return state ID
     */
     StateType convertChar2State(char state);
-    
-    /**
-    *  Convert sequences (from vector of Mutations into vector of Regions)
-    */
-    void convertSequences();
     
     /**
     *  Sort sequences by their distances to the reference genome

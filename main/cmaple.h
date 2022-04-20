@@ -8,6 +8,8 @@
 
 #include "alignment/alignment.h"
 #include "model/model.h"
+#include "tree/tree.h"
+#include "utils/timeutil.h"
 
 #ifndef CMAPLE_H
 #define CMAPLE_H
@@ -26,6 +28,11 @@ private:
      */
     void computeCumulativeRate();
     
+    /**
+        Check to redo the inference
+     */
+    void checkRedoInference();
+    
 public:
     Params *params;
     Alignment *aln;
@@ -33,6 +40,11 @@ public:
     // model-related params
     double *cumulative_rate;
     double* pseu_mutation_count;
+    
+    // The phylogenetic tree
+    Tree* tree;
+    // tree-related params
+    double default_blength;
     
     /**
     *  CMaple constructor
@@ -58,6 +70,11 @@ public:
         Prepare for the inference
      */
     void preInference();
+    
+    /**
+        Do the inference
+     */
+    void doInference();
     
     /**
         Temporarily method for testing

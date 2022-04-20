@@ -518,7 +518,8 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.only_extract_diff = false;
     params.hamming_weight = 1.0;
     params.model_name = "JC";
-    params.fastLK_threshold_prob = 1e-7;
+    params.redo_inference = false;
+    params.threshold_prob = 1e-7;
     params.fastLK_blen_adjustment = 1;
     params.fastLK_failure_limit = 3;
     params.fastLK_loglh_thresh = 25;
@@ -581,6 +582,23 @@ void parseArg(int argc, char *argv[], Params &params) {
                     throw "Use --model <model_name>";
                 
                 params.model_name = argv[cnt];
+                continue;
+            }
+            if (strcmp(argv[cnt], "-redo") == 0 || strcmp(argv[cnt], "--redo") == 0) {
+                params.redo_inference = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--thresh-prob") == 0) {
+                
+                cnt++;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    throw "Use --thresh-prob <PROB_THRESH>";
+                
+                params.threshold_prob = convert_double(argv[cnt]);
+                
+                if (params.threshold_prob <= 0)
+                    throw "<PROB_THRESH> must be positive!";
+
                 continue;
             }
         }

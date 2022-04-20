@@ -12,7 +12,7 @@ class Model
 public:
     string model_name;
     double *root_freqs, *root_log_freqs;
-    double* mutation_mat;
+    double *mutation_mat;
     
 	/**
 		constructor

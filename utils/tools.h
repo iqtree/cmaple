@@ -270,9 +270,14 @@ public:
     string model_name;
     
     /**
-    *  fastLK: threshold
-    */
-    double fastLK_threshold_prob;
+        TRUE to redo the inference and overwrite output files
+     */
+    bool redo_inference;
+    
+    /**
+    *       threshold to ignore possible states with very low probabilities
+     */
+    double threshold_prob;
     
     /**
     *  fastLK: blen adjustment  param
