@@ -445,6 +445,19 @@ void convert_range(const char *str, double &lower, double &upper, double &step_s
     step_size = d;
 }
 
+void reinitDoubleArr(double* &arr, StateType size, bool delete_first, bool set_zero)
+{
+    // delete the current array
+    if (delete_first && arr)
+        delete [] arr;
+    
+    // request memory allocation for the new array
+    arr = new double[size];
+    if (set_zero)
+        for (StateType i = 0; i < size; i++)
+            arr[i] = 0;
+}
+
 void convert_string_vec(const char *str, StrVector &vec, char separator) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();

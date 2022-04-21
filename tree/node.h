@@ -50,7 +50,6 @@ public:
         deconstructor
      */
     ~Node();
-
 };
 
 #endif

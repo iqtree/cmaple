@@ -864,7 +864,7 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
     delete[] sequence_indexes;
 }
 
-int Alignment::compareSequences(vector<Mutation*> sequence1, vector<Mutation*> sequence2)
+int Alignment::compareSequences(vector<Region*> sequence1, vector<Region*> sequence2)
 {
     ASSERT(ref_seq.size() > 0);
     
@@ -874,27 +874,27 @@ int Alignment::compareSequences(vector<Mutation*> sequence1, vector<Mutation*> s
     bool seq1_more_info = false;
     bool seq2_more_info = false;
     PositionType pos = 0;
-    Mutation *seq1_mutation, *seq2_mutation;
+    Region *seq1_region, *seq2_region;
     PositionType seq1_end = -1, seq2_end = -1;
     PositionType length;
 
     while (pos < ref_seq.size() && (!seq1_more_info || !seq2_more_info))
     {
         // get the next shared segment in the two sequences
-        getNextSharedSegment(pos, sequence1, sequence2, seq1_index, seq2_index, seq1_mutation, seq2_mutation, seq1_end, seq2_end, length);
+        getNextSharedSegment(pos, sequence1, sequence2, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
         
-        // The two mutations have different types from each other
-        if (seq1_mutation->type != seq2_mutation->type)
+        // The two regions have different types from each other
+        if (seq1_region->type != seq2_region->type)
         {
-            if (seq1_mutation->type == TYPE_N)
+            if (seq1_region->type == TYPE_N)
                 seq2_more_info = true;
             else
-                if (seq2_mutation->type == TYPE_N)
+                if (seq2_region->type == TYPE_N)
                     seq1_more_info = true;
-                else if (seq1_mutation->type == TYPE_O)
+                else if (seq1_region->type == TYPE_O)
                         seq2_more_info = true;
                     else
-                        if (seq2_mutation->type == TYPE_O)
+                        if (seq2_region->type == TYPE_O)
                             seq1_more_info = true;
                         else
                         {
@@ -902,14 +902,14 @@ int Alignment::compareSequences(vector<Mutation*> sequence1, vector<Mutation*> s
                             seq2_more_info = true;
                         }
         }
-        // Both mutations are type O
-        else if (seq1_mutation->type == TYPE_O)
+        // Both regions are type O
+        else if (seq1_region->type == TYPE_O)
         {
             for (StateType i = 0; i < num_states; i++)
             {
-                if (seq1_mutation->getLikelihood()[i] > seq2_mutation->getLikelihood()[i] + 1e-2)
+                if (seq1_region->likelihood[i] > seq2_region->likelihood[i] + 1e-2)
                     seq2_more_info = true;
-                else if (seq2_mutation->getLikelihood()[i] > seq1_mutation->getLikelihood()[i] + 1e-2)
+                else if (seq2_region->likelihood[i] > seq1_region->likelihood[i] + 1e-2)
                         seq1_more_info = true;
             }
         }
@@ -933,35 +933,35 @@ int Alignment::compareSequences(vector<Mutation*> sequence1, vector<Mutation*> s
     return 0;
 }
 
-void Alignment::move2NextMutation(vector<Mutation*> sequence, PositionType mutation_index, Mutation* &mutation, PositionType &current_pos, PositionType &end_pos)
+void Alignment::move2NextRegion(vector<Region*> sequence, PositionType region_index, Region* &region, PositionType &current_pos, PositionType &end_pos)
 {
-    ASSERT(mutation_index < sequence.size());
+    ASSERT(region_index < sequence.size());
     
-    // get the current mutation
-    mutation = sequence[mutation_index];
+    // get the current region
+    region = sequence[region_index];
     
     // get the current position and end position
-    current_pos = mutation->position;
-    PositionType length = (mutation_index < sequence.size() - 1 ? sequence[mutation_index + 1]->position : ref_seq.size()) - current_pos;
+    current_pos = region->position;
+    PositionType length = (region_index < sequence.size() - 1 ? sequence[region_index + 1]->position : ref_seq.size()) - current_pos;
     end_pos = current_pos + length - 1;
 }
 
-void Alignment::getNextSharedSegment(PositionType current_pos, vector<Mutation*> sequence1, vector<Mutation*> sequence2, PositionType &seq1_index, PositionType &seq2_index, Mutation* &seq1_mutation, Mutation* &seq2_mutation, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length)
+void Alignment::getNextSharedSegment(PositionType current_pos, vector<Region*> sequence1, vector<Region*> sequence2, PositionType &seq1_index, PositionType &seq2_index, Region* &seq1_region, Region* &seq2_region, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length)
 {
     PositionType seq1_pos, seq2_pos, end_pos;
     
-    // move to the next mutation in sequence 1
+    // move to the next region in sequence 1
     if (current_pos > seq1_end_pos)
     {
         seq1_index++;
-        move2NextMutation(sequence1, seq1_index, seq1_mutation, seq1_pos, seq1_end_pos);
+        move2NextRegion(sequence1, seq1_index, seq1_region, seq1_pos, seq1_end_pos);
     }
     
-    // move to the next mutation in sequence 2
+    // move to the next region in sequence 2
     if (current_pos > seq2_end_pos)
     {
         seq2_index++;
-        move2NextMutation(sequence2, seq2_index, seq2_mutation, seq2_pos, seq2_end_pos);
+        move2NextRegion(sequence2, seq2_index, seq2_region, seq2_pos, seq2_end_pos);
     }
     
     // compute the end_pos for the shared segment

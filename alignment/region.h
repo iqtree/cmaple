@@ -28,11 +28,14 @@ private:
     void convertAmbiguiousStateDNA(int max_num_states);
     
 public:
-    // length of the path between the current phylo node and the node where the likelihood is calculated
-    double plength;
+    // distance from root of the upward branch (~length of the path between the current phylo node and the node where the likelihood is calculated)
+    double plength_upward;
+    
+    // distance from root of the downward branch
+    double plength_downward;
     
     // the relative partial likelihood
-    double* likelihood = NULL;
+    double* likelihood;
     
     /**
     *  Region constructor
@@ -42,11 +45,16 @@ public:
     /**
     *  Region constructor
     */
-    Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states, double n_plength = 0, double* n_likelihood = NULL);
+    Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states);
     
     /**
     *  Region constructor
     */
-    Region(Mutation* n_mutation, SeqType seq_type, int max_num_states, double n_plength = 0, double* n_likelihood = NULL);
+    Region(Mutation* n_mutation, SeqType seq_type, int max_num_states);
+    
+    /**
+    *  Region constructor
+    */
+    Region(Region* region, StateType num_states, bool copy_likelihood = true);
 };
 #endif

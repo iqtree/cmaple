@@ -9,24 +9,41 @@
 
 Region::Region():Mutation()
 {
-    plength = 0;
-    likelihood = 0;
+    plength_upward = 0;
+    plength_downward = 0;
+    likelihood = NULL;
 }
 
-Region::Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states, double n_plength, double* n_likelihood):Mutation(n_type, n_position)
+Region::Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states):Mutation(n_type, n_position)
 {
-    plength = n_plength;
-    likelihood = n_likelihood;
+    plength_upward = 0;
+    plength_downward = 0;
+    likelihood = NULL;
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
-Region::Region(Mutation* n_mutation, SeqType seq_type, int max_num_states, double n_plength, double* n_likelihood)
+Region::Region(Mutation* n_mutation, SeqType seq_type, int max_num_states)
 {
     type = n_mutation->type;
     position = n_mutation->position;
-    plength = n_plength;
-    likelihood = n_likelihood;
+    plength_upward = 0;
+    plength_downward = 0;
+    likelihood = NULL;
     convertAmbiguiousState(seq_type, max_num_states);
+}
+
+Region::Region(Region* region, StateType num_states, bool copy_likelihood)
+{
+    type = region->type;
+    position = region->position;
+    plength_upward = region->plength_upward;
+    plength_downward = region->plength_downward;
+    likelihood = NULL;
+    if (region->likelihood && copy_likelihood)
+    {
+        likelihood = new double[num_states];
+        memcpy(likelihood, region->likelihood, sizeof(double) * num_states);
+    }
 }
 
 void Region::convertAmbiguiousState(SeqType seq_type, int max_num_states)

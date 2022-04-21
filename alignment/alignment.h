@@ -22,18 +22,18 @@ private:
     void outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length = -1);
     
     /**
-        move to the next mutation in the vector of mutations
-        @param sequence: a vector of mutations; mutation_index: the index of the next mutation
-        @return mutation: a mutation; current_pos: the current position; end_pos: the end position
+        move to the next region in the vector of regions
+        @param sequence: a vector of regions; region_index: the index of the next region
+        @return region: a region; current_pos: the current position; end_pos: the end position
      */
-    void move2NextMutation(vector<Mutation*> sequence, PositionType mutation_index, Mutation* &mutation, PositionType &current_pos, PositionType &end_pos);
+    void move2NextRegion(vector<Region*> sequence, PositionType region_index, Region* &region, PositionType &current_pos, PositionType &end_pos);
     
     /**
-        get the shared segment between the next mutations of two sequences
-        @param current_pos: current site posisition; sequence1, sequence2: vectors of mutations; seq1_index, seq2_index: the indexes of the current mutations; seq1_end_pos, seq2_end_pos: the end positions of the current mutations
-        @return seq1_mutation, seq2_mutation: the mutations contains the shared segment; length: length of the shared segment
+        get the shared segment between the next regions of two sequences
+        @param current_pos: current site posisition; sequence1, sequence2: vectors of regions; seq1_index, seq2_index: the indexes of the current regions; seq1_end_pos, seq2_end_pos: the end positions of the current regions
+        @return seq1_region, seq2_region: the regions contains the shared segment; length: length of the shared segment
      */
-    void getNextSharedSegment(PositionType current_pos, vector<Mutation*> sequence1, vector<Mutation*> sequence2, PositionType &seq1_index, PositionType &seq2_index, Mutation* &seq1_mutation, Mutation* &seq2_mutation, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length);
+    void getNextSharedSegment(PositionType current_pos, vector<Region*> sequence1, vector<Region*> sequence2, PositionType &seq1_index, PositionType &seq2_index, Region* &seq1_region, Region* &seq2_region, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length);
     
 public:
     // reference sequence
@@ -139,6 +139,6 @@ public:
         @param sequence1, sequence2
         @return 0: if the two sequences are incomparable; 1: if sequence1 is more or equally informative than/to sequence2; -1; if sequence1 is less informative than sequence2
      */
-    int compareSequences(vector<Mutation*> sequence1, vector<Mutation*> sequence2);
+    int compareSequences(vector<Region*> sequence1, vector<Region*> sequence2);
 };
 #endif

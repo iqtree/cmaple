@@ -533,6 +533,15 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size);
  */
 void convert_range(const char *str, double &lower, double &upper, double &step_size);
 
+/**
+        reinitialize an array of double (double*)
+        @param arr the input double*
+        @param size the size of the input array
+        @param delete_first TRUE to delete the current array before reinitializing
+        @param set_zero TRUE to initialize all new items at 0
+ */
+void reinitDoubleArr(double* &arr, StateType size, bool delete_first = true, bool set_zero = true);
+
 void convert_string_vec(const char *str, StrVector &str_vec, char separator = ',');
 
 /**

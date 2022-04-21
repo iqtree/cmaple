@@ -5,9 +5,6 @@
  *      Author: Nhan Ly-Trong
  */
 
-
-#include "alignment/alignment.h"
-#include "model/model.h"
 #include "tree/tree.h"
 #include "utils/timeutil.h"
 
@@ -33,10 +30,17 @@ private:
      */
     void checkRedoInference();
     
+    /**
+        Compute the thresholds for approximations
+     */
+    void computeThresholds();
+    
+    /**
+        Build an Initial Tree
+     */
+    void buildInitialTree();
+    
 public:
-    Params *params;
-    Alignment *aln;
-    Model* model;
     // model-related params
     double *cumulative_rate;
     double* pseu_mutation_count;
@@ -45,6 +49,9 @@ public:
     Tree* tree;
     // tree-related params
     double default_blength;
+    
+    // thresholds for approximations
+    double threshold_prob2, threshold_prob4;
     
     /**
     *  CMaple constructor
