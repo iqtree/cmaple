@@ -37,8 +37,8 @@ public:
     
     /**
         Update the mutation rate matrix regarding the pseu_mutation_count
-        @param pseu_mutation_count: pseudo mutation count; model_name: name of the model; num_states: the number of states
+        @param pseu_mutation_count: pseudo mutation count; num_states: the number of states
      */
-    void updateMutationMat(double* pseu_mutation_count, string model_name, StateType num_states);
+    void updateMutationMat(double* pseu_mutation_count, StateType num_states);
 };
 #endif

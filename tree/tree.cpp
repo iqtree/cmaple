@@ -94,3 +94,62 @@ vector<Region*> Tree::getOverallLhSeqAtRoot(vector<Region*> input_regions, doubl
     // return the overall likelihood sequence
     return regions;
 }
+
+vector<Region*> Tree::getLowerLhSeqAtTip(vector<Mutation*> mutations, double blength)
+{
+    PositionType sequence_length = aln->ref_seq.size();
+    PositionType pos = 0;
+    vector<Region*> regions;
+    
+    for (Mutation* mutation: mutations)
+    {
+        // insert Region of type R (if necessary)
+        if (mutation->position > pos)
+            regions.push_back(new Region(TYPE_R, pos, aln->seq_type, aln->num_states));
+        
+        // convert the current mutation
+        pos = mutation->position + mutation->getLength();
+        regions.push_back(new Region(mutation, aln->seq_type, aln->num_states));
+    }
+    
+    // insert the last Region of type R (if necessary)
+    if (pos < sequence_length)
+        regions.push_back(new Region(TYPE_R, pos, aln->seq_type, aln->num_states));
+    
+    
+    return regions;
+}
+
+void Tree::addNode(Node* new_node, Node* current_node, int &new_id, bool insert_to_right)
+{
+    Node* new_node_1 = new Node(new_id++);
+    Node* new_node_2 = new Node(new_id++);
+    Node* new_node_3 = new Node(new_id++);
+    new_node_1->relative = new_node_2;
+    new_node_2->relative = new_node_3;
+    new_node_3->relative = new_node_1;
+    
+    new_node_1->neighbor = current_node->neighbor;
+    if (current_node == root)
+        root = new_node_1;
+    else
+        new_node_1->neighbor->neighbor = new_node_1;
+    
+    Node *left_tip, *right_tip;
+    if (insert_to_right)
+    {
+        left_tip = current_node;
+        right_tip = new_node;
+    }
+    else
+    {
+        left_tip = new_node;
+        right_tip = current_node;
+    }
+    
+    new_node_2->neighbor = right_tip;
+    right_tip->neighbor = new_node_2;
+    
+    new_node_3->neighbor = left_tip;
+    left_tip->neighbor = new_node_3;
+}

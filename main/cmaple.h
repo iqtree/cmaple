@@ -40,6 +40,31 @@ private:
      */
     void buildInitialTree();
     
+    /**
+        Add the root node to the tree
+     */
+    void addRoot();
+    
+    /**
+        Update the mutation matrix periodically from the empirical count of mutations
+     */
+    void updateMutationMatFromEmpiricalCount();
+    
+    /**
+           seek a position for a sample placement
+     */
+    void seekPlacement(Node* start_node, string seq_name, vector<Region*> regions, Node* &selected_node, double &best_lh_diff , bool &is_mid_branch, double &best_up_lh_diff, double &best_down_lh_diff, Node* &best_child, bool &adjust_blen);
+    
+    /**
+           examine a position for placing a new sample
+     */
+    void examinePosition(Node* node, double parent_lh, int failure_count, string seq_name, vector<Region*> regions, Node* &selected_node, double &best_lh_diff , bool &is_mid_branch, double &best_up_lh_diff, double &best_down_lh_diff, Node* &best_child, bool &adjust_blen);
+    
+    /**
+        Traverse tree from a node (node = root by default)
+     */
+    void traverseTree(Node* node = NULL);
+    
 public:
     // model-related params
     double *cumulative_rate;

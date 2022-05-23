@@ -35,10 +35,5 @@ public:
     *  Sequence constructor
     */
     Sequence(string n_seq_name, vector<Mutation*> n_mutations);
-    
-    /**
-    *  get a vector of Regions from a vector of Mutations
-    */
-    vector<Region*> getRegionsFromMutations(PositionType sequence_length, SeqType seq_type, int max_num_states);
 };
 #endif

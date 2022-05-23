@@ -533,8 +533,9 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.model_name = "JC";
     params.redo_inference = false;
     params.threshold_prob = 1e-7;
+    params.mutation_update_period = 40;
+    params.failure_limit = 3;
     params.fastLK_blen_adjustment = 1;
-    params.fastLK_failure_limit = 3;
     params.fastLK_loglh_thresh = 25;
     params.fastLK_blength_split_factor = 2;
     
@@ -611,6 +612,32 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 if (params.threshold_prob <= 0)
                     throw "<PROB_THRESH> must be positive!";
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--mutation-update") == 0) {
+                
+                cnt++;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    throw "Use --mutation-update <NUMBER>";
+                
+                params.mutation_update_period = convert_int(argv[cnt]);
+                
+                if (params.mutation_update_period <= 0)
+                    throw "<NUMBER> must be positive!";
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--failure-limit") == 0) {
+                
+                cnt++;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    throw "Use --failure-limit <NUMBER>";
+                
+                params.failure_limit = convert_int(argv[cnt]);
+                
+                if (params.failure_limit <= 0)
+                    throw "<NUMBER> must be positive!";
 
                 continue;
             }

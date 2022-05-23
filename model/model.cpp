@@ -55,7 +55,7 @@ void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
     }
 }
 
-void Model::updateMutationMat(double* pseu_mutation_count, string model_name, StateType num_states)
+void Model::updateMutationMat(double* pseu_mutation_count, StateType num_states)
 {
     // init the "zero" mutation matrix
     string model_rates = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
@@ -144,6 +144,6 @@ void Model::initMutationMat(string n_model_name, StateType num_states, double* &
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
         convert_doubles(pseu_mutation_count, model_rates);
         
-        updateMutationMat(pseu_mutation_count, model_name, num_states);
+        updateMutationMat(pseu_mutation_count, num_states);
     }
 }

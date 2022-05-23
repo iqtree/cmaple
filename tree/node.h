@@ -13,20 +13,26 @@ public:
     // sequence name
     string seq_name;
     
+    // overall likelihood
+    vector<Region*> overall_lh;
+    
+    // overall likelihood mid branch
+    vector<Region*> overall_lh_mid_branch;
+    
+    // likelihood from other nodes
+    vector<Region*> lh_from_others;
+    
     // lower likelihood sequence
     vector<Region*> lower_lh_seq;
-    
-    // overall likelihood sequence
-    vector<Region*> overall_lh_seq;
     
     // length of branch connecting to parent
     double length;
     
     // next node in the circle of neighbors. For tips, circle = NULL
-    Node* circle;
+    Node* relative;
     
     // next node in the phylo tree
-    Node* next;
+    Node* neighbor;
     
     // vector of less informative sequences
     vector<string> less_info_seqs;
@@ -41,15 +47,22 @@ public:
     
     /**
         constructor
-        @param sequence the sequence
-        @param aln the alignment
+        @param n_seq_name the sequence name
      */
-    Node(Sequence* sequence, Alignment* aln);
+    Node(int n_id = -1, string n_seq_name = "");
     
     /**
         deconstructor
      */
     ~Node();
+    
+    /**
+        TRUE if this node is a leaf
+     */
+    bool isLeave();
 };
 
 #endif
+
+#define FOR_RELATIVE(node, relative_node) \
+for(relative_node = node->relative; relative_node && relative_node != node; relative_node = relative_node->relative)

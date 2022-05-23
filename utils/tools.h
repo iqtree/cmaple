@@ -35,6 +35,7 @@
 #include <sstream>
 #include <random>
 #include <sys/stat.h>
+#include <cfloat>
 
 #ifndef TOOLS_H
 #define TOOLS_H
@@ -280,14 +281,19 @@ public:
     double threshold_prob;
     
     /**
+    *       the number to limit the attempts
+    */
+    int failure_limit;
+    
+    /**
+    *       the period to update the mutation matrix
+     */
+    PositionType mutation_update_period;
+    
+    /**
     *  fastLK: blen adjustment  param
     */
     int fastLK_blen_adjustment;
-    
-    /**
-    *  fastLK: failure_limit
-    */
-    int fastLK_failure_limit;
     
     /**
     *  fastLK: threshold for loglh
