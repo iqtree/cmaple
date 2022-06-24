@@ -1,6 +1,7 @@
-#include "alignment/region.h"
+#include "alignment/regions.h"
 #include "alignment/sequence.h"
 #include "alignment/alignment.h"
+#include "model/model.h"
 
 #ifndef NODE_H
 #define NODE_H
@@ -13,23 +14,17 @@ public:
     // sequence name
     string seq_name;
     
-    // overall likelihood
-    vector<Region*> overall_lh;
+    // likelihood of the data arrived from other next nodes
+    Regions* partial_lh = NULL;
     
-    // overall likelihood mid branch
-    vector<Region*> overall_lh_mid_branch;
-    
-    // likelihood from other nodes
-    vector<Region*> lh_from_others;
-    
-    // lower likelihood sequence
-    vector<Region*> lower_lh_seq;
+    // total likelihood at the current node
+    Regions* total_lh = NULL;
     
     // length of branch connecting to parent
     double length;
     
     // next node in the circle of neighbors. For tips, circle = NULL
-    Node* relative;
+    Node* next;
     
     // next node in the phylo tree
     Node* neighbor;
@@ -37,8 +32,11 @@ public:
     // vector of less informative sequences
     vector<string> less_info_seqs;
 
-    // flexible attributes
-    map<string,string> attributes;
+    // flexible string attributes
+    map<string,string> str_attributes;
+    
+    // flexible double attributes
+    map<string,double> double_attributes;
     
     /**
         constructor
@@ -60,9 +58,18 @@ public:
         TRUE if this node is a leaf
      */
     bool isLeave();
+    
+    /**
+        compute total lh for root node
+     */
+    void computeTotalLhForRoot(Model* model, StateType num_states, double blength = 0);
 };
 
 #endif
 
-#define FOR_RELATIVE(node, relative_node) \
-for(relative_node = node->relative; relative_node && relative_node != node; relative_node = relative_node->relative)
+#define FOR_NEXT(node, next_node) \
+for(next_node = node->next; next_node && next_node != node; next_node = next_node->next)
+
+#define FOR_NEIGHBOR(node, neighbor_node) \
+if (node->next) \
+for(neighbor_node = node->next->neighbor; neighbor_node && neighbor_node != node->neighbor; neighbor_node = neighbor_node->neighbor->next->neighbor)

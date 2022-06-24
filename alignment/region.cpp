@@ -9,15 +9,22 @@
 
 Region::Region():Mutation()
 {
-    plength_upward = 0;
-    plength_downward = 0;
+    plength_observation = 0;
+    plength_from_root = 0;
     likelihood = NULL;
+}
+
+Region::Region(StateType n_type, PositionType n_position, double n_plength_observation, double n_plength_from_root, double* n_likelihood):Mutation(n_type, n_position)
+{
+    plength_observation = n_plength_observation;
+    plength_from_root = n_plength_from_root;
+    likelihood = n_likelihood;
 }
 
 Region::Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states):Mutation(n_type, n_position)
 {
-    plength_upward = 0;
-    plength_downward = 0;
+    plength_observation = 0;
+    plength_from_root = 0;
     likelihood = NULL;
     convertAmbiguiousState(seq_type, max_num_states);
 }
@@ -26,8 +33,8 @@ Region::Region(Mutation* n_mutation, SeqType seq_type, int max_num_states)
 {
     type = n_mutation->type;
     position = n_mutation->position;
-    plength_upward = 0;
-    plength_downward = 0;
+    plength_observation = 0;
+    plength_from_root = 0;
     likelihood = NULL;
     convertAmbiguiousState(seq_type, max_num_states);
 }
@@ -36,13 +43,22 @@ Region::Region(Region* region, StateType num_states, bool copy_likelihood)
 {
     type = region->type;
     position = region->position;
-    plength_upward = region->plength_upward;
-    plength_downward = region->plength_downward;
+    plength_observation = region->plength_observation;
+    plength_from_root = region->plength_from_root;
     likelihood = NULL;
     if (region->likelihood && copy_likelihood)
     {
         likelihood = new double[num_states];
         memcpy(likelihood, region->likelihood, sizeof(double) * num_states);
+    }
+}
+
+Region::~Region()
+{
+    if (likelihood)
+    {
+        delete likelihood;
+        likelihood = NULL;
     }
 }
 

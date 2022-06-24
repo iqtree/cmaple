@@ -535,9 +535,10 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.threshold_prob = 1e-7;
     params.mutation_update_period = 40;
     params.failure_limit = 3;
-    params.fastLK_blen_adjustment = 1;
-    params.fastLK_loglh_thresh = 25;
-    params.fastLK_blength_split_factor = 2;
+    params.strict_stop_seeking_placement = false;
+    params.thresh_log_lh_subtree_explore = 200;
+    params.thresh_log_lh_failure = 0.01;
+    params.min_blength_factor = 4.1;
     
     for (int cnt = 1; cnt < argc; cnt++) {
         try {
@@ -638,6 +639,12 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 if (params.failure_limit <= 0)
                     throw "<NUMBER> must be positive!";
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--strict-init-stop") == 0) {
+                
+                params.strict_stop_seeking_placement = true;
 
                 continue;
             }

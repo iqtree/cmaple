@@ -224,6 +224,8 @@ extern VerboseMode verbose_mode;
 const int TEST = 1;
 const char REF_NAME[] = "REF";
 const int MIN_NUM_TAXA = 3;
+const string FAILURE_COUNT = "FAILURE_COUNT";
+const string LH_DIFF = "LH_DIFF";
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
@@ -291,20 +293,24 @@ public:
     PositionType mutation_update_period;
     
     /**
-    *  fastLK: blen adjustment  param
-    */
-    int fastLK_blen_adjustment;
+    *       TRUE to apply strict stop rules when seeking placement for a new sample
+     */
+    bool strict_stop_seeking_placement;
     
     /**
-    *  fastLK: threshold for loglh
+    *  threshold of loglh to continue explore the subtree
     */
-    double fastLK_loglh_thresh;
+    double thresh_log_lh_subtree_explore;
     
     /**
-    *  fastLK: blength_split_factor
-     split branch length by this factor when looking for best child of best node
+    *  threshold of loglh to count failure
     */
-    double fastLK_blength_split_factor;
+    double thresh_log_lh_failure;
+    
+    /**
+    *  The minium branch length to try for placement
+    */
+    double min_blength_factor;
 };
 
 /*--------------------------------------------------------------*/
