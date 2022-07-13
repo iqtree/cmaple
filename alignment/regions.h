@@ -12,12 +12,9 @@
 
 class Regions: public vector<Region*> {
 private:
-    /**
-    *  Delete all region items one by one
-    */
-    void deleteRegions();
     
 public:
+    
     /**
     *  Regions constructor
     */
@@ -37,5 +34,10 @@ public:
     *  get a Region
     */
     Region* getRegion(PositionType id);
+    
+    /**
+    *  Delete all region items one by one
+    */
+    void deleteRegions();
 };
 #endif

@@ -6,6 +6,7 @@
 //
 
 #include "regions.h"
+
 Regions::Regions()
 {
     // do nothing
@@ -20,11 +21,9 @@ void Regions::deleteRegions()
 {
     for (iterator it = begin(); it != end(); it++)
         delete (*it);
+    clear();
 }
 
-/**
-*  get a Region
-*/
 Region* Regions::getRegion(PositionType id)
 {
     return at(id);

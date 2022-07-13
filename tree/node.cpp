@@ -1,14 +1,17 @@
 #include "node.h"
 
-Node::Node()
+Node::Node(bool is_top_node)
 {
     id = -1;
     seq_name = "";
     length = 0;
+    if (is_top_node)
+        double_attributes[IS_TOP_NODE] = 1;
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
     total_lh = NULL;
+    dirty = false;
 }
 
 Node::Node(int n_id, string n_seq_name)
@@ -20,6 +23,20 @@ Node::Node(int n_id, string n_seq_name)
     neighbor = NULL;
     partial_lh = NULL;
     total_lh = NULL;
+    dirty = false;
+}
+
+Node::Node(string n_seq_name)
+{
+    id = -1;
+    seq_name = n_seq_name;
+    length = 0;
+    double_attributes[IS_TOP_NODE] = 1;
+    next = NULL;
+    neighbor = NULL;
+    partial_lh = NULL;
+    total_lh = NULL;
+    dirty = false;
 }
 
 Node::~Node()
@@ -33,61 +50,41 @@ bool Node::isLeave()
     return next == NULL;
 }
 
-void Node::computeTotalLhForRoot(Model* model, StateType num_states, double blength)
+Node* Node::getTopNode()
 {
-    // init total_lh
-    if (total_lh)
-        delete total_lh;
-    total_lh = new Regions();
+    Node* next_node;
+    Node* node = this;
     
-    for (Region* region : (*partial_lh))
+    if (node->double_attributes.find(IS_TOP_NODE) != node->double_attributes.end())
+        return node;
+    
+    FOR_NEXT(node, next_node)
     {
-        // type N
-        if (region->type == TYPE_N)
-        {
-            Region* new_region = new Region(region, num_states, false);
-            total_lh->push_back(new_region);
-        }
-        else
-            // type O
-            if (region->type == TYPE_O)
-            {
-                double total_plength_observation = region->plength_observation + blength;
-                double* new_partial_likelihood = new double[num_states];
-                double sum_partial_likelihood = 0;
-                
-                for (StateType i = 0; i < num_states; i++)
-                {
-                    double tot = 0.0;
-                    
-                    if (total_plength_observation > 0)
-                    {
-                        for (StateType j = 0; j < num_states; j++)
-                            tot += model->mutation_mat[i * num_states + j] * region->likelihood[j];
-                        tot *= total_plength_observation;
-                    }
-                    
-                    tot += region->likelihood[i];
-                    new_partial_likelihood[i] = tot * model->root_freqs[i];
-                    sum_partial_likelihood += new_partial_likelihood[i];
-                }
-                
-                // normalize partial likelihood
-                for (StateType i = 0; i < num_states; i++)
-                    new_partial_likelihood[i] /= sum_partial_likelihood;
-                
-                // add new region to the total_lh_regions
-                Region* new_region = new Region(region, num_states, false);
-                new_region->likelihood = new_partial_likelihood;
-                total_lh->push_back(new_region);
-            }
-            // other types: R or A/C/G/T
-            else
-            {
-                // add new region to the total_lh_regions
-                Region* new_region = new Region(region, num_states, false);
-                new_region->plength_observation += blength;
-                total_lh->push_back(new_region);
-            }
+        if (next_node->double_attributes.find(IS_TOP_NODE) != next_node->double_attributes.end())
+            return next_node;
     }
+    
+    return NULL;
+}
+
+string Node::exportString()
+{
+    if (isLeave())
+    {
+        // without minor sequences -> simply return node's name and its branch length
+        if (less_info_seqs.size() == 0)
+            return seq_name + ":" + convertDoubleToString(length);
+        // with minor sequences -> return minor sequences' names with zero branch lengths
+        else
+        {
+            string output = "(" + seq_name + ":0";
+            for (string minor_seq_name : less_info_seqs)
+                output += "," + minor_seq_name + ":0";
+            output += "):" + convertDoubleToString(length);
+            
+            return output;
+        }
+    }
+    
+    return "";
 }

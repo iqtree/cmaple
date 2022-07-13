@@ -449,6 +449,10 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
 void Alignment::parseRefSeq(string ref_sequence)
 {
     ref_seq.resize(ref_sequence.length());
+    
+    // transform ref_sequence to uppercase
+    transform(ref_sequence.begin(), ref_sequence.end(), ref_sequence.begin(), ::toupper);
+    
     for (PositionType i = 0; i < ref_sequence.length(); i++)
     {
         ref_seq[i] = convertChar2State(ref_sequence[i]);
@@ -497,14 +501,17 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             string::size_type pos = line.find_first_of("\n\r");
             seq_name = line.substr(1, pos-1);
             
-            if (seq_name != REF_NAME)
+            // transform seq_name to upper case
+            transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
+            
+            if (seq_name != REF_NAME && seq_name != "REFERENCE")
                 outError("Diff file must start by >REF. Please check and try again!");
         }
         // read the reference sequence
         else
         {
             // make sure the first line was found
-            if (seq_name != REF_NAME)
+            if (seq_name != REF_NAME && seq_name != "REFERENCE")
                 outError("Diff file must start by >REF. Please check and try again!");
             
             // choose the ref sequence if the user already supplies a reference sequence
@@ -581,7 +588,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
                     length = convert_positiontype(tmp.c_str());
                     if (length <= 0)
                         outError("<Length> must be greater than 0!");
-                    if (length + pos > ref_seq.size())
+                    if (length + pos - 1 > ref_seq.size())
                         outError("<Length> + <Position> must be less than the reference sequence length (" + convertPosTypeToString(ref_seq.size()) + ")!");
                 }
                 else
@@ -834,13 +841,17 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
                 case TYPE_N: // handle unsequenced sites ('-' or 'N')
                 case TYPE_O: // handle ambiguity
                     num_ambiguities += mutation->getLength();
+                    num_diffs++;
                     break;
                 default:
                     // handle normal character
                     if (mutation->type < num_states)
                         num_diffs++;
                     else
+                    {
+                        num_diffs++;
                         num_ambiguities++;
+                    }
                     break;
             }
         }

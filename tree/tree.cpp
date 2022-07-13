@@ -67,3 +67,33 @@ void Tree::addNode(Node* new_node, Node* current_node, int &new_id, bool insert_
     new_node_3->neighbor = left_tip;
     left_tip->neighbor = new_node_3;
 }
+
+string Tree::exportTreeString(Node* node)
+{
+    // init starting node from root
+    if (!node)
+        node = root;
+    
+    // move to its neighbor
+    if (node->neighbor)
+        node = node->neighbor;
+    
+    // do something with its neighbor
+    if (node->isLeave())
+        return node->exportString();
+        
+    string output = "(";
+    bool add_comma = false;
+    Node* next;
+    FOR_NEXT(node, next)
+    {
+        if (!add_comma)
+            add_comma = true;
+        else
+            output += ",";
+        output += exportTreeString(next);
+    }
+    output += "):" + convertDoubleToString(node->length);
+    
+    return output;
+}

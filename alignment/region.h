@@ -45,7 +45,7 @@ public:
     /**
     *  Region constructor
     */
-    Region(StateType n_type, PositionType n_position, double n_plength_observation = 0, double n_plength_from_root = 0, double* n_likelihood = NULL);
+    Region(StateType n_type, PositionType n_position, double n_plength_observation = -1, double n_plength_from_root = -1, double* n_likelihood = NULL);
     
     /**
     *  Region constructor

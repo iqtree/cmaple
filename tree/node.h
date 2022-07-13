@@ -31,6 +31,9 @@ public:
     
     // vector of less informative sequences
     vector<string> less_info_seqs;
+    
+    // flag tp prevent traversing the same part of the tree multiple times.
+    bool dirty;
 
     // flexible string attributes
     map<string,string> str_attributes;
@@ -40,14 +43,21 @@ public:
     
     /**
         constructor
+        @param n_seq_name the sequence name
      */
-    Node();
+    Node(int n_id, string n_seq_name = "");
     
     /**
         constructor
         @param n_seq_name the sequence name
      */
-    Node(int n_id = -1, string n_seq_name = "");
+    Node(string n_seq_name);
+    
+    /**
+        constructor
+        @param is_top_node TRUE if this is the first node in the next circle visited from root
+     */
+    Node(bool is_top_node = false);
     
     /**
         deconstructor
@@ -60,9 +70,14 @@ public:
     bool isLeave();
     
     /**
-        compute total lh for root node
+        get the top node
      */
-    void computeTotalLhForRoot(Model* model, StateType num_states, double blength = 0);
+    Node* getTopNode();
+    
+    /**
+        export string: name + branch length
+     */
+    string exportString();
 };
 
 #endif

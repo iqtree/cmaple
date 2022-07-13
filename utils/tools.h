@@ -226,6 +226,7 @@ const char REF_NAME[] = "REF";
 const int MIN_NUM_TAXA = 3;
 const string FAILURE_COUNT = "FAILURE_COUNT";
 const string LH_DIFF = "LH_DIFF";
+const string IS_TOP_NODE = "IS_TOP_NODE";
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
@@ -311,6 +312,16 @@ public:
     *  The minium branch length to try for placement
     */
     double min_blength_factor;
+    
+    /**
+    *  The maximum branch length to try for placement
+    */
+    double max_blength_factor;
+    
+    /**
+    *  Threshold to determine whether a changed partial is different from its former value
+    */
+    double thresh_diff_update;
 };
 
 /*--------------------------------------------------------------*/

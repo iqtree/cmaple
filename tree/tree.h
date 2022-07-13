@@ -38,6 +38,11 @@ public:
     *  add a new node to become a sibling ò the current node
     */
     void addNode(Node* new_node, Node* current_node, int &new_id, bool insert_to_right = true);
+    
+    /**
+        export tree string
+     */
+    string exportTreeString(Node* node = NULL);
 
 };
 

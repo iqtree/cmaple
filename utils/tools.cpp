@@ -206,7 +206,7 @@ int convert_int(const char *str, int &end_pos) {
 		string err = "Expecting integer, but found \"";
 		err += str;
 		err += "\" instead";
-		throw err;
+		outError(err);
 	}
 	end_pos = endptr - str;
 	return i;
@@ -250,7 +250,7 @@ void convert_int_vec(const char *str, IntVector &vec) {
 			string err = "Expecting integer, but found \"";
 			err += beginptr;
 			err += "\" instead";
-			throw err;
+            outError(err);
 		}
 		vec.push_back(i);
 		if (*endptr == ',') endptr++;
@@ -267,7 +267,7 @@ int64_t convert_int64(const char *str) {
         string err = "Expecting large integer , but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
 
     return i;
@@ -281,7 +281,7 @@ int64_t convert_int64(const char *str, int &end_pos) {
 		string err = "Expecting large integer, but found \"";
 		err += str;
 		err += "\" instead";
-		throw err;
+        outError(err);
 	}
 	end_pos = endptr - str;
 	return i;
@@ -295,7 +295,7 @@ double convert_double(const char *str) {
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
     return d;
 }
@@ -307,7 +307,7 @@ double convert_double(const char *str, int &end_pos) {
 		string err = "Expecting floating-point number, but found \"";
 		err += str;
 		err += "\" instead";
-		throw err;
+        outError(err);
 	}
 	end_pos = endptr - str;
 	return d;
@@ -341,7 +341,7 @@ void convert_double_vec(const char *str, DoubleVector &vec, char separator) {
 			string err = "Expecting floating-point number, but found \"";
 			err += beginptr;
 			err += "\" instead";
-			throw err;
+            outError(err);
 		}
 		vec.push_back(d);
 		if (*endptr == separator) endptr++;
@@ -368,7 +368,7 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
     //lower = d;
     int d_save = d;
@@ -383,7 +383,7 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
 
     lower = d_save;
@@ -397,7 +397,7 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
     step_size = d;
 }
@@ -411,7 +411,7 @@ void convert_range(const char *str, double &lower, double &upper, double &step_s
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
     //lower = d;
     double d_save = d;
@@ -426,7 +426,7 @@ void convert_range(const char *str, double &lower, double &upper, double &step_s
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
 
     lower = d_save;
@@ -440,7 +440,7 @@ void convert_range(const char *str, double &lower, double &upper, double &step_s
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        throw err;
+        outError(err);
     }
     step_size = d;
 }
@@ -529,7 +529,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.diff_path = NULL;
     params.ref_path = NULL;
     params.only_extract_diff = false;
-    params.hamming_weight = 1.0;
+    params.hamming_weight = 1000;
     params.model_name = "JC";
     params.redo_inference = false;
     params.threshold_prob = 1e-7;
@@ -538,7 +538,9 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.strict_stop_seeking_placement = false;
     params.thresh_log_lh_subtree_explore = 200;
     params.thresh_log_lh_failure = 0.01;
-    params.min_blength_factor = 4.1;
+    params.min_blength_factor = 0.2;
+    params.max_blength_factor = 40;
+    params.thresh_diff_update = 1e-7;
     
     for (int cnt = 1; cnt < argc; cnt++) {
         try {
@@ -546,7 +548,7 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 cnt++;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    throw "Use --aln <ALIGNMENT_PATH>";
+                    outError("Use --aln <ALIGNMENT_PATH>");
                 
                 params.aln_path = argv[cnt];
 
@@ -556,7 +558,7 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 cnt++;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    throw "Use --diff <DIFF_PATH>";
+                    outError("Use --diff <DIFF_PATH>");
                 
                 params.diff_path = argv[cnt];
 
@@ -566,7 +568,7 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 cnt++;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    throw "Use --ref <REF_PATH>";
+                    outError("Use --ref <REF_PATH>");
                 
                 params.ref_path = argv[cnt];
 
@@ -582,19 +584,19 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 cnt++;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    throw "Use --hamming-weight <WEIGHT>";
+                    outError("Use --hamming-weight <WEIGHT>");
                 
                 params.hamming_weight = convert_double(argv[cnt]);
                 
                 if (params.hamming_weight < 0)
-                    throw "<WEIGHT> must not be negative!";
+                    outError("<WEIGHT> must not be negative!");
 
                 continue;
             }
             if (strcmp(argv[cnt], "--model") == 0 || strcmp(argv[cnt], "-m") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    throw "Use --model <model_name>";
+                    outError("Use --model <model_name>");
                 
                 params.model_name = argv[cnt];
                 continue;
@@ -607,12 +609,12 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 cnt++;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    throw "Use --thresh-prob <PROB_THRESH>";
+                    outError("Use --thresh-prob <PROB_THRESH>");
                 
                 params.threshold_prob = convert_double(argv[cnt]);
                 
                 if (params.threshold_prob <= 0)
-                    throw "<PROB_THRESH> must be positive!";
+                    outError("<PROB_THRESH> must be positive!");
 
                 continue;
             }
@@ -620,25 +622,23 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 cnt++;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    throw "Use --mutation-update <NUMBER>";
+                    outError("Use --mutation-update <NUMBER>");
                 
                 params.mutation_update_period = convert_int(argv[cnt]);
                 
                 if (params.mutation_update_period <= 0)
-                    throw "<NUMBER> must be positive!";
+                    outError("<NUMBER> must be positive!");
 
                 continue;
             }
             if (strcmp(argv[cnt], "--failure-limit") == 0) {
                 
                 cnt++;
-                if (cnt >= argc || argv[cnt][0] == '-')
-                    throw "Use --failure-limit <NUMBER>";
                 
                 params.failure_limit = convert_int(argv[cnt]);
                 
                 if (params.failure_limit <= 0)
-                    throw "<NUMBER> must be positive!";
+                    outError("<NUMBER> must be positive!");
 
                 continue;
             }
@@ -648,6 +648,12 @@ void parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
+            
+            // return invalid option
+            string err = "Invalid \"";
+            err += argv[cnt];
+            err += "\" option.";
+            outError(err);
         }
         // try
         catch (const char *str) {

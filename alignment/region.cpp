@@ -9,8 +9,8 @@
 
 Region::Region():Mutation()
 {
-    plength_observation = 0;
-    plength_from_root = 0;
+    plength_observation = -1;
+    plength_from_root = -1;
     likelihood = NULL;
 }
 
@@ -23,8 +23,8 @@ Region::Region(StateType n_type, PositionType n_position, double n_plength_obser
 
 Region::Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states):Mutation(n_type, n_position)
 {
-    plength_observation = 0;
-    plength_from_root = 0;
+    plength_observation = -1;
+    plength_from_root = -1;
     likelihood = NULL;
     convertAmbiguiousState(seq_type, max_num_states);
 }
@@ -33,8 +33,8 @@ Region::Region(Mutation* n_mutation, SeqType seq_type, int max_num_states)
 {
     type = n_mutation->type;
     position = n_mutation->position;
-    plength_observation = 0;
-    plength_from_root = 0;
+    plength_observation = -1;
+    plength_from_root = -1;
     likelihood = NULL;
     convertAmbiguiousState(seq_type, max_num_states);
 }

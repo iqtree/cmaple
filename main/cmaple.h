@@ -66,12 +66,7 @@ private:
     /**
            place a new sample on the tree
      */
-    Node* placeNewSample(Node* selected_node, Regions* sample, string seq_name, double best_lh_diff , bool is_mid_branch, double best_up_lh_diff, double best_down_lh_diff, Node* best_child, bool adjust_blen);
-    
-    /**
-        Traverse tree from a node (node = root by default)
-     */
-    void traverseTree(Node* node = NULL);
+    void placeNewSample(Node* selected_node, Regions* sample, string seq_name, double best_lh_diff , bool is_mid_branch, double best_up_lh_diff, double best_down_lh_diff, Node* best_child, bool adjust_blen);
     
     /**
         compare two sequences regarding the amount of information
@@ -102,12 +97,22 @@ private:
     /**
         merge two lower likelihood vectors
      */
-    void mergeLhTwoLower(Regions* &merged_regions, Regions* regions1, double plength1, Regions* regions2, double plength2, double log_lh = 0, bool return_log_lh = false);
+    double mergeLhTwoLower(Regions* &merged_regions, Regions* regions1, double plength1, Regions* regions2, double plength2, bool return_log_lh = false);
     
     /**
     *  get lower likelihood sequence at tip (converting a vector of Mutations into a vector of Regions)
     */
     void getLowerLhSeqAtTip(Regions* &output_regions, vector<Mutation*> mutations, double blength);
+    
+    /**
+        compute total lh/upper left_right for root node
+     */
+    Regions* computeTotalLhForRoot(Regions* lower_regions, double blength = 0);
+    
+    /**
+    *  calculate the total likelihood regions for a node.
+    */
+    Regions* computeTotalLhAtNode(Node* node, bool update = true);
     
     /**
         convert an entry 'O' into a normal nucleotide if its probability dominated others
@@ -124,6 +129,34 @@ private:
      */
     double computeLhAtRoot(Regions* region);
     
+    /**
+        get partial_lh of a node
+     */
+    Regions* getPartialLhAtNode(Node* node);
+    
+    /**
+        update pseudocounts from new sample to improve the estimate of the substitution rates
+        @param node_regions the genome list at the node where the appending happens;
+        @param sample_regions the genome list for the new sample.
+     */
+    void updatePesudoCount(Regions* node_regions, Regions* sample_regions);
+    
+    /**
+        iteratively update partial_lh starting from the nodes in node_queue
+        @param node_queue queue of nodes;
+     */
+    void updatePartialLh(queue<Node*> &node_queue);
+    
+    /**
+        Check if two regions represent the same partial likelihoods or not -> be used to stop traversing the tree further for updating partial likelihoods
+     */
+    bool areDiffRegions(Regions* regions1, Regions* regions2);
+    
+    /**
+        increase the length of a 0-length branch to resolve the inconsistency when updating regions in updatePartialLh()
+     */
+    void updateZeroBlength(queue<Node*> &node_queue, Node* node);
+    
 public:
     // model-related params
     double *cumulative_rate;
@@ -134,7 +167,7 @@ public:
     Tree* tree;
     // tree-related params
     double default_blength;
-    double min_blength;
+    double min_blength, max_blength;
     
     // thresholds for approximations
     double threshold_prob2, threshold_prob4;
