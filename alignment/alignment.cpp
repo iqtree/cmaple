@@ -821,7 +821,7 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
     PositionType *distances = new PositionType[num_seqs];
     PositionType *sequence_indexes = new PositionType[num_seqs];
     
-    // calculate the distance for genomelist
+    // calculate the distances of each sequence
     for (PositionType i = 0; i < num_seqs; i++)
     {
         // dummy variables
