@@ -8,6 +8,7 @@
 #include "tree/tree.h"
 #include "utils/timeutil.h"
 #include <queue>
+#include <stack> 
 #include "alignment/regions.h"
 
 #ifndef CMAPLE_H
@@ -127,7 +128,7 @@ public:
     Tree* tree;
     // tree-related params
     double default_blength;
-    double min_blength, max_blength;
+    double min_blength, max_blength, min_blength_mid;
     
     // thresholds for approximations
     double threshold_prob2, threshold_prob4;

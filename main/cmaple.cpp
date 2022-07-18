@@ -135,7 +135,10 @@ void CMaple::computeCumulativeRate()
 {
     PositionType sequence_length = tree->aln->ref_seq.size();
     ASSERT(sequence_length > 0);
-    cumulative_rate = new double[sequence_length];
+    
+    // init cumulative_rate
+    if (!cumulative_rate)
+        cumulative_rate = new double[sequence_length];
     
     // init cumulative_base and cumulative_rate
     cumulative_base.resize(sequence_length);
@@ -190,6 +193,7 @@ void CMaple::preInference()
     default_blength = 1.0 / tree->aln->ref_seq.size();
     min_blength = tree->params->min_blength_factor * default_blength;
     max_blength = tree->params->max_blength_factor * default_blength;
+    min_blength_mid = tree->params->min_blength_mid_factor * default_blength;
     
     // compute thresholds for approximations
     computeThresholds();
@@ -473,7 +477,7 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
     double lh_diff_mid_branch = 0;
     double lh_diff_at_node = 0;
     // queue of nodes to examine positions
-    queue<Node*> node_queue;
+    stack<Node*> node_queue;
     start_node->double_attributes[LH_DIFF] = -DBL_MAX;
     start_node->double_attributes[FAILURE_COUNT] = 0;
     node_queue.push(start_node);
@@ -481,7 +485,7 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
     // recursively examine positions for placing the new sample
     while (!node_queue.empty())
     {
-        Node* current_node = node_queue.front();
+        Node* current_node = node_queue.top();
         node_queue.pop();
     
         // if the current node is a leaf AND the new sample/sequence is strictly less informative than the current node
@@ -538,7 +542,7 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
             {
                 best_up_lh_diff = current_node->double_attributes[LH_DIFF];
                 best_down_lh_diff = lh_diff_at_node;
-                selected_node = current_node;
+                best_child = current_node;
             }
             // placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
             else if (lh_diff_at_node < (current_node->double_attributes[LH_DIFF] - tree->params->thresh_log_lh_failure))
@@ -570,7 +574,7 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
     }
 
     // exploration of the tree is finished, and we are left with the node found so far with the best appending likelihood cost. Now we explore placement just below this node for more fine-grained placement within its descendant branches.
-    double best_child_lh = -DBL_MAX;
+    best_down_lh_diff = -DBL_MAX;
     best_child = NULL;
     
     // if best position so far is the descendant of a node -> explore further at its children
@@ -583,7 +587,7 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
         
         while (!node_queue.empty())
         {
-            Node* node = node_queue.front();
+            Node* node = node_queue.top();
             node_queue.pop();
 
             if (node->length == 0)
@@ -620,17 +624,17 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
                     new_blength /= 2;
                     
                     // stop trying if reaching the minimum branch length
-                    if (new_blength <= min_blength / 2)
+                    if (new_blength <= min_blength_mid / 2)
                         break;
                     
                     // delete mid_branch_regions
                     delete mid_branch_regions;
                 }
                 
-                // record new best_child_lh
-                if (new_best_lh_mid_branch > best_child_lh)
+                // record new best_down_lh_diff
+                if (new_best_lh_mid_branch > best_down_lh_diff)
                 {
-                    best_child_lh = new_best_lh_mid_branch;
+                    best_down_lh_diff = new_best_lh_mid_branch;
                     best_child = node;
                 }
             }
@@ -766,8 +770,12 @@ void CMaple::mergeUpperLower(Regions* &merged_regions, Regions* upper_regions, d
                     merged_regions->push_back(new Region(TYPE_O, pos, 0, 0, new_lh));
                 }
                 else
+                {
+                    double* new_lh = new double[num_states];
+                    memcpy(new_lh, seq1_region->likelihood, sizeof(double) * num_states);
                     // add merged region into merged_regions
-                    merged_regions->push_back(new Region(seq1_region->type, pos, 0, 0, seq1_region->likelihood));
+                    merged_regions->push_back(new Region(seq1_region->type, pos, 0, 0, new_lh));
+                }
             }
             // seq2_entry = 'N' and seq1_entry = R/ACGT
             else
@@ -922,7 +930,10 @@ void CMaple::mergeUpperLower(Regions* &merged_regions, Regions* upper_regions, d
                 if (new_state == TYPE_O)
                     merged_regions->push_back(new Region(TYPE_O, pos, 0, 0, new_lh));
                 else
+                {
+                    delete[] new_lh;
                     merged_regions->push_back(new Region(new_state, pos));
+                }
             }
             // seq1_entry = R/ACGT
             else
@@ -1208,6 +1219,10 @@ double CMaple::mergeTwoLowers(Regions* &merged_regions, Regions* regions1, doubl
                 
                 if (return_log_lh)
                 {
+                    // convert total_blength_1 and total_blength_2 to zero if they are -1
+                    if (total_blength_1 < 0) total_blength_1 = 0;
+                    if (total_blength_2 < 0) total_blength_2 = 0;
+                    
                     if (seq1_region->type == TYPE_R)
                         log_lh += (total_blength_1 + total_blength_2) * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
                     else
@@ -1595,6 +1610,10 @@ void CMaple::buildInitialTree()
         if (i % tree->params->mutation_update_period == 0)
             updateMutationMatEmpirical();
         
+        // NHANLT: debug
+        //if (sequence->seq_name == "48")
+          //  cout << "debug" <<endl;
+        
         // seek a position for new sample placement
         Node *selected_node, *best_child;
         double best_lh_diff, best_up_lh_diff, best_down_lh_diff;
@@ -1605,8 +1624,9 @@ void CMaple::buildInitialTree()
         if (selected_node)
             placeNewSample(selected_node, lower_regions, sequence->seq_name, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child);
         
-        // debug
-        cout << tree->exportTreeString() << endl;
+        // NHANLT: debug
+        //cout << "Added node " << sequence->seq_name << endl;
+        //cout << tree->exportTreeString() << endl;
         
         // don't delete lower_lh_seq as it is used as the lower lh regions of the newly adding tip
     }
@@ -1813,7 +1833,10 @@ Regions* CMaple::computeTotalLhAtRoot(Regions* lower_regions, double blength)
                     new_region->plength_from_root = 0;
                 }
                 else if (blength > 0)
+                {
                     new_region->plength_observation = blength;
+                    new_region->plength_from_root = 0;
+                }
                 
                 total_lh->push_back(new_region);
             }
@@ -1897,23 +1920,27 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
             // if necessary, update the total probabilities at the mid node.
             if (node->length > 0)
             {
-                Regions* regions = new Regions();
+                // don't need to update vector of regions at mid-branch point
+                /*Regions* regions = new Regions();
                 mergeUpperLower(regions, parent_upper_regions, node->length / 2, getPartialLhAtNode(node), node->length / 2);
                 
                 if (!regions)
                 {
                     if (node->length > 1e-100)
                         outError("inside updatePartialLh(), from parent: should not have happened since node->length > 0");
-                    /*updateZeroBlength(nodeList,node,mutMatrix)
-                    update_blength=True*/
+                    updateZeroBlength(nodeList,node,mutMatrix)
+                    update_blength=True
                 }
                 else
                 {
                     // do nothing as I ignore mid-branch points
-                    /*node.probVectTotUp=newTot
+                    node.probVectTotUp=regions
                     if node.dist>=2*minBLenForMidNode:
-                        createFurtherMidNodes(node,parent_upper_regions)*/
+                        createFurtherMidNodes(node,parent_upper_regions)
                 }
+                
+                // delete regions
+                delete regions;*/
                 
                 // if necessary, update the total probability vector.
                 if (!update_blength)
@@ -1928,9 +1955,6 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                         exit()*/
                     }
                 }
-                
-                // delete regions
-                delete regions;
             }
             
             // at valid internal node, update upLeft and upRight, and if necessary add children to node_queue.
@@ -1960,12 +1984,13 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                     if (upper_left_right_regions_2->size() == 0)
                     {
                         if (node->length == 0 && next_node_2->length == 0)
+                        {
                             updateZeroBlength(node_queue, node);
+                            update_blength = true;
+                        }
                         else
                             outError("Strange: None vector from non-zero distances in updatePartialLh() from parent direction, child0.");
                     }
-                    
-                    update_blength = true;
                 }
                 
                 if (!update_blength)
@@ -2249,19 +2274,46 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
         new_internal_node->neighbor = selected_node->neighbor;
         selected_node->neighbor->neighbor = new_internal_node;
         double top_distance = selected_node->length * best_split;
-        new_internal_node->length = top_distance;
-        new_internal_node->neighbor->length = top_distance;
+        // make sure branch length is non-negative
+        if (top_distance < 0)
+        {
+            new_internal_node->length = 0;
+            new_internal_node->neighbor->length = 0;
+        }
+        else
+        {
+            new_internal_node->length = top_distance;
+            new_internal_node->neighbor->length = top_distance;
+        }
         
         selected_node->neighbor = next_node_2;
         next_node_2->neighbor = selected_node;
         double down_distance = selected_node->length * (1 - best_split);
-        selected_node->length = down_distance;
-        selected_node->neighbor->length = down_distance;
+        // make sure branch length is non-negative
+        if (down_distance < 0)
+        {
+            selected_node->length = 0;
+            selected_node->neighbor->length = 0;
+        }
+        else
+        {
+            selected_node->length = down_distance;
+            selected_node->neighbor->length = down_distance;
+        }
         
         new_sample_node->neighbor = next_node_1;
         next_node_1->neighbor = new_sample_node;
-        new_sample_node->length = best_blength;
-        new_sample_node->neighbor->length = best_blength;
+        // make sure branch length is non-negative
+        if (best_blength < 0)
+        {
+            new_sample_node->length = 0;
+            new_sample_node->neighbor->length = 0;
+        }
+        else
+        {
+            new_sample_node->length = best_blength;
+            new_sample_node->neighbor->length = best_blength;
+        }
         
         new_sample_node->partial_lh = sample;
         next_node_1->partial_lh = new Regions();
@@ -2306,7 +2358,7 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
             Regions* upper_left_right_regions = getPartialLhAtNode(best_child->neighbor);
             Regions* lower_regions = getPartialLhAtNode(best_child);
             best_child_regions = new Regions();
-            best_child_regions->copyRegions(upper_left_right_regions, num_states);
+            mergeUpperLower(best_child_regions, upper_left_right_regions, best_child->length / 2, lower_regions, best_child->length / 2);
             double new_split = 0.25;
             
             while (new_split * best_child->length > min_blength)
@@ -2471,19 +2523,46 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
             new_internal_node->neighbor = best_child->neighbor;
             best_child->neighbor->neighbor = new_internal_node;
             double top_distance = best_child->length * best_child_split;
-            new_internal_node->length = top_distance;
-            new_internal_node->neighbor->length = top_distance;
+            // make sure branch length is non-negative
+            if (top_distance < 0)
+            {
+                new_internal_node->length = 0;
+                new_internal_node->neighbor->length = 0;
+            }
+            else
+            {
+                new_internal_node->length = top_distance;
+                new_internal_node->neighbor->length = top_distance;
+            }
             
             best_child->neighbor = next_node_2;
             next_node_2->neighbor = best_child;
             double down_distance = best_child->length * (1 - best_child_split);
-            best_child->length = down_distance;
-            best_child->neighbor->length = down_distance;
+            // make sure branch length is non-negative
+            if (down_distance < 0)
+            {
+                best_child->length = 0;
+                best_child->neighbor->length = 0;
+            }
+            else
+            {
+                best_child->length = down_distance;
+                best_child->neighbor->length = down_distance;
+            }
             
             new_sample_node->neighbor = next_node_1;
             next_node_1->neighbor = new_sample_node;
-            new_sample_node->length = best_length;
-            new_sample_node->neighbor->length = best_length;
+            // make sure branch length is non-negative
+            if (best_length < 0)
+            {
+                new_sample_node->length = 0;
+                new_sample_node->neighbor->length = 0;
+            }
+            else
+            {
+                new_sample_node->length = best_length;
+                new_sample_node->neighbor->length = best_length;
+            }
             
             new_sample_node->partial_lh = sample;
             next_node_1->partial_lh = new Regions();
@@ -2610,8 +2689,17 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 // attach the left child
                 selected_node->neighbor = next_node_2;
                 next_node_2->neighbor = selected_node;
-                selected_node->length = best_root_blength;
-                selected_node->neighbor->length = best_root_blength;
+                // make sure branch length is non-negative
+                if (best_root_blength < 0)
+                {
+                    selected_node->length = 0;
+                    selected_node->neighbor->length = 0;
+                }
+                else
+                {
+                    selected_node->length = best_root_blength;
+                    selected_node->neighbor->length = best_root_blength;
+                }
                 
                 if (best_root_blength == 0)
                 {
@@ -2625,8 +2713,17 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 // attach the right child
                 new_sample_node->neighbor = next_node_1;
                 next_node_1->neighbor = new_sample_node;
-                new_sample_node->length = best_length2;
-                new_sample_node->neighbor->length = best_length2;
+                // make sure branch length is non-negative
+                if (best_length2 < 0)
+                {
+                    new_sample_node->length = 0;
+                    new_sample_node->neighbor->length = 0;
+                }
+                else
+                {
+                    new_sample_node->length = best_length2;
+                    new_sample_node->neighbor->length = best_length2;
+                }
                 
                 new_root->partial_lh = new Regions();
                 new_root->partial_lh->copyRegions(best_parent_regions, num_states);
@@ -2740,20 +2837,47 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 // attach to the parent node
                 new_internal_node->neighbor = selected_node->neighbor;
                 selected_node->neighbor->neighbor = new_internal_node;
-                new_internal_node->length = top_distance;
-                new_internal_node->neighbor->length = top_distance;
+                // make sure branch length is non-negative
+                if (top_distance < 0)
+                {
+                    new_internal_node->length = 0;
+                    new_internal_node->neighbor->length = 0;
+                }
+                else
+                {
+                    new_internal_node->length = top_distance;
+                    new_internal_node->neighbor->length = top_distance;
+                }
                 
                 // attach to the right child
                 selected_node->neighbor = next_node_2;
                 next_node_2->neighbor = selected_node;
-                selected_node->length = down_distance;
-                selected_node->neighbor->length = down_distance;
+                // make sure branch length is non-negative
+                if (down_distance < 0)
+                {
+                    selected_node->length = 0;
+                    selected_node->neighbor->length = 0;
+                }
+                else
+                {
+                    selected_node->length = down_distance;
+                    selected_node->neighbor->length = down_distance;
+                }
                 
                 // attach to the left child
                 new_sample_node->neighbor = next_node_1;
                 next_node_1->neighbor = new_sample_node;
-                new_sample_node->length = best_length;
-                new_sample_node->neighbor->length = best_length;
+                // make sure branch length is non-negative
+                if (best_length < 0)
+                {
+                    new_sample_node->length = 0;
+                    new_sample_node->neighbor->length = 0;
+                }
+                else
+                {
+                    new_sample_node->length = best_length;
+                    new_sample_node->neighbor->length = best_length;
+                }
                 
                 new_sample_node->partial_lh = sample;
                 next_node_1->partial_lh = new Regions();

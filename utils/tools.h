@@ -319,6 +319,11 @@ public:
     double max_blength_factor;
     
     /**
+    *  The minium branch length (for mid-branch point) to try for placement
+    */
+    double min_blength_mid_factor;
+    
+    /**
     *  Threshold to determine whether a changed partial is different from its former value
     */
     double thresh_diff_update;

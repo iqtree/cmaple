@@ -533,12 +533,13 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.model_name = "JC";
     params.redo_inference = false;
     params.threshold_prob = 1e-7;
-    params.mutation_update_period = 40;
+    params.mutation_update_period = 25;
     params.failure_limit = 3;
     params.strict_stop_seeking_placement = false;
     params.thresh_log_lh_subtree_explore = 200;
     params.thresh_log_lh_failure = 0.01;
     params.min_blength_factor = 0.2;
+    params.min_blength_mid_factor = 4.1;
     params.max_blength_factor = 40;
     params.thresh_diff_update = 1e-7;
     
