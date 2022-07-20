@@ -23,6 +23,7 @@
 #include <cmaple_config.h>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <set>
 #include <map>
 #include <iostream>

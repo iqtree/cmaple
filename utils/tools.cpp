@@ -532,7 +532,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.hamming_weight = 1000;
     params.model_name = "JC";
     params.redo_inference = false;
-    params.threshold_prob = 1e-7;
+    params.threshold_prob = 1e-8;
     params.mutation_update_period = 25;
     params.failure_limit = 3;
     params.strict_stop_seeking_placement = false;

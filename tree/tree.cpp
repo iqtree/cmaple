@@ -93,7 +93,8 @@ string Tree::exportTreeString(Node* node)
             output += ",";
         output += exportTreeString(next);
     }
-    output += "):" + convertDoubleToString(node->length);
+    string length = node->length < 0 ? "0" : convertDoubleToString(node->length);
+    output += "):" + length;
     
     return output;
 }

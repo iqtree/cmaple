@@ -199,7 +199,8 @@ void CMaple::preInference()
     computeThresholds();
 }
 
-double CMaple::calculatePlacementCost(Regions* parent_regions, Regions* child_regions, double blength)
+// this implementation derives from appendProbNode
+/*double CMaple::calculatePlacementCost(Regions* parent_regions, Regions* child_regions, double blength)
 {
     // init dummy variables
     double lh_cost = 0;
@@ -461,6 +462,291 @@ double CMaple::calculatePlacementCost(Regions* parent_regions, Regions* child_re
     }
     
     return lh_cost + log(total_factor);
+}*/
+
+// this implementation derives from appendProb
+double CMaple::calculatePlacementCost(Regions* parent_regions, Regions* child_regions, double blength)
+{
+    // init dummy variables
+    double lh_cost = 0;
+    PositionType seq1_index = -1;
+    PositionType seq2_index = -1;
+    PositionType pos = 0;
+    double total_factor = 1;
+    StateType num_states = tree->aln->num_states;
+    Region *seq1_region, *seq2_region;
+    PositionType seq1_end = -1, seq2_end = -1;
+    PositionType length;
+    double minimum_carry_over = DBL_MIN * 1e50;
+    if (blength < 0) blength = 0;
+    double total_blength = blength;
+    PositionType seq_length = tree->aln->ref_seq.size();
+    
+    while (pos < seq_length)
+    {
+        // get the next shared segment in the two sequences
+        Regions::getNextSharedSegment(pos, seq_length, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
+        
+        // 1. e1.type = N || e2.type = N
+        if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
+        {
+            pos += length;
+            continue;
+        }
+        // e1.type != N && e2.type != N
+        else
+        {
+            // 2. e1.type = R
+            if (seq1_region->type == TYPE_R)
+            {
+                // 2.1. e1.type = R and e2.type = R
+                if (seq2_region->type == TYPE_R)
+                {
+                    if (seq1_region->plength_observation < 0 && seq1_region->plength_from_root < 0)
+                        lh_cost += blength * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                    else
+                    {
+                        total_blength = blength + seq1_region->plength_observation;
+                        if (seq1_region->plength_from_root < 0)
+                            lh_cost += total_blength * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                        else
+                            // here contribution from root frequency gets added and subtracted so it's ignored
+                            lh_cost += (total_blength + seq1_region->plength_from_root) * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                    }
+                }
+                // 2.2. e1.type = R and e2.type = O
+                else if (seq2_region->type == TYPE_O)
+                {
+                    StateType seq1_state = tree->aln->ref_seq[pos];
+                    if (seq1_region->plength_from_root >= 0)
+                    {
+                        total_blength = seq1_region->plength_from_root + (blength > 0 ? blength : 0);
+                        
+                        if (seq2_region->likelihood[seq1_state] > 0.1)
+                        {
+                            total_blength += seq1_region->plength_observation;
+                            
+                            // here contribution from root frequency can also be also ignored
+                            lh_cost += tree->model->mutation_mat[seq1_state * (num_states + 1)] * total_blength;
+                        }
+                        else
+                        {
+                            double tot = 0;
+                            for (StateType i = 0; i < num_states; i++)
+                            {
+                                double tot2;
+                                StateType mutation_index = i * num_states + seq1_state;
+                                
+                                if (seq1_state == i)
+                                    tot2 = tree->model->root_freqs[i] * (1.0 + tree->model->mutation_mat[mutation_index] * seq1_region->plength_observation);
+                                else
+                                    tot2 = tree->model->root_freqs[i] * (tree->model->mutation_mat[mutation_index] * seq1_region->plength_observation);
+                                    
+                                double tot3 = 0;
+                                for (StateType j = 0; j < num_states; j++)
+                                    if (seq2_region->likelihood[j] > 0.1)
+                                        tot3 += tree->model->mutation_mat[i * num_states + j];
+                                tot3 *= total_blength;
+                                
+                                if (seq2_region->likelihood[i] > 0.1)
+                                    tot3 += 1;
+                                
+                                tot += tot2 * tot3;
+                            }
+                            
+                            total_factor *= tot /tree->model->root_freqs[seq1_state];
+                        }
+                    }
+                    else
+                    {
+                        if (seq2_region->likelihood[seq1_state] > 0.1)
+                        {
+                            if (seq1_region->plength_observation >= 0)
+                                lh_cost += tree->model->mutation_mat[seq1_state * (num_states + 1)] * (blength + seq1_region->plength_observation);
+                            else
+                                lh_cost += tree->model->mutation_mat[seq1_state * (num_states + 1)] * blength;
+                        }
+                        else
+                        {
+                            double tot = 0;
+                            for (StateType i = 0; i < num_states; i++)
+                                if (seq2_region->likelihood[i] > 0.1)
+                                    tot +=tree->model->mutation_mat[seq1_state * num_states + i];
+                            
+                            if (seq1_region->plength_observation >= 0)
+                                total_factor *= tot * (blength + seq1_region->plength_observation);
+                            else
+                                total_factor *= tot * blength;
+                        }
+                    }
+                }
+                // 2.3. e1.type = R and e2.type = A/C/G/T
+                else
+                {
+                    StateType seq1_state = tree->aln->ref_seq[pos];
+                    StateType seq2_state = seq2_region->type;
+                    
+                    if (seq1_region->plength_from_root >= 0)
+                    {
+                        total_factor *= ((tree->model->root_freqs[seq1_state] * tree->model->mutation_mat[seq1_state * num_states + seq2_state] * blength * (1.0 + tree->model->mutation_mat[seq1_state * (num_states + 1)] * seq1_region->plength_observation) + tree->model->root_freqs[seq2_state] * tree->model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + tree->model->mutation_mat[seq2_state * (num_states + 1)] * (blength + seq1_region->plength_from_root))) / tree->model->root_freqs[seq1_state]);
+                    }
+                    else
+                        total_factor *= tree->model->mutation_mat[seq1_state * num_states + seq2_state] * (blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation));
+                }
+            }
+            // 3. e1.type = O
+            else if (seq1_region->type == TYPE_O)
+            {
+                double blength13 = blength;
+                if (seq1_region->plength_observation >= 0)
+                {
+                    blength13 = seq1_region->plength_observation;
+                    if (blength > 0)
+                        blength13 += blength;
+                }
+                    
+                // 3.1. e1.type = O and e2.type = O
+                if (seq2_region->type == TYPE_O)
+                {
+                    double tot = 0;
+                    
+                    for (StateType i = 0; i < num_states; i++)
+                    {
+                        double tot2 = 0;
+                        
+                        for (StateType j = 0; j < num_states; j++)
+                            if (seq2_region->likelihood[j] > 0.1)
+                                tot2 += tree->model->mutation_mat[i * num_states + j];
+                        
+                        tot2 *= blength13;
+                        
+                        if (seq2_region->likelihood[i] > 0.1)
+                            tot2 += 1;
+                        
+                        tot += tot2 * seq1_region->likelihood[i];
+                    }
+                        
+                    total_factor *= tot;
+                }
+                // 3.2. e1.type = O and e2.type = R or A/C/G/T
+                else
+                {
+                    StateType seq2_state = seq2_region->type;
+                    if (seq2_state == TYPE_R)
+                        seq2_state = tree->aln->ref_seq[pos];
+                    
+                    double tot2 = 0;
+                    for (StateType j = 0; j < num_states; j++)
+                        tot2 += tree->model->mutation_mat[j * num_states + seq2_state] * seq1_region->likelihood[j];
+                    
+                    total_factor *= seq1_region->likelihood[seq2_state] + blength13 * tot2;
+                }
+            }
+            // 4. e1.type = A/C/G/T
+            else
+            {
+                int seq1_state = seq1_region->type;
+                
+                // 4.1. e1.type =  e2.type
+                if (seq1_region->type == seq2_region->type)
+                {
+                    double total_blength = blength;
+                    total_blength += (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
+                    total_blength += (seq1_region->plength_from_root < 0 ? 0 : seq1_region->plength_from_root);
+
+                    lh_cost += tree->model->mutation_mat[seq1_state * (num_states + 1)] * total_blength;
+                }
+                // e1.type = A/C/G/T and e2.type = O/A/C/G/T
+                else
+                {
+                    // 4.2. e1.type = A/C/G/T and e2.type = O
+                    if (seq2_region->type == TYPE_O)
+                    {
+                        double tot = 0.0;
+                        
+                        if (seq1_region->plength_from_root >= 0)
+                        {
+                            double blength15 = blength + seq1_region->plength_from_root;
+                            
+                            if (seq2_region->likelihood[seq1_state] > 0.1)
+                                lh_cost += tree->model->mutation_mat[seq1_state * (num_states + 1)] * (blength15 + seq1_region->plength_observation);
+                            else
+                            {
+                                for (StateType i = 0; i < num_states; i++)
+                                {
+                                    double tot2;
+                                    StateType mutation_index = i * num_states + seq1_state;
+                                    if (seq1_state == i)
+                                        tot2 = tree->model->root_freqs[i] * (1.0 + tree->model->mutation_mat[mutation_index] * seq1_region->plength_observation);
+                                    else
+                                        tot2 = tree->model->root_freqs[i] * (tree->model->mutation_mat[mutation_index] * seq1_region->plength_observation);
+                                        
+                                    double tot3 = 0;
+                                    for (StateType j = 0; j < num_states; j++)
+                                        if (seq2_region->likelihood[j] > 0.1)
+                                            tot3 += tree->model->mutation_mat[i * num_states + j];
+                                    
+                                    if (seq2_region->likelihood[i] > 0.1)
+                                        tot += tot2 * (1.0 + blength15 * tot3);
+                                    else
+                                        tot += tot2 * blength15 * tot3;
+                                }
+                                
+                                total_factor *= (tot / tree->model->root_freqs[seq1_state]);
+                            }
+                        }
+                        else
+                        {
+                            double tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
+                            if (seq2_region->likelihood[seq1_state] > 0.1)
+                                lh_cost += tree->model->mutation_mat[seq1_state * (num_states + 1)] * tmp_blength;
+                            else
+                            {
+                                for (StateType j = 0; j < num_states; j++)
+                                    if (seq2_region->likelihood[j] > 0.1)
+                                        tot += tree->model->mutation_mat[seq1_state * num_states + j];
+                                
+                                total_factor *= tot * tmp_blength;
+                            }
+                        }
+                    }
+                    // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
+                    else
+                    {
+                        StateType seq2_state = seq2_region->type;
+                        if (seq2_state == TYPE_R)
+                            seq2_state = tree->aln->ref_seq[pos];
+                        
+                        if (seq1_region->plength_from_root >= 0)
+                        {
+                            // here we ignore contribution of non-parsimonious mutational histories
+                            total_factor *= ((tree->model->root_freqs[seq1_state] * tree->model->mutation_mat[seq1_state * num_states + seq2_state] * (blength + seq1_region->plength_from_root) * (1.0 + tree->model->mutation_mat[seq1_state * (num_states + 1)] * seq1_region->plength_observation) + tree->model->root_freqs[seq2_state] * tree->model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + tree->model->mutation_mat[seq2_state * (num_states + 1)] * (blength + seq1_region->plength_from_root))) / tree->model->root_freqs[seq1_state]);
+                        }
+                        else
+                        {
+                            double tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
+                            
+                            total_factor *= tree->model->mutation_mat[seq1_state * num_states + seq2_state] * tmp_blength;
+                        }
+                    }
+                }
+            }
+        }
+         
+        // approximately update lh_cost and total_factor
+        if (total_factor <= minimum_carry_over)
+        {
+            if (total_factor < DBL_MIN)
+                return -DBL_MAX;
+            lh_cost += log(total_factor);
+            total_factor = 1.0;
+        }
+        
+        // update pos
+        pos += length;
+    }
+    
+    return lh_cost + log(total_factor);
 }
 
 void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, double &best_lh_diff , bool &is_mid_branch, double &best_up_lh_diff, double &best_down_lh_diff, Node* &best_child)
@@ -476,17 +762,17 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
     // dummy variables
     double lh_diff_mid_branch = 0;
     double lh_diff_at_node = 0;
-    // queue of nodes to examine positions
-    stack<Node*> node_queue;
+    // stack of nodes to examine positions
+    stack<Node*> node_stack;
     start_node->double_attributes[LH_DIFF] = -DBL_MAX;
     start_node->double_attributes[FAILURE_COUNT] = 0;
-    node_queue.push(start_node);
+    node_stack.push(start_node);
     
     // recursively examine positions for placing the new sample
-    while (!node_queue.empty())
+    while (!node_stack.empty())
     {
-        Node* current_node = node_queue.top();
-        node_queue.pop();
+        Node* current_node = node_stack.top();
+        node_stack.pop();
     
         // if the current node is a leaf AND the new sample/sequence is strictly less informative than the current node
         // -> add the new sequence into the list of minor sequences of the current node + stop seeking the placement
@@ -564,7 +850,7 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
             {
                 neighbor_node->double_attributes[LH_DIFF] = lh_diff_at_node;
                 neighbor_node->double_attributes[FAILURE_COUNT] = current_node->double_attributes[FAILURE_COUNT];
-                node_queue.push(neighbor_node);
+                node_stack.push(neighbor_node);
             }
         }
         
@@ -583,17 +869,17 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
         // current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node to find out if the best placement is actually in any of the branches below the current node.
         Node* neighbor_node;
         FOR_NEIGHBOR(selected_node, neighbor_node)
-            node_queue.push(neighbor_node);
+            node_stack.push(neighbor_node);
         
-        while (!node_queue.empty())
+        while (!node_stack.empty())
         {
-            Node* node = node_queue.top();
-            node_queue.pop();
+            Node* node = node_stack.top();
+            node_stack.pop();
 
-            if (node->length == 0)
+            if (node->length <= 0)
             {
                 FOR_NEIGHBOR(node, neighbor_node)
-                    node_queue.push(neighbor_node);
+                    node_stack.push(neighbor_node);
             }
             else
             {
@@ -829,16 +1115,20 @@ void CMaple::mergeUpperLower(Regions* &merged_regions, Regions* upper_regions, d
             }
             
             // due to 0 distance, the entry will be of same type as entry2
-            if ((seq2_region->type < num_states || seq2_region->type == TYPE_R) && total_blength_2 < 0)
+            if ((seq2_region->type < num_states || seq2_region->type == TYPE_R) && total_blength_2 <= 0)
             {
-                if ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 < 0)
-                    //return None
-                    outError("Sorry! something went wrong. DEBUG: ((seq2_region->type < num_states || seq2_region->type == TYPE_R) && total_blength_2 == 0) && ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 == 0)");
+                if ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 <= 0)
+                {
+                    //outError("Sorry! something went wrong. DEBUG: ((seq2_region->type < num_states || seq2_region->type == TYPE_R) && total_blength_2 == 0) && ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 == 0)");
+                    delete merged_regions;
+                    merged_regions = NULL;
+                    return;
+                }
                 
                 merged_regions->push_back(new Region(seq2_region->type, pos));
             }
             // due to 0 distance, the entry will be of same type as entry1
-            else if ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 == 0)
+            else if ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 <= 0)
             {
                 merged_regions->push_back(new Region(seq1_region->type, pos));
             }
@@ -1611,8 +1901,8 @@ void CMaple::buildInitialTree()
             updateMutationMatEmpirical();
         
         // NHANLT: debug
-        //if (sequence->seq_name == "48")
-          //  cout << "debug" <<endl;
+        //if (sequence->seq_name == "55")
+            //cout << "debug" <<endl;
         
         // seek a position for new sample placement
         Node *selected_node, *best_child;
@@ -1625,8 +1915,8 @@ void CMaple::buildInitialTree()
             placeNewSample(selected_node, lower_regions, sequence->seq_name, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child);
         
         // NHANLT: debug
-        //cout << "Added node " << sequence->seq_name << endl;
-        //cout << tree->exportTreeString() << endl;
+        /*cout << "Added node " << sequence->seq_name << endl;
+        cout << tree->exportTreeString() << endl;*/
         
         // don't delete lower_lh_seq as it is used as the lower lh regions of the newly adding tip
     }
@@ -1846,7 +2136,7 @@ Regions* CMaple::computeTotalLhAtRoot(Regions* lower_regions, double blength)
     return total_lh;
 }
 
-void CMaple::updateZeroBlength(queue<Node*> &node_queue, Node* node)
+void CMaple::updateZeroBlength(stack<Node*> &node_stack, Node* node)
 {
     // get the top node in the phylo-node
     Node* top_node = node->getTopNode();
@@ -1890,29 +2180,29 @@ void CMaple::updateZeroBlength(queue<Node*> &node_queue, Node* node)
     top_node->length = best_length;
     top_node->neighbor->length = best_length;
     
-    // add current node and its parent to node_queue to for updating partials further from these nodes
+    // add current node and its parent to node_stack to for updating partials further from these nodes
     top_node->dirty = true;
     top_node->neighbor->dirty = true;
-    node_queue.push(top_node);
-    node_queue.push(top_node->neighbor);
+    node_stack.push(top_node);
+    node_stack.push(top_node->neighbor);
 }
 
-void CMaple::updatePartialLh(queue<Node*> &node_queue)
+void CMaple::updatePartialLh(stack<Node*> &node_stack)
 {
     StateType num_states = tree->aln->num_states;
     PositionType seq_length = tree->aln->ref_seq.size();
     
-    while (!node_queue.empty())
+    while (!node_stack.empty())
     {
-        Node* node = node_queue.front();
-        node_queue.pop();
+        Node* node = node_stack.top();
+        node_stack.pop();
         
         bool update_blength = false;
         node->dirty = true;
         
         Regions* parent_upper_regions = NULL;
         if (tree->root != node->getTopNode())
-            parent_upper_regions = getPartialLhAtNode(node->neighbor);
+            parent_upper_regions = getPartialLhAtNode(node->getTopNode()->neighbor);
             
         // change in likelihoods is coming from parent node
         if (node->double_attributes.find(IS_TOP_NODE) != node->double_attributes.end())
@@ -1957,7 +2247,7 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                 }
             }
             
-            // at valid internal node, update upLeft and upRight, and if necessary add children to node_queue.
+            // at valid internal node, update upLeft and upRight, and if necessary add children to node_stack.
             if (node->next && !update_blength)
             {
                 Node* next_node_1 = node->next;
@@ -1969,8 +2259,8 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                 
                 if (upper_left_right_regions_1->size() == 0)
                 {
-                    if (node->length == 0 && next_node_1->length == 0)
-                        updateZeroBlength(node_queue, node);
+                    if (node->length <= 0 && next_node_1->length <= 0)
+                        updateZeroBlength(node_stack, node);
                     else
                         outError("Strange: None vector from non-zero distances in updatePartialLh() from parent direction.");
                     
@@ -1983,9 +2273,9 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                     
                     if (upper_left_right_regions_2->size() == 0)
                     {
-                        if (node->length == 0 && next_node_2->length == 0)
+                        if (node->length <= 0 && next_node_2->length <= 0)
                         {
-                            updateZeroBlength(node_queue, node);
+                            updateZeroBlength(node_stack, node);
                             update_blength = true;
                         }
                         else
@@ -1998,13 +2288,13 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                     if (getPartialLhAtNode(next_node_1)->areDiffFrom(upper_left_right_regions_2, seq_length, num_states, tree->params))
                     {
                         next_node_1->partial_lh->copyRegions(upper_left_right_regions_2, num_states);
-                        node_queue.push(next_node_1->neighbor);
+                        node_stack.push(next_node_1->neighbor);
                     }
                     
                     if (getPartialLhAtNode(next_node_2)->areDiffFrom(upper_left_right_regions_1, seq_length, num_states, tree->params))
                     {
                         next_node_2->partial_lh->copyRegions(upper_left_right_regions_1, num_states);
-                        node_queue.push(next_node_2->neighbor);
+                        node_stack.push(next_node_2->neighbor);
                     }
                 }
                 
@@ -2043,9 +2333,9 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
             
             if (!merged_two_lower_regions || merged_two_lower_regions->size() == 0)
             {
-                if (this_node_distance == 0 && other_next_node_distance == 0)
+                if (this_node_distance <= 0 && other_next_node_distance <= 0)
                 {
-                    updateZeroBlength(node_queue, node->neighbor);
+                    updateZeroBlength(node_stack, node->neighbor);
                     update_blength = true;
                 }
                 else
@@ -2075,9 +2365,9 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                 {
                     Regions* new_total_lh_regions = computeTotalLhAtNode(top_node, false);
                     
-                    if (!new_total_lh_regions && top_node->length == 0)
+                    if (!new_total_lh_regions && top_node->length <= 0)
                     {
-                        updateZeroBlength(node_queue, top_node);
+                        updateZeroBlength(node_stack, top_node);
                         update_blength = true;
                     }
                     else if (!new_total_lh_regions)
@@ -2116,7 +2406,7 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                 if (getPartialLhAtNode(top_node)->areDiffFrom(old_lower_regions, seq_length, num_states, tree->params))
                 {
                     if (tree->root != top_node)
-                        node_queue.push(top_node->neighbor);
+                        node_stack.push(top_node->neighbor);
                 }
 
                 // update likelihoods at sibling node
@@ -2131,9 +2421,9 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                 
                 if (!new_upper_regions || new_upper_regions->size() == 0)
                 {
-                    if (top_node->length == 0 && this_node_distance == 0)
+                    if (top_node->length <= 0 && this_node_distance <= 0)
                     {
-                        updateZeroBlength(node_queue, top_node);
+                        updateZeroBlength(node_stack, top_node);
                         update_blength = true;
                     }
                     else
@@ -2144,7 +2434,7 @@ void CMaple::updatePartialLh(queue<Node*> &node_queue)
                     if (next_node_upper_left_right_regions->areDiffFrom(new_upper_regions, seq_length, num_states, tree->params))
                     {
                         other_next_node->partial_lh->copyRegions(new_upper_regions, num_states);
-                        node_queue.push(other_next_node->neighbor);
+                        node_stack.push(other_next_node->neighbor);
                     }
                 }
                     
@@ -2267,53 +2557,26 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
         Node* next_node_2 = new Node();
         Node* new_sample_node = new Node(seq_name);
         
-        new_internal_node->next = next_node_1;
-        next_node_1->next = next_node_2;
-        next_node_2->next = new_internal_node;
+        new_internal_node->next = next_node_2;
+        next_node_2->next = next_node_1;
+        next_node_1->next = new_internal_node;
         
         new_internal_node->neighbor = selected_node->neighbor;
         selected_node->neighbor->neighbor = new_internal_node;
         double top_distance = selected_node->length * best_split;
-        // make sure branch length is non-negative
-        if (top_distance < 0)
-        {
-            new_internal_node->length = 0;
-            new_internal_node->neighbor->length = 0;
-        }
-        else
-        {
-            new_internal_node->length = top_distance;
-            new_internal_node->neighbor->length = top_distance;
-        }
+        new_internal_node->length = top_distance;
+        new_internal_node->neighbor->length = top_distance;
         
         selected_node->neighbor = next_node_2;
         next_node_2->neighbor = selected_node;
         double down_distance = selected_node->length * (1 - best_split);
-        // make sure branch length is non-negative
-        if (down_distance < 0)
-        {
-            selected_node->length = 0;
-            selected_node->neighbor->length = 0;
-        }
-        else
-        {
-            selected_node->length = down_distance;
-            selected_node->neighbor->length = down_distance;
-        }
+        selected_node->length = down_distance;
+        selected_node->neighbor->length = down_distance;
         
         new_sample_node->neighbor = next_node_1;
         next_node_1->neighbor = new_sample_node;
-        // make sure branch length is non-negative
-        if (best_blength < 0)
-        {
-            new_sample_node->length = 0;
-            new_sample_node->neighbor->length = 0;
-        }
-        else
-        {
-            new_sample_node->length = best_blength;
-            new_sample_node->neighbor->length = best_blength;
-        }
+        new_sample_node->length = best_blength;
+        new_sample_node->neighbor->length = best_blength;
         
         new_sample_node->partial_lh = sample;
         next_node_1->partial_lh = new Regions();
@@ -2342,10 +2605,10 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
         updatePesudoCount(best_child_regions, sample);
 
         // iteratively traverse the tree to update partials from the current node
-        queue<Node*> node_queue;
-        node_queue.push(selected_node);
-        node_queue.push(new_internal_node->neighbor);
-        updatePartialLh(node_queue);
+        stack<Node*> node_stack;
+        node_stack.push(selected_node);
+        node_stack.push(new_internal_node->neighbor);
+        updatePartialLh(node_stack);
     }
     // otherwise, best lk so far is for appending directly to existing node
     else
@@ -2516,53 +2779,26 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
             Node* next_node_2 = new Node();
             Node* new_sample_node = new Node(seq_name);
             
-            new_internal_node->next = next_node_1;
-            next_node_1->next = next_node_2;
-            next_node_2->next = new_internal_node;
+            new_internal_node->next = next_node_2;
+            next_node_2->next = next_node_1;
+            next_node_1->next = new_internal_node;
             
             new_internal_node->neighbor = best_child->neighbor;
             best_child->neighbor->neighbor = new_internal_node;
             double top_distance = best_child->length * best_child_split;
-            // make sure branch length is non-negative
-            if (top_distance < 0)
-            {
-                new_internal_node->length = 0;
-                new_internal_node->neighbor->length = 0;
-            }
-            else
-            {
-                new_internal_node->length = top_distance;
-                new_internal_node->neighbor->length = top_distance;
-            }
-            
+            new_internal_node->length = top_distance;
+            new_internal_node->neighbor->length = top_distance;
+                
             best_child->neighbor = next_node_2;
             next_node_2->neighbor = best_child;
             double down_distance = best_child->length * (1 - best_child_split);
-            // make sure branch length is non-negative
-            if (down_distance < 0)
-            {
-                best_child->length = 0;
-                best_child->neighbor->length = 0;
-            }
-            else
-            {
-                best_child->length = down_distance;
-                best_child->neighbor->length = down_distance;
-            }
+            best_child->length = down_distance;
+            best_child->neighbor->length = down_distance;
             
             new_sample_node->neighbor = next_node_1;
             next_node_1->neighbor = new_sample_node;
-            // make sure branch length is non-negative
-            if (best_length < 0)
-            {
-                new_sample_node->length = 0;
-                new_sample_node->neighbor->length = 0;
-            }
-            else
-            {
-                new_sample_node->length = best_length;
-                new_sample_node->neighbor->length = best_length;
-            }
+            new_sample_node->length = best_length;
+            new_sample_node->neighbor->length = best_length;
             
             new_sample_node->partial_lh = sample;
             next_node_1->partial_lh = new Regions();
@@ -2588,10 +2824,10 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
             updatePesudoCount(best_child_regions, sample);
 
             // iteratively traverse the tree to update partials from the current node
-            queue<Node*> node_queue;
-            node_queue.push(best_child);
-            node_queue.push(new_internal_node->neighbor);
-            updatePartialLh(node_queue);
+            stack<Node*> node_stack;
+            node_stack.push(best_child);
+            node_stack.push(new_internal_node->neighbor);
+            updatePartialLh(node_stack);
         }
         // otherwise, add new parent to the selected_node
         else
@@ -2682,26 +2918,17 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 Node* next_node_2 = new Node();
                 Node* new_sample_node = new Node(seq_name);
                 
-                new_root->next = next_node_1;
-                next_node_1->next = next_node_2;
-                next_node_2->next = new_root;
+                new_root->next = next_node_2;
+                next_node_2->next = next_node_1;
+                next_node_1->next = new_root;
                 
                 // attach the left child
                 selected_node->neighbor = next_node_2;
                 next_node_2->neighbor = selected_node;
-                // make sure branch length is non-negative
-                if (best_root_blength < 0)
-                {
-                    selected_node->length = 0;
-                    selected_node->neighbor->length = 0;
-                }
-                else
-                {
-                    selected_node->length = best_root_blength;
-                    selected_node->neighbor->length = best_root_blength;
-                }
+                selected_node->length = best_root_blength;
+                selected_node->neighbor->length = best_root_blength;
                 
-                if (best_root_blength == 0)
+                if (best_root_blength <= 0)
                 {
                     delete selected_node->total_lh;
                     selected_node->total_lh = NULL;
@@ -2713,17 +2940,8 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 // attach the right child
                 new_sample_node->neighbor = next_node_1;
                 next_node_1->neighbor = new_sample_node;
-                // make sure branch length is non-negative
-                if (best_length2 < 0)
-                {
-                    new_sample_node->length = 0;
-                    new_sample_node->neighbor->length = 0;
-                }
-                else
-                {
-                    new_sample_node->length = best_length2;
-                    new_sample_node->neighbor->length = best_length2;
-                }
+                new_sample_node->length = best_length2;
+                new_sample_node->neighbor->length = best_length2;
                 
                 new_root->partial_lh = new Regions();
                 new_root->partial_lh->copyRegions(best_parent_regions, num_states);
@@ -2744,6 +2962,15 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                     print(best_root_blength)*/
                 }
                 
+                if (best_root_blength < 0)
+                {
+                    if (selected_node->total_lh)
+                        delete selected_node->total_lh;
+                    selected_node->total_lh = NULL;
+                    /*node.probVectTotUp=None
+                    node.furtherMidNodes=None*/
+                }
+                
                 if (best_length2 > 0)
                 {
                     computeTotalLhAtNode(new_sample_node);
@@ -2758,9 +2985,9 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 tree->root = new_root;
                 
                 // iteratively traverse the tree to update partials from the current node
-                queue<Node*> node_queue;
-                node_queue.push(selected_node);
-                updatePartialLh(node_queue);
+                stack<Node*> node_stack;
+                node_stack.push(selected_node);
+                updatePartialLh(node_stack);
             }
             //add parent to non-root node
             else
@@ -2816,19 +3043,18 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 Node* next_node_2 = new Node();
                 Node* new_sample_node = new Node(seq_name);
                 
-                new_internal_node->next = next_node_1;
-                next_node_1->next = next_node_2;
-                next_node_2->next = new_internal_node;
+                new_internal_node->next = next_node_2;
+                next_node_2->next = next_node_1;
+                next_node_1->next = new_internal_node;
                 
                 double down_distance = selected_node->length * best_parent_split;
                 double top_distance = selected_node->length * (1.0 - best_parent_split);
                 if (best_parent_split < 0)
                 {
+                    down_distance = -1;
+                    top_distance = selected_node->length;
                     delete selected_node->total_lh;
                     selected_node->total_lh = NULL;
-                    down_distance = 0;
-                    //down_distance = false;
-                    top_distance = selected_node->length;
                     
                     /*node.probVectTotUp=None
                     node.furtherMidNodes=None*/
@@ -2837,47 +3063,20 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 // attach to the parent node
                 new_internal_node->neighbor = selected_node->neighbor;
                 selected_node->neighbor->neighbor = new_internal_node;
-                // make sure branch length is non-negative
-                if (top_distance < 0)
-                {
-                    new_internal_node->length = 0;
-                    new_internal_node->neighbor->length = 0;
-                }
-                else
-                {
-                    new_internal_node->length = top_distance;
-                    new_internal_node->neighbor->length = top_distance;
-                }
+                new_internal_node->length = top_distance;
+                new_internal_node->neighbor->length = top_distance;
                 
                 // attach to the right child
                 selected_node->neighbor = next_node_2;
                 next_node_2->neighbor = selected_node;
-                // make sure branch length is non-negative
-                if (down_distance < 0)
-                {
-                    selected_node->length = 0;
-                    selected_node->neighbor->length = 0;
-                }
-                else
-                {
-                    selected_node->length = down_distance;
-                    selected_node->neighbor->length = down_distance;
-                }
+                selected_node->length = down_distance;
+                selected_node->neighbor->length = down_distance;
                 
                 // attach to the left child
                 new_sample_node->neighbor = next_node_1;
                 next_node_1->neighbor = new_sample_node;
-                // make sure branch length is non-negative
-                if (best_length < 0)
-                {
-                    new_sample_node->length = 0;
-                    new_sample_node->neighbor->length = 0;
-                }
-                else
-                {
-                    new_sample_node->length = best_length;
-                    new_sample_node->neighbor->length = best_length;
-                }
+                new_sample_node->length = best_length;
+                new_sample_node->neighbor->length = best_length;
                 
                 new_sample_node->partial_lh = sample;
                 next_node_1->partial_lh = new Regions();
@@ -2914,10 +3113,10 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
                 updatePesudoCount(best_parent_regions, sample);
 
                 // iteratively traverse the tree to update partials from the current node
-                queue<Node*> node_queue;
-                node_queue.push(selected_node);
-                node_queue.push(new_internal_node->neighbor);
-                updatePartialLh(node_queue);
+                stack<Node*> node_stack;
+                node_stack.push(selected_node);
+                node_stack.push(new_internal_node->neighbor);
+                updatePartialLh(node_stack);
             }
         }
     }

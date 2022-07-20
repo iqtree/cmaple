@@ -7,8 +7,7 @@
 
 #include "tree/tree.h"
 #include "utils/timeutil.h"
-#include <queue>
-#include <stack> 
+#include <stack>
 #include "alignment/regions.h"
 
 #ifndef CMAPLE_H
@@ -55,10 +54,10 @@ private:
     void updatePesudoCount(Regions* node_regions, Regions* sample_regions);
     
     /**
-        iteratively update partial_lh starting from the nodes in node_queue
-        @param node_queue queue of nodes;
+        iteratively update partial_lh starting from the nodes in node_stack
+        @param node_stack stack of nodes;
      */
-    void updatePartialLh(queue<Node*> &node_queue);
+    void updatePartialLh(stack<Node*> &node_stack);
     
     /**
             calculate the placement cost
@@ -116,7 +115,7 @@ private:
     /**
         increase the length of a 0-length branch to resolve the inconsistency when updating regions in updatePartialLh()
      */
-    void updateZeroBlength(queue<Node*> &node_queue, Node* node);
+    void updateZeroBlength(stack<Node*> &node_stack, Node* node);
     
 public:
     // model-related params

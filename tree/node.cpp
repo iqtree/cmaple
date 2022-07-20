@@ -71,16 +71,17 @@ string Node::exportString()
 {
     if (isLeave())
     {
+        string length_str = length < 0 ? "0" : convertDoubleToString(length);
         // without minor sequences -> simply return node's name and its branch length
         if (less_info_seqs.size() == 0)
-            return seq_name + ":" + convertDoubleToString(length);
+            return seq_name + ":" + length_str;
         // with minor sequences -> return minor sequences' names with zero branch lengths
         else
         {
             string output = "(" + seq_name + ":0";
             for (string minor_seq_name : less_info_seqs)
                 output += "," + minor_seq_name + ":0";
-            output += "):" + convertDoubleToString(length);
+            output += "):" + length_str;
             
             return output;
         }
