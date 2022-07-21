@@ -773,6 +773,15 @@ void CMaple::seekPlacement(Node* start_node, string seq_name, Regions* sample_re
     {
         Node* current_node = node_stack.top();
         node_stack.pop();
+        
+        // NHANLT: debug
+       /* if (current_node->next && ((current_node->next->neighbor && current_node->next->neighbor->seq_name == "25")
+                                   || (current_node->next->next->neighbor && current_node->next->next->neighbor->seq_name == "25")))
+            cout << "fdsfsd";*/
+        /*if (current_node->seq_name == "639")
+            cout << "fdsfsd";
+        if (current_node->seq_name == "635")
+            cout << "fdsfsd";*/
     
         // if the current node is a leaf AND the new sample/sequence is strictly less informative than the current node
         // -> add the new sequence into the list of minor sequences of the current node + stop seeking the placement
@@ -1522,11 +1531,9 @@ double CMaple::mergeTwoLowers(Regions* &merged_regions, Regions* regions1, doubl
             // #0 distance between different nucleotides: merge is not possible
             else if (total_blength_1 == 0 && total_blength_2 == 0 && (seq1_region->type == TYPE_R || seq1_region->type < num_states) && (seq2_region->type == TYPE_R || seq2_region->type < num_states))
             {
-                outError("#0 distance between different nucleotides: merge is not possible");
-                /*if (return_log_lh)
-                    return None, float("-inf")
-                else
-                    return None*/
+                delete merged_regions;
+                merged_regions = NULL;
+                return -DBL_MAX;
             }
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
@@ -1572,7 +1579,11 @@ double CMaple::mergeTwoLowers(Regions* &merged_regions, Regions* regions1, doubl
                     }
                     
                     if (sum_lh == 0)
-                        outError("Sum of partial likelihood is zero");
+                    {
+                        delete merged_regions;
+                        merged_regions = NULL;
+                        return -DBL_MAX;
+                    }
                         
                     // normalize new partial lh
                     for (StateType i = 0; i < num_states; i++)
@@ -1627,11 +1638,11 @@ double CMaple::mergeTwoLowers(Regions* &merged_regions, Regions* regions1, doubl
                     {
                         if (new_lh[seq2_state] == 0)
                         {
-                            outError("new_lh[seq2_state] == 0");
-                            /*if returnLK:
-                                return None, float("-inf")
-                            else:
-                                return None*/
+                            {
+                                delete merged_regions;
+                                merged_regions = NULL;
+                                return -DBL_MAX;
+                            }
                         }
                         
                         merged_regions->push_back(new Region(seq2_region->type, pos));
@@ -1694,7 +1705,11 @@ double CMaple::mergeTwoLowers(Regions* &merged_regions, Regions* regions1, doubl
                     }
                     
                     if (sum_lh == 0)
-                        outError("Sum of partial likelihood is zero");
+                    {
+                        delete merged_regions;
+                        merged_regions = NULL;
+                        return -DBL_MAX;
+                    }
                         
                     // normalize new partial lh
                     for (StateType i = 0; i < num_states; i++)
@@ -1901,8 +1916,8 @@ void CMaple::buildInitialTree()
             updateMutationMatEmpirical();
         
         // NHANLT: debug
-        //if (sequence->seq_name == "55")
-            //cout << "debug" <<endl;
+       /* if (sequence->seq_name == "614")
+            cout << "debug" <<endl;*/
         
         // seek a position for new sample placement
         Node *selected_node, *best_child;
@@ -1916,7 +1931,7 @@ void CMaple::buildInitialTree()
         
         // NHANLT: debug
         /*cout << "Added node " << sequence->seq_name << endl;
-        cout << tree->exportTreeString() << endl;*/
+        cout << tree->exportTreeString() << ";" << endl;*/
         
         // don't delete lower_lh_seq as it is used as the lower lh regions of the newly adding tip
     }
@@ -2197,6 +2212,10 @@ void CMaple::updatePartialLh(stack<Node*> &node_stack)
         Node* node = node_stack.top();
         node_stack.pop();
         
+        // NHANLT: debug
+       /* if (node->next && node->next->neighbor && node->next->neighbor->seq_name == "711")
+            cout << "dsdas";*/
+        
         bool update_blength = false;
         node->dirty = true;
         
@@ -2236,7 +2255,7 @@ void CMaple::updatePartialLh(stack<Node*> &node_stack)
                 if (!update_blength)
                 {
                     computeTotalLhAtNode(node);
-                    if (node->total_lh->size() == 0)
+                    if (!node->total_lh || node->total_lh->size() == 0)
                     {
                         outError("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
                         
@@ -2257,7 +2276,7 @@ void CMaple::updatePartialLh(stack<Node*> &node_stack)
                 Regions* upper_left_right_regions_2 = new Regions();
                 mergeUpperLower(upper_left_right_regions_1, parent_upper_regions, node->length, getPartialLhAtNode(next_node_1->neighbor), next_node_1->length);
                 
-                if (upper_left_right_regions_1->size() == 0)
+                if (!upper_left_right_regions_1 || upper_left_right_regions_1->size() == 0)
                 {
                     if (node->length <= 0 && next_node_1->length <= 0)
                         updateZeroBlength(node_stack, node);
@@ -2271,7 +2290,7 @@ void CMaple::updatePartialLh(stack<Node*> &node_stack)
                 {
                     mergeUpperLower(upper_left_right_regions_2, parent_upper_regions, node->length, getPartialLhAtNode(next_node_2->neighbor), next_node_2->length);
                     
-                    if (upper_left_right_regions_2->size() == 0)
+                    if (!upper_left_right_regions_2 || upper_left_right_regions_2->size() == 0)
                     {
                         if (node->length <= 0 && next_node_2->length <= 0)
                         {
@@ -2738,9 +2757,9 @@ void CMaple::placeNewSample(Node* selected_node, Regions* sample, string seq_nam
             while (best_length > min_blength)
             {
                 double new_blength = best_length / 2;
-                double placement_cost = calculatePlacementCost(upper_left_right_regions, sample, new_blength);
+                double placement_cost = calculatePlacementCost(best_child_regions, sample, new_blength);
                 
-                if (placement_cost > placement_cost)
+                if (placement_cost > new_branch_length_lh)
                 {
                     new_branch_length_lh = placement_cost;
                     best_length = new_blength;
@@ -3144,7 +3163,8 @@ void CMaple::tmpTestingMethod()
     ofstream out = ofstream(output_file);
     
     // write tree string into the tree file
-    out << tree->exportTreeString() << endl;
+    out << tree->exportTreeString() << ";" << endl;
+    cout << tree->exportTreeString() << ";" << endl;
     
     // close the output file
     out.close();

@@ -156,10 +156,10 @@ int Regions::compareWithSample(Regions* sequence2, PositionType seq_length, Stat
         {
             for (StateType i = 0; i < num_states; i++)
             {
-                if (seq1_region->likelihood[i] > seq2_region->likelihood[i] + 1e-2)
+                if (seq2_region->likelihood[i] > 0.1 && seq1_region->likelihood[i] < 0.1)
+                    seq1_more_info = true;
+                else if (seq1_region->likelihood[i] > 0.1 && seq2_region->likelihood[i] < 0.1)
                     seq2_more_info = true;
-                else if (seq2_region->likelihood[i] > seq1_region->likelihood[i] + 1e-2)
-                        seq1_more_info = true;
             }
         }
 

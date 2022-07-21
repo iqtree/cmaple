@@ -87,13 +87,12 @@ void Model::updateMutationMat(double* pseu_mutation_count, StateType num_states)
         for (int i = 0; i <  num_states; i++)
         {
             int start_index = i * num_states;
-            double inverse_roota_freq = 1.0 / root_freqs[i];
             double sum_rate = 0;
             
             for (int j = 0; j <  num_states; j++)
                 if (i != j)
                 {
-                    mutation_mat[start_index + j] = (pseu_mutation_count[start_index + j] + pseu_mutation_count[j * num_states + i]) * inverse_roota_freq;
+                    mutation_mat[start_index + j] = (pseu_mutation_count[start_index + j] + pseu_mutation_count[j * num_states + i]) / root_freqs[i];
                     sum_rate += mutation_mat[start_index + j];
                 }
             
@@ -111,13 +110,12 @@ void Model::updateMutationMat(double* pseu_mutation_count, StateType num_states)
         total_rate -= root_freqs[i] * mutation_mat[i * (num_states + 1)];
     
     // normalize the mutation_mat
-    total_rate = 1.0 / total_rate;
     for (int i = 0; i <  num_states; i++)
     {
         int start_index = i * num_states;
         
         for (int j = 0; j <  num_states; j++)
-            mutation_mat[start_index + j] *= total_rate;
+            mutation_mat[start_index + j] /= total_rate;
     }
 }
 

@@ -861,62 +861,10 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
         distances[i] = num_diffs * hamming_weight + num_ambiguities;
         
         // NHANLT: debug
-        //distances[i] *= 10;
+        distances[i] *= 1000;
     }
     
     // NHANLT: debug
-    /*distances[30]+=1;
-
-
-
-
-
-
-
-    distances[3]+=1;
-
-
-
-
-
-
-
-
-
-    distances[19]+=1;
-    distances[9]+=2;
-
-
-
-
-    distances[16]+=1;
-
-
-
-
-
-
-    distances[44]+=1;
-    distances[38]+=2;
-
-
-    distances[10]+=1;
-
-
-
-    distances[95]+=1;
-    distances[94]+=2;
-    distances[93]+=3;
-    distances[92]+=4;
-
-
-
-
-
-
-
-    distances[49]+=1;
-    distances[47]+=2;*/
 
     // sort distances
     quicksort(distances, 0, num_seqs - 1, sequence_indexes);
@@ -925,11 +873,7 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
     Sequence** tmp_sequences = new Sequence*[size()];
     memcpy(tmp_sequences, this->data(), sizeof(Sequence*)*size());
     for (PositionType i = 0; i < num_seqs; i++)
-    {
         at(i) = tmp_sequences[sequence_indexes[i]];
-        // NHANLT: debug
-        //cout << at(i)->seq_name << endl;
-    }
     
     // delete distances, sequence_indexes
     delete[] tmp_sequences;
