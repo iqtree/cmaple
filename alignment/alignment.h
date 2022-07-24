@@ -94,6 +94,12 @@ public:
     void readDiff(char* diff_path, char* ref_path);
     
     /**
+            Reconstruct an alignment file from a Diff file
+            @param diff_path path to the Diff file; output_file path to the output aln
+     */
+    void reconstructAln(char* diff_path, char* output_file);
+    
+    /**
             parse the reference sequence into vector of state
             @param ref_sequence reference genome in string
      */

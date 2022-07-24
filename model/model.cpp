@@ -47,10 +47,9 @@ void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
         root_freqs[ref_seq[i]]++;
     
     // update root_freqs and root_log_freqs
-    double inverse_seq_length = 1.0/seq_length;
     for (StateType i = 0; i < num_states; i++)
     {
-        root_freqs[i] *= inverse_seq_length;
+        root_freqs[i] /= seq_length;
         root_log_freqs[i] = log(root_freqs[i]);
     }
 }
@@ -67,13 +66,12 @@ void Model::updateMutationMat(double* pseu_mutation_count, StateType num_states)
         for (int i = 0; i <  num_states; i++)
         {
             int start_index = i * num_states;
-            double inverse_roota_freq = 1.0 / root_freqs[i];
             double sum_rate = 0;
             
             for (int j = 0; j <  num_states; j++)
                 if (i != j)
                 {
-                    mutation_mat[start_index + j] = pseu_mutation_count[start_index + j] * inverse_roota_freq;
+                    mutation_mat[start_index + j] = pseu_mutation_count[start_index + j] / root_freqs[i];
                     sum_rate += mutation_mat[start_index + j];
                 }
             

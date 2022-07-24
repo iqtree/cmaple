@@ -622,6 +622,183 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     in.close();
 }
 
+void Alignment::reconstructAln(char* diff_path, char* output_file)
+{
+    ASSERT(diff_path);
+    
+    if (!fileExists(diff_path))
+        outError("File not found ", diff_path);
+    
+    // init dummy variables
+    string seq_name = "";
+    PositionType current_pos = 1;
+    PositionType seq_length;
+    ifstream in = ifstream(diff_path);
+    ofstream out = ofstream(output_file);
+    PositionType line_num = 1;
+    string line;
+    string ref_str = "";
+
+    // set the failbit and badbit
+    in.exceptions(ios::failbit | ios::badbit);
+    // remove the failbit
+    in.exceptions(ios::badbit);
+
+    cout << "Reading a Diff file" << endl;
+    
+    // extract reference sequence first
+    for (; !in.eof(); line_num++)
+    {
+        safeGetline(in, line);
+        if (line == "") continue;
+        
+        // read the first line (">REF")
+        if (line[0] == '>')
+        {
+            string::size_type pos = line.find_first_of("\n\r");
+            seq_name = line.substr(1, pos-1);
+            
+            // transform seq_name to upper case
+            transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
+            
+            if (seq_name != REF_NAME && seq_name != "REFERENCE")
+                outError("Diff file must start by >REF. Please check and try again!");
+        }
+        // read the reference sequence
+        else
+        {
+            // make sure the first line was found
+            if (seq_name != REF_NAME && seq_name != "REFERENCE")
+                outError("Diff file must start by >REF. Please check and try again!");
+            
+            // get ref_str
+            ref_str = line;
+            
+            // get seq_length
+            seq_length = ref_str.length();
+            
+            // reset the seq_name
+            seq_name = "";
+            
+            // break to read sequences of other taxa
+            break;
+        }
+    }
+    
+    // extract sequences of other taxa one by one
+    for (; !in.eof(); line_num++)
+    {
+        safeGetline(in, line);
+        if (line == "") continue;
+        
+        // Read sequence name
+        if (line[0] == '>')
+        {
+            // record the sequence of the previous taxon
+            if (seq_name.length() > 0)
+            {
+                string tmp_str = "";
+                if (current_pos <= seq_length)
+                {
+                    tmp_str.resize(seq_length - current_pos + 1, '-');
+                    for (int i = 0; i < seq_length - current_pos + 1; i++)
+                        tmp_str[i] = ref_str[current_pos - 1 + i];
+                }
+                out << tmp_str << endl;
+                
+                // reset dummy variables
+                seq_name = "";
+                current_pos = 1;
+            }
+            
+            // Read new sequence name
+            string::size_type pos = line.find_first_of("\n\r");
+            seq_name = line.substr(1, pos-1);
+            if (seq_name.length() == 0)
+                outError("Empty sequence name found at line " + convertIntToString(line_num) + ". Please check and try again!");
+            
+            // write out the sequence name
+            out << line << endl;
+        }
+        // Read a Mutation
+        else
+        {
+            // validate the input
+            char separator = '\t';
+            size_t num_items = std::count(line.begin(), line.end(), separator) + 1;
+            if (num_items < 2 || num_items > 3)
+                outError("Invalid input. Each difference must be presented be <Type>    <Position>  [<Length>]. Please check and try again!");
+            
+            // extract mutation info
+            stringstream ssin(line);
+            string tmp;
+            
+            // extract <Type>
+            ssin >> tmp;
+            char state = toupper(tmp[0]);
+            
+            // extract <Position>
+            ssin >> tmp;
+            PositionType pos = convert_positiontype(tmp.c_str());
+            if (pos <= 0 || pos > seq_length)
+                outError("<Position> must be greater than 0 and less than the reference sequence length (" + convertPosTypeToString(ref_seq.size()) + ")!");
+            
+            // extract <Length>
+            PositionType length = 1;
+            if (ssin.good())
+            {
+                ssin >> tmp;
+                if (state == '-' || state == 'N')
+                {
+                    length = convert_positiontype(tmp.c_str());
+                    if (length <= 0)
+                        outError("<Length> must be greater than 0!");
+                    if (length + pos - 1 > seq_length)
+                        outError("<Length> + <Position> must be less than the reference sequence length (" + convertPosTypeToString(seq_length) + ")!");
+                }
+                else
+                    outWarning("Ignoring <Length> of " + tmp + ". <Length> is only appliable for 'N' or '-'.");
+            }
+            
+            // add ref str if any
+            if (current_pos < pos)
+            {
+                string tmp_str = "";
+                tmp_str.resize(pos - current_pos, '-');
+                for (int i = 0; i < pos - current_pos; i++)
+                    tmp_str[i] = ref_str[current_pos - 1 + i];
+                out << tmp_str;
+            }
+            
+            // add a new mutation
+            string tmp_str = "";
+            tmp_str.resize(length, '-');
+            for (int i = 0; i < length; i++)
+                tmp_str[i] = state;
+            out << tmp_str;
+            
+            // update current_pos
+            current_pos = pos + length;
+        }
+    }
+    
+    // Record the sequence of  the last taxon
+    string tmp_str = "";
+    if (current_pos <= seq_length)
+    {
+        tmp_str.resize(seq_length - current_pos + 1, '-');
+        for (int i = 0; i < seq_length - current_pos + 1; i++)
+            tmp_str[i] = ref_str[current_pos - 1 + i];
+    }
+    out << tmp_str << endl;
+    
+    in.clear();
+    // set the failbit again
+    in.exceptions(ios::failbit | ios::badbit);
+    in.close();
+    out.close();
+}
+
 char Alignment::convertState2Char(StateType state) {
     if (state == TYPE_N || state == TYPE_DEL) return '-';
     if (state > TYPE_INVALID) return '?';
@@ -861,11 +1038,12 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
         distances[i] = num_diffs * hamming_weight + num_ambiguities;
         
         // NHANLT: debug
-        distances[i] *= 1000;
+        //distances[i] *= 1000;
     }
     
     // NHANLT: debug
-
+    
+    
     // sort distances
     quicksort(distances, 0, num_seqs - 1, sequence_indexes);
 

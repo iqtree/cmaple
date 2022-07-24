@@ -120,7 +120,12 @@ void CMaple::loadInput()
         if (tree->params->only_extract_diff)
             outError("To export a Diff file, please supple an alignment via --aln <ALIGNMENT>");
         
-        tree->aln->readDiff(tree->params->diff_path, tree->params->ref_path);
+        // only want to reconstruc the aln file from the Diff file
+        if (tree->params->output_aln)
+            tree->aln->reconstructAln(tree->params->diff_path, tree->params->output_aln);
+        // otherwise, read the Diff file
+        else
+            tree->aln->readDiff(tree->params->diff_path, tree->params->ref_path);
     }
 }
 
@@ -3181,7 +3186,8 @@ void runCMaple(Params &params)
     cmaple.loadInput();
     
     // terminate if the user only wants to export a Diff file from an alignment
-    if (params.only_extract_diff)
+    // or only want to reconstruct an aln from a Diff file
+    if (params.only_extract_diff || params.output_aln)
         return;
     
     // prepare for the inference

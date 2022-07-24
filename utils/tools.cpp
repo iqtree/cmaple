@@ -542,6 +542,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.min_blength_mid_factor = 4.1;
     params.max_blength_factor = 40;
     params.thresh_diff_update = 1e-7;
+    params.output_aln = NULL;
     
     for (int cnt = 1; cnt < argc; cnt++) {
         try {
@@ -562,6 +563,16 @@ void parseArg(int argc, char *argv[], Params &params) {
                     outError("Use --diff <DIFF_PATH>");
                 
                 params.diff_path = argv[cnt];
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--output-aln") == 0) {
+                
+                cnt++;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use --output-aln <ALIGNMENT_PATH>");
+                
+                params.output_aln = argv[cnt];
 
                 continue;
             }

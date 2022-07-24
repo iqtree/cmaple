@@ -328,6 +328,11 @@ public:
     *  Threshold to determine whether a changed partial is different from its former value
     */
     double thresh_diff_update;
+    
+    /**
+    *  Path to output aln
+    */
+    char* output_aln;
 };
 
 /*--------------------------------------------------------------*/
