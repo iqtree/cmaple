@@ -6,6 +6,7 @@ Model::Model()
     mutation_mat = NULL;
     root_freqs = NULL;
     root_log_freqs = NULL;
+    pseu_mutation_count = NULL;
 }
 
 Model::~Model()
@@ -26,6 +27,12 @@ Model::~Model()
     {
         delete [] root_log_freqs;
         root_log_freqs = NULL;
+    }
+    
+    if (pseu_mutation_count)
+    {
+        delete[] pseu_mutation_count;
+        pseu_mutation_count = NULL;
     }
 }
 
@@ -54,7 +61,7 @@ void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
     }
 }
 
-void Model::updateMutationMat(double* pseu_mutation_count, StateType num_states)
+void Model::updateMutationMat(StateType num_states)
 {
     // init the "zero" mutation matrix
     string model_rates = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
@@ -117,7 +124,7 @@ void Model::updateMutationMat(double* pseu_mutation_count, StateType num_states)
     }
 }
 
-void Model::initMutationMat(string n_model_name, StateType num_states, double* &pseu_mutation_count)
+void Model::initMutationMat(string n_model_name, StateType num_states)
 {
     model_name = n_model_name;
     if (model_name.compare("JC") == 0 || model_name.compare("jc") == 0)
@@ -140,6 +147,100 @@ void Model::initMutationMat(string n_model_name, StateType num_states, double* &
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
         convert_doubles(pseu_mutation_count, model_rates);
         
-        updateMutationMat(pseu_mutation_count, num_states);
+        updateMutationMat(num_states);
+    }
+}
+
+void Model::computeCumulativeRate(double *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
+{
+    PositionType sequence_length = aln->ref_seq.size();
+    ASSERT(sequence_length > 0);
+    
+    // init cumulative_rate
+    if (!cumulative_rate)
+        cumulative_rate = new double[sequence_length];
+    
+    // init cumulative_base and cumulative_rate
+    cumulative_base.resize(sequence_length);
+    cumulative_rate[0] = mutation_mat[aln->ref_seq[0] * (aln->num_states + 1)];
+    cumulative_base[0].resize(aln->num_states, 0);
+    cumulative_base[0][aln->ref_seq[0]] = 1;
+    
+    // compute cumulative_base and cumulative_rate
+    for (PositionType i = 1; i < sequence_length; i++)
+    {
+        StateType state = aln->ref_seq[i];
+        cumulative_rate[i] = cumulative_rate[i - 1] + mutation_mat[state * (aln->num_states + 1)];
+        
+        cumulative_base[i] =  cumulative_base[i -1];
+        cumulative_base[i][state] = cumulative_base[i - 1][state] + 1;
+    }
+        
+}
+
+void Model::updateMutationMatEmpirical(double *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
+{
+    StateType num_states = aln->num_states;
+    
+    // backup the current mutation matrix
+    double* tmp_mutation_mat = new double[num_states * num_states];
+    memcpy(tmp_mutation_mat, mutation_mat, num_states * num_states * sizeof(double));
+    
+    // update the mutation matrix regarding the pseu_mutation_count
+    updateMutationMat(num_states);
+    
+    // update cumulative_rate if the mutation matrix changes more than a threshold
+    double change_thresh = 1e-3;
+    double update = false;
+    for (StateType j = 0; j < num_states; j++)
+    {
+        StateType index = j * (num_states + 1);
+        if (fabs(tmp_mutation_mat[index] - mutation_mat[index]) > change_thresh)
+        {
+            update = true;
+            break;
+        }
+    }
+    
+    // update the cumulative_rate
+    if (update)
+        computeCumulativeRate(cumulative_rate, cumulative_base, aln);
+    
+    // delete tmp_mutation_mat
+    delete[] tmp_mutation_mat;
+}
+
+void Model::updatePesudoCount(Alignment* aln, Regions* regions1, Regions* regions2)
+{
+    if (model_name != "JC")
+    {
+        // init variables
+        PositionType seq1_index = -1;
+        PositionType seq2_index = -1;
+        PositionType pos = 0;
+        StateType num_states = aln->num_states;
+        Region *seq1_region, *seq2_region;
+        PositionType seq1_end = -1, seq2_end = -1;
+        PositionType length;
+        PositionType seq_length = aln->ref_seq.size();
+                    
+        while (pos < seq_length)
+        {
+            // get the next shared segment in the two sequences
+            Regions::getNextSharedSegment(pos, seq_length, regions1, regions2, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
+        
+            if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R) && (seq2_region->type < num_states || seq2_region->type == TYPE_R))
+            {
+                if (seq1_region->type == TYPE_R)
+                    pseu_mutation_count[aln->ref_seq[pos] * num_states + seq2_region->type] += 1;
+                else if (seq2_region->type == TYPE_R)
+                    pseu_mutation_count[seq1_region->type * num_states + aln->ref_seq[pos]] += 1;
+                else
+                    pseu_mutation_count[seq1_region->type * num_states + seq2_region->type] += 1;
+            }
+
+            // update pos
+            pos += length;
+        }
     }
 }

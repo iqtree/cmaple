@@ -12,6 +12,7 @@
 #define SEQUENCE_H
 
 class Alignment;
+class Regions;
 
 class Sequence {
 public:

@@ -88,16 +88,21 @@ public:
     void extractMutations(StrVector sequences, StrVector seq_names, string ref_sequence, ofstream &out, bool only_extract_diff);
     
     /**
-            Read Diff file to load reference sequence and vector of Sequence (represented by vector of Mutations)
-            @param diff_path path to the Diff file; ref_path path to the reference sequence
+        Read Diff file to load reference sequence and vector of Sequence (represented by vector of Mutations)
+        @param diff_path path to the Diff file; ref_path path to the reference sequence
      */
     void readDiff(char* diff_path, char* ref_path);
     
     /**
-            Reconstruct an alignment file from a Diff file
-            @param diff_path path to the Diff file; output_file path to the output aln
+        Reconstruct an alignment file from a Diff file
+        @param diff_path path to the Diff file; output_file path to the output aln
      */
     void reconstructAln(char* diff_path, char* output_file);
+    
+    /**
+        Extract Diff file from and alignment file
+     */
+    void extractDiffFile(Params* params);
     
     /**
             parse the reference sequence into vector of state

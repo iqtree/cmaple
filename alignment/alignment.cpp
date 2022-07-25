@@ -1042,7 +1042,7 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
     }
     
     // NHANLT: debug
-    
+
     
     // sort distances
     quicksort(distances, 0, num_seqs - 1, sequence_indexes);
@@ -1057,4 +1057,62 @@ void Alignment::sortSeqsByDistances(double hamming_weight)
     delete[] tmp_sequences;
     delete[] distances;
     delete[] sequence_indexes;
+}
+
+void Alignment::extractDiffFile(Params* params)
+{   
+    // read input sequences
+    ASSERT(params->aln_path);
+    StrVector sequences;
+    StrVector seq_names;
+    readSequences(params->aln_path, sequences, seq_names);
+    
+    // validate the input sequences
+    if (sequences.size() == 0)
+        outError("Empty input sequences. Please check and try again!");
+    // make sure all sequences have the same length
+    if (detectInputFile(params->aln_path) == IN_FASTA)
+        for (PositionType i = 0; i < sequences.size(); i++)
+        {
+            if (sequences[i].length() != sequences[0].length())
+                outError("Sequence " + seq_names[i] + " has a different length compared to the first sequence.");
+        }
+    
+    // generate reference sequence from the input sequences
+    string ref_sequence;
+    // read the reference sequence from file (if the user supplies it)
+    if (params->ref_path)
+        ref_sequence = readRef(params->ref_path, params->only_extract_diff);
+    else
+        ref_sequence = generateRef(sequences, seq_names, params->only_extract_diff);
+    
+    // prepare output (Diff) file
+    // init diff_path if it's null
+    if (!params->diff_path)
+    {
+        string diff_path_str(params->aln_path);
+        diff_path_str += ".diff";
+        
+        params->diff_path = new char[diff_path_str.length() + 1];
+        strcpy(params->diff_path, diff_path_str.c_str());
+    }
+    // check whether the Diff file already exists
+    string diff_file(params->diff_path);
+    if (!params->redo_inference && fileExists(diff_file))
+        outError("File " + diff_file + " already exists. Use `-redo` option if you want overwrite it.\n");
+    
+    // open the output file
+    ofstream out = ofstream(params->diff_path);
+    
+    // write reference sequence to the output file
+    out << ">" << REF_NAME << endl;
+    out << ref_sequence << endl;
+    
+    // extract and write mutations of each sequence to file
+    extractMutations(sequences, seq_names, ref_sequence, out, params->only_extract_diff);
+    
+    // close the output file
+    out.close();
+    
+
 }

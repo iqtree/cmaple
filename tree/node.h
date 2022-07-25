@@ -78,6 +78,21 @@ public:
         export string: name + branch length
      */
     string exportString();
+    
+    /**
+        get partial_lh of a node
+     */
+    Regions* getPartialLhAtNode(Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate);
+    
+    /**
+        increase the length of a 0-length branch to resolve the inconsistency when updating regions in updatePartialLh()
+     */
+    void updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, double default_blength, double min_blength, double max_blength);
+    
+    /**
+    *  compute the total likelihood vector for a node.
+    */
+    Regions* computeTotalLhAtNode(Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, bool is_root, bool update = true);
 };
 
 #endif

@@ -5,10 +5,14 @@
 //  Created by Nhan Ly-Trong on 24/01/2022.
 //
 
-#include "region.h"
-
 #ifndef REGIONS_H
 #define REGIONS_H
+
+#include "region.h"
+#include "alignment.h"
+#include "model/model.h"
+
+class Alignment;
 
 class Regions: public vector<Region*> {
 private:
@@ -72,5 +76,54 @@ public:
         Check if the current regions and regions2 represent the same partial likelihoods or not -> be used to stop traversing the tree further for updating partial likelihoods
      */
     bool areDiffFrom(Regions* regions2, PositionType seq_length, StateType num_states, Params* params);
+    
+    /**
+        merge two likelihood vectors, one from above and one from below
+        This regions is the upper regions
+        @param lower_regions the lower regions
+        @param upper_plength the length of the upper branch
+        @param lower_plength the length of the lower branch
+        @param merged_regions the output regions by merging the upper and lower regions
+        @param aln the alignment
+        @param model the model of evolution
+        @param threshold the threshold for approximation
+     */
+    void mergeUpperLower(Regions* &merged_regions, double upper_plength, Regions* lower_regions, double lower_plength, Alignment* aln, Model* model, double threshold);
+    
+    /**
+    merge two lower likelihood vectors
+    This regions is one of the two lower regions
+    @param regions2 the other lower regions
+    @param plength1, plength2 the lengths of the lower branches
+    @param merged_regions the output regions by merging the upper and lower regions
+    @param aln the alignment
+    @param model the model of evolution
+    @param threshold the threshold for approximation
+    @param cumulative_rate the cumulative rates of the reference sequence
+    @param return_log_lh TRUE to return the log likelihood
+     */
+    double mergeTwoLowers(Regions* &merged_regions, double plength1, Regions* regions2, double plength2, Alignment* aln, Model* model, double threshold, double* cumulative_rate, bool return_log_lh = false);
+    
+    /**
+        compute total lh/upper left_right for root node
+        @param blength the branch length; (-1 by default).
+     */
+    Regions* computeTotalLhAtRoot(StateType num_states, Model* model, double blength = -1);
+    
+    /**
+        compute the likelihood by merging the lower lh with root frequencies
+     */
+    double computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vector<PositionType>> &cumulative_base);
+    
+    /**
+        convert an entry 'O' into a normal nucleotide if its probability dominated others
+     */
+    StateType simplifyO(double* &partial_lh, StateType ref_state, StateType num_states, double threshold);
+    
+    /**
+            calculate the placement cost
+            @param child_regions: vector of regions of the new sample
+     */
+    double calculatePlacementCost(Alignment* aln, Model* model, double* cumulative_rate, Regions* child_regions, double blength);
 };
 #endif
