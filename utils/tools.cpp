@@ -543,11 +543,6 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.max_blength_factor = 40;
     params.thresh_diff_update = 1e-7;
     params.output_aln = NULL;
-    params.time1 = 0;
-    params.time2 = 0;
-    params.time3 = 0;
-    params.time4 = 0;
-    params.time5 = 0;
     
     for (int cnt = 1; cnt < argc; cnt++) {
         try {

@@ -45,8 +45,6 @@ void Regions::copyRegions(Regions* n_regions, StateType num_states)
 
 void Regions::mergeRegionR(StateType num_states, double threshold)
 {
-    auto start = getRealTime();
-    
     // dummy variables
     PositionType start_R_index = -1;
     
@@ -73,7 +71,6 @@ void Regions::mergeRegionR(StateType num_states, double threshold)
                  // remove identical R regions
                  for (PositionType j = 1; j < i - start_R_index; j++)
                      delete getRegion(start_R_index + j);
-                 auto start_1 = getRealTime();
                  erase(begin() + start_R_index + 1, begin() + i);
                  
                  // recompute i
@@ -81,8 +78,6 @@ void Regions::mergeRegionR(StateType num_states, double threshold)
                  
                  // reset start_R_index
                  start_R_index = -1;
-                 
-                 Params::getInstance().time4 += getRealTime() - start_1;
              }
         }
     }
@@ -97,8 +92,6 @@ void Regions::mergeRegionR(StateType num_states, double threshold)
             delete getRegion(start_R_index + j);
         erase(begin() + start_R_index + 1, end());
     }
-    
-    Params::getInstance().time3 += getRealTime() - start;
 }
 
 void Regions::move2NextRegion(Regions* sequence, PositionType region_index, Region* &region, PositionType &current_pos, PositionType &end_pos, PositionType seq_length)
@@ -273,8 +266,6 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
 
 void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Regions* lower_regions, double lower_plength, Alignment* aln, Model* model, double threshold_prob)
 {
-    auto start = getRealTime();
-    
     // init variables
     PositionType seq1_index = -1;
     PositionType seq2_index = -1;
@@ -718,8 +709,6 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
 
     // try to merge consecutive and similar 'R' regions together
     merged_regions->mergeRegionR(num_states, threshold_prob);
-    
-    Params::getInstance().time1 += getRealTime() - start;
 }
 
 StateType Regions::simplifyO(double* &partial_lh, StateType ref_state, StateType num_states, double threshold_prob)
@@ -762,7 +751,6 @@ StateType Regions::simplifyO(double* &partial_lh, StateType ref_state, StateType
 
 double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Regions* regions2, double plength2, Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, bool return_log_lh)
 {
-    auto start = getRealTime();
     // init variables
     double log_lh = 0;
     PositionType seq1_index = -1;
@@ -1157,8 +1145,6 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
 
     // try to merge consecutive and similar 'R' regions together
     merged_regions->mergeRegionR(num_states, threshold_prob);
-    
-    Params::getInstance().time2 += getRealTime() - start;
     
     return log_lh;
 }
@@ -1556,8 +1542,6 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
 // this implementation derives from appendProb
 double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cumulative_rate, Regions* child_regions, double blength)
 {
-    auto start = getRealTime();
-    
     // init dummy variables
     double lh_cost = 0;
     PositionType seq1_index = -1;
@@ -1836,8 +1820,6 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
         // update pos
         pos += length;
     }
-    
-    Params::getInstance().time5 += getRealTime() - start;
     
     return lh_cost + log(total_factor);
 }
