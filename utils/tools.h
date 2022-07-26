@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <set>
 #include <map>
+#include <stack>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>

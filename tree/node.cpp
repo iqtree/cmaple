@@ -96,7 +96,7 @@ Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, double threshold
     if (!partial_lh)
     {
         // init partial_lh
-        partial_lh = new Regions();
+        partial_lh = NULL;
         
         // the phylonode is an internal node
         if (next)
@@ -205,7 +205,7 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
 
 Regions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, bool is_root, bool update)
 {
-    Regions* new_regions;
+    Regions* new_regions = NULL;
     
     // if node is root
     if (is_root)
@@ -213,7 +213,6 @@ Regions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, double thresho
     // if not is normal nodes
     else
     {
-        new_regions = new Regions();
         Regions* lower_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
         neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_regions, length, lower_regions, -1, aln, model, threshold_prob);
     }

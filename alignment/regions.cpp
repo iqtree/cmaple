@@ -286,8 +286,10 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
     PositionType seq_length = aln->ref_seq.size();
     
     // init merged_regions
-    if (merged_regions) delete merged_regions;
-    merged_regions = new Regions();
+    if (merged_regions)
+        merged_regions->deleteRegions();
+    else
+        merged_regions = new Regions();
                 
     while (pos <  seq_length)
     {
@@ -773,8 +775,10 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
     PositionType seq_length = aln->ref_seq.size();
     
     // init merged_regions
-    if (merged_regions) delete merged_regions;
-    merged_regions = new Regions();
+    if (merged_regions)
+        merged_regions->deleteRegions();
+    else
+        merged_regions = new Regions();
                 
     while (pos < seq_length)
     {
