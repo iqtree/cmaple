@@ -166,6 +166,13 @@ void CMaple::doInference()
 
 void CMaple::tmpTestingMethod()
 {
+    // NHANLT: Debug
+    cout << "time1: "<< tree->params->time1 << endl;
+    cout << "time2: "<< tree->params->time2 << endl;
+    cout << "time3: "<< tree->params->time3 << endl;
+    cout << "time4: "<< tree->params->time4 << endl;
+    cout << "time5: "<< tree->params->time5 << endl;
+    
     // open the tree file
     string output_file(tree->params->diff_path);
     output_file += ".treefile";

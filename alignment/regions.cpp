@@ -45,36 +45,60 @@ void Regions::copyRegions(Regions* n_regions, StateType num_states)
 
 void Regions::mergeRegionR(StateType num_states, double threshold)
 {
-    // clone the current regions
-    Regions* tmp_regions = new Regions();
-    tmp_regions->copyRegions(this, num_states);
+    auto start = getRealTime();
     
-    // delete the current regions
-    deleteRegions();
+    // dummy variables
+    PositionType start_R_index = -1;
     
-    // browse regions one by one and try to merge consecutive regions of type R
-    Region* region = tmp_regions->getRegion(0);
-    
-    for (PositionType i = 0; i < tmp_regions->size() - 1; i++)
+    // browse regions one by one to detect identical sequences of R regions
+    for (PositionType i = 0; i < size(); i++)
     {
-        Region* next_region = tmp_regions->getRegion(i + 1);
+        // get the current region
+        Region* current_region = getRegion(i);
         
-        // merge two consecutive regions if they are both 'R' and "similar" to each other (regarding plength_observation, and plength_from_root)
-        if (!(region->type == TYPE_R && next_region->type == TYPE_R && fabs(region->plength_observation - next_region->plength_observation) < threshold && fabs(region->plength_from_root - next_region->plength_from_root) < threshold))
+        // if start_R_index is not set -> check if the current region is an R region
+        if (start_R_index == -1)
         {
-            // add the current region into the current regions
-            push_back(new Region(region, num_states, true));
+            if (current_region->type == TYPE_R)
+                start_R_index = i;
+        }
+        // otherwise, check if the current region is an R region and identical to the starting R region
+        else
+        {
+            Region* start_R_region = getRegion(start_R_index);
             
-            // move to the next entry
-            region = tmp_regions->getRegion(i + 1);
+            // if the current region is NOT identical to the starting region -> merging sequence of identical R regions starting from start_R_index to the region before the current region
+            if (!(current_region->type == TYPE_R && fabs(start_R_region->plength_observation - current_region->plength_observation) < threshold && fabs(start_R_region->plength_from_root - current_region->plength_from_root) < threshold))
+             {
+                 // remove identical R regions
+                 for (PositionType j = 1; j < i - start_R_index; j++)
+                     delete getRegion(start_R_index + j);
+                 auto start_1 = getRealTime();
+                 erase(begin() + start_R_index + 1, begin() + i);
+                 
+                 // recompute i
+                 i -= i - start_R_index - 1;
+                 
+                 // reset start_R_index
+                 start_R_index = -1;
+                 
+                 Params::getInstance().time4 += getRealTime() - start_1;
+             }
         }
     }
     
-    // add the last region into new_regions
-    push_back(new Region(region, num_states, true));
+    // merge the last R regions (if any)
+    if  (start_R_index != -1)
+    {
+        PositionType num_regions = size();
+        
+        // remove identical R regions
+        for (PositionType j = 1; j < num_regions - 1 - start_R_index; j++)
+            delete getRegion(start_R_index + j);
+        erase(begin() + start_R_index + 1, end());
+    }
     
-    // delete tmp_regions
-    delete tmp_regions;
+    Params::getInstance().time3 += getRealTime() - start;
 }
 
 void Regions::move2NextRegion(Regions* sequence, PositionType region_index, Region* &region, PositionType &current_pos, PositionType &end_pos, PositionType seq_length)
@@ -249,6 +273,8 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
 
 void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Regions* lower_regions, double lower_plength, Alignment* aln, Model* model, double threshold_prob)
 {
+    auto start = getRealTime();
+    
     // init variables
     PositionType seq1_index = -1;
     PositionType seq2_index = -1;
@@ -690,6 +716,8 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
 
     // try to merge consecutive and similar 'R' regions together
     merged_regions->mergeRegionR(num_states, threshold_prob);
+    
+    Params::getInstance().time1 += getRealTime() - start;
 }
 
 StateType Regions::simplifyO(double* &partial_lh, StateType ref_state, StateType num_states, double threshold_prob)
@@ -732,6 +760,7 @@ StateType Regions::simplifyO(double* &partial_lh, StateType ref_state, StateType
 
 double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Regions* regions2, double plength2, Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, bool return_log_lh)
 {
+    auto start = getRealTime();
     // init variables
     double log_lh = 0;
     PositionType seq1_index = -1;
@@ -1124,6 +1153,8 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
 
     // try to merge consecutive and similar 'R' regions together
     merged_regions->mergeRegionR(num_states, threshold_prob);
+    
+    Params::getInstance().time2 += getRealTime() - start;
     
     return log_lh;
 }
@@ -1521,6 +1552,8 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
 // this implementation derives from appendProb
 double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cumulative_rate, Regions* child_regions, double blength)
 {
+    auto start = getRealTime();
+    
     // init dummy variables
     double lh_cost = 0;
     PositionType seq1_index = -1;
@@ -1799,6 +1832,8 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
         // update pos
         pos += length;
     }
+    
+    Params::getInstance().time5 += getRealTime() - start;
     
     return lh_cost + log(total_factor);
 }

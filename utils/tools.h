@@ -333,6 +333,9 @@ public:
     *  Path to output aln
     */
     char* output_aln;
+    
+    // NHANLT: debug
+    double time1, time2, time3, time4, time5;
 };
 
 /*--------------------------------------------------------------*/
