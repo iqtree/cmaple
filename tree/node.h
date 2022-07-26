@@ -20,6 +20,9 @@ public:
     // total likelihood at the current node
     Regions* total_lh = NULL;
     
+    // total likelihood at the mid-branch point
+    Regions* mid_branch_lh = NULL;
+    
     // length of branch connecting to parent
     double length;
     

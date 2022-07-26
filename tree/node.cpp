@@ -10,6 +10,7 @@ Node::Node(bool is_top_node)
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
+    mid_branch_lh = NULL;
     total_lh = NULL;
     dirty = false;
 }
@@ -22,6 +23,7 @@ Node::Node(int n_id, string n_seq_name)
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
+    mid_branch_lh = NULL;
     total_lh = NULL;
     dirty = false;
 }
@@ -35,6 +37,7 @@ Node::Node(string n_seq_name)
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
+    mid_branch_lh = NULL;
     total_lh = NULL;
     dirty = false;
 }
