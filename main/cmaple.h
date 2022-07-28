@@ -65,6 +65,11 @@ public:
     void doInference();
     
     /**
+        Complete the inference
+     */
+    void postInference();
+    
+    /**
         Temporarily method for testing
      */
     void tmpTestingMethod();

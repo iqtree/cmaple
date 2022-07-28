@@ -164,7 +164,7 @@ void CMaple::doInference()
     // 2. Optimize the tree with SPR
 }
 
-void CMaple::tmpTestingMethod()
+void CMaple::postInference()
 {
     // open the tree file
     string output_file(tree->params->diff_path);
@@ -173,10 +173,14 @@ void CMaple::tmpTestingMethod()
     
     // write tree string into the tree file
     out << tree->exportTreeString() << ";" << endl;
-    cout << tree->exportTreeString() << ";" << endl;
     
     // close the output file
     out.close();
+}
+
+void CMaple::tmpTestingMethod()
+{
+    // test some new methods
     
     cout << endl;
 }
@@ -197,8 +201,11 @@ void runCMaple(Params &params)
     // prepare for the inference
     cmaple.preInference();
     
-    // inference trees and model params
+    // infer trees and model params
     cmaple.doInference();
+    
+    // complete remaining stuff after the inference
+    cmaple.postInference();
     
     // just test new method
     cmaple.tmpTestingMethod();

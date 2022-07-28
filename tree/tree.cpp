@@ -525,7 +525,8 @@ void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regi
             }
             else
             {
-                // now try to place on the current branch below the best node, at an height above the mid-branch.
+                // NHANLT: only try at the mid-branch position to save time
+                /*// now try to place on the current branch below the best node, at an height above the mid-branch.
                 double new_blength = node->length / 2;
                 double new_best_lh_mid_branch = -DBL_MAX;
 
@@ -548,7 +549,9 @@ void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regi
                     // stop trying if reaching the minimum branch length
                     if (new_blength <= min_blength_mid / 2)
                         break;
-                }
+                }*/
+                
+                double new_best_lh_mid_branch = node->mid_branch_lh->calculatePlacementCost(aln, model, cumulative_rate, sample_regions, default_blength);
                 
                 // record new best_down_lh_diff
                 if (new_best_lh_mid_branch > best_down_lh_diff)
@@ -589,7 +592,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
             upper_left_right_regions->mergeUpperLower(new_parent_regions, selected_node->length * new_split, selected_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate),  selected_node->length * (1 - new_split), aln, model, params->threshold_prob);
             double placement_cost = new_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, default_blength);
             
-            if (placement_cost>best_split_lh)
+            if (placement_cost > best_split_lh)
             {
                 best_split_lh = placement_cost;
                 best_split = new_split;

@@ -1595,7 +1595,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                     StateType seq1_state = aln->ref_seq[pos];
                     if (seq1_region->plength_from_root >= 0)
                     {
-                        total_blength = seq1_region->plength_from_root + (blength > 0 ? blength : 0);
+                        total_blength = seq1_region->plength_from_root + blength;
                         
                         if (seq2_region->likelihood[seq1_state] > 0.1)
                         {
