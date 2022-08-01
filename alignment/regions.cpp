@@ -43,7 +43,7 @@ void Regions::copyRegions(Regions* n_regions, StateType num_states)
     }
 }
 
-void Regions::mergeRegionR(StateType num_states, double threshold)
+void Regions::mergeRegionR(StateType num_states, RealNumType threshold)
 {
     // dummy variables
     PositionType start_R_index = -1;
@@ -241,7 +241,7 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
             // compare likelihood of each state
             for (StateType i = 0; i < num_states; i++)
             {
-                double diff = fabs(seq1_region->likelihood[i] - seq2_region->likelihood[i]);
+                RealNumType diff = fabs(seq1_region->likelihood[i] - seq2_region->likelihood[i]);
                 
                 if (diff > 0)
                 {
@@ -264,7 +264,7 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
     return false;
 }
 
-void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Regions* lower_regions, double lower_plength, Alignment* aln, Model* model, double threshold_prob)
+void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plength, Regions* lower_regions, RealNumType lower_plength, Alignment* aln, Model* model, RealNumType threshold_prob)
 {
     // init variables
     PositionType seq1_index = -1;
@@ -299,16 +299,16 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                 // seq1_entry = 'N' and seq2_entry = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    double total_blength = lower_plength;
+                    RealNumType total_blength = lower_plength;
                     if (seq2_region->plength_observation >= 0)
                         total_blength = seq2_region->plength_observation + (lower_plength > 0 ? lower_plength: 0);
                         
-                    double* new_lh = new double[num_states];
-                    double sum_lh = 0;
+                    RealNumType* new_lh = new RealNumType[num_states];
+                    RealNumType sum_lh = 0;
                     
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         if (total_blength > 0)
                         {
@@ -335,7 +335,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                 {
                     if (seq2_region->plength_observation >= 0)
                     {
-                        double new_plength = seq2_region->plength_observation ;
+                        RealNumType new_plength = seq2_region->plength_observation ;
                         if (lower_plength > 0)
                             new_plength += lower_plength;
                         merged_regions->push_back(new Region(seq2_region->type, pos, new_plength, 0));
@@ -357,7 +357,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
             // seq1_entry = 'O' and seq2_entry = N
             if (seq1_region->type == TYPE_O)
             {
-                double total_blength = -1;
+                RealNumType total_blength = -1;
                 
                 if (seq1_region->plength_observation >= 0)
                 {
@@ -370,12 +370,12 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                 
                 if (total_blength > 0)
                 {
-                    double* new_lh = new double[num_states];
-                    double sum_lh = 0;
+                    RealNumType* new_lh = new RealNumType[num_states];
+                    RealNumType sum_lh = 0;
                     
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; j++)
                             tot += model->mutation_mat[j * num_states + i] * seq1_region->likelihood[j];
@@ -395,8 +395,8 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                 }
                 else
                 {
-                    double* new_lh = new double[num_states];
-                    memcpy(new_lh, seq1_region->likelihood, sizeof(double) * num_states);
+                    RealNumType* new_lh = new RealNumType[num_states];
+                    memcpy(new_lh, seq1_region->likelihood, sizeof(RealNumType) * num_states);
                     // add merged region into merged_regions
                     merged_regions->push_back(new Region(seq1_region->type, pos, 0, 0, new_lh));
                 }
@@ -406,14 +406,14 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
             {
                 if (seq1_region->plength_from_root >= 0)
                 {
-                    double plength_from_root = seq1_region->plength_from_root;
+                    RealNumType plength_from_root = seq1_region->plength_from_root;
                     if (upper_plength > 0)
                         plength_from_root += upper_plength;
                     merged_regions->push_back(new Region(seq1_region->type, pos, seq1_region->plength_observation, plength_from_root));
                 }
                 else if (seq1_region->plength_observation >= 0)
                 {
-                    double plength_observation = seq1_region->plength_observation;
+                    RealNumType plength_observation = seq1_region->plength_observation;
                     if (upper_plength > 0)
                         plength_observation += upper_plength;
                     merged_regions->push_back(new Region(seq1_region->type, pos, plength_observation));
@@ -433,7 +433,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
         // cases where the new genome list entry will likely be of type "O"
         else
         {
-            double total_blength_1 = upper_plength;
+            RealNumType total_blength_1 = upper_plength;
             if (seq1_region->plength_observation >= 0)
             {
                 total_blength_1 = seq1_region->plength_observation;
@@ -444,7 +444,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                     total_blength_1 += seq1_region->plength_from_root;
             }
             
-            double total_blength_2 = lower_plength;
+            RealNumType total_blength_2 = lower_plength;
             if (seq2_region->plength_observation >= 0)
             {
                 total_blength_2 = seq2_region->plength_observation;
@@ -473,14 +473,14 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
             {
-                double* new_lh = new double[num_states];
+                RealNumType* new_lh = new RealNumType[num_states];
                 
                 // if total_blength_1 > 0 => compute new partial likelihood
                 if (total_blength_1 > 0)
                 {
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; j++)
                             tot += model->mutation_mat[j * num_states + i] * seq1_region->likelihood[j];
@@ -492,16 +492,16 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                 }
                 // otherwise, clone the partial likelihood from seq1
                 else
-                    memcpy(new_lh, seq1_region->likelihood, sizeof(double) * num_states);
+                    memcpy(new_lh, seq1_region->likelihood, sizeof(RealNumType) * num_states);
                 
-                double sum_new_lh = 0;
+                RealNumType sum_new_lh = 0;
 
                 // seq2 = O
                 if (seq2_region->type == TYPE_O)
                 {
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
@@ -570,16 +570,16 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                 if (seq1_state == TYPE_R)
                     seq1_state = aln->ref_seq[pos];
                 
-                double* new_lh = new double[num_states];
-                double sum_new_lh = 0;
+                RealNumType* new_lh = new RealNumType[num_states];
+                RealNumType sum_new_lh = 0;
                 
                 if (seq1_region->plength_from_root >= 0)
                 {
-                    double length_to_root = seq1_region->plength_from_root;
+                    RealNumType length_to_root = seq1_region->plength_from_root;
                     if (upper_plength > 0)
                         length_to_root += upper_plength;
-                    double* root_vec = new double[num_states];
-                    memcpy(root_vec, model->root_freqs, sizeof(double) * num_states);
+                    RealNumType* root_vec = new RealNumType[num_states];
+                    memcpy(root_vec, model->root_freqs, sizeof(RealNumType) * num_states);
                     
                     for (StateType i = 0; i < num_states; i++)
                     {
@@ -593,7 +593,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                         
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; j++)
                             tot += model->mutation_mat[j * num_states + i] * root_vec[j];
@@ -634,7 +634,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
                 {
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
@@ -711,12 +711,12 @@ void Regions::mergeUpperLower(Regions* &merged_regions, double upper_plength, Re
     merged_regions->mergeRegionR(num_states, threshold_prob);
 }
 
-StateType Regions::simplifyO(double* &partial_lh, StateType ref_state, StateType num_states, double threshold_prob)
+StateType Regions::simplifyO(RealNumType* &partial_lh, StateType ref_state, StateType num_states, RealNumType threshold_prob)
 {
     // dummy variables
     ASSERT(partial_lh);
-    double max_prob = 0;
-    double max_index = 0;
+    RealNumType max_prob = 0;
+    StateType max_index = 0;
     StateType high_prob_count = 0;
     
     // Check all states one by one
@@ -749,10 +749,10 @@ StateType Regions::simplifyO(double* &partial_lh, StateType ref_state, StateType
         return TYPE_O;
 }
 
-double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Regions* regions2, double plength2, Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, bool return_log_lh)
+RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plength1, Regions* regions2, RealNumType plength2, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool return_log_lh)
 {
     // init variables
-    double log_lh = 0;
+    RealNumType log_lh = 0;
     PositionType seq1_index = -1;
     PositionType seq2_index = -1;
     PositionType pos = 0;
@@ -805,7 +805,7 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
                 {
                     if (seq2_region->plength_observation >= 0)
                     {
-                        double new_plength = seq2_region->plength_observation;
+                        RealNumType new_plength = seq2_region->plength_observation;
                         if (plength2 > 0)
                             new_plength += plength2;
                         merged_regions->push_back(new Region(seq2_region->type, pos, new_plength));
@@ -846,7 +846,7 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
             {
                 if (seq1_region->plength_observation >= 0)
                 {
-                    double new_plength = seq1_region->plength_observation;
+                    RealNumType new_plength = seq1_region->plength_observation;
                     if (plength1 > 0)
                         new_plength += plength1;
                     merged_regions->push_back(new Region(seq1_region->type, pos, new_plength));
@@ -864,7 +864,7 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
         // neither seq1_entry nor seq2_entry = N
         else
         {
-            double total_blength_1 = plength1;
+            RealNumType total_blength_1 = plength1;
             if (seq1_region->plength_observation >= 0)
             {
                 total_blength_1 = seq1_region->plength_observation;
@@ -872,7 +872,7 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
                     total_blength_1 += plength1;
             }
             
-            double total_blength_2 = plength2;
+            RealNumType total_blength_2 = plength2;
             if (seq2_region->plength_observation >= 0)
             {
                 total_blength_2 = seq2_region->plength_observation;
@@ -907,14 +907,14 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
             {
-                double* new_lh = new double[num_states];
-                double sum_lh = 0;
+                RealNumType* new_lh = new RealNumType[num_states];
+                RealNumType sum_lh = 0;
                 
                 if (total_blength_1 > 0)
                 {
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; j++)
                             tot += model->mutation_mat[i * num_states + j] * seq1_region->likelihood[j];
@@ -926,14 +926,14 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
                 }
                 // otherwise, clone the partial likelihood from seq1
                 else
-                    memcpy(new_lh, seq1_region->likelihood, sizeof(double) * num_states);
+                    memcpy(new_lh, seq1_region->likelihood, sizeof(RealNumType) * num_states);
 
                 // seq1_entry = O and seq2_entry = O
                 if (seq2_region->type == TYPE_O)
                 {
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
@@ -1028,8 +1028,8 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
                 if (seq1_state == TYPE_R)
                     seq1_state = aln->ref_seq[pos];
                 
-                double* new_lh = new double[num_states];
-                double sum_lh = 0;
+                RealNumType* new_lh = new RealNumType[num_states];
+                RealNumType sum_lh = 0;
                 
                 if (total_blength_1 > 0)
                 {
@@ -1059,7 +1059,7 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
                 {
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot = 0;
+                        RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
@@ -1149,11 +1149,11 @@ double Regions::mergeTwoLowers(Regions* &merged_regions, double plength1, Region
     return log_lh;
 }
 
-double Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vector<PositionType>> &cumulative_base)
+RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vector<PositionType>> &cumulative_base)
 {
     // dummy variables
-    double log_lh = 0;
-    double log_factor = 1;
+    RealNumType log_lh = 0;
+    RealNumType log_factor = 1;
     StateType num_states = aln->num_states;
     PositionType seq_length = aln->ref_seq.size();
     
@@ -1177,7 +1177,7 @@ double Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vec
         // type O
         else if (region->type == TYPE_O)
         {
-            double tot = 0;
+            RealNumType tot = 0;
             for (StateType i = 0; i < num_states; i++)
                 tot += model->root_freqs[i] * region->likelihood[i];
                 log_factor *= tot;
@@ -1191,7 +1191,7 @@ double Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vec
     return log_lh;
 }
 
-Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, double blength)
+Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealNumType blength)
 {
     Regions* total_lh = new Regions();
     
@@ -1209,7 +1209,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
             if (region->type == TYPE_O)
             {
                 // compute total blength
-                double total_blength = blength;
+                RealNumType total_blength = blength;
                 if (region->plength_observation >= 0)
                 {
                     total_blength = region->plength_observation;
@@ -1218,12 +1218,12 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
                 }
                 
                 // init new likelihood
-                double* new_likelihood = new double[num_states];
-                double sum_likelihood = 0;
+                RealNumType* new_likelihood = new RealNumType[num_states];
+                RealNumType sum_likelihood = 0;
                 
                 for (StateType i = 0; i < num_states; i++)
                 {
-                    double tot = 0.0;
+                    RealNumType tot = 0.0;
                     
                     if (total_blength > 0)
                     {
@@ -1275,20 +1275,20 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
 }
 
 // this implementation derives from appendProbNode
-/*double Regions::calculatePlacementCost(Regions* parent_regions, Regions* child_regions, double blength)
+/*RealNumType Regions::calculatePlacementCost(Regions* parent_regions, Regions* child_regions, RealNumType blength)
 {
     // init dummy variables
-    double lh_cost = 0;
+    RealNumType lh_cost = 0;
     PositionType seq1_index = -1;
     PositionType seq2_index = -1;
     PositionType pos = 0;
-    double total_factor = 1;
+    RealNumType total_factor = 1;
     StateType num_states = tree->aln->num_states;
     Region *seq1_region, *seq2_region;
     PositionType seq1_end = -1, seq2_end = -1;
     PositionType length;
-    double minimum_carry_over = DBL_MIN * 1e50;
-    double total_blength = blength;
+    RealNumType minimum_carry_over = DBL_MIN * 1e50;
+    RealNumType total_blength = blength;
     PositionType seq_length = tree->aln->ref_seq.size();
     
     while (pos < seq_length)
@@ -1331,14 +1331,14 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
                 // 2.2. e1.type = R and e2.type = O
                 else if (seq2_region->type == TYPE_O)
                 {
-                    double tot = 0;
+                    RealNumType tot = 0;
                     StateType seq1_state = tree->aln->ref_seq[pos];
                     
                     if (seq1_region->plength_from_root >= 0)
                     {
                         for (StateType i = 0; i < num_states; i++)
                         {
-                            double tot2;
+                            RealNumType tot2;
                             StateType mutation_index = i * num_states + seq1_state;
                             
                             if (seq1_state == i)
@@ -1346,7 +1346,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
                             else
                                 tot2 = model->root_freqs[i] * (model->mutation_mat[mutation_index] * seq1_region->plength_observation);
                                 
-                            double tot3 = 0;
+                            RealNumType tot3 = 0;
                             if (total_blength > 0)
                             {
                                 for (StateType j = 0; j < num_states; j++)
@@ -1398,7 +1398,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
             // 3. e1.type = O
             else if (seq1_region->type == TYPE_O)
             {
-                double blength13 = blength;
+                RealNumType blength13 = blength;
                 if (seq1_region->plength_observation >= 0)
                 {
                     blength13 = seq1_region->plength_observation;
@@ -1409,11 +1409,11 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
                 // 3.1. e1.type = O and e2.type = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    double tot = 0;
+                    RealNumType tot = 0;
                     
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot2 = 0;
+                        RealNumType tot2 = 0;
                         
                         for (StateType j = 0; j < num_states; j++)
                             if (seq2_region->likelihood[j] > 0.1)
@@ -1436,7 +1436,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
                     if (seq2_state == TYPE_R)
                         seq2_state = tree->aln->ref_seq[pos];
                     
-                    double tot2 = 0;
+                    RealNumType tot2 = 0;
                     if (total_blength > 0)
                     {
                         for (StateType j = 0; j < num_states; j++)
@@ -1466,20 +1466,20 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
                     // 4.2. e1.type = A/C/G/T and e2.type = O
                     if (seq2_region->type == TYPE_O)
                     {
-                        double tot = 0.0;
+                        RealNumType tot = 0.0;
                         
                         if (seq1_region->plength_from_root >= 0)
                         {
                             for (StateType i = 0; i < num_states; i++)
                             {
-                                double tot2;
+                                RealNumType tot2;
                                 StateType mutation_index = i * num_states + seq1_state;
                                 if (seq1_state == i)
                                     tot2 = model->root_freqs[i] * (1.0 + model->mutation_mat[mutation_index] * seq1_region->plength_observation);
                                 else
                                     tot2 = model->root_freqs[i] * (model->mutation_mat[mutation_index] * seq1_region->plength_observation);
                                     
-                                double tot3 = 0;
+                                RealNumType tot3 = 0;
                                 for (StateType j = 0; j < num_states; j++)
                                     tot3 += model->mutation_mat[i * num_states + j] * seq2_region->likelihood[j];
                                 tot += tot2 * (seq2_region->likelihood[i] + total_blength * tot3);
@@ -1540,21 +1540,21 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, doubl
 }*/
 
 // this implementation derives from appendProb
-double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cumulative_rate, Regions* child_regions, double blength)
+RealNumType Regions::calculatePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength)
 {
     // init dummy variables
-    double lh_cost = 0;
+    RealNumType lh_cost = 0;
     PositionType seq1_index = -1;
     PositionType seq2_index = -1;
     PositionType pos = 0;
-    double total_factor = 1;
+    RealNumType total_factor = 1;
     StateType num_states = aln->num_states;
     Region *seq1_region, *seq2_region;
     PositionType seq1_end = -1, seq2_end = -1;
     PositionType length;
-    double minimum_carry_over = DBL_MIN * 1e50;
+    RealNumType minimum_carry_over = DBL_MIN * 1e50;
     if (blength < 0) blength = 0;
-    double total_blength = blength;
+    RealNumType total_blength = blength;
     PositionType seq_length = aln->ref_seq.size();
     
     while (pos < seq_length)
@@ -1606,10 +1606,10 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                         }
                         else
                         {
-                            double tot = 0;
+                            RealNumType tot = 0;
                             for (StateType i = 0; i < num_states; i++)
                             {
-                                double tot2;
+                                RealNumType tot2;
                                 StateType mutation_index = i * num_states + seq1_state;
                                 
                                 if (seq1_state == i)
@@ -1617,7 +1617,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                                 else
                                     tot2 = model->root_freqs[i] * (model->mutation_mat[mutation_index] * seq1_region->plength_observation);
                                     
-                                double tot3 = 0;
+                                RealNumType tot3 = 0;
                                 for (StateType j = 0; j < num_states; j++)
                                     if (seq2_region->likelihood[j] > 0.1)
                                         tot3 += model->mutation_mat[i * num_states + j];
@@ -1643,7 +1643,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                         }
                         else
                         {
-                            double tot = 0;
+                            RealNumType tot = 0;
                             for (StateType i = 0; i < num_states; i++)
                                 if (seq2_region->likelihood[i] > 0.1)
                                     tot += model->mutation_mat[seq1_state * num_states + i];
@@ -1672,7 +1672,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
             // 3. e1.type = O
             else if (seq1_region->type == TYPE_O)
             {
-                double blength13 = blength;
+                RealNumType blength13 = blength;
                 if (seq1_region->plength_observation >= 0)
                 {
                     blength13 = seq1_region->plength_observation;
@@ -1683,11 +1683,11 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                 // 3.1. e1.type = O and e2.type = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    double tot = 0;
+                    RealNumType tot = 0;
                     
                     for (StateType i = 0; i < num_states; i++)
                     {
-                        double tot2 = 0;
+                        RealNumType tot2 = 0;
                         
                         for (StateType j = 0; j < num_states; j++)
                             if (seq2_region->likelihood[j] > 0.1)
@@ -1710,7 +1710,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                     if (seq2_state == TYPE_R)
                         seq2_state = aln->ref_seq[pos];
                     
-                    double tot2 = 0;
+                    RealNumType tot2 = 0;
                     for (StateType j = 0; j < num_states; j++)
                         tot2 += model->mutation_mat[j * num_states + seq2_state] * seq1_region->likelihood[j];
                     
@@ -1725,7 +1725,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                 // 4.1. e1.type =  e2.type
                 if (seq1_region->type == seq2_region->type)
                 {
-                    double total_blength = blength;
+                    RealNumType total_blength = blength;
                     total_blength += (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
                     total_blength += (seq1_region->plength_from_root < 0 ? 0 : seq1_region->plength_from_root);
 
@@ -1737,11 +1737,11 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                     // 4.2. e1.type = A/C/G/T and e2.type = O
                     if (seq2_region->type == TYPE_O)
                     {
-                        double tot = 0.0;
+                        RealNumType tot = 0.0;
                         
                         if (seq1_region->plength_from_root >= 0)
                         {
-                            double blength15 = blength + seq1_region->plength_from_root;
+                            RealNumType blength15 = blength + seq1_region->plength_from_root;
                             
                             if (seq2_region->likelihood[seq1_state] > 0.1)
                                 lh_cost += model->mutation_mat[seq1_state * (num_states + 1)] * (blength15 + seq1_region->plength_observation);
@@ -1749,14 +1749,14 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                             {
                                 for (StateType i = 0; i < num_states; i++)
                                 {
-                                    double tot2;
+                                    RealNumType tot2;
                                     StateType mutation_index = i * num_states + seq1_state;
                                     if (seq1_state == i)
                                         tot2 = model->root_freqs[i] * (1.0 + model->mutation_mat[mutation_index] * seq1_region->plength_observation);
                                     else
                                         tot2 = model->root_freqs[i] * (model->mutation_mat[mutation_index] * seq1_region->plength_observation);
                                         
-                                    double tot3 = 0;
+                                    RealNumType tot3 = 0;
                                     for (StateType j = 0; j < num_states; j++)
                                         if (seq2_region->likelihood[j] > 0.1)
                                             tot3 += model->mutation_mat[i * num_states + j];
@@ -1772,7 +1772,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                         }
                         else
                         {
-                            double tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
+                            RealNumType tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
                             if (seq2_region->likelihood[seq1_state] > 0.1)
                                 lh_cost += model->mutation_mat[seq1_state * (num_states + 1)] * tmp_blength;
                             else
@@ -1799,7 +1799,7 @@ double Regions::calculatePlacementCost(Alignment* aln, Model* model, double* cum
                         }
                         else
                         {
-                            double tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
+                            RealNumType tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
                             
                             total_factor *= model->mutation_mat[seq1_state * num_states + seq2_state] * tmp_blength;
                         }

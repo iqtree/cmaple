@@ -22,17 +22,17 @@ private:
     
 public:
     // model-related params
-    double *cumulative_rate;
+    RealNumType *cumulative_rate;
     vector<vector<PositionType>> cumulative_base;
     
     // The phylogenetic tree
     Tree* tree;
     // tree-related params
-    double default_blength;
-    double min_blength, max_blength, min_blength_mid;
+    RealNumType default_blength;
+    RealNumType min_blength, max_blength, min_blength_mid;
     
     // thresholds for approximations
-    double threshold_prob2, threshold_prob4;
+    RealNumType threshold_prob2, threshold_prob4;
     
     /**
     *  CMaple constructor

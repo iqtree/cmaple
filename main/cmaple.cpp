@@ -136,7 +136,7 @@ void CMaple::buildInitialTree()
         
         // seek a position for new sample placement
         Node *selected_node, *best_child;
-        double best_lh_diff, best_up_lh_diff, best_down_lh_diff;
+        RealNumType best_lh_diff, best_up_lh_diff, best_down_lh_diff;
         bool is_mid_branch;
         tree->seekPlacement(tree->root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, default_blength, min_blength_mid);
         

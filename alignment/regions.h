@@ -47,7 +47,7 @@ public:
     /**
         merge consecutive R regions
      */
-    void mergeRegionR(StateType num_states, double threshold);
+    void mergeRegionR(StateType num_states, RealNumType threshold);
     
     /**
         move to the next region in the vector of regions
@@ -88,7 +88,7 @@ public:
         @param model the model of evolution
         @param threshold the threshold for approximation
      */
-    void mergeUpperLower(Regions* &merged_regions, double upper_plength, Regions* lower_regions, double lower_plength, Alignment* aln, Model* model, double threshold);
+    void mergeUpperLower(Regions* &merged_regions, RealNumType upper_plength, Regions* lower_regions, RealNumType lower_plength, Alignment* aln, Model* model, RealNumType threshold);
     
     /**
     merge two lower likelihood vectors
@@ -102,28 +102,28 @@ public:
     @param cumulative_rate the cumulative rates of the reference sequence
     @param return_log_lh TRUE to return the log likelihood
      */
-    double mergeTwoLowers(Regions* &merged_regions, double plength1, Regions* regions2, double plength2, Alignment* aln, Model* model, double threshold, double* cumulative_rate, bool return_log_lh = false);
+    RealNumType mergeTwoLowers(Regions* &merged_regions, RealNumType plength1, Regions* regions2, RealNumType plength2, Alignment* aln, Model* model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
     
     /**
         compute total lh/upper left_right for root node
         @param blength the branch length; (-1 by default).
      */
-    Regions* computeTotalLhAtRoot(StateType num_states, Model* model, double blength = -1);
+    Regions* computeTotalLhAtRoot(StateType num_states, Model* model, RealNumType blength = -1);
     
     /**
         compute the likelihood by merging the lower lh with root frequencies
      */
-    double computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vector<PositionType>> &cumulative_base);
+    RealNumType computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vector<PositionType>> &cumulative_base);
     
     /**
         convert an entry 'O' into a normal nucleotide if its probability dominated others
      */
-    StateType simplifyO(double* &partial_lh, StateType ref_state, StateType num_states, double threshold);
+    StateType simplifyO(RealNumType* &partial_lh, StateType ref_state, StateType num_states, RealNumType threshold);
     
     /**
             calculate the placement cost
             @param child_regions: vector of regions of the new sample
      */
-    double calculatePlacementCost(Alignment* aln, Model* model, double* cumulative_rate, Regions* child_regions, double blength);
+    RealNumType calculatePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength);
 };
 #endif

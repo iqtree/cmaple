@@ -24,7 +24,7 @@ public:
     Regions* mid_branch_lh = NULL;
     
     // length of branch connecting to parent
-    double length;
+    RealNumType length;
     
     // next node in the circle of neighbors. For tips, circle = NULL
     Node* next;
@@ -41,8 +41,8 @@ public:
     // flexible string attributes
     map<string,string> str_attributes;
     
-    // flexible double attributes
-    map<string,double> double_attributes;
+    // flexible RealNumType attributes
+    map<string,RealNumType> real_number_attributes;
     
     /**
         constructor
@@ -85,17 +85,17 @@ public:
     /**
         get partial_lh of a node
      */
-    Regions* getPartialLhAtNode(Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate);
+    Regions* getPartialLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate);
     
     /**
         increase the length of a 0-length branch to resolve the inconsistency when updating regions in updatePartialLh()
      */
-    void updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, double default_blength, double min_blength, double max_blength);
+    void updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
     *  compute the total likelihood vector for a node.
     */
-    Regions* computeTotalLhAtNode(Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, bool is_root, bool update = true);
+    Regions* computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true);
 };
 
 #endif

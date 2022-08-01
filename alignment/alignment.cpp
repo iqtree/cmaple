@@ -110,7 +110,6 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
     new_seq_names.resize(seq_names.size());
     remain_seq_names = seq_names;
 
-    double startShorten = getRealTime();
     for (step = 0; step < 4; step++) {
         bool duplicated = false;
         unordered_set<string> namesSeenThisTime;
@@ -133,11 +132,6 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
             }
         }
         if (!duplicated) break;
-    }
-    
-    if (verbose_mode >= VB_MED) {
-        cout.precision(6);
-        cout << "Name shortening took " << (getRealTime() - startShorten) << " seconds." << endl;
     }
     
     if (step > 0) {
@@ -988,7 +982,7 @@ StateType Alignment::convertChar2State(char state) {
     }
 }
 
-void Alignment::sortSeqsByDistances(double hamming_weight)
+void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
 {
     ASSERT(ref_seq.size() > 0);
     

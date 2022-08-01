@@ -48,17 +48,17 @@ public:
         iteratively update partial_lh starting from the nodes in node_stack
         @param node_stack stack of nodes;
      */
-    void updatePartialLh(stack<Node*> &node_stack, double* cumulative_rate, double default_blength, double min_blength, double max_blength);
+    void updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
            seek a position for a sample placement starting at the start_node
      */
-    void seekPlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, double &best_lh_diff , bool &is_mid_branch, double &best_up_lh_diff, double &best_down_lh_diff, Node* &best_child, double* cumulative_rate, double default_blength, double min_blength_mid);
+    void seekPlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
 
     /**
            place a new sample on the tree
      */
-    void placeNewSample(Node* selected_node, Regions* sample, string seq_name, double best_lh_diff , bool is_mid_branch, double best_up_lh_diff, double best_down_lh_diff, Node* best_child, double* cumulative_rate, vector<vector<PositionType>> &cumulative_base, double default_blength, double max_blength, double min_blength);
+    void placeNewSample(Node* selected_node, Regions* sample, string seq_name, RealNumType best_lh_diff , bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector<vector<PositionType>> &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
 };
 
 #endif

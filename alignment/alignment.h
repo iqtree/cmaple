@@ -129,6 +129,6 @@ public:
      distance = num_differents * hamming_weight + num_ambiguities
      @param hamming_weight weight to calculate the hamming distance
     */
-    void sortSeqsByDistances(double hamming_weight);
+    void sortSeqsByDistances(RealNumType hamming_weight);
 };
 #endif

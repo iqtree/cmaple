@@ -145,10 +145,17 @@ struct Distribution {
   int pool_size;
 } ;
 
+
+typedef uint16_t StateType;
+
+typedef int32_t PositionType;
+
+typedef float RealNumType;
+
 /**
-        vector of double number
+        vector of real number number
  */
-typedef vector<double> DoubleVector;
+typedef vector<RealNumType> RealNumberVector;
 
 /**
         vector of int
@@ -178,10 +185,6 @@ typedef vector<char> CharVector;
 typedef vector<string> StrVector;
 
 typedef unsigned int UINT;
-
-typedef uint16_t StateType;
-
-typedef int32_t PositionType;
 
 /**
  *  Specify region types
@@ -268,7 +271,7 @@ public:
     /**
     *  weight to calculate the hamming distance
     */
-    double hamming_weight;
+    RealNumType hamming_weight;
     
     /**
         name of the substitution model (e.g., HKY, GTR, TN+I+G, JC+G, etc.)
@@ -283,7 +286,7 @@ public:
     /**
     *       threshold to ignore possible states with very low probabilities
      */
-    double threshold_prob;
+    RealNumType threshold_prob;
     
     /**
     *       the number to limit the attempts
@@ -303,32 +306,32 @@ public:
     /**
     *  threshold of loglh to continue explore the subtree
     */
-    double thresh_log_lh_subtree_explore;
+    RealNumType thresh_log_lh_subtree_explore;
     
     /**
     *  threshold of loglh to count failure
     */
-    double thresh_log_lh_failure;
+    RealNumType thresh_log_lh_failure;
     
     /**
     *  The minium branch length to try for placement
     */
-    double min_blength_factor;
+    RealNumType min_blength_factor;
     
     /**
     *  The maximum branch length to try for placement
     */
-    double max_blength_factor;
+    RealNumType max_blength_factor;
     
     /**
     *  The minium branch length (for mid-branch point) to try for placement
     */
-    double min_blength_mid_factor;
+    RealNumType min_blength_mid_factor;
     
     /**
     *  Threshold to determine whether a changed partial is different from its former value
     */
-    double thresh_diff_update;
+    RealNumType thresh_diff_update;
     
     /**
     *  Path to output aln
@@ -359,12 +362,12 @@ void outError(string error, bool quit = true);
 /*--------------------------------------------------------------*/
 
 /**
-        print double error messages then exit program
+        print error messages then exit program
  */
 void outError(const char *error, const char *msg, bool quit = true);
 
 /**
-        print double error messages then exit program
+        print error messages then exit program
  */
 void outError(const char *error, string msg, bool quit = true);
 
@@ -399,7 +402,7 @@ string convertPosTypeToString(PositionType number);
 string convertIntToString(int number);
 string convertInt64ToString(int64_t number);
 
-string convertDoubleToString(double number);
+string convertDoubleToString(RealNumType number);
 
 /**
  case-insensitive comparison between two strings
@@ -472,34 +475,34 @@ int64_t convert_int64(const char *str);
 int64_t convert_int64(const char *str, int &end_pos);
 
 /**
-        convert string to double, with error checking
+        convert string to a real number, with error checking
         @param str original string
-        @return the double
+        @return the RealNumType
  */
-double convert_double(const char *str);
+RealNumType convert_real_number(const char *str);
 
 /**
-        convert string to double, with error checking
+        convert string to real number, with error checking
         @param str original string
         @param end_pos end position
-        @return the double
+        @return the RealNumType
  */
-double convert_double(const char *str, int &end_pos);
+RealNumType convert_real_number(const char *str, int &end_pos);
 
 /**
-        parse an array of doubles (double*) from a tring
-        @param input_str: a string of  doubles; arr: the output array of doubles
+        parse an array of real numbers from a tring
+        @param input_str: a string of  real_numbers; arr: the output array of real_numbers
  */
-void convert_doubles(double* &arr, string input_str);
+void convert_real_numbers(RealNumType* &arr, string input_str);
 
 /**
-        convert string to double, or generate it from a distribution
+        convert string to real number, or generate it from a distribution
         @param str original string
         @param end_pos end position
         @param separator char separating elements
-        @return the double
+        @return the real number
  */
-double convert_double_with_distribution(const char *str, int &end_pos, char separator = ',');
+RealNumType convert_real_number_with_distribution(const char *str, int &end_pos, char separator = ',');
 
 /**
         convert comma-separated string to integer vector, with error checking
@@ -507,24 +510,24 @@ double convert_double_with_distribution(const char *str, int &end_pos, char sepa
         @param vec (OUT) integer vector
         @param separator char separating elements
  */
-void convert_double_vec(const char *str, DoubleVector &vec, char separator = ',');
+void convert_real_number_vec(const char *str, RealNumberVector &vec, char separator = ',');
 
 /**
-        convert comma-separated string to double vector or generate double vector from distributions
-        @param str original string with doubles separated by comma
-        @param vec (OUT) double vector
+        convert comma-separated string to real number vector or generate real number vector from distributions
+        @param str original string with real numbers separated by comma
+        @param vec (OUT) real number vector
         @param separator char separating elements
  */
-void convert_double_vec_with_distributions(const char *str, DoubleVector &vec, char separator = ',');
+void convert_real_number_vec_with_distributions(const char *str, RealNumberVector &vec, char separator = ',');
 
 /**
-        convert separated string to an array of double number (double*) or generate them from distributions
-        @param tmp_str original string with doubles separated by separator
-        @param array an array of double number (double*)
+        convert separated string to an array of real number (RealNumType*) or generate them from distributions
+        @param tmp_str original string with real numbers separated by separator
+        @param array an array of RealNumType number (RealNumType*)
         @param num_items the number of items in the array
         @param separator char separating elements
  */
-void convert_double_array_with_distributions(string tmp_str, double* array, int num_items, char separator);
+void convert_real_number_array_with_distributions(string tmp_str, RealNumType* array, int num_items, char separator);
 
 /**
         normalize state frequencies so that sum of them is equal to 1
@@ -532,7 +535,7 @@ void convert_double_array_with_distributions(string tmp_str, double* array, int 
         @param num_states the number of states
         @param total_freq sum of all original state frequencies
  */
-void normalize_frequencies_from_index(double* freqs, int num_states, int starting_index);
+void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index);
 
 /**
         normalize entries so that sum of them is equal to 1
@@ -540,14 +543,14 @@ void normalize_frequencies_from_index(double* freqs, int num_states, int startin
         @param num_entries the number of entries
         @param sum_entries sum of all original state frequencies
  */
-void normalize_arr(double* entries, int num_entries, double sum_entries = -1);
+void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entries = -1);
 
 /**
  * Convert seconds to hour, minute, second
  * @param sec
  * @return string represent hour, minute, second
  */
-string convert_time(const double sec);
+string convert_time(const RealNumType sec);
 
 
 /**
@@ -566,16 +569,16 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size);
         @param upper (OUT) upper bound of the range
         @param step_size (OUT) step size of the range
  */
-void convert_range(const char *str, double &lower, double &upper, double &step_size);
+void convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size);
 
 /**
-        reinitialize an array of double (double*)
-        @param arr the input double*
+        reinitialize an array of real number (RealNumType*)
+        @param arr the input RealNumType*
         @param size the size of the input array
         @param delete_first TRUE to delete the current array before reinitializing
         @param set_zero TRUE to initialize all new items at 0
  */
-void reinitDoubleArr(double* &arr, StateType size, bool delete_first = true, bool set_zero = true);
+void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first = true, bool set_zero = true);
 
 void convert_string_vec(const char *str, StrVector &str_vec, char separator = ',');
 

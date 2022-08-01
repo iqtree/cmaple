@@ -42,8 +42,8 @@ void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
     
     // init variables
     PositionType seq_length = ref_seq.size();
-    root_freqs = new double[num_states];
-    root_log_freqs = new double[num_states];
+    root_freqs = new RealNumType[num_states];
+    root_log_freqs = new RealNumType[num_states];
     
     // init root_freqs
     for (StateType i = 0; i < num_states; i++)
@@ -65,7 +65,7 @@ void Model::updateMutationMat(StateType num_states)
 {
     // init the "zero" mutation matrix
     string model_rates = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
-    convert_doubles(mutation_mat, model_rates);
+    convert_real_numbers(mutation_mat, model_rates);
     
     // init UNREST model
     if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0)
@@ -73,8 +73,8 @@ void Model::updateMutationMat(StateType num_states)
         for (int i = 0; i <  num_states; i++)
         {
             int start_index = i * num_states;
-            double sum_rate = 0;
-            double inverse_root_freq = 1 / root_freqs[i];
+            RealNumType sum_rate = 0;
+            RealNumType inverse_root_freq = 1 / root_freqs[i];
             
             for (int j = 0; j <  num_states; j++)
                 if (i != j)
@@ -93,8 +93,8 @@ void Model::updateMutationMat(StateType num_states)
         for (int i = 0; i <  num_states; i++)
         {
             int start_index = i * num_states;
-            double sum_rate = 0;
-            double inverse_root_freq = 1 / root_freqs[i];
+            RealNumType sum_rate = 0;
+            RealNumType inverse_root_freq = 1 / root_freqs[i];
             
             for (int j = 0; j <  num_states; j++)
                 if (i != j)
@@ -112,7 +112,7 @@ void Model::updateMutationMat(StateType num_states)
         outError("Unsupported model! Please check and try again!");
     
     // compute the total rate regarding the root freqs
-    double total_rate = 0;
+    RealNumType total_rate = 0;
     for (int i = 0; i < num_states; i++)
         total_rate -= root_freqs[i] * mutation_mat[i * (num_states + 1)];
     
@@ -133,10 +133,10 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     {
         // init mutation_mat
         string model_rates = "0.0 0.333 0.333 0.333 0.333 0.0 0.333 0.333 0.333 0.333 0.0 0.333 0.333 0.333 0.333 0.0";
-        convert_doubles(mutation_mat, model_rates);
+        convert_real_numbers(mutation_mat, model_rates);
         
         // update root_freqs
-        double log_freq = log(0.25);
+        RealNumType log_freq = log(0.25);
         for (int i = 0; i < num_states; i++)
         {
             root_freqs[i] = 0.25;
@@ -147,20 +147,20 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     {
         // init pseu_mutation_counts
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
-        convert_doubles(pseu_mutation_count, model_rates);
+        convert_real_numbers(pseu_mutation_count, model_rates);
         
         updateMutationMat(num_states);
     }
 }
 
-void Model::computeCumulativeRate(double *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
+void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
 {
     PositionType sequence_length = aln->ref_seq.size();
     ASSERT(sequence_length > 0);
     
     // init cumulative_rate
     if (!cumulative_rate)
-        cumulative_rate = new double[sequence_length];
+        cumulative_rate = new RealNumType[sequence_length];
     
     // init cumulative_base and cumulative_rate
     cumulative_base.resize(sequence_length);
@@ -180,20 +180,20 @@ void Model::computeCumulativeRate(double *&cumulative_rate, vector<vector<Positi
         
 }
 
-void Model::updateMutationMatEmpirical(double *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
+void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
 {
     StateType num_states = aln->num_states;
     
     // backup the current mutation matrix
-    double* tmp_mutation_mat = new double[num_states * num_states];
-    memcpy(tmp_mutation_mat, mutation_mat, num_states * num_states * sizeof(double));
+    RealNumType* tmp_mutation_mat = new RealNumType[num_states * num_states];
+    memcpy(tmp_mutation_mat, mutation_mat, num_states * num_states * sizeof(RealNumType));
     
     // update the mutation matrix regarding the pseu_mutation_count
     updateMutationMat(num_states);
     
     // update cumulative_rate if the mutation matrix changes more than a threshold
-    double change_thresh = 1e-3;
-    double update = false;
+    RealNumType change_thresh = 1e-3;
+    bool update = false;
     for (StateType j = 0; j < num_states; j++)
     {
         StateType index = j * (num_states + 1);

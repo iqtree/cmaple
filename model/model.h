@@ -12,9 +12,9 @@ class Model
 
 public:
     string model_name;
-    double *root_freqs, *root_log_freqs;
-    double *mutation_mat;
-    double* pseu_mutation_count;
+    RealNumType *root_freqs, *root_log_freqs;
+    RealNumType *mutation_mat;
+    RealNumType* pseu_mutation_count;
     
 	/**
 		constructor
@@ -46,12 +46,12 @@ public:
     /**
         compute cumulative rate of the ref genome
      */
-    void computeCumulativeRate(double *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln);
+    void computeCumulativeRate(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln);
     
     /**
         Update the mutation matrix periodically from the empirical count of mutations
      */
-    void updateMutationMatEmpirical(double *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln);
+    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln);
     
     /**
         update pseudocounts from new sample to improve the estimate of the substitution rates

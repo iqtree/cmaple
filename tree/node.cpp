@@ -6,7 +6,7 @@ Node::Node(bool is_top_node)
     seq_name = "";
     length = 0;
     if (is_top_node)
-        double_attributes[IS_TOP_NODE] = 1;
+        real_number_attributes[IS_TOP_NODE] = 1;
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
@@ -33,7 +33,7 @@ Node::Node(string n_seq_name)
     id = -1;
     seq_name = n_seq_name;
     length = 0;
-    double_attributes[IS_TOP_NODE] = 1;
+    real_number_attributes[IS_TOP_NODE] = 1;
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
@@ -58,12 +58,12 @@ Node* Node::getTopNode()
     Node* next_node;
     Node* node = this;
     
-    if (node->double_attributes.find(IS_TOP_NODE) != node->double_attributes.end())
+    if (node->real_number_attributes.find(IS_TOP_NODE) != node->real_number_attributes.end())
         return node;
     
     FOR_NEXT(node, next_node)
     {
-        if (next_node->double_attributes.find(IS_TOP_NODE) != next_node->double_attributes.end())
+        if (next_node->real_number_attributes.find(IS_TOP_NODE) != next_node->real_number_attributes.end())
             return next_node;
     }
     
@@ -93,7 +93,7 @@ string Node::exportString()
     return "";
 }
 
-Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate)
+Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate)
 {
     // if partial_lh has not yet computed (~NULL) -> compute it from next nodes
     if (!partial_lh)
@@ -105,7 +105,7 @@ Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, double threshold
         if (next)
         {
             // if node is a top node -> partial_lh is the lower lh regions
-            if (double_attributes.find(IS_TOP_NODE) != double_attributes.end())
+            if (real_number_attributes.find(IS_TOP_NODE) != real_number_attributes.end())
             {
                 // extract the two lower vectors of regions
                 Node* next_node_1 = next;
@@ -121,12 +121,12 @@ Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, double threshold
             {
                 // extract the upper and the lower vectors of regions
                 Regions* upper_regions, *lower_regions;
-                double upper_blength, lower_blength;
+                RealNumType upper_blength, lower_blength;
                 
                 Node* next_node_1 = next;
                 Node* next_node_2 = next_node_1->next;
                 
-                if (next_node_1->double_attributes.find(IS_TOP_NODE) != next_node_1->double_attributes.end())
+                if (next_node_1->real_number_attributes.find(IS_TOP_NODE) != next_node_1->real_number_attributes.end())
                 {
                     upper_regions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                     upper_blength = next_node_1->length;
@@ -154,7 +154,7 @@ Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, double threshold
     return partial_lh;
 }
 
-void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, double default_blength, double min_blength, double max_blength)
+void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength)
 {
     // get the top node in the phylo-node
     Node* top_node = getTopNode();
@@ -162,13 +162,13 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
     Regions* upper_left_right_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
     Regions* lower_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
     
-    double best_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, default_blength);
-    double best_length = default_blength;
+    RealNumType best_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, default_blength);
+    RealNumType best_length = default_blength;
     
     while (best_length > min_blength)
     {
-        double new_blength = best_length/2;
-        double new_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
+        RealNumType new_blength = best_length/2;
+        RealNumType new_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
         
         if (new_lh > best_lh)
         {
@@ -183,8 +183,8 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
     {
         while (best_length < max_blength)
         {
-            double new_blength = best_length * 2;
-            double new_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
+            RealNumType new_blength = best_length * 2;
+            RealNumType new_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
             if (new_lh > best_lh)
             {
                 best_lh = new_lh;
@@ -206,7 +206,7 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
     node_stack.push(top_node->neighbor);
 }
 
-Regions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, double threshold_prob, double* cumulative_rate, bool is_root, bool update)
+Regions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update)
 {
     Regions* new_regions = NULL;
     

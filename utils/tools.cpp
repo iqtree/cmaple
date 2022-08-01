@@ -126,7 +126,7 @@ string convertInt64ToString(int64_t number) {
     return ss.str(); //return a string with the contents of the stream
 }
 
-string convertDoubleToString(double number) {
+string convertDoubleToString(RealNumType number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
@@ -288,9 +288,9 @@ int64_t convert_int64(const char *str, int &end_pos) {
 }
 
 
-double convert_double(const char *str) {
+RealNumType convert_real_number(const char *str) {
     char *endptr;
-    double d = strtod(str, &endptr);
+    RealNumType d = strtod(str, &endptr);
     if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF || *endptr != 0) {
         string err = "Expecting floating-point number, but found \"";
         err += str;
@@ -300,9 +300,9 @@ double convert_double(const char *str) {
     return d;
 }
 
-double convert_double(const char *str, int &end_pos) {
+RealNumType convert_real_number(const char *str, int &end_pos) {
 	char *endptr;
-	double d = strtod(str, &endptr);
+	RealNumType d = strtod(str, &endptr);
 	if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF) {
 		string err = "Expecting floating-point number, but found \"";
 		err += str;
@@ -313,13 +313,13 @@ double convert_double(const char *str, int &end_pos) {
 	return d;
 }
 
-void convert_doubles(double* &arr, string input_str)
+void convert_real_numbers(RealNumType* &arr, string input_str)
 {
-    // count the number of input doubles
-    int num_doubles = count(input_str.begin(), input_str.end(), ' ') + 1;
+    // count the number of input real_numbers
+    int number_count = count(input_str.begin(), input_str.end(), ' ') + 1;
     
     // init mutation_mat
-    arr = new double[num_doubles];
+    arr = new RealNumType[number_count];
     
     // parse rates
     stringstream ss(input_str);
@@ -331,11 +331,11 @@ void convert_doubles(double* &arr, string input_str)
     }
 }
 
-void convert_double_vec(const char *str, DoubleVector &vec, char separator) {
+void convert_real_number_vec(const char *str, RealNumberVector &vec, char separator) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
     do {
-		double d = strtod(beginptr, &endptr);
+		RealNumType d = strtod(beginptr, &endptr);
 
 		if ((d == 0.0 && endptr == beginptr) || fabs(d) == HUGE_VALF) {
 			string err = "Expecting floating-point number, but found \"";
@@ -349,7 +349,7 @@ void convert_double_vec(const char *str, DoubleVector &vec, char separator) {
     } while (*endptr != 0);
 }
 
-string convert_time(const double sec) {
+string convert_time(const RealNumType sec) {
     int sec_int = (int) floor(sec);
     int secs = sec_int % 60;
     int mins = (sec_int % 3600) / 60;
@@ -402,11 +402,11 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
     step_size = d;
 }
 
-void convert_range(const char *str, double &lower, double &upper, double &step_size) {
+void convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size) {
     char *endptr;
 
     // parse the lower bound of the range
-    double d = strtod(str, &endptr);
+    RealNumType d = strtod(str, &endptr);
     if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF || (*endptr != 0 && *endptr != ':')) {
         string err = "Expecting floating-point number, but found \"";
         err += str;
@@ -414,7 +414,7 @@ void convert_range(const char *str, double &lower, double &upper, double &step_s
         outError(err);
     }
     //lower = d;
-    double d_save = d;
+    RealNumType d_save = d;
     upper = d;
     if (*endptr == 0) return;
 
@@ -445,14 +445,14 @@ void convert_range(const char *str, double &lower, double &upper, double &step_s
     step_size = d;
 }
 
-void reinitDoubleArr(double* &arr, StateType size, bool delete_first, bool set_zero)
+void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool set_zero)
 {
     // delete the current array
     if (delete_first && arr)
         delete [] arr;
     
     // request memory allocation for the new array
-    arr = new double[size];
+    arr = new RealNumType[size];
     if (set_zero)
         for (StateType i = 0; i < size; i++)
             arr[i] = 0;
@@ -476,7 +476,7 @@ void convert_string_vec(const char *str, StrVector &vec, char separator) {
 
 }
 
-void normalize_arr(double* entries, int num_entries, double sum_entries)
+void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entries)
 {
     ASSERT(num_entries > 0);
     // calculate the sum_entries if it's not provided
@@ -499,11 +499,11 @@ void normalize_arr(double* entries, int num_entries, double sum_entries)
     }
 }
 
-void normalize_frequencies_from_index(double* freqs, int num_states, int starting_index)
+void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index)
 {
     ASSERT(num_states > 0);
     // calculate the total_freqs
-    double total_freqs = 0;
+    RealNumType total_freqs = 0;
     for (int i = starting_index; i < starting_index+num_states; i++)
         total_freqs += freqs[i];
     
@@ -598,7 +598,7 @@ void parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --hamming-weight <WEIGHT>");
                 
-                params.hamming_weight = convert_double(argv[cnt]);
+                params.hamming_weight = convert_real_number(argv[cnt]);
                 
                 if (params.hamming_weight < 0)
                     outError("<WEIGHT> must not be negative!");
@@ -623,7 +623,7 @@ void parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --thresh-prob <PROB_THRESH>");
                 
-                params.threshold_prob = convert_double(argv[cnt]);
+                params.threshold_prob = convert_real_number(argv[cnt]);
                 
                 if (params.threshold_prob <= 0)
                     outError("<PROB_THRESH> must be positive!");

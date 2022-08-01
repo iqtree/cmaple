@@ -29,13 +29,13 @@ private:
     
 public:
     // ~length of the path between the current phylo node and the node where the likelihood is calculated
-    double plength_observation;
+    RealNumType plength_observation;
     
     // distance from rootto the current phylo node
-    double plength_from_root;
+    RealNumType plength_from_root;
     
     // the relative partial likelihood
-    double* likelihood;
+    RealNumType* likelihood;
     
     /**
     *  Region constructor
@@ -45,7 +45,7 @@ public:
     /**
     *  Region constructor
     */
-    Region(StateType n_type, PositionType n_position, double n_plength_observation = -1, double n_plength_from_root = -1, double* n_likelihood = NULL);
+    Region(StateType n_type, PositionType n_position, RealNumType n_plength_observation = -1, RealNumType n_plength_from_root = -1, RealNumType* n_likelihood = NULL);
     
     /**
     *  Region constructor
