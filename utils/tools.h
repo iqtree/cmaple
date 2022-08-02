@@ -150,7 +150,7 @@ typedef uint16_t StateType;
 
 typedef int32_t PositionType;
 
-typedef float RealNumType;
+typedef double RealNumType;
 
 /**
         vector of real number number
