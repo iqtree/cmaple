@@ -729,7 +729,7 @@ InputType detectInputFile(const char *input_file) {
                 if (isdigit(ch)) return IN_PHYLIP;
                 return IN_OTHER;
         }
-    } catch (ios::failure) {
+    } catch (ios::failure const&) {
         outError("Cannot read file ", input_file);
     } catch (...) {
         outError("Cannot read file ", input_file);

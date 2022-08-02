@@ -119,7 +119,7 @@ void CMaple::buildInitialTree()
     root->total_lh = root->partial_lh->computeTotalLhAtRoot(num_states, model);
     
     // iteratively place other samples (sequences)
-    for (PositionType i = 1; i < aln->size(); i++)
+    for (PositionType i = 1; i < (PositionType) aln->size(); i++)
     {
         Sequence* sequence = aln->at(i);
         

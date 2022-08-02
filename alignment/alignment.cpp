@@ -114,7 +114,7 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
         bool duplicated = false;
         unordered_set<string> namesSeenThisTime;
         //Set of shorted names seen so far, this iteration
-        for (i = 0; i < seq_names.size(); i++) {
+        for (i = 0; i < (PositionType) seq_names.size(); i++) {
             if (remain_seq_names[i].empty()) continue;
             size_t pos = remain_seq_names[i].find_first_of(" \t");
             if (pos == string::npos) {
@@ -135,7 +135,7 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
     }
     
     if (step > 0) {
-        for (i = 0; i < seq_names.size(); i++)
+        for (i = 0; i < (PositionType) seq_names.size(); i++)
             if (seq_names[i] != new_seq_names[i]) {
                 cout << "NOTE: Change sequence name '" << seq_names[i] << "' -> " << new_seq_names[i] << endl;
             }
@@ -194,7 +194,7 @@ void Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_
                 err_str << "Line " << line_num << ": Sequence " << seq_names[seq_id] << " has wrong sequence length " << sequences[seq_id].length() << endl;
                 throw err_str.str();
             }
-            if (sequences[seq_id].length() > old_len)
+            if ((PositionType) sequences[seq_id].length() > old_len)
                 seq_id++;
             if (seq_id == nseq) {
                 seq_id = 0;
@@ -246,12 +246,12 @@ string Alignment::generateRef(StrVector sequences, StrVector seq_names, bool onl
     
     // determine a character for each site one by one
     PositionType threshold = sequences.size()/2;
-    for (PositionType i = 0; i < ref_str.length(); i++)
+    for (PositionType i = 0; i < (PositionType) ref_str.length(); i++)
     {
         // Init a map to count the number of times each character appears
         std::map<char, PositionType> num_appear;
         
-        for (PositionType j = 0; j < sequences.size(); j++)
+        for (PositionType j = 0; j < (PositionType) sequences.size(); j++)
         {
             // update num_appear for the current character
             PositionType count = num_appear[sequences[j][i]] + 1;
@@ -335,7 +335,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
     Sequence* sequence = NULL;
     
     // extract mutations of sequences one by one
-    for (PositionType i = 0; i < str_sequences.size(); i++)
+    for (PositionType i = 0; i < (PositionType) str_sequences.size(); i++)
     {
         // validate the sequence length
         string str_sequence = str_sequences[i];
@@ -355,7 +355,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
         // init dummy variables
         int state = 0;
         PositionType length = 0;
-        for (PositionType pos = 0; pos < ref_sequence.length(); pos++)
+        for (PositionType pos = 0; pos < (PositionType) ref_sequence.length(); pos++)
         {
             switch (state)
             {
@@ -447,7 +447,7 @@ void Alignment::parseRefSeq(string ref_sequence)
     // transform ref_sequence to uppercase
     transform(ref_sequence.begin(), ref_sequence.end(), ref_sequence.begin(), ::toupper);
     
-    for (PositionType i = 0; i < ref_sequence.length(); i++)
+    for (PositionType i = 0; i < (PositionType) ref_sequence.length(); i++)
     {
         ref_seq[i] = convertChar2State(ref_sequence[i]);
         
@@ -471,7 +471,6 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     // init dummy variables
     string seq_name = "";
     vector<Mutation*> mutations;
-    PositionType current_pos = 1;
     ifstream in = ifstream(diff_path);
     PositionType line_num = 1;
     string line;
@@ -539,7 +538,6 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
                 
                 // reset dummy variables
                 seq_name = "";
-                current_pos = 1;
                 mutations.clear();
             }
             
@@ -569,7 +567,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             // extract <Position>
             ssin >> tmp;
             PositionType pos = convert_positiontype(tmp.c_str());
-            if (pos <= 0 || pos > ref_seq.size())
+            if (pos <= 0 || pos > (PositionType) ref_seq.size())
                 outError("<Position> must be greater than 0 and less than the reference sequence length (" + convertPosTypeToString(ref_seq.size()) + ")!");
             
             // extract <Length>
@@ -582,7 +580,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
                     length = convert_positiontype(tmp.c_str());
                     if (length <= 0)
                         outError("<Length> must be greater than 0!");
-                    if (length + pos - 1 > ref_seq.size())
+                    if (length + pos - 1 > (PositionType) ref_seq.size())
                         outError("<Length> + <Position> must be less than the reference sequence length (" + convertPosTypeToString(ref_seq.size()) + ")!");
                 }
                 else
@@ -594,9 +592,6 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
                 mutations.push_back(new MutationIndel(state, pos - 1, length));
             else
                 mutations.push_back(new Mutation(state, pos - 1));
-            
-            // update current_pos
-            current_pos = pos + length;
         }
     }
     
@@ -626,7 +621,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
     // init dummy variables
     string seq_name = "";
     PositionType current_pos = 1;
-    PositionType seq_length;
+    PositionType seq_length = 0;
     ifstream in = ifstream(diff_path);
     ofstream out = ofstream(output_file);
     PositionType line_num = 1;
@@ -1063,7 +1058,7 @@ void Alignment::extractDiffFile(Params* params)
         outError("Empty input sequences. Please check and try again!");
     // make sure all sequences have the same length
     if (detectInputFile(params->aln_path) == IN_FASTA)
-        for (PositionType i = 0; i < sequences.size(); i++)
+        for (PositionType i = 0; i < (PositionType) sequences.size(); i++)
         {
             if (sequences[i].length() != sequences[0].length())
                 outError("Sequence " + seq_names[i] + " has a different length compared to the first sequence.");

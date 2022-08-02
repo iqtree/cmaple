@@ -233,9 +233,9 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
         // otherwise, change in likelihoods is coming from a child.
         else
         {
-            Node* top_node;
-            Node* other_next_node;
-            Node* next_node;
+            Node* top_node = NULL;
+            Node* other_next_node = NULL;
+            Node* next_node = NULL;
             FOR_NEXT(node, next_node)
             {
                 if (next_node->real_number_attributes.find(IS_TOP_NODE) != next_node->real_number_attributes.end())
@@ -568,12 +568,12 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
 {
     // dummy variables
     RealNumType best_child_lh;
-    RealNumType best_child_split;
+    RealNumType best_child_split = 0;
     RealNumType best_parent_lh;
-    RealNumType best_parent_split;
+    RealNumType best_parent_split = 0;
     Regions* best_parent_regions = NULL;
     Regions* best_child_regions = NULL;
-    RealNumType best_root_blength;
+    RealNumType best_root_blength = -1;
     StateType num_states = aln->num_states;
     
     // try to place the new sample as a descendant of a mid-branch point
@@ -776,7 +776,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
             best_child_lh = -DBL_MAX;
         
         // if node is root, try to place as sibling of the current root.
-        RealNumType old_root_lh;
+        RealNumType old_root_lh = -DBL_MAX;
         if (root == selected_node)
         {
             old_root_lh = selected_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->computeAbsoluteLhAtRoot(aln, model, cumulative_base);

@@ -36,7 +36,7 @@ void Regions::copyRegions(Regions* n_regions, StateType num_states)
     
     // clone regions one by one
     resize(n_regions->size());
-    for (PositionType i = 0; i < n_regions->size(); i++)
+    for (PositionType i = 0; i < (PositionType) n_regions->size(); i++)
     {
         Region* region = n_regions->getRegion(i);
         at(i) = new Region(region, num_states, true);
@@ -49,7 +49,7 @@ void Regions::mergeRegionR(StateType num_states, RealNumType threshold)
     PositionType start_R_index = -1;
     
     // browse regions one by one to detect identical sequences of R regions
-    for (PositionType i = 0; i < size(); i++)
+    for (PositionType i = 0; i < (PositionType) size(); i++)
     {
         // get the current region
         Region* current_region = getRegion(i);
@@ -96,14 +96,14 @@ void Regions::mergeRegionR(StateType num_states, RealNumType threshold)
 
 void Regions::move2NextRegion(Regions* sequence, PositionType region_index, Region* &region, PositionType &current_pos, PositionType &end_pos, PositionType seq_length)
 {
-    ASSERT(region_index < sequence->size());
+    ASSERT(region_index < (PositionType) sequence->size());
     
     // get the current region
     region = sequence->getRegion(region_index);
     
     // get the current position and end position
     current_pos = region->position;
-    PositionType length = (region_index < sequence->size() - 1 ? sequence->getRegion(region_index + 1)->position : seq_length) - current_pos;
+    PositionType length = (region_index < (PositionType) sequence->size() - 1 ? sequence->getRegion(region_index + 1)->position : seq_length) - current_pos;
     end_pos = current_pos + length - 1;
 }
 
@@ -1158,7 +1158,7 @@ RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vecto
     PositionType seq_length = aln->ref_seq.size();
     
     // browse regions one by one to compute the likelihood of each region
-    for (PositionType region_index = 0; region_index < size(); region_index++)
+    for (PositionType region_index = 0; region_index < (PositionType) size(); region_index++)
     {
         Region* region = getRegion(region_index);
         
@@ -1166,7 +1166,7 @@ RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vecto
         if (region->type == TYPE_R)
         {
             PositionType start_pos = region->position;
-            PositionType end_pos = (region_index == size() - 1 ? seq_length - 1 : getRegion(region_index + 1)->position - 1);
+            PositionType end_pos = (region_index == ((PositionType) size()) - 1 ? seq_length - 1 : getRegion(region_index + 1)->position - 1);
             
             for (StateType i = 0; i < num_states; i++)
                 log_lh += model->root_log_freqs[i] * (cumulative_base[end_pos][i] - (start_pos == 0 ? 0 : cumulative_base[start_pos - 1][i]));
@@ -1180,7 +1180,7 @@ RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vecto
             RealNumType tot = 0;
             for (StateType i = 0; i < num_states; i++)
                 tot += model->root_freqs[i] * region->likelihood[i];
-                log_factor *= tot;
+            log_factor *= tot;
         }
     }
 
