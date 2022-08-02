@@ -113,7 +113,7 @@ public:
     /**
         compute the likelihood by merging the lower lh with root frequencies
      */
-    RealNumType computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vector<PositionType>> &cumulative_base);
+    RealNumType computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector< vector<PositionType> > &cumulative_base);
     
     /**
         convert an entry 'O' into a normal nucleotide if its probability dominated others

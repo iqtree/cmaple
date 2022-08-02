@@ -18,3 +18,8 @@ Mutation::Mutation(StateType n_type, PositionType n_position)
     type = n_type;
     position = n_position;
 }
+
+Mutation::~Mutation()
+{
+    // do nothing
+}

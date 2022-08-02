@@ -28,6 +28,11 @@ public:
     Mutation(StateType n_type, PositionType n_position);
     
     /**
+    *  Mutation deconstructor
+    */
+    virtual ~Mutation();
+    
+    /**
     *  return Length of the current mutation, default: 1
     */
     virtual PositionType getLength() { return 1;};

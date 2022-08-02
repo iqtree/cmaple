@@ -1149,7 +1149,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
     return log_lh;
 }
 
-RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector<vector<PositionType>> &cumulative_base)
+RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector< vector<PositionType> > &cumulative_base)
 {
     // dummy variables
     RealNumType log_lh = 0;

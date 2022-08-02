@@ -250,7 +250,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
             RealNumType other_next_node_distance = other_next_node->length;
             
             Regions* this_node_lower_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-            Regions* this_node_upper_left_right_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+            // Regions* this_node_upper_left_right_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
             Regions* next_node_upper_left_right_regions = other_next_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
             
             // update lower likelihoods
@@ -564,7 +564,7 @@ void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regi
     }
 }
 
-void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name, RealNumType best_lh_diff , bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector<vector<PositionType>> &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
+void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name, RealNumType best_lh_diff , bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
 {
     // dummy variables
     RealNumType best_child_lh;

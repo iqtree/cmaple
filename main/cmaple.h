@@ -23,7 +23,7 @@ private:
 public:
     // model-related params
     RealNumType *cumulative_rate;
-    vector<vector<PositionType>> cumulative_base;
+    vector< vector<PositionType> > cumulative_base;
     
     // The phylogenetic tree
     Tree* tree;

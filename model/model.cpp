@@ -153,7 +153,7 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     }
 }
 
-void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
+void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln)
 {
     PositionType sequence_length = aln->ref_seq.size();
     ASSERT(sequence_length > 0);
@@ -180,7 +180,7 @@ void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector<vector<P
         
 }
 
-void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln)
+void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln)
 {
     StateType num_states = aln->num_states;
     

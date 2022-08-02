@@ -46,12 +46,12 @@ public:
     /**
         compute cumulative rate of the ref genome
      */
-    void computeCumulativeRate(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln);
+    void computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln);
     
     /**
         Update the mutation matrix periodically from the empirical count of mutations
      */
-    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector<vector<PositionType>> &cumulative_base, Alignment* aln);
+    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln);
     
     /**
         update pseudocounts from new sample to improve the estimate of the substitution rates

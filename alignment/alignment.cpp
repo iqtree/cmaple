@@ -984,10 +984,7 @@ StateType Alignment::convertChar2State(char state) {
 
 void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
 {
-    ASSERT(ref_seq.size() > 0);
-    
-    // init dummy variables
-    PositionType seq_length = ref_seq.size();
+   // init dummy variables
     PositionType num_seqs = size();
     PositionType *distances = new PositionType[num_seqs];
     PositionType *sequence_indexes = new PositionType[num_seqs];
