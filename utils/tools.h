@@ -337,6 +337,11 @@ public:
     *  Path to output aln
     */
     char* output_aln;
+    
+    /**
+    *       the number of attempts to improve the tree with SPR moves
+    */
+    int num_tree_improvement;
 };
 
 /*--------------------------------------------------------------*/

@@ -116,7 +116,7 @@ void CMaple::buildInitialTree()
     Node* root = new Node(root_sequence->seq_name);
     tree->root = root;
     root->partial_lh = root_sequence->getLowerLhVector(aln->ref_seq.size(), num_states, aln->seq_type);
-    root->total_lh = root->partial_lh->computeTotalLhAtRoot(num_states, model);
+    root->computeTotalLhAtNode(aln, model, tree->params->threshold_prob, cumulative_rate, true);
     
     // iteratively place other samples (sequences)
     for (PositionType i = 1; i < (PositionType) aln->size(); i++)
@@ -154,6 +154,27 @@ void CMaple::buildInitialTree()
     // show the runtime for building an initial tree
     auto end = getRealTime();
     cout << " - Time spent on building an initial tree: " << end - start << endl;
+    
+    // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
+    tree->refreshAllLhs(cumulative_rate, default_blength, max_blength, min_blength);
+}
+
+void CMaple::optimizeTree()
+{
+    // record the start time
+    auto start = getRealTime();
+    
+    for (int i = 0; i < tree->params->num_tree_improvement; i++)
+    {
+        // first, make all nodes dirty
+        tree->setAllNodeDirty();
+        
+        
+    }
+    
+    // show the runtime for optimize the tree
+    auto end = getRealTime();
+    cout << " - Time spent on optimizing the tree: " << end - start << endl;
 }
 
 void CMaple::doInference()
@@ -162,6 +183,7 @@ void CMaple::doInference()
     buildInitialTree();
     
     // 2. Optimize the tree with SPR
+    optimizeTree();
 }
 
 void CMaple::postInference()

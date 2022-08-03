@@ -6,6 +6,17 @@
 #define TREE_H
 
 class Tree {
+private:
+    /**
+           traverse the intial tree from root to re-calculate all lower likelihoods regarding the latest/final estimated model parameters
+     */
+    void refreshAllLowerLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    
+    /**
+           traverse the intial tree from root to re-calculate all non-lower likelihoods regarding the latest/final estimated model parameters
+     */
+    void refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    
 public:
     // parameters
     Params *params;
@@ -51,14 +62,24 @@ public:
     void updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
-           seek a position for a sample placement starting at the start_node
+        seek a position for a sample placement starting at the start_node
      */
     void seekPlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
 
     /**
-           place a new sample on the tree
+        place a new sample on the tree
      */
     void placeNewSample(Node* selected_node, Regions* sample, string seq_name, RealNumType best_lh_diff , bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    
+    /**
+        traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
+     */
+    void refreshAllLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    
+    /**
+           traverse the tree to set the dirty flag (which is used to prevent traversing the same part of the tree multiple times) of all nodes to TRUE
+     */
+    void setAllNodeDirty();
 };
 
 #endif

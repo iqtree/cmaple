@@ -73,6 +73,11 @@ public:
     bool isLeave();
     
     /**
+        TRUE if this node is a top node
+     */
+    bool isTopNode();
+    
+    /**
         get the top node
      */
     Node* getTopNode();
@@ -88,7 +93,7 @@ public:
     Regions* getPartialLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate);
     
     /**
-        increase the length of a 0-length branch to resolve the inconsistency when updating regions in updatePartialLh()
+        increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
      */
     void updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     

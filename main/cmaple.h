@@ -20,6 +20,11 @@ private:
      */
     void buildInitialTree();
     
+    /**
+        Optimize the current tree
+     */
+    void optimizeTree();
+    
 public:
     // model-related params
     RealNumType *cumulative_rate;

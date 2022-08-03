@@ -121,7 +121,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
             parent_upper_regions = node->getTopNode()->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
             
         // change in likelihoods is coming from parent node
-        if (node->real_number_attributes.find(IS_TOP_NODE) != node->real_number_attributes.end())
+        if (node->isTopNode())
         {
             // if necessary, update the total probabilities at the mid node.
             if (node->length > 0)
@@ -238,7 +238,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
             Node* next_node = NULL;
             FOR_NEXT(node, next_node)
             {
-                if (next_node->real_number_attributes.find(IS_TOP_NODE) != next_node->real_number_attributes.end())
+                if (next_node->isTopNode())
                     top_node = next_node;
                 else
                     other_next_node = next_node;
@@ -1085,7 +1085,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
                 
                 new_root->partial_lh = best_parent_regions;
                 best_parent_regions = NULL;
-                new_root->total_lh = new_root->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->computeTotalLhAtRoot(num_states, model);
+                new_root->total_lh = new_root->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, true);
 
                 next_node_1->partial_lh = selected_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->computeTotalLhAtRoot(num_states, model, best_root_blength);
                 next_node_2->partial_lh = sample->computeTotalLhAtRoot(num_states, model, best_length2);
@@ -1273,4 +1273,282 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
         delete best_parent_regions;
     if (best_child_regions)
         delete best_child_regions;
+}
+
+void Tree::refreshAllLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
+{
+    // 1. update all the lower lhs along the tree
+    refreshAllLowerLhs(cumulative_rate, default_blength, max_blength, min_blength);
+    
+    // 2. update all the non-lower lhs along the tree
+    refreshAllNonLowerLhs(cumulative_rate, default_blength, max_blength, min_blength);
+}
+
+void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
+{
+    // start from root
+    Node* node = root;
+    Node* last_node = NULL;
+    
+    // traverse to the deepest tip, update the lower lhs upward from the tips
+    while (node)
+    {
+        // we reach a top node by a downward traversing
+        if (node->isTopNode())
+        {
+            // if the current node is a leaf -> we reach the deepest tip -> traversing upward to update the lower lh of it parent
+            if (node->isLeave())
+            {
+                last_node = node;
+                node = node->neighbor;
+            }
+            // otherwise, keep traversing downward to find the deepest tip
+            else
+                node = node->next->neighbor;
+        }
+        // we reach the current node by an upward traversing from its children
+        else
+        {
+            // if we reach the current node by an upward traversing from its first children -> traversing downward to its second children
+            if (node->getTopNode()->next->neighbor == last_node)
+                node = node->getTopNode()->next->next->neighbor;
+            // otherwise, all children of the current node are updated -> update the lower lh of the current node
+            else
+            {
+                // calculate the new lower lh of the current node from its children
+                Node* top_node = node->getTopNode();
+                Node* next_node_1 = top_node->next;
+                Node* next_node_2 = next_node_1->next;
+                
+                Regions* new_lower_lh = NULL;
+                Regions* lower_lh_1 = next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+                Regions* lower_lh_2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+                lower_lh_1->mergeTwoLowers(new_lower_lh, next_node_1->length, lower_lh_2, next_node_2->length, aln, model, params->threshold_prob, cumulative_rate);
+                 
+                // if new_lower_lh is NULL -> we need to update the branch lengths connecting the current node to its children
+                if (!new_lower_lh)
+                {
+                    if (next_node_1->length <= 0)
+                    {
+                        stack<Node*> node_stack;
+                        // NHANLT: note different from original maple
+                        // updateBLen(nodeList,node,mutMatrix) -> the below codes update from next_node_1 instead of top_node
+                        next_node_1->neighbor->updateZeroBlength(node_stack, aln, model, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+                        updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                    }
+                    else if (next_node_2->length <= 0)
+                    {
+                        stack<Node*> node_stack;
+                        next_node_2->neighbor->updateZeroBlength(node_stack, aln, model, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+                        updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                    }
+                    else
+                        outError("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
+                }
+                // otherwise, everything is good -> update the lower lh of the current node
+                else
+                {
+                    delete top_node->partial_lh;
+                    top_node->partial_lh = new_lower_lh;
+                    new_lower_lh = NULL;
+                }
+
+                // delete new_lower_lh
+                if (new_lower_lh)
+                    delete new_lower_lh;
+                
+                // traverse upward to the parent of the current node
+                last_node = top_node;
+                node = top_node->neighbor;
+            }
+        }
+    }
+}
+
+void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
+{
+    // dummy variables
+    StateType num_states = aln->num_states;
+    RealNumType threshold_prob = params->threshold_prob;
+    
+    // start from the root
+    Node* node = root;
+    
+    // update the total lh at root
+    delete node->total_lh;
+    node->total_lh = NULL;
+    node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, true);
+    
+    // if the root has children -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
+    if (!node->isLeave())
+    {
+        // update upper left/right lh of the root
+        Node* next_node_1 = node->next;
+        Node* next_node_2 = next_node_1->next;
+        delete next_node_1->partial_lh;
+        next_node_1->partial_lh = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(num_states, model, next_node_2->length);
+        delete next_node_2->partial_lh;
+        next_node_2->partial_lh = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(num_states, model, next_node_1->length);
+        
+        // traverse the tree downward and update the non-lower genome lists for all other nodes of the tree.
+        Node* last_node = NULL;
+        node = next_node_1->neighbor;
+        while (node)
+        {
+            // we reach a top node by a downward traversing
+            if (node->isTopNode())
+            {
+                Regions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                
+                // update the total lh, total lh at the mid-branch point of the current node
+                if (node->length > 0)
+                {
+                    // update the total lh
+                    if (node->total_lh)
+                    {
+                        delete node->total_lh;
+                        node->total_lh = NULL;
+                    }
+                    node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, node == root);
+                    
+                    if (!node->total_lh)
+                        outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
+                    else
+                    {
+                        // update total lh at the mid-branch point
+                        if (node->mid_branch_lh)
+                        {
+                            delete node->mid_branch_lh;
+                            node->mid_branch_lh = NULL;
+                        }
+                        Regions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                        parent_upper_lr_lh->mergeUpperLower(node->mid_branch_lh, node->length / 2, lower_lh, node->length / 2, aln, model, threshold_prob);
+                        
+                        /*if node.dist>=2*minBLenForMidNode:
+                            createFurtherMidNodes(node,upper_lr_lh)*/
+                    }
+                }
+                
+                // if the current node is an internal node (~having children) -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
+                if (!node->isLeave())
+                {
+                    Node* next_node_1 = node->next;
+                    Node* next_node_2 = next_node_1->next;
+                    
+                    // recalculate the FIRST upper left/right lh of the current node
+                    Regions* new_upper_lr_lh = NULL;
+                    Regions* lower_lh = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    parent_upper_lr_lh->mergeUpperLower(new_upper_lr_lh, node->length, lower_lh, next_node_2->length, aln, model, threshold_prob);
+                    
+                    // if the upper left/right lh is null -> try to increase the branch length
+                    if (!new_upper_lr_lh)
+                    {
+                        if (next_node_2->length <= 0)
+                        {
+                            stack<Node*> node_stack;
+                            next_node_2->neighbor->updateZeroBlength(node_stack, aln, model, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                        }
+                        else if (node->length <= 0)
+                        {
+                            stack<Node*> node_stack;
+                            node->updateZeroBlength(node_stack, aln, model, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                        }
+                        else
+                            outError("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
+                    }
+                    // otherwise, everything is good -> update upper left/right lh of the current node
+                    else
+                    {
+                        if (next_node_1->partial_lh) delete next_node_1->partial_lh;
+                        next_node_1->partial_lh = new_upper_lr_lh;
+                        new_upper_lr_lh = NULL;
+                    }
+                    
+                    // recalculate the SECOND upper left/right lh of the current node
+                    lower_lh = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    parent_upper_lr_lh->mergeUpperLower(new_upper_lr_lh, node->length, lower_lh, next_node_1->length, aln, model, threshold_prob);
+                    
+                    // if the upper left/right lh is null -> try to increase the branch length
+                    if (!new_upper_lr_lh)
+                    {
+                        if (next_node_1->length <= 0)
+                        {
+                            stack<Node*> node_stack;
+                            next_node_1->neighbor->updateZeroBlength(node_stack, aln, model, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                        }
+                        else if (node->length <= 0)
+                        {
+                            stack<Node*> node_stack;
+                            node->updateZeroBlength(node_stack, aln, model, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                        }
+                        else
+                            outError("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
+                    }
+                    // otherwise, everything is good -> update upper left/right lh of the current node
+                    else
+                    {
+                        if (next_node_2->partial_lh) delete next_node_2->partial_lh;
+                        next_node_2->partial_lh = new_upper_lr_lh;
+                        new_upper_lr_lh = NULL;
+                    }
+                    
+                    // delete new_upper_lr_lh
+                    if (new_upper_lr_lh) delete new_upper_lr_lh;
+                    
+                    // keep traversing downward to its firt child
+                    node = next_node_1->neighbor;
+                }
+                // if the current node is a leaf -> traverse upward to its parent
+                else
+                {
+                    last_node = node;
+                    node = node->neighbor;
+                }
+            }
+            // we reach the current node by an upward traversing from its children
+            else
+            {
+                Node* top_node = node->getTopNode();
+                Node* next_node_1 = top_node->next;
+                Node* next_node_2 = next_node_1->next;
+                
+                // if we reach the current node by an upward traversing from its first children -> traversing downward to its second children
+                if (last_node == next_node_1->neighbor)
+                    node = next_node_2->neighbor;
+                // otherwise, all children of the current node are updated -> update the lower lh of the current node
+                else
+                {
+                    last_node = top_node;
+                    node = top_node->neighbor;
+                }
+            }
+        }
+    }
+}
+
+void Tree::setAllNodeDirty()
+{
+    // start from the root
+    stack<Node*> node_stack;
+    node_stack.push(root);
+    
+    // traverse downward to make all descentdant dirty
+    while (!node_stack.empty())
+    {
+        // pick the top node from the stack
+        Node* node = node_stack.top();
+        node_stack.pop();
+        
+        // make the current node dirty
+        node->dirty = true;
+        
+        // traverse downward
+        Node* neighbor_node;
+        FOR_NEIGHBOR(node, neighbor_node)
+            node_stack.push(neighbor_node);
+    }
 }
