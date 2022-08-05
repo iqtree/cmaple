@@ -14,6 +14,7 @@
 class Alignment;
 class Regions;
 
+/** Suggestion: class Sequence : public vector<Mutations*> */
 class Sequence {
 public:
     string seq_name;

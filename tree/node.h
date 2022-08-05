@@ -6,21 +6,33 @@
 #ifndef NODE_H
 #define NODE_H
 
+/** A node of the tree following the cyclic tree structure */
 class Node {
 public:
-    // node's id
+    /** node's id */
     int id;
     
     // sequence name
     string seq_name;
     
-    // likelihood of the data arrived from other next nodes
+    /** likelihood of the subtree rooted at this node.
+     It is computed from next->partial_lh, next->next->partial_lh and so on */
     Regions* partial_lh = NULL;
     
-    // total likelihood at the current node
+    /**
+     combined likelihood vector at this node used to quickly calculate the placement likelihood.
+     In essence, it is
+     this->partial_lh combined with this->neighbor->partial_lh  extended by this branch length
+    TODO: rename this
+     */
     Regions* total_lh = NULL;
     
-    // total likelihood at the mid-branch point
+    /**
+     combined likelihood vector at the midpoint of this node and its neighbor.
+     It's used to quickly calculate the placement likelihood at the midpoint.
+     In essence, it is
+     this->partial_lh extended by length/2 combined with this->neighbor->partial_lh extended by length/2
+     */
     Regions* mid_branch_lh = NULL;
     
     // length of branch connecting to parent
@@ -36,6 +48,7 @@ public:
     vector<string> less_info_seqs;
     
     // flag tp prevent traversing the same part of the tree multiple times.
+    // TODO: change to computed or something similar
     bool dirty;
 
     // flexible string attributes

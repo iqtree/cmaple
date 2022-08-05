@@ -10,9 +10,10 @@
 #ifndef MUTATION_H
 #define MUTATION_H
 
+/** A mutation compared with a reference sequence */
 class Mutation {
 public:
-    // type: A, C, G, T, N, O, -, R
+    /** alternative allele, for DNA, it is A, C, G, T, N, O, - */
     StateType type;
     // (starting) position
     PositionType position;
