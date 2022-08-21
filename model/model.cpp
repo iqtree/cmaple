@@ -68,15 +68,15 @@ void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
     inverse_root_freqs = new RealNumType[num_states];
     
     // init root_freqs
-    for (StateType i = 0; i < num_states; i++)
+    for (StateType i = 0; i < num_states; ++i)
         root_freqs[i] = 0;
     
     // browse all sites in the ref one by one to count bases
-    for (PositionType i = 0; i < seq_length; i++)
-        root_freqs[ref_seq[i]]++;
+    for (PositionType i = 0; i < seq_length; ++i)
+        ++root_freqs[ref_seq[i]];
     
     // update root_freqs and root_log_freqs
-    for (StateType i = 0; i < num_states; i++)
+    for (StateType i = 0; i < num_states; ++i)
     {
         root_freqs[i] /= seq_length;
         inverse_root_freqs[i] = 1 / root_freqs[i];
@@ -126,12 +126,12 @@ void Model::updateMutationMat(StateType num_states)
     else if (model_name.compare("GTR") == 0 || model_name.compare("gtr") == 0)
     {
         StateType start_index = 0;
-        for (StateType i = 0; i <  num_states; i++)
+        for (StateType i = 0; i <  num_states; ++i)
         {
             RealNumType sum_rate = 0;
             RealNumType inverse_root_freq = 1 / root_freqs[i];
             
-            for (StateType j = 0; j <  num_states; j++)
+            for (StateType j = 0; j <  num_states; ++j)
                 if (i != j)
                 {
                     mutation_mat[start_index + j] = (pseu_mutation_count[start_index + j] + pseu_mutation_count[j * num_states + i]) * inverse_root_freq;
@@ -152,16 +152,16 @@ void Model::updateMutationMat(StateType num_states)
     
     // compute the total rate regarding the root freqs
     RealNumType total_rate = 0;
-    for (StateType i = 0; i < num_states; i++)
+    for (StateType i = 0; i < num_states; ++i)
         total_rate -= root_freqs[i] * diagonal_mut_mat[i];
     // inverse total_rate
     total_rate = 1 / total_rate;
     
     // normalize the mutation_mat
     StateType start_index = 0;
-    for (StateType i = 0; i <  num_states; i++)
+    for (StateType i = 0; i <  num_states; ++i)
     {
-        for (StateType j = 0; j <  num_states; j++)
+        for (StateType j = 0; j <  num_states; ++j)
         {
             mutation_mat[start_index + j] *= total_rate;
             
@@ -190,9 +190,9 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
         RealNumType jc_rate = 1.0 / 3.0;
         
         StateType starting_index = 0;
-        for (StateType i = 0; i < num_states; i++)
+        for (StateType i = 0; i < num_states; ++i)
         {
-            for (StateType j = 0; j < num_states; j++)
+            for (StateType j = 0; j < num_states; ++j)
             {
                 if (i == j)
                 {
@@ -215,7 +215,7 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
         
         // update root_freqs
         RealNumType log_freq = log(0.25);
-        for (StateType i = 0; i < num_states; i++)
+        for (StateType i = 0; i < num_states; ++i)
         {
             root_freqs[i] = 0.25;
             inverse_root_freqs[i] = 4;
@@ -247,7 +247,7 @@ void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<
     cumulative_base[0].resize(aln->num_states, 0);
     
     // compute cumulative_base and cumulative_rate
-    for (PositionType i = 0; i < sequence_length; i++)
+    for (PositionType i = 0; i < sequence_length; ++i)
     {
         StateType state = aln->ref_seq[i];
         cumulative_rate[i + 1] = cumulative_rate[i] + diagonal_mut_mat[state];
@@ -272,7 +272,7 @@ void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< ve
     // update cumulative_rate if the mutation matrix changes more than a threshold
     RealNumType change_thresh = 1e-3;
     bool update = false;
-    for (StateType j = 0; j < num_states; j++)
+    for (StateType j = 0; j < num_states; ++j)
     {
         if (fabs(tmp_diagonal_mut_mat[j] - diagonal_mut_mat[j]) > change_thresh)
         {

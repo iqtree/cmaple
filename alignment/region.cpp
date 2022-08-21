@@ -161,7 +161,7 @@ void Region::computeLhAmbiguity(IntVector entries)
         delete likelihood;
     likelihood = new RealNumType[entries.size()];
     
-    for (StateType i = 0; i < (StateType) entries.size(); i++)
+    for (StateType i = 0; i < (StateType) entries.size(); ++i)
         likelihood[i] = entries[i];
     
     // normalize likelihood

@@ -36,9 +36,9 @@ Tree::~Tree()
 
 void Tree::addNode(Node* new_node, Node* current_node, int &new_id, bool insert_to_right)
 {
-    Node* new_node_1 = new Node(new_id++);
-    Node* new_node_2 = new Node(new_id++);
-    Node* new_node_3 = new Node(new_id++);
+    Node* new_node_1 = new Node(++new_id);
+    Node* new_node_2 = new Node(++new_id);
+    Node* new_node_3 = new Node(++new_id);
     new_node_1->next = new_node_2;
     new_node_2->next = new_node_3;
     new_node_3->next = new_node_1;

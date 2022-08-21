@@ -19,7 +19,7 @@ Regions::~Regions()
 
 void Regions::deleteRegions()
 {
-    for (iterator it = begin(); it != end(); it++)
+    for (iterator it = begin(); it != end(); ++it)
         delete (*it);
     clear();
 }
@@ -36,7 +36,7 @@ void Regions::copyRegions(Regions* n_regions, StateType num_states)
     
     // clone regions one by one
     resize(n_regions->size());
-    for (PositionType i = 0; i < (PositionType) n_regions->size(); i++)
+    for (PositionType i = 0; i < (PositionType) n_regions->size(); ++i)
     {
         Region* region = n_regions->getRegion(i);
         at(i) = new Region(region, num_states, true);
@@ -49,7 +49,7 @@ void Regions::mergeRegionR(StateType num_states, RealNumType threshold)
     PositionType start_R_index = -1;
     
     // browse regions one by one to detect identical sequences of R regions
-    for (PositionType i = 0; i < (PositionType) size(); i++)
+    for (PositionType i = 0; i < (PositionType) size(); ++i)
     {
         // get the current region
         Region* current_region = getRegion(i);
@@ -69,7 +69,7 @@ void Regions::mergeRegionR(StateType num_states, RealNumType threshold)
             if (!(current_region->type == TYPE_R && fabs(start_R_region->plength_observation - current_region->plength_observation) < threshold && fabs(start_R_region->plength_from_root - current_region->plength_from_root) < threshold))
              {
                  // remove identical R regions
-                 for (PositionType j = 1; j < i - start_R_index; j++)
+                 for (PositionType j = 1; j < i - start_R_index; ++j)
                      delete getRegion(start_R_index + j);
                  erase(begin() + start_R_index + 1, begin() + i);
                  
@@ -88,7 +88,7 @@ void Regions::mergeRegionR(StateType num_states, RealNumType threshold)
         PositionType num_regions = size();
         
         // remove identical R regions
-        for (PositionType j = 1; j < num_regions - 1 - start_R_index; j++)
+        for (PositionType j = 1; j < num_regions - 1 - start_R_index; ++j)
             delete getRegion(start_R_index + j);
         erase(begin() + start_R_index + 1, end());
     }
@@ -114,14 +114,14 @@ void Regions::getNextSharedSegment(PositionType current_pos, PositionType seq_le
     // move to the next region in sequence 1
     if (current_pos > seq1_end_pos)
     {
-        seq1_index++;
+        ++seq1_index;
         move2NextRegion(sequence1, seq1_index, seq1_region, seq1_pos, seq1_end_pos, seq_length);
     }
     
     // move to the next region in sequence 2
     if (current_pos > seq2_end_pos)
     {
-        seq2_index++;
+        ++seq2_index;
         move2NextRegion(sequence2, seq2_index, seq2_region, seq2_pos, seq2_end_pos, seq_length);
     }
     
@@ -171,7 +171,7 @@ int Regions::compareWithSample(Regions* sequence2, PositionType seq_length, Stat
         // Both regions are type O
         else if (seq1_region->type == TYPE_O)
         {
-            for (StateType i = 0; i < num_states; i++)
+            for (StateType i = 0; i < num_states; ++i)
             {
                 if (seq2_region->likelihood[i] > 0.1 && seq1_region->likelihood[i] < 0.1)
                     seq1_more_info = true;
@@ -239,7 +239,7 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
                 return true;
             
             // compare likelihood of each state
-            for (StateType i = 0; i < num_states; i++)
+            for (StateType i = 0; i < num_states; ++i)
             {
                 RealNumType diff = fabs(seq1_region->likelihood[i] - seq2_region->likelihood[i]);
                 
@@ -328,7 +328,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
 
                     // normalize the new partial likelihood
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                         new_lh[i] /= sum_lh;
                     
                     // add merged region into merged_regions
@@ -378,11 +378,11 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     RealNumType sum_lh = 0;
                     
                     StateType start_index = 0;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot = 0;
                         
-                        for (StateType j = 0; j < num_states; j++)
+                        for (StateType j = 0; j < num_states; ++j)
                             tot += model->transposed_mut_mat[start_index + j] * seq1_region->likelihood[j];
                         
                         tot *= total_blength;
@@ -395,7 +395,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
 
                     // normalize the new partial likelihood
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                         new_lh[i] /= sum_lh;
                     
                     // add merged region into merged_regions
@@ -487,11 +487,11 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                 if (total_blength_1 > 0)
                 {
                     StateType start_index = 0;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot = 0;
                         
-                        for (StateType j = 0; j < num_states; j++)
+                        for (StateType j = 0; j < num_states; ++j)
                             tot += model->transposed_mut_mat[start_index + j] * seq1_region->likelihood[j];
                         
                         tot *= total_blength_1;
@@ -541,7 +541,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     if (total_blength_2 > 0)
                     {
                         StateType mutation_index = seq2_state * num_states;
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq2_state)
                                 new_lh[i] *= (1.0 + model->transposed_mut_mat[mutation_index + i] * total_blength_2);
@@ -553,7 +553,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     else
                     {
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i != seq2_state)
                                 new_lh[i] = 0;
@@ -566,7 +566,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                 // normalize the new partial lh
                 if (sum_new_lh == 0)
                     outError("Sum of new partital lh is zero.");
-                for (StateType i = 0; i < num_states; i++)
+                for (StateType i = 0; i < num_states; ++i)
                     new_lh[i] /= sum_new_lh;
                 
                 StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
@@ -598,7 +598,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     memcpy(root_vec, model->root_freqs, sizeof(RealNumType) * num_states);
                     
                     StateType mutation_index = seq1_state * num_states;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         if (i == seq1_state)
                             root_vec[i] *= (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
@@ -607,11 +607,11 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     
                     StateType start_index = 0;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot = 0;
                         
-                        for (StateType j = 0; j < num_states; j++)
+                        for (StateType j = 0; j < num_states; ++j)
                             tot += model->transposed_mut_mat[start_index + j] * root_vec[j];
                         
                         tot *= length_to_root;
@@ -637,7 +637,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     else
                     {
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq1_state)
                                 new_lh[i] = 1;
@@ -672,7 +672,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     
                     // normalize the new partial lh
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                         new_lh[i] /= sum_new_lh;
                     
                     StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
@@ -693,7 +693,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     if (total_blength_2 > 0)
                     {
                         StateType mutation_index = seq2_state * num_states;
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq2_state)
                                 new_lh[i] *= 1.0 + model->transposed_mut_mat[mutation_index + i] * total_blength_2;
@@ -705,7 +705,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     else
                     {
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i != seq2_state)
                                 new_lh[i] = 0;
@@ -715,7 +715,7 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     
                     // normalize the new partial lh
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                         new_lh[i] /= sum_new_lh;
 
                     // add new region into the merged regions
@@ -741,7 +741,7 @@ StateType Regions::simplifyO(RealNumType* &partial_lh, StateType ref_state, Stat
     StateType high_prob_count = 0;
     
     // Check all states one by one
-    for (StateType i = 0; i < num_states; i++)
+    for (StateType i = 0; i < num_states; ++i)
     {
         // record the state with the highest likelihood
         if (partial_lh[i] > max_prob)
@@ -752,7 +752,7 @@ StateType Regions::simplifyO(RealNumType* &partial_lh, StateType ref_state, Stat
         
         // count the number of states that have the likelihood greater than a threshold
         if (partial_lh[i] > threshold_prob)
-            high_prob_count++;
+            ++high_prob_count;
     }
     
     // if the partial lh concentrates at a specific state -> return new state
@@ -934,11 +934,11 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                 if (total_blength_1 > 0)
                 {
                     StateType start_index = 0;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot = 0;
                         
-                        for (StateType j = 0; j < num_states; j++)
+                        for (StateType j = 0; j < num_states; ++j)
                             tot += model->mutation_mat[start_index + j] * seq1_region->likelihood[j];
                         
                         tot *= total_blength_1;
@@ -957,13 +957,13 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                 if (seq2_region->type == TYPE_O)
                 {
                     StateType start_index = 0;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
-                            for (StateType j = 0; j < num_states; j++)
+                            for (StateType j = 0; j < num_states; ++j)
                                 tot += model->mutation_mat[start_index + j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength_2;
@@ -984,7 +984,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     }
                         
                     // normalize new partial lh
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                         new_lh[i] /= sum_lh;
                     
                     StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
@@ -1007,7 +1007,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     if (total_blength_2 > 0)
                     {
                         StateType mutation_index = seq2_state * num_states;
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             if (seq2_state == i)
                                 new_lh[i] *= (1 + model->transposed_mut_mat[mutation_index + i] * total_blength_2);
@@ -1018,7 +1018,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                         }
                         
                         // normalize new partial lh
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                             new_lh[i] /= sum_lh;
                         
                         StateType new_state = simplifyO(new_lh, aln->ref_seq[pos],  num_states, threshold_prob);
@@ -1062,7 +1062,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                 if (total_blength_1 > 0)
                 {
                     StateType mutation_index = seq1_state * num_states;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         if (seq1_state == i)
                             new_lh[i] = 1 + model->transposed_mut_mat[mutation_index + i] * total_blength_1;
@@ -1072,7 +1072,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                 }
                 else
                 {
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         if (seq1_state == i)
                             new_lh[i] = 1;
@@ -1085,13 +1085,13 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                 if (seq2_region->type == TYPE_O)
                 {
                     StateType start_index = 0;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
-                            for (StateType j = 0; j < num_states; j++)
+                            for (StateType j = 0; j < num_states; ++j)
                                 tot += model->mutation_mat[start_index + j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength_2;
@@ -1112,7 +1112,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     }
                         
                     // normalize new partial lh
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                         new_lh[i] /= sum_lh;
                     
                     StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
@@ -1135,7 +1135,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     if (total_blength_2 > 0)
                     {
                         StateType mutation_index = seq2_state * num_states;
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             if (seq2_state == i)
                                 new_lh[i] *= (1 + model->transposed_mut_mat[mutation_index + i] * total_blength_2);
@@ -1146,7 +1146,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                         }
                         
                         // normalize new partial lh
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                             new_lh[i] /= sum_lh;
                         
                         StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
@@ -1188,7 +1188,7 @@ RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vecto
     PositionType seq_length = aln->ref_seq.size();
     
     // browse regions one by one to compute the likelihood of each region
-    for (PositionType region_index = 0; region_index < (PositionType) size(); region_index++)
+    for (PositionType region_index = 0; region_index < (PositionType) size(); ++region_index)
     {
         Region* region = getRegion(region_index);
         
@@ -1198,7 +1198,7 @@ RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vecto
             PositionType start_pos = region->position;
             PositionType end_pos = (region_index == ((PositionType) size()) - 1 ? seq_length - 1 : getRegion(region_index + 1)->position - 1);
             
-            for (StateType i = 0; i < num_states; i++)
+            for (StateType i = 0; i < num_states; ++i)
                 log_lh += model->root_log_freqs[i] * (cumulative_base[end_pos + 1][i] - cumulative_base[start_pos][i]);
         }
         // type ACGT
@@ -1208,7 +1208,7 @@ RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vecto
         else if (region->type == TYPE_O)
         {
             RealNumType tot = 0;
-            for (StateType i = 0; i < num_states; i++)
+            for (StateType i = 0; i < num_states; ++i)
                 tot += model->root_freqs[i] * region->likelihood[i];
             log_factor *= tot;
         }
@@ -1252,13 +1252,13 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                 RealNumType sum_likelihood = 0;
                 
                 StateType start_index = 0;
-                for (StateType i = 0; i < num_states; i++)
+                for (StateType i = 0; i < num_states; ++i)
                 {
                     RealNumType tot = 0.0;
                     
                     if (total_blength > 0)
                     {
-                        for (StateType j = 0; j < num_states; j++)
+                        for (StateType j = 0; j < num_states; ++j)
                             tot += model->mutation_mat[start_index + j] * region->likelihood[j];
                         tot *= total_blength;
                     }
@@ -1273,7 +1273,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                 
                 // normalize likelihood
                 sum_likelihood = 1 / sum_likelihood;
-                for (StateType i = 0; i < num_states; i++)
+                for (StateType i = 0; i < num_states; ++i)
                     new_likelihood[i] *= sum_likelihood;
                 
                 // add new region to the total_lh_regions
@@ -1372,7 +1372,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                     {
                         StateType mutation_index = seq1_state * num_states;
                         StateType start_index = 0;
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                         {
                             RealNumType tot2;
                             
@@ -1384,7 +1384,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                             RealNumType tot3 = 0;
                             if (total_blength > 0)
                             {
-                                for (StateType j = 0; j < num_states; j++)
+                                for (StateType j = 0; j < num_states; ++j)
                                     tot3 += model->mutation_mat[start_index + j] * seq2_region->likelihood[j];
                             }
                             
@@ -1401,7 +1401,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                         if (total_blength > 0)
                         {
                             StateType mutation_index = seq1_state * num_states;
-                            for (StateType j = 0; j < num_states; j++)
+                            for (StateType j = 0; j < num_states; ++j)
                                 tot += model->mutation_mat[mutation_index + j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength;
@@ -1470,7 +1470,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                     }
                     else
                     {
-                        for (StateType i = 0; i < num_states; i++)
+                        for (StateType i = 0; i < num_states; ++i)
                             tot += seq1_region->likelihood[i] * seq2_region->likelihood[i];
                     }
                     
@@ -1487,7 +1487,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                     {
                         RealNumType tot2 = 0;
                         StateType mutation_index = seq2_state * num_states;
-                        for (StateType j = 0; j < num_states; j++)
+                        for (StateType j = 0; j < num_states; ++j)
                             tot2 += seq1_region->likelihood[j] * model->transposed_mut_mat[mutation_index + j];
                         
                         total_factor *= seq1_region->likelihood[seq2_state] + total_blength * tot2;
@@ -1522,7 +1522,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                         {
                             StateType mutation_index = seq1_state * num_states;
                             StateType start_index = 0;
-                            for (StateType i = 0; i < num_states; i++)
+                            for (StateType i = 0; i < num_states; ++i)
                             {
                                 RealNumType tot2;
                                 
@@ -1532,7 +1532,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                                     tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
                                     
                                 RealNumType tot3 = 0;
-                                for (StateType j = 0; j < num_states; j++)
+                                for (StateType j = 0; j < num_states; ++j)
                                     tot3 += model->mutation_mat[start_index + j] * seq2_region->likelihood[j];
                                 tot += tot2 * (seq2_region->likelihood[i] + total_blength * tot3);
                                 
@@ -1545,7 +1545,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                         else
                         {
                             StateType mutation_index = seq1_state * num_states;
-                            for (StateType j = 0; j < num_states; j++)
+                            for (StateType j = 0; j < num_states; ++j)
                                 tot += model->mutation_mat[mutation_index + j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength;
@@ -1679,7 +1679,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                             RealNumType tot = 0;
                             StateType mutation_index = seq1_state * num_states;
                             StateType start_index = 0;
-                            for (StateType i = 0; i < num_states; i++)
+                            for (StateType i = 0; i < num_states; ++i)
                             {
                                 RealNumType tot2;
                                 
@@ -1692,7 +1692,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                                 if (seq2_region->likelihood[i] > 0.1)
                                     tot3 = 1;
                                 
-                                for (StateType j = 0; j < num_states; j++)
+                                for (StateType j = 0; j < num_states; ++j)
                                     if (seq2_region->likelihood[j] > 0.1)
                                         tot3 += model->mutation_mat[start_index + j]; // TODO
                                 tot3 *= total_blength;
@@ -1719,7 +1719,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                         {
                             RealNumType tot = 0;
                             StateType mutation_index = seq1_state * num_states;
-                            for (StateType i = 0; i < num_states; i++)
+                            for (StateType i = 0; i < num_states; ++i)
                                 if (seq2_region->likelihood[i] > 0.1)
                                     tot += model->mutation_mat[mutation_index + i];
                             
@@ -1767,11 +1767,11 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                     RealNumType tot = 0;
                     
                     StateType start_index = 0;
-                    for (StateType i = 0; i < num_states; i++)
+                    for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot2 = 0;
                         
-                        for (StateType j = 0; j < num_states; j++)
+                        for (StateType j = 0; j < num_states; ++j)
                             if (seq2_region->likelihood[j] > 0.1)
                                 tot2 += model->mutation_mat[start_index + j];
                         
@@ -1797,7 +1797,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                     
                     RealNumType tot2 = 0;
                     StateType mutation_index = seq2_state * num_states;
-                    for (StateType j = 0; j < num_states; j++)
+                    for (StateType j = 0; j < num_states; ++j)
                         tot2 += model->transposed_mut_mat[mutation_index + j] * seq1_region->likelihood[j];
                     
                     total_factor *= seq1_region->likelihood[seq2_state] + blength13 * tot2;
@@ -1868,7 +1868,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                             else
                             {
                                 StateType start_index = seq1_state * num_states;
-                                for (StateType j = 0; j < num_states; j++)
+                                for (StateType j = 0; j < num_states; ++j)
                                     if (seq2_region->likelihood[j] > 0.1)
                                         tot += model->mutation_mat[start_index + j];
                                 

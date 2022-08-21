@@ -35,19 +35,19 @@ Alignment::Alignment(vector<StateType> n_ref_seq, vector<Sequence*> n_sequences)
 
 Alignment::~Alignment()
 {
-    for (iterator it = begin(); it != end(); it++)
+    for (iterator it = begin(); it != end(); ++it)
         delete (*it);
 }
 
 void Alignment::processSeq(string &sequence, string &line, PositionType line_num) {
-    for (string::iterator it = line.begin(); it != line.end(); it++) {
+    for (string::iterator it = line.begin(); it != line.end(); ++it) {
         if ((*it) <= ' ') continue;
         if (isalnum(*it) || (*it) == '-' || (*it) == '?'|| (*it) == '.' || (*it) == '*' || (*it) == '~')
             sequence.append(1, toupper(*it));
         else if (*it == '(' || *it == '{') {
             auto start_it = it;
             while (*it != ')' && *it != '}' && it != line.end())
-                it++;
+                ++it;
             if (it == line.end())
                 throw "Line " + convertIntToString(line_num) + ": No matching close-bracket ) or } found";
             sequence.append(1, '?');
@@ -73,7 +73,7 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
     {
         cout << "Reading FASTA file" <<endl;
         
-        for (; !in.eof(); line_num++) {
+        for (; !in.eof(); ++line_num) {
             safeGetline(in, line);
             if (line == "") {
                 continue;
@@ -110,11 +110,11 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
     new_seq_names.resize(seq_names.size());
     remain_seq_names = seq_names;
 
-    for (step = 0; step < 4; step++) {
+    for (step = 0; step < 4; ++step) {
         bool duplicated = false;
         unordered_set<string> namesSeenThisTime;
         //Set of shorted names seen so far, this iteration
-        for (i = 0; i < (PositionType) seq_names.size(); i++) {
+        for (i = 0; i < (PositionType) seq_names.size(); ++i) {
             if (remain_seq_names[i].empty()) continue;
             size_t pos = remain_seq_names[i].find_first_of(" \t");
             if (pos == string::npos) {
@@ -135,7 +135,7 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
     }
     
     if (step > 0) {
-        for (i = 0; i < (PositionType) seq_names.size(); i++)
+        for (i = 0; i < (PositionType) seq_names.size(); ++i)
             if (seq_names[i] != new_seq_names[i]) {
                 cout << "NOTE: Change sequence name '" << seq_names[i] << "' -> " << new_seq_names[i] << endl;
             }
@@ -161,7 +161,7 @@ void Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_
     // remove the failbit
     in.exceptions(ios::badbit);
 
-    for (; !in.eof(); line_num++) {
+    for (; !in.eof(); ++line_num) {
         safeGetline(in, line);
         line = line.substr(0, line.find_first_of("\n\r"));
         if (line == "") continue;
@@ -195,7 +195,7 @@ void Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_
                 throw err_str.str();
             }
             if ((PositionType) sequences[seq_id].length() > old_len)
-                seq_id++;
+                ++seq_id;
             if (seq_id == nseq) {
                 seq_id = 0;
             }
@@ -246,12 +246,12 @@ string Alignment::generateRef(StrVector sequences, StrVector seq_names, bool onl
     
     // determine a character for each site one by one
     PositionType threshold = sequences.size()/2;
-    for (PositionType i = 0; i < (PositionType) ref_str.length(); i++)
+    for (PositionType i = 0; i < (PositionType) ref_str.length(); ++i)
     {
         // Init a map to count the number of times each character appears
         std::map<char, PositionType> num_appear;
         
-        for (PositionType j = 0; j < (PositionType) sequences.size(); j++)
+        for (PositionType j = 0; j < (PositionType) sequences.size(); ++j)
         {
             // update num_appear for the current character
             PositionType count = num_appear[sequences[j][i]] + 1;
@@ -335,7 +335,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
     Sequence* sequence = NULL;
     
     // extract mutations of sequences one by one
-    for (PositionType i = 0; i < (PositionType) str_sequences.size(); i++)
+    for (PositionType i = 0; i < (PositionType) str_sequences.size(); ++i)
     {
         // validate the sequence length
         string str_sequence = str_sequences[i];
@@ -355,7 +355,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
         // init dummy variables
         int state = 0;
         PositionType length = 0;
-        for (PositionType pos = 0; pos < (PositionType) ref_sequence.length(); pos++)
+        for (PositionType pos = 0; pos < (PositionType) ref_sequence.length(); ++pos)
         {
             switch (state)
             {
@@ -378,7 +378,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
                 case 1: // previous character is 'N'
                     // inscrease the length if the current character is still 'N'
                     if (toupper(str_sequence[pos]) == 'N' && str_sequence[pos] != ref_sequence[pos])
-                        length++;
+                        ++length;
                     else
                     {
                         // output the previous sequence of 'N'
@@ -406,7 +406,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
                 case 2: // previous character is '-'
                     // inscrease the length if the current character is still '-'
                     if (toupper(str_sequence[pos]) == '-' && str_sequence[pos] != ref_sequence[pos])
-                        length++;
+                        ++length;
                     else
                     {
                         // output the previous sequence of '-'
@@ -447,7 +447,7 @@ void Alignment::parseRefSeq(string ref_sequence)
     // transform ref_sequence to uppercase
     transform(ref_sequence.begin(), ref_sequence.end(), ref_sequence.begin(), ::toupper);
     
-    for (PositionType i = 0; i < (PositionType) ref_sequence.length(); i++)
+    for (PositionType i = 0; i < (PositionType) ref_sequence.length(); ++i)
     {
         ref_seq[i] = convertChar2State(ref_sequence[i]);
         
@@ -483,7 +483,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     cout << "Reading a Diff file" << endl;
     
     // extract reference sequence first
-    for (; !in.eof(); line_num++)
+    for (; !in.eof(); ++line_num)
     {
         safeGetline(in, line);
         if (line == "") continue;
@@ -523,7 +523,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     }
     
     // extract sequences of other taxa one by one
-    for (; !in.eof(); line_num++)
+    for (; !in.eof(); ++line_num)
     {
         safeGetline(in, line);
         if (line == "") continue;
@@ -636,7 +636,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
     cout << "Reading a Diff file" << endl;
     
     // extract reference sequence first
-    for (; !in.eof(); line_num++)
+    for (; !in.eof(); ++line_num)
     {
         safeGetline(in, line);
         if (line == "") continue;
@@ -675,7 +675,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
     }
     
     // extract sequences of other taxa one by one
-    for (; !in.eof(); line_num++)
+    for (; !in.eof(); ++line_num)
     {
         safeGetline(in, line);
         if (line == "") continue;
@@ -690,7 +690,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
                 if (current_pos <= seq_length)
                 {
                     tmp_str.resize(seq_length - current_pos + 1, '-');
-                    for (int i = 0; i < seq_length - current_pos + 1; i++)
+                    for (int i = 0; i < seq_length - current_pos + 1; ++i)
                         tmp_str[i] = ref_str[current_pos - 1 + i];
                 }
                 out << tmp_str << endl;
@@ -754,7 +754,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
             {
                 string tmp_str = "";
                 tmp_str.resize(pos - current_pos, '-');
-                for (int i = 0; i < pos - current_pos; i++)
+                for (int i = 0; i < pos - current_pos; ++i)
                     tmp_str[i] = ref_str[current_pos - 1 + i];
                 out << tmp_str;
             }
@@ -762,7 +762,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
             // add a new mutation
             string tmp_str = "";
             tmp_str.resize(length, '-');
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < length; ++i)
                 tmp_str[i] = state;
             out << tmp_str;
             
@@ -776,7 +776,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
     if (current_pos <= seq_length)
     {
         tmp_str.resize(seq_length - current_pos + 1, '-');
-        for (int i = 0; i < seq_length - current_pos + 1; i++)
+        for (int i = 0; i < seq_length - current_pos + 1; ++i)
             tmp_str[i] = ref_str[current_pos - 1 + i];
     }
     out << tmp_str << endl;
@@ -985,7 +985,7 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     PositionType *sequence_indexes = new PositionType[num_seqs];
     
     // calculate the distances of each sequence
-    for (PositionType i = 0; i < num_seqs; i++)
+    for (PositionType i = 0; i < num_seqs; ++i)
     {
         // dummy variables
         Sequence* sequence = at(i);
@@ -1005,16 +1005,16 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
                 case TYPE_DEL:
                 case TYPE_O: // handle ambiguity
                     num_ambiguities += mutation->getLength();
-                    num_diffs++;
+                    ++num_diffs;
                     break;
                 default:
                     // handle normal character
                     if (mutation->type < num_states)
-                        num_diffs++;
+                        ++num_diffs;
                     else
                     {
-                        num_diffs++;
-                        num_ambiguities++;
+                        ++num_diffs;
+                        ++num_ambiguities;
                     }
                     break;
             }
@@ -1036,7 +1036,7 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     // re-order sequences by distances
     Sequence** tmp_sequences = new Sequence*[size()];
     memcpy(tmp_sequences, this->data(), sizeof(Sequence*)*size());
-    for (PositionType i = 0; i < num_seqs; i++)
+    for (PositionType i = 0; i < num_seqs; ++i)
         at(i) = tmp_sequences[sequence_indexes[i]];
     
     // delete distances, sequence_indexes
@@ -1058,7 +1058,7 @@ void Alignment::extractDiffFile(Params* params)
         outError("Empty input sequences. Please check and try again!");
     // make sure all sequences have the same length
     if (detectInputFile(params->aln_path) == IN_FASTA)
-        for (PositionType i = 0; i < (PositionType) sequences.size(); i++)
+        for (PositionType i = 0; i < (PositionType) sequences.size(); ++i)
         {
             if (sequences[i].length() != sequences[0].length())
                 outError("Sequence " + seq_names[i] + " has a different length compared to the first sequence.");

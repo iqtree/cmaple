@@ -119,7 +119,7 @@ void CMaple::buildInitialTree()
     root->computeTotalLhAtNode(aln, model, tree->params->threshold_prob, cumulative_rate, true);
     
     // iteratively place other samples (sequences)
-    for (PositionType i = 1; i < (PositionType) aln->size(); i++)
+    for (PositionType i = 1; i < (PositionType) aln->size(); ++i)
     {
         Sequence* sequence = aln->at(i);
         
@@ -164,7 +164,7 @@ void CMaple::optimizeTree()
     // record the start time
     auto start = getRealTime();
     
-    for (int i = 0; i < tree->params->num_tree_improvement; i++)
+    for (int i = 0; i < tree->params->num_tree_improvement; ++i)
     {
         // first, make all nodes dirty
         tree->setAllNodeDirty();
@@ -181,7 +181,7 @@ void CMaple::optimizeTree()
         
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         int max_attempts = 20;
-        for (int j = 0; j < max_attempts; i++)
+        for (int j = 0; j < max_attempts; ++i)
         {
             RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + "at subround " + convertIntToString(j + 1) << endl;

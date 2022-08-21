@@ -662,9 +662,9 @@ void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
       /* partition */
       while (i <= j) {
             while (arr[i] < pivot)
-                  i++;
+                  ++i;
             while (arr[j] > pivot)
-                  j--;
+                  --j;
             if (i <= j) {
                   T1 tmp = arr[i];
                   arr[i] = arr[j];
@@ -674,8 +674,8 @@ void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
                       arr2[i] = arr2[j];
                       arr2[j] = tmp2;
                   }
-                  i++;
-                  j--;
+                  ++i;
+                  --j;
             }
       };
 
