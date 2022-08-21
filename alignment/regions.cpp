@@ -1394,7 +1394,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                             start_index += num_states;
                         }
                         
-                        tot /= model->root_freqs[seq1_state];
+                        tot *= model->inverse_root_freqs[seq1_state];
                     }
                     else
                     {
@@ -1540,7 +1540,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                                 start_index += num_states;
                             }
                             
-                            total_factor *= (tot / model->root_freqs[seq1_state]);
+                            total_factor *= (tot * model->inverse_root_freqs[seq1_state]);
                         }
                         else
                         {
@@ -1703,7 +1703,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                                 start_index += num_states;
                             }
                             
-                            total_factor *= tot /model->root_freqs[seq1_state];
+                            total_factor *= tot * model->inverse_root_freqs[seq1_state];
                         }
                     }
                     else
@@ -1857,7 +1857,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                                     start_index += num_states;
                                 }
                                 
-                                total_factor *= (tot / model->root_freqs[seq1_state]);
+                                total_factor *= (tot * model->inverse_root_freqs[seq1_state]);
                             }
                         }
                         else

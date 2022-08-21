@@ -129,12 +129,11 @@ void Model::updateMutationMat(StateType num_states)
         for (StateType i = 0; i <  num_states; ++i)
         {
             RealNumType sum_rate = 0;
-            RealNumType inverse_root_freq = 1 / root_freqs[i];
             
             for (StateType j = 0; j <  num_states; ++j)
                 if (i != j)
                 {
-                    mutation_mat[start_index + j] = (pseu_mutation_count[start_index + j] + pseu_mutation_count[j * num_states + i]) * inverse_root_freq;
+                    mutation_mat[start_index + j] = (pseu_mutation_count[start_index + j] + pseu_mutation_count[j * num_states + i]) * inverse_root_freqs[i];
                     sum_rate += mutation_mat[start_index + j];
                 }
             
