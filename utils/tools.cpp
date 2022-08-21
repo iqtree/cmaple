@@ -318,7 +318,7 @@ void convert_real_numbers(RealNumType* &arr, string input_str)
     // count the number of input real_numbers
     int number_count = count(input_str.begin(), input_str.end(), ' ') + 1;
     
-    // init mutation_mat
+    // init array
     arr = new RealNumType[number_count];
     
     // parse rates

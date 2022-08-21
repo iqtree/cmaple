@@ -127,7 +127,7 @@ void CMaple::buildInitialTree()
         Regions* lower_regions = sequence->getLowerLhVector(aln->ref_seq.size(), num_states, aln->seq_type);
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
-        if (i % tree->params->mutation_update_period == 0)
+        if (model->model_name != "JC" && model->model_name != "jc" && i % tree->params->mutation_update_period == 0)
             tree->model->updateMutationMatEmpirical(cumulative_rate, cumulative_base, aln);
         
         // NHANLT: debug
