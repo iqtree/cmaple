@@ -172,7 +172,7 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
     
     while (best_length > min_blength)
     {
-        RealNumType new_blength = best_length/2;
+        RealNumType new_blength = best_length * 0.5;
         RealNumType new_lh = upper_left_right_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
         
         if (new_lh > best_lh)

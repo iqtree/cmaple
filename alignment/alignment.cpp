@@ -245,7 +245,7 @@ string Alignment::generateRef(StrVector sequences, StrVector seq_names, bool onl
     string ref_str (sequences[0].length(), NULL_CHAR);
     
     // determine a character for each site one by one
-    PositionType threshold = sequences.size()/2;
+    PositionType threshold = sequences.size() * 0.5;
     for (PositionType i = 0; i < (PositionType) ref_str.length(); ++i)
     {
         // Init a map to count the number of times each character appears

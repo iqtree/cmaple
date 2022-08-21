@@ -493,7 +493,7 @@ void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entrie
     
     if (fabs(sum_entries-1.0) >= 1e-7)
     {
-        sum_entries = 1/sum_entries;
+        sum_entries = 1.0 / sum_entries;
         for (int i = 0; i < num_entries; i++)
             entries[i] *= sum_entries;
     }
@@ -510,7 +510,7 @@ void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int st
     // normalize the freqs
     if (fabs(total_freqs) < 1e-5)
         outError("Sum of state frequencies must be greater than zero!");
-    total_freqs = 1/total_freqs;
+    total_freqs = 1.0 / total_freqs;
     for (int i = starting_index; i < starting_index+num_states; i++)
         freqs[i] *= total_freqs;
 }

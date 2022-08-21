@@ -328,8 +328,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
 
                     // normalize the new partial likelihood
+                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
                     for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] /= sum_lh;
+                        new_lh[i] *= inverse_sum_lh;
                     
                     // add merged region into merged_regions
                     merged_regions->push_back(new Region(TYPE_O, pos, 0, 0, new_lh));
@@ -395,8 +396,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
 
                     // normalize the new partial likelihood
+                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
                     for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] /= sum_lh;
+                        new_lh[i] *= inverse_sum_lh;
                     
                     // add merged region into merged_regions
                     merged_regions->push_back(new Region(TYPE_O, pos, 0, 0, new_lh));
@@ -566,8 +568,10 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                 // normalize the new partial lh
                 if (sum_new_lh == 0)
                     outError("Sum of new partital lh is zero.");
+                
+                RealNumType inverse_sum_lh = 1.0 / sum_new_lh;
                 for (StateType i = 0; i < num_states; ++i)
-                    new_lh[i] /= sum_new_lh;
+                    new_lh[i] *= inverse_sum_lh;
                 
                 StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
 
@@ -672,8 +676,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     
                     // normalize the new partial lh
+                    RealNumType inverse_sum_lh = 1.0 / sum_new_lh;
                     for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] /= sum_new_lh;
+                        new_lh[i] *= inverse_sum_lh;
                     
                     StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
                     
@@ -715,8 +720,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     }
                     
                     // normalize the new partial lh
+                    RealNumType inverse_sum_lh = 1.0 / sum_new_lh;
                     for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] /= sum_new_lh;
+                        new_lh[i] *= inverse_sum_lh;
 
                     // add new region into the merged regions
                     merged_regions->push_back(new Region(TYPE_O, pos, 0, 0, new_lh));
@@ -984,8 +990,9 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     }
                         
                     // normalize new partial lh
+                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
                     for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] /= sum_lh;
+                        new_lh[i] *= inverse_sum_lh;
                     
                     StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
 
@@ -1018,8 +1025,9 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                         }
                         
                         // normalize new partial lh
+                        RealNumType inverse_sum_lh = 1.0 / sum_lh;
                         for (StateType i = 0; i < num_states; ++i)
-                            new_lh[i] /= sum_lh;
+                            new_lh[i] *= inverse_sum_lh;
                         
                         StateType new_state = simplifyO(new_lh, aln->ref_seq[pos],  num_states, threshold_prob);
 
@@ -1112,8 +1120,9 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     }
                         
                     // normalize new partial lh
+                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
                     for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] /= sum_lh;
+                        new_lh[i] *= inverse_sum_lh;
                     
                     StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
 
@@ -1146,8 +1155,9 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                         }
                         
                         // normalize new partial lh
+                        RealNumType inverse_sum_lh = 1.0 / sum_lh;
                         for (StateType i = 0; i < num_states; ++i)
-                            new_lh[i] /= sum_lh;
+                            new_lh[i] *= inverse_sum_lh;
                         
                         StateType new_state = simplifyO(new_lh, aln->ref_seq[pos], num_states, threshold_prob);
 
@@ -1272,7 +1282,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                 }
                 
                 // normalize likelihood
-                sum_likelihood = 1 / sum_likelihood;
+                sum_likelihood = 1.0 / sum_likelihood;
                 for (StateType i = 0; i < num_states; ++i)
                     new_likelihood[i] *= sum_likelihood;
                 
