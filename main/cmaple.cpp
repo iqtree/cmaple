@@ -138,7 +138,7 @@ void CMaple::buildInitialTree()
         Node *selected_node, *best_child;
         RealNumType best_lh_diff, best_up_lh_diff, best_down_lh_diff;
         bool is_mid_branch;
-        tree->seekPlacement(tree->root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, default_blength, min_blength_mid);
+        tree->seekSamplePlacement(tree->root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, default_blength, min_blength_mid);
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
         if (selected_node)
@@ -169,7 +169,28 @@ void CMaple::optimizeTree()
         // first, make all nodes dirty
         tree->setAllNodeDirty();
         
+        // traverse the tree from root to try improvements on the entire tree
+        RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
+            
+        // stop trying if the improvement is so small
+        if (improvement < tree->params->thresh_entire_tree_improvement)
+        {
+            cout << "Small improvement, stopping topological search." << endl;
+            break;
+        }
         
+        // run improvements only on the nodes that have been affected by some changes in the last round, and so on
+        int max_attempts = 20;
+        for (int j = 0; j < max_attempts; i++)
+        {
+            RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
+            cout << "Tree was improved by " + convertDoubleToString(improvement) + "at subround " + convertIntToString(j + 1) << endl;
+           
+            // stop trying if the improvement is so small
+            if (improvement < tree->params->thresh_entire_tree_improvement)
+                break;
+        }
+            
     }
     
     // show the runtime for optimize the tree
@@ -183,7 +204,7 @@ void CMaple::doInference()
     buildInitialTree();
     
     // 2. Optimize the tree with SPR
-    optimizeTree();
+    //optimizeTree();
 }
 
 void CMaple::postInference()

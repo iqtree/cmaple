@@ -121,9 +121,16 @@ public:
     StateType simplifyO(RealNumType* &partial_lh, StateType ref_state, StateType num_states, RealNumType threshold);
     
     /**
-            calculate the placement cost
+            calculate the placement cost of a sample
             @param child_regions: vector of regions of the new sample
      */
-    RealNumType calculatePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength);
+    RealNumType calculateSamplePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength);
+    
+    /**
+            calculate the placement cost of a subtree
+            @param child_regions: vector of regions of the new sample
+     */
+    RealNumType calculateSubTreePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength);
+
 };
 #endif

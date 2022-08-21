@@ -389,7 +389,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
     }
 }
 
-void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid)
+void Tree::seekSamplePlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid)
 {
     // init variables
     // output variables
@@ -436,7 +436,7 @@ void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regi
         if (current_node != root && current_node->length > 0)
         {
             // compute the placement cost
-            lh_diff_mid_branch = current_node->mid_branch_lh->calculatePlacementCost(aln, model, cumulative_rate, sample_regions, default_blength);
+            lh_diff_mid_branch = current_node->mid_branch_lh->calculateSamplePlacementCost(aln, model, cumulative_rate, sample_regions, default_blength);
             
             // record the best_lh_diff if lh_diff_mid_branch is greater than the best_lh_diff ever
             if (lh_diff_mid_branch > best_lh_diff)
@@ -455,7 +455,7 @@ void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regi
         if (current_node == root || current_node->length > 0)
         {
             // compute the placement cost
-            lh_diff_at_node = current_node->total_lh->calculatePlacementCost(aln, model, cumulative_rate, sample_regions, default_blength);
+            lh_diff_at_node = current_node->total_lh->calculateSamplePlacementCost(aln, model, cumulative_rate, sample_regions, default_blength);
             
             // record the best_lh_diff if lh_diff_at_node is greater than the best_lh_diff ever
             if (lh_diff_at_node > best_lh_diff)
@@ -551,7 +551,7 @@ void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regi
                         break;
                 }*/
                 
-                RealNumType new_best_lh_mid_branch = node->mid_branch_lh->calculatePlacementCost(aln, model, cumulative_rate, sample_regions, default_blength);
+                RealNumType new_best_lh_mid_branch = node->mid_branch_lh->calculateSamplePlacementCost(aln, model, cumulative_rate, sample_regions, default_blength);
                 
                 // record new best_down_lh_diff
                 if (new_best_lh_mid_branch > best_down_lh_diff)
@@ -563,6 +563,334 @@ void Tree::seekPlacement(Node* start_node, string seq_name, Regions* sample_regi
         }
     }
 }
+
+void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, Node* child_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement, Regions* sample_regions)
+{
+    // init variables
+    Node* node = child_node->neighbor->getTopNode();
+    best_node = node;
+    best_lh_diff = -DBL_MAX;
+    is_mid_branch = false;
+    best_up_lh_diff = -DBL_MAX;
+    best_down_lh_diff = -DBL_MAX;
+    best_child = NULL;
+    Regions* subtree_regions = NULL;
+    // stack of nodes to examine positions
+    stack<Node*> node_stack;
+    // dummy variables
+    RealNumType threshold_prob = params->threshold_prob;
+    RealNumType lh_diff_mid_branch = 0;
+    RealNumType lh_diff_at_node = 0;
+    Regions* parent_upper_lr_regions = NULL;
+
+    /*if (search_subtree_placement)
+    {
+        subtree_regions = child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        
+        if (node != root)
+        {
+            parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            #the list node_stack keeps trak of the nodes of the tree we wil need to traverse, (first element of each entry),
+            # the direction from where we are visitng them (0=from parent, and 1,2=from one of the children),
+            # an updated genome list from the direction where we come from (taking into account the removal of the given subtree),
+            # a branch length value separating the node from this updated genome list (useful for the fact that the removal of the subtree changes the branch length at the removal node),
+            # a flag that says if the updated genome list passed needs still updating, or if it has become identical to the pre-existing genome list in the tree (which usually happens after a while),
+            # the likelihood cost of appending at the last node encountered in this direction,
+            # a number of consecutively failed traversal steps since the last improvement found (if this number goes beyond a threshold, traversal in the considered direction might be halted).
+            node_stack.append((node.up,childUp,node.children[1-child].probVect,node.children[1-child].dist+node.dist,True,bestLKdiff,0))
+            node_stack.append((node.children[1-child],0,parent_upper_lr_regions,node.children[1-child].dist+node.dist,True,bestLKdiff,0))
+        }
+        else
+        {
+            // node is root
+            if node.children[1-child].children: # case there is only one sample outside of the subtree doesn't need to be considered
+            {
+                child1=node.children[1-child].children[0]
+                child2=node.children[1-child].children[1]
+                vectUp1=rootVector(child2.probVect,child2.dist,mutMatrix)
+                node_stack.append((child1,0,vectUp1,child1.dist,True,bestLKdiff,0))
+                vectUp2=rootVector(child1.probVect,child1.dist,mutMatrix)
+                node_stack.append((child2,0,vectUp2,child2.dist,True,bestLKdiff,0))
+            }
+        }
+    }
+    else:
+        subtree_regions=newSamplePartials
+        if is_mid_branch:
+            downLK=best_down_lh_diff
+        else:
+            downLK=bestLKdiff
+        if node.up!=None:
+            if node.up.children[0]==node:
+                childUp=1
+                parent_upper_lr_regions=node.up.probVectUpRight
+            else:
+                childUp=2
+                parent_upper_lr_regions=node.up.probVectUpLeft
+            node_stack.append((node.up,childUp,node.probVect,node.dist,False,downLK,0))
+        if node.children:
+            node_stack.append((node.children[0],0,node.probVectUpRight,node.children[0].dist,False,downLK,0))
+            node_stack.append((node.children[1],0,node.probVectUpLeft,node.children[1].dist,False,downLK,0))
+
+    while node_stack:
+        t1,direction,passedPartials,distance,needsUpdating,lastLK,failedPasses=node_stack.pop()
+        if direction==0:
+            #consider the case we are moving from a parent to a child
+            if t1.dist:
+                if not (t1.up==node or t1.up==None): #try to append mid-branch
+                    if needsUpdating:
+                        midTot=mergeVectorsUpDown(passedPartials,distance/2,t1.probVect,distance/2,mutMatrix)
+                    else:
+                        midTot=t1.probVectTotUp
+                    if midTot==None:
+                        continue
+                    if search_subtree_placement:
+                        midProb=appendProbNode(midTot,subtree_regions,removedBLen,mutMatrix)
+                    else:
+                        midProb=appendProb(midTot,subtree_regions,removedBLen,mutMatrix)
+                    if midProb>bestLKdiff:
+                        best_node=t1
+                        bestLKdiff=midProb
+                        is_mid_branch=True
+                        failedPasses=0
+                else:
+                    midProb=float("-inf")
+                #now try appending exactly at node
+                if needsUpdating:
+                    nodeTot=mergeVectorsUpDown(passedPartials,distance,t1.probVect,False,mutMatrix)
+                    if not areVectorsDifferent(nodeTot,t1.probVectTot):
+                        needsUpdating=False
+                else:
+                    nodeTot=t1.probVectTot
+
+                if nodeTot==None:
+                    continue
+                if search_subtree_placement:
+                    nodeProb=appendProbNode(nodeTot,subtree_regions,removedBLen,mutMatrix)
+                else:
+                    nodeProb=appendProb(nodeTot,subtree_regions,removedBLen,mutMatrix)
+                if nodeProb>bestLKdiff:
+                    best_node=t1
+                    bestLKdiff=nodeProb
+                    is_mid_branch=False
+                    failedPasses=0
+                    best_up_lh_diff=midProb
+                elif midProb>=(bestLKdiff-thresholdProb):
+                    best_up_lh_diff=lastLK
+                    best_down_lh_diff=nodeProb
+                elif nodeProb<(lastLK-thresholdLogLKconsecutivePlacement): #placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
+                    failedPasses+=1
+            else:
+                nodeProb=lastLK
+            
+            #keep crawling down into children nodes unless the stop criteria for the traversal are satisfied.
+            traverseChildren=False
+            if search_subtree_placement:
+                if strictTopologyStopRules:
+                    if failedPasses<=allowedFailsTopology and nodeProb>(bestLKdiff-thresholdLogLKtopology) and t1.children:
+                        traverseChildren=True
+                else:
+                    if failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology):
+                        if t1.children:
+                            traverseChildren=True
+            else:
+                if strictInitialStopRules:
+                    if failedPasses<=allowedFails and nodeProb>(bestLKdiff-thresholdLogLK):
+                        if t1.children:
+                            traverseChildren=True
+                else:
+                    if failedPasses<=allowedFails or nodeProb>(bestLKdiff-thresholdLogLK):
+                        if t1.children:
+                            traverseChildren=True
+            if traverseChildren:
+                #if (failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology) ) and len(t1.children)==2:
+                child=t1.children[0]
+                otherChild=t1.children[1]
+                if needsUpdating:
+                    vectUpRight=mergeVectorsUpDown(passedPartials,distance,otherChild.probVect,otherChild.dist,mutMatrix)
+                else:
+                    vectUpRight=t1.probVectUpRight
+                if vectUpRight!=None:
+                    node_stack.append((child,0,vectUpRight,child.dist,needsUpdating,nodeProb,failedPasses))
+                child=t1.children[1]
+                otherChild=t1.children[0]
+                if needsUpdating:
+                    vectUpLeft=mergeVectorsUpDown(passedPartials,distance,otherChild.probVect,otherChild.dist,mutMatrix)
+                else:
+                    vectUpLeft=t1.probVectUpLeft
+                if vectUpLeft!=None:
+                    node_stack.append((child,0,vectUpLeft,child.dist,needsUpdating,nodeProb,failedPasses))
+
+        else: #case when crawling up from child to parent
+            if t1.dist or t1.up==None: #append directly at the node
+                if needsUpdating:
+                    if direction==1:
+                        nodeTot=mergeVectorsUpDown(t1.probVectUpRight,False,passedPartials,distance,mutMatrix)
+                    else:
+                        nodeTot=mergeVectorsUpDown(t1.probVectUpLeft,False,passedPartials,distance,mutMatrix)
+                    if nodeTot==None:
+                        #print("Removing a node created an inconsistency while moving up.")
+                        continue
+                    elif not areVectorsDifferent(nodeTot,t1.probVectTot):
+                        needsUpdating=False
+                else:
+                    nodeTot=t1.probVectTot
+                if search_subtree_placement:
+                    nodeProb=appendProbNode(nodeTot,subtree_regions,removedBLen,mutMatrix)
+                else:
+                    nodeProb=appendProb(nodeTot,subtree_regions,removedBLen,mutMatrix)
+                if nodeProb<(lastLK-thresholdLogLKconsecutivePlacement): #placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
+                    failedPasses+=1
+                elif nodeProb>bestLKdiff:
+                    best_node=t1
+                    bestLKdiff=nodeProb
+                    is_mid_branch=False
+                    failedPasses=0
+            else:
+                nodeProb=lastLK
+
+            otherChild=t1.children[2-direction]
+            midBottom=None
+            if t1.dist and t1.up!=None: #try appending mid-branch
+                if needsUpdating:
+                    midBottom=mergeVectors(otherChild.probVect,otherChild.dist,passedPartials,distance,mutMatrix)
+                    if midBottom==None:
+                        continue
+                    if t1==t1.up.children[0]:
+                        vectUp=t1.up.probVectUpRight
+                    else:
+                        vectUp=t1.up.probVectUpLeft
+                    midTot=mergeVectorsUpDown(vectUp,t1.dist/2,midBottom,t1.dist/2,mutMatrix)
+                else:
+                    midTot=t1.probVectTotUp
+                if midTot==None:
+                    continue
+                if search_subtree_placement:
+                    midProb=appendProbNode(midTot,subtree_regions,removedBLen,mutMatrix)
+                else:
+                    midProb=appendProb(midTot,subtree_regions,removedBLen,mutMatrix)
+                if best_node==t1:
+                    best_up_lh_diff=midProb
+                if midProb>bestLKdiff:
+                    best_node=t1
+                    bestLKdiff=midProb
+                    is_mid_branch=True
+                    failedPasses=0
+                    best_down_lh_diff=nodeProb
+                elif nodeProb>=(bestLKdiff-thresholdProb):
+                    best_up_lh_diff=midProb
+            else:
+                midProb=float("-inf")
+            
+            #testing for the stop rule of the traversal process
+            keepTraversing=False
+            if search_subtree_placement:
+                if strictTopologyStopRules:
+                    if failedPasses<=allowedFailsTopology and nodeProb>(bestLKdiff-thresholdLogLKtopology):
+                        keepTraversing=True
+                else:
+                    if failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology):
+                        keepTraversing=True
+            else:
+                if strictInitialStopRules:
+                    if failedPasses<=allowedFails and nodeProb>(bestLKdiff-thresholdLogLK):
+                        keepTraversing=True
+                else:
+                    if failedPasses<=allowedFails or nodeProb>(bestLKdiff-thresholdLogLK):
+                        keepTraversing=True
+            if keepTraversing:
+                #if failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology) :
+                # keep crawling up into parent and sibling node
+                if t1.up!=None: #case the node is not the root
+                    #first pass the crawling down the other child
+                    if t1==t1.up.children[0]:
+                        upChild=0
+                        if needsUpdating:
+                            parent_upper_lr_regions=t1.up.probVectUpRight
+                    else:
+                        upChild=1
+                        if needsUpdating:
+                            parent_upper_lr_regions=t1.up.probVectUpLeft
+                    if needsUpdating:
+                        vectUp=mergeVectorsUpDown(parent_upper_lr_regions,t1.dist,passedPartials,distance,mutMatrix)
+                    else:
+                        if direction==1:
+                            vectUp=t1.probVectUpLeft
+                        else:
+                            vectUp=t1.probVectUpRight
+
+                    if vectUp==None:
+                        continue
+                    else:
+                        node_stack.append((otherChild,0,vectUp,otherChild.dist,needsUpdating,nodeProb,failedPasses))
+                    #now pass the crawling up to the parent node
+                    if needsUpdating:
+                        if midBottom==None:
+                            midBottom=mergeVectors(otherChild.probVect,otherChild.dist,passedPartials,distance,mutMatrix)
+                            if midBottom==None:
+                                continue
+                    else:
+                        midBottom=t1.probVect
+                    node_stack.append((t1.up,upChild+1,midBottom,t1.dist,needsUpdating,nodeProb,failedPasses))
+                #now consider case of root node
+                else:
+                    if needsUpdating:
+                        vectUp=rootVector(passedPartials,distance,mutMatrix)
+                    else:
+                        if direction==1:
+                            vectUp=t1.probVectUpLeft
+                        else:
+                            vectUp=t1.probVectUpRight
+                    node_stack.append((otherChild,0,vectUp,otherChild.dist,needsUpdating,nodeProb,failedPasses))
+    if search_subtree_placement:
+        return best_node , bestLKdiff , is_mid_branch
+    else:
+        #exploration of the tree is finished, and we are left with the node found so far with the best appending likelihood cost.
+        #Now we explore placement just below this node for more fine-grained placement within its descendant branches.
+        bestOfChildLK=float("-inf")
+        bestChild=None
+        if is_mid_branch:
+            nodeUp=best_node.up
+            while (not nodeUp.dist) and (nodeUp.up!=None):
+                nodeUp=nodeUp.up
+            best_up_lh_diff=appendProb(nodeUp.probVectTot,subtree_regions,removedBLen,mutMatrix)
+            return best_node , bestLKdiff , is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_node
+        else:
+            #current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node
+            #to find out if the best placement is actually in any of the branches below the current node.
+            node_stack=[]
+            for c in best_node.children:
+                node_stack.append(c)
+            while node_stack:
+                t1=node_stack.pop()
+                if not t1.dist:
+                    for c in t1.children:
+                        node_stack.append(c)
+                else:
+                    #now try to place on the current branch below the best node, at an height above the mid-branch.
+                    newBLen2=t1.dist/2
+                    bestLKdiff2=float("-inf")
+                    furtherNode=-1
+                    newProbVect2=t1.probVectTotUp
+                    while True:
+                        newLKdiff2=appendProb(newProbVect2,subtree_regions,removedBLen,mutMatrix)
+                        if newLKdiff2>bestLKdiff2:
+                            bestLKdiff2=newLKdiff2
+                        else:
+                            break
+                        newBLen2=newBLen2/2
+                        if newBLen2<=(minBLenForMidNode/2):
+                            break
+                        furtherNode+=1
+                        newProbVect2=t1.furtherMidNodes[furtherNode]
+                    
+                    if bestLKdiff2>bestOfChildLK:
+                        bestOfChildLK=bestLKdiff2
+                        bestChild=t1
+            #pass on the best child found to the next function, which will place the new sample somewhere between the best node and the best child.
+            return best_node , bestLKdiff , is_mid_branch, best_up_lh_diff, bestOfChildLK, bestChild*/
+}
+
 
 void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name, RealNumType best_lh_diff , bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
 {
@@ -590,7 +918,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
         while (new_split * selected_node->length > min_blength)
         {
             upper_left_right_regions->mergeUpperLower(new_parent_regions, selected_node->length * new_split, selected_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate),  selected_node->length * (1 - new_split), aln, model, params->threshold_prob);
-            RealNumType placement_cost = new_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, default_blength);
+            RealNumType placement_cost = new_parent_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, default_blength);
             
             if (placement_cost > best_split_lh)
             {
@@ -613,7 +941,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
             {
                 upper_left_right_regions->mergeUpperLower(new_parent_regions, selected_node->length * (1.0 - new_split), selected_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate),selected_node->length * new_split, aln, model, params->threshold_prob);
                 
-                RealNumType placement_cost = new_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, default_blength);
+                RealNumType placement_cost = new_parent_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, default_blength);
                 if (placement_cost > best_split_lh)
                 {
                     best_split_lh = placement_cost;
@@ -641,7 +969,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
         while (best_blength > min_blength)
         {
             RealNumType new_blength = best_blength / 2;
-            RealNumType placement_cost = best_child_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, new_blength);
+            RealNumType placement_cost = best_child_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, new_blength);
             
             if (placement_cost > new_branch_lh)
             {
@@ -656,7 +984,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
             while (best_blength < max_blength)
             {
                 RealNumType new_blength = best_blength * 2;
-                RealNumType placement_cost = best_child_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, new_blength);
+                RealNumType placement_cost = best_child_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, new_blength);
                 if (placement_cost > new_branch_lh)
                 {
                     new_branch_lh = placement_cost;
@@ -668,7 +996,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
         }
         if (best_blength < min_blength)
         {
-            RealNumType zero_branch_lh = best_child_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, -1);
+            RealNumType zero_branch_lh = best_child_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, -1);
             if (zero_branch_lh > new_branch_lh)
                 best_blength = -1;
         }
@@ -749,7 +1077,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
                 Regions* new_parent_regions = NULL;
                 upper_left_right_regions->mergeUpperLower(new_parent_regions, best_child->length * new_split, lower_regions, best_child->length * (1 - new_split), aln, model, params->threshold_prob);
                 
-                RealNumType placement_cost = new_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, default_blength);
+                RealNumType placement_cost = new_parent_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, default_blength);
                 
                 if (placement_cost > best_split_lh)
                 {
@@ -837,7 +1165,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
             {
                 upper_left_right_regions->mergeUpperLower(new_parent_regions, selected_node->length * (1 - new_split), lower_regions, selected_node->length * new_split, aln, model, params->threshold_prob);
                 
-                RealNumType placement_cost = new_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, default_blength);
+                RealNumType placement_cost = new_parent_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, default_blength);
                 
                 if (placement_cost > best_split_lh)
                 {
@@ -870,7 +1198,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
             while (best_length > min_blength)
             {
                 RealNumType new_blength = best_length / 2;
-                RealNumType placement_cost = best_child_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, new_blength);
+                RealNumType placement_cost = best_child_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, new_blength);
                 
                 if (placement_cost > new_branch_length_lh)
                 {
@@ -886,7 +1214,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
                 while (best_length < max_blength)
                 {
                     RealNumType new_blength = best_length * 2;
-                    RealNumType placement_cost = best_child_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, new_blength);
+                    RealNumType placement_cost = best_child_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, new_blength);
                     if (placement_cost > new_branch_length_lh)
                     {
                         new_branch_length_lh = placement_cost;
@@ -899,7 +1227,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
             
             if (best_length < min_blength)
             {
-                RealNumType tmp_lh = best_child_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, -1);
+                RealNumType tmp_lh = best_child_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, -1);
                 
                 if (tmp_lh > new_branch_length_lh)
                     best_length = -1;
@@ -1143,7 +1471,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
                 while (best_length > min_blength)
                 {
                     RealNumType new_blength = best_length / 2;
-                    RealNumType placement_cost = best_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, new_blength);
+                    RealNumType placement_cost = best_parent_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, new_blength);
                     
                     if (placement_cost > new_branch_length_lh)
                     {
@@ -1159,7 +1487,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
                     while (best_length < max_blength)
                     {
                         RealNumType new_blength = best_length * 2;
-                        RealNumType placement_cost = best_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, new_blength);
+                        RealNumType placement_cost = best_parent_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, new_blength);
                         
                         if (placement_cost > new_branch_length_lh)
                         {
@@ -1174,7 +1502,7 @@ void Tree::placeNewSample(Node* selected_node, Regions* sample, string seq_name,
                 // try with length zero
                 if (best_length < min_blength)
                 {
-                    RealNumType placement_cost = best_parent_regions->calculatePlacementCost(aln, model, cumulative_rate, sample, -1);
+                    RealNumType placement_cost = best_parent_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, sample, -1);
                     
                     if (placement_cost > new_branch_length_lh)
                         best_length = -1;
@@ -1551,4 +1879,238 @@ void Tree::setAllNodeDirty()
         FOR_NEIGHBOR(node, neighbor_node)
             node_stack.push(neighbor_node);
     }
+}
+
+RealNumType Tree::improveEntireTree(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
+{
+    // start from the root
+    stack<Node*> node_stack;
+    node_stack.push(root);
+    
+    // dummy variables
+    RealNumType total_improvement = 0;
+    PositionType num_nodes = 0;
+    
+    // traverse downward the tree
+    while (!node_stack.empty())
+    {
+        // pick the top node from the stack
+        Node* node = node_stack.top();
+        node_stack.pop();
+        
+        // add all children of the current nodes to the stack for further traversing later
+        Node* neighbor_node = NULL;
+        FOR_NEIGHBOR(node, neighbor_node)
+            node_stack.push(neighbor_node);
+        
+        // only process dirty node to avoid traversing the same part of the tree multiple times
+        if (node->dirty)
+        {
+            node->dirty = false;
+            
+            /*if checkEachSPR:
+                root=node
+                while root.up!=None:
+                    root=root.up
+                #print("Pre-SPR tree: "+createBinaryNewick(root))
+                oldTreeLK=calculateTreeLikelihood(root,mutMatrix,checkCorrectness=True)
+                #print("Pre-SPR tree likelihood: "+str(oldTreeLK))
+                reCalculateAllGenomeLists(root,mutMatrix, checkExistingAreCorrect=True)*/
+            
+            // do SPR moves to improve the tree
+            RealNumType improvement = improveSubTree(node, cumulative_rate, default_blength, max_blength, min_blength);
+            
+            /*if checkEachSPR:
+                #print(" apparent improvement "+str(improvement))
+                root=node
+                while root.up!=None:
+                    root=root.up
+                #print("Post-SPR tree: "+createBinaryNewick(root))
+                newTreeLK=calculateTreeLikelihood(root,mutMatrix)
+                reCalculateAllGenomeLists(root,mutMatrix, checkExistingAreCorrect=True)
+                #print("Post-SPR tree likelihood: "+str(newTreeLK))
+                if newTreeLK-oldTreeLK < improvement-1.0:
+                    print("In startTopologyUpdates, LK score of improvement "+str(newTreeLK)+" - "+str(oldTreeLK)+" = "+str(newTreeLK-oldTreeLK)+" is less than what is supposd to be "+str(improvement))
+                    exit()
+             */
+            
+            // update total_improvement
+            total_improvement += improvement;
+            
+            // Show log every 1000 nodes
+            num_nodes += 1;
+            if (num_nodes % 1000 == 0)
+                cout << "Processed topology for " + convertIntToString(num_nodes) + " nodes." << endl;
+        }
+    }
+    
+    return total_improvement;
+}
+
+RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
+{
+    // dummy variables
+    RealNumType threshold_prob = params->threshold_prob;
+    RealNumType threshold_prob2 = threshold_prob * threshold_prob;
+    RealNumType total_improvement = 0;
+    bool blength_changed = false; // true if a branch length has been changed
+    
+    // we avoid the root node since it cannot be re-placed with SPR moves
+    if (node != root)
+    {
+        // evaluate current placement
+        Node* parent_node = node->neighbor->getTopNode();
+        Regions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        
+        // score of current tree
+        RealNumType best_blength = node->length;
+        Regions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        RealNumType best_lh = parent_upper_lr_lh->calculateSubTreePlacementCost(aln, model, cumulative_rate, lower_lh, best_blength);
+        RealNumType original_lh = best_lh;
+        
+        // optimize branch length
+        if (best_lh < params->thresh_placement_cost)
+        {
+            // try different branch lengths for the current node placement (just in case branch length can be improved, in which case it counts both as tree improvment and better strategy to find a new placement).
+            if (node->length <= 0)
+            {
+                best_blength = min_blength;
+                best_lh = parent_upper_lr_lh->calculateSubTreePlacementCost(aln, model, cumulative_rate, lower_lh, best_blength);
+            }
+            
+            RealNumType best_split = 1;
+            RealNumType new_split = 0.5;
+            while (new_split * best_blength > min_blength)
+            {
+                RealNumType new_lh = parent_upper_lr_lh->calculateSubTreePlacementCost(aln, model, cumulative_rate, lower_lh, new_split * best_blength);
+                
+                if (new_lh > best_lh)
+                {
+                    best_lh = new_lh;
+                    best_split = new_split;
+                    blength_changed = true;
+                }
+                else
+                    break;
+                
+                new_split = best_split / 2;
+            }
+            
+            if (best_split > 0.7)
+            {
+                new_split = 2;
+                while (new_split * best_blength < max_blength)
+                {
+                    RealNumType new_lh = parent_upper_lr_lh->calculateSubTreePlacementCost(aln, model, cumulative_rate, lower_lh, new_split * best_blength);
+                    
+                    if (new_lh > best_lh)
+                    {
+                        best_lh = new_lh;
+                        best_split = new_split;
+                        blength_changed = true;
+                    }
+                    else
+                        break;
+                    
+                    new_split = best_split * 2;
+                }
+            }
+            
+            best_blength = best_blength * best_split;
+            
+            if (node->length <= 0)
+                if (original_lh > best_lh)
+                    best_lh = original_lh;
+        }
+           
+        // find new placement
+        if (best_lh < params->thresh_placement_cost)
+        {
+            // now find the best place on the tree where to re-attach the subtree rooted at "node" but to do that we need to consider new vector probabilities after removing the node that we want to replace this is done using findBestParentTopology().
+            bool topology_updated = false;
+            
+            Node* best_node = NULL;
+            RealNumType best_lh_diff = -DBL_MAX;
+            bool is_mid_node = false;
+            
+            // NHANLT: ongoing work
+            //findBestParent(parent_node,child,best_lh,best_blength,mutMatrix,strictTopologyStopRules=strictTopologyStopRules,allowedFailsTopology=allowedFailsTopology,thresholdLogLKtopology=thresholdLogLKtopology);
+            
+            // validate the new placement cost
+            if (best_lh_diff > threshold_prob2)
+                outError("Strange, lh cost is positive");
+            else if (best_lh_diff < -1e50)
+                outError("Likelihood cost is very heavy, this might mean that the reference used is not the same used to generate the input diff file");
+            
+            if (best_lh_diff + params->thresh_placement_cost > best_lh)
+            {
+                if (best_node == parent_node)
+                    outWarning("Strange, re-placement is at same node");
+                else if ((best_node == parent_node->next->neighbor || best_node == parent_node->next->next->neighbor) && is_mid_node)
+                    cout << "Re-placement is above sibling node";
+                else
+                {
+                    // reach the top of a multifurcation, which is the only place in a multifurcatio where placement is allowed.
+                    Node* top_polytomy = best_node;
+                    while (top_polytomy->length <= 0 && top_polytomy!= root)
+                        top_polytomy = top_polytomy->neighbor->getTopNode();
+                    
+                    if (top_polytomy != best_node)
+                        outWarning("Strange, placement node not at top of polytomy");
+                    
+                    // reach the top of the multifurcation of the parent
+                    Node* parent_top_polytomy = parent_node;
+                    PositionType parent_top_count = 0;
+                    while (parent_top_polytomy->length <= 0 && parent_top_polytomy != root)
+                    {
+                        parent_top_polytomy = parent_top_polytomy->neighbor->getTopNode();
+                        parent_top_count += 1;
+                    }
+                    
+                    if (!(parent_top_polytomy == top_polytomy && !is_mid_node))
+                    {
+                        total_improvement = best_lh_diff - best_lh;
+                        
+                        if (verbose_mode == VB_DEBUG)
+                            cout << "In improveSubTree() found SPR move with improvement " << total_improvement << endl;
+                        
+                        // apply an SPR move
+                        // NHANLT: ongoing work
+                        // newRoot = cutAndPasteNode(node,best_node,is_mid_node,best_blength,best_lh_diff,mutMatrix)
+                        
+                        topology_updated = true;
+                    }
+                }
+                if (!topology_updated && blength_changed)
+                {
+                    node->length = best_blength;
+                    
+                    stack<Node*> node_stack;
+                    node_stack.push(node);
+                    node_stack.push(node->neighbor);
+                    updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                }
+            }
+            else if (blength_changed)
+            {
+                node->length = best_blength;
+                
+                stack<Node*> node_stack;
+                node_stack.push(node);
+                node_stack.push(node->neighbor);
+                updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+            }
+        }
+        else if (blength_changed)
+        {
+            node->length = best_blength;
+            
+            stack<Node*> node_stack;
+            node_stack.push(node);
+            node_stack.push(node->neighbor);
+            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+        }
+    }
+                        
+    return total_improvement;
 }

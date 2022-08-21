@@ -17,6 +17,12 @@ private:
      */
     void refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
     
+    /**
+        try to improve a subtree rooted at node with SPR moves
+        @return total improvement
+     */
+    RealNumType improveSubTree(Node* node, RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    
 public:
     // parameters
     Params *params;
@@ -64,7 +70,12 @@ public:
     /**
         seek a position for a sample placement starting at the start_node
      */
-    void seekPlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
+    void seekSamplePlacement(Node* start_node, string seq_name, Regions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
+    
+    /**
+        seek a position for placing a subtree/sample starting at the start_node
+     */
+    void seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, Node* start_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement = true, Regions* sample_regions = NULL);
 
     /**
         place a new sample on the tree
@@ -77,9 +88,15 @@ public:
     void refreshAllLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
     
     /**
-           traverse the tree to set the dirty flag (which is used to prevent traversing the same part of the tree multiple times) of all nodes to TRUE
+        traverse the tree to set the dirty flag (which is used to prevent traversing the same part of the tree multiple times) of all nodes to TRUE
      */
     void setAllNodeDirty();
+    
+    /**
+        try to improve the entire tree with SPR moves
+        @return total improvement
+     */
+    RealNumType improveEntireTree(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
 };
 
 #endif

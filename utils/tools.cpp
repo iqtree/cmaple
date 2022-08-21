@@ -544,6 +544,8 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.thresh_diff_update = 1e-7;
     params.output_aln = NULL;
     params.num_tree_improvement = 1;
+    params.thresh_entire_tree_improvement = 1;
+    params.thresh_placement_cost = -1e-5;
     
     for (int cnt = 1; cnt < argc; cnt++) {
         try {

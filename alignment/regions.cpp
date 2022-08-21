@@ -1275,7 +1275,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
 }
 
 // this implementation derives from appendProbNode
-/*RealNumType Regions::calculatePlacementCost(Regions* parent_regions, Regions* child_regions, RealNumType blength)
+RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength)
 {
     // init dummy variables
     RealNumType lh_cost = 0;
@@ -1283,18 +1283,18 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
     PositionType seq2_index = -1;
     PositionType pos = 0;
     RealNumType total_factor = 1;
-    StateType num_states = tree->aln->num_states;
+    StateType num_states = aln->num_states;
     Region *seq1_region, *seq2_region;
     PositionType seq1_end = -1, seq2_end = -1;
     PositionType length;
     RealNumType minimum_carry_over = DBL_MIN * 1e50;
     RealNumType total_blength = blength;
-    PositionType seq_length = tree->aln->ref_seq.size();
+    PositionType seq_length = aln->ref_seq.size();
     
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        Regions::getNextSharedSegment(pos, seq_length, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
+        Regions::getNextSharedSegment(pos, seq_length, this, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
         
         // 1. e1.type = N || e2.type = N
         if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
@@ -1332,7 +1332,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                 else if (seq2_region->type == TYPE_O)
                 {
                     RealNumType tot = 0;
-                    StateType seq1_state = tree->aln->ref_seq[pos];
+                    StateType seq1_state = aln->ref_seq[pos];
                     
                     if (seq1_region->plength_from_root >= 0)
                     {
@@ -1376,7 +1376,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                 // 2.3. e1.type = R and e2.type = A/C/G/T
                 else
                 {
-                    StateType seq1_state = tree->aln->ref_seq[pos];
+                    StateType seq1_state = aln->ref_seq[pos];
                     StateType seq2_state = seq2_region->type;
                     
                     if (seq1_region->plength_from_root >= 0)
@@ -1398,35 +1398,29 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
             // 3. e1.type = O
             else if (seq1_region->type == TYPE_O)
             {
-                RealNumType blength13 = blength;
-                if (seq1_region->plength_observation >= 0)
-                {
-                    blength13 = seq1_region->plength_observation;
-                    if (blength > 0)
-                        blength13 += blength;
-                }
-                    
                 // 3.1. e1.type = O and e2.type = O
                 if (seq2_region->type == TYPE_O)
                 {
                     RealNumType tot = 0;
                     
-                    for (StateType i = 0; i < num_states; i++)
+                    if (total_blength > 0)
                     {
-                        RealNumType tot2 = 0;
-                        
-                        for (StateType j = 0; j < num_states; j++)
-                            if (seq2_region->likelihood[j] > 0.1)
-                                tot2 += model->mutation_mat[i * num_states + j];
-                        
-                        tot2 *= blength13;
-                        
-                        if (seq2_region->likelihood[i] > 0.1)
-                            tot2 += 1;
-                        
-                        tot += tot2 * seq1_region->likelihood[i];
+                        for (StateType i = 0; i < num_states; i++)
+                        {
+                            RealNumType tot2 = 0;
+                            
+                            for (StateType j = 0; j < num_states; j++)
+                                tot2 += model->mutation_mat[i * num_states + j] * seq2_region->likelihood[j];
+                            
+                            tot += seq1_region->likelihood[i] * (seq2_region->likelihood[i] + total_blength * tot2);
+                        }
                     }
-                        
+                    else
+                    {
+                        for (StateType i = 0; i < num_states; i++)
+                            tot += seq1_region->likelihood[i] * seq2_region->likelihood[i];
+                    }
+                    
                     total_factor *= tot;
                 }
                 // 3.2. e1.type = O and e2.type = R or A/C/G/T
@@ -1434,16 +1428,18 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                 {
                     StateType seq2_state = seq2_region->type;
                     if (seq2_state == TYPE_R)
-                        seq2_state = tree->aln->ref_seq[pos];
+                        seq2_state = aln->ref_seq[pos];
                     
-                    RealNumType tot2 = 0;
                     if (total_blength > 0)
                     {
+                        RealNumType tot2 = 0;
                         for (StateType j = 0; j < num_states; j++)
-                            tot2 += model->mutation_mat[j * num_states + seq2_state] * seq1_region->likelihood[j];
+                            tot2 += seq1_region->likelihood[j] * model->mutation_mat[j * num_states + seq2_state];
+                        
+                        total_factor *= seq1_region->likelihood[seq2_state] + total_blength * tot2;
                     }
-                    
-                    total_factor *= seq1_region->likelihood[seq2_state] + blength13 * tot2;
+                    else
+                        total_factor *= seq1_region->likelihood[seq2_state];
                 }
             }
             // 4. e1.type = A/C/G/T
@@ -1502,7 +1498,7 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                     {
                         StateType seq2_state = seq2_region->type;
                         if (seq2_state == TYPE_R)
-                            seq2_state = tree->aln->ref_seq[pos];
+                            seq2_state = aln->ref_seq[pos];
                         
                         if (seq1_region->plength_from_root >= 0)
                         {
@@ -1537,10 +1533,11 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
     }
     
     return lh_cost + log(total_factor);
-}*/
+}
 
+#define MIN_CARRY_OVER 1e-250
 // this implementation derives from appendProb
-RealNumType Regions::calculatePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength)
+RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength)
 {
     // init dummy variables
     RealNumType lh_cost = 0;
@@ -1552,7 +1549,7 @@ RealNumType Regions::calculatePlacementCost(Alignment* aln, Model* model, RealNu
     Region *seq1_region, *seq2_region;
     PositionType seq1_end = -1, seq2_end = -1;
     PositionType length;
-    RealNumType minimum_carry_over = DBL_MIN * 1e50;
+    //RealNumType minimum_carry_over = DBL_MIN * 1e50;
     if (blength < 0) blength = 0;
     RealNumType total_blength = blength;
     PositionType seq_length = aln->ref_seq.size();
@@ -1569,8 +1566,11 @@ RealNumType Regions::calculatePlacementCost(Alignment* aln, Model* model, RealNu
             continue;
         }
         // e1.type != N && e2.type != N
-        else
-        {
+        else {
+            // A,C,G,T
+            // R -> same as the reference
+            // N -> gaps
+            // O -> vector of 4 probability to observe A, C, G, T
             // 2. e1.type = R
             if (seq1_region->type == TYPE_R)
             {
@@ -1618,13 +1618,13 @@ RealNumType Regions::calculatePlacementCost(Alignment* aln, Model* model, RealNu
                                     tot2 = model->root_freqs[i] * (model->mutation_mat[mutation_index] * seq1_region->plength_observation);
                                     
                                 RealNumType tot3 = 0;
+                                if (seq2_region->likelihood[i] > 0.1)
+                                    tot3 = 1;
+                                
                                 for (StateType j = 0; j < num_states; j++)
                                     if (seq2_region->likelihood[j] > 0.1)
-                                        tot3 += model->mutation_mat[i * num_states + j];
+                                        tot3 += model->mutation_mat[i * num_states + j]; // TODO
                                 tot3 *= total_blength;
-                                
-                                if (seq2_region->likelihood[i] > 0.1)
-                                    tot3 += 1;
                                 
                                 tot += tot2 * tot3;
                             }
@@ -1663,7 +1663,8 @@ RealNumType Regions::calculatePlacementCost(Alignment* aln, Model* model, RealNu
                     
                     if (seq1_region->plength_from_root >= 0)
                     {
-                        total_factor *= ((model->root_freqs[seq1_state] * model->mutation_mat[seq1_state * num_states + seq2_state] * blength * (1.0 + model->mutation_mat[seq1_state * (num_states + 1)] * seq1_region->plength_observation) + model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->mutation_mat[seq2_state * (num_states + 1)] * (blength + seq1_region->plength_from_root))) / model->root_freqs[seq1_state]);
+                        
+                        total_factor *= ((model->root_freqs[seq1_state] * model->mutation_mat[seq1_state * num_states + seq2_state] * blength * (1.0 + model->mutation_mat[seq1_state * (num_states + 1)] * seq1_region->plength_observation) + model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->mutation_mat[seq2_state * (num_states + 1)] * (blength + seq1_region->plength_from_root))) / model->root_freqs[seq1_state]); // cache pi(i)/pi(j)*Qij
                     }
                     else
                         total_factor *= model->mutation_mat[seq1_state * num_states + seq2_state] * (blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation));
@@ -1809,7 +1810,7 @@ RealNumType Regions::calculatePlacementCost(Alignment* aln, Model* model, RealNu
         }
          
         // approximately update lh_cost and total_factor
-        if (total_factor <= minimum_carry_over)
+        if (total_factor <= MIN_CARRY_OVER)
         {
             if (total_factor < DBL_MIN)
                 return -DBL_MAX;

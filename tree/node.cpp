@@ -167,13 +167,13 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
     Regions* upper_left_right_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
     Regions* lower_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
     
-    RealNumType best_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, default_blength);
+    RealNumType best_lh = upper_left_right_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, lower_regions, default_blength);
     RealNumType best_length = default_blength;
     
     while (best_length > min_blength)
     {
         RealNumType new_blength = best_length/2;
-        RealNumType new_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
+        RealNumType new_lh = upper_left_right_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
         
         if (new_lh > best_lh)
         {
@@ -189,7 +189,7 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
         while (best_length < max_blength)
         {
             RealNumType new_blength = best_length * 2;
-            RealNumType new_lh = upper_left_right_regions->calculatePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
+            RealNumType new_lh = upper_left_right_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
             if (new_lh > best_lh)
             {
                 best_lh = new_lh;

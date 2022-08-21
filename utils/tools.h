@@ -342,6 +342,16 @@ public:
     *       the number of attempts to improve the tree with SPR moves
     */
     int num_tree_improvement;
+    
+    /**
+    *  Threshold for improvement on the entire tree
+    */
+    RealNumType thresh_entire_tree_improvement;
+    
+    /**
+    *  Don't try to re-place nodes that have the placement cost exceeds this threshold
+    */
+    RealNumType thresh_placement_cost;
 };
 
 /*--------------------------------------------------------------*/
