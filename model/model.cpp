@@ -160,22 +160,21 @@ void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<
     
     // init cumulative_rate
     if (!cumulative_rate)
-        cumulative_rate = new RealNumType[sequence_length];
+        cumulative_rate = new RealNumType[sequence_length + 1];
     
     // init cumulative_base and cumulative_rate
-    cumulative_base.resize(sequence_length);
-    cumulative_rate[0] = mutation_mat[aln->ref_seq[0] * (aln->num_states + 1)];
+    cumulative_base.resize(sequence_length + 1);
+    cumulative_rate[0] = 0;
     cumulative_base[0].resize(aln->num_states, 0);
-    cumulative_base[0][aln->ref_seq[0]] = 1;
     
     // compute cumulative_base and cumulative_rate
-    for (PositionType i = 1; i < sequence_length; i++)
+    for (PositionType i = 0; i < sequence_length; i++)
     {
         StateType state = aln->ref_seq[i];
-        cumulative_rate[i] = cumulative_rate[i - 1] + mutation_mat[state * (aln->num_states + 1)];
+        cumulative_rate[i + 1] = cumulative_rate[i] + mutation_mat[state * (aln->num_states + 1)];
         
-        cumulative_base[i] =  cumulative_base[i -1];
-        cumulative_base[i][state] = cumulative_base[i - 1][state] + 1;
+        cumulative_base[i + 1] =  cumulative_base[i];
+        cumulative_base[i + 1][state] = cumulative_base[i][state] + 1;
     }
         
 }

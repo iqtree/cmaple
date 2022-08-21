@@ -892,7 +892,7 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     if (total_blength_2 < 0) total_blength_2 = 0;
                     
                     if (seq1_region->type == TYPE_R)
-                        log_lh += (total_blength_1 + total_blength_2) * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                        log_lh += (total_blength_1 + total_blength_2) * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                     else
                         log_lh += model->mutation_mat[seq1_region->type * (num_states + 1)] * (total_blength_1 + total_blength_2);
                 }
@@ -1169,7 +1169,7 @@ RealNumType Regions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vecto
             PositionType end_pos = (region_index == ((PositionType) size()) - 1 ? seq_length - 1 : getRegion(region_index + 1)->position - 1);
             
             for (StateType i = 0; i < num_states; i++)
-                log_lh += model->root_log_freqs[i] * (cumulative_base[end_pos][i] - (start_pos == 0 ? 0 : cumulative_base[start_pos - 1][i]));
+                log_lh += model->root_log_freqs[i] * (cumulative_base[end_pos + 1][i] - cumulative_base[start_pos][i]);
         }
         // type ACGT
         else if (region->type < num_states)
@@ -1326,7 +1326,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                         total_blength += seq1_region->plength_observation;
                     
                     if (total_blength > 0)
-                        lh_cost += total_blength * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                        lh_cost += total_blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                 }
                 // 2.2. e1.type = R and e2.type = O
                 else if (seq2_region->type == TYPE_O)
@@ -1578,15 +1578,15 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                 if (seq2_region->type == TYPE_R)
                 {
                     if (seq1_region->plength_observation < 0 && seq1_region->plength_from_root < 0)
-                        lh_cost += blength * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                        lh_cost += blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                     else
                     {
                         total_blength = blength + seq1_region->plength_observation;
                         if (seq1_region->plength_from_root < 0)
-                            lh_cost += total_blength * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                            lh_cost += total_blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                         else
                             // here contribution from root frequency gets added and subtracted so it's ignored
-                            lh_cost += (total_blength + seq1_region->plength_from_root) * (cumulative_rate[pos + length - 1] - (pos == 0 ? 0 : cumulative_rate[pos - 1]));
+                            lh_cost += (total_blength + seq1_region->plength_from_root) * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                     }
                 }
                 // 2.2. e1.type = R and e2.type = O
