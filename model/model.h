@@ -12,12 +12,18 @@ class Model
 
 public:
     string model_name;
-    RealNumType *root_freqs, *root_log_freqs;
+    RealNumType *root_freqs;
     RealNumType *mutation_mat;
+    RealNumType* pseu_mutation_count;
+    
+    /**
+     caches to reduce runtime
+     */
+    RealNumType *root_log_freqs;
     RealNumType *diagonal_mut_mat;
     RealNumType *transposed_mut_mat;
     RealNumType *inverse_root_freqs;
-    RealNumType* pseu_mutation_count;
+    RealNumType *freqi_freqj_qij; // freq(i) / freq(j) * Qij
     
 	/**
 		constructor

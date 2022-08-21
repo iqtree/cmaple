@@ -1432,17 +1432,15 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                     {
                         if (total_blength > 0)
                         {
-                            RealNumType seq1_state_evolves_seq2_state = model->root_freqs[seq1_state] * model->mutation_mat[seq1_state * num_states + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                            RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[seq1_state * num_states + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
                             
-                            RealNumType seq2_state_evolves_seq1_state = model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
+                            RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
                             
-                            total_factor *= ((seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state) * model->inverse_root_freqs[seq1_state]);
+                            total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
                         }
                         else
                         {
-                            RealNumType seq2_state_evolves_seq1_state = model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation;
-                            
-                            total_factor *= (seq2_state_evolves_seq1_state * model->inverse_root_freqs[seq1_state]);
+                            total_factor *= model->freqi_freqj_qij[seq2_state * num_states + seq1_state] * seq1_region->plength_observation;
                         }
                     }
                     else
@@ -1574,17 +1572,15 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                         {
                             if (total_blength > 0)
                             {
-                                RealNumType seq1_state_evolves_seq2_state = model->root_freqs[seq1_state] * model->mutation_mat[seq1_state * num_states + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                                RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[seq1_state * num_states + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
                                 
-                                RealNumType seq2_state_evolves_seq1_state = model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
+                                RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
                                 
-                                total_factor *= ((seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state) * model->inverse_root_freqs[seq1_state]);
+                                total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
                             }
                             else
                             {
-                                RealNumType seq2_state_evolves_seq1_state = model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation;
-                                
-                                total_factor *= (seq2_state_evolves_seq1_state * model->inverse_root_freqs[seq1_state]);
+                                total_factor *= model->freqi_freqj_qij[seq2_state * num_states + seq1_state] * seq1_region->plength_observation;
                             }
                         }
                         else
@@ -1748,11 +1744,11 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                     
                     if (seq1_region->plength_from_root >= 0)
                     {
-                        RealNumType seq1_state_evolves_seq2_state = model->root_freqs[seq1_state] * model->mutation_mat[seq1_state * num_states + seq2_state] * blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                        RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[seq1_state * num_states + seq2_state] * blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
                         
-                        RealNumType seq2_state_evolves_seq1_state = model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_from_root));
+                        RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_from_root));
                                                                                                                                                                                                     
-                        total_factor *= ((seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state) * model->inverse_root_freqs[seq1_state]); // cache pi(i)/pi(j)*Qij
+                        total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
                     }
                     else
                     {
@@ -1896,11 +1892,11 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                         if (seq1_region->plength_from_root >= 0)
                         {
                             // here we ignore contribution of non-parsimonious mutational histories
-                            RealNumType seq1_state_evoloves_seq2_state = model->root_freqs[seq1_state] * model->mutation_mat[seq1_state * num_states + seq2_state] * (blength + seq1_region->plength_from_root) * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                            RealNumType seq1_state_evoloves_seq2_state = model->mutation_mat[seq1_state * num_states + seq2_state] * (blength + seq1_region->plength_from_root) * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
                             
-                            RealNumType seq2_state_evolves_seq2_state = model->root_freqs[seq2_state] * model->mutation_mat[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_from_root));
+                            RealNumType seq2_state_evolves_seq2_state = model->freqi_freqj_qij[seq2_state * num_states + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_from_root));
                             
-                            total_factor *= ((seq1_state_evoloves_seq2_state + seq2_state_evolves_seq2_state) * model->inverse_root_freqs[seq1_state]);
+                            total_factor *= seq1_state_evoloves_seq2_state + seq2_state_evolves_seq2_state;
                         }
                         else
                         {

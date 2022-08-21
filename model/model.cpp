@@ -6,6 +6,7 @@ Model::Model()
     mutation_mat = NULL;
     diagonal_mut_mat = NULL;
     transposed_mut_mat = NULL;
+    freqi_freqj_qij = NULL;
     root_freqs = NULL;
     root_log_freqs = NULL;
     inverse_root_freqs = NULL;
@@ -30,6 +31,12 @@ Model::~Model()
     {
         delete [] transposed_mut_mat;
         transposed_mut_mat = NULL;
+    }
+    
+    if (freqi_freqj_qij)
+    {
+        delete [] freqi_freqj_qij;
+        freqi_freqj_qij = NULL;
     }
     
     if (root_freqs)
@@ -95,6 +102,7 @@ void Model::updateMutationMat(StateType num_states)
     StateType matrix_size = num_states * num_states;
     if (!mutation_mat) mutation_mat = new RealNumType[matrix_size];
     if (!transposed_mut_mat) transposed_mut_mat = new RealNumType[matrix_size];
+    if (!freqi_freqj_qij) freqi_freqj_qij = new RealNumType[matrix_size];
     if (!diagonal_mut_mat) diagonal_mut_mat = new RealNumType[num_states];
     
     // init UNREST model
@@ -165,6 +173,12 @@ void Model::updateMutationMat(StateType num_states)
         {
             mutation_mat[start_index + j] *= total_rate;
             
+            // update freqi_freqj_qij
+            if (i != j)
+                freqi_freqj_qij[start_index + j] = root_freqs[i] * inverse_root_freqs[j] * mutation_mat[start_index + j];
+            else
+                freqi_freqj_qij[start_index + j] = mutation_mat[start_index + j];
+            
             // update the transposed mutation matrix
             transposed_mut_mat[j * num_states + i] = mutation_mat[start_index + j];
         }
@@ -182,6 +196,15 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     model_name = n_model_name;
     if (model_name.compare("JC") == 0 || model_name.compare("jc") == 0)
     {
+        // update root_freqs
+        RealNumType log_freq = log(0.25);
+        for (StateType i = 0; i < num_states; ++i)
+        {
+            root_freqs[i] = 0.25;
+            inverse_root_freqs[i] = 4;
+            root_log_freqs[i] = log_freq;
+        }
+        
         // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
         StateType mat_size = num_states * num_states;
         mutation_mat = new RealNumType[mat_size];
@@ -198,11 +221,15 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
                 {
                     mutation_mat[starting_index + j] = -1;
                     transposed_mut_mat[starting_index + j] = -1;
+                    // update freqi_freqj_qij
+                    freqi_freqj_qij[starting_index + j] = -1;
                 }
                 else
                 {
                     mutation_mat[starting_index + j] = jc_rate;
                     transposed_mut_mat[j * num_states + i] = jc_rate;
+                    // update freqi_freqj_qij
+                    freqi_freqj_qij[starting_index + j] = root_freqs[i] * inverse_root_freqs[j] * jc_rate;
                 }
             }
             
@@ -211,15 +238,6 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
             
             // update starting_index
             starting_index += num_states;
-        }
-        
-        // update root_freqs
-        RealNumType log_freq = log(0.25);
-        for (StateType i = 0; i < num_states; ++i)
-        {
-            root_freqs[i] = 0.25;
-            inverse_root_freqs[i] = 4;
-            root_log_freqs[i] = log_freq;
         }
     }
     else
@@ -260,6 +278,9 @@ void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<
 
 void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln)
 {
+    // don't update JC model parameters
+    if (model_name == "JC" || model_name == "jc") return;
+    
     StateType num_states = aln->num_states;
     
     // clone the current mutation matrix
