@@ -5,8 +5,7 @@ Node::Node(bool is_top_node)
     id = -1;
     seq_name = "";
     length = 0;
-    if (is_top_node)
-        real_number_attributes[IS_TOP_NODE] = 1;
+    is_top = is_top_node;
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
@@ -20,6 +19,7 @@ Node::Node(int n_id, string n_seq_name)
     id = n_id;
     seq_name = n_seq_name;
     length = 0;
+    is_top = false;
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
@@ -33,7 +33,7 @@ Node::Node(string n_seq_name)
     id = -1;
     seq_name = n_seq_name;
     length = 0;
-    real_number_attributes[IS_TOP_NODE] = 1;
+    is_top = true;
     next = NULL;
     neighbor = NULL;
     partial_lh = NULL;
@@ -53,22 +53,17 @@ bool Node::isLeave()
     return next == NULL;
 }
 
-bool Node::isTopNode()
-{
-    return real_number_attributes.find(IS_TOP_NODE) != real_number_attributes.end();
-}
-
 Node* Node::getTopNode()
 {
     Node* next_node;
     Node* node = this;
     
-    if (node->isTopNode())
+    if (node->is_top)
         return node;
     
     FOR_NEXT(node, next_node)
     {
-        if (next_node->isTopNode())
+        if (next_node->is_top)
             return next_node;
     }
     
@@ -110,7 +105,7 @@ Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType thre
         if (next)
         {
             // if node is a top node -> partial_lh is the lower lh regions
-            if (isTopNode())
+            if (is_top)
             {
                 // extract the two lower vectors of regions
                 Node* next_node_1 = next;
@@ -131,7 +126,7 @@ Regions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType thre
                 Node* next_node_1 = next;
                 Node* next_node_2 = next_node_1->next;
                 
-                if (next_node_1->isTopNode())
+                if (next_node_1->is_top)
                 {
                     upper_regions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                     upper_blength = next_node_1->length;

@@ -121,7 +121,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
             parent_upper_regions = node->getTopNode()->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
             
         // change in likelihoods is coming from parent node
-        if (node->isTopNode())
+        if (node->is_top)
         {
             // if necessary, update the total probabilities at the mid node.
             if (node->length > 0)
@@ -238,7 +238,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
             Node* next_node = NULL;
             FOR_NEXT(node, next_node)
             {
-                if (next_node->isTopNode())
+                if (next_node->is_top)
                     top_node = next_node;
                 else
                     other_next_node = next_node;
@@ -1622,7 +1622,7 @@ void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate, RealNumType default_
     while (node)
     {
         // we reach a top node by a downward traversing
-        if (node->isTopNode())
+        if (node->is_top)
         {
             // if the current node is a leaf -> we reach the deepest tip -> traversing upward to update the lower lh of it parent
             if (node->isLeave())
@@ -1724,7 +1724,7 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType defau
         while (node)
         {
             // we reach a top node by a downward traversing
-            if (node->isTopNode())
+            if (node->is_top)
             {
                 Regions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                 

@@ -50,6 +50,11 @@ public:
     // flag tp prevent traversing the same part of the tree multiple times.
     // TODO: change to computed or something similar
     bool dirty;
+    
+    /**
+        TRUE if this node is the top node in a phylogenetic node structure
+     */
+    bool is_top;
 
     // flexible string attributes
     map<string,string> str_attributes;
@@ -84,11 +89,6 @@ public:
         TRUE if this node is a leaf
      */
     bool isLeave();
-    
-    /**
-        TRUE if this node is a top node
-     */
-    bool isTopNode();
     
     /**
         get the top node
