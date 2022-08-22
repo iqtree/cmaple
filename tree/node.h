@@ -116,6 +116,29 @@ public:
     Regions* computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true);
 };
 
+/** an extension of node storing more dummy data used for browsing all nodes in a stack  */
+class ExtendedNode {
+public:
+    Node* node;
+    short int failure_count;
+    RealNumType likelihood_diff;
+    
+    /**
+        constructor
+     */
+    ExtendedNode();
+    
+    /**
+        constructor
+     */
+    ExtendedNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff);
+    
+    /**
+        deconstructor
+     */
+    ~ExtendedNode();
+};
+
 #endif
 
 #define FOR_NEXT(node, next_node) \

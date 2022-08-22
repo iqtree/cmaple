@@ -403,16 +403,15 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, Regions* sampl
     RealNumType lh_diff_mid_branch = 0;
     RealNumType lh_diff_at_node = 0;
     // stack of nodes to examine positions
-    stack<Node*> node_stack;
-    start_node->real_number_attributes[LH_DIFF] = -DBL_MAX;
-    start_node->real_number_attributes[FAILURE_COUNT] = 0;
-    node_stack.push(start_node);
+    stack<ExtendedNode> extended_node_stack;
+    extended_node_stack.push(ExtendedNode(start_node, 0, -DBL_MAX));
     
     // recursively examine positions for placing the new sample
-    while (!node_stack.empty())
+    while (!extended_node_stack.empty())
     {
-        Node* current_node = node_stack.top();
-        node_stack.pop();
+        ExtendedNode current_extended_node = extended_node_stack.top();
+        Node* current_node = current_extended_node.node;
+        extended_node_stack.pop();
         
         // NHANLT: debug
        /* if (current_node->next && ((current_node->next->neighbor && current_node->next->neighbor->seq_name == "25")
@@ -443,7 +442,7 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, Regions* sampl
             {
                 best_lh_diff = lh_diff_mid_branch;
                 selected_node = current_node;
-                current_node->real_number_attributes[FAILURE_COUNT] = 0;
+                current_extended_node.failure_count = 0;
                 is_mid_branch = true;
             }
         }
@@ -462,38 +461,34 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, Regions* sampl
             {
                 best_lh_diff = lh_diff_at_node;
                 selected_node = current_node;
-                current_node->real_number_attributes[FAILURE_COUNT] = 0;
+                current_extended_node.failure_count = 0;
                 is_mid_branch = false;
                 best_up_lh_diff = lh_diff_mid_branch;
             }
             else if (lh_diff_mid_branch >= (best_lh_diff - params->threshold_prob))
             {
-                best_up_lh_diff = current_node->real_number_attributes[LH_DIFF];
+                best_up_lh_diff = current_extended_node.likelihood_diff;
                 best_down_lh_diff = lh_diff_at_node;
                 best_child = current_node;
             }
             // placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
-            else if (lh_diff_at_node < (current_node->real_number_attributes[LH_DIFF] - params->thresh_log_lh_failure))
-                current_node->real_number_attributes[FAILURE_COUNT] = current_node->real_number_attributes[FAILURE_COUNT] + 1;
+            else if (lh_diff_at_node < (current_extended_node.likelihood_diff - params->thresh_log_lh_failure))
+                ++current_extended_node.failure_count;
         }
         else
-            lh_diff_at_node = current_node->real_number_attributes[LH_DIFF];
+            lh_diff_at_node = current_extended_node.likelihood_diff;
         
         // keep trying to place at children nodes, unless the number of attempts has reaches the failure limit
         if ((params->strict_stop_seeking_placement
-             && current_node->real_number_attributes[FAILURE_COUNT]  < params->failure_limit
+             && current_extended_node.failure_count < params->failure_limit
              && lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_subtree_explore))
             || (!params->strict_stop_seeking_placement
-                && (current_node->real_number_attributes[FAILURE_COUNT]  < params->failure_limit
+                && (current_extended_node.failure_count < params->failure_limit
                     || lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_subtree_explore))))
         {
             Node* neighbor_node;
             FOR_NEIGHBOR(current_node, neighbor_node)
-            {
-                neighbor_node->real_number_attributes[LH_DIFF] = lh_diff_at_node;
-                neighbor_node->real_number_attributes[FAILURE_COUNT] = current_node->real_number_attributes[FAILURE_COUNT];
-                node_stack.push(neighbor_node);
-            }
+            extended_node_stack.push(ExtendedNode(neighbor_node, current_extended_node.failure_count, lh_diff_at_node));
         }
         
         // remove real_number_attributes of the current node
@@ -510,6 +505,7 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, Regions* sampl
     {
         // current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node to find out if the best placement is actually in any of the branches below the current node.
         Node* neighbor_node;
+        stack<Node*> node_stack;
         FOR_NEIGHBOR(selected_node, neighbor_node)
             node_stack.push(neighbor_node);
         
@@ -576,7 +572,7 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
     best_child = NULL;
     Regions* subtree_regions = NULL;
     // stack of nodes to examine positions
-    stack<Node*> node_stack;
+    stack<ExtendedNode> node_stack;
     // dummy variables
     RealNumType threshold_prob = params->threshold_prob;
     RealNumType lh_diff_mid_branch = 0;

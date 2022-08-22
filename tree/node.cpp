@@ -229,3 +229,22 @@ Regions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType th
     
     return new_regions;
 }
+
+ExtendedNode::ExtendedNode()
+{
+    node = NULL;
+    failure_count = 0;
+    likelihood_diff = 0;
+}
+
+ExtendedNode::ExtendedNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff)
+{
+    node = n_node;
+    failure_count = n_failure_count;
+    likelihood_diff = n_lh_diff;
+}
+
+ExtendedNode::~ExtendedNode()
+{
+    // do nothing
+}
