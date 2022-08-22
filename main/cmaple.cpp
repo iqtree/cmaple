@@ -68,9 +68,8 @@ void CMaple::loadInput()
 void CMaple::preInference()
 {
     // validate input
-    ASSERT(tree->aln->ref_seq.size() > 0);
-    if (tree->aln->size() < 3)
-        outError("The number of input sequences must be at least 3! Please check and try again!");
+    ASSERT(tree->aln->ref_seq.size() > 0 && "Reference sequence is not found!");
+    ASSERT(tree->aln->size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
     
     // check whether output file is already exists
     string output_file(tree->params->diff_path);
@@ -110,12 +109,13 @@ void CMaple::buildInitialTree()
     Alignment* aln = tree->aln;
     Model* model = tree->model;
     StateType num_states = aln->num_states;
+    PositionType seq_length = aln->ref_seq.size();
     
     // place the root node
     Sequence* root_sequence = tree->aln->at(0);
     Node* root = new Node(root_sequence->seq_name);
     tree->root = root;
-    root->partial_lh = root_sequence->getLowerLhVector(aln->ref_seq.size(), num_states, aln->seq_type);
+    root->partial_lh = root_sequence->getLowerLhVector(seq_length, num_states, aln->seq_type);
     root->computeTotalLhAtNode(aln, model, tree->params->threshold_prob, cumulative_rate, true);
     
     // iteratively place other samples (sequences)
@@ -124,7 +124,7 @@ void CMaple::buildInitialTree()
         Sequence* sequence = aln->at(i);
         
         // get the lower likelihood vector of the current sequence
-        Regions* lower_regions = sequence->getLowerLhVector(aln->ref_seq.size(), num_states, aln->seq_type);
+        Regions* lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->seq_type);
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree->params->mutation_update_period == 0)
@@ -164,7 +164,12 @@ void CMaple::optimizeTree()
     // record the start time
     auto start = getRealTime();
     
-    for (int i = 0; i < tree->params->num_tree_improvement; ++i)
+    // dummy variables
+    const int NUM_TREE_IMPROVEMENT = tree->params->num_tree_improvement;
+    const RealNumType THRESH_ENTIER_TREE_IMPROVEMENT = tree->params->thresh_entire_tree_improvement;
+    const int MAX_ATTEMPTS = 20;
+    
+    for (int i = 0; i < NUM_TREE_IMPROVEMENT; ++i)
     {
         // first, make all nodes dirty
         tree->setAllNodeDirty();
@@ -173,21 +178,20 @@ void CMaple::optimizeTree()
         RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
             
         // stop trying if the improvement is so small
-        if (improvement < tree->params->thresh_entire_tree_improvement)
+        if (improvement < THRESH_ENTIER_TREE_IMPROVEMENT)
         {
             cout << "Small improvement, stopping topological search." << endl;
             break;
         }
         
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
-        int max_attempts = 20;
-        for (int j = 0; j < max_attempts; ++i)
+        for (int j = 0; j < MAX_ATTEMPTS; ++i)
         {
             RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + "at subround " + convertIntToString(j + 1) << endl;
            
             // stop trying if the improvement is so small
-            if (improvement < tree->params->thresh_entire_tree_improvement)
+            if (improvement < THRESH_ENTIER_TREE_IMPROVEMENT)
                 break;
         }
             

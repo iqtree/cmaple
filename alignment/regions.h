@@ -35,11 +35,6 @@ public:
     void copyRegions(Regions* n_regions, StateType num_states);
     
     /**
-    *  get a Region
-    */
-    Region* getRegion(PositionType id);
-    
-    /**
     *  Delete all region items one by one
     */
     void deleteRegions();

@@ -24,6 +24,7 @@ public:
     RealNumType *transposed_mut_mat;
     RealNumType *inverse_root_freqs;
     RealNumType *freqi_freqj_qij; // freq(i) / freq(j) * Qij
+    StateType *row_index; // the starting index of row i: i * num_states
     
 	/**
 		constructor

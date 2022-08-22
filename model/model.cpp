@@ -11,6 +11,7 @@ Model::Model()
     root_log_freqs = NULL;
     inverse_root_freqs = NULL;
     pseu_mutation_count = NULL;
+    row_index = NULL;
 }
 
 Model::~Model()
@@ -62,6 +63,12 @@ Model::~Model()
         delete[] pseu_mutation_count;
         pseu_mutation_count = NULL;
     }
+    
+    if (row_index)
+    {
+        delete[] row_index;
+        row_index = NULL;
+    }
 }
 
 void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
@@ -99,7 +106,7 @@ void Model::updateMutationMat(StateType num_states)
     convert_real_numbers(mutation_mat, model_rates);*/
     
     // init mutation_mat, diagonal_mut_mat, and transposed_mut_mat
-    StateType matrix_size = num_states * num_states;
+    StateType matrix_size = row_index[num_states];
     if (!mutation_mat) mutation_mat = new RealNumType[matrix_size];
     if (!transposed_mut_mat) transposed_mut_mat = new RealNumType[matrix_size];
     if (!freqi_freqj_qij) freqi_freqj_qij = new RealNumType[matrix_size];
@@ -117,8 +124,9 @@ void Model::updateMutationMat(StateType num_states)
             {
                 if (i != j)
                 {
-                    RealNumType new_rate = pseu_mutation_count[start_index + j] * inverse_root_freqs[i];
-                    mutation_mat[start_index + j] = new_rate;
+                    StateType index = start_index + j;
+                    RealNumType new_rate = pseu_mutation_count[index] * inverse_root_freqs[i];
+                    mutation_mat[index] = new_rate;
                     sum_rate += new_rate;
                 }
             }
@@ -142,8 +150,9 @@ void Model::updateMutationMat(StateType num_states)
             for (StateType j = 0; j <  num_states; ++j)
                 if (i != j)
                 {
-                    mutation_mat[start_index + j] = (pseu_mutation_count[start_index + j] + pseu_mutation_count[j * num_states + i]) * inverse_root_freqs[i];
-                    sum_rate += mutation_mat[start_index + j];
+                    StateType index = start_index + j;
+                    mutation_mat[index] = (pseu_mutation_count[index] + pseu_mutation_count[row_index[j] + i]) * inverse_root_freqs[i];
+                    sum_rate += mutation_mat[index];
                 }
             
             // update the diagonal entry
@@ -171,16 +180,18 @@ void Model::updateMutationMat(StateType num_states)
     {
         for (StateType j = 0; j <  num_states; ++j)
         {
-            mutation_mat[start_index + j] *= total_rate;
+            StateType index = start_index + j;
+            
+            mutation_mat[index] *= total_rate;
             
             // update freqi_freqj_qij
             if (i != j)
-                freqi_freqj_qij[start_index + j] = root_freqs[i] * inverse_root_freqs[j] * mutation_mat[start_index + j];
+                freqi_freqj_qij[index] = root_freqs[i] * inverse_root_freqs[j] * mutation_mat[index];
             else
-                freqi_freqj_qij[start_index + j] = mutation_mat[start_index + j];
+                freqi_freqj_qij[index] = mutation_mat[index];
             
             // update the transposed mutation matrix
-            transposed_mut_mat[j * num_states + i] = mutation_mat[start_index + j];
+            transposed_mut_mat[row_index[j] + i] = mutation_mat[index];
         }
         
         // update diagonal
@@ -194,6 +205,16 @@ void Model::updateMutationMat(StateType num_states)
 void Model::initMutationMat(string n_model_name, StateType num_states)
 {
     model_name = n_model_name;
+    
+    // init row_index
+    row_index = new StateType[num_states + 1];
+    StateType start_index = 0;
+    for (StateType i = 0; i < num_states + 1; i++)
+    {
+        row_index[i] = start_index;
+        start_index += num_states;
+    }
+        
     if (model_name.compare("JC") == 0 || model_name.compare("jc") == 0)
     {
         // update root_freqs
@@ -206,7 +227,7 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
         }
         
         // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
-        StateType mat_size = num_states * num_states;
+        StateType mat_size = row_index[num_states];
         mutation_mat = new RealNumType[mat_size];
         transposed_mut_mat = new RealNumType[mat_size];
         diagonal_mut_mat = new RealNumType[num_states];
@@ -217,19 +238,21 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
         {
             for (StateType j = 0; j < num_states; ++j)
             {
+                StateType index = starting_index + j;
+                
                 if (i == j)
                 {
-                    mutation_mat[starting_index + j] = -1;
-                    transposed_mut_mat[starting_index + j] = -1;
+                    mutation_mat[index] = -1;
+                    transposed_mut_mat[index] = -1;
                     // update freqi_freqj_qij
-                    freqi_freqj_qij[starting_index + j] = -1;
+                    freqi_freqj_qij[index] = -1;
                 }
                 else
                 {
-                    mutation_mat[starting_index + j] = jc_rate;
-                    transposed_mut_mat[j * num_states + i] = jc_rate;
+                    mutation_mat[index] = jc_rate;
+                    transposed_mut_mat[row_index[j] + i] = jc_rate;
                     // update freqi_freqj_qij
-                    freqi_freqj_qij[starting_index + j] = root_freqs[i] * inverse_root_freqs[j] * jc_rate;
+                    freqi_freqj_qij[index] = root_freqs[i] * inverse_root_freqs[j] * jc_rate;
                 }
             }
             
@@ -312,7 +335,7 @@ void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< ve
 
 void Model::updatePesudoCount(Alignment* aln, Regions* regions1, Regions* regions2)
 {
-    if (model_name != "JC")
+    if (model_name != "JC" && model_name != "jc")
     {
         // init variables
         PositionType seq1_index = -1;
@@ -332,11 +355,11 @@ void Model::updatePesudoCount(Alignment* aln, Regions* regions1, Regions* region
             if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R) && (seq2_region->type < num_states || seq2_region->type == TYPE_R))
             {
                 if (seq1_region->type == TYPE_R)
-                    pseu_mutation_count[aln->ref_seq[pos] * num_states + seq2_region->type] += 1;
+                    pseu_mutation_count[row_index[aln->ref_seq[pos]] + seq2_region->type] += 1;
                 else if (seq2_region->type == TYPE_R)
-                    pseu_mutation_count[seq1_region->type * num_states + aln->ref_seq[pos]] += 1;
+                    pseu_mutation_count[row_index[seq1_region->type] + aln->ref_seq[pos]] += 1;
                 else
-                    pseu_mutation_count[seq1_region->type * num_states + seq2_region->type] += 1;
+                    pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
             }
 
             // update pos
