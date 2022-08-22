@@ -61,7 +61,7 @@ void Regions::mergeRegionR(StateType num_states, RealNumType threshold)
             Region* start_R_region = at(start_R_index);
             
             // if the current region is NOT identical to the starting region -> merging sequence of identical R regions starting from start_R_index to the region before the current region
-            if (!(current_region->type == TYPE_R && fabs(start_R_region->plength_observation - current_region->plength_observation) < threshold && fabs(start_R_region->plength_from_root - current_region->plength_from_root) < threshold))
+            if (!(current_region->type == TYPE_R && fabs(start_R_region->plength_observation2node - current_region->plength_observation2node) < threshold && fabs(start_R_region->plength_observation2root - current_region->plength_observation2root) < threshold))
              {
                  // remove identical R regions
                  for (PositionType j = 1; j < i - start_R_index; ++j)
@@ -218,8 +218,8 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
         if (seq1_region->type < num_states || seq1_region->type == TYPE_R)
         {
             // compare plength_from_root and plength_observation
-            if (fabs(seq1_region->plength_from_root - seq2_region->plength_from_root) > params->threshold_prob
-                ||fabs(seq1_region->plength_observation - seq2_region->plength_observation) > params->threshold_prob)
+            if (fabs(seq1_region->plength_observation2root - seq2_region->plength_observation2root) > params->threshold_prob
+                ||fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > params->threshold_prob)
                 return true;
         }
         
@@ -227,7 +227,7 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
         if (seq1_region->type == TYPE_O)
         {
             // compare plength_observation
-            if (fabs(seq1_region->plength_observation - seq2_region->plength_observation) > params->threshold_prob)
+            if (fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > params->threshold_prob)
                 return true;
             
             // compare likelihood of each state
@@ -292,8 +292,8 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                 if (seq2_region->type == TYPE_O)
                 {
                     RealNumType total_blength = lower_plength;
-                    if (seq2_region->plength_observation >= 0)
-                        total_blength = seq2_region->plength_observation + (lower_plength > 0 ? lower_plength: 0);
+                    if (seq2_region->plength_observation2node >= 0)
+                        total_blength = seq2_region->plength_observation2node + (lower_plength > 0 ? lower_plength: 0);
                         
                     RealNumType* new_lh = new RealNumType[num_states];
                     RealNumType sum_lh = 0;
@@ -330,9 +330,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
                 {
-                    if (seq2_region->plength_observation >= 0)
+                    if (seq2_region->plength_observation2node >= 0)
                     {
-                        RealNumType new_plength = seq2_region->plength_observation ;
+                        RealNumType new_plength = seq2_region->plength_observation2node ;
                         if (lower_plength > 0)
                             new_plength += lower_plength;
                         merged_regions->push_back(new Region(seq2_region->type, pos, new_plength, 0));
@@ -356,9 +356,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
             {
                 RealNumType total_blength = -1;
                 
-                if (seq1_region->plength_observation >= 0)
+                if (seq1_region->plength_observation2node >= 0)
                 {
-                    total_blength = seq1_region->plength_observation;
+                    total_blength = seq1_region->plength_observation2node;
                     if (upper_plength > 0)
                         total_blength += upper_plength;
                 }
@@ -406,16 +406,16 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
             // seq2_entry = 'N' and seq1_entry = R/ACGT
             else
             {
-                if (seq1_region->plength_from_root >= 0)
+                if (seq1_region->plength_observation2root >= 0)
                 {
-                    RealNumType plength_from_root = seq1_region->plength_from_root;
+                    RealNumType plength_from_root = seq1_region->plength_observation2root;
                     if (upper_plength > 0)
                         plength_from_root += upper_plength;
-                    merged_regions->push_back(new Region(seq1_region->type, pos, seq1_region->plength_observation, plength_from_root));
+                    merged_regions->push_back(new Region(seq1_region->type, pos, seq1_region->plength_observation2node, plength_from_root));
                 }
-                else if (seq1_region->plength_observation >= 0)
+                else if (seq1_region->plength_observation2node >= 0)
                 {
-                    RealNumType plength_observation = seq1_region->plength_observation;
+                    RealNumType plength_observation = seq1_region->plength_observation2node;
                     if (upper_plength > 0)
                         plength_observation += upper_plength;
                     merged_regions->push_back(new Region(seq1_region->type, pos, plength_observation));
@@ -436,20 +436,20 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
         else
         {
             RealNumType total_blength_1 = upper_plength;
-            if (seq1_region->plength_observation >= 0)
+            if (seq1_region->plength_observation2node >= 0)
             {
-                total_blength_1 = seq1_region->plength_observation;
+                total_blength_1 = seq1_region->plength_observation2node;
                 if (upper_plength > 0)
                     total_blength_1 += upper_plength;
                 
-                if (seq1_region->type != TYPE_O && seq1_region->plength_from_root >= 0)
-                    total_blength_1 += seq1_region->plength_from_root;
+                if (seq1_region->type != TYPE_O && seq1_region->plength_observation2root >= 0)
+                    total_blength_1 += seq1_region->plength_observation2root;
             }
             
             RealNumType total_blength_2 = lower_plength;
-            if (seq2_region->plength_observation >= 0)
+            if (seq2_region->plength_observation2node >= 0)
             {
-                total_blength_2 = seq2_region->plength_observation;
+                total_blength_2 = seq2_region->plength_observation2node;
                 if (lower_plength > 0)
                     total_blength_2 += lower_plength;
             }
@@ -585,9 +585,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                 RealNumType* new_lh = new RealNumType[num_states];
                 RealNumType sum_new_lh = 0;
                 
-                if (seq1_region->plength_from_root >= 0)
+                if (seq1_region->plength_observation2root >= 0)
                 {
-                    RealNumType length_to_root = seq1_region->plength_from_root;
+                    RealNumType length_to_root = seq1_region->plength_observation2root;
                     if (upper_plength > 0)
                         length_to_root += upper_plength;
                     RealNumType* root_vec = new RealNumType[num_states];
@@ -597,9 +597,9 @@ void Regions::mergeUpperLower(Regions* &merged_regions, RealNumType upper_plengt
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         if (i == seq1_state)
-                            root_vec[i] *= (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                            root_vec[i] *= (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                         else
-                            root_vec[i] *= model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation;
+                            root_vec[i] *= model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node;
                     }
                     
                     StateType start_index = 0;
@@ -807,24 +807,24 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                     // add merged region into merged_regions
                     Region* new_region = new Region(seq2_region, num_states);
                     new_region->position = pos;
-                    if (seq2_region->plength_observation >= 0)
+                    if (seq2_region->plength_observation2node >= 0)
                     {
                         if (plength2 > 0)
-                            new_region->plength_observation += plength2;
+                            new_region->plength_observation2node += plength2;
                     }
                     else
                     {
                         if (plength2 > 0)
-                            new_region->plength_observation = plength2;
+                            new_region->plength_observation2node = plength2;
                     }
                     merged_regions->push_back(new_region);
                 }
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
                 {
-                    if (seq2_region->plength_observation >= 0)
+                    if (seq2_region->plength_observation2node >= 0)
                     {
-                        RealNumType new_plength = seq2_region->plength_observation;
+                        RealNumType new_plength = seq2_region->plength_observation2node;
                         if (plength2 > 0)
                             new_plength += plength2;
                         merged_regions->push_back(new Region(seq2_region->type, pos, new_plength));
@@ -848,24 +848,24 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
                 // add merged region into merged_regions
                 Region* new_region = new Region(seq1_region, num_states);
                 new_region->position = pos;
-                if (seq1_region->plength_observation >= 0)
+                if (seq1_region->plength_observation2node >= 0)
                 {
                     if (plength1 > 0)
-                        new_region->plength_observation += plength1;
+                        new_region->plength_observation2node += plength1;
                 }
                 else
                 {
                     if (plength1 > 0)
-                        new_region->plength_observation = plength1;
+                        new_region->plength_observation2node = plength1;
                 }
                 merged_regions->push_back(new_region);
             }
             // seq1_entry = 'N' and seq2_entry = R/ACGT
             else
             {
-                if (seq1_region->plength_observation >= 0)
+                if (seq1_region->plength_observation2node >= 0)
                 {
-                    RealNumType new_plength = seq1_region->plength_observation;
+                    RealNumType new_plength = seq1_region->plength_observation2node;
                     if (plength1 > 0)
                         new_plength += plength1;
                     merged_regions->push_back(new Region(seq1_region->type, pos, new_plength));
@@ -884,17 +884,17 @@ RealNumType Regions::mergeTwoLowers(Regions* &merged_regions, RealNumType plengt
         else
         {
             RealNumType total_blength_1 = plength1;
-            if (seq1_region->plength_observation >= 0)
+            if (seq1_region->plength_observation2node >= 0)
             {
-                total_blength_1 = seq1_region->plength_observation;
+                total_blength_1 = seq1_region->plength_observation2node;
                 if (plength1 > 0)
                     total_blength_1 += plength1;
             }
             
             RealNumType total_blength_2 = plength2;
-            if (seq2_region->plength_observation >= 0)
+            if (seq2_region->plength_observation2node >= 0)
             {
-                total_blength_2 = seq2_region->plength_observation;
+                total_blength_2 = seq2_region->plength_observation2node;
                 if (plength2 > 0)
                     total_blength_2 += plength2;
             }
@@ -1242,9 +1242,9 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
             {
                 // compute total blength
                 RealNumType total_blength = blength;
-                if (region->plength_observation >= 0)
+                if (region->plength_observation2node >= 0)
                 {
-                    total_blength = region->plength_observation;
+                    total_blength = region->plength_observation2node;
                     if (blength > 0)
                         total_blength += blength;
                 }
@@ -1289,17 +1289,17 @@ Regions* Regions::computeTotalLhAtRoot(StateType num_states, Model* model, RealN
                 // add new region to the total_lh_regions
                 Region* new_region = new Region(region, num_states, false);
                 
-                if (new_region->plength_observation >= 0)
+                if (new_region->plength_observation2node >= 0)
                 {
                     if (blength > 0)
-                        new_region->plength_observation += blength;
+                        new_region->plength_observation2node += blength;
 
-                    new_region->plength_from_root = 0;
+                    new_region->plength_observation2root = 0;
                 }
                 else if (blength > 0)
                 {
-                    new_region->plength_observation = blength;
-                    new_region->plength_from_root = 0;
+                    new_region->plength_observation2node = blength;
+                    new_region->plength_observation2root = 0;
                 }
                 
                 total_lh->push_back(new_region);
@@ -1342,15 +1342,15 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
         else
         {
             // total_blength will be here the total length from the root or from the upper node, down to the down node.
-            if (seq1_region->plength_from_root >= 0)
-                total_blength = seq1_region->plength_from_root + (blength >= 0 ? blength : 0);
-            else if (seq1_region->plength_observation >= 0)
-                total_blength = seq1_region->plength_observation + (blength >= 0 ? blength : 0);
+            if (seq1_region->plength_observation2root >= 0)
+                total_blength = seq1_region->plength_observation2root + (blength >= 0 ? blength : 0);
+            else if (seq1_region->plength_observation2node >= 0)
+                total_blength = seq1_region->plength_observation2node + (blength >= 0 ? blength : 0);
             else
                 total_blength = blength;
                 
-            if (seq2_region->plength_observation >= 0)
-                total_blength = (total_blength > 0 ? total_blength : 0) + seq2_region->plength_observation;
+            if (seq2_region->plength_observation2node >= 0)
+                total_blength = (total_blength > 0 ? total_blength : 0) + seq2_region->plength_observation2node;
             
             // 2. e1.type = R
             if (seq1_region->type == TYPE_R)
@@ -1358,8 +1358,8 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                 // 2.1. e1.type = R and e2.type = R
                 if (seq2_region->type == TYPE_R)
                 {
-                    if (seq1_region->plength_from_root >= 0)
-                        total_blength += seq1_region->plength_observation;
+                    if (seq1_region->plength_observation2root >= 0)
+                        total_blength += seq1_region->plength_observation2node;
                     
                     if (total_blength > 0)
                         lh_cost += total_blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
@@ -1370,7 +1370,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                     RealNumType tot = 0;
                     StateType seq1_state = aln->ref_seq[pos];
                     
-                    if (seq1_region->plength_from_root >= 0)
+                    if (seq1_region->plength_observation2root >= 0)
                     {
                         StateType mutation_index = model->row_index[seq1_state];
                         StateType start_index = 0;
@@ -1379,9 +1379,9 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                             RealNumType tot2;
                             
                             if (seq1_state == i)
-                                tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                             else
-                                tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                 
                             RealNumType tot3 = 0;
                             if (total_blength > 0)
@@ -1420,19 +1420,19 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                     StateType seq1_state = aln->ref_seq[pos];
                     StateType seq2_state = seq2_region->type;
                     
-                    if (seq1_region->plength_from_root >= 0)
+                    if (seq1_region->plength_observation2root >= 0)
                     {
                         if (total_blength > 0)
                         {
-                            RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                            RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
                             
-                            RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
+                            RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
                             
                             total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
                         }
                         else
                         {
-                            total_factor *= model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation;
+                            total_factor *= model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
                         }
                     }
                     else
@@ -1504,8 +1504,8 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                 // 4.1. e1.type =  e2.type
                 if (seq1_region->type == seq2_region->type)
                 {
-                    if (seq1_region->plength_from_root >= 0)
-                        total_blength += seq1_region->plength_observation;
+                    if (seq1_region->plength_observation2root >= 0)
+                        total_blength += seq1_region->plength_observation2node;
                     
                     if (total_blength > 0)
                         lh_cost += model->diagonal_mut_mat[seq1_state] * total_blength;
@@ -1518,7 +1518,7 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                     {
                         RealNumType tot = 0.0;
                         
-                        if (seq1_region->plength_from_root >= 0)
+                        if (seq1_region->plength_observation2root >= 0)
                         {
                             StateType mutation_index = model->row_index[seq1_state];
                             StateType start_index = 0;
@@ -1527,9 +1527,9 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                                 RealNumType tot2;
                                 
                                 if (seq1_state == i)
-                                    tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                    tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                 else
-                                    tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                    tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                     
                                 RealNumType tot3 = 0;
                                 for (StateType j = 0; j < num_states; ++j)
@@ -1560,19 +1560,19 @@ RealNumType Regions::calculateSubTreePlacementCost(Alignment* aln, Model* model,
                         if (seq2_state == TYPE_R)
                             seq2_state = aln->ref_seq[pos];
                         
-                        if (seq1_region->plength_from_root >= 0)
+                        if (seq1_region->plength_observation2root >= 0)
                         {
                             if (total_blength > 0)
                             {
-                                RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                                RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
                                 
-                                RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
+                                RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model->diagonal_mut_mat[seq2_state] * total_blength);
                                 
                                 total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
                             }
                             else
                             {
-                                total_factor *= model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation;
+                                total_factor *= model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
                             }
                         }
                         else
@@ -1645,29 +1645,29 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                 // 2.1. e1.type = R and e2.type = R
                 if (seq2_region->type == TYPE_R)
                 {
-                    if (seq1_region->plength_observation < 0 && seq1_region->plength_from_root < 0)
+                    if (seq1_region->plength_observation2node < 0 && seq1_region->plength_observation2root < 0)
                         lh_cost += blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                     else
                     {
-                        total_blength = blength + seq1_region->plength_observation;
-                        if (seq1_region->plength_from_root < 0)
+                        total_blength = blength + seq1_region->plength_observation2node;
+                        if (seq1_region->plength_observation2root < 0)
                             lh_cost += total_blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                         else
                             // here contribution from root frequency gets added and subtracted so it's ignored
-                            lh_cost += (total_blength + seq1_region->plength_from_root) * (cumulative_rate[pos + length] - cumulative_rate[pos]);
+                            lh_cost += (total_blength + seq1_region->plength_observation2root) * (cumulative_rate[pos + length] - cumulative_rate[pos]);
                     }
                 }
                 // 2.2. e1.type = R and e2.type = O
                 else if (seq2_region->type == TYPE_O)
                 {
                     StateType seq1_state = aln->ref_seq[pos];
-                    if (seq1_region->plength_from_root >= 0)
+                    if (seq1_region->plength_observation2root >= 0)
                     {
-                        total_blength = seq1_region->plength_from_root + blength;
+                        total_blength = seq1_region->plength_observation2root + blength;
                         
                         if (seq2_region->likelihood[seq1_state] > 0.1)
                         {
-                            total_blength += seq1_region->plength_observation;
+                            total_blength += seq1_region->plength_observation2node;
                             
                             // here contribution from root frequency can also be also ignored
                             lh_cost += model->diagonal_mut_mat[seq1_state] * total_blength;
@@ -1682,9 +1682,9 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                                 RealNumType tot2;
                                 
                                 if (seq1_state == i)
-                                    tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                    tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                 else
-                                    tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                    tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                     
                                 RealNumType tot3 = 0;
                                 if (seq2_region->likelihood[i] > 0.1)
@@ -1708,8 +1708,8 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                     {
                         if (seq2_region->likelihood[seq1_state] > 0.1)
                         {
-                            if (seq1_region->plength_observation >= 0)
-                                lh_cost += model->diagonal_mut_mat[seq1_state] * (blength + seq1_region->plength_observation);
+                            if (seq1_region->plength_observation2node >= 0)
+                                lh_cost += model->diagonal_mut_mat[seq1_state] * (blength + seq1_region->plength_observation2node);
                             else
                                 lh_cost += model->diagonal_mut_mat[seq1_state] * blength;
                         }
@@ -1721,8 +1721,8 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                                 if (seq2_region->likelihood[i] > 0.1)
                                     tot += model->mutation_mat[mutation_index + i];
                             
-                            if (seq1_region->plength_observation >= 0)
-                                total_factor *= tot * (blength + seq1_region->plength_observation);
+                            if (seq1_region->plength_observation2node >= 0)
+                                total_factor *= tot * (blength + seq1_region->plength_observation2node);
                             else
                                 total_factor *= tot * blength;
                         }
@@ -1734,17 +1734,17 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                     StateType seq1_state = aln->ref_seq[pos];
                     StateType seq2_state = seq2_region->type;
                     
-                    if (seq1_region->plength_from_root >= 0)
+                    if (seq1_region->plength_observation2root >= 0)
                     {
-                        RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                        RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
                         
-                        RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_from_root));
+                        RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
                                                                                                                                                                                                     
                         total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
                     }
                     else
                     {
-                        total_factor *= model->mutation_mat[model->row_index[seq1_state] + seq2_state] * (blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation));
+                        total_factor *= model->mutation_mat[model->row_index[seq1_state] + seq2_state] * (blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node));
                     }
                 }
             }
@@ -1752,9 +1752,9 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
             else if (seq1_region->type == TYPE_O)
             {
                 RealNumType blength13 = blength;
-                if (seq1_region->plength_observation >= 0)
+                if (seq1_region->plength_observation2node >= 0)
                 {
-                    blength13 = seq1_region->plength_observation;
+                    blength13 = seq1_region->plength_observation2node;
                     if (blength > 0)
                         blength13 += blength;
                 }
@@ -1810,8 +1810,8 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                 if (seq1_region->type == seq2_region->type)
                 {
                     RealNumType total_blength = blength;
-                    total_blength += (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
-                    total_blength += (seq1_region->plength_from_root < 0 ? 0 : seq1_region->plength_from_root);
+                    total_blength += (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
+                    total_blength += (seq1_region->plength_observation2root < 0 ? 0 : seq1_region->plength_observation2root);
 
                     lh_cost += model->diagonal_mut_mat[seq1_state] * total_blength;
                 }
@@ -1823,12 +1823,12 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                     {
                         RealNumType tot = 0.0;
                         
-                        if (seq1_region->plength_from_root >= 0)
+                        if (seq1_region->plength_observation2root >= 0)
                         {
-                            RealNumType blength15 = blength + seq1_region->plength_from_root;
+                            RealNumType blength15 = blength + seq1_region->plength_observation2root;
                             
                             if (seq2_region->likelihood[seq1_state] > 0.1)
-                                lh_cost += model->diagonal_mut_mat[seq1_state] * (blength15 + seq1_region->plength_observation);
+                                lh_cost += model->diagonal_mut_mat[seq1_state] * (blength15 + seq1_region->plength_observation2node);
                             else
                             {
                                 StateType mutation_index = model->row_index[seq1_state];
@@ -1837,9 +1837,9 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                                 {
                                     RealNumType tot2;
                                     if (seq1_state == i)
-                                        tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                        tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                     else
-                                        tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation);
+                                        tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                         
                                     RealNumType tot3 = 0;
                                     for (StateType j = 0; j < num_states; ++j)
@@ -1860,7 +1860,7 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                         }
                         else
                         {
-                            RealNumType tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
+                            RealNumType tmp_blength = blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
                             if (seq2_region->likelihood[seq1_state] > 0.1)
                                 lh_cost += model->diagonal_mut_mat[seq1_state] * tmp_blength;
                             else
@@ -1881,18 +1881,18 @@ RealNumType Regions::calculateSamplePlacementCost(Alignment* aln, Model* model, 
                         if (seq2_state == TYPE_R)
                             seq2_state = aln->ref_seq[pos];
                         
-                        if (seq1_region->plength_from_root >= 0)
+                        if (seq1_region->plength_observation2root >= 0)
                         {
                             // here we ignore contribution of non-parsimonious mutational histories
-                            RealNumType seq1_state_evoloves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * (blength + seq1_region->plength_from_root) * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation);
+                            RealNumType seq1_state_evoloves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * (blength + seq1_region->plength_observation2root) * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
                             
-                            RealNumType seq2_state_evolves_seq2_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_from_root));
+                            RealNumType seq2_state_evolves_seq2_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
                             
                             total_factor *= seq1_state_evoloves_seq2_state + seq2_state_evolves_seq2_state;
                         }
                         else
                         {
-                            RealNumType tmp_blength = blength + (seq1_region->plength_observation < 0 ? 0 : seq1_region->plength_observation);
+                            RealNumType tmp_blength = blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
                             
                             total_factor *= model->mutation_mat[model->row_index[seq1_state] + seq2_state] * tmp_blength;
                         }
