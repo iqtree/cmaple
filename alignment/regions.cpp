@@ -203,6 +203,8 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
     Region *seq1_region, *seq2_region;
     PositionType seq1_end = -1, seq2_end = -1;
     PositionType length;
+    const RealNumType THRESH_PROB = params->threshold_prob;
+    const RealNumType THRESH_DIFF_UPDATE = params->thresh_diff_update;
     
     // compare each pair of regions
     while (pos < seq_length)
@@ -218,8 +220,8 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
         if (seq1_region->type < num_states || seq1_region->type == TYPE_R)
         {
             // compare plength_from_root and plength_observation
-            if (fabs(seq1_region->plength_observation2root - seq2_region->plength_observation2root) > params->threshold_prob
-                ||fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > params->threshold_prob)
+            if (fabs(seq1_region->plength_observation2root - seq2_region->plength_observation2root) > THRESH_PROB
+                ||fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > THRESH_PROB)
                 return true;
         }
         
@@ -227,7 +229,7 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
         if (seq1_region->type == TYPE_O)
         {
             // compare plength_observation
-            if (fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > params->threshold_prob)
+            if (fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > THRESH_PROB)
                 return true;
             
             // compare likelihood of each state
@@ -240,10 +242,10 @@ bool Regions::areDiffFrom(Regions* regions2, PositionType seq_length, StateType 
                     if ((seq1_region->likelihood[i] == 0) || (seq2_region->likelihood[i] == 0))
                         return true;
                     
-                    if (diff > params->thresh_diff_update
-                        || (diff > params->threshold_prob
-                            && ((diff / seq1_region->likelihood[i] > params->thresh_diff_update)
-                                || (diff / seq2_region->likelihood[i] > params->thresh_diff_update))))
+                    if (diff > THRESH_DIFF_UPDATE
+                        || (diff > THRESH_PROB
+                            && ((diff / seq1_region->likelihood[i] > THRESH_DIFF_UPDATE)
+                                || (diff / seq2_region->likelihood[i] > THRESH_DIFF_UPDATE))))
                         return true;
                 }
             }
