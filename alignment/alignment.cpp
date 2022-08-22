@@ -22,17 +22,6 @@ Alignment::Alignment()
     num_states = 4;
 }
 
-Alignment::Alignment(vector<StateType> n_ref_seq, vector<Sequence*> n_sequences)
-{
-    ref_seq = n_ref_seq;
-    for (Sequence* sequence:n_sequences)
-        push_back(sequence);
-    
-    // init DNA as the default sequence type
-    seq_type = SEQ_DNA;
-    num_states = 4;
-}
-
 Alignment::~Alignment()
 {
     for (iterator it = begin(); it != end(); ++it)
@@ -232,7 +221,7 @@ void Alignment::readSequences(char* aln_path, StrVector &sequences, StrVector &s
     }
 }
 
-string Alignment::generateRef(StrVector sequences, StrVector seq_names, bool only_extract_diff)
+string Alignment::generateRef(StrVector &sequences, bool only_extract_diff)
 {
     // validate the input sequences
     if (sequences.size() == 0 || sequences[0].length() == 0)
@@ -328,18 +317,19 @@ void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_cha
     }
 }
 
-void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, string ref_sequence, ofstream &out, bool only_extract_diff)
+void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_diff)
 {
     ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out);
     resize(0);
     Sequence* sequence = NULL;
+    PositionType seq_length = ref_sequence.length();
     
     // extract mutations of sequences one by one
     for (PositionType i = 0; i < (PositionType) str_sequences.size(); ++i)
     {
         // validate the sequence length
         string str_sequence = str_sequences[i];
-        if (str_sequence.length() != ref_sequence.length())
+        if (str_sequence.length() != seq_length)
             outError("The sequence length of " + seq_names[i] + " (" + convertIntToString(str_sequence.length()) + ") is different from that of the reference sequence (" + convertIntToString(ref_sequence.length()) + ")!");
         
         // write taxon name
@@ -355,7 +345,7 @@ void Alignment::extractMutations(StrVector str_sequences, StrVector seq_names, s
         // init dummy variables
         int state = 0;
         PositionType length = 0;
-        for (PositionType pos = 0; pos < (PositionType) ref_sequence.length(); ++pos)
+        for (PositionType pos = 0; pos < seq_length; ++pos)
         {
             switch (state)
             {
@@ -881,7 +871,7 @@ StateType Alignment::convertChar2State(char state) {
                 outError(invalid_state_msg);
                 return TYPE_INVALID;
             }
-                }
+        }
         break;
     case SEQ_DNA: // DNA
         switch (state) {
@@ -1070,7 +1060,7 @@ void Alignment::extractDiffFile(Params* params)
     if (params->ref_path)
         ref_sequence = readRef(params->ref_path, params->only_extract_diff);
     else
-        ref_sequence = generateRef(sequences, seq_names, params->only_extract_diff);
+        ref_sequence = generateRef(sequences, params->only_extract_diff);
     
     // prepare output (Diff) file
     // init diff_path if it's null
@@ -1099,6 +1089,4 @@ void Alignment::extractDiffFile(Params* params)
     
     // close the output file
     out.close();
-    
-
 }

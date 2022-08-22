@@ -327,7 +327,7 @@ void convert_real_numbers(RealNumType* &arr, string input_str)
     while (ss.good())
     {
         ss >> arr[index];
-        index++;
+        ++index;
     }
 }
 
@@ -454,7 +454,7 @@ void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool 
     // request memory allocation for the new array
     arr = new RealNumType[size];
     if (set_zero)
-        for (StateType i = 0; i < size; i++)
+        for (StateType i = 0; i < size; ++i)
             arr[i] = 0;
 }
 
@@ -483,7 +483,7 @@ void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entrie
     if (sum_entries == -1)
     {
         sum_entries = 0;
-        for (int i = 0; i < num_entries; i++)
+        for (int i = 0; i < num_entries; ++i)
             sum_entries += entries[i];
     }
     
@@ -494,7 +494,7 @@ void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entrie
     if (fabs(sum_entries-1.0) >= 1e-7)
     {
         sum_entries = 1.0 / sum_entries;
-        for (int i = 0; i < num_entries; i++)
+        for (int i = 0; i < num_entries; ++i)
             entries[i] *= sum_entries;
     }
 }
@@ -504,14 +504,14 @@ void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int st
     ASSERT(num_states > 0);
     // calculate the total_freqs
     RealNumType total_freqs = 0;
-    for (int i = starting_index; i < starting_index+num_states; i++)
+    for (int i = starting_index; i < starting_index+num_states; ++i)
         total_freqs += freqs[i];
     
     // normalize the freqs
     if (fabs(total_freqs) < 1e-5)
         outError("Sum of state frequencies must be greater than zero!");
     total_freqs = 1.0 / total_freqs;
-    for (int i = starting_index; i < starting_index+num_states; i++)
+    for (int i = starting_index; i < starting_index+num_states; ++i)
         freqs[i] *= total_freqs;
 }
 
@@ -547,11 +547,11 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.thresh_entire_tree_improvement = 1;
     params.thresh_placement_cost = -1e-5;
     
-    for (int cnt = 1; cnt < argc; cnt++) {
+    for (int cnt = 1; cnt < argc; ++cnt) {
         try {
             if (strcmp(argv[cnt], "--aln") == 0) {
                 
-                cnt++;
+                ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --aln <ALIGNMENT_PATH>");
                 
@@ -561,7 +561,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--diff") == 0) {
                 
-                cnt++;
+                ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --diff <DIFF_PATH>");
                 
@@ -571,7 +571,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--output-aln") == 0) {
                 
-                cnt++;
+                ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --output-aln <ALIGNMENT_PATH>");
                 
@@ -581,7 +581,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--ref") == 0) {
                 
-                cnt++;
+                ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --ref <REF_PATH>");
                 
@@ -597,7 +597,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--hamming-weight") == 0) {
                 
-                cnt++;
+                ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --hamming-weight <WEIGHT>");
                 
@@ -609,7 +609,7 @@ void parseArg(int argc, char *argv[], Params &params) {
                 continue;
             }
             if (strcmp(argv[cnt], "--model") == 0 || strcmp(argv[cnt], "-m") == 0) {
-                cnt++;
+                ++cnt;
                 if (cnt >= argc)
                     outError("Use --model <model_name>");
                 
@@ -622,7 +622,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--thresh-prob") == 0) {
                 
-                cnt++;
+                ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --thresh-prob <PROB_THRESH>");
                 
@@ -635,7 +635,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--mutation-update") == 0) {
                 
-                cnt++;
+                ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --mutation-update <NUMBER>");
                 
@@ -648,7 +648,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--failure-limit") == 0) {
                 
-                cnt++;
+                ++cnt;
                 
                 params.failure_limit = convert_int(argv[cnt]);
                 

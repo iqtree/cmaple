@@ -37,11 +37,6 @@ public:
     Alignment();
     
     /**
-    *  Alignment constructor
-    */
-    Alignment(vector<StateType> ref_seq, vector<Sequence*> sequences);
-    
-    /**
     *  Alignment deconstructor
     */
     ~Alignment();
@@ -69,10 +64,10 @@ public:
     
     /**
         Generate a reference genome from input_sequences
-        @param sequences, seq_names: the input sequences,  seq_names; only_extract_diff: TRUE to only extract Diff file without running inference
+        @param sequences the input sequences; only_extract_diff: TRUE to only extract Diff file without running inference
         @return a reference genome
      */
-    string generateRef(StrVector sequences, StrVector seq_names, bool only_extract_diff);
+    string generateRef(StrVector &sequences, bool only_extract_diff);
     
     /**
         Read a reference genome from file
@@ -85,7 +80,7 @@ public:
         extract Mutation from sequences regarding the reference sequence
         @param sequences, seq_names: the input sequences,  ref_sequence; ref_sequence, out: output stream to write the Diff file; only_extract_diff: TRUE to only extract Diff file without running inference
      */
-    void extractMutations(StrVector sequences, StrVector seq_names, string ref_sequence, ofstream &out, bool only_extract_diff);
+    void extractMutations(StrVector &sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_diff);
     
     /**
         Read Diff file to load reference sequence and vector of Sequence (represented by vector of Mutations)
