@@ -12,6 +12,7 @@
 #ifndef CMAPLE_H
 #define CMAPLE_H
 
+/** CMaple class contains all main methods*/
 class CMaple {
 private:
     
@@ -26,17 +27,18 @@ private:
     void optimizeTree();
     
 public:
-    // model-related params
+    /** Model-related parameters */
     RealNumType *cumulative_rate;
     vector< vector<PositionType> > cumulative_base;
     
-    // The phylogenetic tree
+    /** The phylogenetic tree */
     Tree* tree;
-    // tree-related params
+    
+    /** tree-related params */
     RealNumType default_blength;
     RealNumType min_blength, max_blength, min_blength_mid;
     
-    // thresholds for approximations
+    /** thresholds for approximations */
     RealNumType threshold_prob2, threshold_prob4;
     
     /**
@@ -46,6 +48,7 @@ public:
     
     /**
     *  CMaple constructor
+     @param params user-specified parameters
     */
     CMaple(Params *params);
     
@@ -80,6 +83,6 @@ public:
     void tmpTestingMethod();
 };
 
-// Run CMaple
+/** Method to run CMaple */
 void runCMaple(Params &params);
 #endif

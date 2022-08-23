@@ -13,9 +13,14 @@
 /** A mutation compared with a reference sequence */
 class Mutation {
 public:
-    /** alternative allele, for DNA, it is A, C, G, T, N, O, - */
+    /**
+        Alternative allele, for DNA, it is A, C, G, T, N, O, -
+     */
     StateType type;
-    // (starting) position
+    
+    /**
+        (starting) position
+     */
     PositionType position;
     
     /**
@@ -34,7 +39,7 @@ public:
     virtual ~Mutation();
     
     /**
-    *  return Length of the current mutation, default: 1
+        Return length of the current mutation, default: 1
     */
     virtual PositionType getLength() { return 1;};
 };

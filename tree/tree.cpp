@@ -34,40 +34,6 @@ Tree::~Tree()
     // NHANLT: TODO
 }
 
-void Tree::addNode(Node* new_node, Node* current_node, int &new_id, bool insert_to_right)
-{
-    Node* new_node_1 = new Node(++new_id);
-    Node* new_node_2 = new Node(++new_id);
-    Node* new_node_3 = new Node(++new_id);
-    new_node_1->next = new_node_2;
-    new_node_2->next = new_node_3;
-    new_node_3->next = new_node_1;
-    
-    new_node_1->neighbor = current_node->neighbor;
-    if (current_node == root)
-        root = new_node_1;
-    else
-        new_node_1->neighbor->neighbor = new_node_1;
-    
-    Node *left_tip, *right_tip;
-    if (insert_to_right)
-    {
-        left_tip = current_node;
-        right_tip = new_node;
-    }
-    else
-    {
-        left_tip = new_node;
-        right_tip = current_node;
-    }
-    
-    new_node_2->neighbor = right_tip;
-    right_tip->neighbor = new_node_2;
-    
-    new_node_3->neighbor = left_tip;
-    left_tip->neighbor = new_node_3;
-}
-
 string Tree::exportTreeString(Node* node)
 {
     // init starting node from root
@@ -114,7 +80,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
             cout << "dsdas";*/
         
         bool update_blength = false;
-        node->dirty = true;
+        node->outdated = true;
         
         SeqRegions* parent_upper_regions = NULL;
         if (root != node->getTopNode())
@@ -490,10 +456,6 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
             FOR_NEIGHBOR(current_node, neighbor_node)
             extended_node_stack.push(ExtendedNode(neighbor_node, current_extended_node.failure_count, lh_diff_at_node));
         }
-        
-        // remove real_number_attributes of the current node
-        current_node->real_number_attributes.erase(FAILURE_COUNT);
-        current_node->real_number_attributes.erase(LH_DIFF);
     }
 
     // exploration of the tree is finished, and we are left with the node found so far with the best appending likelihood cost. Now we explore placement just below this node for more fine-grained placement within its descendant branches.
@@ -1854,21 +1816,21 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType defau
     }
 }
 
-void Tree::setAllNodeDirty()
+void Tree::setAllNodeOutdated()
 {
     // start from the root
     stack<Node*> node_stack;
     node_stack.push(root);
     
-    // traverse downward to make all descentdant dirty
+    // traverse downward to set all descentdant outdated
     while (!node_stack.empty())
     {
         // pick the top node from the stack
         Node* node = node_stack.top();
         node_stack.pop();
         
-        // make the current node dirty
-        node->dirty = true;
+        // set the current node outdated
+        node->outdated = true;
         
         // traverse downward
         Node* neighbor_node;
@@ -1899,10 +1861,10 @@ RealNumType Tree::improveEntireTree(RealNumType *cumulative_rate, RealNumType de
         FOR_NEIGHBOR(node, neighbor_node)
             node_stack.push(neighbor_node);
         
-        // only process dirty node to avoid traversing the same part of the tree multiple times
-        if (node->dirty)
+        // only process outdated node to avoid traversing the same part of the tree multiple times
+        if (node->outdated)
         {
-            node->dirty = false;
+            node->outdated = false;
             
             /*if checkEachSPR:
                 root=node

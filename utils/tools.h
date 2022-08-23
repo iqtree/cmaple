@@ -145,49 +145,60 @@ struct Distribution {
   int pool_size;
 } ;
 
-
+/**
+    Type of site states
+ */
 typedef uint16_t StateType;
 
+/**
+    Type of site positions
+ */
 typedef int32_t PositionType;
 
+/**
+    Type of real numbers
+ */
 typedef double RealNumType;
 
 /**
-        vector of real number number
+    vector of real number number
  */
 typedef vector<RealNumType> RealNumberVector;
 
 /**
-        vector of int
+    vector of int
  */
 typedef vector<int> IntList;
 
 
 /**
-        vector of int
+    vector of int
  */
 typedef vector<int> IntVector;
 
 /**
-        vector of bool
+    vector of bool
  */
 typedef vector<bool> BoolVector;
 
 
 /**
-        vector of char
+    vector of char
  */
 typedef vector<char> CharVector;
 
 /**
-        vector of string
+    vector of string
  */
 typedef vector<string> StrVector;
 
+/**
+    Unsigned integers
+ */
 typedef unsigned int UINT;
 
 /**
- *  Specify region types
+ *  Types of sequence regions
  */
 enum RegionType : StateType {
     TYPE_R = 1000,
@@ -198,40 +209,36 @@ enum RegionType : StateType {
 };
 
 /**
-        input type, tree or splits graph
+    input type, tree or splits graph
  */
 enum InputType {
     IN_NEWICK, IN_NEXUS, IN_FASTA, IN_PHYLIP, IN_COUNTS, IN_CLUSTAL, IN_MSF, IN_OTHER
 };
 
 /**
-        verbose mode, determine how verbose should the screen be printed.
+    verbose mode, determine how verbose should the screen be printed.
  */
 enum VerboseMode {
     VB_QUIET, VB_MIN, VB_MED, VB_MAX, VB_DEBUG
 };
 
 /**
-        types of sequences
+    types of sequences
  */
 enum SeqType {
     SEQ_DNA, SEQ_PROTEIN, SEQ_BINARY, SEQ_MORPH, SEQ_MULTISTATE, SEQ_CODON, SEQ_POMO, SEQ_UNKNOWN
 };
 
 /**
-        verbose level on the screen
+    verbose level on the screen
  */
 extern VerboseMode verbose_mode;
 
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
-const int TEST = 1;
 const char REF_NAME[] = "REF";
 const int MIN_NUM_TAXA = 3;
-const string FAILURE_COUNT = "FAILURE_COUNT";
-const string LH_DIFF = "LH_DIFF";
-const string IS_TOP_NODE = "IS_TOP_NODE";
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
@@ -249,17 +256,17 @@ private:
 public:
     
     /**
-    *  path to input sequences
+    *  Path to input sequences
     */
     char* aln_path;
     
     /**
-    *  path to a Diff file
+    *  Path to a Diff file
     */
     char* diff_path;
     
     /**
-    *  path to the reference sequence
+    *  Path to the reference sequence
     */
     char* ref_path;
     
@@ -269,12 +276,12 @@ public:
     bool only_extract_diff;
     
     /**
-    *  weight to calculate the hamming distance
+    *  Weight to calculate the hamming distance
     */
     RealNumType hamming_weight;
     
     /**
-        name of the substitution model (e.g., HKY, GTR, TN+I+G, JC+G, etc.)
+        Name of the substitution model (e.g., HKY, GTR, TN+I+G, JC+G, etc.)
      */
     string model_name;
     
@@ -284,17 +291,17 @@ public:
     bool redo_inference;
     
     /**
-    *       threshold to ignore possible states with very low probabilities
+    *       Threshold to ignore possible states with very low probabilities
      */
     RealNumType threshold_prob;
     
     /**
-    *       the number to limit the attempts
+    *      The number to limit the attempts
     */
     int failure_limit;
     
     /**
-    *       the period to update the mutation matrix
+    *       The period to update the mutation matrix
      */
     PositionType mutation_update_period;
     
@@ -304,12 +311,12 @@ public:
     bool strict_stop_seeking_placement;
     
     /**
-    *  threshold of loglh to continue explore the subtree
+    *  Threshold of loglh to continue explore the subtree
     */
     RealNumType thresh_log_lh_subtree_explore;
     
     /**
-    *  threshold of loglh to count failure
+    *  Threshold of loglh to count failure
     */
     RealNumType thresh_log_lh_failure;
     
@@ -339,7 +346,7 @@ public:
     char* output_aln;
     
     /**
-    *       the number of attempts to improve the tree with SPR moves
+    *       The number of attempts to improve the tree with SPR moves
     */
     int num_tree_improvement;
     
@@ -358,17 +365,12 @@ public:
 /*--------------------------------------------------------------*/
 
 /**
-        print error message then exit program
- */
-//void outError(char *error);
-
-/**
-        print error message then exit program
+    Print error message then exit program
  */
 void outError(const char *error, bool quit = true);
 
 /**
-        print error message then exit program
+    Print error message then exit program
  */
 void outError(string error, bool quit = true);
 
@@ -377,18 +379,18 @@ void outError(string error, bool quit = true);
 /*--------------------------------------------------------------*/
 
 /**
-        print error messages then exit program
+    Print error messages then exit program
  */
 void outError(const char *error, const char *msg, bool quit = true);
 
 /**
-        print error messages then exit program
+    Print error messages then exit program
  */
 void outError(const char *error, string msg, bool quit = true);
 
 /**
-        Output a warning message to screen
-        @param error warning message
+    Output a warning message to screen
+    @param error warning message
  */
 void outWarning(const char *warn);
 void outWarning(string warn);
@@ -409,7 +411,7 @@ const char ERR_NO_MEMORY[] = "Not enough memory!";
 /*--------------------------------------------------------------*/
 
 /**
- * convert int to string
+ * Convert int to string
  * @param int
  * @return string
  */
@@ -420,7 +422,7 @@ string convertInt64ToString(int64_t number);
 string convertDoubleToString(RealNumType number);
 
 /**
- case-insensitive comparison between two strings
+ Case-insensitive comparison between two strings
  @return true if two strings are equal.
  */
 bool iEquals(const string a, const string b);
@@ -441,122 +443,122 @@ bool copyFile(const char SRC[], const char DEST[]);
 bool fileExists(string strFilename);
 
 /**
-    check that path is a directory
+    Check that path is a directory
  */
 int isDirectory(const char *path);
 
 /**
-        convert string to int, with error checking
-        @param str original string
-        @return the number
+    Convert string to int, with error checking
+    @param str original string
+    @return the number
  */
 int convert_int(const char *str);
 
 /**
-    convert string to int64, with error checking
+    Convert string to int64, with error checking
     @param str original string
     @return the number
  */
 int64_t convert_int64(const char *str);
 
 /**
-        convert string to int, with error checking
-        @param str original string
-        @param end_pos end position
-        @return the number
+    Convert string to int, with error checking
+    @param str original string
+    @param end_pos end position
+    @return the number
  */
 int convert_int(const char *str, int &end_pos);
 
 /**
-        convert comma-separated string to integer vector, with error checking
-        @param str original string with integers separated by comma
-        @param vec (OUT) integer vector
+    Convert comma-separated string to integer vector, with error checking
+    @param str original string with integers separated by comma
+    @param vec (OUT) integer vector
  */
 void convert_int_vec(const char *str, IntVector &vec);
 
 /**
-        convert string to int64_t, with error checking
-        @param str original string
-        @return the number
+    Convert string to int64_t, with error checking
+    @param str original string
+    @return the number
  */
 int64_t convert_int64(const char *str);
 
 /**
-        convert string to int64_t, with error checking
-        @param str original string
-        @param end_pos end position
-        @return the number
+    Convert string to int64_t, with error checking
+    @param str original string
+    @param end_pos end position
+    @return the number
  */
 int64_t convert_int64(const char *str, int &end_pos);
 
 /**
-        convert string to a real number, with error checking
-        @param str original string
-        @return the RealNumType
+    Convert string to a real number, with error checking
+    @param str original string
+    @return the RealNumType
  */
 RealNumType convert_real_number(const char *str);
 
 /**
-        convert string to real number, with error checking
-        @param str original string
-        @param end_pos end position
-        @return the RealNumType
+    Convert string to real number, with error checking
+    @param str original string
+    @param end_pos end position
+    @return the RealNumType
  */
 RealNumType convert_real_number(const char *str, int &end_pos);
 
 /**
-        parse an array of real numbers from a tring
-        @param input_str: a string of  real_numbers; arr: the output array of real_numbers
+    Parse an array of real numbers from a tring
+    @param input_str: a string of  real_numbers; arr: the output array of real_numbers
  */
 void convert_real_numbers(RealNumType* &arr, string input_str);
 
 /**
-        convert string to real number, or generate it from a distribution
-        @param str original string
-        @param end_pos end position
-        @param separator char separating elements
-        @return the real number
+    Convert string to real number, or generate it from a distribution
+    @param str original string
+    @param end_pos end position
+    @param separator char separating elements
+    @return the real number
  */
 RealNumType convert_real_number_with_distribution(const char *str, int &end_pos, char separator = ',');
 
 /**
-        convert comma-separated string to integer vector, with error checking
-        @param str original string with integers separated by comma
-        @param vec (OUT) integer vector
-        @param separator char separating elements
+    Convert comma-separated string to integer vector, with error checking
+    @param str original string with integers separated by comma
+    @param vec (OUT) integer vector
+    @param separator char separating elements
  */
 void convert_real_number_vec(const char *str, RealNumberVector &vec, char separator = ',');
 
 /**
-        convert comma-separated string to real number vector or generate real number vector from distributions
-        @param str original string with real numbers separated by comma
-        @param vec (OUT) real number vector
-        @param separator char separating elements
+    Convert comma-separated string to real number vector or generate real number vector from distributions
+    @param str original string with real numbers separated by comma
+    @param vec (OUT) real number vector
+    @param separator char separating elements
  */
 void convert_real_number_vec_with_distributions(const char *str, RealNumberVector &vec, char separator = ',');
 
 /**
-        convert separated string to an array of real number (RealNumType*) or generate them from distributions
-        @param tmp_str original string with real numbers separated by separator
-        @param array an array of RealNumType number (RealNumType*)
-        @param num_items the number of items in the array
-        @param separator char separating elements
+    Convert separated string to an array of real number (RealNumType*) or generate them from distributions
+    @param tmp_str original string with real numbers separated by separator
+    @param array an array of RealNumType number (RealNumType*)
+    @param num_items the number of items in the array
+    @param separator char separating elements
  */
 void convert_real_number_array_with_distributions(string tmp_str, RealNumType* array, int num_items, char separator);
 
 /**
-        normalize state frequencies so that sum of them is equal to 1
-        @param freqs original state frequencies
-        @param num_states the number of states
-        @param total_freq sum of all original state frequencies
+    Normalize state frequencies so that sum of them is equal to 1
+    @param freqs original state frequencies
+    @param num_states the number of states
+    @param total_freq sum of all original state frequencies
  */
 void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index);
 
 /**
-        normalize entries so that sum of them is equal to 1
-        @param entries original entries
-        @param num_entries the number of entries
-        @param sum_entries sum of all original state frequencies
+    Normalize entries so that sum of them is equal to 1
+    @param entries original entries
+    @param num_entries the number of entries
+    @param sum_entries sum of all original state frequencies
  */
 void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entries = -1);
 
@@ -569,84 +571,87 @@ string convert_time(const RealNumType sec);
 
 
 /**
-        convert a string to to range lower:upper:step_size with error checking
-        @param str original string
-        @param lower (OUT) lower bound of the range
-        @param upper (OUT) upper bound of the range
-        @param step_size (OUT) step size of the range
+    Convert a string to to range lower:upper:step_size with error checking
+    @param str original string
+    @param lower (OUT) lower bound of the range
+    @param upper (OUT) upper bound of the range
+    @param step_size (OUT) step size of the range
  */
 void convert_range(const char *str, int &lower, int &upper, int &step_size);
 
 /**
-        convert a string to to range lower:upper:step_size with error checking
-        @param str original string
-        @param lower (OUT) lower bound of the range
-        @param upper (OUT) upper bound of the range
-        @param step_size (OUT) step size of the range
+    Convert a string to to range lower:upper:step_size with error checking
+    @param str original string
+    @param lower (OUT) lower bound of the range
+    @param upper (OUT) upper bound of the range
+    @param step_size (OUT) step size of the range
  */
 void convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size);
 
 /**
-        reinitialize an array of real number (RealNumType*)
-        @param arr the input RealNumType*
-        @param size the size of the input array
-        @param delete_first TRUE to delete the current array before reinitializing
-        @param set_zero TRUE to initialize all new items at 0
+    Reinitialize an array of real number (RealNumType*)
+    @param arr the input RealNumType*
+    @param size the size of the input array
+    @param delete_first TRUE to delete the current array before reinitializing
+    @param set_zero TRUE to initialize all new items at 0
  */
 void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first = true, bool set_zero = true);
 
+/**
+    Convert char* into vector of strings separated by separator
+ */
 void convert_string_vec(const char *str, StrVector &str_vec, char separator = ',');
 
 /**
-        convert string to PositionType, with error checking
-        @param str original string
-        @return the number
+    Convert string to PositionType, with error checking
+    @param str original string
+    @return the number
  */
 PositionType convert_positiontype(const char *str);
 
 /**
-       check whether a string is a number
-        @param s storing a string
+    Check whether a string is a number
+    @param s storing a string
  */
 bool is_number(const string& s);
 
 
 /**
-        parse program argument into params
-        @param argc number of arguments
-        @param argv list of arguments
-        @param params (OUT) program parameters
+    Parse program argument into params
+    @param argc number of arguments
+    @param argv list of arguments
+    @param params (OUT) program parameters
  */
 void parseArg(int argc, char *argv[], Params &params);
 
 /**
-        detect the format of input file
-        @param input_file file name
-        @return
-                IN_NEWICK if file in newick format,
-                IN_NEXUS if in nexus format,
-                IN_FASTA if in fasta format,
-                IN_PHYLIP if in phylip format,
+    Detect the format of input file
+    @param input_file file name
+    @return
+        IN_NEWICK if file in newick format,
+        IN_NEXUS if in nexus format,
+        IN_FASTA if in fasta format,
+        IN_PHYLIP if in phylip format,
 		IN_COUNTSFILE if in counts format (PoMo),
-                IN_OTHER if file format unknown.
+        IN_OTHER if file format unknown.
  */
 InputType detectInputFile(const char *input_file);
 
 /**
-        if file exists, ask user to overwrite it or not
-        @param filename file name
-        @return TRUE if agree to overwrite an existing file, or simply file does not exist
+    If file exists, ask user to overwrite it or not
+    @param filename file name
+    @return TRUE if agree to overwrite an existing file, or simply file does not exist
  */
 bool overwriteFile(char *filename);
 
 /**
-    remove white space at the beginning and end of the string
+    Remove white space at the beginning and end of the string
     @param str (IN/OUT) string to be trimmed
 */
 void trimString(string &str);
 
 /**
-    sort an array by quicksort
+    Sort an array by quicksort
     @param arr array for comparison
     @param arr2 array for sorting
     @param left the left index
@@ -687,7 +692,7 @@ void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
 }
 
 /**
- * print usage for iq-tree
+ * Print usage for iq-tree
  * @param program arguments list
  * @param full_command TRUE to print all available commands, FALSE to print normal usage dialog
  */

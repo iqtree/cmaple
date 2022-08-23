@@ -203,8 +203,6 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
     SeqRegion *seq1_region, *seq2_region;
     PositionType seq1_end = -1, seq2_end = -1;
     PositionType length;
-    const RealNumType THRESH_PROB = params->threshold_prob;
-    const RealNumType THRESH_DIFF_UPDATE = params->thresh_diff_update;
     
     // compare each pair of regions
     while (pos < seq_length)
@@ -220,8 +218,8 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
         if (seq1_region->type < num_states || seq1_region->type == TYPE_R)
         {
             // compare plength_from_root and plength_observation
-            if (fabs(seq1_region->plength_observation2root - seq2_region->plength_observation2root) > THRESH_PROB
-                ||fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > THRESH_PROB)
+            if (fabs(seq1_region->plength_observation2root - seq2_region->plength_observation2root) > params->threshold_prob
+                ||fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > params->threshold_prob)
                 return true;
         }
         
@@ -229,7 +227,7 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
         if (seq1_region->type == TYPE_O)
         {
             // compare plength_observation
-            if (fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > THRESH_PROB)
+            if (fabs(seq1_region->plength_observation2node - seq2_region->plength_observation2node) > params->threshold_prob)
                 return true;
             
             // compare likelihood of each state
@@ -242,10 +240,10 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
                     if ((seq1_region->likelihood[i] == 0) || (seq2_region->likelihood[i] == 0))
                         return true;
                     
-                    if (diff > THRESH_DIFF_UPDATE
-                        || (diff > THRESH_PROB
-                            && ((diff / seq1_region->likelihood[i] > THRESH_DIFF_UPDATE)
-                                || (diff / seq2_region->likelihood[i] > THRESH_DIFF_UPDATE))))
+                    if (diff > params->thresh_diff_update
+                        || (diff > params->threshold_prob
+                            && ((diff / seq1_region->likelihood[i] > params->thresh_diff_update)
+                                || (diff / seq2_region->likelihood[i] > params->thresh_diff_update))))
                         return true;
                 }
             }
@@ -1694,7 +1692,7 @@ RealNumType SeqRegions::calculateSamplePlacementCost(Alignment* aln, Model* mode
                                 
                                 for (StateType j = 0; j < num_states; ++j)
                                     if (seq2_region->likelihood[j] > 0.1)
-                                        tot3 += model->mutation_mat[start_index + j]; // TODO
+                                        tot3 += model->mutation_mat[start_index + j]; 
                                 tot3 *= total_blength;
                                 
                                 tot += tot2 * tot3;

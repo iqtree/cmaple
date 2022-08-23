@@ -311,9 +311,9 @@ void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_cha
     if (sequence)
     {
         if (length == -1)
-            sequence->mutations.push_back(new Mutation(convertChar2State(state_char), pos));
+            sequence->push_back(new Mutation(convertChar2State(state_char), pos));
         else
-            sequence->mutations.push_back(new MutationIndel(convertChar2State(state_char), pos, length));
+            sequence->push_back(new MutationIndel(convertChar2State(state_char), pos, length));
     }
 }
 
@@ -984,7 +984,7 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
         sequence_indexes[i] = i;
         
         // browse mutations one by one
-        for (Mutation* mutation: sequence->mutations)
+        for (Mutation* mutation: *sequence)
         {
             switch (mutation->type)
             {

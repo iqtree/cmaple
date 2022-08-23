@@ -11,7 +11,7 @@ Node::Node(bool is_top_node)
     partial_lh = NULL;
     mid_branch_lh = NULL;
     total_lh = NULL;
-    dirty = false;
+    outdated = false;
 }
 
 Node::Node(int n_id, string n_seq_name)
@@ -25,7 +25,7 @@ Node::Node(int n_id, string n_seq_name)
     partial_lh = NULL;
     mid_branch_lh = NULL;
     total_lh = NULL;
-    dirty = false;
+    outdated = false;
 }
 
 Node::Node(string n_seq_name)
@@ -39,7 +39,7 @@ Node::Node(string n_seq_name)
     partial_lh = NULL;
     mid_branch_lh = NULL;
     total_lh = NULL;
-    dirty = false;
+    outdated = false;
 }
 
 Node::~Node()
@@ -200,8 +200,8 @@ void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* mo
     top_node->neighbor->length = best_length;
     
     // add current node and its parent to node_stack to for updating partials further from these nodes
-    top_node->dirty = true;
-    top_node->neighbor->dirty = true;
+    top_node->outdated = true;
+    top_node->neighbor->outdated = true;
     node_stack.push(top_node);
     node_stack.push(top_node->neighbor);
 }

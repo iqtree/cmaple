@@ -165,20 +165,18 @@ void CMaple::optimizeTree()
     auto start = getRealTime();
     
     // dummy variables
-    const int NUM_TREE_IMPROVEMENT = tree->params->num_tree_improvement;
-    const RealNumType THRESH_ENTIER_TREE_IMPROVEMENT = tree->params->thresh_entire_tree_improvement;
     const int MAX_ATTEMPTS = 20;
     
-    for (int i = 0; i < NUM_TREE_IMPROVEMENT; ++i)
+    for (int i = 0; i < tree->params->num_tree_improvement; ++i)
     {
-        // first, make all nodes dirty
-        tree->setAllNodeDirty();
+        // first, set all nodes outdated
+        tree->setAllNodeOutdated();
         
         // traverse the tree from root to try improvements on the entire tree
         RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
             
         // stop trying if the improvement is so small
-        if (improvement < THRESH_ENTIER_TREE_IMPROVEMENT)
+        if (improvement < tree->params->thresh_entire_tree_improvement)
         {
             cout << "Small improvement, stopping topological search." << endl;
             break;
@@ -191,7 +189,7 @@ void CMaple::optimizeTree()
             cout << "Tree was improved by " + convertDoubleToString(improvement) + "at subround " + convertIntToString(j + 1) << endl;
            
             // stop trying if the improvement is so small
-            if (improvement < THRESH_ENTIER_TREE_IMPROVEMENT)
+            if (improvement < tree->params->thresh_entire_tree_improvement)
                 break;
         }
             

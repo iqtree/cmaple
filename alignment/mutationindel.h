@@ -10,25 +10,28 @@
 #ifndef MUTATIONINDEL_H
 #define MUTATIONINDEL_H
 
+/** An indel mutation contains gaps */
 class MutationIndel: public Mutation {
 private:
-    // length of mutation (continuous sites)
+    /**
+        Length of mutation (continuous sites)
+     */
     PositionType length;
     
 public:
     
     /**
-    *  MutationIndel constructor
+        MutationIndel constructor
     */
     MutationIndel();
     
     /**
-    *  MutationIndel constructor
+        MutationIndel constructor
     */
     MutationIndel(StateType n_type, PositionType n_position, PositionType n_length);
     
     /**
-    *  return Length of the current mutation
+        Return Length of the current mutation
     */
     virtual PositionType getLength() { return length;};
 };

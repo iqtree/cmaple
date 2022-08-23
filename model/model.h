@@ -7,32 +7,39 @@ using namespace std;
 #ifndef MODEL_H
 #define MODEL_H
 
+/** Class of evolutionary models */
 class Model
 {
-
 public:
+    /** Name of the model */
     string model_name;
+    
+    /** State frequencies*/
     RealNumType *root_freqs;
+    
+    /** Mutation matrix */
     RealNumType *mutation_mat;
+    
+    /** Pseudo mutation count */
     RealNumType* pseu_mutation_count;
     
     /**
-     caches to reduce runtime
+        Caches to reduce runtime
      */
-    RealNumType *root_log_freqs;
-    RealNumType *diagonal_mut_mat;
-    RealNumType *transposed_mut_mat;
-    RealNumType *inverse_root_freqs;
+    RealNumType *root_log_freqs; // log of state frequencies
+    RealNumType *diagonal_mut_mat; // diagonal of the mutation matrix
+    RealNumType *transposed_mut_mat; // the transposed matrix of the mutation matrix
+    RealNumType *inverse_root_freqs; // the inversed values of state frequencies
     RealNumType *freqi_freqj_qij; // freq(i) / freq(j) * Qij
     StateType *row_index; // the starting index of row i: i * num_states
     
 	/**
-		constructor
+		Constructor
 	*/
     Model();
     
     /**
-        deconstructor
+        Deconstructor
     */
     ~Model();
     
@@ -54,7 +61,7 @@ public:
     void updateMutationMat(StateType num_states);
     
     /**
-        compute cumulative rate of the ref genome
+        Compute cumulative rate of the ref genome
      */
     void computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln);
     
@@ -64,7 +71,7 @@ public:
     void updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln);
     
     /**
-        update pseudocounts from new sample to improve the estimate of the substitution rates
+        Update pseudocounts from new sample to improve the estimate of the substitution rates
         @param node_regions the genome list at the node where the appending happens;
         @param sample_regions the genome list for the new sample.
      */

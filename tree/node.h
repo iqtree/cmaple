@@ -9,79 +9,93 @@
 /** A node of the tree following the cyclic tree structure */
 class Node {
 public:
-    /** node's id */
+    /**
+        Node's id
+    */
     int id;
     
-    // sequence name
+    /**
+        Sequence name
+     */
     string seq_name;
     
-    /** likelihood of the subtree rooted at this node.
-     It is computed from next->partial_lh, next->next->partial_lh and so on */
+    /**
+        Likelihood of the subtree rooted at this node.
+        It is computed from next->partial_lh, next->next->partial_lh and so on
+     */
     SeqRegions* partial_lh = NULL;
     
     /**
-     combined likelihood vector at this node used to quickly calculate the placement likelihood.
-     In essence, it is
-     this->partial_lh combined with this->neighbor->partial_lh  extended by this branch length
-    TODO: rename this
+        Combined likelihood vector at this node used to quickly calculate the placement likelihood.
+        In essence, it is
+        this->partial_lh combined with this->neighbor->partial_lh  extended by this branch length
      */
     SeqRegions* total_lh = NULL;
     
     /**
-     combined likelihood vector at the midpoint of this node and its neighbor.
-     It's used to quickly calculate the placement likelihood at the midpoint.
-     In essence, it is
-     this->partial_lh extended by length/2 combined with this->neighbor->partial_lh extended by length/2
+        Combined likelihood vector at the midpoint of this node and its neighbor.
+        It's used to quickly calculate the placement likelihood at the midpoint.
+        In essence, it is
+        this->partial_lh extended by length/2 combined with this->neighbor->partial_lh extended by length/2
      */
     SeqRegions* mid_branch_lh = NULL;
     
-    // length of branch connecting to parent
+    /**
+        Length of branch connecting to parent
+     */
     RealNumType length;
     
-    // next node in the circle of neighbors. For tips, circle = NULL
+    /**
+        Next node in the circle of neighbors. For tips, circle = NULL
+     */
     Node* next;
     
-    // next node in the phylo tree
+    /**
+        Neighbor node in the phylo tree
+     */
     Node* neighbor;
     
-    // vector of less informative sequences
+    /**
+        Vector of sequences that are less informative than the sequence of this node
+     */
     vector<string> less_info_seqs;
     
-    // flag tp prevent traversing the same part of the tree multiple times.
-    // TODO: change to computed or something similar
-    bool dirty;
+    /**
+        Flag to prevent traversing the same part of the tree multiple times.
+     */
+    bool outdated;
     
     /**
         TRUE if this node is the top node in a phylogenetic node structure
      */
     bool is_top;
 
-    // flexible string attributes
+    /**
+        Flexible string attributes
+     
+     */
     map<string,string> str_attributes;
     
-    // flexible RealNumType attributes
-    map<string,RealNumType> real_number_attributes;
-    
     /**
-        constructor
+        Constructor
         @param n_seq_name the sequence name
      */
     Node(int n_id, string n_seq_name = "");
     
     /**
-        constructor
+        Constructor
         @param n_seq_name the sequence name
      */
     Node(string n_seq_name);
     
     /**
-        constructor
+        Constructor
         @param is_top_node TRUE if this is the first node in the next circle visited from root
      */
     Node(bool is_top_node = false);
     
     /**
-        deconstructor
+        Deconstructor
      */
     ~Node();
     
@@ -91,50 +105,61 @@ public:
     bool isLeave();
     
     /**
-        get the top node
+        Get the top node of a phylo-node
      */
     Node* getTopNode();
     
     /**
-        export string: name + branch length
+        Export string: name + branch length
      */
     string exportString();
     
     /**
-        get partial_lh of a node
+        Get/(or compute) partial_lh of a node
      */
     SeqRegions* getPartialLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate);
     
     /**
-        increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
+        Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
      */
     void updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
-    *  compute the total likelihood vector for a node.
+        Compute the total likelihood vector for a node.
     */
     SeqRegions* computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true);
 };
 
-/** an extension of node storing more dummy data used for browsing all nodes in a stack  */
+/** An extension of node storing more dummy data used for browsing all nodes in a stack  */
 class ExtendedNode {
 public:
+    /**
+        Pointer to a node
+     */
     Node* node;
+    
+    /**
+        Count of the number of failures when traversing until the current node
+     */
     short int failure_count;
+    
+    /**
+        Cache the likelihood difference computed at the parent node
+     */
     RealNumType likelihood_diff;
     
     /**
-        constructor
+        Constructor
      */
     ExtendedNode();
     
     /**
-        constructor
+        Constructor
      */
     ExtendedNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff);
     
     /**
-        deconstructor
+        Deconstructor
      */
     ~ExtendedNode();
 };

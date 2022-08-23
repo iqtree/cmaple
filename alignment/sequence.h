@@ -14,11 +14,13 @@
 class Alignment;
 class SeqRegions;
 
-/** Suggestion: class Sequence : public vector<Mutations*> */
-class Sequence {
+/** Class present a sequence */
+class Sequence: public vector<Mutation*> {
 public:
+    /**
+        Name of the sequence
+     */
     string seq_name;
-    vector<Mutation*> mutations;
     
     /**
     *  Sequence constructor
@@ -41,7 +43,7 @@ public:
     ~Sequence();
     
     /**
-    *  get lower likelihood vector (converting a vector of Mutations into a vector of Regions)
+        Extract the lower likelihood vector (converting a vector of Mutations into a vector of Regions)
     */
     SeqRegions* getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type);
 };
