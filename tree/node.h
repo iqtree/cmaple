@@ -1,4 +1,4 @@
-#include "alignment/regions.h"
+#include "alignment/seqregions.h"
 #include "alignment/sequence.h"
 #include "alignment/alignment.h"
 #include "model/model.h"
@@ -17,7 +17,7 @@ public:
     
     /** likelihood of the subtree rooted at this node.
      It is computed from next->partial_lh, next->next->partial_lh and so on */
-    Regions* partial_lh = NULL;
+    SeqRegions* partial_lh = NULL;
     
     /**
      combined likelihood vector at this node used to quickly calculate the placement likelihood.
@@ -25,7 +25,7 @@ public:
      this->partial_lh combined with this->neighbor->partial_lh  extended by this branch length
     TODO: rename this
      */
-    Regions* total_lh = NULL;
+    SeqRegions* total_lh = NULL;
     
     /**
      combined likelihood vector at the midpoint of this node and its neighbor.
@@ -33,7 +33,7 @@ public:
      In essence, it is
      this->partial_lh extended by length/2 combined with this->neighbor->partial_lh extended by length/2
      */
-    Regions* mid_branch_lh = NULL;
+    SeqRegions* mid_branch_lh = NULL;
     
     // length of branch connecting to parent
     RealNumType length;
@@ -103,7 +103,7 @@ public:
     /**
         get partial_lh of a node
      */
-    Regions* getPartialLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate);
+    SeqRegions* getPartialLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate);
     
     /**
         increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
@@ -113,7 +113,7 @@ public:
     /**
     *  compute the total likelihood vector for a node.
     */
-    Regions* computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true);
+    SeqRegions* computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true);
 };
 
 /** an extension of node storing more dummy data used for browsing all nodes in a stack  */

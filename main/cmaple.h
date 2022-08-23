@@ -7,7 +7,7 @@
 
 #include "tree/tree.h"
 #include "utils/timeutil.h"
-#include "alignment/regions.h"
+#include "alignment/seqregions.h"
 
 #ifndef CMAPLE_H
 #define CMAPLE_H

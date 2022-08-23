@@ -6,13 +6,13 @@
 //
 
 #include "mutationindel.h"
-#include "regions.h"
+#include "seqregions.h"
 
 #ifndef SEQUENCE_H
 #define SEQUENCE_H
 
 class Alignment;
-class Regions;
+class SeqRegions;
 
 /** Suggestion: class Sequence : public vector<Mutations*> */
 class Sequence {
@@ -43,6 +43,6 @@ public:
     /**
     *  get lower likelihood vector (converting a vector of Mutations into a vector of Regions)
     */
-    Regions* getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type);
+    SeqRegions* getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type);
 };
 #endif

@@ -124,7 +124,7 @@ void CMaple::buildInitialTree()
         Sequence* sequence = aln->at(i);
         
         // get the lower likelihood vector of the current sequence
-        Regions* lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->seq_type);
+        SeqRegions* lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->seq_type);
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree->params->mutation_update_period == 0)

@@ -25,25 +25,25 @@ Sequence::~Sequence()
         delete mutation;
 }
 
-Regions* Sequence::getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type)
+SeqRegions* Sequence::getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type)
 {
-    Regions* regions = new Regions();
+    SeqRegions* regions = new SeqRegions();
     PositionType pos = 0;
     
     for (Mutation* mutation: mutations)
     {
         // insert Region of type R (if necessary)
         if (mutation->position > pos)
-            regions->push_back(new Region(TYPE_R, pos));
+            regions->push_back(new SeqRegion(TYPE_R, pos));
         
         // convert the current mutation
         pos = mutation->position + mutation->getLength();
-        regions->push_back(new Region(mutation, seq_type, num_states));
+        regions->push_back(new SeqRegion(mutation, seq_type, num_states));
     }
     
     // insert the last Region of type R (if necessary)
     if (pos < sequence_length)
-        regions->push_back(new Region(TYPE_R, pos));
+        regions->push_back(new SeqRegion(TYPE_R, pos));
     
     return regions;
 }

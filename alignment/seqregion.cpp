@@ -5,23 +5,23 @@
 //  Created by NhanLT on 31/3/2022.
 //
 
-#include "region.h"
+#include "seqregion.h"
 
-Region::Region():Mutation()
+SeqRegion::SeqRegion():Mutation()
 {
     plength_observation2node = -1;
     plength_observation2root = -1;
     likelihood = NULL;
 }
 
-Region::Region(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, RealNumType* n_likelihood):Mutation(n_type, n_position)
+SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, RealNumType* n_likelihood):Mutation(n_type, n_position)
 {
     plength_observation2node = n_plength_observation;
     plength_observation2root = n_plength_from_root;
     likelihood = n_likelihood;
 }
 
-Region::Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states):Mutation(n_type, n_position)
+SeqRegion::SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states):Mutation(n_type, n_position)
 {
     plength_observation2node = -1;
     plength_observation2root = -1;
@@ -29,7 +29,7 @@ Region::Region(StateType n_type, PositionType n_position, SeqType seq_type, int 
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
-Region::Region(Mutation* n_mutation, SeqType seq_type, int max_num_states)
+SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states)
 {
     type = n_mutation->type;
     position = n_mutation->position;
@@ -39,7 +39,7 @@ Region::Region(Mutation* n_mutation, SeqType seq_type, int max_num_states)
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
-Region::Region(Region* region, StateType num_states, bool copy_likelihood)
+SeqRegion::SeqRegion(SeqRegion* region, StateType num_states, bool copy_likelihood)
 {
     type = region->type;
     position = region->position;
@@ -53,7 +53,7 @@ Region::Region(Region* region, StateType num_states, bool copy_likelihood)
     }
 }
 
-Region::~Region()
+SeqRegion::~SeqRegion()
 {
     if (likelihood)
     {
@@ -62,7 +62,7 @@ Region::~Region()
     }
 }
 
-void Region::convertAmbiguiousState(SeqType seq_type, int max_num_states)
+void SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
 {
     ASSERT(type >= 0 && type < TYPE_INVALID);
     switch (seq_type) {
@@ -76,7 +76,7 @@ void Region::convertAmbiguiousState(SeqType seq_type, int max_num_states)
     }
 }
 
-void Region::convertAmbiguiousStateDNA(int max_num_states)
+void SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
 {
     // do nothing if it is not an ambiguious state
     if (type < max_num_states || type == TYPE_N || type == TYPE_R)
@@ -151,7 +151,7 @@ void Region::convertAmbiguiousStateDNA(int max_num_states)
     }
 }
 
-void Region::computeLhAmbiguity(IntVector entries)
+void SeqRegion::computeLhAmbiguity(IntVector entries)
 {
     // change type to 'O'
     type = TYPE_O;

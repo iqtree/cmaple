@@ -1,5 +1,5 @@
 //
-//  region.h
+//  seqregion.h
 //  alignment
 //
 //  Created by Nhan Ly-Trong on 24/01/2022.
@@ -7,10 +7,10 @@
 
 #include "mutation.h"
 
-#ifndef REGION_H
-#define REGION_H
+#ifndef SEQREGION_H
+#define SEQREGION_H
 
-class Region: public Mutation {
+class SeqRegion: public Mutation {
 private:
     /**
     *  compute the relative likelihood for an ambiguious state
@@ -44,31 +44,31 @@ public:
     /**
     *  Region constructor
     */
-    Region();
+    SeqRegion();
     
     /**
     *  Region constructor
     */
-    Region(StateType n_type, PositionType n_position, RealNumType n_plength_observation = -1, RealNumType n_plength_from_root = -1, RealNumType* n_likelihood = NULL);
+    SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation = -1, RealNumType n_plength_from_root = -1, RealNumType* n_likelihood = NULL);
     
     /**
     *  Region constructor
     */
-    Region(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states);
+    SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states);
     
     /**
     *  Region constructor
     */
-    Region(Mutation* n_mutation, SeqType seq_type, int max_num_states);
+    SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states);
     
     /**
     *  Region constructor
     */
-    Region(Region* region, StateType num_states, bool copy_likelihood = true);
+    SeqRegion(SeqRegion* region, StateType num_states, bool copy_likelihood = true);
     
     /**
     *  Region deconstructor
     */
-    ~Region();
+    ~SeqRegion();
 };
 #endif

@@ -1,20 +1,20 @@
 //
-//  regions.h
+//  seqregions.h
 //  alignment
 //
 //  Created by Nhan Ly-Trong on 24/01/2022.
 //
 
-#ifndef REGIONS_H
-#define REGIONS_H
+#ifndef SEQREGIONS_H
+#define SEQREGIONS_H
 
-#include "region.h"
+#include "seqregion.h"
 #include "alignment.h"
 #include "model/model.h"
 
 class Alignment;
 
-class Regions: public vector<Region*> {
+class SeqRegions: public vector<SeqRegion*> {
 private:
     
 public:
@@ -22,17 +22,17 @@ public:
     /**
     *  Regions constructor
     */
-    Regions();
+    SeqRegions();
     
     /**
     *  Regions deconstructor
     */
-    ~Regions();
+    ~SeqRegions();
     
     /**
     *  copy regions
     */
-    void copyRegions(Regions* n_regions, StateType num_states);
+    void copyRegions(SeqRegions* n_regions, StateType num_states);
     
     /**
     *  Delete all region items one by one
@@ -49,14 +49,14 @@ public:
         @param sequence: a vector of regions; region_index: the index of the next region
         @return region: a region; current_pos: the current position; end_pos: the end position
      */
-    static void move2NextRegion(Regions* sequence, PositionType region_index, Region* &region, PositionType &current_pos, PositionType &end_pos, PositionType seq_length);
+    static void move2NextRegion(SeqRegions* sequence, PositionType region_index, SeqRegion* &region, PositionType &current_pos, PositionType &end_pos, PositionType seq_length);
     
     /**
         get the shared segment between the next regions of two sequences
         @param current_pos: current site posisition; sequence1, sequence2: vectors of regions; seq1_index, seq2_index: the indexes of the current regions; seq1_end_pos, seq2_end_pos: the end positions of the current regions
         @return seq1_region, seq2_region: the regions contains the shared segment; length: length of the shared segment
      */
-    static void getNextSharedSegment(PositionType current_pos, PositionType seq_length, Regions* sequence1, Regions* sequence2, PositionType &seq1_index, PositionType &seq2_index, Region* &seq1_region, Region* &seq2_region, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length);
+    static void getNextSharedSegment(PositionType current_pos, PositionType seq_length, SeqRegions* sequence1, SeqRegions* sequence2, PositionType &seq1_index, PositionType &seq2_index, SeqRegion* &seq1_region, SeqRegion* &seq2_region, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length);
     
     /**
         compare the current sequence with another sequence regarding the amount of information
@@ -65,12 +65,12 @@ public:
         @param num_states the number of states
         @return 0: if the two sequences are incomparable; 1: if the current sequence is more or equally informative than/to sequence2; -1; if the current sequence  is less informative than sequence2
      */
-    int compareWithSample(Regions* sequence2, PositionType seq_length, StateType num_states);
+    int compareWithSample(SeqRegions* sequence2, PositionType seq_length, StateType num_states);
     
     /**
         Check if the current regions and regions2 represent the same partial likelihoods or not -> be used to stop traversing the tree further for updating partial likelihoods
      */
-    bool areDiffFrom(Regions* regions2, PositionType seq_length, StateType num_states, Params* params);
+    bool areDiffFrom(SeqRegions* regions2, PositionType seq_length, StateType num_states, Params* params);
     
     /**
         merge two likelihood vectors, one from above and one from below
@@ -83,7 +83,7 @@ public:
         @param model the model of evolution
         @param threshold the threshold for approximation
      */
-    void mergeUpperLower(Regions* &merged_regions, RealNumType upper_plength, Regions* lower_regions, RealNumType lower_plength, Alignment* aln, Model* model, RealNumType threshold);
+    void mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, SeqRegions* lower_regions, RealNumType lower_plength, Alignment* aln, Model* model, RealNumType threshold);
     
     /**
     merge two lower likelihood vectors
@@ -97,13 +97,13 @@ public:
     @param cumulative_rate the cumulative rates of the reference sequence
     @param return_log_lh TRUE to return the log likelihood
      */
-    RealNumType mergeTwoLowers(Regions* &merged_regions, RealNumType plength1, Regions* regions2, RealNumType plength2, Alignment* aln, Model* model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
+    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, SeqRegions* regions2, RealNumType plength2, Alignment* aln, Model* model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
     
     /**
         compute total lh/upper left_right for root node
         @param blength the branch length; (-1 by default).
      */
-    Regions* computeTotalLhAtRoot(StateType num_states, Model* model, RealNumType blength = -1);
+    SeqRegions* computeTotalLhAtRoot(StateType num_states, Model* model, RealNumType blength = -1);
     
     /**
         compute the likelihood by merging the lower lh with root frequencies
@@ -119,13 +119,13 @@ public:
             calculate the placement cost of a sample
             @param child_regions: vector of regions of the new sample
      */
-    RealNumType calculateSamplePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength);
+    RealNumType calculateSamplePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* child_regions, RealNumType blength);
     
     /**
             calculate the placement cost of a subtree
             @param child_regions: vector of regions of the new sample
      */
-    RealNumType calculateSubTreePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, Regions* child_regions, RealNumType blength);
+    RealNumType calculateSubTreePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* child_regions, RealNumType blength);
 
 };
 #endif
