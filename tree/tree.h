@@ -9,6 +9,41 @@
 class Tree {
 private:
     /**
+        Pointer  to updatePartialLh method
+     */
+    typedef void (Tree::*UpdatePartialLhPointerType)(stack<Node*> &, RealNumType*, RealNumType, RealNumType, RealNumType);
+    UpdatePartialLhPointerType updatePartialLhPointer;
+    
+    /**
+        Template of updatePartialLh
+     */
+    template <const StateType num_states>
+    void updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
+    
+    /**
+        Pointer  to updatePartialLh method
+     */
+    typedef RealNumType (Tree::*CalculatePlacementCostType)(Alignment*, Model*, RealNumType*, SeqRegions*, SeqRegions*, RealNumType);
+    CalculatePlacementCostType calculateSamplePlacementCostPointer;
+    
+    /**
+        Template of calculateSamplePlacementCost
+     */
+    template <const StateType num_states>
+    RealNumType calculateSamplePlacementCostTemplate(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    
+    /**
+        Pointer  to updatePartialLh method
+     */
+    CalculatePlacementCostType calculateSubTreePlacementCostPointer;
+    
+    /**
+        Template of calculateSubTreePlacementCost
+     */
+    template <const StateType num_states>
+    RealNumType calculateSubTreePlacementCostTemplate(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    
+    /**
         Traverse the intial tree from root to re-calculate all lower likelihoods regarding the latest/final estimated model parameters
      */
     void refreshAllLowerLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
@@ -61,9 +96,19 @@ public:
     ~Tree();
     
     /**
+        Setup function pointers
+     */
+    void setupFunctionPointers();
+    
+    /**
         Export tree string in Newick format
      */
     string exportTreeString(Node* node = NULL);
+    
+    /**
+        Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
+     */
+    void updateZeroBlength(Node* node, stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
         Iteratively update partial_lh starting from the nodes in node_stack
@@ -101,6 +146,19 @@ public:
         @return total improvement
      */
     RealNumType improveEntireTree(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    
+    /**
+        Calculate the placement cost of a sample
+        @param child_regions: vector of regions of the new sample
+     */
+    RealNumType calculateSamplePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    
+    /**
+        Calculate the placement cost of a subtree
+        @param child_regions: vector of regions of the new sample
+     */
+    RealNumType calculateSubTreePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+
 };
 
 #endif

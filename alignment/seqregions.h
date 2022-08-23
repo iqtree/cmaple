@@ -115,18 +115,5 @@ public:
         Convert an entry 'O' into a normal nucleotide if its probability dominated others
      */
     StateType simplifyO(RealNumType* &partial_lh, StateType ref_state, StateType num_states, RealNumType threshold);
-    
-    /**
-        Calculate the placement cost of a sample
-        @param child_regions: vector of regions of the new sample
-     */
-    RealNumType calculateSamplePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* child_regions, RealNumType blength);
-    
-    /**
-        Calculate the placement cost of a subtree
-        @param child_regions: vector of regions of the new sample
-     */
-    RealNumType calculateSubTreePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* child_regions, RealNumType blength);
-
 };
 #endif

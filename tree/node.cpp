@@ -154,58 +154,6 @@ SeqRegions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType t
     return partial_lh;
 }
 
-void Node::updateZeroBlength(stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength)
-{
-    // get the top node in the phylo-node
-    Node* top_node = getTopNode();
-    ASSERT(top_node);
-    SeqRegions* upper_left_right_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-    SeqRegions* lower_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-    
-    RealNumType best_lh = upper_left_right_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, lower_regions, default_blength);
-    RealNumType best_length = default_blength;
-    
-    while (best_length > min_blength)
-    {
-        RealNumType new_blength = best_length * 0.5;
-        RealNumType new_lh = upper_left_right_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
-        
-        if (new_lh > best_lh)
-        {
-            best_lh = new_lh;
-            best_length = new_blength;
-        }
-        else
-            break;
-    }
-    
-    if (best_length > 0.7 * default_blength)
-    {
-        while (best_length < max_blength)
-        {
-            RealNumType new_blength = best_length * 2;
-            RealNumType new_lh = upper_left_right_regions->calculateSamplePlacementCost(aln, model, cumulative_rate, lower_regions, new_blength);
-            if (new_lh > best_lh)
-            {
-                best_lh = new_lh;
-                best_length = new_blength;
-            }
-            else
-                break;
-        }
-    }
-    
-    // update best_length
-    top_node->length = best_length;
-    top_node->neighbor->length = best_length;
-    
-    // add current node and its parent to node_stack to for updating partials further from these nodes
-    top_node->outdated = true;
-    top_node->neighbor->outdated = true;
-    node_stack.push(top_node);
-    node_stack.push(top_node->neighbor);
-}
-
 SeqRegions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update)
 {
     SeqRegions* new_regions = NULL;

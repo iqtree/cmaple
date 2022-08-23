@@ -89,6 +89,9 @@ void CMaple::preInference()
     // compute cumulative rates of the ref sequence
     tree->model->computeCumulativeRate(cumulative_rate, cumulative_base, tree->aln);
     
+    // setup function pointers in tree
+    tree->setupFunctionPointers();
+    
     // compute the default initial branch length
     default_blength = 1.0 / tree->aln->ref_seq.size();
     min_blength = tree->params->min_blength_factor * default_blength;
