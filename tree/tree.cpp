@@ -2170,7 +2170,6 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                 if (seq1_region->plength_observation2root >= 0)
                 {
                     StateType mutation_index = model->row_index[seq1_state];
-                    StateType start_index = 0;
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot2;
@@ -2184,13 +2183,10 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                         if (total_blength > 0)
                         {
                             for (StateType j = 0; j < num_states; ++j)
-                                tot3 += model->mutation_mat[start_index + j] * seq2_region->likelihood[j];
+                                tot3 += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
                         }
                         
                         tot += tot2 * (seq2_region->likelihood[i] + total_blength * tot3);
-                        
-                        // update start_index
-                        start_index += num_states;
                     }
                     
                     tot *= model->inverse_root_freqs[seq1_state];
@@ -2246,18 +2242,14 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                 
                 if (total_blength > 0)
                 {
-                    StateType start_index = 0;
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot2 = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot2 += model->mutation_mat[start_index + j] * seq2_region->likelihood[j];
+                            tot2 += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
                         
                         tot += seq1_region->likelihood[i] * (seq2_region->likelihood[i] + total_blength * tot2);
-                        
-                        // update start_index
-                        start_index += num_states;
                     }
                 }
                 else
@@ -2311,7 +2303,6 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                     if (seq1_region->plength_observation2root >= 0)
                     {
                         StateType mutation_index = model->row_index[seq1_state];
-                        StateType start_index = 0;
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             RealNumType tot2;
@@ -2323,11 +2314,8 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                                 
                             RealNumType tot3 = 0;
                             for (StateType j = 0; j < num_states; ++j)
-                                tot3 += model->mutation_mat[start_index + j] * seq2_region->likelihood[j];
+                                tot3 += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
                             tot += tot2 * (seq2_region->likelihood[i] + total_blength * tot3);
-                            
-                            // update start_index
-                            start_index += num_states;
                         }
                         
                         total_factor *= (tot * model->inverse_root_freqs[seq1_state]);
@@ -2465,7 +2453,6 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                         {
                             RealNumType tot = 0;
                             StateType mutation_index = model->row_index[seq1_state];
-                            StateType start_index = 0;
                             for (StateType i = 0; i < num_states; ++i)
                             {
                                 RealNumType tot2;
@@ -2481,13 +2468,10 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                                 
                                 for (StateType j = 0; j < num_states; ++j)
                                     if (seq2_region->likelihood[j] > 0.1)
-                                        tot3 += model->mutation_mat[start_index + j];
+                                        tot3 += model->mutation_mat[model->row_index[i] + j];
                                 tot3 *= total_blength;
                                 
                                 tot += tot2 * tot3;
-                                
-                                // update start_index
-                                start_index += num_states;
                             }
                             
                             total_factor *= tot * model->inverse_root_freqs[seq1_state];
@@ -2553,14 +2537,13 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                 {
                     RealNumType tot = 0;
                     
-                    StateType start_index = 0;
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot2 = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
                             if (seq2_region->likelihood[j] > 0.1)
-                                tot2 += model->mutation_mat[start_index + j];
+                                tot2 += model->mutation_mat[model->row_index[i] + j];
                         
                         tot2 *= blength13;
                         
@@ -2568,9 +2551,6 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                             tot2 += 1;
                         
                         tot += tot2 * seq1_region->likelihood[i];
-                        
-                        // update start_index
-                        start_index += num_states;
                     }
                         
                     total_factor *= tot;
@@ -2621,7 +2601,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                             else
                             {
                                 StateType mutation_index = model->row_index[seq1_state];
-                                StateType start_index = 0;
+
                                 for (StateType i = 0; i < num_states; ++i)
                                 {
                                     RealNumType tot2;
@@ -2633,15 +2613,12 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                                     RealNumType tot3 = 0;
                                     for (StateType j = 0; j < num_states; ++j)
                                         if (seq2_region->likelihood[j] > 0.1)
-                                            tot3 += model->mutation_mat[start_index + j];
+                                            tot3 += model->mutation_mat[model->row_index[i] + j];
                                     
                                     if (seq2_region->likelihood[i] > 0.1)
                                         tot += tot2 * (1.0 + blength15 * tot3);
                                     else
                                         tot += tot2 * blength15 * tot3;
-                                    
-                                    // update start_index
-                                    start_index += num_states;
                                 }
                                 
                                 total_factor *= (tot * model->inverse_root_freqs[seq1_state]);

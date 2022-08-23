@@ -115,7 +115,6 @@ void Model::updateMutationMat(StateType num_states)
     // init UNREST model
     if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0)
     {
-        StateType start_index = 0;
         for (StateType i = 0; i <  num_states; ++i)
         {
             RealNumType sum_rate = 0;
@@ -124,7 +123,7 @@ void Model::updateMutationMat(StateType num_states)
             {
                 if (i != j)
                 {
-                    StateType index = start_index + j;
+                    StateType index = row_index[i] + j;
                     RealNumType new_rate = pseu_mutation_count[index] * inverse_root_freqs[i];
                     mutation_mat[index] = new_rate;
                     sum_rate += new_rate;
@@ -132,17 +131,13 @@ void Model::updateMutationMat(StateType num_states)
             }
             
             // update the diagonal entry
-            mutation_mat[start_index + i] = -sum_rate;
+            mutation_mat[row_index[i] + i] = -sum_rate;
             diagonal_mut_mat[i] = -sum_rate;
-            
-            // update start_index
-            start_index += num_states;
         }
     }
     // init GTR model
     else if (model_name.compare("GTR") == 0 || model_name.compare("gtr") == 0)
     {
-        StateType start_index = 0;
         for (StateType i = 0; i <  num_states; ++i)
         {
             RealNumType sum_rate = 0;
@@ -150,17 +145,14 @@ void Model::updateMutationMat(StateType num_states)
             for (StateType j = 0; j <  num_states; ++j)
                 if (i != j)
                 {
-                    StateType index = start_index + j;
+                    StateType index = row_index[i] + j;
                     mutation_mat[index] = (pseu_mutation_count[index] + pseu_mutation_count[row_index[j] + i]) * inverse_root_freqs[i];
                     sum_rate += mutation_mat[index];
                 }
             
             // update the diagonal entry
-            mutation_mat[start_index + i] = -sum_rate;
+            mutation_mat[row_index[i] + i] = -sum_rate;
             diagonal_mut_mat[i] = -sum_rate;
-            
-            // update start_index
-            start_index += num_states;
         }
     }
     // handle other model names
@@ -175,12 +167,11 @@ void Model::updateMutationMat(StateType num_states)
     total_rate = 1.0 / total_rate;
     
     // normalize the mutation_mat
-    StateType start_index = 0;
     for (StateType i = 0; i <  num_states; ++i)
     {
         for (StateType j = 0; j <  num_states; ++j)
         {
-            StateType index = start_index + j;
+            StateType index = row_index[i] + j;
             
             mutation_mat[index] *= total_rate;
             
@@ -195,10 +186,7 @@ void Model::updateMutationMat(StateType num_states)
         }
         
         // update diagonal
-        diagonal_mut_mat[i] = mutation_mat[start_index + i];
-        
-        // update start_index
-        start_index += num_states;
+        diagonal_mut_mat[i] = mutation_mat[row_index[i] + i];
     }
 }
 
@@ -233,12 +221,11 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
         diagonal_mut_mat = new RealNumType[num_states];
         RealNumType jc_rate = 1.0 / 3.0;
         
-        StateType starting_index = 0;
         for (StateType i = 0; i < num_states; ++i)
         {
             for (StateType j = 0; j < num_states; ++j)
             {
-                StateType index = starting_index + j;
+                StateType index = row_index[i] + j;
                 
                 if (i == j)
                 {
@@ -258,9 +245,6 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
             
             // update diagonal entries
             diagonal_mut_mat[i] = -1;
-            
-            // update starting_index
-            starting_index += num_states;
         }
     }
     else
