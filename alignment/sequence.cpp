@@ -33,7 +33,7 @@ SeqRegions* Sequence::getLowerLhVector(PositionType sequence_length, StateType n
     {
         // insert Region of type R (if necessary)
         if (mutation->position > pos)
-            regions->push_back(new SeqRegion(TYPE_R, pos));
+            regions->push_back(new SeqRegion(TYPE_R, mutation->position - 1));
         
         // convert the current mutation
         pos = mutation->position + mutation->getLength();
@@ -42,7 +42,7 @@ SeqRegions* Sequence::getLowerLhVector(PositionType sequence_length, StateType n
     
     // insert the last Region of type R (if necessary)
     if (pos < sequence_length)
-        regions->push_back(new SeqRegion(TYPE_R, pos));
+        regions->push_back(new SeqRegion(TYPE_R, sequence_length - 1));
     
     return regions;
 }

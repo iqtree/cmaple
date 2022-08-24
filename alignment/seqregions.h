@@ -46,18 +46,11 @@ public:
     void mergeRegionR(StateType num_states, RealNumType threshold);
     
     /**
-        Move to the next region in the vector of regions
-        @param sequence: a vector of regions; region_index: the index of the next region
-        @return region: a region; current_pos: the current position; end_pos: the end position
-     */
-    static void move2NextRegion(SeqRegions* sequence, PositionType region_index, SeqRegion* &region, PositionType &current_pos, PositionType &end_pos, PositionType seq_length);
-    
-    /**
         Get the shared segment between the next regions of two sequences
-        @param current_pos: current site posisition; sequence1, sequence2: vectors of regions; seq1_index, seq2_index: the indexes of the current regions; seq1_end_pos, seq2_end_pos: the end positions of the current regions
-        @return seq1_region, seq2_region: the regions contains the shared segment; length: length of the shared segment
+        @param current_pos: current site posisition; sequence1, sequence2: vectors of regions; seq1_index, seq2_index: the indexes of the current regions;
+        @return seq1_region, seq2_region: the regions contains the shared segment; end_pos: ending position of the shared segment
      */
-    static void getNextSharedSegment(PositionType current_pos, PositionType seq_length, SeqRegions* sequence1, SeqRegions* sequence2, PositionType &seq1_index, PositionType &seq2_index, SeqRegion* &seq1_region, SeqRegion* &seq2_region, PositionType &seq1_end_pos, PositionType &seq2_end_pos, PositionType &length);
+    static void getNextSharedSegment(PositionType current_pos, SeqRegions* sequence1, SeqRegions* sequence2, PositionType &seq1_index, PositionType &seq2_index, SeqRegion* &seq1_region, SeqRegion* &seq2_region, PositionType &end_pos);
     
     /**
         Compare the current sequence with another sequence regarding the amount of information

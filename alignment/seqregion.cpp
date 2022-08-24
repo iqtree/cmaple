@@ -32,7 +32,7 @@ SeqRegion::SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type
 SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states)
 {
     type = n_mutation->type;
-    position = n_mutation->position;
+    position = n_mutation->position + n_mutation->getLength() - 1;
     plength_observation2node = -1;
     plength_observation2root = -1;
     likelihood = NULL;

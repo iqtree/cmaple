@@ -327,27 +327,26 @@ void Model::updatePesudoCount(Alignment* aln, SeqRegions* regions1, SeqRegions* 
         PositionType pos = 0;
         StateType num_states = aln->num_states;
         SeqRegion *seq1_region, *seq2_region;
-        PositionType seq1_end = -1, seq2_end = -1;
-        PositionType length;
+        PositionType end_pos;
         PositionType seq_length = aln->ref_seq.size();
                     
         while (pos < seq_length)
         {
             // get the next shared segment in the two sequences
-            SeqRegions::getNextSharedSegment(pos, seq_length, regions1, regions2, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
+            SeqRegions::getNextSharedSegment(pos, regions1, regions2, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
         
             if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R) && (seq2_region->type < num_states || seq2_region->type == TYPE_R))
             {
                 if (seq1_region->type == TYPE_R)
-                    pseu_mutation_count[row_index[aln->ref_seq[pos]] + seq2_region->type] += 1;
+                    pseu_mutation_count[row_index[aln->ref_seq[end_pos]] + seq2_region->type] += 1;
                 else if (seq2_region->type == TYPE_R)
-                    pseu_mutation_count[row_index[seq1_region->type] + aln->ref_seq[pos]] += 1;
+                    pseu_mutation_count[row_index[seq1_region->type] + aln->ref_seq[end_pos]] += 1;
                 else
                     pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
             }
 
             // update pos
-            pos += length;
+            pos = end_pos + 1;
         }
     }
 }

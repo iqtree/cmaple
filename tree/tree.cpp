@@ -2119,8 +2119,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
     PositionType pos = 0;
     RealNumType total_factor = 1;
     SeqRegion *seq1_region, *seq2_region;
-    PositionType seq1_end = -1, seq2_end = -1;
-    PositionType length;
+    PositionType end_pos;
     RealNumType minimum_carry_over = DBL_MIN * 1e50;
     RealNumType total_blength = blength;
     PositionType seq_length = aln->ref_seq.size();
@@ -2128,12 +2127,12 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq_length, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
+        SeqRegions::getNextSharedSegment(pos, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
         
         // 1. e1.type = N || e2.type = N
         if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
         {
-            pos += length;
+            pos = end_pos + 1;
             continue;
         }
         
@@ -2159,13 +2158,13 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                     total_blength += seq1_region->plength_observation2node;
                 
                 if (total_blength > 0)
-                    lh_cost += total_blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
+                    lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
             }
             // 2.2. e1.type = R and e2.type = O
             else if (seq2_region->type == TYPE_O)
             {
                 RealNumType tot = 0;
-                StateType seq1_state = aln->ref_seq[pos];
+                StateType seq1_state = aln->ref_seq[end_pos];
                 
                 if (seq1_region->plength_observation2root >= 0)
                 {
@@ -2210,7 +2209,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
             // 2.3. e1.type = R and e2.type = A/C/G/T
             else
             {
-                StateType seq1_state = aln->ref_seq[pos];
+                StateType seq1_state = aln->ref_seq[end_pos];
                 StateType seq2_state = seq2_region->type;
                 
                 if (seq1_region->plength_observation2root >= 0)
@@ -2263,7 +2262,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
             {
                 StateType seq2_state = seq2_region->type;
                 if (seq2_state == TYPE_R)
-                    seq2_state = aln->ref_seq[pos];
+                    seq2_state = aln->ref_seq[end_pos];
                 
                 if (total_blength > 0)
                 {
@@ -2336,7 +2335,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                 {
                     StateType seq2_state = seq2_region->type;
                     if (seq2_state == TYPE_R)
-                        seq2_state = aln->ref_seq[pos];
+                        seq2_state = aln->ref_seq[end_pos];
                     
                     if (seq1_region->plength_observation2root >= 0)
                     {
@@ -2369,7 +2368,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
         }
         
         // update pos
-        pos += length;
+        pos = end_pos + 1;
     }
     
     return lh_cost + log(total_factor);
@@ -2392,8 +2391,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
     PositionType pos = 0;
     RealNumType total_factor = 1;
     SeqRegion *seq1_region, *seq2_region;
-    PositionType seq1_end = -1, seq2_end = -1;
-    PositionType length;
+    PositionType end_pos;
     //RealNumType minimum_carry_over = DBL_MIN * 1e50;
     if (blength < 0) blength = 0;
     RealNumType total_blength = blength;
@@ -2402,12 +2400,12 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq_length, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, seq1_end, seq2_end, length);
+        SeqRegions::getNextSharedSegment(pos, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
         
         // 1. e1.type = N || e2.type = N
         if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
         {
-            pos += length;
+            pos = end_pos + 1;
             continue;
         }
         // e1.type != N && e2.type != N
@@ -2423,21 +2421,21 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                 if (seq2_region->type == TYPE_R)
                 {
                     if (seq1_region->plength_observation2node < 0 && seq1_region->plength_observation2root < 0)
-                        lh_cost += blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
+                        lh_cost += blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
                     else
                     {
                         total_blength = blength + seq1_region->plength_observation2node;
                         if (seq1_region->plength_observation2root < 0)
-                            lh_cost += total_blength * (cumulative_rate[pos + length] - cumulative_rate[pos]);
+                            lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
                         else
                             // here contribution from root frequency gets added and subtracted so it's ignored
-                            lh_cost += (total_blength + seq1_region->plength_observation2root) * (cumulative_rate[pos + length] - cumulative_rate[pos]);
+                            lh_cost += (total_blength + seq1_region->plength_observation2root) * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
                     }
                 }
                 // 2.2. e1.type = R and e2.type = O
                 else if (seq2_region->type == TYPE_O)
                 {
-                    StateType seq1_state = aln->ref_seq[pos];
+                    StateType seq1_state = aln->ref_seq[end_pos];
                     if (seq1_region->plength_observation2root >= 0)
                     {
                         total_blength = seq1_region->plength_observation2root + blength;
@@ -2504,7 +2502,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                 // 2.3. e1.type = R and e2.type = A/C/G/T
                 else
                 {
-                    StateType seq1_state = aln->ref_seq[pos];
+                    StateType seq1_state = aln->ref_seq[end_pos];
                     StateType seq2_state = seq2_region->type;
                     
                     if (seq1_region->plength_observation2root >= 0)
@@ -2560,7 +2558,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                 {
                     StateType seq2_state = seq2_region->type;
                     if (seq2_state == TYPE_R)
-                        seq2_state = aln->ref_seq[pos];
+                        seq2_state = aln->ref_seq[end_pos];
                     
                     RealNumType tot2 = 0;
                     StateType mutation_index = model->row_index[seq2_state];
@@ -2645,7 +2643,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                     {
                         StateType seq2_state = seq2_region->type;
                         if (seq2_state == TYPE_R)
-                            seq2_state = aln->ref_seq[pos];
+                            seq2_state = aln->ref_seq[end_pos];
                         
                         if (seq1_region->plength_observation2root >= 0)
                         {
@@ -2677,7 +2675,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
         }
         
         // update pos
-        pos += length;
+        pos = end_pos + 1;
     }
     
     return lh_cost + log(total_factor);
