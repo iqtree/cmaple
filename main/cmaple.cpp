@@ -99,8 +99,7 @@ void CMaple::preInference()
     min_blength_mid = tree->params->min_blength_mid_factor * default_blength;
     
     // compute thresholds for approximations
-    threshold_prob2 = tree->params->threshold_prob * tree->params->threshold_prob;
-    threshold_prob4 = threshold_prob2 * threshold_prob2;
+    tree->params->threshold_prob2 = tree->params->threshold_prob * tree->params->threshold_prob;
 }
 
 void CMaple::buildInitialTree()

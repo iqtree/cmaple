@@ -70,6 +70,20 @@ Node* Node::getTopNode()
     return NULL;
 }
 
+Node* Node::getOtherNextNode()
+{
+    Node* next_node;
+    Node* node = this;
+    
+    FOR_NEXT(node, next_node)
+    {
+        if (!next_node->is_top)
+            return next_node;
+    }
+    
+    return NULL;
+}
+
 string Node::exportString()
 {
     if (isLeave())
@@ -178,21 +192,40 @@ SeqRegions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType
     return new_regions;
 }
 
-ExtendedNode::ExtendedNode()
+TraversingNode::TraversingNode()
 {
     node = NULL;
     failure_count = 0;
     likelihood_diff = 0;
 }
 
-ExtendedNode::ExtendedNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff)
+TraversingNode::TraversingNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff)
 {
     node = n_node;
     failure_count = n_failure_count;
     likelihood_diff = n_lh_diff;
 }
 
-ExtendedNode::~ExtendedNode()
+TraversingNode::~TraversingNode()
+{
+    // do nothing
+}
+
+UpdatingNode::UpdatingNode():TraversingNode()
+{
+    incoming_regions = NULL;
+    branch_length = 0;
+    need_updating = false;
+}
+
+UpdatingNode::UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, short int n_failure_count, RealNumType n_lh_diff):TraversingNode(n_node, n_failure_count, n_lh_diff)
+{
+    incoming_regions = n_incoming_regions;
+    branch_length = n_branch_length;
+    need_updating = n_need_updating;
+}
+
+UpdatingNode::~UpdatingNode()
 {
     // do nothing
 }

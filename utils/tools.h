@@ -296,6 +296,11 @@ public:
     RealNumType threshold_prob;
     
     /**
+    *       threshold_prob ^ 2
+     */
+    RealNumType threshold_prob2;
+    
+    /**
     *      The number to limit the attempts
     */
     int failure_limit;

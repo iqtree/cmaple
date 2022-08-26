@@ -38,9 +38,6 @@ public:
     RealNumType default_blength;
     RealNumType min_blength, max_blength, min_blength_mid;
     
-    /** thresholds for approximations */
-    RealNumType threshold_prob2, threshold_prob4;
-    
     /**
     *  CMaple constructor
     */

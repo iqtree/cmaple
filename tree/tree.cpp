@@ -399,13 +399,13 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
     RealNumType lh_diff_mid_branch = 0;
     RealNumType lh_diff_at_node = 0;
     // stack of nodes to examine positions
-    stack<ExtendedNode> extended_node_stack;
-    extended_node_stack.push(ExtendedNode(start_node, 0, -DBL_MAX));
+    stack<TraversingNode> extended_node_stack;
+    extended_node_stack.push(TraversingNode(start_node, 0, -DBL_MAX));
     
     // recursively examine positions for placing the new sample
     while (!extended_node_stack.empty())
     {
-        ExtendedNode current_extended_node = extended_node_stack.top();
+        TraversingNode current_extended_node = extended_node_stack.top();
         Node* current_node = current_extended_node.node;
         extended_node_stack.pop();
         
@@ -484,7 +484,7 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
         {
             Node* neighbor_node;
             FOR_NEIGHBOR(current_node, neighbor_node)
-            extended_node_stack.push(ExtendedNode(neighbor_node, current_extended_node.failure_count, lh_diff_at_node));
+            extended_node_stack.push(TraversingNode(neighbor_node, current_extended_node.failure_count, lh_diff_at_node));
         }
     }
 
@@ -556,6 +556,7 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
 {
     // init variables
     Node* node = child_node->neighbor->getTopNode();
+    Node* other_child_node = child_node->neighbor->getOtherNextNode()->neighbor;
     best_node = node;
     best_lh_diff = -DBL_MAX;
     is_mid_branch = false;
@@ -564,50 +565,54 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
     best_child = NULL;
     SeqRegions* subtree_regions = NULL;
     // stack of nodes to examine positions
-    stack<ExtendedNode> node_stack;
+    stack<TraversingNode> node_stack;
     // dummy variables
     RealNumType threshold_prob = params->threshold_prob;
     RealNumType lh_diff_mid_branch = 0;
     RealNumType lh_diff_at_node = 0;
     SeqRegions* parent_upper_lr_regions = NULL;
 
-    /*if (search_subtree_placement)
+    if (search_subtree_placement)
     {
         subtree_regions = child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
         
         if (node != root)
         {
             parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-            #the list node_stack keeps trak of the nodes of the tree we wil need to traverse, (first element of each entry),
-            # the direction from where we are visitng them (0=from parent, and 1,2=from one of the children),
-            # an updated genome list from the direction where we come from (taking into account the removal of the given subtree),
-            # a branch length value separating the node from this updated genome list (useful for the fact that the removal of the subtree changes the branch length at the removal node),
-            # a flag that says if the updated genome list passed needs still updating, or if it has become identical to the pre-existing genome list in the tree (which usually happens after a while),
-            # the likelihood cost of appending at the last node encountered in this direction,
-            # a number of consecutively failed traversal steps since the last improvement found (if this number goes beyond a threshold, traversal in the considered direction might be halted).
-            node_stack.append((node.up,childUp,node.children[1-child].probVect,node.children[1-child].dist+node.dist,True,bestLKdiff,0))
-            node_stack.append((node.children[1-child],0,parent_upper_lr_regions,node.children[1-child].dist+node.dist,True,bestLKdiff,0))
+            SeqRegions* other_child_node_regions = other_child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+           
+            // add nodes into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
+            node_stack.push(UpdatingNode(node->neighbor, other_child_node_regions, other_child_node->length + node->length, true, best_lh_diff, 0));
+            node_stack.push(UpdatingNode(other_child_node, parent_upper_lr_regions, other_child_node->length + node->length, true, best_lh_diff, 0));
         }
         else
         {
             // node is root
-            if node.children[1-child].children: # case there is only one sample outside of the subtree doesn't need to be considered
+            // there is only one sample outside of the subtree doesn't need to be considered
+            if (other_child_node->next)
             {
-                child1=node.children[1-child].children[0]
-                child2=node.children[1-child].children[1]
-                vectUp1=rootVector(child2.probVect,child2.dist,mutMatrix)
-                node_stack.append((child1,0,vectUp1,child1.dist,True,bestLKdiff,0))
-                vectUp2=rootVector(child1.probVect,child1.dist,mutMatrix)
-                node_stack.append((child2,0,vectUp2,child2.dist,True,bestLKdiff,0))
+                Node* grand_child_1 = other_child_node->next->neighbor;
+                Node* grand_child_2 = other_child_node->next->next->neighbor;
+                
+                SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false);
+                node_stack.push(UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0));
+                
+                SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false);
+                node_stack.push(UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0));
+                
+                // delete up_lr_regions_1, up_lr_regions_2
+                if (up_lr_regions_1) delete up_lr_regions_1;
+                if (up_lr_regions_2) delete up_lr_regions_2;
             }
         }
     }
-    else:
+    /* else
+    {
         subtree_regions=newSamplePartials
         if is_mid_branch:
             downLK=best_down_lh_diff
         else:
-            downLK=bestLKdiff
+            downLK=best_lh_diff
         if node.up!=None:
             if node.up.children[0]==node:
                 childUp=1
@@ -619,6 +624,7 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
         if node.children:
             node_stack.append((node.children[0],0,node.probVectUpRight,node.children[0].dist,False,downLK,0))
             node_stack.append((node.children[1],0,node.probVectUpLeft,node.children[1].dist,False,downLK,0))
+     }
 
     while node_stack:
         t1,direction,passedPartials,distance,needsUpdating,lastLK,failedPasses=node_stack.pop()
@@ -636,9 +642,9 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
                         midProb=appendProbNode(midTot,subtree_regions,removedBLen,mutMatrix)
                     else:
                         midProb=appendProb(midTot,subtree_regions,removedBLen,mutMatrix)
-                    if midProb>bestLKdiff:
+                    if midProb>best_lh_diff:
                         best_node=t1
-                        bestLKdiff=midProb
+                        best_lh_diff=midProb
                         is_mid_branch=True
                         failedPasses=0
                 else:
@@ -657,13 +663,13 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
                     nodeProb=appendProbNode(nodeTot,subtree_regions,removedBLen,mutMatrix)
                 else:
                     nodeProb=appendProb(nodeTot,subtree_regions,removedBLen,mutMatrix)
-                if nodeProb>bestLKdiff:
+                if nodeProb>best_lh_diff:
                     best_node=t1
-                    bestLKdiff=nodeProb
+                    best_lh_diff=nodeProb
                     is_mid_branch=False
                     failedPasses=0
                     best_up_lh_diff=midProb
-                elif midProb>=(bestLKdiff-thresholdProb):
+                elif midProb>=(best_lh_diff-thresholdProb):
                     best_up_lh_diff=lastLK
                     best_down_lh_diff=nodeProb
                 elif nodeProb<(lastLK-thresholdLogLKconsecutivePlacement): #placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
@@ -675,23 +681,23 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
             traverseChildren=False
             if search_subtree_placement:
                 if strictTopologyStopRules:
-                    if failedPasses<=allowedFailsTopology and nodeProb>(bestLKdiff-thresholdLogLKtopology) and t1.children:
+                    if failedPasses<=allowedFailsTopology and nodeProb>(best_lh_diff-thresholdLogLKtopology) and t1.children:
                         traverseChildren=True
                 else:
-                    if failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology):
+                    if failedPasses<=allowedFailsTopology or nodeProb>(best_lh_diff-thresholdLogLKtopology):
                         if t1.children:
                             traverseChildren=True
             else:
                 if strictInitialStopRules:
-                    if failedPasses<=allowedFails and nodeProb>(bestLKdiff-thresholdLogLK):
+                    if failedPasses<=allowedFails and nodeProb>(best_lh_diff-thresholdLogLK):
                         if t1.children:
                             traverseChildren=True
                 else:
-                    if failedPasses<=allowedFails or nodeProb>(bestLKdiff-thresholdLogLK):
+                    if failedPasses<=allowedFails or nodeProb>(best_lh_diff-thresholdLogLK):
                         if t1.children:
                             traverseChildren=True
             if traverseChildren:
-                #if (failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology) ) and len(t1.children)==2:
+                #if (failedPasses<=allowedFailsTopology or nodeProb>(best_lh_diff-thresholdLogLKtopology) ) and len(t1.children)==2:
                 child=t1.children[0]
                 otherChild=t1.children[1]
                 if needsUpdating:
@@ -729,9 +735,9 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
                     nodeProb=appendProb(nodeTot,subtree_regions,removedBLen,mutMatrix)
                 if nodeProb<(lastLK-thresholdLogLKconsecutivePlacement): #placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
                     failedPasses+=1
-                elif nodeProb>bestLKdiff:
+                elif nodeProb>best_lh_diff:
                     best_node=t1
-                    bestLKdiff=nodeProb
+                    best_lh_diff=nodeProb
                     is_mid_branch=False
                     failedPasses=0
             else:
@@ -759,13 +765,13 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
                     midProb=appendProb(midTot,subtree_regions,removedBLen,mutMatrix)
                 if best_node==t1:
                     best_up_lh_diff=midProb
-                if midProb>bestLKdiff:
+                if midProb>best_lh_diff:
                     best_node=t1
-                    bestLKdiff=midProb
+                    best_lh_diff=midProb
                     is_mid_branch=True
                     failedPasses=0
                     best_down_lh_diff=nodeProb
-                elif nodeProb>=(bestLKdiff-thresholdProb):
+                elif nodeProb>=(best_lh_diff-thresholdProb):
                     best_up_lh_diff=midProb
             else:
                 midProb=float("-inf")
@@ -774,20 +780,20 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
             keepTraversing=False
             if search_subtree_placement:
                 if strictTopologyStopRules:
-                    if failedPasses<=allowedFailsTopology and nodeProb>(bestLKdiff-thresholdLogLKtopology):
+                    if failedPasses<=allowedFailsTopology and nodeProb>(best_lh_diff-thresholdLogLKtopology):
                         keepTraversing=True
                 else:
-                    if failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology):
+                    if failedPasses<=allowedFailsTopology or nodeProb>(best_lh_diff-thresholdLogLKtopology):
                         keepTraversing=True
             else:
                 if strictInitialStopRules:
-                    if failedPasses<=allowedFails and nodeProb>(bestLKdiff-thresholdLogLK):
+                    if failedPasses<=allowedFails and nodeProb>(best_lh_diff-thresholdLogLK):
                         keepTraversing=True
                 else:
-                    if failedPasses<=allowedFails or nodeProb>(bestLKdiff-thresholdLogLK):
+                    if failedPasses<=allowedFails or nodeProb>(best_lh_diff-thresholdLogLK):
                         keepTraversing=True
             if keepTraversing:
-                #if failedPasses<=allowedFailsTopology or nodeProb>(bestLKdiff-thresholdLogLKtopology) :
+                #if failedPasses<=allowedFailsTopology or nodeProb>(best_lh_diff-thresholdLogLKtopology) :
                 # keep crawling up into parent and sibling node
                 if t1.up!=None: #case the node is not the root
                     #first pass the crawling down the other child
@@ -831,7 +837,7 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
                             vectUp=t1.probVectUpRight
                     node_stack.append((otherChild,0,vectUp,otherChild.dist,needsUpdating,nodeProb,failedPasses))
     if search_subtree_placement:
-        return best_node , bestLKdiff , is_mid_branch
+        return best_node , best_lh_diff , is_mid_branch
     else:
         #exploration of the tree is finished, and we are left with the node found so far with the best appending likelihood cost.
         #Now we explore placement just below this node for more fine-grained placement within its descendant branches.
@@ -842,7 +848,7 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
             while (not nodeUp.dist) and (nodeUp.up!=None):
                 nodeUp=nodeUp.up
             best_up_lh_diff=appendProb(nodeUp.probVectTot,subtree_regions,removedBLen,mutMatrix)
-            return best_node , bestLKdiff , is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_node
+            return best_node , best_lh_diff , is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_node
         else:
             #current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node
             #to find out if the best placement is actually in any of the branches below the current node.
@@ -857,13 +863,13 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
                 else:
                     #now try to place on the current branch below the best node, at an height above the mid-branch.
                     newBLen2=t1.dist * 0.5
-                    bestLKdiff2=float("-inf")
+                    best_lh_diff2=float("-inf")
                     furtherNode=-1
                     newProbVect2=t1.probVectTotUp
                     while True:
                         newLKdiff2=appendProb(newProbVect2,subtree_regions,removedBLen,mutMatrix)
-                        if newLKdiff2>bestLKdiff2:
-                            bestLKdiff2=newLKdiff2
+                        if newLKdiff2>best_lh_diff2:
+                            best_lh_diff2=newLKdiff2
                         else:
                             break
                         newBLen2=newBLen2 * 0.5
@@ -872,11 +878,11 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
                         furtherNode+=1
                         newProbVect2=t1.furtherMidNodes[furtherNode]
                     
-                    if bestLKdiff2>bestOfChildLK:
-                        bestOfChildLK=bestLKdiff2
+                    if best_lh_diff2>bestOfChildLK:
+                        bestOfChildLK=best_lh_diff2
                         bestChild=t1
             #pass on the best child found to the next function, which will place the new sample somewhere between the best node and the best child.
-            return best_node , bestLKdiff , is_mid_branch, best_up_lh_diff, bestOfChildLK, bestChild*/
+            return best_node , best_lh_diff , is_mid_branch, best_up_lh_diff, bestOfChildLK, bestChild*/
 }
 
 
@@ -1939,7 +1945,7 @@ RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, RealN
 {
     // dummy variables
     RealNumType threshold_prob = params->threshold_prob;
-    RealNumType threshold_prob2 = threshold_prob * threshold_prob;
+    RealNumType threshold_prob2 = params->threshold_prob2;
     RealNumType total_improvement = 0;
     bool blength_changed = false; // true if a branch length has been changed
     
@@ -2108,6 +2114,7 @@ RealNumType Tree::calculateSubTreePlacementCost(Alignment* aln, Model* model, Re
     return (this->*calculateSubTreePlacementCostPointer)(aln, model, cumulative_rate, parent_regions, child_regions, blength);
 }
 
+#define MIN_CARRY_OVER 1e-250
 // this implementation derives from appendProbNode
 template <const StateType num_states>
 RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength)
@@ -2120,7 +2127,6 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
     RealNumType total_factor = 1;
     SeqRegion *seq1_region, *seq2_region;
     PositionType end_pos;
-    RealNumType minimum_carry_over = DBL_MIN * 1e50;
     RealNumType total_blength = blength;
     PositionType seq_length = aln->ref_seq.size();
     
@@ -2359,7 +2365,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
         }
          
         // approximately update lh_cost and total_factor
-        if (total_factor <= minimum_carry_over)
+        if (total_factor <= MIN_CARRY_OVER)
         {
             if (total_factor < DBL_MIN)
                 return -DBL_MAX;
@@ -2380,7 +2386,6 @@ RealNumType Tree::calculateSamplePlacementCost(Alignment* aln, Model* model, Rea
 }
 
 // this implementation derives from appendProb
-#define MIN_CARRY_OVER 1e-250
 template <const StateType num_states>
 RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength)
 {
@@ -2392,7 +2397,6 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
     RealNumType total_factor = 1;
     SeqRegion *seq1_region, *seq2_region;
     PositionType end_pos;
-    //RealNumType minimum_carry_over = DBL_MIN * 1e50;
     if (blength < 0) blength = 0;
     RealNumType total_blength = blength;
     PositionType seq_length = aln->ref_seq.size();
@@ -2455,14 +2459,14 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                             {
                                 RealNumType tot2;
                                 
+                                // TODO: cache model->root_freqs[i] * model->transposed_mut_mat[mutation_index + i] before while loop
+                                // TODO: cache model->root_freqs[i] + cache above
                                 if (seq1_state == i)
                                     tot2 = model->root_freqs[i] * (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                 else
                                     tot2 = model->root_freqs[i] * (model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
                                     
-                                RealNumType tot3 = 0;
-                                if (seq2_region->likelihood[i] > 0.1)
-                                    tot3 = 1;
+                                RealNumType tot3 = (seq2_region->likelihood[i] > 0.1) ? 1 : 0;
                                 
                                 for (StateType j = 0; j < num_states; ++j)
                                     if (seq2_region->likelihood[j] > 0.1)
@@ -2538,10 +2542,9 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         RealNumType tot2 = 0;
-                        
+                        RealNumType *mutation_row = &model->mutation_mat[model->row_index[i]];
                         for (StateType j = 0; j < num_states; ++j)
-                            if (seq2_region->likelihood[j] > 0.1)
-                                tot2 += model->mutation_mat[model->row_index[i] + j];
+                            tot2 += (seq2_region->likelihood[j] > 0.1) ? mutation_row[j] : 0;
                         
                         tot2 *= blength13;
                         
@@ -2561,9 +2564,9 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                         seq2_state = aln->ref_seq[end_pos];
                     
                     RealNumType tot2 = 0;
-                    StateType mutation_index = model->row_index[seq2_state];
+                    RealNumType *mat_row = &model->transposed_mut_mat[model->row_index[seq2_state]];
                     for (StateType j = 0; j < num_states; ++j)
-                        tot2 += model->transposed_mut_mat[mutation_index + j] * seq1_region->likelihood[j];
+                        tot2 += mat_row[j] * seq1_region->likelihood[j];
                     
                     total_factor *= seq1_region->likelihood[seq2_state] + blength13 * tot2;
                 }
@@ -2650,9 +2653,9 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                             // here we ignore contribution of non-parsimonious mutational histories
                             RealNumType seq1_state_evoloves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * (blength + seq1_region->plength_observation2root) * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
                             
-                            RealNumType seq2_state_evolves_seq2_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
+                            RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
                             
-                            total_factor *= seq1_state_evoloves_seq2_state + seq2_state_evolves_seq2_state;
+                            total_factor *= (seq1_state_evoloves_seq2_state + seq2_state_evolves_seq1_state);
                         }
                         else
                         {

@@ -50,7 +50,7 @@ public:
         @param current_pos: current site posisition; sequence1, sequence2: vectors of regions; seq1_index, seq2_index: the indexes of the current regions;
         @return seq1_region, seq2_region: the regions contains the shared segment; end_pos: ending position of the shared segment
      */
-    static void getNextSharedSegment(PositionType current_pos, SeqRegions* sequence1, SeqRegions* sequence2, PositionType &seq1_index, PositionType &seq2_index, SeqRegion* &seq1_region, SeqRegion* &seq2_region, PositionType &end_pos);
+    inline static void getNextSharedSegment(PositionType current_pos, SeqRegions* sequence1, SeqRegions* sequence2, PositionType &seq1_index, PositionType &seq2_index, SeqRegion* &seq1_region, SeqRegion* &seq2_region, PositionType &end_pos);
     
     /**
         Compare the current sequence with another sequence regarding the amount of information

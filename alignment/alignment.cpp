@@ -329,7 +329,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
     {
         // validate the sequence length
         string str_sequence = str_sequences[i];
-        if (str_sequence.length() != seq_length)
+        if (seq_length != (PositionType) str_sequence.length())
             outError("The sequence length of " + seq_names[i] + " (" + convertIntToString(str_sequence.length()) + ") is different from that of the reference sequence (" + convertIntToString(ref_sequence.length()) + ")!");
         
         // write taxon name

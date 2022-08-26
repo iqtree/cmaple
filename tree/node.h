@@ -110,6 +110,11 @@ public:
     Node* getTopNode();
     
     /**
+        Get the other next node (not the top)
+     */
+    Node* getOtherNextNode();
+    
+    /**
         Export string: name + branch length
      */
     string exportString();
@@ -126,7 +131,7 @@ public:
 };
 
 /** An extension of node storing more dummy data used for browsing all nodes in a stack  */
-class ExtendedNode {
+class TraversingNode {
 public:
     /**
         Pointer to a node
@@ -146,17 +151,51 @@ public:
     /**
         Constructor
      */
-    ExtendedNode();
+    TraversingNode();
     
     /**
         Constructor
      */
-    ExtendedNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff);
+    TraversingNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff);
     
     /**
         Deconstructor
      */
-    ~ExtendedNode();
+    ~TraversingNode();
+};
+
+/** An extension of node storing more dummy data used for updating nodes in the tree  */
+class UpdatingNode: public TraversingNode {
+public:
+    /**
+        an updated regions from the direction where we come from (taking into account the removal of the given subtree),
+     */
+    SeqRegions* incoming_regions;
+    
+    /**
+        a branch length separating the node from this updated regions (useful for the fact that the removal of the subtree changes the branch length at the removal node)
+     */
+    RealNumType branch_length;
+    
+    /**
+        a flag says if the updated regions passed needs still updating, or if it has become identical to the pre-existing genome list in the tree (which usually happens after a while)
+     */
+    bool need_updating;
+    
+    /**
+        Constructor
+     */
+    UpdatingNode();
+    
+    /**
+        Constructor
+     */
+    UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, short int n_failure_count, RealNumType n_lh_diff);
+    
+    /**
+        Deconstructor
+     */
+    ~UpdatingNode();
 };
 
 #endif

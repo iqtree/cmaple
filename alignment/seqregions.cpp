@@ -91,6 +91,9 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
 
 void SeqRegions::getNextSharedSegment(PositionType current_pos, SeqRegions* sequence1, SeqRegions* sequence2, PositionType &seq1_index, PositionType &seq2_index, SeqRegion* &seq1_region, SeqRegion* &seq2_region, PositionType &end_pos)
 {
+    // seq1_region += (current_pos > seq1_region->position) ? 1 : 0;
+    // seq2_region += (current_pos > seq2_region->position) ? 1 : 0;
+    
     // move to the next region in sequence 1
     if (seq1_index < 0 || current_pos > seq1_region->position)
     {
