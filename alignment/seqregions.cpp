@@ -31,11 +31,9 @@ void SeqRegions::copyRegions(SeqRegions* n_regions, StateType num_states)
     
     // clone regions one by one
     resize(n_regions->size());
-    for (PositionType i = 0; i < (PositionType) n_regions->size(); ++i)
-    {
-        SeqRegion* region = n_regions->at(i);
-        at(i) = new SeqRegion(region, num_states, true);
-    }
+    SeqRegion** region = &n_regions->front();
+    for (PositionType i = 0; i < (PositionType) n_regions->size(); ++i, ++region)
+        at(i) = new SeqRegion(*region, num_states, true);
 }
 
 void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
@@ -1111,11 +1109,12 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(Alignment* aln, Model* model, ve
     RealNumType log_factor = 1;
     StateType num_states = aln->num_states;
     PositionType start_pos = 0;
+    SeqRegion** region_pointer = &front();
     
     // browse regions one by one to compute the likelihood of each region
-    for (PositionType region_index = 0; region_index < (PositionType) size(); ++region_index)
+    for (PositionType region_index = 0; region_index < (PositionType) size(); ++region_index, ++region_pointer)
     {
-        SeqRegion* region = at(region_index);
+        SeqRegion* region = *region_pointer;
         
         // type R
         if (region->type == TYPE_R)

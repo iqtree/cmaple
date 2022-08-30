@@ -973,18 +973,18 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     PositionType num_seqs = size();
     PositionType *distances = new PositionType[num_seqs];
     PositionType *sequence_indexes = new PositionType[num_seqs];
+    Sequence** sequence = &front();
     
     // calculate the distances of each sequence
-    for (PositionType i = 0; i < num_seqs; ++i)
+    for (PositionType i = 0; i < num_seqs; ++i, ++sequence)
     {
         // dummy variables
-        Sequence* sequence = at(i);
         PositionType num_ambiguities = 0;
         PositionType num_diffs = 0;
         sequence_indexes[i] = i;
         
         // browse mutations one by one
-        for (Mutation* mutation: *sequence)
+        for (Mutation* mutation: **sequence)
         {
             switch (mutation->type)
             {
