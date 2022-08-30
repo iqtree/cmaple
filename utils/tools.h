@@ -158,7 +158,7 @@ typedef int32_t PositionType;
 /**
     Type of real numbers
  */
-typedef double RealNumType;
+typedef float RealNumType;
 
 /**
     vector of real number number
@@ -239,6 +239,9 @@ extern VerboseMode verbose_mode;
 /*--------------------------------------------------------------*/
 const char REF_NAME[] = "REF";
 const int MIN_NUM_TAXA = 3;
+const RealNumType MIN_NEGATIVE = -FLT_MAX;
+const RealNumType MIN_POSITIVE = FLT_MIN;
+const RealNumType MIN_CARRY_OVER = 1e-20;
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/

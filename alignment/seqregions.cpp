@@ -867,7 +867,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
             {
                 delete merged_regions;
                 merged_regions = NULL;
-                return -DBL_MAX;
+                return MIN_NEGATIVE;
             }
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
@@ -920,7 +920,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     {
                         delete merged_regions;
                         merged_regions = NULL;
-                        return -DBL_MAX;
+                        return MIN_NEGATIVE;
                     }
                         
                     // normalize new partial lh
@@ -980,7 +980,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                             {
                                 delete merged_regions;
                                 merged_regions = NULL;
-                                return -DBL_MAX;
+                                return MIN_NEGATIVE;
                             }
                         }
                         
@@ -1045,7 +1045,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     {
                         delete merged_regions;
                         merged_regions = NULL;
-                        return -DBL_MAX;
+                        return MIN_NEGATIVE;
                     }
                         
                     // normalize new partial lh

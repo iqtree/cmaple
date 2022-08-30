@@ -390,17 +390,17 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
     // init variables
     // output variables
     selected_node = start_node;
-    best_lh_diff = -DBL_MAX;
+    best_lh_diff = MIN_NEGATIVE;
     is_mid_branch = false;
-    best_up_lh_diff = -DBL_MAX;
-    best_down_lh_diff = -DBL_MAX;
+    best_up_lh_diff = MIN_NEGATIVE;
+    best_down_lh_diff = MIN_NEGATIVE;
     best_child = NULL;
     // dummy variables
     RealNumType lh_diff_mid_branch = 0;
     RealNumType lh_diff_at_node = 0;
     // stack of nodes to examine positions
     stack<TraversingNode> extended_node_stack;
-    extended_node_stack.push(TraversingNode(start_node, 0, -DBL_MAX));
+    extended_node_stack.push(TraversingNode(start_node, 0, MIN_NEGATIVE));
     
     // recursively examine positions for placing the new sample
     while (!extended_node_stack.empty())
@@ -444,7 +444,7 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
         }
         // otherwise, don't consider mid-branch point
         else
-            lh_diff_mid_branch = -DBL_MAX;
+            lh_diff_mid_branch = MIN_NEGATIVE;
 
         // 2. try to place as descendant of the current node (this is skipped if the node has top branch length 0 and so is part of a polytomy).
         if (current_node == root || current_node->length > 0)
@@ -489,7 +489,7 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
     }
 
     // exploration of the tree is finished, and we are left with the node found so far with the best appending likelihood cost. Now we explore placement just below this node for more fine-grained placement within its descendant branches.
-    best_down_lh_diff = -DBL_MAX;
+    best_down_lh_diff = MIN_NEGATIVE;
     best_child = NULL;
     
     // if best position so far is the descendant of a node -> explore further at its children
@@ -516,7 +516,7 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
                 // NHANLT: only try at the mid-branch position to save time
                 /*// now try to place on the current branch below the best node, at an height above the mid-branch.
                 RealNumType new_blength = node->length * 0.5;
-                RealNumType new_best_lh_mid_branch = -DBL_MAX;
+                RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
 
                 // try to place new sample along the upper half of the current branch
                 while (true)
@@ -558,10 +558,10 @@ void Tree::seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_m
     Node* node = child_node->neighbor->getTopNode();
     Node* other_child_node = child_node->neighbor->getOtherNextNode()->neighbor;
     best_node = node;
-    best_lh_diff = -DBL_MAX;
+    best_lh_diff = MIN_NEGATIVE;
     is_mid_branch = false;
-    best_up_lh_diff = -DBL_MAX;
-    best_down_lh_diff = -DBL_MAX;
+    best_up_lh_diff = MIN_NEGATIVE;
+    best_down_lh_diff = MIN_NEGATIVE;
     best_child = NULL;
     SeqRegions* subtree_regions = NULL;
     // stack of nodes to examine positions
@@ -1095,10 +1095,10 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, string seq_na
             best_child_split = best_split;
         }
         else
-            best_child_lh = -DBL_MAX;
+            best_child_lh = MIN_NEGATIVE;
         
         // if node is root, try to place as sibling of the current root.
-        RealNumType old_root_lh = -DBL_MAX;
+        RealNumType old_root_lh = MIN_NEGATIVE;
         if (root == selected_node)
         {
             old_root_lh = selected_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->computeAbsoluteLhAtRoot(aln, model, cumulative_base);
@@ -2024,7 +2024,7 @@ RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, RealN
             bool topology_updated = false;
             
             Node* best_node = NULL;
-            RealNumType best_lh_diff = -DBL_MAX;
+            RealNumType best_lh_diff = MIN_NEGATIVE;
             bool is_mid_node = false;
             
             // NHANLT: ongoing work
@@ -2114,7 +2114,6 @@ RealNumType Tree::calculateSubTreePlacementCost(Alignment* aln, Model* model, Re
     return (this->*calculateSubTreePlacementCostPointer)(aln, model, cumulative_rate, parent_regions, child_regions, blength);
 }
 
-#define MIN_CARRY_OVER 1e-250
 // this implementation derives from appendProbNode
 template <const StateType num_states>
 RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength)
@@ -2237,7 +2236,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                 else if (total_blength > 0)
                     total_factor *= model->mutation_mat[model->row_index[seq1_state] + seq2_state] * total_blength;
                 else
-                    return -DBL_MAX;
+                    return MIN_NEGATIVE;
             }
         }
         // 3. e1.type = O
@@ -2367,7 +2366,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
                     else if (total_blength > 0)
                         total_factor *= model->mutation_mat[model->row_index[seq1_state] + seq2_state] * total_blength;
                     else
-                        return -DBL_MAX;
+                        return MIN_NEGATIVE;
                 }
             }
         }
@@ -2375,8 +2374,8 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
         // approximately update lh_cost and total_factor
         if (total_factor <= MIN_CARRY_OVER)
         {
-            if (total_factor < DBL_MIN)
-                return -DBL_MAX;
+            if (total_factor < MIN_POSITIVE)
+                return MIN_NEGATIVE;
             lh_cost += log(total_factor);
             total_factor = 1.0;
         }
@@ -2675,8 +2674,8 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
         // approximately update lh_cost and total_factor
         if (total_factor <= MIN_CARRY_OVER)
         {
-            if (total_factor < DBL_MIN)
-                return -DBL_MAX;
+            if (total_factor < MIN_POSITIVE)
+                return MIN_NEGATIVE;
             lh_cost += log(total_factor);
             total_factor = 1.0;
         }
