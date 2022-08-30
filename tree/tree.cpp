@@ -2121,11 +2121,12 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
 {
     // init dummy variables
     RealNumType lh_cost = 0;
-    PositionType seq1_index = -1;
-    PositionType seq2_index = -1;
     PositionType pos = 0;
     RealNumType total_factor = 1;
-    SeqRegion *seq1_region, *seq2_region;
+    SeqRegion **seq1_region_pointer = &parent_regions->front();
+    SeqRegion **seq2_region_pointer = &child_regions->front();
+    SeqRegion *seq1_region = (*seq1_region_pointer);
+    SeqRegion *seq2_region = (*seq2_region_pointer);
     PositionType end_pos;
     RealNumType total_blength = blength;
     PositionType seq_length = aln->ref_seq.size();
@@ -2133,7 +2134,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
+        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
         
         // 1. e1.type = N || e2.type = N
         if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
@@ -2391,11 +2392,12 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
 {
     // init dummy variables
     RealNumType lh_cost = 0;
-    PositionType seq1_index = -1;
-    PositionType seq2_index = -1;
     PositionType pos = 0;
     RealNumType total_factor = 1;
-    SeqRegion *seq1_region, *seq2_region;
+    SeqRegion **seq1_region_pointer = &parent_regions->front();
+    SeqRegion **seq2_region_pointer = &child_regions->front();
+    SeqRegion *seq1_region = (*seq1_region_pointer);
+    SeqRegion *seq2_region = (*seq2_region_pointer);
     PositionType end_pos;
     if (blength < 0) blength = 0;
     RealNumType total_blength = blength;
@@ -2404,7 +2406,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, parent_regions, child_regions, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
+        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
         
         // 1. e1.type = N || e2.type = N
         if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)

@@ -322,18 +322,19 @@ void Model::updatePesudoCount(Alignment* aln, SeqRegions* regions1, SeqRegions* 
     if (model_name != "JC" && model_name != "jc")
     {
         // init variables
-        PositionType seq1_index = -1;
-        PositionType seq2_index = -1;
         PositionType pos = 0;
         StateType num_states = aln->num_states;
-        SeqRegion *seq1_region, *seq2_region;
+        SeqRegion **seq1_region_pointer = &regions1->front();
+        SeqRegion **seq2_region_pointer = &regions2->front();
+        SeqRegion *seq1_region = (*seq1_region_pointer);
+        SeqRegion *seq2_region = (*seq2_region_pointer);
         PositionType end_pos;
         PositionType seq_length = aln->ref_seq.size();
                     
         while (pos < seq_length)
         {
             // get the next shared segment in the two sequences
-            SeqRegions::getNextSharedSegment(pos, regions1, regions2, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
+            SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
         
             if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R) && (seq2_region->type < num_states || seq2_region->type == TYPE_R))
             {

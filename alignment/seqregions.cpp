@@ -89,46 +89,24 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
     }
 }
 
-void SeqRegions::getNextSharedSegment(PositionType current_pos, SeqRegions* sequence1, SeqRegions* sequence2, PositionType &seq1_index, PositionType &seq2_index, SeqRegion* &seq1_region, SeqRegion* &seq2_region, PositionType &end_pos)
-{
-    // seq1_region += (current_pos > seq1_region->position) ? 1 : 0;
-    // seq2_region += (current_pos > seq2_region->position) ? 1 : 0;
-    
-    // move to the next region in sequence 1
-    if (seq1_index < 0 || current_pos > seq1_region->position)
-    {
-        ++seq1_index;
-        seq1_region = sequence1->at(seq1_index);
-    }
-    
-    // move to the next region in sequence 2
-    if (seq2_index < 0 || current_pos > seq2_region->position)
-    {
-        ++seq2_index;
-        seq2_region = sequence2->at(seq2_index);
-    }
-    
-    // compute the end_pos for the shared segment
-    end_pos = min(seq1_region->position, seq2_region->position);
-}
-
 int SeqRegions::compareWithSample(SeqRegions* sequence2, PositionType seq_length, StateType num_states)
 {
     ASSERT(seq_length > 0);
     
     // init dummy variables
-    PositionType seq1_index = -1;
-    PositionType seq2_index = -1;
     bool seq1_more_info = false;
     bool seq2_more_info = false;
     PositionType pos = 0;
-    SeqRegion *seq1_region, *seq2_region;
+    SeqRegion **seq1_region_pointer = &front();
+    SeqRegion **seq2_region_pointer = &sequence2->front();
+    SeqRegion *seq1_region = (*seq1_region_pointer);
+    SeqRegion *seq2_region = (*seq2_region_pointer);
     PositionType end_pos;
 
     while (pos < seq_length && (!seq1_more_info || !seq2_more_info))
     {
         // get the next shared segment in the two sequences
-        getNextSharedSegment(pos, this, sequence2, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
+        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
         
         // The two regions have different types from each other
         if (seq1_region->type != seq2_region->type)
@@ -186,17 +164,18 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
         return true;
     
     // init variables
-    PositionType seq1_index = -1;
-    PositionType seq2_index = -1;
     PositionType pos = 0;
-    SeqRegion *seq1_region, *seq2_region;
+    SeqRegion **seq1_region_pointer = &front();
+    SeqRegion **seq2_region_pointer = &regions2->front();
+    SeqRegion *seq1_region = (*seq1_region_pointer);
+    SeqRegion *seq2_region = (*seq2_region_pointer);
     PositionType end_pos;
     
     // compare each pair of regions
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, this, regions2, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
+        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
         
         // if any pair of regions is different in type -> the two sequences are different
         if (seq1_region->type != seq2_region->type)
@@ -247,10 +226,11 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
 void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, SeqRegions* lower_regions, RealNumType lower_plength, Alignment* aln, Model* model, RealNumType threshold_prob)
 {
     // init variables
-    PositionType seq1_index = -1;
-    PositionType seq2_index = -1;
     PositionType pos = 0;
-    SeqRegion *seq1_region, *seq2_region;
+    SeqRegion **seq1_region_pointer = &front();
+    SeqRegion **seq2_region_pointer = &lower_regions->front();
+    SeqRegion *seq1_region = (*seq1_region_pointer);
+    SeqRegion *seq2_region = (*seq2_region_pointer);
     PositionType end_pos;
     StateType num_states = aln->num_states;
     PositionType seq_length = aln->ref_seq.size();
@@ -264,7 +244,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
     while (pos <  seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, this, lower_regions, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
+        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
         
         // seq1_entry = 'N'
         if (seq1_region->type == TYPE_N)
@@ -735,11 +715,12 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
 {
     // init variables
     RealNumType log_lh = 0;
-    PositionType seq1_index = -1;
-    PositionType seq2_index = -1;
     PositionType pos = 0;
     StateType num_states = aln->num_states;
-    SeqRegion *seq1_region, *seq2_region;
+    SeqRegion **seq1_region_pointer = &front();
+    SeqRegion **seq2_region_pointer = &regions2->front();
+    SeqRegion *seq1_region = (*seq1_region_pointer);
+    SeqRegion *seq2_region = (*seq2_region_pointer);
     PositionType end_pos;
     PositionType seq_length = aln->ref_seq.size();
     
@@ -752,7 +733,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, this, regions2, seq1_index, seq2_index, seq1_region, seq2_region, end_pos);
+        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
         
         // seq1_entry = 'N'
         if (seq1_region->type == TYPE_N)
