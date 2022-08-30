@@ -581,12 +581,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     else
                     {
                         for (StateType i = 0; i < num_states; ++i)
-                        {
-                            if (i == seq1_state)
-                                new_lh[i] = 1;
-                            else
-                                new_lh[i] = 0;
-                        }
+                            new_lh[i] = 0;
+                        new_lh[seq1_state] = 1;
                     }
                 }
                   
@@ -1008,12 +1004,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 else
                 {
                     for (StateType i = 0; i < num_states; ++i)
-                    {
-                        if (seq1_state == i)
-                            new_lh[i] = 1;
-                        else
-                            new_lh[i] = 0;
-                    }
+                        new_lh[i] = 0;
+                    new_lh[seq1_state] = 1;
                 }
 
                 // seq1_entry = ACGT and seq2_entry = O

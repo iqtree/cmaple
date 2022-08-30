@@ -58,7 +58,6 @@ public:
         // compute the end_pos for the shared segment
         end_pos = min(seq1_region->position, seq2_region->position);
     }
-
     
     /**
         Compare the current sequence with another sequence regarding the amount of information
