@@ -262,15 +262,16 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                         
                     RealNumType* new_lh = new RealNumType[num_states];
                     RealNumType sum_lh = 0;
+                    RealNumType* mutation_mat_row = model->mutation_mat;
                     
-                    for (StateType i = 0; i < num_states; ++i)
+                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         if (total_blength > 0)
                         {
                             for (StateType j = 0; j < num_states; ++j)
-                                tot += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
+                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength;
                         }
@@ -330,13 +331,14 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 {
                     RealNumType* new_lh = new RealNumType[num_states];
                     RealNumType sum_lh = 0;
+                    RealNumType* transposed_mut_mat_row = model->transposed_mut_mat;
                     
-                    for (StateType i = 0; i < num_states; ++i)
+                    for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot += model->transposed_mut_mat[model->row_index[i] + j] * seq1_region->likelihood[j];
+                            tot += transposed_mut_mat_row[j] * seq1_region->likelihood[j];
                         
                         tot *= total_blength;
                         tot += seq1_region->likelihood[i];
@@ -437,12 +439,14 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 // if total_blength_1 > 0 => compute new partial likelihood
                 if (total_blength_1 > 0)
                 {
-                    for (StateType i = 0; i < num_states; ++i)
+                    RealNumType* transposed_mut_mat_row = model->transposed_mut_mat;
+                    
+                    for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot += model->transposed_mut_mat[model->row_index[i] + j] * seq1_region->likelihood[j];
+                            tot += transposed_mut_mat_row[j] * seq1_region->likelihood[j];
                         
                         tot *= total_blength_1;
                         tot += seq1_region->likelihood[i];
@@ -458,14 +462,16 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 // seq2 = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    for (StateType i = 0; i < num_states; ++i)
+                    RealNumType* mutation_mat_row = model->mutation_mat;
+                    
+                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
                             for (StateType j = 0; j < num_states; ++j)
-                                tot += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
+                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
         
                             tot *= total_blength_2;
                         }
@@ -483,13 +489,13 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     
                     if (total_blength_2 > 0)
                     {
-                        StateType mutation_index = model->row_index[seq2_state];
+                        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq2_state)
-                                new_lh[i] *= (1.0 + model->transposed_mut_mat[mutation_index + i] * total_blength_2);
+                                new_lh[i] *= (1.0 + transposed_mut_mat_row[i] * total_blength_2);
                             else
-                                new_lh[i] *= (model->transposed_mut_mat[mutation_index + i] * total_blength_2);
+                                new_lh[i] *= (transposed_mut_mat_row[i] * total_blength_2);
                                 
                             sum_new_lh += new_lh[i];
                         }
@@ -542,21 +548,22 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     RealNumType* root_vec = new RealNumType[num_states];
                     memcpy(root_vec, model->root_freqs, sizeof(RealNumType) * num_states);
                     
-                    StateType mutation_index = model->row_index[seq1_state];
+                    RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         if (i == seq1_state)
-                            root_vec[i] *= (1.0 + model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node);
+                            root_vec[i] *= (1.0 + transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
                         else
-                            root_vec[i] *= model->transposed_mut_mat[mutation_index + i] * seq1_region->plength_observation2node;
+                            root_vec[i] *= transposed_mut_mat_row[i] * seq1_region->plength_observation2node;
                     }
                     
-                    for (StateType i = 0; i < num_states; ++i)
+                    transposed_mut_mat_row = model->transposed_mut_mat;
+                    for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot += model->transposed_mut_mat[model->row_index[i] + j] * root_vec[j];
+                            tot += transposed_mut_mat_row[j] * root_vec[j];
                         
                         tot *= length_to_root;
                         tot += root_vec[i];
@@ -567,13 +574,13 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 {
                     if (total_blength_1 > 0)
                     {
-                        StateType mutation_index = model->row_index[seq1_state];
+                        RealNumType* mutation_mat_row = model->mutation_mat + model->row_index[seq1_state];
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq1_state)
-                                new_lh[i] = 1.0 + model->mutation_mat[mutation_index + i] * total_blength_1;
+                                new_lh[i] = 1.0 + mutation_mat_row[i] * total_blength_1;
                             else
-                                new_lh[i] = model->mutation_mat[mutation_index + i] * total_blength_1;
+                                new_lh[i] = mutation_mat_row[i] * total_blength_1;
                         }
                     }
                     else
@@ -587,14 +594,16 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 // seq2 = "O" and seq1 = ACGT
                 if (seq2_region->type == TYPE_O)
                 {
-                    for (StateType i = 0; i < num_states; ++i)
+                    RealNumType* mutation_mat_row = model->mutation_mat;
+                                        
+                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
                             for (StateType j = 0; j < num_states; ++j)
-                                tot += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
+                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength_2;
                         }
@@ -626,13 +635,13 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     
                     if (total_blength_2 > 0)
                     {
-                        StateType mutation_index = model->row_index[seq2_state];
+                        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq2_state)
-                                new_lh[i] *= 1.0 + model->transposed_mut_mat[mutation_index + i] * total_blength_2;
+                                new_lh[i] *= 1.0 + transposed_mut_mat_row[i] * total_blength_2;
                             else
-                                new_lh[i] *= model->transposed_mut_mat[mutation_index + i] * total_blength_2;
+                                new_lh[i] *= transposed_mut_mat_row[i] * total_blength_2;
                             
                             sum_new_lh += new_lh[i];
                         }
@@ -868,12 +877,14 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 
                 if (total_blength_1 > 0)
                 {
-                    for (StateType i = 0; i < num_states; ++i)
+                    RealNumType* mutation_mat_row = model->mutation_mat;
+                                        
+                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot += model->mutation_mat[model->row_index[i] + j] * seq1_region->likelihood[j];
+                            tot += mutation_mat_row[j] * seq1_region->likelihood[j];
                         
                         tot *= total_blength_1;
                         tot += seq1_region->likelihood[i];
@@ -887,14 +898,16 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 // seq1_entry = O and seq2_entry = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    for (StateType i = 0; i < num_states; ++i)
+                    RealNumType* mutation_mat_row = model->mutation_mat;
+                                        
+                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
                             for (StateType j = 0; j < num_states; ++j)
-                                tot += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
+                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength_2;
                         }
@@ -934,13 +947,13 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     
                     if (total_blength_2 > 0)
                     {
-                        StateType mutation_index = model->row_index[seq2_state];
+                        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (seq2_state == i)
-                                new_lh[i] *= (1 + model->transposed_mut_mat[mutation_index + i] * total_blength_2);
+                                new_lh[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
                             else
-                                new_lh[i] *= (model->transposed_mut_mat[mutation_index + i] * total_blength_2);
+                                new_lh[i] *= (transposed_mut_mat_row[i] * total_blength_2);
                             
                             sum_lh += new_lh[i];
                         }
@@ -990,13 +1003,14 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 
                 if (total_blength_1 > 0)
                 {
-                    StateType mutation_index = model->row_index[seq1_state];
+                    RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
+                    
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         if (seq1_state == i)
-                            new_lh[i] = 1 + model->transposed_mut_mat[mutation_index + i] * total_blength_1;
+                            new_lh[i] = 1 + transposed_mut_mat_row[i] * total_blength_1;
                         else
-                            new_lh[i] = model->transposed_mut_mat[mutation_index + i] * total_blength_1;
+                            new_lh[i] = transposed_mut_mat_row[i] * total_blength_1;
                     }
                 }
                 else
@@ -1009,14 +1023,16 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 // seq1_entry = ACGT and seq2_entry = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    for (StateType i = 0; i < num_states; ++i)
+                    RealNumType* mutation_mat_row = model->mutation_mat;
+                                        
+                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                     {
                         RealNumType tot = 0;
                         
                         if (total_blength_2 > 0)
                         {
                             for (StateType j = 0; j < num_states; ++j)
-                                tot += model->mutation_mat[model->row_index[i] + j] * seq2_region->likelihood[j];
+                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
                             
                             tot *= total_blength_2;
                         }
@@ -1056,13 +1072,13 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     
                     if (total_blength_2 > 0)
                     {
-                        StateType mutation_index = model->row_index[seq2_state];
+                        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (seq2_state == i)
-                                new_lh[i] *= (1 + model->transposed_mut_mat[mutation_index + i] * total_blength_2);
+                                new_lh[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
                             else
-                                new_lh[i] *= (model->transposed_mut_mat[mutation_index + i] * total_blength_2);
+                                new_lh[i] *= (transposed_mut_mat_row[i] * total_blength_2);
                             
                             sum_lh += new_lh[i];
                         }
@@ -1175,14 +1191,16 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, Model* model,
                 RealNumType* new_likelihood = new RealNumType[num_states];
                 RealNumType sum_likelihood = 0;
                 
-                for (StateType i = 0; i < num_states; ++i)
+                RealNumType* mutation_mat_row = model->mutation_mat;
+                                    
+                for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                 {
                     RealNumType tot = 0.0;
                     
                     if (total_blength > 0)
                     {
                         for (StateType j = 0; j < num_states; ++j)
-                            tot += model->mutation_mat[model->row_index[i] + j] * region->likelihood[j];
+                            tot += mutation_mat_row[j] * region->likelihood[j];
                         tot *= total_blength;
                     }
                     

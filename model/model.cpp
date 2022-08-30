@@ -115,7 +115,9 @@ void Model::updateMutationMat(StateType num_states)
     // init UNREST model
     if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0)
     {
-        for (StateType i = 0; i <  num_states; ++i)
+        RealNumType* pseu_mutation_count_row = pseu_mutation_count;
+        RealNumType* mutation_mat_row = mutation_mat;
+        for (StateType i = 0; i <  num_states; ++i, pseu_mutation_count_row += num_states, mutation_mat_row += num_states)
         {
             RealNumType sum_rate = 0;
             
@@ -123,35 +125,36 @@ void Model::updateMutationMat(StateType num_states)
             {
                 if (i != j)
                 {
-                    StateType index = row_index[i] + j;
-                    RealNumType new_rate = pseu_mutation_count[index] * inverse_root_freqs[i];
-                    mutation_mat[index] = new_rate;
+                    RealNumType new_rate = pseu_mutation_count_row[j] * inverse_root_freqs[i];
+                    mutation_mat_row[j] = new_rate;
                     sum_rate += new_rate;
                 }
             }
             
             // update the diagonal entry
-            mutation_mat[row_index[i] + i] = -sum_rate;
+            mutation_mat_row[i] = -sum_rate;
             diagonal_mut_mat[i] = -sum_rate;
         }
     }
     // init GTR model
     else if (model_name.compare("GTR") == 0 || model_name.compare("gtr") == 0)
     {
-        for (StateType i = 0; i <  num_states; ++i)
+        RealNumType* pseu_mutation_count_row = pseu_mutation_count;
+        RealNumType* mutation_mat_row = mutation_mat;
+        
+        for (StateType i = 0; i <  num_states; ++i, pseu_mutation_count_row += num_states, mutation_mat_row += num_states)
         {
             RealNumType sum_rate = 0;
             
             for (StateType j = 0; j <  num_states; ++j)
                 if (i != j)
                 {
-                    StateType index = row_index[i] + j;
-                    mutation_mat[index] = (pseu_mutation_count[index] + pseu_mutation_count[row_index[j] + i]) * inverse_root_freqs[i];
-                    sum_rate += mutation_mat[index];
+                    mutation_mat_row[j] = (pseu_mutation_count_row[j] + pseu_mutation_count[row_index[j] + i]) * inverse_root_freqs[i];
+                    sum_rate += mutation_mat_row[j];
                 }
             
             // update the diagonal entry
-            mutation_mat[row_index[i] + i] = -sum_rate;
+            mutation_mat_row[i] = -sum_rate;
             diagonal_mut_mat[i] = -sum_rate;
         }
     }
@@ -167,26 +170,26 @@ void Model::updateMutationMat(StateType num_states)
     total_rate = 1.0 / total_rate;
     
     // normalize the mutation_mat
-    for (StateType i = 0; i <  num_states; ++i)
+    RealNumType* mutation_mat_row = mutation_mat;
+    RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
+    for (StateType i = 0; i <  num_states; ++i, mutation_mat_row += num_states, freqi_freqj_qij_row += num_states)
     {
         for (StateType j = 0; j <  num_states; ++j)
         {
-            StateType index = row_index[i] + j;
-            
-            mutation_mat[index] *= total_rate;
+            mutation_mat_row[j] *= total_rate;
             
             // update freqi_freqj_qij
             if (i != j)
-                freqi_freqj_qij[index] = root_freqs[i] * inverse_root_freqs[j] * mutation_mat[index];
+                freqi_freqj_qij_row[j] = root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
             else
-                freqi_freqj_qij[index] = mutation_mat[index];
+                freqi_freqj_qij_row[j] = mutation_mat_row[j];
             
             // update the transposed mutation matrix
-            transposed_mut_mat[row_index[j] + i] = mutation_mat[index];
+            transposed_mut_mat[row_index[j] + i] = mutation_mat_row[j];
         }
         
         // update diagonal
-        diagonal_mut_mat[i] = mutation_mat[row_index[i] + i];
+        diagonal_mut_mat[i] = mutation_mat_row[i];
     }
 }
 
@@ -197,11 +200,8 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     // init row_index
     row_index = new StateType[num_states + 1];
     StateType start_index = 0;
-    for (StateType i = 0; i < num_states + 1; i++)
-    {
+    for (StateType i = 0; i < num_states + 1; i++, start_index += num_states)
         row_index[i] = start_index;
-        start_index += num_states;
-    }
         
     if (model_name.compare("JC") == 0 || model_name.compare("jc") == 0)
     {
@@ -221,25 +221,25 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
         diagonal_mut_mat = new RealNumType[num_states];
         RealNumType jc_rate = 1.0 / 3.0;
         
-        for (StateType i = 0; i < num_states; ++i)
+        RealNumType* mutation_mat_row = mutation_mat;
+        RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
+        for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states, freqi_freqj_qij_row += num_states)
         {
             for (StateType j = 0; j < num_states; ++j)
             {
-                StateType index = row_index[i] + j;
-                
                 if (i == j)
                 {
-                    mutation_mat[index] = -1;
-                    transposed_mut_mat[index] = -1;
+                    mutation_mat_row[j] = -1;
+                    transposed_mut_mat[row_index[j] + i] = -1;
                     // update freqi_freqj_qij
-                    freqi_freqj_qij[index] = -1;
+                    freqi_freqj_qij_row[j] = -1;
                 }
                 else
                 {
-                    mutation_mat[index] = jc_rate;
+                    mutation_mat_row[j] = jc_rate;
                     transposed_mut_mat[row_index[j] + i] = jc_rate;
                     // update freqi_freqj_qij
-                    freqi_freqj_qij[index] = root_freqs[i] * inverse_root_freqs[j] * jc_rate;
+                    freqi_freqj_qij_row[j] = root_freqs[i] * inverse_root_freqs[j] * jc_rate;
                 }
             }
             
