@@ -47,7 +47,7 @@ public:
     
     /**
         Get the shared segment between the next regions of two sequences
-        @param current_pos: current site posisition; sequence1, sequence2: vectors of regions; seq1_index, seq2_index: the indexes of the current regions;
+        @param current_pos: current site posisition; 
         @return seq1_region, seq2_region: the regions contains the shared segment; end_pos: ending position of the shared segment
      */
     inline static void getNextSharedSegment(PositionType current_pos, SeqRegion* &seq1_region, SeqRegion* &seq2_region, SeqRegion** &seq1_region_pointer, SeqRegion** &seq2_region_pointer, PositionType &end_pos)

@@ -31,6 +31,7 @@ public:
     RealNumType *transposed_mut_mat; // the transposed matrix of the mutation matrix
     RealNumType *inverse_root_freqs; // the inversed values of state frequencies
     RealNumType *freqi_freqj_qij; // freq(i) / freq(j) * Qij
+    RealNumType *freq_j_transposed_ij; // freq[j] * transposed[i][j]
     StateType *row_index; // the starting index of row i: i * num_states
     
 	/**

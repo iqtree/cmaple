@@ -2463,20 +2463,12 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                         else
                         {
                             RealNumType tot = 0;
-                            RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
+                            RealNumType* freq_j_transposed_ij_row = model->freq_j_transposed_ij + model->row_index[seq1_state];
                             RealNumType* mutation_mat_row = model->mutation_mat;
                                                 
                             for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                             {
-                                RealNumType tot2;
-                                
-                                // TODO: cache model->root_freqs[i] * model->transposed_mut_mat[mutation_index + i] before while loop
-                                // TODO: cache model->root_freqs[i] + cache above
-                                if (seq1_state == i)
-                                    tot2 = model->root_freqs[i] * (1.0 + transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
-                                else
-                                    tot2 = model->root_freqs[i] * (transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
-                                    
+                                RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model->root_freqs[i] : 0);
                                 RealNumType tot3 = (seq2_region->likelihood[i] > 0.1) ? 1 : 0;
                                 
                                 for (StateType j = 0; j < num_states; ++j)
@@ -2522,6 +2514,8 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                     
                     if (seq1_region->plength_observation2root >= 0)
                     {
+                        // TODO: can cache model->mutation_mat[model->row_index[seq1_state] * model->diagonal_mut_mat[seq1_state]
+                        // TODO: can cache  model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * model->diagonal_mut_mat[seq2_state]
                         RealNumType seq1_state_evolves_seq2_state = model->mutation_mat[model->row_index[seq1_state] + seq2_state] * blength * (1.0 + model->diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
                         
                         RealNumType seq2_state_evolves_seq1_state = model->freqi_freqj_qij[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model->diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
@@ -2614,16 +2608,12 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                                 lh_cost += model->diagonal_mut_mat[seq1_state] * (blength15 + seq1_region->plength_observation2node);
                             else
                             {
-                                RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
+                                RealNumType* freq_j_transposed_ij_row = model->freq_j_transposed_ij + model->row_index[seq1_state];
                                 RealNumType* mutation_mat_row = model->mutation_mat;
                                                     
                                 for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                                 {
-                                    RealNumType tot2;
-                                    if (seq1_state == i)
-                                        tot2 = model->root_freqs[i] * (1.0 + transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
-                                    else
-                                        tot2 = model->root_freqs[i] * (transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
+                                    RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model->root_freqs[i] : 0);
                                         
                                     RealNumType tot3 = 0;
                                     for (StateType j = 0; j < num_states; ++j)
@@ -2673,7 +2663,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
                         }
                         else
                         {
-                            RealNumType tmp_blength = blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
+                            RealNumType tmp_blength = ((seq1_region->plength_observation2node < 0) ? blength : blength + seq1_region->plength_observation2node);
                             
                             total_factor *= model->mutation_mat[model->row_index[seq1_state] + seq2_state] * tmp_blength;
                         }
