@@ -2376,8 +2376,11 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(Alignment* aln, Model* m
         {
             if (total_factor < MIN_POSITIVE)
                 return MIN_NEGATIVE;
-            lh_cost += log(total_factor);
-            total_factor = 1.0;
+            
+            //lh_cost += log(total_factor);
+            //total_factor = 1.0;
+            total_factor *= MAX_POSITIVE;
+            lh_cost -= LOG_MAX_POSITIVE;
         }
         
         // update pos
@@ -2676,8 +2679,11 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(Alignment* aln, Model* mo
         {
             if (total_factor < MIN_POSITIVE)
                 return MIN_NEGATIVE;
-            lh_cost += log(total_factor);
-            total_factor = 1.0;
+            
+            //lh_cost += log(total_factor);
+            //total_factor = 1.0;
+            total_factor *= MAX_POSITIVE;
+            lh_cost -= LOG_MAX_POSITIVE;
         }
         
         // update pos
