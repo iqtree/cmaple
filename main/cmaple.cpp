@@ -138,9 +138,12 @@ void CMaple::buildInitialTree()
             cout << "debug" <<endl;*/
         
         // seek a position for new sample placement
-        Node *selected_node, *best_child;
-        RealNumType best_lh_diff, best_up_lh_diff, best_down_lh_diff;
-        bool is_mid_branch;
+        Node* selected_node = NULL;
+        RealNumType best_lh_diff = MIN_NEGATIVE;
+        bool is_mid_branch = false;
+        RealNumType best_up_lh_diff = MIN_NEGATIVE;
+        RealNumType best_down_lh_diff = MIN_NEGATIVE;
+        Node* best_child = NULL;
         tree->seekSamplePlacement(tree->root, (*sequence)->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, default_blength, min_blength_mid);
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
@@ -176,7 +179,7 @@ void CMaple::optimizeTree()
         tree->setAllNodeOutdated();
         
         // traverse the tree from root to try improvements on the entire tree
-        RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
+        RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength, min_blength_mid);
             
         // stop trying if the improvement is so small
         if (improvement < tree->params->thresh_entire_tree_improvement)
@@ -188,7 +191,7 @@ void CMaple::optimizeTree()
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         for (int j = 0; j < MAX_ATTEMPTS; ++i)
         {
-            RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength);
+            RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength, min_blength_mid);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + "at subround " + convertIntToString(j + 1) << endl;
            
             // stop trying if the improvement is so small
@@ -209,7 +212,7 @@ void CMaple::doInference()
     buildInitialTree();
     
     // 2. Optimize the tree with SPR
-    //optimizeTree();
+    optimizeTree();
 }
 
 void CMaple::postInference()

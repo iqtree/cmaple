@@ -308,9 +308,14 @@ public:
     RealNumType threshold_prob2;
     
     /**
-    *      The number to limit the attempts
+    *      The number to limit the attempts of seeking a placement for a sample
     */
-    int failure_limit;
+    int failure_limit_sample;
+    
+    /**
+    *      The number to limit the attempts of seeking a placement for a subtree
+    */
+    int failure_limit_subtree;
     
     /**
     *       The period to update the mutation matrix
@@ -320,12 +325,22 @@ public:
     /**
     *       TRUE to apply strict stop rules when seeking placement for a new sample
      */
-    bool strict_stop_seeking_placement;
+    bool strict_stop_seeking_placement_sample;
     
     /**
-    *  Threshold of loglh to continue explore the subtree
+    *       TRUE to apply strict stop rules when seeking placement for a subtree
+     */
+    bool strict_stop_seeking_placement_subtree;
+    
+    /**
+    *  Threshold of loglh to continue explore the subtree to seek a placement for a sample
     */
-    RealNumType thresh_log_lh_subtree_explore;
+    RealNumType thresh_log_lh_sample;
+    
+    /**
+    *  Threshold of loglh to continue explore the subtree to seek a placement for a subtree
+    */
+    RealNumType thresh_log_lh_subtree;
     
     /**
     *  Threshold of loglh to count failure

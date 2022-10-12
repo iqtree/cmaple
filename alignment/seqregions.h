@@ -26,6 +26,11 @@ public:
     SeqRegions();
     
     /**
+    *  Regions constructor
+    */
+    SeqRegions(SeqRegions* n_regions, StateType num_states);
+    
+    /**
     *  Regions deconstructor
     */
     ~SeqRegions();

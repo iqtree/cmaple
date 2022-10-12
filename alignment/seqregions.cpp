@@ -12,6 +12,15 @@ SeqRegions::SeqRegions()
     // do nothing
 }
 
+SeqRegions::SeqRegions(SeqRegions* n_regions, StateType num_states)
+{
+    // clone regions one by one
+    resize(n_regions->size());
+    SeqRegion** region = &n_regions->front();
+    for (PositionType i = 0; i < (PositionType) n_regions->size(); ++i, ++region)
+        at(i) = new SeqRegion(*region, num_states, true);
+}
+
 SeqRegions::~SeqRegions()
 {
     deleteRegions();

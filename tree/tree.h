@@ -57,7 +57,7 @@ private:
         Try to improve a subtree rooted at node with SPR moves
         @return total improvement
      */
-    RealNumType improveSubTree(Node* node, RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    RealNumType improveSubTree(Node* node, RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
 public:
     /**
@@ -145,7 +145,7 @@ public:
         Try to improve the entire tree with SPR moves
         @return total improvement
      */
-    RealNumType improveEntireTree(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    RealNumType improveEntireTree(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
     /**
         Calculate the placement cost of a sample

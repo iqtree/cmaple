@@ -55,11 +55,11 @@ bool Node::isLeave()
 
 Node* Node::getTopNode()
 {
+    if (this->is_top)
+        return this;
+    
     Node* next_node;
     Node* node = this;
-    
-    if (node->is_top)
-        return node;
     
     FOR_NEXT(node, next_node)
     {
@@ -227,5 +227,5 @@ UpdatingNode::UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNum
 
 UpdatingNode::~UpdatingNode()
 {
-    // do nothing
+    if (incoming_regions) delete incoming_regions;
 }
