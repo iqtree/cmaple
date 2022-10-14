@@ -179,7 +179,7 @@ void CMaple::optimizeTree()
         tree->setAllNodeOutdated();
         
         // traverse the tree from root to try improvements on the entire tree
-        RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength, min_blength_mid);
+        RealNumType improvement = tree->improveEntireTree(cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
             
         // stop trying if the improvement is so small
         if (improvement < tree->params->thresh_entire_tree_improvement)
@@ -191,8 +191,8 @@ void CMaple::optimizeTree()
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         for (int j = 0; j < MAX_ATTEMPTS; ++i)
         {
-            RealNumType improvement = tree->improveEntireTree(cumulative_rate, default_blength, max_blength, min_blength, min_blength_mid);
-            cout << "Tree was improved by " + convertDoubleToString(improvement) + "at subround " + convertIntToString(j + 1) << endl;
+            RealNumType improvement = tree->improveEntireTree(cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
+            cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
            
             // stop trying if the improvement is so small
             if (improvement < tree->params->thresh_entire_tree_improvement)

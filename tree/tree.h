@@ -57,7 +57,7 @@ private:
         Try to improve a subtree rooted at node with SPR moves
         @return total improvement
      */
-    RealNumType improveSubTree(Node* node, RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    RealNumType improveSubTree(Node* node, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
 public:
     /**
@@ -124,12 +124,23 @@ public:
     /**
         Seek a position for placing a subtree/sample starting at the start_node
      */
-    void seekPlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, Node* start_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement = true, SeqRegions* sample_regions = NULL);
+    void seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, Node* start_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement = true, SeqRegions* sample_regions = NULL);
 
     /**
         Place a new sample on the tree
      */
-    void placeNewSample(Node* selected_node, SeqRegions* sample, string seq_name, RealNumType best_lh_diff , bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    void placeNewSample(Node* selected_node, SeqRegions* sample, string seq_name, RealNumType best_lh_diff, bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    
+    /**
+        Place a subtree
+     */
+    void placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_regions, bool is_mid_branch, RealNumType branch_length, RealNumType new_lh, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    
+    /**
+        Apply SPR move
+        pruning a subtree then regrafting it to a new position
+     */
+    void applySPR(Node* subtree, Node* best_node, bool is_mid_branch, RealNumType branch_length, RealNumType best_lh_diff, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
     /**
         Traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
@@ -145,7 +156,7 @@ public:
         Try to improve the entire tree with SPR moves
         @return total improvement
      */
-    RealNumType improveEntireTree(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    RealNumType improveEntireTree(RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
     /**
         Calculate the placement cost of a sample
