@@ -117,7 +117,7 @@ public:
     /**
         Export string: name + branch length
      */
-    string exportString();
+    string exportString(bool binary = false);
     
     /**
         Get/(or compute) partial_lh of a node

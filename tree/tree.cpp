@@ -59,7 +59,7 @@ void Tree::setupFunctionPointers()
     }
 }
 
-string Tree::exportTreeString(Node* node)
+string Tree::exportTreeString(bool binary, Node* node)
 {
     // init starting node from root
     if (!node)
@@ -71,7 +71,7 @@ string Tree::exportTreeString(Node* node)
     
     // do something with its neighbor
     if (node->isLeave())
-        return node->exportString();
+        return node->exportString(binary);
         
     string output = "(";
     bool add_comma = false;
@@ -82,7 +82,7 @@ string Tree::exportTreeString(Node* node)
             add_comma = true;
         else
             output += ",";
-        output += exportTreeString(next);
+        output += exportTreeString(binary, next);
     }
     string length = node->length < 0 ? "0" : convertDoubleToString(node->length);
     output += "):" + length;

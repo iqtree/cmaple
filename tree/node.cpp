@@ -84,22 +84,37 @@ Node* Node::getOtherNextNode()
     return NULL;
 }
 
-string Node::exportString()
+string Node::exportString(bool binary)
 {
     if (isLeave())
     {
         string length_str = length < 0 ? "0" : convertDoubleToString(length);
         // without minor sequences -> simply return node's name and its branch length
-        if (less_info_seqs.size() == 0)
+        PositionType num_less_info_seqs = less_info_seqs.size();
+        if (num_less_info_seqs == 0)
             return seq_name + ":" + length_str;
         // with minor sequences -> return minor sequences' names with zero branch lengths
         else
         {
             string output = "(" + seq_name + ":0";
-            for (string minor_seq_name : less_info_seqs)
-                output += "," + minor_seq_name + ":0";
+            // export less informative sequences in binary tree format
+            if (binary)
+            {
+                string closing_brackets = "";
+                for (PositionType i = 0; i < num_less_info_seqs - 1; i++)
+                {
+                    output += ",(" + less_info_seqs[i] + ":0";
+                    closing_brackets += "):0";
+                }
+                output += "," + less_info_seqs[num_less_info_seqs - 1] + ":0" + closing_brackets;
+            }
+            // export less informative sequences in mutifurcating tree format
+            else
+            {
+                for (string minor_seq_name : less_info_seqs)
+                    output += "," + minor_seq_name + ":0";
+            }
             output += "):" + length_str;
-            
             return output;
         }
     }

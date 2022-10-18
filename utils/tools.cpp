@@ -549,6 +549,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.num_tree_improvement = 1;
     params.thresh_entire_tree_improvement = 1;
     params.thresh_placement_cost = -1e-5;
+    params.export_binary_tree = true;
     
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
@@ -680,6 +681,12 @@ void parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "--unstrict-stop-subtree") == 0) {
                 
                 params.strict_stop_seeking_placement_subtree = false;
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--multifurcating-tree") == 0) {
+                
+                params.export_binary_tree = false;
 
                 continue;
             }

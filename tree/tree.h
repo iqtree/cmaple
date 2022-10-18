@@ -103,7 +103,7 @@ public:
     /**
         Export tree string in Newick format
      */
-    string exportTreeString(Node* node = NULL);
+    string exportTreeString(bool binary = false, Node* node = NULL);
     
     /**
         Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()

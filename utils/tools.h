@@ -386,6 +386,11 @@ public:
     *  Don't try to re-place nodes that have the placement cost exceeds this threshold
     */
     RealNumType thresh_placement_cost;
+    
+    /**
+    *  export output tree in binary tree format
+    */
+    bool export_binary_tree;
 };
 
 /*--------------------------------------------------------------*/

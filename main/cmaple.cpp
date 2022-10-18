@@ -231,7 +231,7 @@ void CMaple::postInference()
     ofstream out = ofstream(output_file);
     
     // write tree string into the tree file
-    out << tree->exportTreeString() << ";" << endl;
+    out << tree->exportTreeString(tree->params->export_binary_tree) << ";" << endl;
     
     // close the output file
     out.close();
