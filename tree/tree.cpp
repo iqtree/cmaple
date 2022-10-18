@@ -509,16 +509,18 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
             else
             {
                 // NHANLT: only try at the mid-branch position to save time
-                /*// now try to place on the current branch below the best node, at an height above the mid-branch.
+                // now try to place on the current branch below the best node, at an height above the mid-branch.
                 RealNumType new_blength = node->length * 0.5;
                 RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
-                SeqRegions* mid_branch_regions = node->mid_branch_lh;
+                SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+                SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+                SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh, aln->num_states);
 
                 // try to place new sample along the upper half of the current branch
                 while (true)
                 {
                     // compute the placement cost
-                    RealNumType new_lh_mid_branch = calculateSamplePlacementCost(aln, model, cumulative_rate, mid_branch_regions, sample_regions, default_blength)
+                    RealNumType new_lh_mid_branch = calculateSamplePlacementCost(aln, model, cumulative_rate, mid_branch_regions, sample_regions, default_blength);
                     
                     // record new_best_lh_mid_branch
                     if (new_lh_mid_branch > new_best_lh_mid_branch)
@@ -531,14 +533,14 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
                     new_blength *= 0.5;
                     
                     // stop trying if reaching the minimum branch length
-                    if (new_blength <= min_blength_mid * 0.5)
+                    if (new_blength + new_blength <= min_blength_mid)
                         break;
                  
                     // get new mid_branch_regions based on the new_blength
-                    mid_branch_regions = // compute at runtime
-                }*/
+                    upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
+                }
                 
-                RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(aln, model, cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
+                //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(aln, model, cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
                 
                 // record new best_down_lh_diff
                 if (new_best_lh_mid_branch > best_down_lh_diff)
@@ -1044,10 +1046,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 else
                 {
                     // NHANLT: only try at the mid-branch position to save time
-                    /////// now try to place on the current branch below the best node, at an height above the mid-branch.
+                    // now try to place on the current branch below the best node, at an height above the mid-branch.
                     RealNumType new_blength = node->length * 0.5;
                     RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
-                    SeqRegions* mid_branch_regions = node->mid_branch_lh;
+                    SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+                    SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+                    SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh, aln->num_states);
 
                     // try to place new sample along the upper half of the current branch
                     while (true)
@@ -1066,15 +1070,14 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                         new_blength *= 0.5;
                         
                         // stop trying if reaching the minimum branch length
-                        if (new_blength <= min_blength_mid * 0.5)
+                        if (new_blength + new_blength <= min_blength_mid)
                             break;
                      
-                         // get new mid_branch_regions based on the new_blength
-                         mid_branch_regions = // compute at runtime
-                    }*\\\\\\\\\\\\\\\\
+                        // get new mid_branch_regions based on the new_blength
+                        upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
+                    }
                     
-                    // Added by Nhan
-                    RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(aln, model, cumulative_rate, node->mid_branch_lh, subtree_regions, removed_blength);
+                    //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(aln, model, cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
                     
                     // record new best_down_lh_diff
                     if (new_best_lh_mid_branch > best_down_lh_diff)
@@ -2503,7 +2506,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, string seq_na
                 {
                     new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_sample_node == root);
                     
-                    new_root->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, new_sample_node->length * 0.5, sample, new_sample_node->length * 0.5, aln, model, threshold_prob);
+                    next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, new_sample_node->length * 0.5, sample, new_sample_node->length * 0.5, aln, model, threshold_prob);
                     
                     /*if best_length2>=2*min_blengthForMidNode:
                         createFurtherMidNodes(new_root.children[1],new_root.probVectUpLeft)*/

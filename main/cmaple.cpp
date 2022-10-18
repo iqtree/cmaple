@@ -134,7 +134,7 @@ void CMaple::buildInitialTree()
             tree->model->updateMutationMatEmpirical(cumulative_rate, cumulative_base, aln);
         
         // NHANLT: debug
-       /* if (sequence->seq_name == "614")
+        /*if ((*sequence)->seq_name == "39")
             cout << "debug" <<endl;*/
         
         // seek a position for new sample placement
@@ -151,8 +151,16 @@ void CMaple::buildInitialTree()
             tree->placeNewSample(selected_node, lower_regions, (*sequence)->seq_name, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength);
         
         // NHANLT: debug
-        /*cout << "Added node " << sequence->seq_name << endl;
-        cout << tree->exportTreeString() << ";" << endl;*/
+        //cout << "Added node " << (*sequence)->seq_name << endl;
+        //cout << (*sequence)->seq_name << endl;
+        //cout << tree->exportTreeString() << ";" << endl;
+        
+        /*if ((*sequence)->seq_name == "39")
+        {
+            cout << tree->exportTreeString() << ";" << endl;
+            exit(0);
+        }*/
+           
         
         // don't delete lower_lh_seq as it is used as the lower lh regions of the newly adding tip
     }
