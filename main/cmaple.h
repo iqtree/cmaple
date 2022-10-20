@@ -26,6 +26,16 @@ private:
      */
     void optimizeTree();
     
+    /**
+        Optimize the branch lengths of the current tree
+     */
+    void optimizeBranchLengthsOfTree();
+    
+    /**
+        export output files
+     */
+    void exportOutput(string filename);
+    
 public:
     /** Model-related parameters */
     RealNumType *cumulative_rate;
@@ -36,7 +46,7 @@ public:
     
     /** tree-related params */
     RealNumType default_blength;
-    RealNumType min_blength, max_blength, min_blength_mid;
+    RealNumType min_blength, max_blength, min_blength_mid, min_blength_sensitivity;
     
     /**
     *  CMaple constructor

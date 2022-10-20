@@ -510,7 +510,6 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
             }
             else
             {
-                // NHANLT: only try at the mid-branch position to save time
                 // now try to place on the current branch below the best node, at an height above the mid-branch.
                 RealNumType new_blength = node->length * 0.5;
                 RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
@@ -1047,7 +1046,6 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 // now try to place on the current branch below the best node, at an height above the mid-branch.
                 else
                 {
-                    // NHANLT: only try at the mid-branch position to save time
                     // now try to place on the current branch below the best node, at an height above the mid-branch.
                     RealNumType new_blength = node->length * 0.5;
                     RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
@@ -1974,7 +1972,6 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, string seq_na
         RealNumType best_split = 0.5;
         RealNumType best_split_lh = best_lh_diff;
         RealNumType new_split = 0.25;
-        // NHANLT may not need to compute the mid-branch lh -> just get it from selected_node
         if (best_child_regions) delete best_child_regions;
         best_child_regions = new SeqRegions(selected_node->mid_branch_lh, num_states);
         //selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(best_child_regions, selected_node->length * 0.5, selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), selected_node->length * 0.5, aln, model, threshold_prob);
@@ -3030,6 +3027,350 @@ RealNumType Tree::improveEntireTree(RealNumType *cumulative_rate, vector< vector
     }
     
     return total_improvement;
+}
+
+PositionType Tree::optimizeBranchLengths(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_sensitivity)
+{
+    // start from the root's children
+    stack<Node*> node_stack;
+    if (!root || !root->next)
+        return 0;
+    Node* neighbor_node = NULL;
+    FOR_NEIGHBOR(root, neighbor_node)
+        node_stack.push(neighbor_node);
+    
+    // dummy variables
+    PositionType num_improvement = 0;
+    RealNumType threshold_prob = params->threshold_prob;
+    
+    // traverse downward the tree
+    while (!node_stack.empty())
+    {
+        // pick the top node from the stack
+        Node* node = node_stack.top();
+        node_stack.pop();
+        
+        SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        
+        // add all children of the current nodes to the stack for further traversing later
+        neighbor_node = NULL;
+        FOR_NEIGHBOR(node, neighbor_node)
+            node_stack.push(neighbor_node);
+        
+        // only process outdated node to avoid traversing the same part of the tree multiple times
+        if (node->outdated)
+        {
+            // estimate the branch length
+            RealNumType best_length = estimateBranchLength(upper_lr_regions, lower_regions, aln, model, cumulative_rate, min_blength_sensitivity);
+            
+            if (best_length > 0 || node->length > 0)
+            {
+                if (best_length <= 0 || node->length <= 0 || (node->length > 1.01 * best_length) || (node->length < 0.99 * best_length))
+                {
+                    node->length = best_length;
+                    ++num_improvement;
+                    
+                    // update partial likelihood regions
+                    stack<Node*> new_node_stack;
+                    new_node_stack.push(node);
+                    new_node_stack.push(node->neighbor);
+                    updatePartialLh(new_node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+                }
+            }
+        }
+    }
+    
+    return num_improvement;
+}
+
+RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* child_regions, Alignment* aln, Model* model, RealNumType* cumulative_rate, RealNumType min_blength_sensitivity)
+{
+    // init dummy variables
+    RealNumType coefficient = 0;
+    vector<RealNumType> coefficient_vec;
+    PositionType pos = 0;
+    SeqRegion **seq1_region_pointer = &parent_regions->front();
+    SeqRegion **seq2_region_pointer = &child_regions->front();
+    SeqRegion *seq1_region = (*seq1_region_pointer);
+    SeqRegion *seq2_region = (*seq2_region_pointer);
+    PositionType end_pos;
+    RealNumType total_blength;
+    PositionType seq_length = aln->ref_seq.size();
+    StateType num_states = aln->num_states;
+    
+    while (pos < seq_length)
+    {
+        // get the next shared segment in the two sequences
+        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
+        
+        // 1. e1.type = N || e2.type = N
+        if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
+        {
+            pos = end_pos + 1;
+            continue;
+        }
+        
+        // e1.type != N && e2.type != N
+        // total_blength will be here the total length from the root or from the upper node, down to the down node.
+        if (seq1_region->plength_observation2root >= 0)
+            total_blength = seq1_region->plength_observation2root;
+        else if (seq1_region->plength_observation2node >= 0)
+            total_blength = seq1_region->plength_observation2node;
+        else
+            total_blength = 0;
+            
+        if (seq2_region->plength_observation2node >= 0)
+            total_blength = total_blength + seq2_region->plength_observation2node;
+            //total_blength = (total_blength > 0 ? total_blength : 0) + seq2_region->plength_observation2node;
+        
+        // 2. e1.type = R
+        if (seq1_region->type == TYPE_R)
+        {
+            // 2.1. e1.type = R and e2.type = R
+            if (seq2_region->type == TYPE_R)
+                coefficient += cumulative_rate[end_pos + 1] - cumulative_rate[pos];
+            // 2.2. e1.type = R and e2.type = O
+            else if (seq2_region->type == TYPE_O)
+            {
+                StateType seq1_state = aln->ref_seq[end_pos];
+                RealNumType* mutation_mat_row = model->mutation_mat + model->row_index[seq1_state];
+                
+                RealNumType coeff0 = seq2_region->likelihood[seq1_state];
+                RealNumType coeff1 = 0;
+                
+                if (seq1_region->plength_observation2root >= 0)
+                {
+                    coeff0 *= model->root_freqs[seq1_state];
+
+                    RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
+                                        
+                    for (StateType i = 0; i < num_states; ++i)
+                    {
+                        coeff0 += model->root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->likelihood[i];
+                        coeff1 += mutation_mat_row[i] * seq2_region->likelihood[i];
+                    }
+                    
+                    coeff1 *=  model->root_freqs[seq1_state];
+                }
+                else
+                {
+                    for (StateType j = 0; j < num_states; ++j)
+                        coeff1 += mutation_mat_row[j] * seq2_region->likelihood[j];
+                }
+                
+                if (total_blength > 0)
+                    coeff0 += coeff1 * total_blength;
+                    
+                if (coeff1 < 0)
+                    coefficient += coeff1 / coeff0;
+                else
+                    coefficient_vec.push_back(coeff0 / coeff1);
+            }
+            // 2.3. e1.type = R and e2.type = A/C/G/T
+            else
+            {
+                RealNumType coeff0 = 0;
+                
+                if (seq1_region->plength_observation2root >= 0)
+                {
+                    StateType seq1_state = aln->ref_seq[end_pos];
+                    StateType seq2_state = seq2_region->type;
+                    
+                    RealNumType coeff1 = model->root_freqs[seq1_state] * model->mutation_mat[model->row_index[seq1_state] + seq2_state];
+                    RealNumType coeff0 = model->root_freqs[seq2_state] * model->mutation_mat[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
+                    
+                    if (total_blength > 0)
+                        coeff0 += coeff1 * total_blength;
+                    
+                    coeff0 /= coeff1;
+                }
+                else if (total_blength > 0)
+                    coeff0 = total_blength;
+
+                coefficient_vec.push_back(coeff0);
+            }
+        }
+        // 3. e1.type = O
+        else if (seq1_region->type == TYPE_O)
+        {
+            RealNumType coeff0 = 0;
+            RealNumType coeff1 = 0;
+            
+            // 3.1. e1.type = O and e2.type = O
+            if (seq2_region->type == TYPE_O)
+            {
+                RealNumType* mutation_mat_row = model->mutation_mat;
+                                    
+                for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+                {
+                    RealNumType seq1_lh_i = seq1_region->likelihood[i];
+                    coeff0 += seq1_lh_i * seq2_region->likelihood[i];
+                    
+                    for (StateType j = 0; j < num_states; ++j)
+                        coeff1 += seq1_lh_i * seq2_region->likelihood[j] * mutation_mat_row[j];
+                }
+            }
+            // 3.2. e1.type = O and e2.type = R or A/C/G/T
+            else
+            {
+                StateType seq2_state = seq2_region->type;
+                if (seq2_state == TYPE_R)
+                    seq2_state = aln->ref_seq[end_pos];
+                
+                coeff0 = seq1_region->likelihood[seq2_state];
+
+                RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
+                for (StateType i = 0; i < num_states; ++i)
+                    coeff1 += seq1_region->likelihood[i] * transposed_mut_mat_row[i];
+            }
+            
+            if (total_blength > 0)
+                coeff0 += coeff1 * total_blength;
+            
+            if (coeff1 < 0)
+                coefficient += coeff1 / coeff0;
+            else
+                coefficient_vec.push_back(coeff0 / coeff1);
+        }
+        // 4. e1.type = A/C/G/T
+        else
+        {
+            int seq1_state = seq1_region->type;
+            
+            // 4.1. e1.type =  e2.type
+            if (seq1_region->type == seq2_region->type)
+                coefficient += model->diagonal_mut_mat[seq1_state];
+            // e1.type = A/C/G/T and e2.type = O/A/C/G/T
+            else
+            {
+                // 4.2. e1.type = A/C/G/T and e2.type = O
+                if (seq2_region->type == TYPE_O)
+                {
+                    RealNumType coeff0 = seq2_region->likelihood[seq1_state];
+                    RealNumType coeff1 = 0;
+                    
+                    RealNumType* mutation_mat_row = model->mutation_mat + model->row_index[seq1_state];
+                    
+                    if (seq1_region->plength_observation2root >= 0)
+                    {
+                        coeff0 *= model->root_freqs[seq1_state];
+
+                        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
+                                            
+                        for (StateType i = 0; i < num_states; ++i)
+                        {
+                            coeff0 += model->root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->likelihood[i];
+                            coeff1 += mutation_mat_row[i] * seq2_region->likelihood[i];
+                        }
+                        
+                        coeff1 *= model->root_freqs[seq1_state];
+                    }
+                    else
+                    {
+                        for (StateType j = 0; j < num_states; ++j)
+                            coeff1 += mutation_mat_row[j] * seq2_region->likelihood[j];
+                    }
+                    
+                    if (total_blength > 0)
+                        coeff0 += coeff1 * total_blength;
+                    
+                    if (coeff1 < 0)
+                        coefficient += coeff1 / coeff0;
+                    else
+                        coefficient_vec.push_back(coeff0 / coeff1);
+                }
+                // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
+                else
+                {
+                    RealNumType coeff0 = 0;
+                    
+                    StateType seq2_state = seq2_region->type;
+                    if (seq2_state == TYPE_R)
+                        seq2_state = aln->ref_seq[end_pos];
+                    
+                    if (seq1_region->plength_observation2root >= 0)
+                    {
+                        coeff0 = model->root_freqs[seq2_state] * model->mutation_mat[model->row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
+                        RealNumType coeff1 = model->root_freqs[seq1_state] * model->mutation_mat[model->row_index[seq1_state] + seq2_state];
+                        
+                        if (total_blength > 0)
+                            coeff0 += coeff1 * total_blength;
+                        
+                        coeff0 /= coeff1;
+                    }
+                    else if (total_blength > 0)
+                        coeff0 = total_blength;
+                    
+                    coefficient_vec.push_back(coeff0);
+                }
+            }
+        }
+        
+        // update pos
+        pos = end_pos + 1;
+    }
+    
+    // now optimized branch length based on coefficients
+    coefficient = -coefficient;
+    PositionType num_coefficients = coefficient_vec.size();
+    if (num_coefficients == 0)
+        return -1;
+
+    // Get min and max coefficients
+    RealNumType min_coefficient = coefficient_vec[0];
+    RealNumType max_coefficient = coefficient_vec[0];
+    for (PositionType i = 1; i < num_coefficients; ++i)
+    {
+        RealNumType coefficient_i = coefficient_vec[i];
+        if (coefficient_i < min_coefficient)
+            min_coefficient = coefficient_i;
+        if (coefficient_i > max_coefficient)
+            max_coefficient = coefficient_i;
+    }
+    
+    RealNumType num_coefficients_over_coefficient = num_coefficients / coefficient;
+    RealNumType tDown = num_coefficients_over_coefficient - min_coefficient;
+    if (tDown <= 0)
+        return 0;
+    RealNumType derivative_tDown = calculateDerivative(coefficient_vec, tDown);
+    
+    RealNumType tUp = num_coefficients_over_coefficient - max_coefficient;
+    if (tUp < 0)
+    {
+        if (min_coefficient > 0)
+            tUp = 0;
+        else
+            tUp = min_blength_sensitivity;
+    }
+    RealNumType derivative_tUp = calculateDerivative(coefficient_vec, tUp);
+    
+    if ((derivative_tDown > coefficient + min_blength_sensitivity) || (derivative_tUp < coefficient - min_blength_sensitivity))
+        if ((derivative_tUp < coefficient - min_blength_sensitivity) and (tUp == 0))
+            return 0;
+    
+    while (tDown - tUp > min_blength_sensitivity)
+    {
+        RealNumType tMiddle = (tUp + tDown) * 0.5;
+        RealNumType derivative_tMiddle = calculateDerivative(coefficient_vec, tMiddle);
+        
+        if (derivative_tMiddle > coefficient)
+            tUp = tMiddle;
+        else
+            tDown = tMiddle;
+    }
+    
+    return tUp;
+}
+
+RealNumType Tree::calculateDerivative(vector<RealNumType> &coefficient_vec, RealNumType delta_t)
+{
+    RealNumType result = 0;
+    
+    for (RealNumType coefficient : coefficient_vec)
+        result += 1.0 / (coefficient + delta_t);
+        
+    return result;
 }
 
 RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)

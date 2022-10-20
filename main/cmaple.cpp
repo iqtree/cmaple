@@ -97,6 +97,7 @@ void CMaple::preInference()
     min_blength = tree->params->min_blength_factor * default_blength;
     max_blength = tree->params->max_blength_factor * default_blength;
     min_blength_mid = tree->params->min_blength_mid_factor * default_blength;
+    min_blength_sensitivity = min_blength * 1e-5;
     
     // compute thresholds for approximations
     tree->params->threshold_prob2 = tree->params->threshold_prob * tree->params->threshold_prob;
@@ -178,9 +179,6 @@ void CMaple::optimizeTree()
     // record the start time
     auto start = getRealTime();
     
-    // dummy variables
-    const int MAX_ATTEMPTS = 20;
-    
     for (int i = 0; i < tree->params->num_tree_improvement; ++i)
     {
         // first, set all nodes outdated
@@ -197,7 +195,7 @@ void CMaple::optimizeTree()
         }
         
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
-        for (int j = 0; j < MAX_ATTEMPTS; ++i)
+        for (int j = 0; j < 20; ++j)
         {
             RealNumType improvement = tree->improveEntireTree(cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
@@ -212,6 +210,40 @@ void CMaple::optimizeTree()
     // show the runtime for optimize the tree
     auto end = getRealTime();
     cout << " - Time spent on optimizing the tree: " << end - start << endl;
+    
+    // do further optimization on branch lengths (if needed)
+    if (tree->params->optimize_branch_length)
+        optimizeBranchLengthsOfTree();
+}
+
+void CMaple::optimizeBranchLengthsOfTree()
+{
+    // record the start time
+    auto start = getRealTime();
+    
+    cout << "Start optimizing branch lengths" << endl;
+    
+    // first, set all nodes outdated
+    tree->setAllNodeOutdated();
+   
+    // traverse the tree from root to optimize branch lengths
+    PositionType num_improvement = tree->optimizeBranchLengths(cumulative_rate, default_blength, max_blength, min_blength, min_blength_sensitivity);
+   
+    // run improvements only on the nodes that have been affected by some changes in the last round, and so on
+    for (int j = 0; j < 20; ++j)
+    {
+        // stop trying if the improvement is so small
+        if (num_improvement < tree->params->thresh_entire_tree_improvement)
+        //if (num_improvement == 0)
+          //  break;
+        
+        // traverse the tree from root to optimize branch lengths
+        num_improvement = tree->optimizeBranchLengths(cumulative_rate, default_blength, max_blength, min_blength, min_blength_sensitivity);
+    }
+
+    // show the runtime for optimize the branch lengths
+    auto end = getRealTime();
+    cout << " - Time spent on optimizing the branch lengths: " << end - start << endl;
 }
 
 void CMaple::doInference()
@@ -225,10 +257,15 @@ void CMaple::doInference()
 
 void CMaple::postInference()
 {
-    // open the tree file
     string output_file(tree->params->diff_path);
     output_file += ".treefile";
-    ofstream out = ofstream(output_file);
+    exportOutput(output_file);
+}
+
+void CMaple::exportOutput(string filename)
+{
+    // open the tree file
+    ofstream out = ofstream(filename);
     
     // write tree string into the tree file
     out << tree->exportTreeString(tree->params->export_binary_tree) << ";" << endl;

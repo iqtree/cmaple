@@ -550,6 +550,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.thresh_entire_tree_improvement = 1;
     params.thresh_placement_cost = -1e-5;
     params.export_binary_tree = true;
+    params.optimize_branch_length = true;
     
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
@@ -687,6 +688,12 @@ void parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "--multifurcating-tree") == 0) {
                 
                 params.export_binary_tree = false;
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--no-optimize-blength") == 0) {
+                
+                params.optimize_branch_length = false;
 
                 continue;
             }

@@ -391,6 +391,11 @@ public:
     *  export output tree in binary tree format
     */
     bool export_binary_tree;
+    
+    /**
+    *  TRUE to optimize the branch lengths after optimizing the tree topology
+    */
+    bool optimize_branch_length;
 };
 
 /*--------------------------------------------------------------*/

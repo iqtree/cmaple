@@ -59,6 +59,13 @@ private:
      */
     RealNumType improveSubTree(Node* node, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
+    /**
+       Calculate derivative starting from coefficients.
+       @return derivative
+    */
+    RealNumType calculateDerivative(vector<RealNumType> &coefficient_vec, RealNumType delta_t);
+
+    
 public:
     /**
         Program parameters
@@ -157,6 +164,17 @@ public:
         @return total improvement
      */
     RealNumType improveEntireTree(RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    
+    /**
+        Try to optimize branch lengths of the tree
+        @return num of improvements
+     */
+    PositionType optimizeBranchLengths(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_sensitivity);
+    
+    /**
+        Estimate the length of a branch using the derivative of the likelihood cost function wrt the branch length
+     */
+    RealNumType estimateBranchLength(SeqRegions* parent_regions, SeqRegions* child_regions, Alignment* aln, Model* model, RealNumType* cumulative_rate, RealNumType min_blength_sensitivity);
     
     /**
         Calculate the placement cost of a sample
