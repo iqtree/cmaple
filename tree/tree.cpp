@@ -3128,6 +3128,10 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
         if (seq1_region->type == TYPE_R)
         {
             // 2.1. e1.type = R and e2.type = R
+            // NHANLT NOTES:
+            // coefficient = derivative of log likelihood function wrt t
+            // l = log(1 + q_xx * t) ~ q_xx * t
+            // => l' = q_xx
             if (seq2_region->type == TYPE_R)
                 coefficient += cumulative_rate[end_pos + 1] - cumulative_rate[pos];
             // 2.2. e1.type = R and e2.type = O
@@ -3155,13 +3159,24 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                 }
                 else
                 {
+                    // NHANLT NOTES:
+                    // x = seq1_state
+                    // l = log(1 + q_xx * t + sum(q_xy * t)
+                    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+                    // coeff1 = numerator = q_xx + sum(q_xy)
                     for (StateType j = 0; j < num_states; ++j)
                         coeff1 += mutation_mat_row[j] * seq2_region->likelihood[j];
                 }
                 
+                // NHANLT NOTES:
+                // l = log(1 + q_xx * t + sum(q_xy * t)
+                // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+                // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
                 if (total_blength > 0)
                     coeff0 += coeff1 * total_blength;
-                    
+                
+                // NHANLT NOTES:
+                // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0
                 if (coeff1 < 0)
                     coefficient += coeff1 / coeff0;
                 else
@@ -3185,6 +3200,9 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                     
                     coeff0 /= coeff1;
                 }
+                // NHANLT NOTES:
+                // l = log(q_xy * t)
+                // l' = q_xy / (q_xy * t) = 1 / t
                 else if (total_blength > 0)
                     coeff0 = total_blength;
 
@@ -3201,7 +3219,12 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
             if (seq2_region->type == TYPE_O)
             {
                 RealNumType* mutation_mat_row = model->mutation_mat;
-                                    
+                
+                // NHANLT NOTES:
+                // l = log(sum_x(1 + q_xx * t + sum_y(q_xy * t)))
+                // l' = [sum_x(q_xx + sum_y(q_xy))]/[sum_x(1 + q_xx * t + sum_y(q_xy * t))]
+                // coeff1 = numerator = sum_x(q_xx + sum_y(q_xy))
+                // coeff0 = denominator = sum_x(1 + q_xx * t + sum_y(q_xy * t))
                 for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                 {
                     RealNumType seq1_lh_i = seq1_region->likelihood[i];
@@ -3220,6 +3243,12 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                 
                 coeff0 = seq1_region->likelihood[seq2_state];
 
+                // NHANLT NOTES:
+                // y = seq2_state
+                // l = log(1 + q_yy * t + sum_x(q_xy * t)
+                // l' = [q_yy + sum_x(q_xy))]/[1 + q_xx * t + sum_y(q_xy * t)]
+                // coeff1 = numerator = q_yy + sum_x(q_xy))
+                // coeff0 = denominator = 1 + q_xx * t + sum_y(q_xy * t)
                 RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
                 for (StateType i = 0; i < num_states; ++i)
                     coeff1 += seq1_region->likelihood[i] * transposed_mut_mat_row[i];
@@ -3228,6 +3257,8 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
             if (total_blength > 0)
                 coeff0 += coeff1 * total_blength;
             
+            // NHANLT NOTES:
+            // l' = coeff1 / coeff0
             if (coeff1 < 0)
                 coefficient += coeff1 / coeff0;
             else
@@ -3239,6 +3270,10 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
             int seq1_state = seq1_region->type;
             
             // 4.1. e1.type =  e2.type
+            // NHANLT NOTES:
+            // coefficient = derivative of log likelihood function wrt t
+            // l = log(1 + q_xx * t) ~ q_xx * t
+            // => l' = q_xx
             if (seq1_region->type == seq2_region->type)
                 coefficient += model->diagonal_mut_mat[seq1_state];
             // e1.type = A/C/G/T and e2.type = O/A/C/G/T
@@ -3268,13 +3303,24 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                     }
                     else
                     {
+                        // NHANLT NOTES:
+                        // x = seq1_state
+                        // l = log(1 + q_xx * t + sum(q_xy * t)
+                        // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+                        // coeff1 = numerator = q_xx + sum(q_xy)
                         for (StateType j = 0; j < num_states; ++j)
                             coeff1 += mutation_mat_row[j] * seq2_region->likelihood[j];
                     }
                     
+                    // NHANLT NOTES:
+                    // l = log(1 + q_xx * t + sum(q_xy * t)
+                    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+                    // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
                     if (total_blength > 0)
                         coeff0 += coeff1 * total_blength;
                     
+                    // NHANLT NOTES:
+                    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0;
                     if (coeff1 < 0)
                         coefficient += coeff1 / coeff0;
                     else
@@ -3299,6 +3345,9 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                         
                         coeff0 /= coeff1;
                     }
+                    // NHANLT NOTES:
+                    // l = log(q_xy * t)
+                    // l' = q_xy / (q_xy * t) = 1 / t
                     else if (total_blength > 0)
                         coeff0 = total_blength;
                     
