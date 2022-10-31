@@ -318,6 +318,11 @@ public:
     int failure_limit_subtree;
     
     /**
+    *      The number to limit the attempts of seeking a placement for a subtree (short range search
+    */
+    int failure_limit_subtree_short_search;
+    
+    /**
     *       The period to update the mutation matrix
      */
     PositionType mutation_update_period;
@@ -333,6 +338,11 @@ public:
     bool strict_stop_seeking_placement_subtree;
     
     /**
+    *       TRUE to apply strict stop rules when seeking placement for a subtree (short range search)
+     */
+    bool strict_stop_seeking_placement_subtree_short_search;
+    
+    /**
     *  Threshold of loglh to continue explore the subtree to seek a placement for a sample
     */
     RealNumType thresh_log_lh_sample;
@@ -341,6 +351,11 @@ public:
     *  Threshold of loglh to continue explore the subtree to seek a placement for a subtree
     */
     RealNumType thresh_log_lh_subtree;
+    
+    /**
+    *  Threshold of loglh to continue explore the subtree to seek a placement for a subtree (short range search)
+    */
+    RealNumType thresh_log_lh_subtree_short_search;
     
     /**
     *  Threshold of loglh to count failure
@@ -388,6 +403,11 @@ public:
     RealNumType thresh_placement_cost;
     
     /**
+    *  Don't try to re-place nodes (during short range topology search) that have the placement cost exceeds this threshold
+    */
+    RealNumType thresh_placement_cost_short_search;
+    
+    /**
     *  export output tree in binary tree format
     */
     bool export_binary_tree;
@@ -396,6 +416,11 @@ public:
     *  TRUE to optimize the branch lengths after optimizing the tree topology
     */
     bool optimize_branch_length;
+    
+    /**
+    *  TRUE to run an additional short range search for tree topology improvement
+    */
+    bool short_range_topo_search;
 };
 
 /*--------------------------------------------------------------*/

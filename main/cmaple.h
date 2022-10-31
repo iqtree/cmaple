@@ -27,6 +27,11 @@ private:
     void optimizeTree();
     
     /**
+        Optimize the tree topology
+     */
+    void optimizeTreeTopology(bool short_range_search = false);
+    
+    /**
         Optimize the branch lengths of the current tree
      */
     void optimizeBranchLengthsOfTree();

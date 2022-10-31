@@ -554,7 +554,7 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
     }
 }
 
-void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, Node* child_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement, SeqRegions* sample_regions)
+void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, bool short_range_search, Node* child_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement, SeqRegions* sample_regions)
 {
     // init variables
     Node* node = child_node->neighbor->getTopNode();
@@ -570,6 +570,19 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
     SeqRegions* parent_upper_lr_regions = NULL;
     PositionType seq_length = aln->ref_seq.size();
     StateType num_states = aln->num_states;
+    
+    // get/init approximation params
+    bool strict_stop_seeking_placement_subtree = params->strict_stop_seeking_placement_subtree;
+    int failure_limit_subtree = params->failure_limit_subtree;
+    RealNumType thresh_log_lh_subtree = params->thresh_log_lh_subtree;
+    
+    // for short range topology search
+    if (short_range_search)
+    {
+        strict_stop_seeking_placement_subtree = params->strict_stop_seeking_placement_subtree_short_search;
+        failure_limit_subtree = params->failure_limit_subtree_short_search;
+        thresh_log_lh_subtree = params->thresh_log_lh_subtree_short_search;
+    }
 
     // search a placement for a subtree
     /*if (search_subtree_placement)
@@ -742,14 +755,14 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             bool keep_traversing = false;
             /*if (search_subtree_placement)
             {*/
-            if (params->strict_stop_seeking_placement_subtree)
+            if (strict_stop_seeking_placement_subtree)
             {
-                if (updating_node->failure_count <= params->failure_limit_subtree && lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_subtree) && updating_node->node->next)
+                if (updating_node->failure_count <= failure_limit_subtree && lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree) && updating_node->node->next)
                     keep_traversing = true;
             }
             else
             {
-                if ((updating_node->failure_count <= params->failure_limit_subtree || lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_subtree))
+                if ((updating_node->failure_count <= failure_limit_subtree || lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree))
                     && updating_node->node->next)
                     keep_traversing = true;
             }
@@ -922,12 +935,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             bool keep_traversing = false;
             /*if (search_subtree_placement)
             {*/
-            if (params->strict_stop_seeking_placement_subtree)
+            if (strict_stop_seeking_placement_subtree)
             {
-                if (updating_node->failure_count <= params->failure_limit_subtree && lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_subtree))
+                if (updating_node->failure_count <= failure_limit_subtree && lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree))
                     keep_traversing = true;
             }
-            else if (updating_node->failure_count <= params->failure_limit_subtree || lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_subtree))
+            else if (updating_node->failure_count <= failure_limit_subtree || lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree))
                 keep_traversing = true;
             /*    }
             else
@@ -2963,7 +2976,7 @@ void Tree::setAllNodeOutdated()
     }
 }
 
-RealNumType Tree::improveEntireTree(RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)
+RealNumType Tree::improveEntireTree(bool short_range_search, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)
 {
     // start from the root
     stack<Node*> node_stack;
@@ -3000,7 +3013,7 @@ RealNumType Tree::improveEntireTree(RealNumType *cumulative_rate, vector< vector
                 reCalculateAllGenomeLists(root,mutMatrix, checkExistingAreCorrect=True)*/
             
             // do SPR moves to improve the tree
-            RealNumType improvement = improveSubTree(node, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
+            RealNumType improvement = improveSubTree(node, short_range_search, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
             
             /*if checkEachSPR:
                 #print(" apparent improvement "+str(improvement))
@@ -3422,11 +3435,12 @@ RealNumType Tree::calculateDerivative(vector<RealNumType> &coefficient_vec, Real
     return result;
 }
 
-RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)
+RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)
 {
     // dummy variables
     RealNumType threshold_prob = params->threshold_prob;
     RealNumType threshold_prob2 = params->threshold_prob2;
+    RealNumType thresh_placement_cost = short_range_search ? params->thresh_placement_cost_short_search : params->thresh_placement_cost;
     RealNumType total_improvement = 0;
     bool blength_changed = false; // true if a branch length has been changed
     
@@ -3444,7 +3458,7 @@ RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, vecto
         RealNumType original_lh = best_lh;
         
         // optimize branch length
-        if (best_lh < params->thresh_placement_cost)
+        if (best_lh < thresh_placement_cost)
         {
             // try different branch lengths for the current node placement (just in case branch length can be improved, in which case it counts both as tree improvment and better strategy to find a new placement).
             if (node->length <= 0)
@@ -3499,7 +3513,7 @@ RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, vecto
         }
            
         // find new placement
-        if (best_lh < params->thresh_placement_cost)
+        if (best_lh < thresh_placement_cost)
         {
             // now find the best place on the tree where to re-attach the subtree rooted at "node" but to do that we need to consider new vector probabilities after removing the node that we want to replace this is done using findBestParentTopology().
             bool topology_updated = false;
@@ -3512,7 +3526,7 @@ RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, vecto
             Node* best_child = NULL;
             
             // seek a new placement for the subtree
-            seekSubTreePlacement(best_node, best_lh_diff, is_mid_node, best_up_lh_diff, best_down_lh_diff, best_child, node, best_blength, cumulative_rate, default_blength, min_blength_mid, true, NULL);
+            seekSubTreePlacement(best_node, best_lh_diff, is_mid_node, best_up_lh_diff, best_down_lh_diff, best_child, short_range_search, node, best_blength, cumulative_rate, default_blength, min_blength_mid, true, NULL);
             
             // validate the new placement cost
             if (best_lh_diff > threshold_prob2)
@@ -3520,7 +3534,7 @@ RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, vecto
             else if (best_lh_diff < -1e50)
                 outError("Likelihood cost is very heavy, this might mean that the reference used is not the same used to generate the input diff file");
             
-            if (best_lh_diff + params->thresh_placement_cost > best_lh)
+            if (best_lh_diff + thresh_placement_cost > best_lh)
             {
                 if (best_node == parent_node)
                     outWarning("Strange, re-placement is at same node");
@@ -3554,7 +3568,6 @@ RealNumType Tree::improveSubTree(Node* node, RealNumType *cumulative_rate, vecto
                         
                         // apply an SPR move
                         applySPR(node, best_node, is_mid_node, best_blength, best_lh_diff, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
-                        // newRoot = cutAndPasteNode(node,best_node,is_mid_node,best_blength,best_lh_diff,mutMatrix)
                         
                         topology_updated = true;
                     }

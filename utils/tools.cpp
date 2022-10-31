@@ -536,10 +536,13 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.mutation_update_period = 25;
     params.failure_limit_sample = 3;
     params.failure_limit_subtree = 1;
+    params.failure_limit_subtree_short_search = 1;
     params.strict_stop_seeking_placement_sample = false;
     params.strict_stop_seeking_placement_subtree = true;
+    params.strict_stop_seeking_placement_subtree_short_search = true;
     params.thresh_log_lh_sample = 200;
     params.thresh_log_lh_subtree = 160;
+    params.thresh_log_lh_subtree_short_search = 40;
     params.thresh_log_lh_failure = 0.01;
     params.min_blength_factor = 0.2;
     params.min_blength_mid_factor = 4.1;
@@ -549,8 +552,10 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.num_tree_improvement = 1;
     params.thresh_entire_tree_improvement = 1;
     params.thresh_placement_cost = -1e-5;
+    params.thresh_placement_cost_short_search = -1;
     params.export_binary_tree = true;
     params.optimize_branch_length = true;
+    params.short_range_topo_search = false;
     
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
@@ -694,6 +699,12 @@ void parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "--no-optimize-blength") == 0) {
                 
                 params.optimize_branch_length = false;
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--short-topo-search") == 0) {
+                
+                params.short_range_topo_search = false;
 
                 continue;
             }

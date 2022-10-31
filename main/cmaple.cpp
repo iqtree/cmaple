@@ -176,44 +176,54 @@ void CMaple::buildInitialTree()
 
 void CMaple::optimizeTree()
 {
+    // run a short range search for tree topology improvement (if neccessary)
+    if (tree->params->short_range_topo_search)
+        optimizeTreeTopology(true);
+    
+    // run a normal search for tree topology improvement
+    optimizeTreeTopology();
+    
+    // do further optimization on branch lengths (if needed)
+    if (tree->params->optimize_branch_length)
+        optimizeBranchLengthsOfTree();
+}
+
+void CMaple::optimizeTreeTopology(bool short_range_search)
+{
     // record the start time
     auto start = getRealTime();
+    int num_tree_improvement = short_range_search ? 1 : tree->params->num_tree_improvement;
     
-    for (int i = 0; i < tree->params->num_tree_improvement; ++i)
+    for (int i = 0; i < num_tree_improvement; ++i)
     {
         // first, set all nodes outdated
         tree->setAllNodeOutdated();
         
         // traverse the tree from root to try improvements on the entire tree
-        RealNumType improvement = tree->improveEntireTree(cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
-            
-        // stop trying if the improvement is so small
-        if (improvement < tree->params->thresh_entire_tree_improvement)
-        {
-            cout << "Small improvement, stopping topological search." << endl;
-            break;
-        }
+        RealNumType improvement = tree->improveEntireTree(short_range_search, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
         
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         for (int j = 0; j < 20; ++j)
         {
-            RealNumType improvement = tree->improveEntireTree(cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
-            cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
-           
             // stop trying if the improvement is so small
             if (improvement < tree->params->thresh_entire_tree_improvement)
+            {
+                cout << "Small improvement, stopping topological search." << endl;
                 break;
+            }
+            
+            improvement = tree->improveEntireTree(short_range_search, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
+            cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
         }
             
     }
     
     // show the runtime for optimize the tree
     auto end = getRealTime();
-    cout << " - Time spent on optimizing the tree: " << end - start << endl;
-    
-    // do further optimization on branch lengths (if needed)
-    if (tree->params->optimize_branch_length)
-        optimizeBranchLengthsOfTree();
+    if (short_range_search)
+        cout << " - Time spent on a short range search for optimizing the tree topology: " << end - start << endl;
+    else
+        cout << " - Time spent on optimizing the tree topology: " << end - start << endl;
 }
 
 void CMaple::optimizeBranchLengthsOfTree()
@@ -252,7 +262,7 @@ void CMaple::doInference()
     buildInitialTree();
     
     // 2. Optimize the tree with SPR
-    optimizeTree();
+    //optimizeTree();
 }
 
 void CMaple::postInference()
