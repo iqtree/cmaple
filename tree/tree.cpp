@@ -3082,6 +3082,7 @@ PositionType Tree::optimizeBranchLengths(RealNumType *cumulative_rate, RealNumTy
                 if (best_length <= 0 || node->length <= 0 || (node->length > 1.01 * best_length) || (node->length < 0.99 * best_length))
                 {
                     node->length = best_length;
+                    node->neighbor->length = node->length;
                     ++num_improvement;
                     
                     // update partial likelihood regions
@@ -3575,6 +3576,7 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
                 if (!topology_updated && blength_changed)
                 {
                     node->length = best_blength;
+                    node->neighbor->length = node->length;
                     
                     stack<Node*> node_stack;
                     node_stack.push(node);
@@ -3585,6 +3587,7 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
             else if (blength_changed)
             {
                 node->length = best_blength;
+                node->neighbor->length = node->length;
                 
                 stack<Node*> node_stack;
                 node_stack.push(node);
@@ -3595,6 +3598,7 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
         else if (blength_changed)
         {
             node->length = best_blength;
+            node->neighbor->length = node->length;
             
             stack<Node*> node_stack;
             node_stack.push(node);

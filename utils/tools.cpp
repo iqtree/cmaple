@@ -704,7 +704,7 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--short-topo-search") == 0) {
                 
-                params.short_range_topo_search = false;
+                params.short_range_topo_search = true;
 
                 continue;
             }

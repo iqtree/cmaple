@@ -190,7 +190,7 @@ public:
     /**
         Constructor
      */
-    UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, short int n_failure_count, RealNumType n_lh_diff);
+    UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count);
     
     /**
         Deconstructor

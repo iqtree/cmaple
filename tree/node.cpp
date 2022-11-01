@@ -233,7 +233,7 @@ UpdatingNode::UpdatingNode():TraversingNode()
     need_updating = false;
 }
 
-UpdatingNode::UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, short int n_failure_count, RealNumType n_lh_diff):TraversingNode(n_node, n_failure_count, n_lh_diff)
+UpdatingNode::UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count):TraversingNode(n_node, n_failure_count, n_lh_diff)
 {
     incoming_regions = n_incoming_regions;
     branch_length = n_branch_length;

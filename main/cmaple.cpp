@@ -176,12 +176,18 @@ void CMaple::buildInitialTree()
 
 void CMaple::optimizeTree()
 {
+    string output_file(tree->params->diff_path);
+    exportOutput(output_file + "_init.treefile");
     // run a short range search for tree topology improvement (if neccessary)
     if (tree->params->short_range_topo_search)
         optimizeTreeTopology(true);
     
+    exportOutput(output_file + "_short_search.treefile");
+    
     // run a normal search for tree topology improvement
     optimizeTreeTopology();
+    
+    exportOutput(output_file + "_topo.treefile");
     
     // do further optimization on branch lengths (if needed)
     if (tree->params->optimize_branch_length)
@@ -262,7 +268,7 @@ void CMaple::doInference()
     buildInitialTree();
     
     // 2. Optimize the tree with SPR
-    //optimizeTree();
+    optimizeTree();
 }
 
 void CMaple::postInference()
