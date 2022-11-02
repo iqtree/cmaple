@@ -127,7 +127,7 @@ public:
     /**
         Compute the total likelihood vector for a node.
     */
-    SeqRegions* computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true);
+    SeqRegions* computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true, RealNumType blength = -1);
 };
 
 /** An extension of node storing more dummy data used for browsing all nodes in a stack  */

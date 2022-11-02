@@ -383,6 +383,11 @@ public:
     RealNumType thresh_diff_update;
     
     /**
+    *  Threshold to determine whether a changed partial is different from its former value by folds
+    */
+    RealNumType thresh_diff_fold_update;
+    
+    /**
     *  Path to output aln
     */
     char* output_aln;

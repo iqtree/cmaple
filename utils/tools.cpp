@@ -538,7 +538,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.failure_limit_subtree = 1;
     params.failure_limit_subtree_short_search = 1;
     params.strict_stop_seeking_placement_sample = false;
-    params.strict_stop_seeking_placement_subtree = true;
+    params.strict_stop_seeking_placement_subtree = false;
     params.strict_stop_seeking_placement_subtree_short_search = true;
     params.thresh_log_lh_sample = 200;
     params.thresh_log_lh_subtree = 160;
@@ -548,6 +548,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.min_blength_mid_factor = 4.1;
     params.max_blength_factor = 40;
     params.thresh_diff_update = 1e-7;
+    params.thresh_diff_fold_update = 1.001;
     params.output_aln = NULL;
     params.num_tree_improvement = 1;
     params.thresh_entire_tree_improvement = 1;

@@ -183,18 +183,18 @@ SeqRegions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType t
     return partial_lh;
 }
 
-SeqRegions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update)
+SeqRegions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update, RealNumType blength)
 {
     SeqRegions* new_regions = NULL;
     
     // if node is root
     if (is_root)
-        new_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln->num_states, model);
+        new_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln->num_states, model, blength);
     // if not is normal nodes
     else
     {
         SeqRegions* lower_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_regions, length, lower_regions, -1, aln, model, threshold_prob);
+        neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_regions, length, lower_regions, blength, aln, model, threshold_prob);
     }
     
     // update if necessary

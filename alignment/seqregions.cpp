@@ -216,8 +216,8 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
                     
                     if (diff > params->thresh_diff_update
                         || (diff > params->threshold_prob
-                            && ((diff / seq1_region->likelihood[i] > params->thresh_diff_update)
-                                || (diff / seq2_region->likelihood[i] > params->thresh_diff_update))))
+                            && ((diff > params->thresh_diff_fold_update * seq1_region->likelihood[i])
+                                || (diff > params->thresh_diff_fold_update * seq2_region->likelihood[i]))))
                         return true;
                 }
             }

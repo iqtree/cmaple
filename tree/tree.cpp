@@ -106,7 +106,8 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
         node_stack.pop();
         
         // NHANLT: debug
-       /* if (node->next && node->next->neighbor && node->next->neighbor->seq_name == "711")
+        /*if (node->next && (node->neighbor->seq_name == "25" || (node->next->neighbor && node->next->neighbor->seq_name == "25") || (node->next->next->neighbor && node->next->next->neighbor->seq_name == "25")))
+        //if (node->seq_name == "25")
             cout << "dsdas";*/
         
         bool update_blength = false;
@@ -407,12 +408,8 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
         extended_node_stack.pop();
         
         // NHANLT: debug
-       /* if (current_node->next && ((current_node->next->neighbor && current_node->next->neighbor->seq_name == "25")
-                                   || (current_node->next->next->neighbor && current_node->next->next->neighbor->seq_name == "25")))
-            cout << "fdsfsd";*/
-        /*if (current_node->seq_name == "639")
-            cout << "fdsfsd";
-        if (current_node->seq_name == "635")
+        /*if (current_node->next && ((current_node->next->neighbor && current_node->next->neighbor->seq_name == "25")
+                                  || (current_node->next->next->neighbor && current_node->next->next->neighbor->seq_name == "25")))
             cout << "fdsfsd";*/
     
         // if the current node is a leaf AND the new sample/sequence is strictly less informative than the current node
@@ -614,10 +611,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             Node* grand_child_1 = other_child_node->next->neighbor;
             Node* grand_child_2 = other_child_node->next->next->neighbor;
             
-            SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false);
+            SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_2->length);
             node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0));
             
-            SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false);
+            SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_1->length);
             node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0));
         }
     }
