@@ -534,8 +534,8 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.redo_inference = false;
     params.threshold_prob = 1e-8;
     params.mutation_update_period = 25;
-    params.failure_limit_sample = 3;
-    params.failure_limit_subtree = 1;
+    params.failure_limit_sample = 5;
+    params.failure_limit_subtree = 4;
     params.failure_limit_subtree_short_search = 1;
     params.strict_stop_seeking_placement_sample = false;
     params.strict_stop_seeking_placement_subtree = false;

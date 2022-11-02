@@ -111,7 +111,7 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
             cout << "dsdas";*/
         
         bool update_blength = false;
-        node->outdated = true;
+        node->getTopNode()->outdated = true;
         
         SeqRegions* parent_upper_regions = NULL;
         if (root != node->getTopNode())
@@ -1319,6 +1319,12 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
         Node* new_internal_node = next_node_1->getTopNode();
         Node* next_node_2 = next_node_1->getOtherNextNode();
         
+        // NHANLT NOTES: UNNECESSARY
+        // re-order next circle (not neccessary, just to make it consistent with Python code)
+        new_internal_node->next = next_node_2;
+        next_node_2->next = next_node_1;
+        next_node_1->next = new_internal_node;
+        
         // connect new_internal_node to the parent of the selected node
         new_internal_node->outdated = true;
         selected_node->neighbor->neighbor = new_internal_node;
@@ -1634,6 +1640,12 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
             Node* new_internal_node = next_node_1->getTopNode();
             Node* next_node_2 = next_node_1->getOtherNextNode();
             
+            // NHANLT NOTES: UNNECESSARY
+            // re-order next circle (not neccessary, just to make it consistent with Python code)
+            new_internal_node->next = next_node_2;
+            next_node_2->next = next_node_1;
+            next_node_1->next = new_internal_node;
+            
             // connect new_internal_node to the parent of the selected node
             new_internal_node->outdated = true;
             best_child->neighbor->neighbor = new_internal_node;
@@ -1644,8 +1656,8 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
             // connect the selected_node to new_internal_node (via next_node_2)
             best_child->neighbor = next_node_2;
             next_node_2->neighbor = best_child;
-            selected_node->length = down_distance;
-            selected_node->neighbor->length = down_distance;
+            best_child->length = down_distance;
+            best_child->neighbor->length = down_distance;
             
             // subtree already connected to new_internal_node (via next_node_1)
             subtree->length = best_length;
@@ -1784,6 +1796,12 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 Node* new_root = next_node_1->getTopNode();
                 Node* next_node_2 = next_node_1->getOtherNextNode();
                 
+                // NHANLT NOTES: UNNECESSARY
+                // re-order next circle (not neccessary, just to make it consistent with Python code)
+                new_root->next = next_node_2;
+                next_node_2->next = next_node_1;
+                next_node_1->next = new_root;
+                
                 // connect new_internal_node to the parent of the selected node
                 new_root->outdated = true;
                 new_root->neighbor = selected_node->neighbor; // actually NULL since selected_node is root
@@ -1903,6 +1921,12 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 Node* next_node_1 = subtree->neighbor;
                 Node* new_internal_node = next_node_1->getTopNode();
                 Node* next_node_2 = next_node_1->getOtherNextNode();
+                
+                // NHANLT NOTES: UNNECESSARY
+                // re-order next circle (not neccessary, just to make it consistent with Python code)
+                new_internal_node->next = next_node_2;
+                next_node_2->next = next_node_1;
+                next_node_1->next = new_internal_node;
                 
                 // connect new_internal_node to the parent of the selected node
                 new_internal_node->outdated = true;
@@ -4305,7 +4329,7 @@ void Tree::updateZeroBlength(Node* node, stack<Node*> &node_stack, Alignment* al
     
     // add current node and its parent to node_stack to for updating partials further from these nodes
     top_node->outdated = true;
-    top_node->neighbor->outdated = true;
+    top_node->neighbor->getTopNode()->outdated = true;
     node_stack.push(top_node);
     node_stack.push(top_node->neighbor);
 }
