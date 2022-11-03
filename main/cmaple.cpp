@@ -156,9 +156,11 @@ void CMaple::buildInitialTree()
         //cout << (*sequence)->seq_name << endl;
         //cout << tree->exportTreeString() << ";" << endl;
         
-        /*if ((*sequence)->seq_name == "39")
+        /*if ((*sequence)->seq_name == "2219")
         {
-            cout << tree->exportTreeString() << ";" << endl;
+            //cout << tree->exportTreeString() << ";" << endl;
+            string output_file(tree->params->diff_path);
+            exportOutput(output_file + "_init.treefile");
             exit(0);
         }*/
            
@@ -208,18 +210,22 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
         // traverse the tree from root to try improvements on the entire tree
         RealNumType improvement = tree->improveEntireTree(short_range_search, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
         
+        // stop trying if the improvement is so small
+        if (improvement < tree->params->thresh_entire_tree_improvement)
+        {
+            cout << "Small improvement, stopping topological search." << endl;
+            break;
+        }
+        
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         for (int j = 0; j < 20; ++j)
         {
-            // stop trying if the improvement is so small
-            if (improvement < tree->params->thresh_entire_tree_improvement)
-            {
-                cout << "Small improvement, stopping topological search." << endl;
-                break;
-            }
-            
             improvement = tree->improveEntireTree(short_range_search, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
+            
+            // stop trying if the improvement is so small
+            if (improvement < tree->params->thresh_entire_tree_improvement)
+                break;
         }
             
     }

@@ -3491,9 +3491,10 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
             
             RealNumType best_split = 1;
             RealNumType new_split = 0.5;
-            while (new_split * best_blength > min_blength)
+            RealNumType new_bl_split = new_split * best_blength;
+            while (new_bl_split > min_blength)
             {
-                RealNumType new_lh = calculateSubTreePlacementCost(aln, model, cumulative_rate, parent_upper_lr_lh, lower_lh, new_split * best_blength);
+                RealNumType new_lh = calculateSubTreePlacementCost(aln, model, cumulative_rate, parent_upper_lr_lh, lower_lh, new_bl_split);
                 
                 if (new_lh > best_lh)
                 {
@@ -3505,14 +3506,16 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
                     break;
                 
                 new_split = best_split * 0.5;
+                new_bl_split = new_split * best_blength;
             }
             
             if (best_split > 0.7)
             {
                 new_split = 2;
-                while (new_split * best_blength < max_blength)
+                RealNumType new_bl_split = new_split * best_blength;
+                while (new_bl_split < max_blength)
                 {
-                    RealNumType new_lh = calculateSubTreePlacementCost(aln, model, cumulative_rate, parent_upper_lr_lh, lower_lh, new_split * best_blength);
+                    RealNumType new_lh = calculateSubTreePlacementCost(aln, model, cumulative_rate, parent_upper_lr_lh, lower_lh, new_bl_split);
                     
                     if (new_lh > best_lh)
                     {
@@ -3524,6 +3527,7 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
                         break;
                     
                     new_split = best_split * 2;
+                    new_bl_split = new_split * best_blength;
                 }
             }
             
