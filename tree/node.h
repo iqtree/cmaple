@@ -183,6 +183,11 @@ public:
     bool need_updating;
     
     /**
+        TRUE to delete incoming_regions with the deconstructor
+     */
+    bool delete_regions;
+    
+    /**
         Constructor
      */
     UpdatingNode();
@@ -190,7 +195,7 @@ public:
     /**
         Constructor
      */
-    UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count);
+    UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count, bool n_delete_regions);
     
     /**
         Deconstructor

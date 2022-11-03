@@ -590,16 +590,16 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
     // node is not the root
     if (node != root)
     {
-        parent_upper_lr_regions = new SeqRegions(node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
-        SeqRegions* other_child_node_regions = new SeqRegions(other_child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
+        parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* other_child_node_regions = other_child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
        
         // add nodes (sibling and parent of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
         RealNumType branch_length = other_child_node->length;
         if (node->length > 0)
             branch_length = branch_length > 0 ? branch_length + node->length : node->length;
         
-        node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions, branch_length, true, best_lh_diff, 0));
-        node_stack.push(new UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true, best_lh_diff, 0));
+        node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions, branch_length, true, best_lh_diff, 0, false));
+        node_stack.push(new UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true, best_lh_diff, 0, false));
     }
     // node is root
     else
@@ -612,10 +612,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             Node* grand_child_2 = other_child_node->next->next->neighbor;
             
             SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_2->length);
-            node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0));
+            node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0, true));
             
             SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_1->length);
-            node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0));
+            node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0, true));
         }
     }
     /*}
@@ -795,11 +795,11 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 else
                 {
                     if (child_1->neighbor->partial_lh)
-                        upper_lr_regions = new SeqRegions(child_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
+                        upper_lr_regions = child_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                 }
                 // traverse to this child's subtree
                 if (upper_lr_regions)
-                    node_stack.push(new UpdatingNode(child_1, upper_lr_regions, child_1->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count));
+                    node_stack.push(new UpdatingNode(child_1, upper_lr_regions, child_1->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
                 
                 // add child_2 to node_stack
                 upper_lr_regions = NULL;
@@ -810,11 +810,11 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 else
                 {
                     if (child_2->neighbor->partial_lh)
-                        upper_lr_regions = new SeqRegions(child_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
+                        upper_lr_regions = child_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                 }
                 // traverse to this child's subtree
                 if (upper_lr_regions)
-                    node_stack.push(new UpdatingNode(child_2, upper_lr_regions, child_2->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count));
+                    node_stack.push(new UpdatingNode(child_2, upper_lr_regions, child_2->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
             }
         }
         // case when crawling up from child to parent
@@ -968,14 +968,14 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     else
                     {
                         if (updating_node->node->partial_lh)
-                            upper_lr_regions = new SeqRegions(updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
+                            upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                     }
 
                     // add sibling node to node_stack for traversing later; skip if upper_lr_regions is null (inconsistent)
                     if (!upper_lr_regions)
                         continue;
                     else
-                        node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count));
+                        node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
                     
                     // now pass the crawling up to the parent node
                     // get or recompute the bottom regions (comming from 2 children) of the parent node
@@ -992,10 +992,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                         }
                     }
                     else
-                        bottom_regions = new SeqRegions(top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
+                        bottom_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                     
                     // add the parent node to node_stack for traversing later
-                    node_stack.push(new UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count));
+                    node_stack.push(new UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
                 }
                 // now consider case of root node -> only need to care about the sibling node
                 else
@@ -1006,10 +1006,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     if (updating_node->need_updating)
                         upper_lr_regions = updating_node->incoming_regions->computeTotalLhAtRoot(num_states, model, updating_node->branch_length);
                     else
-                        upper_lr_regions = new SeqRegions(updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
+                        upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                     
                     // add the sibling node to node_stack for traversing later
-                    node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count));
+                    node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
                 }
             }
         }
@@ -4315,7 +4315,7 @@ void Tree::updateZeroBlength(Node* node, stack<Node*> &node_stack, Alignment* al
     {
         while (best_length < max_blength)
         {
-            RealNumType new_blength = best_length * 2;
+            RealNumType new_blength = best_length + best_length;
             RealNumType new_lh = calculateSamplePlacementCost(aln, model, cumulative_rate, upper_left_right_regions, lower_regions, new_blength);
             if (new_lh > best_lh)
             {
