@@ -674,7 +674,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     
                     // skip if mid_branch_regions is null (branch length == 0)
                     if (!mid_branch_regions)
+                    {
+                        // delete updating_node
+                        delete updating_node;
+                        
                         continue;
+                    }
                     
                     // compute the placement cost
                     // if (search_subtree_placement)
@@ -715,7 +720,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
 
                 // skip if at_node_regions is null (branch length == 0)
                 if (!at_node_regions)
+                {
+                    // delete updating_node
+                    delete updating_node;
+                    
                     continue;
+                }
                 
                 //if (search_subtree_placement)
                 lh_diff_at_node = calculateSubTreePlacementCost(aln, model, cumulative_rate, at_node_regions, subtree_regions, removed_blength);
@@ -836,6 +846,9 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     if (!at_node_regions)
                     {
                         // print("Removing a node created an inconsistency while moving up.")
+                        // delete updating_node
+                        delete updating_node;
+                        
                         continue;
                     }
                     // stop updating if the difference between the new and old regions is insignificant
@@ -883,7 +896,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     
                     // skip if bottom_regions is null (inconsistent)
                     if (!bottom_regions)
+                    {
+                        // delete updating_node
+                        delete updating_node;
+
                         continue;
+                    }
                    
                     // compute new mid-branch regions
                     SeqRegions* upper_lr_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
@@ -898,7 +916,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 
                 // skip if mid_branch_regions is null (inconsistent)
                 if (!mid_branch_regions)
+                {
+                    // delete updating_node
+                    delete updating_node;
+                    
                     continue;
+                }
                 
                 // compute the placement cost
                 //if (search_subtree_placement)
@@ -973,7 +996,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
 
                     // add sibling node to node_stack for traversing later; skip if upper_lr_regions is null (inconsistent)
                     if (!upper_lr_regions)
+                    {
+                        // delete updating_node
+                        delete updating_node;
+                        
                         continue;
+                    }
                     else
                         node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
                     
@@ -988,7 +1016,12 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                             
                             // skip if bottom_regions is null (inconsistent)
                             if (!bottom_regions)
+                            {
+                                // delete updating_node
+                                delete updating_node;
+                                
                                 continue;
+                            }
                         }
                     }
                     else
