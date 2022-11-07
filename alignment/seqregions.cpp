@@ -997,14 +997,15 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     }
                     else
                     {
-                        delete[] new_lh;
-                        
                         if (new_lh[seq2_state] == 0)
                         {
+                            delete[] new_lh;
                             delete merged_regions;
                             merged_regions = NULL;
                             return MIN_NEGATIVE;
                         }
+                        
+                        delete[] new_lh;
                         
                         merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
                     
