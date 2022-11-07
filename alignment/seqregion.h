@@ -16,7 +16,7 @@ private:
     /**
     *  Compute the relative likelihood for an ambiguious state
     */
-    void computeLhAmbiguity(IntVector entries);
+    void computeLhAmbiguity(IntVector &entries);
     
     /**
     *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R

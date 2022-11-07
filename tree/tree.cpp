@@ -31,7 +31,38 @@ Tree::~Tree()
     }
     
     // browse tree to delete all nodes
-    // NHANLT: TODO
+    stack<Node*> node_stack;
+    node_stack.push(root);
+    
+    while (!node_stack.empty())
+    {
+        Node* node = node_stack.top();
+        node_stack.pop();
+        
+        // add neighbors to the stack
+        stack<Node*> delete_stack;
+        delete_stack.push(node);
+        Node* next_node;
+        FOR_NEXT(node, next_node)
+        {
+            // add neighbor if it's existed
+            if (next_node->neighbor) node_stack.push(next_node->neighbor);
+            
+            // push next_node into delete_stack
+            delete_stack.push(next_node);
+        }
+        
+        // delete all nodes in delete_stack
+        while (!delete_stack.empty())
+        {
+            Node* delete_node = delete_stack.top();
+            delete_stack.pop();
+            
+            // delete node
+            delete delete_node;
+        }
+    }
+    
 }
 
 void Tree::setupFunctionPointers()
@@ -275,6 +306,7 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
             }
             else
             {
+                if (old_lower_regions) delete old_lower_regions;
                 old_lower_regions = top_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
                 top_node->partial_lh = merged_two_lower_regions;
                 merged_two_lower_regions = NULL;
@@ -538,6 +570,9 @@ void Tree::seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sa
                     upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
                 }
                 
+                // delete mid_branch_regions
+                delete mid_branch_regions;
+                
                 //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(aln, model, cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
                 
                 // record new best_down_lh_diff
@@ -705,8 +740,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     
                 // now try appending exactly at node
                 SeqRegions* at_node_regions = NULL;
+                bool delete_at_node_regions = false;
                 if (updating_node->need_updating)
                 {
+                    delete_at_node_regions = true;
                     // get or recompute the lh regions at the current node position
                     SeqRegions* lower_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                     updating_node->incoming_regions->mergeUpperLower(at_node_regions, updating_node->branch_length, lower_regions, -1, aln, model, threshold_prob);
@@ -751,7 +788,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     ++updating_node->failure_count;
                     
                 // delete at_node_regions
-                if (updating_node->need_updating) delete at_node_regions;
+                if (delete_at_node_regions) delete at_node_regions;
             }
             // set the placement cost at the current node position at the most negative value if branch length is zero -> we can't place the subtree on that branch
             else
@@ -917,6 +954,9 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 // skip if mid_branch_regions is null (inconsistent)
                 if (!mid_branch_regions)
                 {
+                    // delete bottom_regions if it's existed
+                    if (bottom_regions) delete bottom_regions;
+                    
                     // delete updating_node
                     delete updating_node;
                     
@@ -997,6 +1037,9 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     // add sibling node to node_stack for traversing later; skip if upper_lr_regions is null (inconsistent)
                     if (!upper_lr_regions)
                     {
+                        // delete bottom_regions if it's existed
+                        if (bottom_regions) delete bottom_regions;
+                        
                         // delete updating_node
                         delete updating_node;
                         
@@ -1025,7 +1068,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                         }
                     }
                     else
+                    {
+                        if (bottom_regions) delete bottom_regions;
                         bottom_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    }
                     
                     // add the parent node to node_stack for traversing later
                     node_stack.push(new UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
@@ -1043,7 +1089,15 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     
                     // add the sibling node to node_stack for traversing later
                     node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
+                    
+                    // delete bottom_regions
+                    if (bottom_regions) delete bottom_regions;
                 }
+            }
+            else
+            {
+                // delete bottom_regions if it's existed
+                if (bottom_regions) delete bottom_regions;
             }
         }
         

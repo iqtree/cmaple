@@ -151,7 +151,7 @@ void SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
     }
 }
 
-void SeqRegion::computeLhAmbiguity(IntVector entries)
+void SeqRegion::computeLhAmbiguity(IntVector &entries)
 {
     // change type to 'O'
     type = TYPE_O;

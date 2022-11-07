@@ -44,8 +44,9 @@ Node::Node(string n_seq_name)
 
 Node::~Node()
 {
-    // delete other neighbors
-    // NHANLT: TODO
+    if (partial_lh) delete partial_lh;
+    if (total_lh) delete total_lh;
+    if (mid_branch_lh) delete mid_branch_lh;
 }
 
 bool Node::isLeave()
@@ -126,10 +127,7 @@ SeqRegions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType t
 {
     // if partial_lh has not yet computed (~NULL) -> compute it from next nodes
     if (!partial_lh)
-    {
-        // init partial_lh
-        partial_lh = NULL;
-        
+    {        
         // the phylonode is an internal node
         if (next)
         {
