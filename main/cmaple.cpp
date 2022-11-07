@@ -5,7 +5,7 @@
  */
 
 #include "cmaple.h"
-
+using namespace std;
 CMaple::CMaple()
 {
     cumulative_rate = NULL;

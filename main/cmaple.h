@@ -39,12 +39,12 @@ private:
     /**
         export output files
      */
-    void exportOutput(string filename);
+    void exportOutput(std::string filename);
     
 public:
     /** Model-related parameters */
     RealNumType *cumulative_rate;
-    vector< vector<PositionType> > cumulative_base;
+    std::vector< std::vector<PositionType> > cumulative_base;
     
     /** The phylogenetic tree */
     Tree* tree;

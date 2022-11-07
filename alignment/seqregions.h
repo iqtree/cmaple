@@ -11,11 +11,12 @@
 #include "seqregion.h"
 #include "alignment.h"
 #include "model/model.h"
+#include <algorithm>
 
 class Alignment;
 
 /** Vector of sequence regions, used to represent/compute partial/total likelihood */
-class SeqRegions: public vector<SeqRegion*> {
+class SeqRegions: public std::vector<SeqRegion*> {
 private:
     
 public:
@@ -61,7 +62,7 @@ public:
         (current_pos > seq2_region->position) ? seq2_region = (*(++seq2_region_pointer)) : 0;
         
         // compute the end_pos for the shared segment
-        end_pos = min(seq1_region->position, seq2_region->position);
+        end_pos = (std::min)(seq1_region->position, seq2_region->position);
     }
     
     /**
@@ -114,7 +115,7 @@ public:
     /**
         Compute the likelihood by merging the lower lh with root frequencies
      */
-    RealNumType computeAbsoluteLhAtRoot(Alignment* aln, Model* model, vector< vector<PositionType> > &cumulative_base);
+    RealNumType computeAbsoluteLhAtRoot(Alignment* aln, Model* model, std::vector< std::vector<PositionType> > &cumulative_base);
     
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others

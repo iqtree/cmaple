@@ -1,5 +1,5 @@
 #include "tree.h"
-
+using namespace std;
 Tree::Tree()
 {
     params = NULL;
@@ -3462,7 +3462,7 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
     RealNumType derivative_tUp = calculateDerivative(coefficient_vec, tUp);
     
     if ((derivative_tDown > coefficient + min_blength_sensitivity) || (derivative_tUp < coefficient - min_blength_sensitivity))
-        if ((derivative_tUp < coefficient - min_blength_sensitivity) and (tUp == 0))
+        if ((derivative_tUp < coefficient - min_blength_sensitivity) && (tUp == 0))
             return 0;
     
     while (tDown - tUp > min_blength_sensitivity)

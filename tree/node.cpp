@@ -1,5 +1,5 @@
 #include "node.h"
-
+using namespace std;
 Node::Node(bool is_top_node)
 {
     id = -1;

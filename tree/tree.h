@@ -11,14 +11,14 @@ private:
     /**
         Pointer  to updatePartialLh method
      */
-    typedef void (Tree::*UpdatePartialLhPointerType)(stack<Node*> &, RealNumType*, RealNumType, RealNumType, RealNumType);
+    typedef void (Tree::*UpdatePartialLhPointerType)(std::stack<Node*> &, RealNumType*, RealNumType, RealNumType, RealNumType);
     UpdatePartialLhPointerType updatePartialLhPointer;
     
     /**
         Template of updatePartialLh
      */
     template <const StateType num_states>
-    void updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
+    void updatePartialLhTemplate(std::stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
         Pointer  to updatePartialLh method
@@ -57,13 +57,13 @@ private:
         Try to improve a subtree rooted at node with SPR moves
         @return total improvement
      */
-    RealNumType improveSubTree(Node* node, bool short_range_search, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    RealNumType improveSubTree(Node* node, bool short_range_search, RealNumType *cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
     /**
        Calculate derivative starting from coefficients.
        @return derivative
     */
-    RealNumType calculateDerivative(vector<RealNumType> &coefficient_vec, RealNumType delta_t);
+    RealNumType calculateDerivative(std::vector<RealNumType> &coefficient_vec, RealNumType delta_t);
 
     
 public:
@@ -108,25 +108,25 @@ public:
     void setupFunctionPointers();
     
     /**
-        Export tree string in Newick format
+        Export tree std::string in Newick format
      */
-    string exportTreeString(bool binary = false, Node* node = NULL);
+    std::string exportTreeString(bool binary = false, Node* node = NULL);
     
     /**
         Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
      */
-    void updateZeroBlength(Node* node, stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
+    void updateZeroBlength(Node* node, std::stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
         Iteratively update partial_lh starting from the nodes in node_stack
         @param node_stack stack of nodes;
      */
-    void updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
+    void updatePartialLh(std::stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
         Seek a position for a sample placement starting at the start_node
      */
-    void seekSamplePlacement(Node* start_node, string seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
+    void seekSamplePlacement(Node* start_node, std::string seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
     
     /**
         Seek a position for placing a subtree/sample starting at the start_node
@@ -136,18 +136,18 @@ public:
     /**
         Place a new sample on the tree
      */
-    void placeNewSample(Node* selected_node, SeqRegions* sample, string seq_name, RealNumType best_lh_diff, bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    void placeNewSample(Node* selected_node, SeqRegions* sample, std::string seq_name, RealNumType best_lh_diff, bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
     
     /**
         Place a subtree
      */
-    void placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_regions, bool is_mid_branch, RealNumType branch_length, RealNumType new_lh, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    void placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_regions, bool is_mid_branch, RealNumType branch_length, RealNumType new_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
     /**
         Apply SPR move
         pruning a subtree then regrafting it to a new position
      */
-    void applySPR(Node* subtree, Node* best_node, bool is_mid_branch, RealNumType branch_length, RealNumType best_lh_diff, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    void applySPR(Node* subtree, Node* best_node, bool is_mid_branch, RealNumType branch_length, RealNumType best_lh_diff, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
     /**
         Traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
@@ -163,7 +163,7 @@ public:
         Try to improve the entire tree with SPR moves
         @return total improvement
      */
-    RealNumType improveEntireTree(bool short_range_search, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    RealNumType improveEntireTree(bool short_range_search, RealNumType *cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
     
     /**
         Try to optimize branch lengths of the tree

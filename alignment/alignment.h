@@ -13,24 +13,24 @@
 #define ALIGNMENT_H
 
 /** Class presents the input alignment */
-class Alignment:public vector<Sequence*> {
+class Alignment:public std::vector<Sequence*> {
 private:
     
     /**
         Read sequence from a string line
      */
-    void processSeq(string &sequence, string &line, PositionType line_num);
+    void processSeq(std::string &sequence, std::string &line, PositionType line_num);
     
     /**
         Output a mutation into Diff file
      */
-    void outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length = -1);
+    void outputMutation(std::ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length = -1);
     
 public:
     /**
         reference sequence
      */
-    vector<StateType> ref_seq;
+    std::vector<StateType> ref_seq;
     
     /**
         Type of sequences
@@ -78,20 +78,20 @@ public:
         @param sequences the input sequences; only_extract_diff: TRUE to only extract Diff file without running inference
         @return a reference genome
      */
-    string generateRef(StrVector &sequences, bool only_extract_diff);
+    std::string generateRef(StrVector &sequences, bool only_extract_diff);
     
     /**
         Read a reference genome from file
         @param ref_path; only_extract_diff: TRUE to only extract Diff file without running inference
         @return a reference genome
      */
-    string readRef(char* ref_path, bool only_extract_diff);
+    std::string readRef(char* ref_path, bool only_extract_diff);
     
     /**
         Extract Mutation from sequences regarding the reference sequence
         @param sequences, seq_names: the input sequences,  ref_sequence; ref_sequence, out: output stream to write the Diff file; only_extract_diff: TRUE to only extract Diff file without running inference
      */
-    void extractMutations(StrVector &sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_diff);
+    void extractMutations(StrVector &sequences, StrVector &seq_names, std::string ref_sequence, std::ofstream &out, bool only_extract_diff);
     
     /**
         Read Diff file to load reference sequence and vector of Sequence (represented by vector of Mutations)
@@ -114,7 +114,7 @@ public:
         Parse the reference sequence into vector of state
         @param ref_sequence reference genome in string
      */
-    void parseRefSeq(string ref_sequence);
+    void parseRefSeq(std::string ref_sequence);
     
     /**
         Convert a state ID, indexed from 0, to a raw characer

@@ -6,7 +6,7 @@
 //
 
 #include "sequence.h"
-
+using namespace std;
 Sequence::Sequence(string n_seq_name)
 {
     seq_name = n_seq_name;
