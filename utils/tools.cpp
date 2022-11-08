@@ -25,6 +25,10 @@
 #include "tools.h"
 #include "timeutil.h"
 
+#include <filesystem>
+
+using namespace std;
+
 VerboseMode verbose_mode;
 
 extern void printCopyright(ostream &out);
@@ -184,19 +188,13 @@ bool fileExists(string strFilename) {
     return (blnReturn);
 }
 
-int isDirectory(const char *path) {
-    struct stat statbuf;
-    if (stat(path, &statbuf) != 0)
-        return 0;
-    return S_ISDIR(statbuf.st_mode);
+/*int isDirectory(const char *path) {
+  return std::filesystem::is_directory(path);
 }
 
 int isFile(const char *path) {
-    struct stat statbuf;
-    if (stat(path, &statbuf) != 0)
-        return 0;
-    return S_ISREG(statbuf.st_mode);
-}
+  return std::filesystem::is_regular_file(path);
+}*/
 
 int convert_int(const char *str, int &end_pos) {
 	char *endptr;

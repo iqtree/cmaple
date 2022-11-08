@@ -1,5 +1,5 @@
 #include "model.h"
-
+using namespace std;
 Model::Model()
 {
     model_name = "";

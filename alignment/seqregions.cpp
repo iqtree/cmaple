@@ -79,7 +79,7 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
                  i -= i - start_R_index - 1;
                  
                  // reset start_R_index
-                 start_R_index = -1;
+                 start_R_index = current_region->type == TYPE_R ? i : -1;
              }
         }
     }
@@ -90,9 +90,9 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
         PositionType num_regions = size();
         
         // remove identical R regions
-        for (PositionType j = 0; j < num_regions - 2 - start_R_index; ++j)
+        for (PositionType j = 0; j < num_regions - 1 - start_R_index; ++j)
             delete at(start_R_index + j);
-        erase(begin() + start_R_index, end() - 1);
+        erase(begin() + start_R_index, begin() + num_regions - 1);
     }
 }
 
@@ -578,6 +578,9 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                         tot += root_vec[i];
                         new_lh[i] = tot;
                     }
+                    
+                    // delete root_vec
+                    delete[] root_vec;
                 }
                 else
                 {
@@ -632,7 +635,10 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     if (new_state == TYPE_O)
                         merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, new_lh));
                     else
+                    {
+                        delete[] new_lh;
                         merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                    }
                 }
                 // seq1 = ACGT and different from seq2 = R/ACGT
                 else
@@ -927,6 +933,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     
                     if (sum_lh == 0)
                     {
+                        delete[] new_lh;
                         delete merged_regions;
                         merged_regions = NULL;
                         return MIN_NEGATIVE;
@@ -942,7 +949,10 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     if (new_state == TYPE_O)
                         merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
                     else
+                    {
+                        delete[] new_lh;
                         merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                    }
                     
                     if (return_log_lh)
                         log_lh += log(sum_lh);
@@ -977,7 +987,10 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         if (new_state == TYPE_O)
                             merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
                         else
+                        {
+                            delete[] new_lh;
                             merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                        }
                         
                         if (return_log_lh)
                             log_lh += log(sum_lh);
@@ -986,12 +999,13 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     {
                         if (new_lh[seq2_state] == 0)
                         {
-                            {
-                                delete merged_regions;
-                                merged_regions = NULL;
-                                return MIN_NEGATIVE;
-                            }
+                            delete[] new_lh;
+                            delete merged_regions;
+                            merged_regions = NULL;
+                            return MIN_NEGATIVE;
                         }
+                        
+                        delete[] new_lh;
                         
                         merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
                     
@@ -1052,6 +1066,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     
                     if (sum_lh == 0)
                     {
+                        delete[] new_lh;
                         delete merged_regions;
                         merged_regions = NULL;
                         return MIN_NEGATIVE;
@@ -1067,7 +1082,10 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     if (new_state == TYPE_O)
                         merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
                     else
+                    {
+                        delete[] new_lh;
                         merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                    }
                     
                     if (return_log_lh)
                         log_lh += log(sum_lh);
@@ -1102,13 +1120,18 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         if (new_state == TYPE_O)
                             merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
                         else
+                        {
+                            delete[] new_lh;
                             merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                        }
                         
                         if (return_log_lh)
                             log_lh += log(sum_lh);
                     }
                     else
                     {
+                        delete[] new_lh;
+                        
                         merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
                     
                         if (return_log_lh)
