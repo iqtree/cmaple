@@ -57,7 +57,7 @@ SeqRegion::~SeqRegion()
 {
     if (likelihood)
     {
-        delete likelihood;
+        delete[] likelihood;
         likelihood = NULL;
     }
 }
@@ -158,7 +158,7 @@ void SeqRegion::computeLhAmbiguity(IntVector &entries)
     
     // init likelihood
     if (likelihood)
-        delete likelihood;
+        delete[] likelihood;
     likelihood = new RealNumType[entries.size()];
     
     for (StateType i = 0; i < (StateType) entries.size(); ++i)
