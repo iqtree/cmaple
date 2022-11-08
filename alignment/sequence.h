@@ -15,12 +15,12 @@ class Alignment;
 class SeqRegions;
 
 /** Class present a sequence */
-class Sequence: public vector<Mutation*> {
+class Sequence: public std::vector<Mutation*> {
 public:
     /**
         Name of the sequence
      */
-    string seq_name;
+     std::string seq_name;
     
     /**
     *  Sequence constructor
@@ -30,12 +30,12 @@ public:
     /**
     *  Sequence constructor
     */
-    Sequence(string n_seq_name);
+    Sequence(std::string n_seq_name);
     
     /**
     *  Sequence constructor
     */
-    Sequence(string n_seq_name, vector<Mutation*> n_mutations);
+    Sequence(std::string n_seq_name, vector<Mutation*> n_mutations);
     
     /**
     *  Sequence deconstructor

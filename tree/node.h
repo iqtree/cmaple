@@ -17,7 +17,7 @@ public:
     /**
         Sequence name
      */
-    string seq_name;
+    std::string seq_name;
     
     /**
         Likelihood of the subtree rooted at this node.
@@ -58,7 +58,7 @@ public:
     /**
         Vector of sequences that are less informative than the sequence of this node
      */
-    vector<string> less_info_seqs;
+    std::vector<std::string> less_info_seqs;
     
     /**
         Flag to prevent traversing the same part of the tree multiple times.
@@ -74,19 +74,19 @@ public:
         Flexible string attributes
      
      */
-    map<string,string> str_attributes;
+    std::map<std::string, std::string> str_attributes;
     
     /**
         Constructor
         @param n_seq_name the sequence name
      */
-    Node(int n_id, string n_seq_name = "");
+    Node(int n_id, std::string n_seq_name = "");
     
     /**
         Constructor
         @param n_seq_name the sequence name
      */
-    Node(string n_seq_name);
+    Node(std::string n_seq_name);
     
     /**
         Constructor
@@ -117,7 +117,7 @@ public:
     /**
         Export string: name + branch length
      */
-    string exportString(bool binary = false);
+    std::string exportString(bool binary = false);
     
     /**
         Get/(or compute) partial_lh of a node

@@ -143,11 +143,8 @@ set(CLANG_UNDER_VS "FALSE") #Clang compiler, used from inside Visual Studio
 # disable AVX for NEON
 if (__ARM_NEON)
     set(IQTREE_FLAGS "${IQTREE_FLAGS} novx")
-elseif (CMAKE_CXX_COMPILER MATCHES "VISUAL STUDIO")
-    set(CLANG_UNDER_VS "TRUE")
-    #it won't recognize the -std=c++17 parameter.
-    #Todo: don't hard-code this; figure out some way it can be passed in (though ideally, not the whole shebang).
-    include_directories("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\Llvm\\lib\\clang\\10.0.0\\include")
+elseif (MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
@@ -212,23 +209,6 @@ set(EXE_SUFFIX "")
 if (MSVC)
     # MS Visual Studio environment
     message("Exporting MS Visual Studio projects...")
-    if (CLANG_UNDER_VS)
-        #see https://clang.llvm.org/docs/UsersManual.html#clang-cl
-        #note .GX is how you say -fexceptions
-        add_definitions(/D_UWIN)
-        set(CMAKE_C_FLAGS_RELEASE "/O2 /GX")
-        set(CMAKE_C_FLAGS_DEBUG   "/D_UWIN /GX")
-    else()
-        add_definitions(/MP) # enable multi-processor compilation
-    endif()
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_definitions(/Ot /Oi)
-        if (VCC)
-            add_definitions(/O2)
-        elseif (ICC)
-            add_definitions(/O3)
-        endif()
-    endif()
 endif()
 
 # enable link time optimization
@@ -382,7 +362,7 @@ endif(Backtrace_FOUND)
 
 # link special lib for WIN32
 if (WIN32)
-    set(PLATFORM_LIB "ws2_32")
+    #set(PLATFORM_LIB "ws2_32")
 else()
     set(PLATFORM_LIB "m")
 endif()

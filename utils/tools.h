@@ -42,14 +42,13 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
-using namespace std;
 
 // redefine assertion
 inline void _my_assert(const char* expression, const char *func, const char* file, int line)
 {
     char *sfile = (char*)strrchr(file, '/');
     if (!sfile) sfile = (char*)file; else sfile++;
-    cerr << sfile << ":" << line << ": " << func << ": Assertion `" << expression << "' failed." << endl;
+    std::cerr << sfile << ":" << line << ": " << func << ": Assertion `" << expression << "' failed." << std::endl;
     abort();
 }
  
@@ -116,8 +115,6 @@ inline void _my_assert(const char* expression, const char *func, const char* fil
 	#include <set>
 #endif
 
-using namespace std;
-
 
 #if	defined(USE_HASH_MAP) && GCC_VERSION < 40300 && !defined(_MSC_VER) && !defined(__clang__)
 /*
@@ -141,7 +138,7 @@ namespace __gnu_cxx {
 #endif // USE_HASH_MAP
 
 struct Distribution {
-  string random_numbers_str;
+  std::string random_numbers_str;
   int pool_size;
 } ;
 
@@ -163,34 +160,34 @@ typedef double RealNumType;
 /**
     vector of real number number
  */
-typedef vector<RealNumType> RealNumberVector;
+typedef std::vector<RealNumType> RealNumberVector;
 
 /**
     vector of int
  */
-typedef vector<int> IntList;
+typedef std::vector<int> IntList;
 
 
 /**
     vector of int
  */
-typedef vector<int> IntVector;
+typedef std::vector<int> IntVector;
 
 /**
     vector of bool
  */
-typedef vector<bool> BoolVector;
+typedef std::vector<bool> BoolVector;
 
 
 /**
     vector of char
  */
-typedef vector<char> CharVector;
+typedef std::vector<char> CharVector;
 
 /**
     vector of string
  */
-typedef vector<string> StrVector;
+typedef std::vector<std::string> StrVector;
 
 /**
     Unsigned integers
@@ -290,7 +287,7 @@ public:
     /**
         Name of the substitution model (e.g., HKY, GTR, TN+I+G, JC+G, etc.)
      */
-    string model_name;
+    std::string model_name;
     
     /**
         TRUE to redo the inference and overwrite output files
@@ -439,7 +436,7 @@ void outError(const char *error, bool quit = true);
 /**
     Print error message then exit program
  */
-void outError(string error, bool quit = true);
+void outError(std::string error, bool quit = true);
 
 
 /*--------------------------------------------------------------*/
@@ -453,14 +450,14 @@ void outError(const char *error, const char *msg, bool quit = true);
 /**
     Print error messages then exit program
  */
-void outError(const char *error, string msg, bool quit = true);
+void outError(const char *error, std::string msg, bool quit = true);
 
 /**
     Output a warning message to screen
     @param error warning message
  */
 void outWarning(const char *warn);
-void outWarning(string warn);
+void outWarning(std::string warn);
 
 
 /** safe version of std::getline to deal with files from different platforms */ 
@@ -482,17 +479,17 @@ const char ERR_NO_MEMORY[] = "Not enough memory!";
  * @param int
  * @return string
  */
-string convertPosTypeToString(PositionType number);
-string convertIntToString(int number);
-string convertInt64ToString(int64_t number);
+std::string convertPosTypeToString(PositionType number);
+std::string convertIntToString(int number);
+std::string convertInt64ToString(int64_t number);
 
-string convertDoubleToString(RealNumType number);
+std::string convertDoubleToString(RealNumType number);
 
 /**
  Case-insensitive comparison between two strings
  @return true if two strings are equal.
  */
-bool iEquals(const string a, const string b);
+bool iEquals(const std::string a, const std::string b);
     
 /**
  *
@@ -507,7 +504,7 @@ bool copyFile(const char SRC[], const char DEST[]);
  * @param strFilename
  * @return
  */
-bool fileExists(string strFilename);
+bool fileExists(std::string strFilename);
 
 /**
     Check that path is a directory
@@ -577,7 +574,7 @@ RealNumType convert_real_number(const char *str, int &end_pos);
     Parse an array of real numbers from a tring
     @param input_str: a string of  real_numbers; arr: the output array of real_numbers
  */
-void convert_real_numbers(RealNumType* &arr, string input_str);
+void convert_real_numbers(RealNumType* &arr, std::string input_str);
 
 /**
     Convert string to real number, or generate it from a distribution
@@ -611,7 +608,7 @@ void convert_real_number_vec_with_distributions(const char *str, RealNumberVecto
     @param num_items the number of items in the array
     @param separator char separating elements
  */
-void convert_real_number_array_with_distributions(string tmp_str, RealNumType* array, int num_items, char separator);
+void convert_real_number_array_with_distributions(std::string tmp_str, RealNumType* array, int num_items, char separator);
 
 /**
     Normalize state frequencies so that sum of them is equal to 1
@@ -634,7 +631,7 @@ void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entrie
  * @param sec
  * @return string represent hour, minute, second
  */
-string convert_time(const RealNumType sec);
+std::string convert_time(const RealNumType sec);
 
 
 /**
@@ -680,7 +677,7 @@ PositionType convert_positiontype(const char *str);
     Check whether a string is a number
     @param s storing a string
  */
-bool is_number(const string& s);
+bool is_number(const std::string& s);
 
 
 /**
@@ -715,7 +712,7 @@ bool overwriteFile(char *filename);
     Remove white space at the beginning and end of the string
     @param str (IN/OUT) string to be trimmed
 */
-void trimString(string &str);
+void trimString(std::string &str);
 
 /**
     Sort an array by quicksort

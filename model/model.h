@@ -2,8 +2,6 @@
 #include "utils/tools.h"
 #include "alignment/alignment.h"
 
-using namespace std;
-
 #ifndef MODEL_H
 #define MODEL_H
 
@@ -12,7 +10,7 @@ class Model
 {
 public:
     /** Name of the model */
-    string model_name;
+    std::string model_name;
     
     /** State frequencies*/
     RealNumType *root_freqs;
@@ -47,13 +45,13 @@ public:
     /**
         Extract reference-related info (freqs, log_freqs)
      */
-    void extractRefInfo(vector<StateType> ref_seq, StateType num_states);
+    void extractRefInfo(std::vector<StateType> ref_seq, StateType num_states);
     
     /**
         Init the mutation rate matrix from a model
         @param n_model_name: name of the model; num_states: the number of states
      */
-    void initMutationMat(string n_model_name, StateType num_states);
+    void initMutationMat(std::string n_model_name, StateType num_states);
     
     /**
         Update the mutation rate matrix regarding the pseu_mutation_count
@@ -64,12 +62,12 @@ public:
     /**
         Compute cumulative rate of the ref genome
      */
-    void computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln);
+    void computeCumulativeRate(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, Alignment* aln);
     
     /**
         Update the mutation matrix periodically from the empirical count of mutations
      */
-    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln);
+    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, Alignment* aln);
     
     /**
         Update pseudocounts from new sample to improve the estimate of the substitution rates
