@@ -188,13 +188,13 @@ bool fileExists(string strFilename) {
     return (blnReturn);
 }
 
-int isDirectory(const char *path) {
+/*int isDirectory(const char *path) {
   return std::filesystem::is_directory(path);
 }
 
 int isFile(const char *path) {
   return std::filesystem::is_regular_file(path);
-}
+}*/
 
 int convert_int(const char *str, int &end_pos) {
 	char *endptr;
