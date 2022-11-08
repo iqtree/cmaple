@@ -91,229 +91,22 @@ if (APPLE)
 	endif()
 endif()
 
-##################################################################
-# Detect target platforms
-##################################################################
-if (WIN32)
-    message("Target OS     : Windows")
-    # build as static binary to run on most machines
-    if (CMAPLE_FLAGS MATCHES "static")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-    endif()
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-elseif (APPLE)
-    message("Target OS     : Mac OS X")
-	if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
-		add_definitions("--target=arm64-apple-macos10.5")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --target=arm64-apple-macos12.0.1")
-	else()
-		# to be compatible back to Mac OS X 10.7
-    	if (CMAPLE_FLAGS MATCHES "oldmac")
-        	add_definitions("-mmacosx-version-min=10.5")
-        	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mmacosx-version-min=10.5")
-    	else()
-        	add_definitions("--target=x86_64-apple-macos10.7")
-        	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --target=x86_64-apple-macos10.7")
-    	endif()
-	endif()
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-elseif (UNIX)
-    message("Target OS     : Unix")
-    # build as static binary to run on most machines
-    if (NOT CMAPLE_FLAGS MATCHES "static")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
-    else()
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-    endif()
-else()
-    # Note that CMAPLE has NOT been tested on other platforms
-    message("Target OS     : Unknown and untested yet")
-endif()
 
 ##################################################################
 # Setup compiler, currently supported GCC, CLANG, MSVC, and ICC
 ##################################################################
 
-set(GCC "FALSE")   #  GNU compiler
-set(CLANG "FALSE") # Clang compiler
-set(ICC "FALSE")   # Intel compiler
-set(VCC "FALSE")   # MS Visual C Compiler, note that it is different from MSVC variable
-set(CLANG_UNDER_VS "FALSE") #Clang compiler, used from inside Visual Studio
-# using C++17 standard
-# disable AVX for NEON
-if (__ARM_NEON)
-    set(IQTREE_FLAGS "${IQTREE_FLAGS} novx")
-elseif (CMAKE_CXX_COMPILER MATCHES "VISUAL STUDIO")
-    set(CLANG_UNDER_VS "TRUE")
-    #it won't recognize the -std=c++17 parameter.
-    #Todo: don't hard-code this; figure out some way it can be passed in (though ideally, not the whole shebang).
-    include_directories("C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\Llvm\\lib\\clang\\10.0.0\\include")
+if (MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 endif()
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-    message("Compiler      : GNU Compiler (gcc)")
-    set(GCC "TRUE")
-#    set(COMBINED_FLAGS "-Wall -Wno-unused-function -Wno-sign-compare -pedantic -D_GNU_SOURCE -fms-extensions -Wno-deprecated")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -g -ffunction-sections -fdata-sections -Wall -pedantic")
-    set(CMAKE_C_FLAGS_RELEASE "-O2 -g -ffunction-sections -fdata-sections -Wall -pedantic")
-    if (APPLE)
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,-dead_strip")
-    else()
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,--gc-sections")
-    endif()
-    # require at least gcc ${GCC_MIN_VERSION}
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_MIN_VERSION)
-        message(FATAL_ERROR "GCC version must be at least ${GCC_MIN_VERSION}!")
-    endif()
-    if (WIN32)
-        # disable AVX on Windows due to memory alignment
-        set(CMAPLE_FLAGS "${CMAPLE_FLAGS} novx")
-        message("WARNING: AVX is disabled on Windows as GCC does not properly suport memory alignment")
-    endif()
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    message("Compiler      : Clang")
-    set(CLANG "TRUE")
-#    set(COMBINED_FLAGS "-Wall -Wno-unused-function -Wno-sign-compare -pedantic -D_GNU_SOURCE -Wno-nested-anon-types")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffunction-sections -fdata-sections -Wall -pedantic")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 -ffunction-sections -fdata-sections -Wall -pedantic")
-    if (APPLE)
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,-dead_strip")
-    else()
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,--gc-sections")
-    endif()
 
-    # use libc++ per default in MacOS
-    if (APPLE)
-        SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-    endif()
-
-    #remove -rdynamic for Clang under Linux
-    if (UNIX AND CMAPLE_FLAGS MATCHES "static")
-        SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
-    endif()
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(VCC "TRUE")
-    message("Compiler      : MS Visual C++ Compiler")
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-    message("Compiler      : Intel C++ Compiler (icc)")
-    set(ICC "TRUE")
-    #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Qstd=c99")
-else()
-    message("Compiler      : Unknown and untested yet")
-endif()
-message("Compiler version: ${CMAKE_CXX_COMPILER_VERSION}")
-
-set(EXE_SUFFIX "")
-
-if (MSVC)
-    # MS Visual Studio environment
-    message("Exporting MS Visual Studio projects...")
-    if (CLANG_UNDER_VS)
-        #see https://clang.llvm.org/docs/UsersManual.html#clang-cl
-        #note .GX is how you say -fexceptions
-        add_definitions(/D_UWIN)
-        set(CMAKE_C_FLAGS_RELEASE "/O2 /GX")
-        set(CMAKE_C_FLAGS_DEBUG   "/D_UWIN /GX")
-    else()
-        add_definitions(/MP) # enable multi-processor compilation
-    endif()
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_definitions(/Ot /Oi)
-        if (VCC)
-            add_definitions(/O2)
-        elseif (ICC)
-            add_definitions(/O3)
-        endif()
-    endif()
-endif()
-
-# enable link time optimization
-if (CMAPLE_FLAGS MATCHES "lto")
-    #if (CLANG)
-    #    set(COMBINED_FLAGS "${COMBINED_FLAGS} -flto=thin")
-    #else()
-        set(COMBINED_FLAGS "${COMBINED_FLAGS} -flto")
-    #endif()
-endif()
-
-##################################################################
-# detect 32 or 64 bit binary
-##################################################################
-set (BINARY32 "FALSE")
-if(CMAKE_SIZEOF_VOID_P EQUAL 4 OR CMAPLE_FLAGS MATCHES "m32")
-    set(BINARY32 "TRUE")
-    message("Target binary : 32-bit")
-    if (CMAKE_GENERATOR MATCHES "Win64")
-        error("Both 32-bit and 64-bit mode cannot be specified")
-    endif()
-    if (GCC OR CLANG)
-        set(COMBINED_FLAGS "${COMBINED_FLAGS} -m32")
-    endif()
-    add_definitions(-DBINARY32)
-    if (WIN32)
-        add_definitions(-DWIN32)
-    endif()
-else()
-    message("Target binary : 64-bit")
-    if (CLANG_UNDER_VS)
-        set(COMBINED_FLAGS "${COMBINED_FLAGS} -m64")
-    endif()
-    if (WIN32)
-        add_definitions(-DWIN64)
-    endif()
-endif()
 
 ##################################################################
 # Setup compiler flags
 ##################################################################
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMBINED_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMBINED_FLAGS}")
-set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS} -fno-inline-functions -fno-inline-functions-called-once -fno-optimize-sibling-calls -fno-default-inline -fno-inline -O2 -fno-omit-frame-pointer -g")
-set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS} -fno-inline-functions -fno-inline-functions-called-once -fno-optimize-sibling-calls -O2 -fno-omit-frame-pointer -g")
-
-if(CLANG AND CMAPLE_FLAGS MATCHES "static")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -Wl,--allow-multiple-definition")
-endif()
-
-if (CMAPLE_FLAGS MATCHES "libcxx")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-endif()
-
-
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    message("C flags       : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
-    message("CXX flags     : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message("C flags       : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
-    message("CXX flags     : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Profile")
-    message("C flags       : ${CMAKE_C_FLAGS_PROFILE} ")
-    message("CXX flags     : ${CMAKE_CXX_FLAGS_PROFILE} ")
-endif()
-
-message("LINKER flags  : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
-
-
-if (GCC)
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -fno-inline-functions -fno-inline-functions-called-once -fno-default-inline -fno-inline")
-    set(CMAKE_C_FLAGS_DEBUG "-O0 -g -fno-inline-functions -fno-inline-functions-called-once -fno-default-inline -fno-inline")
-    set(CMAKE_CXX_FLAGS_MEM "-g -O1")
-    set(CMAKE_C_FLAGS_MEM "-g -O1")
-elseif (CLANG AND NOT CLANG_UNDER_VS)
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -fno-inline-functions -fno-inline")
-    set(CMAKE_C_FLAGS_DEBUG "-O0 -g -fno-inline-functions -fno-inline")
-    set(CMAKE_CXX_FLAGS_MEM "-g -O1")
-    set(CMAKE_C_FLAGS_MEM "-g -O1")
-endif()
 
 ##################################################################
 # check existence of a few basic functions
@@ -380,50 +173,10 @@ endif(Backtrace_FOUND)
 # setup linking flags
 ##################################################################
 
-# link special lib for WIN32
-if (WIN32)
-    set(PLATFORM_LIB "ws2_32")
-else()
-    set(PLATFORM_LIB "m")
-endif()
-
-if (CMAPLE_FLAGS MATCHES "libcxx")
-    set(STD_LIB "c++abi")
-endif()
 
 # basic linking librararies
-target_link_libraries(cmaple utils model alignment tree main ${PLATFORM_LIB} ${STD_LIB})
+target_link_libraries(cmaple utils model alignment tree main)
 
-# setup the executable name
-##################################################################
-set_target_properties(cmaple PROPERTIES OUTPUT_NAME "cmaple${EXE_SUFFIX}")
-
-# strip the release build
-if (NOT CMAPLE_FLAGS MATCHES "nostrip" AND CMAKE_BUILD_TYPE STREQUAL "Release" AND (GCC OR CLANG) AND NOT APPLE) # strip is not necessary for MSVC
-    if (WIN32)
-        ADD_CUSTOM_COMMAND(TARGET cmaple POST_BUILD COMMAND strip $<TARGET_FILE:cmaple>)
-    elseif (NOT APPLE)
-        ADD_CUSTOM_COMMAND(TARGET cmaple POST_BUILD COMMAND strip $<TARGET_FILE:cmaple>)
-    endif()
-endif()
-
-if (MSVC)
-    set (BINARY_DIR "${PROJECT_BINARY_DIR}/Release")
-else()
-    set (BINARY_DIR "${PROJECT_BINARY_DIR}")
-endif()
-
-if (WIN32)
-    if (MSVC)
-        if (CLANG_UNDER_VS)
-            ADD_CUSTOM_COMMAND(TARGET cmaple POST_BUILD COMMAND copy "cmaple${EXE_SUFFIX}.exe" "cmaple${EXE_SUFFIX}-click.exe")
-        else()
-            ADD_CUSTOM_COMMAND(TARGET cmaple POST_BUILD COMMAND copy "Release\\cmaple${EXE_SUFFIX}.exe" "Release\\cmaple${EXE_SUFFIX}-click.exe")
-        endif()
-    else()
-        ADD_CUSTOM_COMMAND(TARGET cmaple POST_BUILD COMMAND copy "cmaple${EXE_SUFFIX}.exe" "cmaple${EXE_SUFFIX}-click.exe")
-    endif()
-endif()
 
 ##############################################################
 # add the install targets
@@ -459,22 +212,6 @@ endif()
 set(CPACK_SOURCE_IGNORE_FILES
   "/build.*/;/debug.*/;/examples/;/test_scripts/;/manual/;/.bzr/;~$;/\\\\.svn/;/\\\\.git/;/pllrepo/;${CPACK_SOURCE_IGNORE_FILES}")
 
-set (SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    if (CMAPLE_FLAGS MATCHES "oldmac")
-        set (SYSTEM_NAME "MacOS10.5")
-    else()
-        set (SYSTEM_NAME "MacOSX")
-    endif()
-endif()
-
-if (BINARY32)
-    set (SYSTEM_NAME "${SYSTEM_NAME}32")
-endif()
-
-if (CMAPLE_FLAGS MATCHES "KNL")
-    set (SYSTEM_NAME "${SYSTEM_NAME}KNL")
-endif()
 
 set(CPACK_PACKAGE_FILE_NAME
     "${CMAKE_PROJECT_NAME}${EXE_SUFFIX}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}${CPACK_PACKAGE_VERSION_PATCH}-${SYSTEM_NAME}")
