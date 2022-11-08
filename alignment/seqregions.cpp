@@ -79,7 +79,7 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
                  i -= i - start_R_index - 1;
                  
                  // reset start_R_index
-                 start_R_index = -1;
+                 start_R_index = current_region->type == TYPE_R ? i : -1;
              }
         }
     }
@@ -90,9 +90,9 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
         PositionType num_regions = size();
         
         // remove identical R regions
-        for (PositionType j = 0; j < num_regions - 2 - start_R_index; ++j)
+        for (PositionType j = 0; j < num_regions - 1 - start_R_index; ++j)
             delete at(start_R_index + j);
-        erase(begin() + start_R_index, end() - 1);
+        erase(begin() + start_R_index, begin() + num_regions - 1);
     }
 }
 
