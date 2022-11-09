@@ -1549,10 +1549,10 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
             SeqRegions* lower_regions = best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             RealNumType new_split = best_split * 0.5;
             RealNumType new_branch_length_split = new_split * best_child->length;
+            SeqRegions* new_parent_regions = NULL;
             
             while (new_branch_length_split > min_blength)
             {
-                SeqRegions* new_parent_regions = NULL;
                 upper_left_right_regions->mergeUpperLower(new_parent_regions, new_branch_length_split, lower_regions, best_child->length - new_branch_length_split, aln, model, threshold_prob);
                 
                 RealNumType placement_cost = calculateSubTreePlacementCost(aln, model, cumulative_rate, new_parent_regions, subtree_regions, new_branch_length);
@@ -1571,10 +1571,10 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 
                 new_split = best_split * 0.5;
                 new_branch_length_split = new_split * best_child->length;
-                
-                // delete new_parent_regions
-                if (new_parent_regions) delete new_parent_regions;
             }
+            
+            // delete new_parent_regions
+            if (new_parent_regions) delete new_parent_regions;
             
             best_child_lh = best_split_lh;
             best_child_split = best_split;
