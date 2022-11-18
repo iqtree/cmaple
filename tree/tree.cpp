@@ -1288,10 +1288,10 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
     RealNumType threshold_prob = params->threshold_prob;
     
     // in case of a polytomy, reach first the top of the polytomy, which is the only node at which appending is allowed.
-    if (selected_node)
+    // NHANLT: this block seems to be unnecessary: (1) it doesn't affect the result in my tests with up to 10K sequences; (2) it is removed from new versions of MAPLE;
+    /*if (selected_node)
         while (selected_node->length <= 0 && selected_node != root)
-            selected_node = selected_node->neighbor->getTopNode();
-    
+            selected_node = selected_node->neighbor->getTopNode();*/
     ASSERT(selected_node);
     
     // try to place the new sample as a descendant of a mid-branch point
