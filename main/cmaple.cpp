@@ -286,7 +286,7 @@ void CMaple::postInference()
     exportOutput(output_file);
 }
 
-void CMaple::exportOutput(string filename)
+void CMaple::exportOutput(const string &filename)
 {
     // open the tree file
     ofstream out = ofstream(filename);

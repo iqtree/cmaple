@@ -436,7 +436,7 @@ void outError(const char *error, bool quit = true);
 /**
     Print error message then exit program
  */
-void outError(std::string error, bool quit = true);
+void outError(const std::string &error, bool quit = true);
 
 
 /*--------------------------------------------------------------*/
@@ -450,14 +450,14 @@ void outError(const char *error, const char *msg, bool quit = true);
 /**
     Print error messages then exit program
  */
-void outError(const char *error, std::string msg, bool quit = true);
+void outError(const char *error, const std::string &msg, bool quit = true);
 
 /**
     Output a warning message to screen
     @param error warning message
  */
 void outWarning(const char *warn);
-void outWarning(std::string warn);
+void outWarning(const std::string &warn);
 
 
 /** safe version of std::getline to deal with files from different platforms */ 
@@ -489,7 +489,7 @@ std::string convertDoubleToString(RealNumType number);
  Case-insensitive comparison between two strings
  @return true if two strings are equal.
  */
-bool iEquals(const std::string a, const std::string b);
+bool iEquals(const std::string &a, const std::string &b);
     
 /**
  *
@@ -504,7 +504,7 @@ bool copyFile(const char SRC[], const char DEST[]);
  * @param strFilename
  * @return
  */
-bool fileExists(std::string strFilename);
+bool fileExists(const std::string &strFilename);
 
 /**
     Check that path is a directory

@@ -9,13 +9,13 @@
 using namespace std;
 Sequence::Sequence(string n_seq_name)
 {
-    seq_name = n_seq_name;
+    seq_name = std::move(n_seq_name);
     resize(0);
 }
 
-Sequence::Sequence(string n_seq_name, vector<Mutation*> n_mutations):vector<Mutation*>(n_mutations)
+Sequence::Sequence(string n_seq_name, vector<Mutation*> n_mutations):vector<Mutation*>(std::move(n_mutations))
 {
-    seq_name = n_seq_name;
+    seq_name = std::move(n_seq_name);
 }
 
 Sequence::~Sequence()

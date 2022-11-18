@@ -203,7 +203,7 @@ void Model::updateMutationMat(StateType num_states)
 
 void Model::initMutationMat(string n_model_name, StateType num_states)
 {
-    model_name = n_model_name;
+    model_name = std::move(n_model_name);
     
     // init row_index
     row_index = new StateType[num_states + 1];

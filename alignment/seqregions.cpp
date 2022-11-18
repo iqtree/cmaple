@@ -1005,12 +1005,12 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                             return MIN_NEGATIVE;
                         }
                         
-                        delete[] new_lh;
-                        
                         merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
                     
                         if (return_log_lh)
                             log_lh += log(new_lh[seq2_state]);
+                        
+                        delete[] new_lh;
                     }
                 }
             }
@@ -1130,12 +1130,12 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     }
                     else
                     {
-                        delete[] new_lh;
-                        
                         merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
                     
                         if (return_log_lh)
                             log_lh += log(new_lh[seq2_state]);
+                        
+                        delete[] new_lh;
                     }
                 }
             }
