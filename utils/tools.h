@@ -145,7 +145,7 @@ struct Distribution {
 /**
     Type of site states
  */
-typedef uint16_t StateType;
+typedef uint8_t StateType;
 
 /**
     Type of site positions
@@ -198,11 +198,11 @@ typedef unsigned int UINT;
  *  Types of sequence regions
  */
 enum RegionType : StateType {
-    TYPE_R = 1000,
-    TYPE_O = 1001,
-    TYPE_N = 1002,
-    TYPE_DEL = 1003,
-    TYPE_INVALID = 9999
+    TYPE_R = 250,
+    TYPE_O,
+    TYPE_N,
+    TYPE_DEL,
+    TYPE_INVALID
 };
 
 /**
