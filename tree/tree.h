@@ -126,7 +126,7 @@ public:
     /**
         Seek a position for a sample placement starting at the start_node
      */
-    void seekSamplePlacement(Node* start_node, std::string seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
+    void seekSamplePlacement(Node* start_node, const std::string &seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid);
     
     /**
         Seek a position for placing a subtree/sample starting at the start_node
@@ -136,7 +136,7 @@ public:
     /**
         Place a new sample on the tree
      */
-    void placeNewSample(Node* selected_node, SeqRegions* sample, std::string seq_name, RealNumType best_lh_diff, bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
+    void placeNewSample(Node* selected_node, SeqRegions* sample, const std::string &seq_name, RealNumType best_lh_diff, bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength);
     
     /**
         Place a subtree

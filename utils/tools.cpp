@@ -50,7 +50,7 @@ void outError(const char *error, bool quit) {
         Output an error to screen, then exit program
         @param error error message
  */
-void outError(string error, bool quit) {
+void outError(const string &error, bool quit) {
     outError(error.c_str(), quit);
 }
 
@@ -60,7 +60,7 @@ void outError(const char *error, const char *msg, bool quit) {
     outError(str, quit);
 }
 
-void outError(const char *error, string msg, bool quit) {
+void outError(const char *error, const string &msg, bool quit) {
     string str = error;
     str += msg;
     outError(str, quit);
@@ -74,7 +74,7 @@ void outWarning(const char *warn) {
     cout << "WARNING: " << warn << endl;
 }
 
-void outWarning(string warn) {
+void outWarning(const string &warn) {
     outWarning(warn.c_str());
 }
 
@@ -136,7 +136,7 @@ string convertDoubleToString(RealNumType number) {
     return ss.str(); //return a string with the contents of the stream
 }
 
-bool iEquals(const string a, const string b)
+bool iEquals(const string &a, const string &b)
 {
     unsigned int sz = a.size();
     if (b.size() != sz)
@@ -165,7 +165,7 @@ bool copyFile(const char SRC[], const char DEST[]) {
     return true; // file copied successfully
 }
 
-bool fileExists(string strFilename) {
+bool fileExists(const string &strFilename) {
     struct stat stFileInfo;
     bool blnReturn;
     int intStat;
@@ -756,7 +756,8 @@ InputType detectInputFile(const char *input_file) {
         in.exceptions(ios::failbit | ios::badbit);
         in.open(input_file);
 
-        unsigned char ch, ch2;
+        unsigned char ch = ' ';
+        unsigned char ch2 = ' ';
         int count = 0;
         do {
             in >> ch;

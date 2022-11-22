@@ -39,7 +39,7 @@ private:
     /**
         export output files
      */
-    void exportOutput(std::string filename);
+    void exportOutput(const std::string &filename);
     
 public:
     /** Model-related parameters */

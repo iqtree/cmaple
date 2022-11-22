@@ -48,6 +48,13 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 set(GCC_MIN_VERSION "5")
 
+
+##############################################################
+# Clang-tidy
+##############################################################
+message("Setup clang-tidy")
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-header-filter=.;-checks=performance-*")
+
 project(cmaple)
 add_definitions(-DCMAPLE)
 

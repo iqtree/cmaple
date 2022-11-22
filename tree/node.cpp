@@ -17,7 +17,7 @@ Node::Node(bool is_top_node)
 Node::Node(int n_id, string n_seq_name)
 {
     id = n_id;
-    seq_name = n_seq_name;
+    seq_name = std::move(n_seq_name);
     length = 0;
     is_top = false;
     next = NULL;
@@ -31,7 +31,7 @@ Node::Node(int n_id, string n_seq_name)
 Node::Node(string n_seq_name)
 {
     id = -1;
-    seq_name = n_seq_name;
+    seq_name = std::move(n_seq_name);
     length = 0;
     is_top = true;
     next = NULL;
@@ -113,7 +113,7 @@ string Node::exportString(bool binary)
             else
             {
                 for (string minor_seq_name : less_info_seqs)
-                    output += "," + minor_seq_name + ":0";
+                    output += "," + std::move(minor_seq_name) + ":0";
             }
             output += "):" + length_str;
             return output;
