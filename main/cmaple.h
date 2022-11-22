@@ -43,11 +43,11 @@ private:
     
 public:
     /** Model-related parameters */
-    RealNumType *cumulative_rate;
+    RealNumType *cumulative_rate = nullptr;
     std::vector< std::vector<PositionType> > cumulative_base;
     
     /** The phylogenetic tree */
-    Tree* tree;
+    Tree tree;
     
     /** tree-related params */
     RealNumType default_blength;
@@ -62,10 +62,10 @@ public:
     *  CMaple constructor
      @param params user-specified parameters
     */
-    CMaple(Params *params);
+    CMaple(Params params);
     
     /**
-    *  CMaple deconstructor
+    *  CMaple destructor
     */
     ~CMaple();
     

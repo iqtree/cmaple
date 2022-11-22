@@ -1,6 +1,7 @@
 #include "node.h"
 #include "alignment/alignment.h"
 #include "model/model.h"
+#include <optional>
 
 #ifndef TREE_H
 #define TREE_H
@@ -23,14 +24,14 @@ private:
     /**
         Pointer  to updatePartialLh method
      */
-    typedef RealNumType (Tree::*CalculatePlacementCostType)(Alignment*, Model*, RealNumType*, SeqRegions*, SeqRegions*, RealNumType);
+    typedef RealNumType (Tree::*CalculatePlacementCostType)(RealNumType*, SeqRegions*, SeqRegions*, RealNumType);
     CalculatePlacementCostType calculateSamplePlacementCostPointer;
     
     /**
         Template of calculateSamplePlacementCost
      */
     template <const StateType num_states>
-    RealNumType calculateSamplePlacementCostTemplate(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSamplePlacementCostTemplate(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
     
     /**
         Pointer  to updatePartialLh method
@@ -41,7 +42,7 @@ private:
         Template of calculateSubTreePlacementCost
      */
     template <const StateType num_states>
-    RealNumType calculateSubTreePlacementCostTemplate(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSubTreePlacementCostTemplate(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
     
     /**
         Traverse the intial tree from root to re-calculate all lower likelihoods regarding the latest/final estimated model parameters
@@ -70,35 +71,35 @@ public:
     /**
         Program parameters
      */
-    Params *params;
+    std::optional<Params> params;
     
     /**
         Alignment
      */
-    Alignment *aln;
+    Alignment aln;
     
     /**
         Evolutionary model
      */
-    Model* model;
+    Model model;
     
     /**
         Root node of the tree
      */
-    Node* root;
+    Node* root = nullptr;
     
     /**
         Constructor
      */
-    Tree();
+    Tree() = default;
     
     /**
         Constructor
     */
-    Tree(Params *params, Node* n_root = NULL);
+    Tree(Params&& params, Node* n_root = nullptr);
     
     /**
-        Deconstructor
+        Destructor
      */
     ~Tree();
     
@@ -115,7 +116,7 @@ public:
     /**
         Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
      */
-    void updateZeroBlength(Node* node, std::stack<Node*> &node_stack, Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
+    void updateZeroBlength(Node* node, std::stack<Node*> &node_stack, RealNumType threshold_prob, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength);
     
     /**
         Iteratively update partial_lh starting from the nodes in node_stack
@@ -174,19 +175,19 @@ public:
     /**
         Estimate the length of a branch using the derivative of the likelihood cost function wrt the branch length
      */
-    RealNumType estimateBranchLength(SeqRegions* parent_regions, SeqRegions* child_regions, Alignment* aln, Model* model, RealNumType* cumulative_rate, RealNumType min_blength_sensitivity);
+    RealNumType estimateBranchLength(SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType* cumulative_rate, RealNumType min_blength_sensitivity);
     
     /**
         Calculate the placement cost of a sample
         @param child_regions: vector of regions of the new sample
      */
-    RealNumType calculateSamplePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSamplePlacementCost(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
     
     /**
         Calculate the placement cost of a subtree
         @param child_regions: vector of regions of the new sample
      */
-    RealNumType calculateSubTreePlacementCost(Alignment* aln, Model* model, RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSubTreePlacementCost(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
 
 };
 

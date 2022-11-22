@@ -95,7 +95,8 @@ public:
         @param model the model of evolution
         @param threshold the threshold for approximation
      */
-    void mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, SeqRegions* lower_regions, RealNumType lower_plength, Alignment* aln, Model* model, RealNumType threshold);
+    void mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, SeqRegions* lower_regions, RealNumType lower_plength, const
+                         Alignment& aln, const Model& model, RealNumType threshold);
     
     /**
         Merge two lower likelihood vectors
@@ -109,18 +110,19 @@ public:
         @param cumulative_rate the cumulative rates of the reference sequence
         @param return_log_lh TRUE to return the log likelihood
      */
-    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, SeqRegions* regions2, RealNumType plength2, Alignment* aln, Model* model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
+    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, SeqRegions* regions2, RealNumType plength2, const Alignment& aln, const
+                               Model& model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
     
     /**
         Compute total lh/upper left_right for root node
         @param blength the branch length; (-1 by default).
      */
-    SeqRegions* computeTotalLhAtRoot(StateType num_states, Model* model, RealNumType blength = -1);
+    SeqRegions* computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength = -1);
     
     /**
         Compute the likelihood by merging the lower lh with root frequencies
      */
-    RealNumType computeAbsoluteLhAtRoot(Alignment* aln, Model* model, std::vector< std::vector<PositionType> > &cumulative_base);
+    RealNumType computeAbsoluteLhAtRoot(const Alignment& aln, const Model& model, std::vector< std::vector<PositionType> > &cumulative_base);
     
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others

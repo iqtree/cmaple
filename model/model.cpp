@@ -275,9 +275,9 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     }
 }
 
-void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln)
+void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, const Alignment& aln)
 {
-    PositionType sequence_length = aln->ref_seq.size();
+    PositionType sequence_length = aln.ref_seq.size();
     ASSERT(sequence_length > 0);
     
     // init cumulative_rate
@@ -287,12 +287,12 @@ void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<
     // init cumulative_base and cumulative_rate
     cumulative_base.resize(sequence_length + 1);
     cumulative_rate[0] = 0;
-    cumulative_base[0].resize(aln->num_states, 0);
+    cumulative_base[0].resize(aln.num_states, 0);
     
     // compute cumulative_base and cumulative_rate
     for (PositionType i = 0; i < sequence_length; ++i)
     {
-        StateType state = aln->ref_seq[i];
+        StateType state = aln.ref_seq[i];
         cumulative_rate[i + 1] = cumulative_rate[i] + diagonal_mut_mat[state];
         
         cumulative_base[i + 1] =  cumulative_base[i];
@@ -301,12 +301,12 @@ void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<
         
 }
 
-void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, Alignment* aln)
+void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, const Alignment& aln)
 {
     // don't update JC model parameters
     if (model_name == "JC" || model_name == "jc") return;
     
-    StateType num_states = aln->num_states;
+    StateType num_states = aln.num_states;
     
     // clone the current mutation matrix
     RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states];
@@ -335,19 +335,19 @@ void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< ve
     delete[] tmp_diagonal_mut_mat;
 }
 
-void Model::updatePesudoCount(Alignment* aln, SeqRegions* regions1, SeqRegions* regions2)
+void Model::updatePesudoCount(const Alignment& aln, SeqRegions* regions1, SeqRegions* regions2)
 {
     if (model_name != "JC" && model_name != "jc")
     {
         // init variables
         PositionType pos = 0;
-        StateType num_states = aln->num_states;
+        StateType num_states = aln.num_states;
         SeqRegion **seq1_region_pointer = &regions1->front();
         SeqRegion **seq2_region_pointer = &regions2->front();
         SeqRegion *seq1_region = (*seq1_region_pointer);
         SeqRegion *seq2_region = (*seq2_region_pointer);
         PositionType end_pos;
-        PositionType seq_length = aln->ref_seq.size();
+        PositionType seq_length = aln.ref_seq.size();
                     
         while (pos < seq_length)
         {
@@ -357,9 +357,9 @@ void Model::updatePesudoCount(Alignment* aln, SeqRegions* regions1, SeqRegions* 
             if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R) && (seq2_region->type < num_states || seq2_region->type == TYPE_R))
             {
                 if (seq1_region->type == TYPE_R)
-                    pseu_mutation_count[row_index[aln->ref_seq[end_pos]] + seq2_region->type] += 1;
+                    pseu_mutation_count[row_index[aln.ref_seq[end_pos]] + seq2_region->type] += 1;
                 else if (seq2_region->type == TYPE_R)
-                    pseu_mutation_count[row_index[seq1_region->type] + aln->ref_seq[end_pos]] += 1;
+                    pseu_mutation_count[row_index[seq1_region->type] + aln.ref_seq[end_pos]] += 1;
                 else
                     pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
             }
