@@ -16,31 +16,38 @@ public:
     /**
         Alternative allele, for DNA, it is A, C, G, T, N, O, -
      */
-    StateType type;
+    StateType type = TYPE_N;
     
     /**
         (starting) position
      */
-    PositionType position;
+    PositionType position = 0;
+
+    PositionType length = 1;
+
+    /**
+    *  Mutation constructor
+    */
+    Mutation() = default;
     
     /**
     *  Mutation constructor
     */
-    Mutation();
-    
-    /**
-    *  Mutation constructor
-    */
-    Mutation(StateType n_type, PositionType n_position);
-    
-    /**
-    *  Mutation deconstructor
-    */
-    virtual ~Mutation();
-    
-    /**
-        Return length of the current mutation, default: 1
-    */
-    virtual PositionType getLength() { return 1;};
+    Mutation(StateType n_type, PositionType n_position)
+      : type(n_type),
+      position(n_position)
+    {}
+
+    Mutation(StateType n_type, PositionType n_position, PositionType n_length)
+     : type(n_type),
+       position(n_position),
+       length (n_length)
+    {
+      // validate the data
+      if (type != TYPE_N && type != TYPE_DEL && type != TYPE_R)
+        outError("Invalid mutation. Only mutation type N, -, or R can have length greater than 1.");
+    }
+
+    PositionType getLength() const { return length;}
 };
 #endif

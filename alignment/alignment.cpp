@@ -315,7 +315,7 @@ void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_cha
         if (length == -1)
             sequence->push_back(new Mutation(convertChar2State(state_char), pos));
         else
-            sequence->push_back(new MutationIndel(convertChar2State(state_char), pos, length));
+            sequence->push_back(new Mutation(convertChar2State(state_char), pos, length));
     }
 }
 
@@ -581,7 +581,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             
             // add a new mutation into mutations
             if (state == TYPE_N || state == TYPE_DEL)
-                mutations.push_back(new MutationIndel(state, pos - 1, length));
+                mutations.push_back(new Mutation(state, pos - 1, length));
             else
                 mutations.push_back(new Mutation(state, pos - 1));
         }
