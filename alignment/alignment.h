@@ -13,9 +13,8 @@
 #define ALIGNMENT_H
 
 /** Class presents the input alignment */
-class Alignment:public std::vector<Sequence*> {
+class Alignment {
 private:
-    
     /**
         Read sequence from a string line
      */
@@ -27,6 +26,9 @@ private:
     void outputMutation(std::ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length = -1);
     
 public:
+
+    std::vector<Sequence*> data; // note: this is inefficient, but only used briefly
+
     /**
         reference sequence
      */
@@ -35,12 +37,12 @@ public:
     /**
         Type of sequences
      */
-    SeqType seq_type;
+    SeqType seq_type = SEQ_DNA;
     
     /**
         The number of states
      */
-    StateType num_states;
+    StateType num_states = 4;
     
     /**
     *  Alignment constructor
@@ -117,14 +119,14 @@ public:
     void parseRefSeq(std::string ref_sequence);
     
     /**
-        Convert a state ID, indexed from 0, to a raw characer
+        Convert a state ID, indexed from 0, to a raw character
         @param state ID input a state ID
         @return a raw state
     */
     char convertState2Char(StateType state);
     
     /**
-        Convert a raw characer state into ID, indexed from 0
+        Convert a raw character state into ID, indexed from 0
         @param state input raw state
         @return state ID
     */
