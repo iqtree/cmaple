@@ -622,10 +622,34 @@ void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int st
     Normalize entries so that sum of them is equal to 1
     @param entries original entries
     @param num_entries the number of entries
-    @param sum_entries sum of all original state frequencies
+    @param sum_entries Precomputed sum of all original state frequencies
  */
-void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entries = -1);
+inline void normalize_arr(RealNumType* const entries, const int num_entries, RealNumType sum_entries)
+{
+  ASSERT(num_entries > 0);
 
+#ifndef NDEBUG
+  //if (fabs(sum_entries) < 1e-5)
+  //  outError("Sum of entries must be greater than zero!");
+#endif
+
+  sum_entries = 1.0 / sum_entries;
+  for (int i = 0; i < num_entries; ++i)
+    entries[i] *= sum_entries;
+}
+
+/**
+    Normalize entries so that sum of them is equal to 1
+    @param entries original entries
+    @param num_entries the number of entries
+ */
+inline void normalize_arr(RealNumType* const entries, const int num_entries)
+{
+  RealNumType sum_entries = 0;
+  for (int i = 0; i < num_entries; ++i)
+    sum_entries += entries[i];
+  normalize_arr(entries, num_entries, sum_entries);
+}
 /**
  * Convert seconds to hour, minute, second
  * @param sec

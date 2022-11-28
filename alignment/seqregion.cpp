@@ -7,25 +7,27 @@
 
 #include "seqregion.h"
 
-SeqRegion::SeqRegion():Mutation()
-{
-    plength_observation2node = -1;
-    plength_observation2root = -1;
-    likelihood = NULL;
-}
 
-SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, RealNumType* n_likelihood):Mutation(n_type, n_position)
+SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHPtrType n_likelihood)
+  : Mutation(n_type, n_position)
 {
     plength_observation2node = n_plength_observation;
     plength_observation2root = n_plength_from_root;
-    likelihood = n_likelihood;
+    likelihood = std::move(n_likelihood);
 }
 
-SeqRegion::SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states):Mutation(n_type, n_position)
+SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHType n_likelihood)
+: Mutation(n_type, n_position)
 {
-    plength_observation2node = -1;
-    plength_observation2root = -1;
-    likelihood = NULL;
+  plength_observation2node = n_plength_observation;
+  plength_observation2root = n_plength_from_root;
+  likelihood = std::make_unique<LHType>(n_likelihood);
+}
+
+
+SeqRegion::SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states)
+  : Mutation(n_type, n_position)
+{
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
@@ -33,34 +35,9 @@ SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states)
 {
     type = n_mutation->type;
     position = n_mutation->position + n_mutation->getLength() - 1;
-    plength_observation2node = -1;
-    plength_observation2root = -1;
-    likelihood = NULL;
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
-SeqRegion::SeqRegion(SeqRegion* region, StateType num_states, bool copy_likelihood)
-{
-    type = region->type;
-    position = region->position;
-    plength_observation2node = region->plength_observation2node;
-    plength_observation2root = region->plength_observation2root;
-    likelihood = NULL;
-    if (region->likelihood && copy_likelihood)
-    {
-        likelihood = new RealNumType[num_states];
-        memcpy(likelihood, region->likelihood, sizeof(RealNumType) * num_states);
-    }
-}
-
-SeqRegion::~SeqRegion()
-{
-    if (likelihood)
-    {
-        delete[] likelihood;
-        likelihood = NULL;
-    }
-}
 
 void SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
 {
@@ -155,15 +132,11 @@ void SeqRegion::computeLhAmbiguity(IntVector &entries)
 {
     // change type to 'O'
     type = TYPE_O;
-    
-    // init likelihood
-    if (likelihood)
-        delete[] likelihood;
-    likelihood = new RealNumType[entries.size()];
-    
+
+    if (!likelihood) likelihood = std::make_unique<LHType>();
     for (StateType i = 0; i < (StateType) entries.size(); ++i)
-        likelihood[i] = entries[i];
+        (*likelihood)[i] = entries[i];
     
     // normalize likelihood
-    normalize_arr(likelihood, entries.size());
+    normalize_arr(likelihood->data(), entries.size());
 }

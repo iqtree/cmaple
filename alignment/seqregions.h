@@ -34,17 +34,12 @@ public:
     /**
     *  Regions constructor
     */
-    SeqRegions(SeqRegions* n_regions, StateType num_states);
+    SeqRegions(SeqRegions* n_regions);
     
     /**
-    *  Regions deconstructor
+    *  Regions destructor
     */
     ~SeqRegions();
-    
-    /**
-    *  Copy regions
-    */
-    void copyRegions(SeqRegions* n_regions, StateType num_states);
     
     /**
     *  Delete all region items one by one
@@ -58,11 +53,11 @@ public:
     
     /**
         Get the shared segment between the next regions of two sequences
-        @param current_pos: current site posisition; 
+        @param current_pos: current site position; 
         @return seq1_region, seq2_region: the regions contains the shared segment; end_pos: ending position of the shared segment
      */
     inline static void getNextSharedSegment(PositionType current_pos, SeqRegion* &seq1_region, SeqRegion* &seq2_region, SeqRegion** &seq1_region_pointer, SeqRegion** &seq2_region_pointer, PositionType &end_pos)
-    {
+    {  // 14% of runtime, invoked from Tree::calculateSubTreePlacementCostTemplate
         (current_pos > seq1_region->position) ? seq1_region = (*(++seq1_region_pointer)) : 0;
         (current_pos > seq2_region->position) ? seq2_region = (*(++seq2_region_pointer)) : 0;
         
@@ -127,6 +122,6 @@ public:
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others
      */
-    StateType simplifyO(RealNumType* &partial_lh, StateType ref_state, StateType num_states, RealNumType threshold);
+    StateType simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold);
 };
 #endif

@@ -7,19 +7,104 @@
 
 #include "seqregions.h"
 
+
+RealNumType updateLHwithModel(int num_states, const Model& model,
+  const SeqRegion::LHType& prior,
+  SeqRegion::LHType& posterior, const RealNumType total_blength)
+{
+  /*if (total_blength < 0) // sometimes total_blength == -1;
+  {
+    outError("what?");
+  }*/
+
+  RealNumType sum_lh = 0;
+  RealNumType* mutation_mat_row = model.mutation_mat;
+  for (int i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+  {
+    RealNumType tot = 0;
+    if (total_blength > 0) // TODO: avoid
+    {
+      for (StateType j = 0; j < num_states; ++j)
+        tot += mutation_mat_row[j] * prior[j];
+
+      tot *= total_blength;
+    }
+
+    tot += prior[i];
+    posterior[i] = tot * model.root_freqs[i];
+    sum_lh += posterior[i];
+  }
+  return sum_lh;
+}
+
+
+RealNumType updateLHwithMat(int num_states, const RealNumType* mat_row,
+  const SeqRegion::LHType& prior,
+  SeqRegion::LHType& posterior, const RealNumType total_blength)
+{
+  /*if (total_blength < 0) // sometimes total_blength == -1;
+  {
+    outError("what?");
+  }*/
+
+  RealNumType sum_lh = 0;
+  for (int i = 0; i < num_states; ++i, mat_row += num_states)
+  {
+    RealNumType tot = 0;
+    if (total_blength > 0) // TODO: avoid
+    {
+      for (int j = 0; j < num_states; ++j)
+        tot += mat_row[j] * prior[j];
+
+      tot *= total_blength;
+    }
+    tot += prior[i];
+    posterior[i] = tot;
+    sum_lh += tot;
+  }
+  return sum_lh;
+}
+
+
+RealNumType updateMultLHwithMat(int num_states, const RealNumType* mat_row,
+  const SeqRegion::LHType& prior,
+  SeqRegion::LHType& posterior, const RealNumType total_blength)
+{
+  /*if (total_blength < 0) // sometimes total_blength == -1;
+  {
+    outError("what?");
+  }*/
+  RealNumType sum_lh = 0;
+  for (int i = 0; i < num_states; ++i, mat_row += num_states)
+  {
+    RealNumType tot = 0;
+    if (total_blength > 0) // TODO: avoid
+    {
+      for (int j = 0; j < num_states; ++j)
+        tot += mat_row[j] * prior[j];
+
+      tot *= total_blength;
+    }
+    tot += prior[i];
+    posterior[i] *= tot;
+    sum_lh += posterior[i];
+  }
+  return sum_lh;
+}
+
 SeqRegions::SeqRegions()
 {
     // do nothing
 }
 
-SeqRegions::SeqRegions(SeqRegions* n_regions, StateType num_states)
+SeqRegions::SeqRegions(SeqRegions* n_regions)
 {
     // clone regions one by one
     resize(n_regions->size());
     SeqRegion** region = &n_regions->front();
     for (PositionType i = 0; i < (PositionType) n_regions->size(); ++i, ++region)
-        at(i) = new SeqRegion(*region, num_states, true);
-}
+        this->operator[](i) = new SeqRegion(SeqRegion::clone(**region));
+} 
 
 SeqRegions::~SeqRegions()
 {
@@ -31,18 +116,6 @@ void SeqRegions::deleteRegions()
     for (iterator it = begin(); it != end(); ++it)
         delete (*it);
     clear();
-}
-
-void SeqRegions::copyRegions(SeqRegions* n_regions, StateType num_states)
-{
-    // delete the current regions
-    deleteRegions();
-    
-    // clone regions one by one
-    resize(n_regions->size());
-    SeqRegion** region = &n_regions->front();
-    for (PositionType i = 0; i < (PositionType) n_regions->size(); ++i, ++region)
-        at(i) = new SeqRegion(*region, num_states, true);
 }
 
 void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
@@ -139,9 +212,9 @@ int SeqRegions::compareWithSample(SeqRegions* sequence2, PositionType seq_length
         {
             for (StateType i = 0; i < num_states; ++i)
             {
-                if (seq2_region->likelihood[i] > 0.1 && seq1_region->likelihood[i] < 0.1)
+                if (seq2_region->getLH(i) > 0.1 && seq1_region->getLH(i) < 0.1)
                     seq1_more_info = true;
-                else if (seq1_region->likelihood[i] > 0.1 && seq2_region->likelihood[i] < 0.1)
+                else if (seq1_region->getLH(i) > 0.1 && seq2_region->getLH(i) < 0.1)
                     seq2_more_info = true;
             }
         }
@@ -207,17 +280,17 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
             // compare likelihood of each state
             for (StateType i = 0; i < num_states; ++i)
             {
-                RealNumType diff = fabs(seq1_region->likelihood[i] - seq2_region->likelihood[i]);
+                RealNumType diff = fabs(seq1_region->getLH(i) - seq2_region->getLH(i));
                 
                 if (diff > 0)
                 {
-                    if ((seq1_region->likelihood[i] == 0) || (seq2_region->likelihood[i] == 0))
+                    if ((seq1_region->getLH(i) == 0) || (seq2_region->getLH(i) == 0))
                         return true;
                     
                     if (diff > params->thresh_diff_update
                         || (diff > params->threshold_prob
-                            && ((diff > params->thresh_diff_fold_update * seq1_region->likelihood[i])
-                                || (diff > params->thresh_diff_fold_update * seq2_region->likelihood[i]))))
+                            && ((diff > params->thresh_diff_fold_update * seq1_region->getLH(i))
+                                || (diff > params->thresh_diff_fold_update * seq2_region->getLH(i)))))
                         return true;
                 }
             }
@@ -230,8 +303,13 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
     return false;
 }
 
-void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, SeqRegions* lower_regions, RealNumType lower_plength, const
-                                 Alignment& aln, const Model& model, RealNumType threshold_prob)
+void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
+                                 RealNumType upper_plength, 
+                                 SeqRegions* lower_regions, 
+                                 RealNumType lower_plength, const
+                                 Alignment& aln, 
+                                 const Model& model,
+                                 RealNumType threshold_prob)
 {
     // init variables
     PositionType pos = 0;
@@ -270,34 +348,13 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     if (seq2_region->plength_observation2node >= 0)
                         total_blength = seq2_region->plength_observation2node + (lower_plength > 0 ? lower_plength: 0);
                         
-                    RealNumType* new_lh = new RealNumType[num_states];
-                    RealNumType sum_lh = 0;
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                    
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        if (total_blength > 0)
-                        {
-                            for (StateType j = 0; j < num_states; ++j)
-                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
-                            
-                            tot *= total_blength;
-                        }
-                        
-                        tot += seq2_region->likelihood[i];
-                        new_lh[i] = tot * model.root_freqs[i];
-                        sum_lh += new_lh[i];
-                    }
-
+                    auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+                    RealNumType sum_lh = updateLHwithModel(num_states, model, *seq2_region->likelihood, (*new_lh), total_blength);
                     // normalize the new partial likelihood
-                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
-                    for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] *= inverse_sum_lh;
-                    
+                    normalize_arr(new_lh->data(), 4, sum_lh);
+
                     // add merged region into merged_regions
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, new_lh));
+                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
                 }
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
@@ -339,37 +396,19 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 
                 if (total_blength > 0)
                 {
-                    RealNumType* new_lh = new RealNumType[num_states];
-                    RealNumType sum_lh = 0;
-                    RealNumType* transposed_mut_mat_row = model.transposed_mut_mat;
-                    
-                    for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot += transposed_mut_mat_row[j] * seq1_region->likelihood[j];
-                        
-                        tot *= total_blength;
-                        tot += seq1_region->likelihood[i];
-                        new_lh[i] = tot;
-                        sum_lh += new_lh[i];
-                    }
+                    auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+                    RealNumType sum_lh = updateLHwithMat(num_states, model.transposed_mut_mat, *(seq1_region->likelihood), *new_lh, total_blength);
 
                     // normalize the new partial likelihood
-                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
-                    for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] *= inverse_sum_lh;
+                    normalize_arr(new_lh->data(), 4, sum_lh);
                     
                     // add merged region into merged_regions
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, new_lh));
+                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
                 }
                 else
                 {
-                    RealNumType* new_lh = new RealNumType[num_states];
-                    memcpy(new_lh, seq1_region->likelihood, sizeof(RealNumType) * num_states);
                     // add merged region into merged_regions
-                    merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, 0, 0, new_lh));
+                    merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, 0, 0, *(seq1_region->likelihood)));
                 }
             }
             // seq2_entry = 'N' and seq1_entry = R/ACGT
@@ -444,28 +483,17 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
             {
-                RealNumType* new_lh = new RealNumType[num_states];
-                
+                auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+                auto& new_lh_value = *new_lh;
+
                 // if total_blength_1 > 0 => compute new partial likelihood
                 if (total_blength_1 > 0)
                 {
-                    RealNumType* transposed_mut_mat_row = model.transposed_mut_mat;
-                    
-                    for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot += transposed_mut_mat_row[j] * seq1_region->likelihood[j];
-                        
-                        tot *= total_blength_1;
-                        tot += seq1_region->likelihood[i];
-                        new_lh[i] = tot;
-                    }
+                  updateLHwithMat(num_states, model.transposed_mut_mat, *(seq1_region->likelihood), *new_lh, total_blength_1);
                 }
                 // otherwise, clone the partial likelihood from seq1
                 else
-                    memcpy(new_lh, seq1_region->likelihood, sizeof(RealNumType) * num_states);
+                  *new_lh = *seq1_region->likelihood;
                 
                 RealNumType sum_new_lh = 0;
 
@@ -473,22 +501,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 if (seq2_region->type == TYPE_O)
                 {
                     RealNumType* mutation_mat_row = model.mutation_mat;
-                    
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        if (total_blength_2 > 0)
-                        {
-                            for (StateType j = 0; j < num_states; ++j)
-                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
-        
-                            tot *= total_blength_2;
-                        }
-                        tot += seq2_region->likelihood[i];
-                        new_lh[i] *= tot;
-                        sum_new_lh += new_lh[i];
-                    }
+                    sum_new_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region->likelihood), *new_lh, total_blength_2);
                 }
                 // seq1 = "O" and seq2 = ACGT
                 else
@@ -497,17 +510,18 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     if (seq2_state == TYPE_R)
                         seq2_state = aln.ref_seq[end_pos];
                     
+
                     if (total_blength_2 > 0)
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq2_state)
-                                new_lh[i] *= (1.0 + transposed_mut_mat_row[i] * total_blength_2);
+                              new_lh_value[i] *= (1.0 + transposed_mut_mat_row[i] * total_blength_2);
                             else
-                                new_lh[i] *= (transposed_mut_mat_row[i] * total_blength_2);
+                              new_lh_value[i] *= (transposed_mut_mat_row[i] * total_blength_2);
                                 
-                            sum_new_lh += new_lh[i];
+                            sum_new_lh += new_lh_value[i];
                         }
                     }
                     else
@@ -515,9 +529,9 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i != seq2_state)
-                                new_lh[i] = 0;
+                              new_lh_value[i] = 0;
                             
-                            sum_new_lh += new_lh[i];
+                            sum_new_lh += new_lh_value[i];
                         }
                     }
                 }
@@ -526,17 +540,15 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 if (sum_new_lh == 0)
                     outError("Sum of new partital lh is zero.");
                 
-                RealNumType inverse_sum_lh = 1.0 / sum_new_lh;
-                for (StateType i = 0; i < num_states; ++i)
-                    new_lh[i] *= inverse_sum_lh;
-                
-                StateType new_state = simplifyO(new_lh, aln.ref_seq[end_pos], num_states, threshold_prob);
+                // normalize the new partial likelihood
+                normalize_arr(new_lh->data(), 4, sum_new_lh);
+
+                StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                 if (new_state == TYPE_O)
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, new_lh));
+                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
                 else
                 {
-                    delete[] new_lh;
                     merged_regions->push_back(new SeqRegion(new_state, end_pos));
                 }
             }
@@ -547,7 +559,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                 if (seq1_state == TYPE_R)
                     seq1_state = aln.ref_seq[end_pos];
                 
-                RealNumType* new_lh = new RealNumType[num_states];
+                auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+                auto& new_lh_value = *new_lh;
                 RealNumType sum_new_lh = 0;
                 
                 if (seq1_region->plength_observation2root >= 0)
@@ -555,8 +568,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                     RealNumType length_to_root = seq1_region->plength_observation2root;
                     if (upper_plength > 0)
                         length_to_root += upper_plength;
-                    RealNumType* root_vec = new RealNumType[num_states];
-                    memcpy(root_vec, model.root_freqs, sizeof(RealNumType) * num_states);
+                    SeqRegion::LHType root_vec;
+                    memcpy(root_vec.data(), model.root_freqs, sizeof(RealNumType)* num_states);
                     
                     RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
                     for (StateType i = 0; i < num_states; ++i)
@@ -567,21 +580,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                             root_vec[i] *= transposed_mut_mat_row[i] * seq1_region->plength_observation2node;
                     }
                     
-                    transposed_mut_mat_row = model.transposed_mut_mat;
-                    for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot += transposed_mut_mat_row[j] * root_vec[j];
-                        
-                        tot *= length_to_root;
-                        tot += root_vec[i];
-                        new_lh[i] = tot;
-                    }
-                    
-                    // delete root_vec
-                    delete[] root_vec;
+                    updateLHwithMat(num_states, model.transposed_mut_mat, root_vec, *new_lh, length_to_root);
                 }
                 else
                 {
@@ -591,55 +590,30 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq1_state)
-                                new_lh[i] = 1.0 + mutation_mat_row[i] * total_blength_1;
+                              new_lh_value[i] = 1.0 + mutation_mat_row[i] * total_blength_1;
                             else
-                                new_lh[i] = mutation_mat_row[i] * total_blength_1;
+                              new_lh_value[i] = mutation_mat_row[i] * total_blength_1;
                         }
                     }
                     else
                     {
-                        for (StateType i = 0; i < num_states; ++i)
-                            new_lh[i] = 0;
-                        new_lh[seq1_state] = 1;
+                      for (auto& v : new_lh_value) v = 0;
+                      new_lh_value[seq1_state] = 1;
                     }
                 }
                   
                 // seq2 = "O" and seq1 = ACGT
                 if (seq2_region->type == TYPE_O)
                 {
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                                        
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        if (total_blength_2 > 0)
-                        {
-                            for (StateType j = 0; j < num_states; ++j)
-                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
-                            
-                            tot *= total_blength_2;
-                        }
-                        
-                        tot += seq2_region->likelihood[i];
-                        new_lh[i] *= tot;
-                        sum_new_lh += new_lh[i];
-                    }
+                  sum_new_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region->likelihood), *new_lh, total_blength_2);
+                  // normalize the new partial likelihood
+                  normalize_arr(new_lh->data(), 4, sum_new_lh);
+                  StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
                     
-                    // normalize the new partial lh
-                    RealNumType inverse_sum_lh = 1.0 / sum_new_lh;
-                    for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] *= inverse_sum_lh;
-                    
-                    StateType new_state = simplifyO(new_lh, aln.ref_seq[end_pos], num_states, threshold_prob);
-                    
-                    if (new_state == TYPE_O)
-                        merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, new_lh));
-                    else
-                    {
-                        delete[] new_lh;
-                        merged_regions->push_back(new SeqRegion(new_state, end_pos));
-                    }
+                  if (new_state == TYPE_O)
+                      merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
+                  else
+                      merged_regions->push_back(new SeqRegion(new_state, end_pos));
                 }
                 // seq1 = ACGT and different from seq2 = R/ACGT
                 else
@@ -655,11 +629,11 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i == seq2_state)
-                                new_lh[i] *= 1.0 + transposed_mut_mat_row[i] * total_blength_2;
+                                new_lh_value[i] *= 1.0 + transposed_mut_mat_row[i] * total_blength_2;
                             else
-                                new_lh[i] *= transposed_mut_mat_row[i] * total_blength_2;
+                              new_lh_value[i] *= transposed_mut_mat_row[i] * total_blength_2;
                             
-                            sum_new_lh += new_lh[i];
+                            sum_new_lh += new_lh_value[i];
                         }
                     }
                     else
@@ -667,19 +641,16 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (i != seq2_state)
-                                new_lh[i] = 0;
-                                
-                            sum_new_lh += new_lh[i];
+                              new_lh_value[i] = 0;
                         }
+                        sum_new_lh = new_lh_value[seq2_state];
                     }
                     
-                    // normalize the new partial lh
-                    RealNumType inverse_sum_lh = 1.0 / sum_new_lh;
-                    for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] *= inverse_sum_lh;
+                    // normalize the new partial likelihood
+                    normalize_arr(new_lh->data(), 4, sum_new_lh);
 
                     // add new region into the merged regions
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, new_lh));
+                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
                 }
             }
         }
@@ -692,7 +663,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_
     merged_regions->mergeRegionR(num_states, threshold_prob);
 }
 
-StateType SeqRegions::simplifyO(RealNumType* &partial_lh, StateType ref_state, StateType num_states, RealNumType threshold_prob)
+StateType SeqRegions::simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold_prob)
 {
     // dummy variables
     ASSERT(partial_lh);
@@ -768,19 +739,19 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 if (seq2_region->type == TYPE_O)
                 {
                     // add merged region into merged_regions
-                    SeqRegion* new_region = new SeqRegion(seq2_region, num_states);
-                    new_region->position = end_pos;
+                    SeqRegion new_region = SeqRegion::clone(*seq2_region);
+                    new_region.position = end_pos;
                     if (seq2_region->plength_observation2node >= 0)
                     {
                         if (plength2 > 0)
-                            new_region->plength_observation2node += plength2;
+                            new_region.plength_observation2node += plength2;
                     }
                     else
                     {
                         if (plength2 > 0)
-                            new_region->plength_observation2node = plength2;
+                            new_region.plength_observation2node = plength2;
                     }
-                    merged_regions->push_back(new_region);
+                    merged_regions->push_back(new SeqRegion(std::move(new_region)));
                 }
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
@@ -809,19 +780,19 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
             if (seq1_region->type == TYPE_O)
             {
                 // add merged region into merged_regions
-                SeqRegion* new_region = new SeqRegion(seq1_region, num_states);
-                new_region->position = end_pos;
+                auto new_region = SeqRegion::clone(*seq1_region);
+                new_region.position = end_pos;
                 if (seq1_region->plength_observation2node >= 0)
                 {
                     if (plength1 > 0)
-                        new_region->plength_observation2node += plength1;
+                        new_region.plength_observation2node += plength1;
                 }
                 else
                 {
                     if (plength1 > 0)
-                        new_region->plength_observation2node = plength1;
+                        new_region.plength_observation2node = plength1;
                 }
-                merged_regions->push_back(new_region);
+                merged_regions->push_back(new SeqRegion(std::move(new_region)));
             }
             // seq1_entry = 'N' and seq2_entry = R/ACGT
             else
@@ -889,70 +860,38 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
             {
-                RealNumType* new_lh = new RealNumType[num_states];
+              auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+              auto& new_lh_value = *new_lh;
                 RealNumType sum_lh = 0;
-                
                 if (total_blength_1 > 0)
                 {
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                                        
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot += mutation_mat_row[j] * seq1_region->likelihood[j];
-                        
-                        tot *= total_blength_1;
-                        tot += seq1_region->likelihood[i];
-                        new_lh[i] = tot;
-                    }
+                  sum_lh = updateLHwithMat(num_states, model.mutation_mat, *(seq1_region->likelihood), *new_lh, total_blength_1);
                 }
                 // otherwise, clone the partial likelihood from seq1
                 else
-                    memcpy(new_lh, seq1_region->likelihood, sizeof(RealNumType) * num_states);
+                    *new_lh = *seq1_region->likelihood;
 
                 // seq1_entry = O and seq2_entry = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                                        
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        if (total_blength_2 > 0)
-                        {
-                            for (StateType j = 0; j < num_states; ++j)
-                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
-                            
-                            tot *= total_blength_2;
-                        }
-                        tot += seq2_region->likelihood[i];
-                        new_lh[i] *= tot;
-                        sum_lh += new_lh[i];
-                    }
+                    sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region->likelihood), *new_lh, total_blength_2);
                     
                     if (sum_lh == 0)
                     {
-                        delete[] new_lh;
                         delete merged_regions;
                         merged_regions = NULL;
                         return MIN_NEGATIVE;
                     }
                         
-                    // normalize new partial lh
-                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
-                    for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] *= inverse_sum_lh;
-                    
-                    StateType new_state = simplifyO(new_lh, aln.ref_seq[end_pos], num_states, threshold_prob);
+                    // normalize the new partial likelihood
+                    normalize_arr(new_lh->data(), 4, sum_lh);
+
+                    StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                     if (new_state == TYPE_O)
-                        merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
+                        merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
                     else
                     {
-                        delete[] new_lh;
                         merged_regions->push_back(new SeqRegion(new_state, end_pos));
                     }
                     
@@ -972,25 +911,23 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (seq2_state == i)
-                                new_lh[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
+                                new_lh_value[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
                             else
-                                new_lh[i] *= (transposed_mut_mat_row[i] * total_blength_2);
+                              new_lh_value[i] *= (transposed_mut_mat_row[i] * total_blength_2);
                             
-                            sum_lh += new_lh[i];
+                            sum_lh += new_lh_value[i];
                         }
                         
                         // normalize new partial lh
-                        RealNumType inverse_sum_lh = 1.0 / sum_lh;
-                        for (StateType i = 0; i < num_states; ++i)
-                            new_lh[i] *= inverse_sum_lh;
-                        
-                        StateType new_state = simplifyO(new_lh, aln.ref_seq[end_pos],  num_states, threshold_prob);
+                        // normalize the new partial likelihood
+                        normalize_arr(new_lh->data(), 4, sum_lh);
+
+                        StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos],  num_states, threshold_prob);
 
                         if (new_state == TYPE_O)
-                            merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
+                            merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
                         else
                         {
-                            delete[] new_lh;
                             merged_regions->push_back(new SeqRegion(new_state, end_pos));
                         }
                         
@@ -999,9 +936,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     }
                     else
                     {
-                        if (new_lh[seq2_state] == 0)
+                        if (new_lh_value[seq2_state] == 0)
                         {
-                            delete[] new_lh;
                             delete merged_regions;
                             merged_regions = NULL;
                             return MIN_NEGATIVE;
@@ -1010,9 +946,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
                     
                         if (return_log_lh)
-                            log_lh += log(new_lh[seq2_state]);
-                        
-                        delete[] new_lh;
+                            log_lh += log(new_lh_value[seq2_state]);
                     }
                 }
             }
@@ -1023,7 +957,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 if (seq1_state == TYPE_R)
                     seq1_state = aln.ref_seq[end_pos];
                 
-                RealNumType* new_lh = new RealNumType[num_states];
+                auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+                auto& new_lh_value = *new_lh;
                 RealNumType sum_lh = 0;
                 
                 if (total_blength_1 > 0)
@@ -1033,59 +968,39 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     for (StateType i = 0; i < num_states; ++i)
                     {
                         if (seq1_state == i)
-                            new_lh[i] = 1 + transposed_mut_mat_row[i] * total_blength_1;
+                          new_lh_value[i] = 1 + transposed_mut_mat_row[i] * total_blength_1;
                         else
-                            new_lh[i] = transposed_mut_mat_row[i] * total_blength_1;
+                          new_lh_value[i] = transposed_mut_mat_row[i] * total_blength_1;
                     }
                 }
                 else
                 {
                     for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] = 0;
-                    new_lh[seq1_state] = 1;
+                      new_lh_value[i] = 0;
+                    new_lh_value[seq1_state] = 1;
                 }
 
                 // seq1_entry = ACGT and seq2_entry = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    RealNumType* mutation_mat_row = model.mutation_mat;
+                    sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region->likelihood), *new_lh, total_blength_2);
                                         
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot = 0;
-                        
-                        if (total_blength_2 > 0)
-                        {
-                            for (StateType j = 0; j < num_states; ++j)
-                                tot += mutation_mat_row[j] * seq2_region->likelihood[j];
-                            
-                            tot *= total_blength_2;
-                        }
-                        tot += seq2_region->likelihood[i];
-                        new_lh[i] *= tot;
-                        sum_lh += new_lh[i];
-                    }
-                    
                     if (sum_lh == 0)
                     {
-                        delete[] new_lh;
                         delete merged_regions;
                         merged_regions = NULL;
                         return MIN_NEGATIVE;
                     }
                         
-                    // normalize new partial lh
-                    RealNumType inverse_sum_lh = 1.0 / sum_lh;
-                    for (StateType i = 0; i < num_states; ++i)
-                        new_lh[i] *= inverse_sum_lh;
+                    // normalize the new partial likelihood
+                    normalize_arr(new_lh->data(), 4, sum_lh);
                     
-                    StateType new_state = simplifyO(new_lh, aln.ref_seq[end_pos], num_states, threshold_prob);
+                    StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                     if (new_state == TYPE_O)
-                        merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
+                        merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
                     else
                     {
-                        delete[] new_lh;
                         merged_regions->push_back(new SeqRegion(new_state, end_pos));
                     }
                     
@@ -1105,25 +1020,21 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         for (StateType i = 0; i < num_states; ++i)
                         {
                             if (seq2_state == i)
-                                new_lh[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
+                              new_lh_value[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
                             else
-                                new_lh[i] *= (transposed_mut_mat_row[i] * total_blength_2);
+                              new_lh_value[i] *= (transposed_mut_mat_row[i] * total_blength_2);
                             
-                            sum_lh += new_lh[i];
+                            sum_lh += new_lh_value[i];
                         }
                         
-                        // normalize new partial lh
-                        RealNumType inverse_sum_lh = 1.0 / sum_lh;
-                        for (StateType i = 0; i < num_states; ++i)
-                            new_lh[i] *= inverse_sum_lh;
-                        
-                        StateType new_state = simplifyO(new_lh, aln.ref_seq[end_pos], num_states, threshold_prob);
+                        // normalize the new partial likelihood
+                        normalize_arr(new_lh->data(), 4, sum_lh);
+                        StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                         if (new_state == TYPE_O)
-                            merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, new_lh));
+                            merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
                         else
                         {
-                            delete[] new_lh;
                             merged_regions->push_back(new SeqRegion(new_state, end_pos));
                         }
                         
@@ -1135,9 +1046,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
                     
                         if (return_log_lh)
-                            log_lh += log(new_lh[seq2_state]);
-                        
-                        delete[] new_lh;
+                            log_lh += log(new_lh_value[seq2_state]);
                     }
                 }
             }
@@ -1180,7 +1089,7 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const Alignment& aln, const Mode
         {
             RealNumType tot = 0;
             for (StateType i = 0; i < num_states; ++i)
-                tot += model.root_freqs[i] * region->likelihood[i];
+                tot += model.root_freqs[i] * region->getLH(i);
             log_factor *= tot;
         }
         
@@ -1204,7 +1113,7 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
         // type N
         if (region->type == TYPE_N)
         {
-            SeqRegion* new_region = new SeqRegion(region, num_states, false);
+            SeqRegion* new_region = new SeqRegion(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
             total_lh->push_back(new_region);
         }
         else
@@ -1222,42 +1131,21 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
                 }
                 
                 // init new likelihood
-                RealNumType* new_likelihood = new RealNumType[num_states];
-                RealNumType sum_likelihood = 0;
-                
-                RealNumType* mutation_mat_row = model.mutation_mat;
-                                    
-                for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                {
-                    RealNumType tot = 0.0;
-                    
-                    if (total_blength > 0)
-                    {
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot += mutation_mat_row[j] * region->likelihood[j];
-                        tot *= total_blength;
-                    }
-                    
-                    tot += region->likelihood[i];
-                    new_likelihood[i] = tot * model.root_freqs[i];
-                    sum_likelihood += new_likelihood[i];
-                }
-                
-                // normalize likelihood
-                sum_likelihood = 1.0 / sum_likelihood;
-                for (StateType i = 0; i < num_states; ++i)
-                    new_likelihood[i] *= sum_likelihood;
+                auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+                auto& new_lh_value = *new_lh;
+                RealNumType sum_lh = updateLHwithModel(num_states, model, *region->likelihood, (*new_lh), total_blength);
+                // normalize the new partial likelihood
+                normalize_arr(new_lh->data(), 4, sum_lh);
                 
                 // add new region to the total_lh_regions
-                SeqRegion* new_region = new SeqRegion(region, num_states, false);
-                new_region->likelihood = new_likelihood;
+                SeqRegion* new_region = new SeqRegion(region->type, region->position, region->plength_observation2node, region->plength_observation2root, std::move(new_lh));
                 total_lh->push_back(new_region);
             }
             // other types: R or A/C/G/T
             else
             {
                 // add new region to the total_lh_regions
-                SeqRegion* new_region = new SeqRegion(region, num_states, false);
+                SeqRegion* new_region = new SeqRegion(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
                 
                 if (new_region->plength_observation2node >= 0)
                 {
