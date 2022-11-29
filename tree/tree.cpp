@@ -551,6 +551,9 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
                     // get new mid_branch_regions based on the new_blength
                     upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
                 }
+                // delete mid_branch_regions
+                delete mid_branch_regions;
+
                 //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
                 
                 // record new best_down_lh_diff

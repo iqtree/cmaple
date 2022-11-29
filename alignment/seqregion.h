@@ -14,11 +14,14 @@
 
 /** A region in a sequence */
 class SeqRegion: public Mutation {
+public: 
+  using LHType = std::array<RealNumType, 4>;
+  using LHPtrType = std::unique_ptr<LHType>;
 private:
     /**
     *  Compute the relative likelihood for an ambiguous state
     */
-    void computeLhAmbiguity(IntVector &entries);
+    void computeLhAmbiguity(const LHType &entries);
     
     /**
     *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R
@@ -46,10 +49,7 @@ public:
     /**
         The relative partial likelihood
      */
-    using LHType = std::array<RealNumType, 4>;
-    using LHPtrType = std::unique_ptr<LHType>;
     LHPtrType likelihood;
-
     RealNumType getLH(int pos) const
     {
       return (*likelihood)[pos];
@@ -68,7 +68,7 @@ public:
     /**
     *  Region constructor
     */
-    SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHType n_likelihood);
+    SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, const LHType& n_likelihood);
 
     /**
     *  Region constructor
