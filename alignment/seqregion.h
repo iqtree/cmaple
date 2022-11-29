@@ -8,6 +8,7 @@
 #include "mutation.h"
 
 #include <array>
+#include <memory> // for unique_ptr
 
 #ifndef SEQREGION_H
 #define SEQREGION_H
