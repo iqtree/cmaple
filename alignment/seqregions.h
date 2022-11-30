@@ -15,6 +15,11 @@
 
 class Alignment;
 
+inline PositionType minFast(PositionType a, PositionType b)
+{ // some compilers cannot optimize std::min as well as the ternary op
+  return a < b ? a : b;
+}
+
 /** Vector of sequence regions, used to represent/compute partial/total likelihood */
 class SeqRegions: public std::vector<SeqRegion*> {
 private:
@@ -62,7 +67,7 @@ public:
         (current_pos > seq2_region->position) ? seq2_region = (*(++seq2_region_pointer)) : 0;
         
         // compute the end_pos for the shared segment
-        end_pos = (std::min)(seq1_region->position, seq2_region->position);
+        end_pos = minFast(seq1_region->position, seq2_region->position);
     }
     
     /**
