@@ -74,6 +74,6 @@ public:
         @param node_regions the genome list at the node where the appending happens;
         @param sample_regions the genome list for the new sample.
      */
-    void updatePesudoCount(const Alignment& aln, SeqRegions* node_regions, SeqRegions* sample_regions);
+    void updatePesudoCount(const Alignment& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
 };
 #endif

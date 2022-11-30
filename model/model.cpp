@@ -335,25 +335,26 @@ void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< ve
     delete[] tmp_diagonal_mut_mat;
 }
 
-void Model::updatePesudoCount(const Alignment& aln, SeqRegions* regions1, SeqRegions* regions2)
+void Model::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     if (model_name != "JC" && model_name != "jc")
     {
         // init variables
         PositionType pos = 0;
         StateType num_states = aln.num_states;
-        SeqRegion **seq1_region_pointer = &regions1->front();
-        SeqRegion **seq2_region_pointer = &regions2->front();
-        SeqRegion *seq1_region = (*seq1_region_pointer);
-        SeqRegion *seq2_region = (*seq2_region_pointer);
-        PositionType end_pos;
+        const SeqRegions& seq1_regions = regions1;
+        const SeqRegions& seq2_regions = regions2;
+        size_t iseq1 = 0;
+        size_t iseq2 = 0;        PositionType end_pos;
         PositionType seq_length = aln.ref_seq.size();
                     
         while (pos < seq_length)
         {
             // get the next shared segment in the two sequences
-            SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
-        
+            SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
+            const auto* const seq1_region = &seq1_regions[iseq1];
+            const auto* const seq2_region = &seq2_regions[iseq2];
+
             if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R) && (seq2_region->type < num_states || seq2_region->type == TYPE_R))
             {
                 if (seq1_region->type == TYPE_R)

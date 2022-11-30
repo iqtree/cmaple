@@ -169,7 +169,7 @@ SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, R
                 }
                 
                 // compute partial_lh
-                upper_regions->mergeUpperLower(partial_lh, upper_blength, lower_regions, lower_blength, aln, model, threshold_prob);
+                upper_regions->mergeUpperLower(partial_lh, upper_blength, *lower_regions, lower_blength, aln, model, threshold_prob);
             }
         }
         // the phylonode is a tip, partial_lh must be already computed
@@ -192,7 +192,7 @@ SeqRegions* Node::computeTotalLhAtNode(const Alignment& aln, const Model& model,
     else
     {
         SeqRegions* lower_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_regions, length, lower_regions, blength, aln, model, threshold_prob);
+        neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_regions, length, *lower_regions, blength, aln, model, threshold_prob);
     }
     
     // update if necessary
