@@ -3140,7 +3140,7 @@ RealNumType Tree::improveEntireTree(bool short_range_search, RealNumType *cumula
             // Show log every 1000 nodes
             num_nodes += 1;
             if (num_nodes % 1000 == 0)
-                cout << "Processed topology for " + convertIntToString(num_nodes) + " nodes." << endl;
+                cout << "Processed topology for " << convertIntToString(num_nodes) << " nodes." << endl;
         }
     }
     

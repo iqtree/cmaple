@@ -7,19 +7,6 @@
 
 #include "mutation.h"
 
-Mutation::Mutation()
-{
-    type = TYPE_N;
-    position = 0;
-}
 
-Mutation::Mutation(StateType n_type, PositionType n_position)
-{
-    type = n_type;
-    position = n_position;
-}
 
-Mutation::~Mutation()
-{
-    // do nothing
-}
+
