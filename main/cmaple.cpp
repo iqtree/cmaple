@@ -57,7 +57,7 @@ void CMaple::preInference()
 {
     // validate input
     ASSERT(tree.aln.ref_seq.size() > 0 && "Reference sequence is not found!");
-    ASSERT(tree.aln.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
+    ASSERT(tree.aln.data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
     
     // check whether output file is already exists
     string output_file(tree.params->diff_path);
@@ -103,7 +103,7 @@ void CMaple::buildInitialTree()
     PositionType seq_length = aln.ref_seq.size();
     
     // place the root node
-    Sequence** sequence = &tree.aln.front();
+    Sequence** sequence = &tree.aln.data.front();
     Node* root = new Node((*sequence)->seq_name);
     tree.root = root;
     root->partial_lh = (*sequence)->getLowerLhVector(seq_length, num_states, aln.seq_type);
@@ -113,7 +113,7 @@ void CMaple::buildInitialTree()
     ++sequence;
     
     // iteratively place other samples (sequences)
-    for (PositionType i = 1; i < (PositionType) aln.size(); ++i, ++sequence)
+    for (PositionType i = 1; i < (PositionType) aln.data.size(); ++i, ++sequence)
     {
         // get the lower likelihood vector of the current sequence
         SeqRegions* lower_regions = (*sequence)->getLowerLhVector(seq_length, num_states, aln.seq_type);

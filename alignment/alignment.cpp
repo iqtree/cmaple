@@ -14,19 +14,11 @@ char symbols_dna[]     = "ACGT";
 char symbols_rna[]     = "ACGU";
 char symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-Alignment::Alignment()
-{
-    ref_seq.resize(0);
-    resize(0);
-    
-    // init DNA as the default sequence type
-    seq_type = SEQ_DNA;
-    num_states = 4;
-}
+Alignment::Alignment() = default;
 
 Alignment::~Alignment()
 {
-    for (iterator it = begin(); it != end(); ++it)
+    for (auto it = data.begin(); it != data.end(); ++it)
         delete (*it);
 }
 
@@ -322,7 +314,7 @@ void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_cha
 void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_diff)
 {
     ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out);
-    resize(0);
+    data.clear();
     Sequence* sequence = NULL;
     PositionType seq_length = ref_sequence.length();
     
@@ -341,7 +333,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
         if (!only_extract_diff)
         {
             sequence = new Sequence(seq_names[i]);
-            push_back(sequence);
+            data.push_back(sequence);
         }
         
         // init dummy variables
@@ -526,7 +518,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             // record the sequence of the previous taxon
             if (seq_name.length() > 0)
             {
-                push_back(new Sequence(seq_name, mutations));
+                data.push_back(new Sequence(seq_name, mutations));
                 
                 // reset dummy variables
                 seq_name = "";
@@ -589,12 +581,12 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     
     // Record the sequence of  the last taxon
     if (seq_name.length() > 0)
-        push_back(new Sequence(seq_name, mutations));
+        data.push_back(new Sequence(seq_name, mutations));
     
     // validate the input
     if (ref_seq.size() == 0)
         outError("Reference sequence is not found!");
-    if (size() < MIN_NUM_TAXA)
+    if (data.size() < MIN_NUM_TAXA)
         outError("The number of taxa must be at least " + convertIntToString(MIN_NUM_TAXA));
 
     in.clear();
@@ -972,10 +964,10 @@ StateType Alignment::convertChar2State(char state) {
 void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
 {
    // init dummy variables
-    PositionType num_seqs = size();
+    PositionType num_seqs = data.size();
     PositionType *distances = new PositionType[num_seqs];
     PositionType *sequence_indexes = new PositionType[num_seqs];
-    Sequence** sequence = &front();
+    Sequence** sequence = &data.front();
     
     // calculate the distances of each sequence
     for (PositionType i = 0; i < num_seqs; ++i, ++sequence)
@@ -1026,10 +1018,10 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     quicksort(distances, 0, num_seqs - 1, sequence_indexes);
 
     // re-order sequences by distances
-    Sequence** tmp_sequences = new Sequence*[size()];
-    memcpy(tmp_sequences, this->data(), sizeof(Sequence*)*size());
+    Sequence** tmp_sequences = new Sequence*[data.size()];
+    memcpy(tmp_sequences, this->data.data(), sizeof(Sequence*)* data.size());
     for (PositionType i = 0; i < num_seqs; ++i)
-        at(i) = tmp_sequences[sequence_indexes[i]];
+        data[i] = tmp_sequences[sequence_indexes[i]];
     
     // delete distances, sequence_indexes
     delete[] tmp_sequences;
