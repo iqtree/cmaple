@@ -38,7 +38,7 @@ public:
     Model();
     
     /**
-        Deconstructor
+        Destructor
     */
     ~Model();
     
@@ -62,18 +62,18 @@ public:
     /**
         Compute cumulative rate of the ref genome
      */
-    void computeCumulativeRate(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, Alignment* aln);
+    void computeCumulativeRate(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const Alignment& aln);
     
     /**
         Update the mutation matrix periodically from the empirical count of mutations
      */
-    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, Alignment* aln);
+    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const Alignment& aln);
     
     /**
         Update pseudocounts from new sample to improve the estimate of the substitution rates
         @param node_regions the genome list at the node where the appending happens;
         @param sample_regions the genome list for the new sample.
      */
-    void updatePesudoCount(Alignment* aln, SeqRegions* node_regions, SeqRegions* sample_regions);
+    void updatePesudoCount(const Alignment& aln, SeqRegions* node_regions, SeqRegions* sample_regions);
 };
 #endif

@@ -108,7 +108,7 @@ public:
     /**
         Extract Diff file from and alignment file
      */
-    void extractDiffFile(Params* params);
+    void extractDiffFile(Params& params);
     
     /**
         Parse the reference sequence into vector of state

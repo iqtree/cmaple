@@ -123,7 +123,7 @@ string Node::exportString(bool binary)
     return "";
 }
 
-SeqRegions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate)
+SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate)
 {
     // if partial_lh has not yet computed (~NULL) -> compute it from next nodes
     if (!partial_lh)
@@ -181,13 +181,13 @@ SeqRegions* Node::getPartialLhAtNode(Alignment* aln, Model* model, RealNumType t
     return partial_lh;
 }
 
-SeqRegions* Node::computeTotalLhAtNode(Alignment* aln, Model* model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update, RealNumType blength)
+SeqRegions* Node::computeTotalLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update, RealNumType blength)
 {
     SeqRegions* new_regions = NULL;
     
     // if node is root
     if (is_root)
-        new_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln->num_states, model, blength);
+        new_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln.num_states, model, blength);
     // if not is normal nodes
     else
     {
