@@ -207,12 +207,12 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     
     // init row_index
     row_index = new StateType[num_states + 1];
-    StateType start_index = 0;
+    uint16_t start_index = 0;
     for (StateType i = 0; i < num_states + 1; i++, start_index += num_states)
         row_index[i] = start_index;
     
     // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
-    StateType mat_size = row_index[num_states];
+    uint16_t mat_size = row_index[num_states];
     mutation_mat = new RealNumType[mat_size];
     transposed_mut_mat = new RealNumType[mat_size];
     diagonal_mut_mat = new RealNumType[num_states];
