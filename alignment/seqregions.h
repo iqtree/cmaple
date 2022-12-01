@@ -58,8 +58,8 @@ public:
      */
     inline static void getNextSharedSegment(PositionType current_pos, SeqRegion* &seq1_region, SeqRegion* &seq2_region, SeqRegion** &seq1_region_pointer, SeqRegion** &seq2_region_pointer, PositionType &end_pos)
     {  // 14% of runtime, invoked from Tree::calculateSubTreePlacementCostTemplate
-        (current_pos > seq1_region->position) ? seq1_region = (*(++seq1_region_pointer)) : 0;
-        (current_pos > seq2_region->position) ? seq2_region = (*(++seq2_region_pointer)) : 0;
+        if (current_pos > seq1_region->position) seq1_region = (*(++seq1_region_pointer));
+        if (current_pos > seq2_region->position) seq2_region = (*(++seq2_region_pointer));
         
         // compute the end_pos for the shared segment
         end_pos = minFast(seq1_region->position, seq2_region->position);
