@@ -9,19 +9,19 @@
 
 
 SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHPtrType n_likelihood)
-  : Mutation(n_type, n_position)
+  : Mutation(n_type, n_position),
+    plength_observation2node(n_plength_observation),
+    plength_observation2root(n_plength_from_root)
 {
-    plength_observation2node = n_plength_observation;
-    plength_observation2root = n_plength_from_root;
-    likelihood = std::move(n_likelihood);
+    if (n_likelihood) likelihood = std::move(n_likelihood);
 }
 
-SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHType n_likelihood)
-: Mutation(n_type, n_position)
+SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, const LHType& n_likelihood)
+: Mutation(n_type, n_position),
+  plength_observation2node(n_plength_observation),
+  plength_observation2root(n_plength_from_root),
+  likelihood(std::make_unique<LHType>(n_likelihood))
 {
-  plength_observation2node = n_plength_observation;
-  plength_observation2root = n_plength_from_root;
-  likelihood = std::make_unique<LHType>(n_likelihood);
 }
 
 
@@ -32,9 +32,8 @@ SeqRegion::SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type
 }
 
 SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states)
+  : Mutation(n_mutation->type, n_mutation->position + n_mutation->getLength() - 1)
 {
-    type = n_mutation->type;
-    position = n_mutation->position + n_mutation->getLength() - 1;
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
@@ -65,61 +64,61 @@ void SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
             break;
         case 1+4+3: // 'R' -> A or G, Purine
         {
-            IntVector entries{1,0,1,0};
+            static constexpr LHType entries{0.5,0,0.5,0};
             computeLhAmbiguity(entries);
             break;
         }
         case 2+8+3: // 'Y' -> C or T, Pyrimidine
         {
-            IntVector entries{0,1,0,1};
+          static constexpr LHType  entries{0, 0.5, 0, 0.5};
             computeLhAmbiguity(entries);
             break;
         }
         case 1+8+3: // 'W' -> A or T, Weak
         {
-            IntVector entries{1,0,0,1};
+          static constexpr LHType  entries{0.5, 0, 0, 0.5};
             computeLhAmbiguity(entries);
             break;
         }
         case 2+4+3: // 'S' -> G or C, Strong
         {
-            IntVector entries{0,1,1,0};
+          static constexpr LHType  entries{0, 0.5, 0.5, 0};
             computeLhAmbiguity(entries);
             break;
         }
         case 1+2+3:  // 'M' -> A or C, Amino
         {
-            IntVector entries{1,1,0,0};
+          static constexpr LHType  entries{0.5, 0.5, 0, 0};
             computeLhAmbiguity(entries);
             break;
         }
         case 4+8+3: // 'K' -> G or T, Keto
         {
-            IntVector entries{0,0,1,1};
+          static constexpr LHType  entries{0, 0, 0.5, 0.5};
             computeLhAmbiguity(entries);
             break;
         }
         case 2+4+8+3: // 'B' -> C or G or T
         {
-            IntVector entries{0,1,1,1};
+          static constexpr LHType  entries{0, 1.0/3, 1.0/3, 1.0/3};
             computeLhAmbiguity(entries);
             break;
         }
         case 1+2+8+3: // 'H' -> A or C or T
         {
-            IntVector entries{1,1,0,1};
+          static constexpr LHType  entries{ 1.0/3, 1.0/3, 0, 1.0/3};
             computeLhAmbiguity(entries);
             break;
         }
         case 1+4+8+3: // 'D' -> A or G or T
         {
-            IntVector entries{1,0,1,1};
+          static constexpr LHType  entries{ 1.0/3, 0, 1.0/3, 1.0/3};
             computeLhAmbiguity(entries);
             break;
         }
         case 1+2+4+3: // 'V' -> A or G or C
         {
-            IntVector entries{1,1,1,0};
+          static constexpr LHType  entries{ 1.0/3, 1.0/3, 1.0/3, 0};
             computeLhAmbiguity(entries);
             break;
         }
@@ -128,15 +127,10 @@ void SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
     }
 }
 
-void SeqRegion::computeLhAmbiguity(IntVector &entries)
+void SeqRegion::computeLhAmbiguity(const LHType &entries)
 {
     // change type to 'O'
     type = TYPE_O;
-
     if (!likelihood) likelihood = std::make_unique<LHType>();
-    for (StateType i = 0; i < (StateType) entries.size(); ++i)
-        (*likelihood)[i] = entries[i];
-    
-    // normalize likelihood
-    normalize_arr(likelihood->data(), entries.size());
+    (*likelihood) = entries;
 }
