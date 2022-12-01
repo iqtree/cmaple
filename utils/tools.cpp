@@ -474,29 +474,6 @@ void convert_string_vec(const char *str, StrVector &vec, char separator) {
 
 }
 
-void normalize_arr(RealNumType* entries, int num_entries, RealNumType sum_entries)
-{
-    ASSERT(num_entries > 0);
-    // calculate the sum_entries if it's not provided
-    if (sum_entries == -1)
-    {
-        sum_entries = 0;
-        for (int i = 0; i < num_entries; ++i)
-            sum_entries += entries[i];
-    }
-    
-    // normalize the entries
-    if (fabs(sum_entries) < 1e-5)
-        outError("Sum of entries must be greater than zero!");
-    
-    if (fabs(sum_entries-1.0) >= 1e-7)
-    {
-        sum_entries = 1.0 / sum_entries;
-        for (int i = 0; i < num_entries; ++i)
-            entries[i] *= sum_entries;
-    }
-}
-
 void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index)
 {
     ASSERT(num_states > 0);

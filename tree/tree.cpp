@@ -526,7 +526,7 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
                 RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
                 SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
                 SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh, aln.num_states);
+                SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh);
 
                 // try to place new sample along the upper half of the current branch
                 while (true)
@@ -541,20 +541,16 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
                     else
                         break;
                     
-                    // try at different position along the current branch
-                    new_blength *= 0.5;
-                    
                     // stop trying if reaching the minimum branch length
-                    if (new_blength + new_blength <= min_blength_mid)
+                    if (new_blength <= min_blength_mid)
                         break;
                  
+                    // try at different position along the current branch
+                    new_blength *= 0.5;
+
                     // get new mid_branch_regions based on the new_blength
                     upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
                 }
-                
-                // delete mid_branch_regions
-                delete mid_branch_regions;
-                
                 //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
                 
                 // record new best_down_lh_diff
@@ -1281,7 +1277,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
         RealNumType best_split_lh = new_lh;
         RealNumType new_split = 0.25;
         if (best_child_regions) delete best_child_regions;
-        best_child_regions = new SeqRegions(selected_node->mid_branch_lh, num_states);
+        best_child_regions = new SeqRegions(selected_node->mid_branch_lh);
         SeqRegions* new_parent_regions = NULL;
         SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
         RealNumType new_branch_length_split = selected_node->length * new_split;
@@ -1478,7 +1474,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 // now try to place on the current branch below the best node, at an height above or equal to the mid-branch.
                 RealNumType new_branch_length_split;
                 RealNumType tmp_best_lh_diff = MIN_NEGATIVE;
-                SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh, num_states);
+                SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh);
                 SeqRegions* tmp_best_child_regions = NULL;
                 SeqRegions* parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                 SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
@@ -1619,7 +1615,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
             best_split = 0.5;
             SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             if (best_parent_regions) delete best_parent_regions;
-            best_parent_regions = new SeqRegions(selected_node->mid_branch_lh, num_states);
+            best_parent_regions = new SeqRegions(selected_node->mid_branch_lh);
             RealNumType best_split_lh = calculateSubTreePlacementCost(cumulative_rate, best_parent_regions, subtree_regions, new_branch_length);
             SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             SeqRegions* new_parent_regions = NULL;
@@ -1785,7 +1781,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 if (selected_node == root)
                     lower_regions->mergeTwoLowers(best_parent_regions, -1, subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate);
                 else
-                    best_parent_regions = new SeqRegions(selected_node->total_lh, num_states);
+                    best_parent_regions = new SeqRegions(selected_node->total_lh);
             }
 
             // add parent to the root
@@ -2096,7 +2092,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
         RealNumType best_split_lh = best_lh_diff;
         RealNumType new_split = 0.25;
         if (best_child_regions) delete best_child_regions;
-        best_child_regions = new SeqRegions(selected_node->mid_branch_lh, num_states);
+        best_child_regions = new SeqRegions(selected_node->mid_branch_lh);
         //selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(best_child_regions, selected_node->length * 0.5, selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), selected_node->length * 0.5, aln, model, threshold_prob);
         SeqRegions* new_parent_regions = NULL;
         SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
@@ -2259,7 +2255,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
             SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             SeqRegions* lower_regions = best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             if (best_child_regions) delete best_child_regions;
-            best_child_regions = new SeqRegions(best_child->mid_branch_lh, num_states);
+            best_child_regions = new SeqRegions(best_child->mid_branch_lh);
             //upper_left_right_regions->mergeUpperLower(best_child_regions, best_child->length * 0.5, lower_regions, best_child->length * 0.5, aln, model, threshold_prob);
             RealNumType new_split = 0.25;
             RealNumType new_branch_length_split = new_split * best_child->length;
@@ -2350,7 +2346,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
             SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             if (best_parent_regions) delete best_parent_regions;
-            best_parent_regions = new SeqRegions(selected_node->mid_branch_lh, num_states);
+            best_parent_regions = new SeqRegions(selected_node->mid_branch_lh);
             // upper_left_right_regions->mergeUpperLower(best_parent_regions, selected_node->length * 0.5, lower_regions, selected_node->length * 0.5, aln, model, threshold_prob);
             RealNumType new_split = 0.25;
             RealNumType new_branch_length_split = new_split * selected_node->length;
@@ -2502,7 +2498,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
                 if (selected_node == root)
                     selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(best_parent_regions, -1, sample, default_blength, aln, model, threshold_prob, cumulative_rate);
                 else
-                    best_parent_regions = new SeqRegions(selected_node->total_lh, num_states);
+                    best_parent_regions = new SeqRegions(selected_node->total_lh);
             }
 
             // add parent to the root
@@ -3259,7 +3255,7 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                 StateType seq1_state = aln.ref_seq[end_pos];
                 RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
                 
-                RealNumType coeff0 = seq2_region->likelihood[seq1_state];
+                RealNumType coeff0 = seq2_region->getLH(seq1_state);
                 RealNumType coeff1 = 0;
                 
                 if (seq1_region->plength_observation2root >= 0)
@@ -3270,8 +3266,8 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                                         
                     for (StateType i = 0; i < num_states; ++i)
                     {
-                        coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->likelihood[i];
-                        coeff1 += mutation_mat_row[i] * seq2_region->likelihood[i];
+                        coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->getLH(i);
+                        coeff1 += mutation_mat_row[i] * seq2_region->getLH(i);
                     }
                     
                     coeff1 *=  model.root_freqs[seq1_state];
@@ -3284,7 +3280,7 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                     // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
                     // coeff1 = numerator = q_xx + sum(q_xy)
                     for (StateType j = 0; j < num_states; ++j)
-                        coeff1 += mutation_mat_row[j] * seq2_region->likelihood[j];
+                        coeff1 += mutation_mat_row[j] * seq2_region->getLH(j);
                 }
                 
                 // NHANLT NOTES:
@@ -3344,11 +3340,11 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                 // coeff0 = denominator = sum_x(1 + q_xx * t + sum_y(q_xy * t))
                 for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                 {
-                    RealNumType seq1_lh_i = seq1_region->likelihood[i];
-                    coeff0 += seq1_lh_i * seq2_region->likelihood[i];
+                    RealNumType seq1_lh_i = seq1_region->getLH(i);
+                    coeff0 += seq1_lh_i * seq2_region->getLH(i);
                     
                     for (StateType j = 0; j < num_states; ++j)
-                        coeff1 += seq1_lh_i * seq2_region->likelihood[j] * mutation_mat_row[j];
+                        coeff1 += seq1_lh_i * seq2_region->getLH(j) * mutation_mat_row[j];
                 }
             }
             // 3.2. e1.type = O and e2.type = R or A/C/G/T
@@ -3358,7 +3354,7 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                 if (seq2_state == TYPE_R)
                     seq2_state = aln.ref_seq[end_pos];
                 
-                coeff0 = seq1_region->likelihood[seq2_state];
+                coeff0 = seq1_region->getLH(seq2_state);
 
                 // NHANLT NOTES:
                 // y = seq2_state
@@ -3368,7 +3364,7 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                 // coeff0 = denominator = 1 + q_xx * t + sum_y(q_xy * t)
                 RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
                 for (StateType i = 0; i < num_states; ++i)
-                    coeff1 += seq1_region->likelihood[i] * transposed_mut_mat_row[i];
+                    coeff1 += seq1_region->getLH(i) * transposed_mut_mat_row[i];
             }
             
             if (total_blength > 0)
@@ -3399,7 +3395,7 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                 // 4.2. e1.type = A/C/G/T and e2.type = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    RealNumType coeff0 = seq2_region->likelihood[seq1_state];
+                    RealNumType coeff0 = seq2_region->getLH(seq1_state);
                     RealNumType coeff1 = 0;
                     
                     RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
@@ -3412,8 +3408,8 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                                             
                         for (StateType i = 0; i < num_states; ++i)
                         {
-                            coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->likelihood[i];
-                            coeff1 += mutation_mat_row[i] * seq2_region->likelihood[i];
+                            coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->getLH(i);
+                            coeff1 += mutation_mat_row[i] * seq2_region->getLH(i);
                         }
                         
                         coeff1 *= model.root_freqs[seq1_state];
@@ -3426,7 +3422,7 @@ RealNumType Tree::estimateBranchLength(SeqRegions* parent_regions, SeqRegions* c
                         // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
                         // coeff1 = numerator = q_xx + sum(q_xy)
                         for (StateType j = 0; j < num_states; ++j)
-                            coeff1 += mutation_mat_row[j] * seq2_region->likelihood[j];
+                            coeff1 += mutation_mat_row[j] * seq2_region->getLH(j);
                     }
                     
                     // NHANLT NOTES:
@@ -3725,7 +3721,7 @@ RealNumType Tree::calculateSubTreePlacementCost(RealNumType* cumulative_rate, Se
 // this implementation derives from appendProbNode
 template <const StateType num_states>
 RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength)
-{
+{  // 55% of runtime
     // init dummy variables
     RealNumType lh_cost = 0;
     PositionType pos = 0;
@@ -3749,7 +3745,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
             pos = end_pos + 1;
             continue;
         }
-        
+       
         // e1.type != N && e2.type != N
         // total_blength will be here the total length from the root or from the upper node, down to the down node.
         if (seq1_region->plength_observation2root >= 0)
@@ -3806,14 +3802,14 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
                         if (total_blength > 0)
                         {
                             for (StateType j = 0; j < num_states; ++j)
-                                tot3 += mutation_mat_row[j] * seq2_region->likelihood[j];
+                                tot3 += mutation_mat_row[j] * seq2_region->getLH(j);
                             
                             tot3 *= total_blength;
                         }
                         
                         // NHANLT NOTE:
                         // tot = tot2 * tot3
-                        tot += tot2 * (seq2_region->likelihood[i] + tot3);
+                        tot += tot2 * (seq2_region->getLH(i) + tot3);
                     }
                     
                     // NHANLT NOTE: UNCLEAR
@@ -3828,12 +3824,12 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
                     {
                         RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
                         for (StateType j = 0; j < num_states; ++j)
-                            tot += mutation_mat_row[j] * seq2_region->likelihood[j];
+                            tot += mutation_mat_row[j] * seq2_region->getLH(j);
                         
                         tot *= total_blength;
                     }
                     
-                    tot += seq2_region->likelihood[seq1_state];
+                    tot += seq2_region->getLH(seq1_state);
                 }
                     
                 total_factor *= tot;
@@ -3896,18 +3892,18 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
                         RealNumType tot2 = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot2 += mutation_mat_row[j] * seq2_region->likelihood[j];
+                            tot2 += mutation_mat_row[j] * seq2_region->getLH(j);
                         
                         // NHANLT NOTE:
                         // tot = the likelihood of observing i * the likelihood of i evolves to j
-                        tot += seq1_region->likelihood[i] * (seq2_region->likelihood[i] + total_blength * tot2);
+                        tot += seq1_region->getLH(i) * (seq2_region->getLH(i) + total_blength * tot2);
                     }
                 }
                 // NHANLT NOTE:
                 // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
                 else
                     for (StateType i = 0; i < num_states; ++i)
-                        tot += seq1_region->likelihood[i] * seq2_region->likelihood[i];
+                        tot += seq1_region->getLH(i) * seq2_region->getLH(i);
                 
                 total_factor *= tot;
             }
@@ -3926,14 +3922,14 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
                     RealNumType tot2 = 0;
                     RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
                     for (StateType j = 0; j < num_states; ++j)
-                        tot2 += seq1_region->likelihood[j] * transposed_mut_mat_row[j];
+                        tot2 += seq1_region->getLH(j) * transposed_mut_mat_row[j];
                     
-                    total_factor *= seq1_region->likelihood[seq2_state] + total_blength * tot2;
+                    total_factor *= seq1_region->getLH(seq2_state) + total_blength * tot2;
                 }
                 // NHANLT NOTE:
                 // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
                 else
-                    total_factor *= seq1_region->likelihood[seq2_state];
+                    total_factor *= seq1_region->getLH(seq2_state);
             }
         }
         // 4. e1.type = A/C/G/T
@@ -3982,8 +3978,8 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
                             // tot3 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] * total_blength * lh(seq2,j)
                             RealNumType tot3 = 0;
                             for (StateType j = 0; j < num_states; ++j)
-                                tot3 += mutation_mat_row[j] * seq2_region->likelihood[j];
-                            tot += tot2 * (seq2_region->likelihood[i] + total_blength * tot3);
+                                tot3 += mutation_mat_row[j] * seq2_region->getLH(j);
+                            tot += tot2 * (seq2_region->getLH(i) + total_blength * tot3);
                         }
                         
                         // NHANLT NOTE: UNCLEAR
@@ -3998,10 +3994,10 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
                         // tot = the likelihood of seq1_state evolving to j
                         // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
                         for (StateType j = 0; j < num_states; ++j)
-                            tot += mutation_mat_row[j] * seq2_region->likelihood[j];
+                            tot += mutation_mat_row[j] * seq2_region->getLH(j);
                         
                         tot *= total_blength;
-                        tot += seq2_region->likelihood[seq1_state];
+                        tot += seq2_region->getLH(seq1_state);
                         total_factor *= tot;
                     }
                 }
@@ -4073,7 +4069,7 @@ RealNumType Tree::calculateSamplePlacementCost(RealNumType* cumulative_rate, Seq
 // this implementation derives from appendProb
 template <const StateType num_states>
 RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength)
-{
+{     // 10% of total runtime
     // init dummy variables
     RealNumType lh_cost = 0;
     PositionType pos = 0;
@@ -4130,7 +4126,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                     {
                         total_blength = seq1_region->plength_observation2root + blength;
                         
-                        if (seq2_region->likelihood[seq1_state] > 0.1)
+                        if (seq2_region->getLH(seq1_state) > 0.1)
                         {
                             total_blength += seq1_region->plength_observation2node;
                             
@@ -4146,10 +4142,10 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                             for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                             {
                                 RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
-                                RealNumType tot3 = (seq2_region->likelihood[i] > 0.1) ? 1 : 0;
+                                RealNumType tot3 = (seq2_region->getLH(i) > 0.1) ? 1 : 0;
                                 
                                 for (StateType j = 0; j < num_states; ++j)
-                                    if (seq2_region->likelihood[j] > 0.1)
+                                    if (seq2_region->getLH(j) > 0.1)
                                         tot3 += mutation_mat_row[j];
                                 tot3 *= total_blength;
                                 
@@ -4161,7 +4157,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                     }
                     else
                     {
-                        if (seq2_region->likelihood[seq1_state] > 0.1)
+                        if (seq2_region->getLH(seq1_state) > 0.1)
                         {
                             if (seq1_region->plength_observation2node >= 0)
                                 lh_cost += model.diagonal_mut_mat[seq1_state] * (blength + seq1_region->plength_observation2node);
@@ -4173,7 +4169,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                             RealNumType tot = 0;
                             RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
                             for (StateType i = 0; i < num_states; ++i)
-                                if (seq2_region->likelihood[i] > 0.1)
+                                if (seq2_region->getLH(i) > 0.1)
                                     tot += mutation_mat_row[i];
                             
                             if (seq1_region->plength_observation2node >= 0)
@@ -4228,14 +4224,14 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                         RealNumType tot2 = 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot2 += (seq2_region->likelihood[j] > 0.1) ? mutation_mat_row[j] : 0;
+                            tot2 += (seq2_region->getLH(j) > 0.1) ? mutation_mat_row[j] : 0;
                         
                         tot2 *= blength13;
                         
-                        if (seq2_region->likelihood[i] > 0.1)
+                        if (seq2_region->getLH(i) > 0.1)
                             tot2 += 1;
                         
-                        tot += tot2 * seq1_region->likelihood[i];
+                        tot += tot2 * seq1_region->getLH(i);
                     }
                         
                     total_factor *= tot;
@@ -4250,9 +4246,9 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                     RealNumType tot2 = 0;
                     RealNumType *transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
                     for (StateType j = 0; j < num_states; ++j)
-                        tot2 += transposed_mut_mat_row[j] * seq1_region->likelihood[j];
+                        tot2 += transposed_mut_mat_row[j] * seq1_region->getLH(j);
                     
-                    total_factor *= seq1_region->likelihood[seq2_state] + blength13 * tot2;
+                    total_factor *= seq1_region->getLH(seq2_state) + blength13 * tot2;
                 }
             }
             // 4. e1.type = A/C/G/T
@@ -4281,7 +4277,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                         {
                             RealNumType blength15 = blength + seq1_region->plength_observation2root;
                             
-                            if (seq2_region->likelihood[seq1_state] > 0.1)
+                            if (seq2_region->getLH(seq1_state) > 0.1)
                                 lh_cost += model.diagonal_mut_mat[seq1_state] * (blength15 + seq1_region->plength_observation2node);
                             else
                             {
@@ -4294,10 +4290,10 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                                         
                                     RealNumType tot3 = 0;
                                     for (StateType j = 0; j < num_states; ++j)
-                                        if (seq2_region->likelihood[j] > 0.1)
+                                        if (seq2_region->getLH(j) > 0.1)
                                             tot3 += mutation_mat_row[j];
                                     
-                                    if (seq2_region->likelihood[i] > 0.1)
+                                    if (seq2_region->getLH(i) > 0.1)
                                         tot += tot2 * (1.0 + blength15 * tot3);
                                     else
                                         tot += tot2 * blength15 * tot3;
@@ -4309,13 +4305,13 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                         else
                         {
                             RealNumType tmp_blength = blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
-                            if (seq2_region->likelihood[seq1_state] > 0.1)
+                            if (seq2_region->getLH(seq1_state) > 0.1)
                                 lh_cost += model.diagonal_mut_mat[seq1_state] * tmp_blength;
                             else
                             {
                                 RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
                                 for (StateType j = 0; j < num_states; ++j)
-                                    if (seq2_region->likelihood[j] > 0.1)
+                                    if (seq2_region->getLH(j) > 0.1)
                                         tot += mutation_mat_row[j];
                                 
                                 total_factor *= tot * tmp_blength;
