@@ -27,6 +27,7 @@ Sequence::~Sequence()
 SeqRegions* Sequence::getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type)
 {
     SeqRegions* regions = new SeqRegions();
+    regions->reserve(this->size() * 2); // avoid realloc of vector data (alternatively, scan through vector first to determine final # of elements)
     PositionType pos = 0;
     
     for (Mutation* mutation: (*this))
