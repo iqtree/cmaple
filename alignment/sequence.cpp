@@ -8,37 +8,45 @@
 #include "sequence.h"
 using namespace std;
 Sequence::Sequence(string n_seq_name)
+  : seq_name(std::move(n_seq_name))
 {
-    seq_name = std::move(n_seq_name);
-    resize(0);
 }
 
-Sequence::Sequence(string n_seq_name, vector<Mutation*> n_mutations):vector<Mutation*>(std::move(n_mutations))
-{
-    seq_name = std::move(n_seq_name);
-}
-
-Sequence::~Sequence()
-{
-    for (Mutation *mutation : (*this))
-        delete mutation;
+Sequence::Sequence(string n_seq_name, vector<Mutation> n_mutations):
+  vector<Mutation>(std::move(n_mutations)),
+  seq_name(std::move(n_seq_name))
+{    
 }
 
 SeqRegions* Sequence::getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type)
 {
     SeqRegions* regions = new SeqRegions();
-    regions->reserve(this->size() * 2); // avoid realloc of vector data (alternatively, scan through vector first to determine final # of elements)
+    regions->reserve(size() * 2); // avoid realloc of vector data (we could also count explicitly - see below), but that seems a bit slower (yet potentially more memory efficient)
+
+    // count number of items we will need
+    /**
+    size_t count{this->size()};
     PositionType pos = 0;
+    for (auto& mutation : (*this))
+    { // insert Region of type R (if necessary)
+      if (mutation.position > pos) ++count;
+      pos = mutation.position + mutation.getLength();
+    }
+    regions->reserve(++count); // avoid realloc of vector data 
     
-    for (Mutation* mutation: (*this))
+    pos = 0;
+    */
+
+    PositionType pos = 0;
+    for (auto& mutation: (*this))
     {
         // insert Region of type R (if necessary)
-        if (mutation->position > pos)
-            regions->emplace_back(TYPE_R, mutation->position - 1);
+        if (mutation.position > pos)
+            regions->emplace_back(TYPE_R, mutation.position - 1);
         
         // convert the current mutation
-        pos = mutation->position + mutation->getLength();
-        regions->emplace_back(mutation, seq_type, num_states);
+        pos = mutation.position + mutation.getLength();
+        regions->emplace_back(&mutation, seq_type, num_states);
     }
     
     // insert the last Region of type R (if necessary)

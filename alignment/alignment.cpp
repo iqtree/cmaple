@@ -305,9 +305,9 @@ void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_cha
     if (sequence)
     {
         if (length == -1)
-            sequence->push_back(new Mutation(convertChar2State(state_char), pos));
+            sequence->emplace_back(convertChar2State(state_char), pos);
         else
-            sequence->push_back(new Mutation(convertChar2State(state_char), pos, length));
+            sequence->emplace_back(convertChar2State(state_char), pos, length);
     }
 }
 
@@ -454,7 +454,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     
     // init dummy variables
     string seq_name = "";
-    vector<Mutation*> mutations;
+    vector<Mutation> mutations;
     ifstream in = ifstream(diff_path);
     PositionType line_num = 1;
     string line;
@@ -573,9 +573,9 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             
             // add a new mutation into mutations
             if (state == TYPE_N || state == TYPE_DEL)
-                mutations.push_back(new Mutation(state, pos - 1, length));
+                mutations.emplace_back(state, pos - 1, length);
             else
-                mutations.push_back(new Mutation(state, pos - 1));
+                mutations.emplace_back(state, pos - 1);
         }
     }
     
@@ -967,10 +967,9 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     PositionType num_seqs = data.size();
     PositionType *distances = new PositionType[num_seqs];
     PositionType *sequence_indexes = new PositionType[num_seqs];
-    Sequence** sequence = &data.front();
     
     // calculate the distances of each sequence
-    for (PositionType i = 0; i < num_seqs; ++i, ++sequence)
+    for (PositionType i = 0; i < num_seqs; ++i)
     {
         // dummy variables
         PositionType num_ambiguities = 0;
@@ -978,9 +977,9 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
         sequence_indexes[i] = i;
         
         // browse mutations one by one
-        for (Mutation* mutation: **sequence)
+        for (const auto& mutation: *data[i])
         {
-            switch (mutation->type)
+            switch (mutation.type)
             {
                 case TYPE_R: // Type R does not exist in Mutations (only in Regions)
                     outError("Sorry! Something went wrong. Invalid mutation type (type R).");
@@ -988,12 +987,12 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
                 case TYPE_N: // handle unsequenced sites ('-' or 'N')
                 case TYPE_DEL:
                 case TYPE_O: // handle ambiguity
-                    num_ambiguities += mutation->getLength();
+                    num_ambiguities += mutation.getLength();
                     ++num_diffs;
                     break;
                 default:
                     // handle normal character
-                    if (mutation->type < num_states)
+                    if (mutation.type < num_states)
                         ++num_diffs;
                     else
                     {
