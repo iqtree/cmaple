@@ -286,6 +286,23 @@ bool SeqRegions::areDiffFrom(const SeqRegions& regions2, PositionType seq_length
     return false;
 }
 
+size_t countSharedSegments(const SeqRegions& seq1_regions, const SeqRegions& seq2_regions, const size_t seq_length)
+{
+  
+  size_t count{};
+  PositionType pos{}, end_pos{};
+  size_t iseq1 = 0;
+  size_t iseq2 = 0;
+  while (pos < seq_length)
+  {
+    // get the next shared segment in the two sequences
+    SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
+    ++count;
+    pos = end_pos + 1;
+  }
+  return ++count;
+}
+
 void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
                                  RealNumType upper_plength, 
                                  const SeqRegions& lower_regions, 
@@ -309,11 +326,15 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
         merged_regions->deleteRegions();
     else
         merged_regions = new SeqRegions();
-                
-    while (pos <  seq_length)
+    
+    // avoid realloc of vector data (minimize memory footprint)
+    merged_regions->reserve(countSharedSegments(seq1_regions, seq2_regions, seq_length)); // avoid realloc of vector data
+    const size_t max_elements = merged_regions->capacity(); // remember capacity (may be more than we 'reserved')
+
+    while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);        
+        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
         const auto* const seq2_region = &seq2_regions[iseq2];
 
@@ -644,6 +665,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
         pos = end_pos + 1;
     }
 
+    assert(merged_regions->capacity() == max_elements); // ensure we did the correct reserve, otherwise it was a pessimization
+
     // try to merge consecutive and similar 'R' regions together
     merged_regions->mergeRegionR(num_states, threshold_prob);
 }
@@ -705,7 +728,11 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
         merged_regions->deleteRegions();
     else
         merged_regions = new SeqRegions();
-                
+
+    // avoid realloc of vector data (minimize memory footprint)
+    merged_regions->reserve(countSharedSegments(seq1_regions, seq2_regions, seq_length)); // avoid realloc of vector data
+    const size_t max_elements = merged_regions->capacity(); // remember capacity (may be more than we 'reserved')
+
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
@@ -1043,9 +1070,11 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
         pos = end_pos + 1;
     }
 
+    assert(merged_regions->capacity() == max_elements); // ensure we did the correct reserve, otherwise it was a pessimization
+
     // try to merge consecutive and similar 'R' regions together
     merged_regions->mergeRegionR(num_states, threshold_prob);
-    
+
     return log_lh;
 }
 
@@ -1093,7 +1122,7 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const Alignment& aln, const Mode
 SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength)
 {
     SeqRegions* total_lh = new SeqRegions();
-    
+    total_lh->reserve(this->size()); // avoid realloc of vector data
     for (const SeqRegion& elem : (*this))
     {
         const auto* const region = &elem;
