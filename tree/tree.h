@@ -24,14 +24,14 @@ private:
     /**
         Pointer  to updatePartialLh method
      */
-    typedef RealNumType (Tree::*CalculatePlacementCostType)(RealNumType*, SeqRegions*, SeqRegions*, RealNumType);
+    typedef RealNumType (Tree::*CalculatePlacementCostType)(RealNumType*, const SeqRegions* const, const SeqRegions* const, RealNumType);
     CalculatePlacementCostType calculateSamplePlacementCostPointer;
     
     /**
         Template of calculateSamplePlacementCost
      */
     template <const StateType num_states>
-    RealNumType calculateSamplePlacementCostTemplate(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSamplePlacementCostTemplate(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength);
     
     /**
         Pointer  to updatePartialLh method
@@ -42,7 +42,7 @@ private:
         Template of calculateSubTreePlacementCost
      */
     template <const StateType num_states>
-    RealNumType calculateSubTreePlacementCostTemplate(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSubTreePlacementCostTemplate(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength);
     
     /**
         Traverse the intial tree from root to re-calculate all lower likelihoods regarding the latest/final estimated model parameters
@@ -175,19 +175,19 @@ public:
     /**
         Estimate the length of a branch using the derivative of the likelihood cost function wrt the branch length
      */
-    RealNumType estimateBranchLength(SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType* cumulative_rate, RealNumType min_blength_sensitivity);
+    RealNumType estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, const RealNumType* const cumulative_rate, RealNumType min_blength_sensitivity);
     
     /**
         Calculate the placement cost of a sample
         @param child_regions: vector of regions of the new sample
      */
-    RealNumType calculateSamplePlacementCost(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSamplePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength);
     
     /**
         Calculate the placement cost of a subtree
         @param child_regions: vector of regions of the new sample
      */
-    RealNumType calculateSubTreePlacementCost(RealNumType* cumulative_rate, SeqRegions* parent_regions, SeqRegions* child_regions, RealNumType blength);
+    RealNumType calculateSubTreePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength);
 
 };
 

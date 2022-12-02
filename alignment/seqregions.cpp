@@ -75,30 +75,21 @@ RealNumType updateMultLHwithMat(int num_states, const RealNumType* mat_row,
     return sum_lh;
 }
 
-SeqRegions::SeqRegions()
-{
-    // do nothing
-}
-
 SeqRegions::SeqRegions(SeqRegions* n_regions)
 {
     // clone regions one by one
-    resize(n_regions->size());
-    SeqRegion** region = &n_regions->front();
-    for (PositionType i = 0; i < (PositionType) n_regions->size(); ++i, ++region)
-        this->operator[](i) = new SeqRegion(SeqRegion::clone(**region));
+    reserve(n_regions->size());
+    for (const auto& region : *n_regions)
+      push_back(SeqRegion::clone(region));
 } 
 
 SeqRegions::~SeqRegions()
 {
-    deleteRegions();
 }
 
 void SeqRegions::deleteRegions()
 {
-    for (iterator it = begin(); it != end(); ++it)
-        delete (*it);
-    clear();
+  clear();
 }
 
 void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
@@ -110,7 +101,7 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
     for (PositionType i = 0; i < (PositionType) size(); ++i)
     {
         // get the current region
-        SeqRegion* current_region = at(i);
+        const SeqRegion* const current_region = &at(i);
         
         // if start_R_index is not set -> check if the current region is an R region
         if (start_R_index == -1)
@@ -121,21 +112,22 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
         // otherwise, check if the current region is an R region and identical to the starting R region
         else
         {
-            SeqRegion* start_R_region = at(start_R_index);
+          const SeqRegion* const start_R_region = &at(start_R_index);
             
             // if the current region is NOT identical to the starting region -> merging sequence of identical R regions starting from start_R_index to the region before the current region
             if (!(current_region->type == TYPE_R && fabs(start_R_region->plength_observation2node - current_region->plength_observation2node) < threshold && fabs(start_R_region->plength_observation2root - current_region->plength_observation2root) < threshold))
              {
+                 // record the type of the current region before remove identical R regions
+                 StateType current_region_type = current_region->type;
+                 
                  // remove identical R regions
-                 for (PositionType j = 0; j < i - start_R_index - 1; ++j)
-                     delete at(start_R_index + j);
                  erase(begin() + start_R_index, begin() + i - 1);
                  
                  // recompute i
                  i -= i - start_R_index - 1;
                  
                  // reset start_R_index
-                 start_R_index = current_region->type == TYPE_R ? i : -1;
+                 start_R_index = current_region_type == TYPE_R ? i : -1;
              }
         }
     }
@@ -144,15 +136,12 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
     if  (start_R_index != -1)
     {
         PositionType num_regions = size();
-        
         // remove identical R regions
-        for (PositionType j = 0; j < num_regions - 1 - start_R_index; ++j)
-            delete at(start_R_index + j);
         erase(begin() + start_R_index, begin() + num_regions - 1);
     }
 }
 
-int SeqRegions::compareWithSample(SeqRegions* sequence2, PositionType seq_length, StateType num_states)
+int SeqRegions::compareWithSample(const SeqRegions& sequence2, PositionType seq_length, StateType num_states) const
 {
     ASSERT(seq_length > 0);
     
@@ -160,17 +149,18 @@ int SeqRegions::compareWithSample(SeqRegions* sequence2, PositionType seq_length
     bool seq1_more_info = false;
     bool seq2_more_info = false;
     PositionType pos = 0;
-    SeqRegion **seq1_region_pointer = &front();
-    SeqRegion **seq2_region_pointer = &sequence2->front();
-    SeqRegion *seq1_region = (*seq1_region_pointer);
-    SeqRegion *seq2_region = (*seq2_region_pointer);
+    const SeqRegions& seq1_regions = *this;
+    const SeqRegions& seq2_regions = sequence2;
+    size_t iseq1 = 0;
+    size_t iseq2 = 0;
     PositionType end_pos;
 
     while (pos < seq_length && (!seq1_more_info || !seq2_more_info))
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
-        
+        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
+        const auto* const seq1_region = &seq1_regions[iseq1];
+        const auto* const seq2_region = &seq2_regions[iseq2];
         // The two regions have different types from each other
         if (seq1_region->type != seq2_region->type)
         {
@@ -221,25 +211,27 @@ int SeqRegions::compareWithSample(SeqRegions* sequence2, PositionType seq_length
     return 0;
 }
 
-bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, StateType num_states, Params* params)
+bool SeqRegions::areDiffFrom(const SeqRegions& regions2, PositionType seq_length, StateType num_states, const Params* params) const
 {
-    if (!regions2 || regions2->size() == 0)
+    if (regions2.empty())
         return true;
     
     // init variables
     PositionType pos = 0;
-    SeqRegion **seq1_region_pointer = &front();
-    SeqRegion **seq2_region_pointer = &regions2->front();
-    SeqRegion *seq1_region = (*seq1_region_pointer);
-    SeqRegion *seq2_region = (*seq2_region_pointer);
+    const SeqRegions& seq1_regions = *this;
+    const SeqRegions& seq2_regions = regions2;
+    size_t iseq1 = 0;
+    size_t iseq2 = 0;
     PositionType end_pos;
     
     // compare each pair of regions
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
-        
+        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
+        const auto* const seq1_region = &seq1_regions[iseq1];
+        const auto* const seq2_region = &seq2_regions[iseq2];
+
         // if any pair of regions is different in type -> the two sequences are different
         if (seq1_region->type != seq2_region->type)
             return true;
@@ -288,18 +280,18 @@ bool SeqRegions::areDiffFrom(SeqRegions* regions2, PositionType seq_length, Stat
 
 void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
                                  RealNumType upper_plength, 
-                                 SeqRegions* lower_regions, 
+                                 const SeqRegions& lower_regions, 
                                  RealNumType lower_plength, const
                                  Alignment& aln, 
                                  const Model& model,
-                                 RealNumType threshold_prob)
+                                 RealNumType threshold_prob) const
 {
     // init variables
     PositionType pos = 0;
-    SeqRegion **seq1_region_pointer = &front();
-    SeqRegion **seq2_region_pointer = &lower_regions->front();
-    SeqRegion *seq1_region = (*seq1_region_pointer);
-    SeqRegion *seq2_region = (*seq2_region_pointer);
+    const SeqRegions& seq1_regions = *this;
+    const SeqRegions& seq2_regions = lower_regions;
+    size_t iseq1 = 0;
+    size_t iseq2 = 0;
     PositionType end_pos;
     StateType num_states = aln.num_states;
     PositionType seq_length = aln.ref_seq.size();
@@ -313,14 +305,16 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
     while (pos <  seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
-        
+        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);        
+        const auto* const seq1_region = &seq1_regions[iseq1];
+        const auto* const seq2_region = &seq2_regions[iseq2];
+
         // seq1_entry = 'N'
         if (seq1_region->type == TYPE_N)
         {
             // seq1_entry = 'N' and seq2_entry = 'N'
             if (seq2_region->type == TYPE_N)
-                merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos));
+                merged_regions->emplace_back(seq1_region->type, end_pos);
             // seq1_entry = 'N' and seq2_entry = O/R/ACGT
             else
             {
@@ -337,7 +331,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     normalize_arr(new_lh->data(), num_states, sum_lh);
 
                     // add merged region into merged_regions
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
+                    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
                 }
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
@@ -347,14 +341,14 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                         RealNumType new_plength = seq2_region->plength_observation2node ;
                         if (lower_plength > 0)
                             new_plength += lower_plength;
-                        merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos, new_plength, 0));
+                        merged_regions->emplace_back(seq2_region->type, end_pos, new_plength, 0);
                     }
                     else
                     {
                         if (lower_plength > 0)
-                            merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos, lower_plength, 0));
+                            merged_regions->emplace_back(seq2_region->type, end_pos, lower_plength, 0);
                         else
-                            merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
+                            merged_regions->emplace_back(seq2_region->type, end_pos);
                     }
                     
                 }
@@ -386,12 +380,12 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     normalize_arr(new_lh->data(), num_states, sum_lh);
                     
                     // add merged region into merged_regions
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
+                    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
                 }
                 else
                 {
                     // add merged region into merged_regions
-                    merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, 0, 0, *(seq1_region->likelihood)));
+                    merged_regions->emplace_back(seq1_region->type, end_pos, 0, 0, *(seq1_region->likelihood));
                 }
             }
             // seq2_entry = 'N' and seq1_entry = R/ACGT
@@ -402,27 +396,27 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     RealNumType plength_from_root = seq1_region->plength_observation2root;
                     if (upper_plength > 0)
                         plength_from_root += upper_plength;
-                    merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, seq1_region->plength_observation2node, plength_from_root));
+                    merged_regions->emplace_back(seq1_region->type, end_pos, seq1_region->plength_observation2node, plength_from_root);
                 }
                 else if (seq1_region->plength_observation2node >= 0)
                 {
                     RealNumType plength_observation = seq1_region->plength_observation2node;
                     if (upper_plength > 0)
                         plength_observation += upper_plength;
-                    merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, plength_observation));
+                    merged_regions->emplace_back(seq1_region->type, end_pos, plength_observation);
                 }
                 else
                 {
                     if (upper_plength > 0)
-                        merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, upper_plength));
+                        merged_regions->emplace_back(seq1_region->type, end_pos, upper_plength);
                     else
-                        merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos));
+                        merged_regions->emplace_back(seq1_region->type, end_pos);
                 }
             }
         }
         // seq1_entry = seq2_entry = R/ACGT
         else if (seq1_region->type == seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R))
-            merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos));
+            merged_regions->emplace_back(seq1_region->type, end_pos);
         // cases where the new genome list entry will likely be of type "O"
         else
         {
@@ -456,12 +450,12 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     return;
                 }
                 
-                merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
+                merged_regions->emplace_back(seq2_region->type, end_pos);
             }
             // due to 0 distance, the entry will be of same type as entry1
             else if ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 <= 0)
             {
-                merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos));
+                merged_regions->emplace_back(seq1_region->type, end_pos);
             }
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
@@ -529,10 +523,10 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                 StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                 if (new_state == TYPE_O)
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
+                    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
                 else
                 {
-                    merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                    merged_regions->emplace_back(new_state, end_pos);
                 }
             }
             // seq1_entry = R/ACGT
@@ -594,9 +588,9 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                   StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
                     
                   if (new_state == TYPE_O)
-                      merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
+                      merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
                   else
-                      merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                      merged_regions->emplace_back(new_state, end_pos);
                 }
                 // seq1 = ACGT and different from seq2 = R/ACGT
                 else
@@ -633,7 +627,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     normalize_arr(new_lh->data(), num_states, sum_new_lh);
 
                     // add new region into the merged regions
-                    merged_regions->push_back(new SeqRegion(TYPE_O, end_pos, 0, 0, std::move(new_lh)));
+                    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
                 }
             }
         }
@@ -646,7 +640,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
     merged_regions->mergeRegionR(num_states, threshold_prob);
 }
 
-StateType SeqRegions::simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold_prob)
+StateType SeqRegions::simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold_prob) const
 {
     // dummy variables
     ASSERT(partial_lh);
@@ -684,17 +678,17 @@ StateType SeqRegions::simplifyO(RealNumType* const partial_lh, StateType ref_sta
         return TYPE_O;
 }
 
-RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, SeqRegions* regions2, RealNumType plength2, const Alignment& aln, const
+RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const
                                        Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool return_log_lh)
 {
     // init variables
     RealNumType log_lh = 0;
     PositionType pos = 0;
     StateType num_states = aln.num_states;
-    SeqRegion **seq1_region_pointer = &front();
-    SeqRegion **seq2_region_pointer = &regions2->front();
-    SeqRegion *seq1_region = (*seq1_region_pointer);
-    SeqRegion *seq2_region = (*seq2_region_pointer);
+    const SeqRegions& seq1_regions = *this;
+    const SeqRegions& seq2_regions = *regions2;
+    size_t iseq1 = 0;
+    size_t iseq2 = 0;
     PositionType end_pos;
     PositionType seq_length = aln.ref_seq.size();
     
@@ -707,14 +701,17 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
     while (pos < seq_length)
     {
         // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq1_region, seq2_region, seq1_region_pointer, seq2_region_pointer, end_pos);
-        
+        // get the next shared segment in the two sequences
+        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos); 
+        const auto* const seq1_region = &seq1_regions[iseq1];
+        const auto* const seq2_region = &seq2_regions[iseq2];
+
         // seq1_entry = 'N'
         if (seq1_region->type == TYPE_N)
         {
             // seq1_entry = 'N' and seq2_entry = 'N'
             if (seq2_region->type == TYPE_N)
-                merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos));
+                merged_regions->emplace_back(seq1_region->type, end_pos);
             // seq1_entry = 'N' and seq2_entry = O/R/ACGT
             else
             {
@@ -734,7 +731,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         if (plength2 > 0)
                             new_region.plength_observation2node = plength2;
                     }
-                    merged_regions->push_back(new SeqRegion(std::move(new_region)));
+                    merged_regions->emplace_back(std::move(new_region));
                 }
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
@@ -744,14 +741,14 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         RealNumType new_plength = seq2_region->plength_observation2node;
                         if (plength2 > 0)
                             new_plength += plength2;
-                        merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos, new_plength));
+                        merged_regions->emplace_back(seq2_region->type, end_pos, new_plength);
                     }
                     else
                     {
                         if (plength2 > 0)
-                            merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos, plength2));
+                            merged_regions->emplace_back(seq2_region->type, end_pos, plength2);
                         else
-                            merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
+                            merged_regions->emplace_back(seq2_region->type, end_pos);
                     }
                 }
             }
@@ -775,7 +772,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     if (plength1 > 0)
                         new_region.plength_observation2node = plength1;
                 }
-                merged_regions->push_back(new SeqRegion(std::move(new_region)));
+                merged_regions->emplace_back(std::move(new_region));
             }
             // seq1_entry = 'N' and seq2_entry = R/ACGT
             else
@@ -785,14 +782,14 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     RealNumType new_plength = seq1_region->plength_observation2node;
                     if (plength1 > 0)
                         new_plength += plength1;
-                    merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, new_plength));
+                    merged_regions->emplace_back(seq1_region->type, end_pos, new_plength);
                 }
                 else
                 {
                     if (plength1 > 0)
-                        merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos, plength1));
+                        merged_regions->emplace_back(seq1_region->type, end_pos, plength1);
                     else
-                        merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos));
+                        merged_regions->emplace_back(seq1_region->type, end_pos);
                         
                 }
             }
@@ -819,7 +816,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
             // seq1_entry and seq2_entry are identical seq1_entry = R/ACGT
             if (seq1_region->type == seq2_region->type && (seq1_region->type == TYPE_R || seq1_region->type < num_states))
             {
-                merged_regions->push_back(new SeqRegion(seq1_region->type, end_pos));
+                merged_regions->emplace_back(seq1_region->type, end_pos);
                 
                 if (return_log_lh)
                 {
@@ -872,10 +869,10 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                     if (new_state == TYPE_O)
-                        merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
+                        merged_regions->emplace_back(new_state, end_pos, 0, 0, std::move(new_lh));
                     else
                     {
-                        merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                        merged_regions->emplace_back(new_state, end_pos);
                     }
                     
                     if (return_log_lh)
@@ -908,10 +905,10 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos],  num_states, threshold_prob);
 
                         if (new_state == TYPE_O)
-                            merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
+                            merged_regions->emplace_back(new_state, end_pos, 0, 0, std::move(new_lh));
                         else
                         {
-                            merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                            merged_regions->emplace_back(new_state, end_pos);
                         }
                         
                         if (return_log_lh)
@@ -926,7 +923,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                             return MIN_NEGATIVE;
                         }
                         
-                        merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
+                        merged_regions->emplace_back(seq2_region->type, end_pos);
                     
                         if (return_log_lh)
                             log_lh += log(new_lh_value[seq2_state]);
@@ -981,10 +978,10 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                     if (new_state == TYPE_O)
-                        merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
+                        merged_regions->emplace_back(new_state, end_pos, 0, 0, std::move(new_lh));
                     else
                     {
-                        merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                        merged_regions->emplace_back(new_state, end_pos);
                     }
                     
                     if (return_log_lh)
@@ -1015,10 +1012,10 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         StateType new_state = simplifyO(new_lh_value.data(), aln.ref_seq[end_pos], num_states, threshold_prob);
 
                         if (new_state == TYPE_O)
-                            merged_regions->push_back(new SeqRegion(new_state, end_pos, 0, 0, std::move(new_lh)));
+                            merged_regions->emplace_back(new_state, end_pos, 0, 0, std::move(new_lh));
                         else
                         {
-                            merged_regions->push_back(new SeqRegion(new_state, end_pos));
+                            merged_regions->emplace_back(new_state, end_pos);
                         }
                         
                         if (return_log_lh)
@@ -1026,7 +1023,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     }
                     else
                     {
-                        merged_regions->push_back(new SeqRegion(seq2_region->type, end_pos));
+                        merged_regions->emplace_back(seq2_region->type, end_pos);
                     
                         if (return_log_lh)
                             log_lh += log(new_lh_value[seq2_state]);
@@ -1051,12 +1048,13 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const Alignment& aln, const Mode
     RealNumType log_factor = 1;
     StateType num_states = aln.num_states;
     PositionType start_pos = 0;
-    SeqRegion** region_pointer = &front();
+    const SeqRegions& regions = *this;
+    size_t iregion = 0;
     
     // browse regions one by one to compute the likelihood of each region
-    for (PositionType region_index = 0; region_index < (PositionType) size(); ++region_index, ++region_pointer)
+    for (PositionType region_index = 0; region_index < (PositionType) size(); ++region_index, ++iregion)
     {
-        SeqRegion* region = *region_pointer;
+        const SeqRegion* const region = &regions[iregion];
         
         // type R
         if (region->type == TYPE_R)
@@ -1091,13 +1089,13 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
 {
     SeqRegions* total_lh = new SeqRegions();
     
-    for (SeqRegion* region : (*this))
+    for (const SeqRegion& elem : (*this))
     {
+        const auto* const region = &elem;
         // type N
         if (region->type == TYPE_N)
         {
-            SeqRegion* new_region = new SeqRegion(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
-            total_lh->push_back(new_region);
+            total_lh->emplace_back(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
         }
         else
         {
@@ -1121,14 +1119,13 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
                 normalize_arr(new_lh->data(), num_states, sum_lh);
                 
                 // add new region to the total_lh_regions
-                SeqRegion* new_region = new SeqRegion(region->type, region->position, region->plength_observation2node, region->plength_observation2root, std::move(new_lh));
-                total_lh->push_back(new_region);
+                total_lh->emplace_back(region->type, region->position, region->plength_observation2node, region->plength_observation2root, std::move(new_lh));
             }
             // other types: R or A/C/G/T
             else
             {
                 // add new region to the total_lh_regions
-                SeqRegion* new_region = new SeqRegion(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
+                SeqRegion* new_region = &total_lh->emplace_back(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
                 
                 if (new_region->plength_observation2node >= 0)
                 {
@@ -1142,8 +1139,6 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
                     new_region->plength_observation2node = blength;
                     new_region->plength_observation2root = 0;
                 }
-                
-                total_lh->push_back(new_region);
             }
         }
     }

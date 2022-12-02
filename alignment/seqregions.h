@@ -21,7 +21,7 @@ inline PositionType minFast(PositionType a, PositionType b)
 }
 
 /** Vector of sequence regions, used to represent/compute partial/total likelihood */
-class SeqRegions: public std::vector<SeqRegion*> {
+class SeqRegions: public std::vector<SeqRegion> {
 private:
     
 public:
@@ -29,12 +29,12 @@ public:
     /**
     *  Regions constructor
     */
-    SeqRegions();
+    SeqRegions() = default;
     
     /**
     *  Regions constructor
     */
-    SeqRegions(SeqRegions* n_regions);
+    explicit SeqRegions(SeqRegions* n_regions);
     
     /**
     *  Regions destructor
@@ -56,13 +56,13 @@ public:
         @param current_pos: current site position; 
         @return seq1_region, seq2_region: the regions contains the shared segment; end_pos: ending position of the shared segment
      */
-    inline static void getNextSharedSegment(PositionType current_pos, SeqRegion* &seq1_region, SeqRegion* &seq2_region, SeqRegion** &seq1_region_pointer, SeqRegion** &seq2_region_pointer, PositionType &end_pos)
+    inline static void getNextSharedSegment(PositionType current_pos, const SeqRegions& seq1_region, const SeqRegions& seq2_region, size_t& i1, size_t& i2, PositionType &end_pos)
     {  // 14% of runtime, invoked from Tree::calculateSubTreePlacementCostTemplate
-        if (current_pos > seq1_region->position) seq1_region = (*(++seq1_region_pointer));
-        if (current_pos > seq2_region->position) seq2_region = (*(++seq2_region_pointer));
+      if (current_pos > seq1_region[i1].position) ++i1;
+      if (current_pos > seq2_region[i2].position) ++i2;
         
-        // compute the end_pos for the shared segment
-        end_pos = minFast(seq1_region->position, seq2_region->position);
+      // compute the end_pos for the shared segment
+      end_pos = minFast(seq1_region[i1].position, seq2_region[i2].position);
     }
     
     /**
@@ -72,12 +72,12 @@ public:
         @param num_states the number of states
         @return 0: if the two sequences are incomparable; 1: if the current sequence is more or equally informative than/to sequence2; -1; if the current sequence  is less informative than sequence2
      */
-    int compareWithSample(SeqRegions* sequence2, PositionType seq_length, StateType num_states);
+    int compareWithSample(const SeqRegions& sequence2, PositionType seq_length, StateType num_states) const;
     
     /**
         Check if the current regions and regions2 represent the same partial likelihoods or not -> be used to stop traversing the tree further for updating partial likelihoods
      */
-    bool areDiffFrom(SeqRegions* regions2, PositionType seq_length, StateType num_states, Params* params);
+    bool areDiffFrom(const SeqRegions& regions2, PositionType seq_length, StateType num_states, const Params* params) const;
     
     /**
         Merge two likelihood vectors, one from above and one from below
@@ -90,8 +90,8 @@ public:
         @param model the model of evolution
         @param threshold the threshold for approximation
      */
-    void mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, SeqRegions* lower_regions, RealNumType lower_plength, const
-                         Alignment& aln, const Model& model, RealNumType threshold);
+    void mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, const SeqRegions& lower_regions, RealNumType lower_plength, const
+                         Alignment& aln, const Model& model, RealNumType threshold) const;
     
     /**
         Merge two lower likelihood vectors
@@ -105,7 +105,7 @@ public:
         @param cumulative_rate the cumulative rates of the reference sequence
         @param return_log_lh TRUE to return the log likelihood
      */
-    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, SeqRegions* regions2, RealNumType plength2, const Alignment& aln, const
+    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const
                                Model& model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
     
     /**
@@ -122,6 +122,6 @@ public:
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others
      */
-    StateType simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold);
+    StateType simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold) const;
 };
 #endif
