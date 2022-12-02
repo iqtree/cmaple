@@ -37,8 +37,13 @@ public:
     */
     Sequence(std::string n_seq_name, vector<Mutation> n_mutations);
     
+    /// Move Ctor
+    Sequence(Sequence&&) noexcept = default;
+    /// Move assignment
+    Sequence& operator=(Sequence&&) = default;
+
     /**
-    *  Sequence deconstructor
+    *  Sequence destructor
     */
     ~Sequence() = default;
     
