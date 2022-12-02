@@ -6,6 +6,7 @@
 //
 
 #include "seqregions.h"
+#include <cassert>
 
 
 RealNumType updateLHwithModel(int num_states, const Model& model,
@@ -77,6 +78,10 @@ RealNumType updateMultLHwithMat(int num_states, const RealNumType* mat_row,
 
 SeqRegions::SeqRegions(SeqRegions* n_regions)
 {
+  if (!n_regions)
+  {
+    outError("oops");
+  }
     // clone regions one by one
     reserve(n_regions->size());
     for (const auto& region : *n_regions)
@@ -101,25 +106,27 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
     for (PositionType i = 0; i < (PositionType) size(); ++i)
     {
         // get the current region
-        const SeqRegion* const current_region = &at(i);
+        const SeqRegion& current_region = at(i);
         
         // if start_R_index is not set -> check if the current region is an R region
         if (start_R_index == -1)
         {
-            if (current_region->type == TYPE_R)
+            if (current_region.type == TYPE_R)
                 start_R_index = i;
         }
         // otherwise, check if the current region is an R region and identical to the starting R region
         else
         {
-          const SeqRegion* const start_R_region = &at(start_R_index);
+            const SeqRegion& start_R_region = at(start_R_index);
             
             // if the current region is NOT identical to the starting region -> merging sequence of identical R regions starting from start_R_index to the region before the current region
-            if (!(current_region->type == TYPE_R && fabs(start_R_region->plength_observation2node - current_region->plength_observation2node) < threshold && fabs(start_R_region->plength_observation2root - current_region->plength_observation2root) < threshold))
+            if (!(current_region.type == TYPE_R && fabs(start_R_region.plength_observation2node - current_region.plength_observation2node) < threshold && fabs(start_R_region.plength_observation2root - current_region.plength_observation2root) < threshold))
              {
                  // record the type of the current region before remove identical R regions
-                 StateType current_region_type = current_region->type;
-                 
+                 StateType current_region_type = current_region.type;
+
+                 assert(start_R_index < size());
+
                  // remove identical R regions
                  erase(begin() + start_R_index, begin() + i - 1);
                  
@@ -137,6 +144,7 @@ void SeqRegions::mergeRegionR(StateType num_states, RealNumType threshold)
     {
         PositionType num_regions = size();
         // remove identical R regions
+        assert(start_R_index < size());
         erase(begin() + start_R_index, begin() + num_regions - 1);
     }
 }
@@ -840,8 +848,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
             // seq1_entry = O
             else if (seq1_region->type == TYPE_O)
             {
-              auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
-              auto& new_lh_value = *new_lh;
+                auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+                auto& new_lh_value = *new_lh;
                 RealNumType sum_lh = 0;
                 if (total_blength_1 > 0)
                 {
@@ -1046,36 +1054,33 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const Alignment& aln, const Mode
     // dummy variables
     RealNumType log_lh = 0;
     RealNumType log_factor = 1;
-    StateType num_states = aln.num_states;
+    const StateType num_states = aln.num_states;
     PositionType start_pos = 0;
     const SeqRegions& regions = *this;
-    size_t iregion = 0;
     
     // browse regions one by one to compute the likelihood of each region
-    for (PositionType region_index = 0; region_index < (PositionType) size(); ++region_index, ++iregion)
+    for (const SeqRegion& region : regions)
     {
-        const SeqRegion* const region = &regions[iregion];
-        
         // type R
-        if (region->type == TYPE_R)
+        if (region.type == TYPE_R)
         {
             for (StateType i = 0; i < num_states; ++i)
-                log_lh += model.root_log_freqs[i] * (cumulative_base[region->position + 1][i] - cumulative_base[start_pos][i]);
+                log_lh += model.root_log_freqs[i] * (cumulative_base[region.position + 1][i] - cumulative_base[start_pos][i]);
         }
         // type ACGT
-        else if (region->type < num_states)
-            log_lh += model.root_log_freqs[region->type];
+        else if (region.type < num_states)
+            log_lh += model.root_log_freqs[region.type];
         // type O
-        else if (region->type == TYPE_O)
+        else if (region.type == TYPE_O)
         {
             RealNumType tot = 0;
             for (StateType i = 0; i < num_states; ++i)
-                tot += model.root_freqs[i] * region->getLH(i);
+                tot += model.root_freqs[i] * region.getLH(i);
             log_factor *= tot;
         }
         
         // maintain start_pos
-        start_pos = region->position + 1;
+        start_pos = region.position + 1;
     }
 
     // update log_lh
@@ -1125,19 +1130,19 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
             else
             {
                 // add new region to the total_lh_regions
-                SeqRegion* new_region = &total_lh->emplace_back(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
+                SeqRegion& new_region = total_lh->emplace_back(region->type, region->position, region->plength_observation2node, region->plength_observation2root);
                 
-                if (new_region->plength_observation2node >= 0)
+                if (new_region.plength_observation2node >= 0)
                 {
                     if (blength > 0)
-                        new_region->plength_observation2node += blength;
+                        new_region.plength_observation2node += blength;
 
-                    new_region->plength_observation2root = 0;
+                    new_region.plength_observation2root = 0;
                 }
                 else if (blength > 0)
                 {
-                    new_region->plength_observation2node = blength;
-                    new_region->plength_observation2root = 0;
+                    new_region.plength_observation2node = blength;
+                    new_region.plength_observation2root = 0;
                 }
             }
         }
