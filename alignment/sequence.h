@@ -15,7 +15,7 @@ class Alignment;
 class SeqRegions;
 
 /** Class present a sequence */
-class Sequence: public std::vector<Mutation*> {
+class Sequence: public std::vector<Mutation> {
 public:
     /**
         Name of the sequence
@@ -35,12 +35,12 @@ public:
     /**
     *  Sequence constructor
     */
-    Sequence(std::string n_seq_name, vector<Mutation*> n_mutations);
+    Sequence(std::string n_seq_name, vector<Mutation> n_mutations);
     
     /**
     *  Sequence deconstructor
     */
-    ~Sequence();
+    ~Sequence() = default;
     
     /**
         Extract the lower likelihood vector (converting a vector of Mutations into a vector of Regions)
