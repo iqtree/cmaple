@@ -74,7 +74,7 @@ public:
         Flexible string attributes
      
      */
-    std::map<std::string, std::string> str_attributes;
+    //std::map<std::string, std::string> str_attributes;
     
     /**
         Constructor
