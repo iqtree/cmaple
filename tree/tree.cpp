@@ -3726,7 +3726,11 @@ RealNumType Tree::calculateSubTreePlacementCost(RealNumType* cumulative_rate, co
 
 // this implementation derives from appendProbNode
 template <const StateType num_states>
-RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
+RealNumType Tree::calculateSubTreePlacementCostTemplate(
+  RealNumType* cumulative_rate, 
+  const SeqRegions* const parent_regions, 
+  const SeqRegions* const child_regions, 
+  RealNumType blength)
 {  // 55% of runtime
     // init dummy variables
     RealNumType lh_cost = 0;
@@ -3744,8 +3748,8 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(RealNumType* cumulative_
     {
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
-        const auto* seq1_region = &seq1_regions[iseq1];
-        const auto* seq2_region = &seq2_regions[iseq2];
+        const auto* const seq1_region = &seq1_regions[iseq1];
+        const auto* const seq2_region = &seq2_regions[iseq2];
         // 1. e1.type = N || e2.type = N
         if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
         {
