@@ -1,4 +1,7 @@
 #include "tree.h"
+
+#include <cassert>
+
 using namespace std;
 
 Tree::Tree(Params&& n_params, Node* n_root)
@@ -3740,12 +3743,12 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
     const SeqRegions& seq2_regions = *child_regions;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    PositionType end_pos;
-    RealNumType total_blength = blength;
-    PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln.ref_seq.size();
     
     while (pos < seq_length)
     {
+        PositionType end_pos;
+        RealNumType total_blength;
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
@@ -3769,6 +3772,9 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
         if (seq2_region->plength_observation2node >= 0)
             total_blength = (total_blength > 0 ? total_blength : 0) + seq2_region->plength_observation2node;
         
+        
+        //assert(total_blength >= 0); // can be -1 ..
+
         // 2. e1.type = R
         if (seq1_region->type == TYPE_R)
         {
