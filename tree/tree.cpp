@@ -3216,16 +3216,17 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
     const SeqRegions& seq2_regions = *child_regions;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    PositionType end_pos;
-    RealNumType total_blength;
-    PositionType seq_length = aln.ref_seq.size();
-    StateType num_states = aln.num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // avoid reallocations
     coefficient_vec.reserve(parent_regions->countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
     
     while (pos < seq_length)
     {
+        PositionType end_pos;
+        RealNumType total_blength;
+        
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* seq1_region = &seq1_regions[iseq1];
@@ -3752,6 +3753,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
     {
         PositionType end_pos;
         RealNumType total_blength;
+        
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
@@ -4098,13 +4100,14 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
     const SeqRegions& seq2_regions = *child_regions;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    PositionType end_pos;
     if (blength < 0) blength = 0;
-    RealNumType total_blength = blength;
-    PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln.ref_seq.size();
     
     while (pos < seq_length)
     {
+        PositionType end_pos;
+        RealNumType total_blength = blength;
+        
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* seq1_region = &seq1_regions[iseq1];
@@ -4281,7 +4284,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                 // 4.1. e1.type =  e2.type
                 if (seq1_region->type == seq2_region->type)
                 {
-                    RealNumType total_blength = blength;
+                    total_blength = blength;
                     total_blength += (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
                     total_blength += (seq1_region->plength_observation2root < 0 ? 0 : seq1_region->plength_observation2root);
 

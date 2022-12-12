@@ -341,15 +341,17 @@ void Model::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, 
     {
         // init variables
         PositionType pos = 0;
-        StateType num_states = aln.num_states;
+        const StateType num_states = aln.num_states;
         const SeqRegions& seq1_regions = regions1;
         const SeqRegions& seq2_regions = regions2;
         size_t iseq1 = 0;
-        size_t iseq2 = 0;        PositionType end_pos;
-        PositionType seq_length = aln.ref_seq.size();
+        size_t iseq2 = 0;
+        const PositionType seq_length = aln.ref_seq.size();
                     
         while (pos < seq_length)
         {
+            PositionType end_pos;
+            
             // get the next shared segment in the two sequences
             SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
             const auto* const seq1_region = &seq1_regions[iseq1];

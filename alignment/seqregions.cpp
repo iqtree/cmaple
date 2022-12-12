@@ -109,10 +109,11 @@ int SeqRegions::compareWithSample(const SeqRegions& sequence2, PositionType seq_
     const SeqRegions& seq2_regions = sequence2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    PositionType end_pos;
 
     while (pos < seq_length && (!seq1_more_info || !seq2_more_info))
     {
+        PositionType end_pos;
+        
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
@@ -178,11 +179,12 @@ bool SeqRegions::areDiffFrom(const SeqRegions& regions2, PositionType seq_length
     const SeqRegions& seq2_regions = regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    PositionType end_pos;
     
     // compare each pair of regions
     while (pos < seq_length)
     {
+        PositionType end_pos;
+        
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
@@ -238,11 +240,14 @@ size_t SeqRegions::countSharedSegments(const SeqRegions& seq2_regions, const siz
 {
     const SeqRegions& seq1_regions = *this;
     size_t count{};
-    PositionType pos{}, end_pos{};
+    PositionType pos{};
     size_t iseq1 = 0;
     size_t iseq2 = 0;
+    
     while (pos < seq_length)
     {
+        PositionType end_pos{};
+        
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         ++count;
@@ -265,9 +270,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
     const SeqRegions& seq2_regions = lower_regions;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    PositionType end_pos;
-    StateType num_states = aln.num_states;
-    PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln.ref_seq.size();
     
     // init merged_regions
     if (merged_regions)
@@ -281,6 +285,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
 
     while (pos < seq_length)
     {
+        PositionType end_pos;
+        
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
@@ -679,13 +685,12 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
     // init variables
     RealNumType log_lh = 0;
     PositionType pos = 0;
-    StateType num_states = aln.num_states;
+    const StateType num_states = aln.num_states;
     const SeqRegions& seq1_regions = *this;
     const SeqRegions& seq2_regions = *regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    PositionType end_pos;
-    PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln.ref_seq.size();
     
     // init merged_regions
     if (merged_regions)
@@ -699,7 +704,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
 
     while (pos < seq_length)
     {
-        // get the next shared segment in the two sequences
+        PositionType end_pos;
+
         // get the next shared segment in the two sequences
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos); 
         const auto* const seq1_region = &seq1_regions[iseq1];
