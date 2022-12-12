@@ -90,6 +90,11 @@ public:
     }
     
     /**
+        Count the number of shared segments
+     */
+    size_t countSharedSegments(const SeqRegions& seq2_regions, const size_t seq_length) const;
+    
+    /**
         Compare the current sequence with another sequence regarding the amount of information
         @param sequence2 the sequence to compare
         @param seq_length the sequence length

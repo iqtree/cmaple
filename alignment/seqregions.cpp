@@ -85,7 +85,7 @@ SeqRegions::SeqRegions(SeqRegions* n_regions)
     // clone regions one by one
     reserve(n_regions->size());
     for (const auto& region : *n_regions)
-      push_back(SeqRegion::clone(region));
+      emplace_back(SeqRegion::clone(region));
 } 
 
 SeqRegions::~SeqRegions()
@@ -234,21 +234,21 @@ bool SeqRegions::areDiffFrom(const SeqRegions& regions2, PositionType seq_length
     return false;
 }
 
-size_t countSharedSegments(const SeqRegions& seq1_regions, const SeqRegions& seq2_regions, const size_t seq_length)
+size_t SeqRegions::countSharedSegments(const SeqRegions& seq2_regions, const size_t seq_length) const
 {
-  
-  size_t count{};
-  PositionType pos{}, end_pos{};
-  size_t iseq1 = 0;
-  size_t iseq2 = 0;
-  while (pos < seq_length)
-  {
-    // get the next shared segment in the two sequences
-    SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
-    ++count;
-    pos = end_pos + 1;
-  }
-  return ++count;
+    const SeqRegions& seq1_regions = *this;
+    size_t count{};
+    PositionType pos{}, end_pos{};
+    size_t iseq1 = 0;
+    size_t iseq2 = 0;
+    while (pos < seq_length)
+    {
+        // get the next shared segment in the two sequences
+        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
+        ++count;
+        pos = end_pos + 1;
+    }
+    return ++count;
 }
 
 void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
@@ -276,7 +276,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
         merged_regions = new SeqRegions();
     
     // avoid realloc of vector data (minimize memory footprint)
-    merged_regions->reserve(countSharedSegments(seq1_regions, seq2_regions, seq_length)); // avoid realloc of vector data
+    merged_regions->reserve(countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
     const size_t max_elements = merged_regions->capacity(); // remember capacity (may be more than we 'reserved')
 
     while (pos < seq_length)
@@ -694,7 +694,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
         merged_regions = new SeqRegions();
 
     // avoid realloc of vector data (minimize memory footprint)
-    merged_regions->reserve(countSharedSegments(seq1_regions, seq2_regions, seq_length)); // avoid realloc of vector data
+    merged_regions->reserve(countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
     const size_t max_elements = merged_regions->capacity(); // remember capacity (may be more than we 'reserved')
 
     while (pos < seq_length)
