@@ -3308,7 +3308,7 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
                 if (coeff1 < 0)
                     coefficient += coeff1 / coeff0;
                 else
-                    coefficient_vec.emplace_back(coeff0 / coeff1);
+                    coefficient_vec.push_back(coeff0 / coeff1);
             }
             // 2.3. e1.type = R and e2.type = A/C/G/T
             else
@@ -3324,15 +3324,15 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
                     if (total_blength > 0)
                         coeff0 += coeff1 * total_blength;
                     
-                    coefficient_vec.emplace_back(coeff0 / coeff1);
+                    coefficient_vec.push_back(coeff0 / coeff1);
                 }
                 // NHANLT NOTES:
                 // l = log(q_xy * t)
                 // l' = q_xy / (q_xy * t) = 1 / t
                 else if (total_blength > 0)
-                    coefficient_vec.emplace_back(total_blength);
+                    coefficient_vec.push_back(total_blength);
                 else
-                    coefficient_vec.emplace_back(0);
+                    coefficient_vec.push_back(0);
             }
         }
         // 3. e1.type = O
@@ -3388,7 +3388,7 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
             if (coeff1 < 0)
                 coefficient += coeff1 / coeff0;
             else
-                coefficient_vec.emplace_back(coeff0 / coeff1);
+                coefficient_vec.push_back(coeff0 / coeff1);
         }
         // 4. e1.type = A/C/G/T
         else
@@ -3450,7 +3450,7 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
                     if (coeff1 < 0)
                         coefficient += coeff1 / coeff0;
                     else
-                        coefficient_vec.emplace_back(coeff0 / coeff1);
+                        coefficient_vec.push_back(coeff0 / coeff1);
                 }
                 // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
                 else
@@ -3477,7 +3477,7 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
                     else if (total_blength > 0)
                         coeff0 = total_blength;
                     
-                    coefficient_vec.emplace_back(coeff0);
+                    coefficient_vec.push_back(coeff0);
                 }
             }
         }

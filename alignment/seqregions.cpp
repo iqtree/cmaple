@@ -85,7 +85,7 @@ SeqRegions::SeqRegions(SeqRegions* n_regions)
     // clone regions one by one
     reserve(n_regions->size());
     for (const auto& region : *n_regions)
-      emplace_back(SeqRegion::clone(region));
+      push_back(SeqRegion::clone(region));
 } 
 
 SeqRegions::~SeqRegions()
@@ -736,7 +736,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         if (plength2 > 0)
                             new_region.plength_observation2node = plength2;
                     }
-                    merged_regions->emplace_back(std::move(new_region));
+                    merged_regions->push_back(std::move(new_region));
                 }
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
@@ -778,7 +778,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     if (plength1 > 0)
                         new_region.plength_observation2node = plength1;
                 }
-                merged_regions->emplace_back(std::move(new_region));
+                merged_regions->push_back(std::move(new_region));
             }
             // seq1_entry = 'N' and seq2_entry = R/ACGT
             else

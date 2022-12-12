@@ -1015,7 +1015,7 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     vector<Sequence> tmp_sequences(move(data));
     data.reserve(num_seqs);
     for (PositionType i = 0; i < num_seqs; ++i)
-        data.emplace_back(move(tmp_sequences[sequence_indexes[i]]));
+        data.push_back(move(tmp_sequences[sequence_indexes[i]]));
     
     // delete distances, sequence_indexes
     delete[] distances;
