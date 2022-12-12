@@ -47,9 +47,33 @@ public:
     void deleteRegions();
     
     /**
-        Merge consecutive R regions
+        Add a new region and automatically merged consecutive R regions
      */
-    void mergeRegionR(StateType num_states, RealNumType threshold);
+    inline void addNonConsecutiveRRegion(SeqRegions* const regions, const StateType new_region_type, const RealNumType plength_observation2node, const RealNumType plength_observation2root, const PositionType end_pos, const RealNumType threshold_prob) const
+    {
+        bool merged = false;
+        
+        // cannot merge consecutive R regions if no region exists in regions
+        if (!regions->empty())
+        {
+            // try to merge consecutive R regions
+            SeqRegion& last_region = regions->back();
+            if (new_region_type == TYPE_R
+                && last_region.type == TYPE_R
+                && fabs(last_region.plength_observation2node - plength_observation2node) < threshold_prob
+                && fabs(last_region.plength_observation2root - plength_observation2root) < threshold_prob)
+            {
+                last_region.position = end_pos;
+                last_region.plength_observation2node = plength_observation2node;
+                last_region.plength_observation2root = plength_observation2root;
+                merged = true;
+            }
+        }
+        
+        // if we cannot merge new region into existing R region => just add a new one
+        if (!merged)
+            regions->emplace_back(new_region_type, end_pos, plength_observation2node, plength_observation2root);
+    }
     
     /**
         Get the shared segment between the next regions of two sequences
