@@ -25,7 +25,7 @@ public:
     /**
     *  Sequence constructor
     */
-    Sequence(){};
+    Sequence() = default;
     
     /**
     *  Sequence constructor

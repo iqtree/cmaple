@@ -27,7 +27,7 @@ private:
     
 public:
 
-    std::vector<Sequence*> data; // note: this is inefficient, but only used briefly
+    std::vector<Sequence> data; // note: this is inefficient, but only used briefly
 
     /**
         reference sequence

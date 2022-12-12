@@ -103,10 +103,10 @@ void CMaple::buildInitialTree()
     PositionType seq_length = aln.ref_seq.size();
     
     // place the root node
-    Sequence** sequence = &tree.aln.data.front();
-    Node* root = new Node((*sequence)->seq_name);
+    Sequence* sequence = &tree.aln.data.front();
+    Node* root = new Node(sequence->seq_name);
     tree.root = root;
-    root->partial_lh = (*sequence)->getLowerLhVector(seq_length, num_states, aln.seq_type);
+    root->partial_lh = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
     root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, cumulative_rate, true);
     
     // move to the next sequence in the alignment
@@ -116,7 +116,7 @@ void CMaple::buildInitialTree()
     for (PositionType i = 1; i < (PositionType) aln.data.size(); ++i, ++sequence)
     {
         // get the lower likelihood vector of the current sequence
-        SeqRegions* lower_regions = (*sequence)->getLowerLhVector(seq_length, num_states, aln.seq_type);
+        SeqRegions* lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
@@ -133,11 +133,11 @@ void CMaple::buildInitialTree()
         RealNumType best_up_lh_diff = MIN_NEGATIVE;
         RealNumType best_down_lh_diff = MIN_NEGATIVE;
         Node* best_child = NULL;
-        tree.seekSamplePlacement(tree.root, (*sequence)->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, default_blength, min_blength_mid);
+        tree.seekSamplePlacement(tree.root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, default_blength, min_blength_mid);
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
         if (selected_node)
-            tree.placeNewSample(selected_node, lower_regions, (*sequence)->seq_name, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength);
+            tree.placeNewSample(selected_node, lower_regions, sequence->seq_name, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength);
         else
             delete lower_regions;
         

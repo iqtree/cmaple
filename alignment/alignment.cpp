@@ -16,11 +16,7 @@ char symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
 Alignment::Alignment() = default;
 
-Alignment::~Alignment()
-{
-    for (auto it = data.begin(); it != data.end(); ++it)
-        delete (*it);
-}
+Alignment::~Alignment() = default;
 
 void Alignment::processSeq(string &sequence, string &line, PositionType line_num) {
     for (string::iterator it = line.begin(); it != line.end(); ++it) {
@@ -332,8 +328,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
         // init new sequence instance for the inference process afterwards
         if (!only_extract_diff)
         {
-            sequence = new Sequence(seq_names[i]);
-            data.push_back(sequence);
+            data.emplace_back(seq_names[i]);
         }
         
         // init dummy variables
@@ -518,7 +513,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             // record the sequence of the previous taxon
             if (seq_name.length() > 0)
             {
-                data.push_back(new Sequence(seq_name, mutations));
+                data.emplace_back(seq_name, mutations);
                 
                 // reset dummy variables
                 seq_name = "";
@@ -581,7 +576,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     
     // Record the sequence of  the last taxon
     if (seq_name.length() > 0)
-        data.push_back(new Sequence(seq_name, mutations));
+        data.emplace_back(seq_name, mutations);
     
     // validate the input
     if (ref_seq.size() == 0)
@@ -977,7 +972,7 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
         sequence_indexes[i] = i;
         
         // browse mutations one by one
-        for (const auto& mutation: *data[i])
+        for (const auto& mutation: data[i])
         {
             switch (mutation.type)
             {
@@ -1017,13 +1012,12 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     quicksort(distances, 0, num_seqs - 1, sequence_indexes);
 
     // re-order sequences by distances
-    Sequence** tmp_sequences = new Sequence*[data.size()];
-    memcpy(tmp_sequences, this->data.data(), sizeof(Sequence*)* data.size());
+    vector<Sequence> tmp_sequences(move(data));
+    data.reserve(num_seqs);
     for (PositionType i = 0; i < num_seqs; ++i)
-        data[i] = tmp_sequences[sequence_indexes[i]];
+        data.emplace_back(move(tmp_sequences[sequence_indexes[i]]));
     
     // delete distances, sequence_indexes
-    delete[] tmp_sequences;
     delete[] distances;
     delete[] sequence_indexes;
 }
