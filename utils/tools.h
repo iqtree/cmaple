@@ -423,6 +423,11 @@ public:
     *  TRUE to run an additional short range search for tree topology improvement
     */
     bool short_range_topo_search;
+    
+    /**
+    *  path to output testing codes
+    */
+    char* output_testing;
 };
 
 /*--------------------------------------------------------------*/

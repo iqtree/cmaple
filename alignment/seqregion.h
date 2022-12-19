@@ -104,5 +104,15 @@ public:
     *  Region destructor
     */
     ~SeqRegion() = default;
+    
+    /**
+        For testing only, export codes to re-contruct this seqregions
+     */
+    void writeConstructionCodes(const std::string regions_name, std::ofstream& out, const StateType num_states) const;
+    
+    /**
+        Compare two regions
+     */
+    bool operator==(const SeqRegion& seqregion_1) const;
 };
 #endif

@@ -134,8 +134,7 @@ public:
         @param cumulative_rate the cumulative rates of the reference sequence
         @param return_log_lh TRUE to return the log likelihood
      */
-    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const
-                               Model& model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
+    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
     
     /**
         Compute total lh/upper left_right for root node
@@ -152,5 +151,15 @@ public:
         Convert an entry 'O' into a normal nucleotide if its probability dominated others
      */
     StateType simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold) const;
+    
+    /**
+        For testing only, export codes to re-contruct this seqregions
+     */
+    void writeConstructionCodes(const std::string regions_name, std::ofstream& out, const StateType num_states) const;
+    
+    /**
+        Compare two regions
+     */
+    bool operator==(const SeqRegions& seqregions_1) const;
 };
 #endif

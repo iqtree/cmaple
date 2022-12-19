@@ -639,6 +639,18 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
     }
     
     assert(merged_regions->capacity() == max_elements); // ensure we did the correct reserve, otherwise it was a pessimization
+    
+    // randomly choose some test-cases for testing
+    /*if (Params::getInstance().output_testing && rand() < 2000000)
+    {
+        std::string output_file(Params::getInstance().output_testing);
+        std::ofstream out = std::ofstream(output_file + ".txt", std::ios_base::app);
+        out << "// --- New test --- //" << "\t@" << std::setprecision(50) << upper_plength << "\t@" << std::setprecision(50) << lower_plength << std::endl;
+        this->writeConstructionCodes("input1", out, num_states);
+        lower_regions.writeConstructionCodes("input2", out, num_states);
+        merged_regions->writeConstructionCodes("output", out, num_states);
+        out.close();
+    }*/
 }
 
 StateType SeqRegions::simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold_prob) const
@@ -1153,4 +1165,25 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
     }
     
     return total_lh;
+}
+
+bool SeqRegions::operator==(const SeqRegions& seqregions_1) const
+{
+    if (size() != seqregions_1.size())
+        return false;
+    
+    for (PositionType i = 0; i < size(); ++i)
+        if (!(at(i) == seqregions_1[i]))
+            return false;
+    
+    return true;
+}
+
+void SeqRegions::writeConstructionCodes(const std::string regions_name, std::ofstream& out, const StateType num_states) const
+{
+    const SeqRegions& regions = *this;
+    
+    // browse regions one by one to export the construction codes
+    for (const SeqRegion& region : regions)
+        region.writeConstructionCodes(regions_name, out, num_states);
 }

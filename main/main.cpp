@@ -29,6 +29,7 @@
 #include "utils/operatingsystem.h" //for getOSName()
 #include <stdlib.h>
 #include "cmaple.h"
+#include "unitest/maintest.cpp"
 
 using namespace std;
 
@@ -38,8 +39,14 @@ void printCopyright(ostream &out) {
 
 
 int main(int argc, char *argv[]) {
-    time_t start_time;
     parseArg(argc, argv, Params::getInstance());
+    
+    // GTest
+    testing::InitGoogleTest(&argc, (char**)argv);
+    RUN_ALL_TESTS();
+    
+    // Measure runtime
+    time_t start_time;
     
     // call the main function
     runCMaple(Params::getInstance());

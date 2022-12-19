@@ -165,6 +165,7 @@ LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
+add_subdirectory(unitest)
 
 ##################################################################
 # the main executable
@@ -182,7 +183,7 @@ endif(Backtrace_FOUND)
 
 
 # basic linking librararies
-target_link_libraries(cmaple utils model alignment tree main)
+target_link_libraries(cmaple utils model alignment tree unitest main)
 
 
 ##############################################################

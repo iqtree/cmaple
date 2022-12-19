@@ -532,6 +532,7 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.export_binary_tree = true;
     params.optimize_branch_length = true;
     params.short_range_topo_search = false;
+    params.output_testing = NULL;
     
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
@@ -681,6 +682,17 @@ void parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "--short-topo-search") == 0) {
                 
                 params.short_range_topo_search = true;
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--output-testing") == 0) {
+                
+                ++cnt;
+                
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use --output-testing <FILE_PATH>");
+                
+                params.output_testing = argv[cnt];
 
                 continue;
             }
