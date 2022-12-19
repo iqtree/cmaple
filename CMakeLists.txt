@@ -43,7 +43,7 @@
 #
 #
 
-cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 set(GCC_MIN_VERSION "5")
@@ -156,16 +156,29 @@ else(ZLIB_FOUND)
 endif(ZLIB_FOUND)
 
 ##################################################################
+# fetch GoogleTest framework when CMake runs
+##################################################################
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+##################################################################
 # subdirectories containing necessary libraries for the build
 ##################################################################
 
-add_subdirectory(main)
 add_subdirectory(utils)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
+add_subdirectory(maple)
 add_subdirectory(unitest)
+
 
 ##################################################################
 # the main executable
@@ -181,9 +194,8 @@ endif(Backtrace_FOUND)
 # setup linking flags
 ##################################################################
 
-
 # basic linking librararies
-target_link_libraries(cmaple utils model alignment tree unitest main)
+target_link_libraries(cmaple utils model alignment tree maple)
 
 
 ##############################################################
