@@ -1,4 +1,4 @@
-#include "main/cmaple.h"
+#include "maple/cmaple.h"
 #include "seqregions_testclass.h"
 
 // ----- Test MergeUpperLower() ----- //

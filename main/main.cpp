@@ -23,13 +23,13 @@
 
 #include <cmaple_config.h>
 
-#include <stdio.h>
 #include "utils/timeutil.h"
 #include "utils/tools.h"
 #include "utils/operatingsystem.h" //for getOSName()
+#include "maple/cmaple.h"
+
 #include <stdlib.h>
-#include "cmaple.h"
-#include "unitest/maintest.cpp"
+#include <stdio.h>
 
 using namespace std;
 
@@ -40,10 +40,6 @@ void printCopyright(ostream &out) {
 
 int main(int argc, char *argv[]) {
     parseArg(argc, argv, Params::getInstance());
-    
-    // GTest
-    testing::InitGoogleTest(&argc, (char**)argv);
-    RUN_ALL_TESTS();
     
     // Measure runtime
     time_t start_time;
