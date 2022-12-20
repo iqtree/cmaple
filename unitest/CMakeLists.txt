@@ -1,7 +1,7 @@
 enable_testing()
 
 add_executable(
-  maintest
+  maintest          ## todo: should be called 'SeqRegions_test'
   maintest.cpp
 )
 target_link_libraries(
