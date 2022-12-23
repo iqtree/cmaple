@@ -57,6 +57,7 @@ message("Setup clang-tidy")
 
 project(cmaple)
 add_definitions(-DCMAPLE)
+set(CMAKE_CXX_STANDARD 17)
 
 # The version number.
 set (cmaple_VERSION_MAJOR 1)
@@ -177,7 +178,7 @@ add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
 add_subdirectory(maple)
-add_subdirectory(unitest)
+add_subdirectory(unittest)
 
 
 ##################################################################

@@ -718,6 +718,12 @@ bool is_number(const std::string& s);
 void parseArg(int argc, char *argv[], Params &params);
 
 /**
+    Init default parameters
+    @param params (OUT) program parameters
+ */
+void initDefaultValue(Params &params);
+
+/**
     Detect the format of input file
     @param input_file file name
     @return

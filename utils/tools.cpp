@@ -31,7 +31,9 @@ using namespace std;
 
 VerboseMode verbose_mode;
 
-extern void printCopyright(ostream &out);
+void printCopyright(ostream &out) {
+     out << "CMAPLE";
+}
 
 /**
         Output an error to screen, then exit program
@@ -499,7 +501,8 @@ bool is_number(const std::string& s)
 
 void quickStartGuide();
 
-void parseArg(int argc, char *argv[], Params &params) {
+void initDefaultValue(Params &params)
+{
     params.aln_path = NULL;
     params.diff_path = NULL;
     params.ref_path = NULL;
@@ -533,6 +536,11 @@ void parseArg(int argc, char *argv[], Params &params) {
     params.optimize_branch_length = true;
     params.short_range_topo_search = false;
     params.output_testing = NULL;
+}
+
+void parseArg(int argc, char *argv[], Params &params) {
+    // init parameters
+    initDefaultValue(params);
     
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {

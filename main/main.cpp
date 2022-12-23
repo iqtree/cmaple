@@ -33,11 +33,6 @@
 
 using namespace std;
 
-void printCopyright(ostream &out) {
-     out << "CMAPLE";
-}
-
-
 int main(int argc, char *argv[]) {
     parseArg(argc, argv, Params::getInstance());
     
