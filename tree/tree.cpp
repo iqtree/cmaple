@@ -3759,7 +3759,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
         const auto* const seq1_region = &seq1_regions[iseq1];
         const auto* const seq2_region = &seq2_regions[iseq2];
         // 1. e1.type = N || e2.type = N
-        if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
+        if ((seq2_region->type == TYPE_N) + (seq1_region->type == TYPE_N))
         {
             pos = end_pos + 1;
             continue;
