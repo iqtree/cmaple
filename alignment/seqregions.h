@@ -49,10 +49,8 @@ public:
     /**
         Add a new region and automatically merged consecutive R regions
      */
-    inline void addNonConsecutiveRRegion(SeqRegions* const regions, const StateType new_region_type, const RealNumType plength_observation2node, const RealNumType plength_observation2root, const PositionType end_pos, const RealNumType threshold_prob) const
+    static void addNonConsecutiveRRegion(SeqRegions* const regions, const StateType new_region_type, const RealNumType plength_observation2node, const RealNumType plength_observation2root, const PositionType end_pos, const RealNumType threshold_prob)
     {
-        bool merged = false;
-        
         // cannot merge consecutive R regions if no region exists in regions
         if (!regions->empty())
         {
@@ -66,13 +64,12 @@ public:
                 last_region.position = end_pos;
                 last_region.plength_observation2node = plength_observation2node;
                 last_region.plength_observation2root = plength_observation2root;
-                merged = true;
+                return;
             }
         }
         
         // if we cannot merge new region into existing R region => just add a new one
-        if (!merged)
-            regions->emplace_back(new_region_type, end_pos, plength_observation2node, plength_observation2root);
+        regions->emplace_back(new_region_type, end_pos, plength_observation2node, plength_observation2root);
     }
     
     /**
