@@ -256,6 +256,105 @@ size_t SeqRegions::countSharedSegments(const SeqRegions& seq2_regions, const siz
     return ++count;
 }
 
+void merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const Model& model, 
+               const PositionType end_pos, const StateType num_states, SeqRegions& merged_target)
+{
+  RealNumType total_blength = lower_plength;
+  if (reg_o.plength_observation2node >= 0)
+    total_blength = reg_o.plength_observation2node + (lower_plength > 0 ? lower_plength : 0);
+
+  auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+  RealNumType sum_lh = updateLHwithModel(num_states, model, *reg_o.likelihood, (*new_lh), total_blength);
+  // normalize the new partial likelihood
+  normalize_arr(new_lh->data(), num_states, sum_lh);
+
+  // add merged region into merged_regions
+  merged_target.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+}
+
+void merge_N_RACGT(const SeqRegion& reg_racgt, const RealNumType lower_plength, const PositionType end_pos, 
+                   const RealNumType threshold_prob, SeqRegions& merged_regions)
+{
+  RealNumType plength_observation2node = -1;
+  RealNumType plength_observation2root = 0;
+
+  if (reg_racgt.plength_observation2node >= 0)
+  {
+    RealNumType new_plength = reg_racgt.plength_observation2node;
+    if (lower_plength > 0)
+      new_plength += lower_plength;
+
+    plength_observation2node = new_plength;
+  }
+  else
+  {
+    if (lower_plength > 0)
+      plength_observation2node = lower_plength;
+    else
+      plength_observation2root = -1;
+  }
+
+  // add a new region and try to merge consecutive R regions together
+  SeqRegions::addNonConsecutiveRRegion(&merged_regions, reg_racgt.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
+}
+
+void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const Model& model, const StateType num_states, SeqRegions& merged_regions)
+{
+  RealNumType total_blength = upper_plength;
+  if (reg_o.plength_observation2node > 0)
+  {
+    total_blength += reg_o.plength_observation2node;
+  }
+
+  if (total_blength > 0)
+  {
+    auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+    RealNumType sum_lh = updateLHwithMat(num_states, model.transposed_mut_mat, *(reg_o.likelihood), *new_lh, total_blength);
+
+    // normalize the new partial likelihood
+    normalize_arr(new_lh->data(), num_states, sum_lh);
+
+    // add merged region into merged_regions
+    merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+  }
+  else
+  {
+    // add merged region into merged_regions
+    merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, *(reg_o.likelihood));
+  }
+}
+
+void merge_RACGT_N(const SeqRegion& reg_n, const RealNumType upper_plength, const PositionType end_pos,
+  const RealNumType threshold_prob, SeqRegions& merged_regions)
+{
+  // todo rewrite
+  RealNumType plength_observation2node = -1;
+  RealNumType plength_observation2root = -1;
+
+  if (reg_n.plength_observation2root >= 0)
+  {
+    RealNumType plength_from_root = reg_n.plength_observation2root;
+    if (upper_plength > 0)
+      plength_from_root += upper_plength;
+
+    plength_observation2node = reg_n.plength_observation2node;
+    plength_observation2root = plength_from_root;
+  }
+  else if (reg_n.plength_observation2node >= 0)
+  {
+    RealNumType plength_observation = reg_n.plength_observation2node;
+    if (upper_plength > 0)
+      plength_observation += upper_plength;
+
+    plength_observation2node = plength_observation;
+  }
+  else if (upper_plength > 0)
+    plength_observation2node = upper_plength;
+
+  // add a new region and try to merge consecutive R regions together
+  SeqRegions::addNonConsecutiveRRegion(&merged_regions, reg_n.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
+}
+
 void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
                                  RealNumType upper_plength, 
                                  const SeqRegions& lower_regions, 
@@ -304,42 +403,12 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                 // seq1_entry = 'N' and seq2_entry = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    RealNumType total_blength = lower_plength;
-                    if (seq2_region->plength_observation2node >= 0)
-                        total_blength = seq2_region->plength_observation2node + (lower_plength > 0 ? lower_plength: 0);
-                        
-                    auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
-                    RealNumType sum_lh = updateLHwithModel(num_states, model, *seq2_region->likelihood, (*new_lh), total_blength);
-                    // normalize the new partial likelihood
-                    normalize_arr(new_lh->data(), num_states, sum_lh);
-
-                    // add merged region into merged_regions
-                    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+                  merge_N_O(lower_plength, *seq2_region, model, end_pos, num_states, *merged_regions);
                 }
                 // seq1_entry = 'N' and seq2_entry = R/ACGT
                 else
                 {
-                    RealNumType plength_observation2node = -1;
-                    RealNumType plength_observation2root = 0;
-                    
-                    if (seq2_region->plength_observation2node >= 0)
-                    {
-                        RealNumType new_plength = seq2_region->plength_observation2node ;
-                        if (lower_plength > 0)
-                            new_plength += lower_plength;
-                        
-                        plength_observation2node = new_plength;
-                    }
-                    else
-                    {
-                        if (lower_plength > 0)
-                            plength_observation2node = lower_plength;
-                        else
-                            plength_observation2root = -1;
-                    }
-                    
-                    // add a new region and try to merge consecutive R regions together
-                    addNonConsecutiveRRegion(merged_regions, seq2_region->type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
+                  merge_N_RACGT(*seq2_region, lower_plength, end_pos, threshold_prob, *merged_regions);
                 }
             }
         }
@@ -349,65 +418,16 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
             // seq1_entry = 'O' and seq2_entry = N
             if (seq1_region->type == TYPE_O)
             {
-                RealNumType total_blength = -1;
-                
-                if (seq1_region->plength_observation2node >= 0)
-                {
-                    total_blength = seq1_region->plength_observation2node;
-                    if (upper_plength > 0)
-                        total_blength += upper_plength;
-                }
-                else if (upper_plength > 0)
-                    total_blength = upper_plength;
-                
-                if (total_blength > 0)
-                {
-                    auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
-                    RealNumType sum_lh = updateLHwithMat(num_states, model.transposed_mut_mat, *(seq1_region->likelihood), *new_lh, total_blength);
-
-                    // normalize the new partial likelihood
-                    normalize_arr(new_lh->data(), num_states, sum_lh);
-                    
-                    // add merged region into merged_regions
-                    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
-                }
-                else
-                {
-                    // add merged region into merged_regions
-                    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, *(seq1_region->likelihood));
-                }
+              merge_O_N(*seq1_region, upper_plength, end_pos, model, num_states, *merged_regions);
             }
             // seq2_entry = 'N' and seq1_entry = R/ACGT
             else
             {
-                RealNumType plength_observation2node = -1;
-                RealNumType plength_observation2root = -1;
-                
-                if (seq1_region->plength_observation2root >= 0)
-                {
-                    RealNumType plength_from_root = seq1_region->plength_observation2root;
-                    if (upper_plength > 0)
-                        plength_from_root += upper_plength;
-                    
-                    plength_observation2node = seq1_region->plength_observation2node;
-                    plength_observation2root = plength_from_root;
-                }
-                else if (seq1_region->plength_observation2node >= 0)
-                {
-                    RealNumType plength_observation = seq1_region->plength_observation2node;
-                    if (upper_plength > 0)
-                        plength_observation += upper_plength;
-                    
-                    plength_observation2node = plength_observation;
-                }
-                else if (upper_plength > 0)
-                        plength_observation2node = upper_plength;
-                
-                // add a new region and try to merge consecutive R regions together
-                addNonConsecutiveRRegion(merged_regions, seq1_region->type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
+              merge_RACGT_N(*seq1_region, upper_plength, end_pos, threshold_prob, *merged_regions);
             }
         }
         // seq1_entry = seq2_entry = R/ACGT
+        // todo: improve condition: a == b & a == RACGT
         else if (seq1_region->type == seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R))
         {
             // add a new region and try to merge consecutive R regions together
