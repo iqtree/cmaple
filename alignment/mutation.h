@@ -12,18 +12,17 @@
 
 /** A mutation compared with a reference sequence */
 class Mutation {
+    LengthType length_ = 1;
 public:
     /**
         Alternative allele, for DNA, it is A, C, G, T, N, O, -
      */
     StateType type = TYPE_N;
-    
+
     /**
         (starting) position
      */
     PositionType position = 0;
-
-    PositionType length = 1;
 
     /**
     *  Mutation constructor
@@ -35,19 +34,21 @@ public:
     */
     Mutation(StateType n_type, PositionType n_position)
       : type(n_type),
-      position(n_position)
+        position(n_position)
     {}
 
-    Mutation(StateType n_type, PositionType n_position, PositionType n_length)
+    Mutation(StateType n_type, PositionType n_position, LengthTypeLarge n_length)
      : type(n_type),
        position(n_position),
-       length (n_length)
+       length_(n_length)
     {
       // validate the data
       if (type != TYPE_N && type != TYPE_DEL && type != TYPE_R)
         outError("Invalid mutation. Only mutation type N, -, or R can have length greater than 1.");
+      if (n_length > (std::numeric_limits<LengthType>::max)())
+        outError("Invalid mutation. Length is larger than 2^15. Recompile with larger 'LengthType' at the cost of higher memory consumption.");
     }
 
-    PositionType getLength() const { return length;}
+   LengthType getLength() const { return length_;}
 };
 #endif

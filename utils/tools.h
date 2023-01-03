@@ -153,6 +153,15 @@ typedef uint8_t StateType;
 typedef int32_t PositionType;
 
 /**
+    Type of segment lengths
+ */
+typedef int16_t LengthType;
+/**
+    Type of segment lengths (to check if 16 bit is sufficient)
+ */
+typedef int32_t LengthTypeLarge;
+
+/**
     Type of real numbers
  */
 typedef double RealNumType;
