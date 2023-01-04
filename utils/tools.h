@@ -236,13 +236,20 @@ extern VerboseMode verbose_mode;
 /*--------------------------------------------------------------*/
 const char REF_NAME[] = "REF";
 const int MIN_NUM_TAXA = 3;
-const RealNumType MIN_NEGATIVE = -DBL_MAX;// -FLT_MAX;
-const RealNumType MIN_POSITIVE = DBL_MIN;// FLT_MIN;
+const RealNumType MIN_NEGATIVE = std::numeric_limits<RealNumType>::lowest();// -FLT_MAX;
+const RealNumType MIN_POSITIVE = (std::numeric_limits<RealNumType>::min)();// FLT_MIN;
 //const RealNumType INVERSE_MIN_POSITIVE = 1.0 / MIN_POSITIVE;
 //const RealNumType LOG_MIN_POSITIVE = log(MIN_POSITIVE);
-const RealNumType MAX_POSITIVE = DBL_MAX;
+const RealNumType MAX_POSITIVE = (std::numeric_limits<RealNumType>::max)();
 const RealNumType LOG_MAX_POSITIVE = log(MAX_POSITIVE);
-const RealNumType MIN_CARRY_OVER = 1e-250;
+
+template <class T> constexpr T getMinCarryOver();
+template<> constexpr double getMinCarryOver<double>() { return 1e-250; }; // of -308
+template<> constexpr float getMinCarryOver<float>() { return 1e-36; };    // of -38
+
+const RealNumType MIN_CARRY_OVER = getMinCarryOver<RealNumType>();
+
+
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
