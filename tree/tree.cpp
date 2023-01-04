@@ -1,6 +1,7 @@
 #include "tree.h"
 
 #include <cassert>
+#include <utils/matrix.h>
 
 using namespace std;
 
@@ -3844,23 +3845,19 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                     // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
                     if (total_blength > 0)
                     {
-                        RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot += mutation_mat_row[j] * seq2_region->getLH(j);
-                        
+                        const RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+                        tot += dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
                         tot *= total_blength;
                     }
-                    
                     tot += seq2_region->getLH(seq1_state);
                 }
-                    
                 total_factor *= tot;
             }
             // 2.3. e1.type = R and e2.type = A/C/G/T
             else
             {
-                StateType seq1_state = aln.ref_seq[end_pos];
-                StateType seq2_state = seq2_region->type;
+                const StateType seq1_state = aln.ref_seq[end_pos];
+                const StateType seq2_state = seq2_region->type;
                 
                 if (seq1_region->plength_observation2root >= 0)
                 {
@@ -3900,34 +3897,16 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
             // 3.1. e1.type = O and e2.type = O
             if (seq2_region->type == TYPE_O)
             {
-                RealNumType tot = 0;
-                
                 if (total_blength > 0)
                 {
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                                        
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        // NHANLT NOTE:
-                        // tot2: likelihood of i evolves to j
-                        // tot2 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] * total_blength * lh(seq2,j)
-                        RealNumType tot2 = 0;
-                        
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot2 += mutation_mat_row[j] * seq2_region->getLH(j);
-                        
-                        // NHANLT NOTE:
-                        // tot = the likelihood of observing i * the likelihood of i evolves to j
-                        tot += seq1_region->getLH(i) * (seq2_region->getLH(i) + total_blength * tot2);
-                    }
+                  total_factor *= matrixEvolve<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]), model.mutation_mat, total_blength);
                 }
                 // NHANLT NOTE:
                 // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
                 else
-                    for (StateType i = 0; i < num_states; ++i)
-                        tot += seq1_region->getLH(i) * seq2_region->getLH(i);
-                
-                total_factor *= tot;
+                {
+                  total_factor *= dotProduct<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]));
+                }
             }
             // 3.2. e1.type = O and e2.type = R or A/C/G/T
             else
@@ -3941,11 +3920,8 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                     // NHANLT NOTE:
                     // tot2: likelihood of i evolves to seq2_state
                     // tot2 = (1 + mut[seq2_state,seq2_state] * total_blength) * lh(seq1,seq2_state) + lh(seq1,i) * mut[i,seq2_state] * total_blength
-                    RealNumType tot2 = 0;
                     RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                    for (StateType j = 0; j < num_states; ++j)
-                        tot2 += seq1_region->getLH(j) * transposed_mut_mat_row[j];
-                    
+                    RealNumType tot2 = dotProduct<num_states>(&((*seq1_region->likelihood)[0]), transposed_mut_mat_row);
                     total_factor *= seq1_region->getLH(seq2_state) + total_blength * tot2;
                 }
                 // NHANLT NOTE:
@@ -3976,34 +3952,12 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                 // 4.2. e1.type = A/C/G/T and e2.type = O
                 if (seq2_region->type == TYPE_O)
                 {
-                    RealNumType tot = 0.0;
-                    
                     if (seq1_region->plength_observation2root >= 0)
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
                         RealNumType* mutation_mat_row = model.mutation_mat;
-                                            
-                        for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                        {
-                            // NHANLT NOTE: UNSURE
-                            // tot2: likelihood that we can observe seq1_state elvoving from i (from root) (account for the fact that the observation might have occurred on the other side of the phylogeny with respect to the root)
-                            // tot2 = root_freqs[seq1_state] * (1 + mut[seq1_state,seq1_state] * plength_observation2node) + root_freqs[i] * mut[i,seq1_state] * plength_observation2node
-                            RealNumType tot2;
-                            
-                            if (seq1_state == i)
-                                tot2 = model.root_freqs[i] * (1.0 + transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
-                            else
-                                tot2 = model.root_freqs[i] * (transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
-                            
-                            // NHANLT NOTE:
-                            // tot3: likelihood of i evolves to j
-                            // tot3 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] * total_blength * lh(seq2,j)
-                            RealNumType tot3 = 0;
-                            for (StateType j = 0; j < num_states; ++j)
-                                tot3 += mutation_mat_row[j] * seq2_region->getLH(j);
-                            tot += tot2 * (seq2_region->getLH(i) + total_blength * tot3);
-                        }
-                        
+                        RealNumType tot = matrixEvolveRoot<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]), seq1_state,
+                          model.root_freqs, transposed_mut_mat_row, mutation_mat_row, total_blength, seq1_region->plength_observation2node);
                         // NHANLT NOTE: UNCLEAR
                         // why we need to divide tot by root_freqs[seq1_state]
                         total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
@@ -4015,9 +3969,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                         // NHANLT NOTE:
                         // tot = the likelihood of seq1_state evolving to j
                         // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
-                        for (StateType j = 0; j < num_states; ++j)
-                            tot += mutation_mat_row[j] * seq2_region->getLH(j);
-                        
+                        RealNumType tot = dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
                         tot *= total_blength;
                         tot += seq2_region->getLH(seq1_state);
                         total_factor *= tot;
