@@ -96,13 +96,13 @@ RealNumType matrixEvolveRoot(const RealNumType* const vec2,
   return result;
 }
 
-template <int length>
-RealNumType updateVecWithState(RealNumType* const update_vec, const int seq1_state,
+template <StateType length>
+RealNumType updateVecWithState(RealNumType* const update_vec, const StateType seq1_state,
   const RealNumType* const vec,
   const RealNumType factor)
 {
-  RealNumType result{ 0 };
-  for (int i = 0; i < length; ++i)
+  RealNumType result{0};
+  for (StateType i = 0; i < length; ++i)
   {
     if (i == seq1_state)
       update_vec[i] *= (1.0 + vec[i] * factor);
@@ -113,12 +113,12 @@ RealNumType updateVecWithState(RealNumType* const update_vec, const int seq1_sta
   return result;
 }
 
-template <int length>
-void setVecWithState(RealNumType* const set_vec, const int seq1_state,
+template <StateType length>
+void setVecWithState(RealNumType* const set_vec, const StateType seq1_state,
   const RealNumType* const vec,
   const RealNumType factor)
 {
-  for (int i = 0; i < length; ++i)
+  for (StateType i = 0; i < length; ++i)
   {
     if (i == seq1_state)
       set_vec[i] = 1.0 + vec[i] * factor;

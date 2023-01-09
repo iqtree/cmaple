@@ -573,6 +573,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                 auto& new_lh_value = *new_lh;
                 RealNumType sum_new_lh = 0;
                 
+                // init or update new_lh/new_lh_value
                 if (seq1_region->plength_observation2root >= 0)
                 {
                     RealNumType length_to_root = seq1_region->plength_observation2root;
@@ -628,6 +629,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     
                     // TODO: this seems a weird operation on `new_lh_value` (since it was just created anew and is all 00000)!
                     // please check this makes sense!
+                    // CHECKED: NHANLT: new_lh_value or new_lh is already initialized or updated in the section "init or update new_lh/new_lh_value" above
                     if (total_blength_2 > 0)
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
