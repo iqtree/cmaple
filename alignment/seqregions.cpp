@@ -300,11 +300,25 @@ void merge_N_RACGT(const SeqRegion& reg_racgt, const RealNumType lower_plength, 
 
 void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const Model& model, const StateType num_states, SeqRegions& merged_regions)
 {
+  /*
+   NhanLT: total_blength may be wrong if upper_plength == -1 and reg_o.plength_observation2node > 0
   RealNumType total_blength = upper_plength;
   if (reg_o.plength_observation2node > 0)
   {
     total_blength += reg_o.plength_observation2node;
-  }
+  }*/
+    
+    RealNumType total_blength = -1;
+    
+    if (reg_o.plength_observation2node >= 0)
+    {
+        total_blength = reg_o.plength_observation2node;
+        if (upper_plength > 0)
+            total_blength += upper_plength;
+    }
+    else if (upper_plength > 0)
+        total_blength = upper_plength;
+
 
   if (total_blength > 0)
   {
