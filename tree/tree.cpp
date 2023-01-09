@@ -3210,6 +3210,7 @@ PositionType Tree::optimizeBranchLengths(RealNumType *cumulative_rate, RealNumTy
 using DoubleState = uint16_t;
 static constexpr DoubleState RR = (DoubleState(TYPE_R) << 8) | TYPE_R;
 static constexpr DoubleState RO = (DoubleState(TYPE_R) << 8) | TYPE_O;
+static constexpr DoubleState OO = (DoubleState(TYPE_O) << 8) | TYPE_O;
 
 RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, const RealNumType* const cumulative_rate, RealNumType min_blength_sensitivity)
 {
@@ -3237,16 +3238,17 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* seq1_region = &seq1_regions[iseq1];
         const auto* seq2_region = &seq2_regions[iseq2];
-        const DoubleState s1s2 = (DoubleState(seq1_region->type) << 8) | seq2_region->type;
-
+        
         // 1. e1.type = N || e2.type = N
-        if (((seq2_region->type) == TYPE_N) + (seq1_region->type == TYPE_N))
+        if ((seq2_region->type == TYPE_N) + (seq1_region->type == TYPE_N))
         {
             pos = end_pos + 1;
             continue;
         }
         
         // e1.type != N && e2.type != N
+        const DoubleState s1s2 = (DoubleState(seq1_region->type) << 8) | seq2_region->type;
+
         // total_blength will be here the total length from the root or from the upper node, down to the down node.
         if (seq1_region->plength_observation2root >= 0)
             total_blength = seq1_region->plength_observation2root;
@@ -3397,95 +3399,88 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
                 coefficient_vec.push_back(coeff0 / coeff1);
         }
         // 4. e1.type = A/C/G/T
-        else
+        // 4.1. e1.type =  e2.type
+        // NHANLT NOTES:
+        // coefficient = derivative of log likelihood function wrt t
+        // l = log(1 + q_xx * t) ~ q_xx * t
+        // => l' = q_xx
+        else if (seq1_region->type == seq2_region->type)
+            coefficient += model.diagonal_mut_mat[seq1_region->type];
+        // e1.type = A/C/G/T and e2.type = O/A/C/G/T
+        // 4.2. e1.type = A/C/G/T and e2.type = O
+        else if (seq2_region->type == TYPE_O)
         {
-            int seq1_state = seq1_region->type;
+            StateType seq1_state = seq1_region->type;
+            RealNumType coeff0 = seq2_region->getLH(seq1_state);
+            RealNumType coeff1 = 0;
             
-            // 4.1. e1.type =  e2.type
-            // NHANLT NOTES:
-            // coefficient = derivative of log likelihood function wrt t
-            // l = log(1 + q_xx * t) ~ q_xx * t
-            // => l' = q_xx
-            if (seq1_region->type == seq2_region->type)
-                coefficient += model.diagonal_mut_mat[seq1_state];
-            // e1.type = A/C/G/T and e2.type = O/A/C/G/T
+            RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+            
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                coeff0 *= model.root_freqs[seq1_state];
+
+                RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+                                    
+                for (StateType i = 0; i < num_states; ++i)
+                {
+                    coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->getLH(i);
+                    coeff1 += mutation_mat_row[i] * seq2_region->getLH(i);
+                }
+                
+                coeff1 *= model.root_freqs[seq1_state];
+            }
             else
             {
-                // 4.2. e1.type = A/C/G/T and e2.type = O
-                if (seq2_region->type == TYPE_O)
-                {
-                    RealNumType coeff0 = seq2_region->getLH(seq1_state);
-                    RealNumType coeff1 = 0;
-                    
-                    RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                    
-                    if (seq1_region->plength_observation2root >= 0)
-                    {
-                        coeff0 *= model.root_freqs[seq1_state];
-
-                        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-                                            
-                        for (StateType i = 0; i < num_states; ++i)
-                        {
-                            coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->getLH(i);
-                            coeff1 += mutation_mat_row[i] * seq2_region->getLH(i);
-                        }
-                        
-                        coeff1 *= model.root_freqs[seq1_state];
-                    }
-                    else
-                    {
-                        // NHANLT NOTES:
-                        // x = seq1_state
-                        // l = log(1 + q_xx * t + sum(q_xy * t)
-                        // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
-                        // coeff1 = numerator = q_xx + sum(q_xy)
-                        for (StateType j = 0; j < num_states; ++j)
-                            coeff1 += mutation_mat_row[j] * seq2_region->getLH(j);
-                    }
-                    
-                    // NHANLT NOTES:
-                    // l = log(1 + q_xx * t + sum(q_xy * t)
-                    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
-                    // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
-                    if (total_blength > 0)
-                        coeff0 += coeff1 * total_blength;
-                    
-                    // NHANLT NOTES:
-                    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0;
-                    if (coeff1 < 0)
-                        coefficient += coeff1 / coeff0;
-                    else
-                        coefficient_vec.push_back(coeff0 / coeff1);
-                }
-                // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
-                else
-                {
-                    RealNumType coeff0 = 0;
-                    
-                    StateType seq2_state = seq2_region->type;
-                    if (seq2_state == TYPE_R)
-                        seq2_state = aln.ref_seq[end_pos];
-                    
-                    if (seq1_region->plength_observation2root >= 0)
-                    {
-                        coeff0 = model.root_freqs[seq2_state] * model.mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
-                        RealNumType coeff1 = model.root_freqs[seq1_state] * model.mutation_mat[model.row_index[seq1_state] + seq2_state];
-                        
-                        if (total_blength > 0)
-                            coeff0 += coeff1 * total_blength;
-                        
-                        coeff0 /= coeff1;
-                    }
-                    // NHANLT NOTES:
-                    // l = log(q_xy * t)
-                    // l' = q_xy / (q_xy * t) = 1 / t
-                    else if (total_blength > 0)
-                        coeff0 = total_blength;
-                    
-                    coefficient_vec.push_back(coeff0);
-                }
+                // NHANLT NOTES:
+                // x = seq1_state
+                // l = log(1 + q_xx * t + sum(q_xy * t)
+                // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+                // coeff1 = numerator = q_xx + sum(q_xy)
+                for (StateType j = 0; j < num_states; ++j)
+                    coeff1 += mutation_mat_row[j] * seq2_region->getLH(j);
             }
+            
+            // NHANLT NOTES:
+            // l = log(1 + q_xx * t + sum(q_xy * t)
+            // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+            // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
+            if (total_blength > 0)
+                coeff0 += coeff1 * total_blength;
+            
+            // NHANLT NOTES:
+            // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0;
+            if (coeff1 < 0)
+                coefficient += coeff1 / coeff0;
+            else
+                coefficient_vec.push_back(coeff0 / coeff1);
+        }
+        // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
+        else
+        {
+            RealNumType coeff0 = 0;
+            StateType seq1_state = seq1_region->type;
+            StateType seq2_state = seq2_region->type;
+            if (seq2_state == TYPE_R)
+                seq2_state = aln.ref_seq[end_pos];
+            
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                coeff0 = model.root_freqs[seq2_state] * model.mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
+                RealNumType coeff1 = model.root_freqs[seq1_state] * model.mutation_mat[model.row_index[seq1_state] + seq2_state];
+                
+                if (total_blength > 0)
+                    coeff0 += coeff1 * total_blength;
+                
+                coeff0 /= coeff1;
+            }
+            // NHANLT NOTES:
+            // l = log(q_xy * t)
+            // l' = q_xy / (q_xy * t) = 1 / t
+            else if (total_blength > 0)
+                coeff0 = total_blength;
+            
+            coefficient_vec.push_back(coeff0);
         }
         
         // update pos
@@ -3764,7 +3759,6 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
         const auto* const seq2_region = &seq2_regions[iseq2];
-        const DoubleState s1s2 = (DoubleState(seq1_region->type) << 8) | seq2_region->type;
 
         // 1. e1.type = N || e2.type = N
         if ((seq2_region->type == TYPE_N) + (seq1_region->type == TYPE_N))
@@ -3774,6 +3768,8 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
         }
        
         // e1.type != N && e2.type != N
+        const DoubleState s1s2 = (DoubleState(seq1_region->type) << 8) | seq2_region->type;
+        
         // total_blength will be here the total length from the root or from the upper node, down to the down node.
         if (seq1_region->plength_observation2root >= 0)
             total_blength = seq1_region->plength_observation2root + (blength >= 0 ? blength : 0);
@@ -3855,7 +3851,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                 }
                 total_factor *= tot;
             }
-            // 2.3. e1.type = R and e2.type = A/C/G/T
+        // 2.3. e1.type = R and e2.type = A/C/G/T
         else if (seq1_region->type == TYPE_R)
             {
                 const StateType seq1_state = aln.ref_seq[end_pos];
@@ -3894,128 +3890,119 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
             }
         
         // 3. e1.type = O
-        else if (seq1_region->type == TYPE_O)
+        // 3.1. e1.type = O and e2.type = O
+        else if (s1s2 == OO)
         {
-            // 3.1. e1.type = O and e2.type = O
-            if (seq2_region->type == TYPE_O)
+            if (total_blength > 0)
             {
-                if (total_blength > 0)
-                {
-                  total_factor *= matrixEvolve<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]), model.mutation_mat, total_blength);
-                }
-                // NHANLT NOTE:
-                // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
-                else
-                {
-                  total_factor *= dotProduct<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]));
-                }
+              total_factor *= matrixEvolve<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]), model.mutation_mat, total_blength);
             }
-            // 3.2. e1.type = O and e2.type = R or A/C/G/T
+            // NHANLT NOTE:
+            // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
             else
             {
-                StateType seq2_state = seq2_region->type;
-                if (seq2_state == TYPE_R)
-                    seq2_state = aln.ref_seq[end_pos];
-                
-                if (total_blength > 0)
-                {
-                    // NHANLT NOTE:
-                    // tot2: likelihood of i evolves to seq2_state
-                    // tot2 = (1 + mut[seq2_state,seq2_state] * total_blength) * lh(seq1,seq2_state) + lh(seq1,i) * mut[i,seq2_state] * total_blength
-                    RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                    RealNumType tot2 = dotProduct<num_states>(&((*seq1_region->likelihood)[0]), transposed_mut_mat_row);
-                    total_factor *= seq1_region->getLH(seq2_state) + total_blength * tot2;
-                }
-                // NHANLT NOTE:
-                // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
-                else
-                    total_factor *= seq1_region->getLH(seq2_state);
+              total_factor *= dotProduct<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]));
             }
         }
-        // 4. e1.type = A/C/G/T
-        else
+        // 3.2. e1.type = O and e2.type = R or A/C/G/T
+        else if (seq1_region->type == TYPE_O)
         {
-            int seq1_state = seq1_region->type;
+            StateType seq2_state = seq2_region->type;
+            if (seq2_state == TYPE_R)
+                seq2_state = aln.ref_seq[end_pos];
             
-            // 4.1. e1.type =  e2.type
-            if (seq1_region->type == seq2_region->type)
+            if (total_blength > 0)
             {
-                if (seq1_region->plength_observation2root >= 0)
-                    total_blength += seq1_region->plength_observation2node;
-                
                 // NHANLT NOTE:
-                // the likelihood that seq1_state unchanges
-                if (total_blength > 0)
-                    lh_cost += model.diagonal_mut_mat[seq1_state] * total_blength;
+                // tot2: likelihood of i evolves to seq2_state
+                // tot2 = (1 + mut[seq2_state,seq2_state] * total_blength) * lh(seq1,seq2_state) + lh(seq1,i) * mut[i,seq2_state] * total_blength
+                RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+                RealNumType tot2 = dotProduct<num_states>(&((*seq1_region->likelihood)[0]), transposed_mut_mat_row);
+                total_factor *= seq1_region->getLH(seq2_state) + total_blength * tot2;
             }
-            // e1.type = A/C/G/T and e2.type = O/A/C/G/T
+            // NHANLT NOTE:
+            // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
+            else
+                total_factor *= seq1_region->getLH(seq2_state);
+        }
+        // 4. e1.type = A/C/G/T
+        // 4.1. e1.type =  e2.type
+        else if (seq1_region->type == seq2_region->type)
+        {
+            if (seq1_region->plength_observation2root >= 0)
+                total_blength += seq1_region->plength_observation2node;
+            
+            // NHANLT NOTE:
+            // the likelihood that seq1_state unchanges
+            if (total_blength > 0)
+                lh_cost += model.diagonal_mut_mat[seq1_region->type] * total_blength;
+        }
+        // e1.type = A/C/G/T and e2.type = O/A/C/G/T
+        // 4.2. e1.type = A/C/G/T and e2.type = O
+        else if (seq2_region->type == TYPE_O)
+        {
+            StateType seq1_state = seq1_region->type;
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+                RealNumType* mutation_mat_row = model.mutation_mat;
+                RealNumType tot = matrixEvolveRoot<num_states>(&((*seq2_region->likelihood)[0]), seq1_state,
+                  model.root_freqs, transposed_mut_mat_row, mutation_mat_row, total_blength, seq1_region->plength_observation2node);
+                // NHANLT NOTE: UNCLEAR
+                // why we need to divide tot by root_freqs[seq1_state]
+                total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
+            }
             else
             {
-                // 4.2. e1.type = A/C/G/T and e2.type = O
-                if (seq2_region->type == TYPE_O)
-                {
-                    if (seq1_region->plength_observation2root >= 0)
-                    {
-                        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-                        RealNumType* mutation_mat_row = model.mutation_mat;
-                        RealNumType tot = matrixEvolveRoot<num_states>(&((*seq2_region->likelihood)[0]), seq1_state,
-                          model.root_freqs, transposed_mut_mat_row, mutation_mat_row, total_blength, seq1_region->plength_observation2node);
-                        // NHANLT NOTE: UNCLEAR
-                        // why we need to divide tot by root_freqs[seq1_state]
-                        total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
-                    }
-                    else
-                    {
-                        RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                        
-                        // NHANLT NOTE:
-                        // tot = the likelihood of seq1_state evolving to j
-                        // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
-                        RealNumType tot = dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
-                        tot *= total_blength;
-                        tot += seq2_region->getLH(seq1_state);
-                        total_factor *= tot;
-                    }
-                }
-                // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
-                else
-                {
-                    StateType seq2_state = seq2_region->type;
-                    if (seq2_state == TYPE_R)
-                        seq2_state = aln.ref_seq[end_pos];
-                    
-                    if (seq1_region->plength_observation2root >= 0)
-                    {
-                        if (total_blength > 0)
-                        {
-                            // NHANLT NOTE: UNSURE
-                            // seq1_state_evolves_seq2_state = (1) the likelihood that seq1_state evolves to seq2_state * (2) the likelihood that seq1_state unchanges from the observing position
-                            // (1) = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength
-                            // (2) = (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node)
-                            RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
-                            
-                            // NHANLT NOTE: UNCLEAR
-                            // consider the inverse process of the above
-                            // seq2_state_evolves_seq1_state = (1) the likelihood that seq2_state evolves to seq1_state * (2) the likelihood that seq2_state unchanges from the observing position
-                            // (1) = root_freqs[seq2_state] / root_freqs[seq1_state] * mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node
-                            // (2) = (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength)
-                            RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength);
-                            
-                            total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
-                        }
-                        // NHANLT NOTE:
-                        // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
-                        else
-                            total_factor *= model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
-                    }
-                    // NHANLT NOTE:
-                    // add the likelihood that seq1_state evoles to seq2_state = mut[seq1_state,seq2_state] * total_blength
-                    else if (total_blength > 0)
-                        total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength;
-                    else
-                        return MIN_NEGATIVE;
-                }
+                RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+                
+                // NHANLT NOTE:
+                // tot = the likelihood of seq1_state evolving to j
+                // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
+                RealNumType tot = dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
+                tot *= total_blength;
+                tot += seq2_region->getLH(seq1_state);
+                total_factor *= tot;
             }
+        }
+        // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
+        else
+        {
+            StateType seq1_state = seq1_region->type;
+            StateType seq2_state = seq2_region->type;
+            if (seq2_state == TYPE_R)
+                seq2_state = aln.ref_seq[end_pos];
+            
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                if (total_blength > 0)
+                {
+                    // NHANLT NOTE: UNSURE
+                    // seq1_state_evolves_seq2_state = (1) the likelihood that seq1_state evolves to seq2_state * (2) the likelihood that seq1_state unchanges from the observing position
+                    // (1) = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength
+                    // (2) = (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node)
+                    RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
+                    
+                    // NHANLT NOTE: UNCLEAR
+                    // consider the inverse process of the above
+                    // seq2_state_evolves_seq1_state = (1) the likelihood that seq2_state evolves to seq1_state * (2) the likelihood that seq2_state unchanges from the observing position
+                    // (1) = root_freqs[seq2_state] / root_freqs[seq1_state] * mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node
+                    // (2) = (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength)
+                    RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength);
+                    
+                    total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
+                }
+                // NHANLT NOTE:
+                // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
+                else
+                    total_factor *= model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
+            }
+            // NHANLT NOTE:
+            // add the likelihood that seq1_state evoles to seq2_state = mut[seq1_state,seq2_state] * total_blength
+            else if (total_blength > 0)
+                total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength;
+            else
+                return MIN_NEGATIVE;
         }
          
         // approximately update lh_cost and total_factor
@@ -4068,256 +4055,253 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
         const auto* seq2_region = &seq2_regions[iseq2]; 
         
         // 1. e1.type = N || e2.type = N
-        if (seq2_region->type == TYPE_N || seq1_region->type == TYPE_N)
+        if ((seq2_region->type == TYPE_N) + (seq1_region->type == TYPE_N))
         {
             pos = end_pos + 1;
             continue;
         }
+        
         // e1.type != N && e2.type != N
-        else {
-            // A,C,G,T
-            // R -> same as the reference
-            // N -> gaps
-            // O -> vector of 4 probability to observe A, C, G, T
-            // 2. e1.type = R
-            if (seq1_region->type == TYPE_R)
+        // A,C,G,T
+        // R -> same as the reference
+        // N -> gaps
+        // O -> vector of 4 probability to observe A, C, G, T
+        const DoubleState s1s2 = (DoubleState(seq1_region->type) << 8) | seq2_region->type;
+        
+        // 2. e1.type = R
+        // 2.1. e1.type = R and e2.type = R
+        if (s1s2 == RR) [[likely]]
+        {
+            if (seq1_region->plength_observation2node < 0 && seq1_region->plength_observation2root < 0)
+                lh_cost += blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+            else
             {
-                // 2.1. e1.type = R and e2.type = R
-                if (seq2_region->type == TYPE_R)
+                total_blength = blength + seq1_region->plength_observation2node;
+                if (seq1_region->plength_observation2root < 0)
+                    lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+                else
+                    // here contribution from root frequency gets added and subtracted so it's ignored
+                    lh_cost += (total_blength + seq1_region->plength_observation2root) * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+            }
+        }
+        // 2.2. e1.type = R and e2.type = O
+        else if (s1s2 == RO)
+        {
+            StateType seq1_state = aln.ref_seq[end_pos];
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                total_blength = seq1_region->plength_observation2root + blength;
+                
+                if (seq2_region->getLH(seq1_state) > 0.1)
                 {
-                    if (seq1_region->plength_observation2node < 0 && seq1_region->plength_observation2root < 0)
-                        lh_cost += blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-                    else
-                    {
-                        total_blength = blength + seq1_region->plength_observation2node;
-                        if (seq1_region->plength_observation2root < 0)
-                            lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-                        else
-                            // here contribution from root frequency gets added and subtracted so it's ignored
-                            lh_cost += (total_blength + seq1_region->plength_observation2root) * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-                    }
+                    total_blength += seq1_region->plength_observation2node;
+                    
+                    // here contribution from root frequency can also be also ignored
+                    lh_cost += model.diagonal_mut_mat[seq1_state] * total_blength;
                 }
-                // 2.2. e1.type = R and e2.type = O
-                else if (seq2_region->type == TYPE_O)
-                {
-                    StateType seq1_state = aln.ref_seq[end_pos];
-                    if (seq1_region->plength_observation2root >= 0)
-                    {
-                        total_blength = seq1_region->plength_observation2root + blength;
-                        
-                        if (seq2_region->getLH(seq1_state) > 0.1)
-                        {
-                            total_blength += seq1_region->plength_observation2node;
-                            
-                            // here contribution from root frequency can also be also ignored
-                            lh_cost += model.diagonal_mut_mat[seq1_state] * total_blength;
-                        }
-                        else
-                        {
-                            RealNumType tot = 0;
-                            RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
-                            RealNumType* mutation_mat_row = model.mutation_mat;
-                                                
-                            for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                            {
-                                RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
-                                RealNumType tot3 = (seq2_region->getLH(i) > 0.1) ? 1 : 0;
-                                
-                                for (StateType j = 0; j < num_states; ++j)
-                                    if (seq2_region->getLH(j) > 0.1)
-                                        tot3 += mutation_mat_row[j];
-                                tot3 *= total_blength;
-                                
-                                tot += tot2 * tot3;
-                            }
-                            
-                            total_factor *= tot * model.inverse_root_freqs[seq1_state];
-                        }
-                    }
-                    else
-                    {
-                        if (seq2_region->getLH(seq1_state) > 0.1)
-                        {
-                            if (seq1_region->plength_observation2node >= 0)
-                                lh_cost += model.diagonal_mut_mat[seq1_state] * (blength + seq1_region->plength_observation2node);
-                            else
-                                lh_cost += model.diagonal_mut_mat[seq1_state] * blength;
-                        }
-                        else
-                        {
-                            RealNumType tot = 0;
-                            RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                            for (StateType i = 0; i < num_states; ++i)
-                                if (seq2_region->getLH(i) > 0.1)
-                                    tot += mutation_mat_row[i];
-                            
-                            if (seq1_region->plength_observation2node >= 0)
-                                total_factor *= tot * (blength + seq1_region->plength_observation2node);
-                            else
-                                total_factor *= tot * blength;
-                        }
-                    }
-                }
-                // 2.3. e1.type = R and e2.type = A/C/G/T
                 else
                 {
-                    StateType seq1_state = aln.ref_seq[end_pos];
-                    StateType seq2_state = seq2_region->type;
-                    
-                    if (seq1_region->plength_observation2root >= 0)
-                    {
-                        // TODO: can cache model.mutation_mat[model.row_index[seq1_state] * model.diagonal_mut_mat[seq1_state]
-                        // TODO: can cache  model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * model.diagonal_mut_mat[seq2_state]
-                        RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
-                        
-                        RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
-                                                                                                                                                                                                    
-                        total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
-                    }
-                    else
-                    {
-                        total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node));
-                    }
-                }
-            }
-            // 3. e1.type = O
-            else if (seq1_region->type == TYPE_O)
-            {
-                RealNumType blength13 = blength;
-                if (seq1_region->plength_observation2node >= 0)
-                {
-                    blength13 = seq1_region->plength_observation2node;
-                    if (blength > 0)
-                        blength13 += blength;
-                }
-                    
-                // 3.1. e1.type = O and e2.type = O
-                if (seq2_region->type == TYPE_O)
-                {
                     RealNumType tot = 0;
-                    
+                    RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
                     RealNumType* mutation_mat_row = model.mutation_mat;
                                         
                     for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
                     {
-                        RealNumType tot2 = 0;
+                        RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
+                        RealNumType tot3 = (seq2_region->getLH(i) > 0.1) ? 1 : 0;
                         
                         for (StateType j = 0; j < num_states; ++j)
-                            tot2 += (seq2_region->getLH(j) > 0.1) ? mutation_mat_row[j] : 0;
+                            if (seq2_region->getLH(j) > 0.1)
+                                tot3 += mutation_mat_row[j];
+                        tot3 *= total_blength;
                         
-                        tot2 *= blength13;
-                        
-                        if (seq2_region->getLH(i) > 0.1)
-                            tot2 += 1;
-                        
-                        tot += tot2 * seq1_region->getLH(i);
+                        tot += tot2 * tot3;
                     }
-                        
-                    total_factor *= tot;
-                }
-                // 3.2. e1.type = O and e2.type = R or A/C/G/T
-                else
-                {
-                    StateType seq2_state = seq2_region->type;
-                    if (seq2_state == TYPE_R)
-                        seq2_state = aln.ref_seq[end_pos];
                     
-                    RealNumType *transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                    RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region->likelihood)[0]));
-                    total_factor *= seq1_region->getLH(seq2_state) + blength13 * tot2;
+                    total_factor *= tot * model.inverse_root_freqs[seq1_state];
                 }
             }
-            // 4. e1.type = A/C/G/T
             else
             {
-                int seq1_state = seq1_region->type;
-                
-                // 4.1. e1.type =  e2.type
-                if (seq1_region->type == seq2_region->type)
+                if (seq2_region->getLH(seq1_state) > 0.1)
                 {
-                    total_blength = blength;
-                    total_blength += (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
-                    total_blength += (seq1_region->plength_observation2root < 0 ? 0 : seq1_region->plength_observation2root);
-
-                    lh_cost += model.diagonal_mut_mat[seq1_state] * total_blength;
+                    if (seq1_region->plength_observation2node >= 0)
+                        lh_cost += model.diagonal_mut_mat[seq1_state] * (blength + seq1_region->plength_observation2node);
+                    else
+                        lh_cost += model.diagonal_mut_mat[seq1_state] * blength;
                 }
-                // e1.type = A/C/G/T and e2.type = O/A/C/G/T
                 else
                 {
-                    // 4.2. e1.type = A/C/G/T and e2.type = O
-                    if (seq2_region->type == TYPE_O)
-                    {
-                        RealNumType tot = 0.0;
-                        
-                        if (seq1_region->plength_observation2root >= 0)
-                        {
-                            RealNumType blength15 = blength + seq1_region->plength_observation2root;
-                            
-                            if (seq2_region->getLH(seq1_state) > 0.1)
-                                lh_cost += model.diagonal_mut_mat[seq1_state] * (blength15 + seq1_region->plength_observation2node);
-                            else
-                            {
-                                RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
-                                RealNumType* mutation_mat_row = model.mutation_mat;
-                                                    
-                                for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                                {
-                                    RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
-                                        
-                                    RealNumType tot3 = 0;
-                                    for (StateType j = 0; j < num_states; ++j)
-                                        if (seq2_region->getLH(j) > 0.1)
-                                            tot3 += mutation_mat_row[j];
-                                    
-                                    if (seq2_region->getLH(i) > 0.1)
-                                        tot += tot2 * (1.0 + blength15 * tot3);
-                                    else
-                                        tot += tot2 * blength15 * tot3;
-                                }
-                                
-                                total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
-                            }
-                        }
-                        else
-                        {
-                            RealNumType tmp_blength = blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
-                            if (seq2_region->getLH(seq1_state) > 0.1)
-                                lh_cost += model.diagonal_mut_mat[seq1_state] * tmp_blength;
-                            else
-                            {
-                                RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                                for (StateType j = 0; j < num_states; ++j)
-                                    if (seq2_region->getLH(j) > 0.1)
-                                        tot += mutation_mat_row[j];
-                                
-                                total_factor *= tot * tmp_blength;
-                            }
-                        }
-                    }
-                    // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
+                    RealNumType tot = 0;
+                    RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+                    for (StateType i = 0; i < num_states; ++i)
+                        if (seq2_region->getLH(i) > 0.1)
+                            tot += mutation_mat_row[i];
+                    
+                    if (seq1_region->plength_observation2node >= 0)
+                        total_factor *= tot * (blength + seq1_region->plength_observation2node);
                     else
-                    {
-                        StateType seq2_state = seq2_region->type;
-                        if (seq2_state == TYPE_R)
-                            seq2_state = aln.ref_seq[end_pos];
-                        
-                        if (seq1_region->plength_observation2root >= 0)
-                        {
-                            // here we ignore contribution of non-parsimonious mutational histories
-                            RealNumType seq1_state_evoloves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + seq1_region->plength_observation2root) * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
-                            
-                            RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
-                            
-                            total_factor *= (seq1_state_evoloves_seq2_state + seq2_state_evolves_seq1_state);
-                        }
-                        else
-                        {
-                            RealNumType tmp_blength = ((seq1_region->plength_observation2node < 0) ? blength : blength + seq1_region->plength_observation2node);
-                            
-                            total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * tmp_blength;
-                        }
-                    }
+                        total_factor *= tot * blength;
                 }
+            }
+        }
+        // 2.3. e1.type = R and e2.type = A/C/G/T
+        else if (seq1_region->type == TYPE_R)
+        {
+            StateType seq1_state = aln.ref_seq[end_pos];
+            StateType seq2_state = seq2_region->type;
+            
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                // TODO: can cache model.mutation_mat[model.row_index[seq1_state] * model.diagonal_mut_mat[seq1_state]
+                // TODO: can cache  model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * model.diagonal_mut_mat[seq2_state]
+                RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
+                
+                RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
+                                                                                                                                                                                            
+                total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
+            }
+            else
+            {
+                total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node));
+            }
+        }
+        // 3. e1.type = O
+        // 3.1. e1.type = O and e2.type = O
+        else if (s1s2 == OO)
+        {
+            RealNumType blength13 = blength;
+            if (seq1_region->plength_observation2node >= 0)
+            {
+                blength13 = seq1_region->plength_observation2node;
+                if (blength > 0)
+                    blength13 += blength;
+            }
+            
+            RealNumType tot = 0;
+            
+            RealNumType* mutation_mat_row = model.mutation_mat;
+                                
+            for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+            {
+                RealNumType tot2 = 0;
+                
+                for (StateType j = 0; j < num_states; ++j)
+                    tot2 += (seq2_region->getLH(j) > 0.1) ? mutation_mat_row[j] : 0;
+                
+                tot2 *= blength13;
+                
+                if (seq2_region->getLH(i) > 0.1)
+                    tot2 += 1;
+                
+                tot += tot2 * seq1_region->getLH(i);
+            }
+                
+            total_factor *= tot;
+        }
+        // 3.2. e1.type = O and e2.type = R or A/C/G/T
+        else if (seq1_region->type == TYPE_O)
+        {
+            RealNumType blength13 = blength;
+            if (seq1_region->plength_observation2node >= 0)
+            {
+                blength13 = seq1_region->plength_observation2node;
+                if (blength > 0)
+                    blength13 += blength;
+            }
+            
+            StateType seq2_state = seq2_region->type;
+            if (seq2_state == TYPE_R)
+                seq2_state = aln.ref_seq[end_pos];
+            
+            RealNumType *transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+            RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region->likelihood)[0]));
+            total_factor *= seq1_region->getLH(seq2_state) + blength13 * tot2;
+        }
+        // 4. e1.type = A/C/G/T
+        // 4.1. e1.type =  e2.type
+        else if (seq1_region->type == seq2_region->type)
+        {
+            total_blength = blength;
+            total_blength += (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
+            total_blength += (seq1_region->plength_observation2root < 0 ? 0 : seq1_region->plength_observation2root);
+
+            lh_cost += model.diagonal_mut_mat[seq1_region->type] * total_blength;
+        }
+        // e1.type = A/C/G/T and e2.type = O/A/C/G/T
+        // 4.2. e1.type = A/C/G/T and e2.type = O
+        else if (seq2_region->type == TYPE_O)
+        {
+            StateType seq1_state = seq1_region->type;
+            RealNumType tot = 0.0;
+            
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                RealNumType blength15 = blength + seq1_region->plength_observation2root;
+                
+                if (seq2_region->getLH(seq1_state) > 0.1)
+                    lh_cost += model.diagonal_mut_mat[seq1_state] * (blength15 + seq1_region->plength_observation2node);
+                else
+                {
+                    RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
+                    RealNumType* mutation_mat_row = model.mutation_mat;
+                                        
+                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+                    {
+                        RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
+                            
+                        RealNumType tot3 = 0;
+                        for (StateType j = 0; j < num_states; ++j)
+                            if (seq2_region->getLH(j) > 0.1)
+                                tot3 += mutation_mat_row[j];
+                        
+                        if (seq2_region->getLH(i) > 0.1)
+                            tot += tot2 * (1.0 + blength15 * tot3);
+                        else
+                            tot += tot2 * blength15 * tot3;
+                    }
+                    
+                    total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
+                }
+            }
+            else
+            {
+                RealNumType tmp_blength = blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
+                if (seq2_region->getLH(seq1_state) > 0.1)
+                    lh_cost += model.diagonal_mut_mat[seq1_state] * tmp_blength;
+                else
+                {
+                    RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+                    for (StateType j = 0; j < num_states; ++j)
+                        if (seq2_region->getLH(j) > 0.1)
+                            tot += mutation_mat_row[j];
+                    
+                    total_factor *= tot * tmp_blength;
+                }
+            }
+        }
+        // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
+        else
+        {
+            StateType seq1_state = seq1_region->type;
+            StateType seq2_state = seq2_region->type;
+            if (seq2_state == TYPE_R)
+                seq2_state = aln.ref_seq[end_pos];
+            
+            if (seq1_region->plength_observation2root >= 0)
+            {
+                // here we ignore contribution of non-parsimonious mutational histories
+                RealNumType seq1_state_evoloves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + seq1_region->plength_observation2root) * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
+                
+                RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
+                
+                total_factor *= (seq1_state_evoloves_seq2_state + seq2_state_evolves_seq1_state);
+            }
+            else
+            {
+                RealNumType tmp_blength = ((seq1_region->plength_observation2node < 0) ? blength : blength + seq1_region->plength_observation2node);
+                
+                total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * tmp_blength;
             }
         }
          
