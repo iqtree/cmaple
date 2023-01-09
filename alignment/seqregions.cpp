@@ -369,6 +369,13 @@ void merge_RACGT_N(const SeqRegion& reg_n, const RealNumType upper_plength, cons
   SeqRegions::addNonConsecutiveRRegion(&merged_regions, reg_n.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
 }
 
+using DoubleState = uint16_t;
+static constexpr DoubleState NN = (DoubleState(TYPE_N) << 8) | TYPE_N;
+static constexpr DoubleState NO = (DoubleState(TYPE_N) << 8) | TYPE_O;
+static constexpr DoubleState RR = (DoubleState(TYPE_R) << 8) | TYPE_R;
+static constexpr DoubleState RO = (DoubleState(TYPE_R) << 8) | TYPE_O;
+static constexpr DoubleState OO = (DoubleState(TYPE_O) << 8) | TYPE_O;
+static constexpr DoubleState ON = (DoubleState(TYPE_O) << 8) | TYPE_N;
 void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
                                  RealNumType upper_plength, 
                                  const SeqRegions& lower_regions, 
@@ -404,41 +411,33 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
         const auto* const seq1_region = &seq1_regions[iseq1];
         const auto* const seq2_region = &seq2_regions[iseq2];
+        const DoubleState s1s2 = (DoubleState(seq1_region->type) << 8) | seq2_region->type;
 
         // seq1_entry = 'N'
-        if (seq1_region->type == TYPE_N)
+        // seq1_entry = 'N' and seq2_entry = 'N'
+        if (s1s2 == NN)
+            merged_regions->emplace_back(TYPE_N, end_pos);
+        // seq1_entry = 'N' and seq2_entry = O/R/ACGT
+        // seq1_entry = 'N' and seq2_entry = O
+        else if (s1s2 == NO)
         {
-            // seq1_entry = 'N' and seq2_entry = 'N'
-            if (seq2_region->type == TYPE_N)
-                merged_regions->emplace_back(TYPE_N, end_pos);
-            // seq1_entry = 'N' and seq2_entry = O/R/ACGT
-            else
-            {
-                // seq1_entry = 'N' and seq2_entry = O
-                if (seq2_region->type == TYPE_O)
-                {
-                  merge_N_O(lower_plength, *seq2_region, model, end_pos, num_states, *merged_regions);
-                }
-                // seq1_entry = 'N' and seq2_entry = R/ACGT
-                else
-                {
-                  merge_N_RACGT(*seq2_region, lower_plength, end_pos, threshold_prob, *merged_regions);
-                }
-            }
+            merge_N_O(lower_plength, *seq2_region, model, end_pos, num_states, *merged_regions);
+        }
+        // seq1_entry = 'N' and seq2_entry = R/ACGT
+        else if (seq1_region->type == TYPE_N)
+        {
+            merge_N_RACGT(*seq2_region, lower_plength, end_pos, threshold_prob, *merged_regions);
         }
         // seq2_entry = 'N'
+        // seq1_entry = 'O' and seq2_entry = N
+        else if (s1s2 == ON)
+        {
+            merge_O_N(*seq1_region, upper_plength, end_pos, model, num_states, *merged_regions);
+        }
+        // seq2_entry = 'N' and seq1_entry = R/ACGT
         else if (seq2_region->type == TYPE_N)
         {
-            // seq1_entry = 'O' and seq2_entry = N
-            if (seq1_region->type == TYPE_O)
-            {
-              merge_O_N(*seq1_region, upper_plength, end_pos, model, num_states, *merged_regions);
-            }
-            // seq2_entry = 'N' and seq1_entry = R/ACGT
-            else
-            {
-              merge_RACGT_N(*seq1_region, upper_plength, end_pos, threshold_prob, *merged_regions);
-            }
+            merge_RACGT_N(*seq1_region, upper_plength, end_pos, threshold_prob, *merged_regions);
         }
         // seq1_entry = seq2_entry = R/ACGT
         // todo: improve condition: a == b & a == RACGT
@@ -742,95 +741,87 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
         SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos); 
         const auto* const seq1_region = &seq1_regions[iseq1];
         const auto* const seq2_region = &seq2_regions[iseq2];
+        const DoubleState s1s2 = (DoubleState(seq1_region->type) << 8) | seq2_region->type;
 
         // seq1_entry = 'N'
-        if (seq1_region->type == TYPE_N)
+        // seq1_entry = 'N' and seq2_entry = 'N'
+        if (s1s2 == NN)
+            merged_regions->emplace_back(TYPE_N, end_pos);
+        // seq1_entry = 'N' and seq2_entry = O/R/ACGT
+        // seq1_entry = 'N' and seq2_entry = O
+        else if (s1s2 == NO)
         {
-            // seq1_entry = 'N' and seq2_entry = 'N'
-            if (seq2_region->type == TYPE_N)
-                merged_regions->emplace_back(TYPE_N, end_pos);
-            // seq1_entry = 'N' and seq2_entry = O/R/ACGT
+            // add merged region into merged_regions
+            SeqRegion new_region = SeqRegion::clone(*seq2_region);
+            new_region.position = end_pos;
+            if (seq2_region->plength_observation2node >= 0)
+            {
+                if (plength2 > 0)
+                    new_region.plength_observation2node += plength2;
+            }
             else
             {
-                // seq1_entry = 'N' and seq2_entry = O
-                if (seq2_region->type == TYPE_O)
-                {
-                    // add merged region into merged_regions
-                    SeqRegion new_region = SeqRegion::clone(*seq2_region);
-                    new_region.position = end_pos;
-                    if (seq2_region->plength_observation2node >= 0)
-                    {
-                        if (plength2 > 0)
-                            new_region.plength_observation2node += plength2;
-                    }
-                    else
-                    {
-                        if (plength2 > 0)
-                            new_region.plength_observation2node = plength2;
-                    }
-                    merged_regions->push_back(std::move(new_region));
-                }
-                // seq1_entry = 'N' and seq2_entry = R/ACGT
-                else
-                {
-                    RealNumType plength_observation2node = -1;
-                    
-                    if (seq2_region->plength_observation2node >= 0)
-                    {
-                        RealNumType new_plength = seq2_region->plength_observation2node;
-                        if (plength2 > 0)
-                            new_plength += plength2;
-                        
-                        plength_observation2node = new_plength;
-                    }
-                    else if (plength2 > 0)
-                            plength_observation2node = plength2;
-                    
-                    // add a new region and try to merge consecutive R regions together
-                    addNonConsecutiveRRegion(merged_regions, seq2_region->type, plength_observation2node, -1, end_pos, threshold_prob);
-                }
+                if (plength2 > 0)
+                    new_region.plength_observation2node = plength2;
             }
+            merged_regions->push_back(std::move(new_region));
+        }
+        // seq1_entry = 'N' and seq2_entry = R/ACGT
+        else if (seq1_region->type == TYPE_N)
+        {
+            RealNumType plength_observation2node = -1;
+            
+            if (seq2_region->plength_observation2node >= 0)
+            {
+                RealNumType new_plength = seq2_region->plength_observation2node;
+                if (plength2 > 0)
+                    new_plength += plength2;
+                
+                plength_observation2node = new_plength;
+            }
+            else if (plength2 > 0)
+                    plength_observation2node = plength2;
+            
+            // add a new region and try to merge consecutive R regions together
+            addNonConsecutiveRRegion(merged_regions, seq2_region->type, plength_observation2node, -1, end_pos, threshold_prob);
         }
         // seq2_entry = 'N'
-        else if (seq2_region->type == TYPE_N)
+        // seq1_entry = 'O' and seq2_entry = N
+        else if (s1s2 == ON)
         {
-            // seq1_entry = 'O' and seq2_entry = N
-            if (seq1_region->type == TYPE_O)
+            // add merged region into merged_regions
+            auto new_region = SeqRegion::clone(*seq1_region);
+            new_region.position = end_pos;
+            if (seq1_region->plength_observation2node >= 0)
             {
-                // add merged region into merged_regions
-                auto new_region = SeqRegion::clone(*seq1_region);
-                new_region.position = end_pos;
-                if (seq1_region->plength_observation2node >= 0)
-                {
-                    if (plength1 > 0)
-                        new_region.plength_observation2node += plength1;
-                }
-                else
-                {
-                    if (plength1 > 0)
-                        new_region.plength_observation2node = plength1;
-                }
-                merged_regions->push_back(std::move(new_region));
+                if (plength1 > 0)
+                    new_region.plength_observation2node += plength1;
             }
-            // seq1_entry = 'N' and seq2_entry = R/ACGT
             else
             {
-                RealNumType plength_observation2node = -1;
-                
-                if (seq1_region->plength_observation2node >= 0)
-                {
-                    RealNumType new_plength = seq1_region->plength_observation2node;
-                    if (plength1 > 0)
-                        new_plength += plength1;
-                    
-                    plength_observation2node = new_plength;
-                }
-                else if (plength1 > 0)
-                        plength_observation2node = plength1;
-                
-                // add a new region and try to merge consecutive R regions together
-                addNonConsecutiveRRegion(merged_regions, seq1_region->type, plength_observation2node, -1, end_pos, threshold_prob);
+                if (plength1 > 0)
+                    new_region.plength_observation2node = plength1;
             }
+            merged_regions->push_back(std::move(new_region));
+        }
+        // seq2_entry = 'N' and seq1_entry = R/ACGT
+        else if (seq2_region->type == TYPE_N)
+        {
+            RealNumType plength_observation2node = -1;
+            
+            if (seq1_region->plength_observation2node >= 0)
+            {
+                RealNumType new_plength = seq1_region->plength_observation2node;
+                if (plength1 > 0)
+                    new_plength += plength1;
+                
+                plength_observation2node = new_plength;
+            }
+            else if (plength1 > 0)
+                    plength_observation2node = plength1;
+            
+            // add a new region and try to merge consecutive R regions together
+            addNonConsecutiveRRegion(merged_regions, seq1_region->type, plength_observation2node, -1, end_pos, threshold_prob);
         }
         // neither seq1_entry nor seq2_entry = N
         else
