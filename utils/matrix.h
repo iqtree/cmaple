@@ -32,11 +32,11 @@
 //
 
 
-template <int length>
+template <StateType length>
 RealNumType dotProduct(const RealNumType* const vec1, const RealNumType* const vec2)
 {
   RealNumType result{0};
-  for (int j = 0; j < length; ++j)
+  for (StateType j = 0; j < length; ++j)
   {
     result += vec1[j] * vec2[j];
   }
@@ -44,14 +44,14 @@ RealNumType dotProduct(const RealNumType* const vec1, const RealNumType* const v
 }
 
 
-template <int length>
+template <StateType length>
 RealNumType matrixEvolve(const RealNumType* const vec1,
                          const RealNumType* const vec2,
                          const RealNumType* mutation_mat_row,
                          const RealNumType total_blength)
 {
   RealNumType result{ 0 };
-  for (int i = 0; i < length; ++i, mutation_mat_row += length)
+  for (StateType i = 0; i < length; ++i, mutation_mat_row += length)
   {
     // NHANLT NOTE:
     // tot2: likelihood of i evolves to j
@@ -65,10 +65,9 @@ RealNumType matrixEvolve(const RealNumType* const vec1,
   return result;
 }
 
-template <int length>
-RealNumType matrixEvolveRoot(const RealNumType* const vec1,
-                             const RealNumType* const vec2,
-                             const int seq1_state,
+template <StateType length>
+RealNumType matrixEvolveRoot(const RealNumType* const vec2,
+                             const StateType seq1_state,
                              const RealNumType* model_root_freqs, 
                              const RealNumType* transposed_mut_mat_row, 
                              const RealNumType* mutation_mat_row, 
@@ -76,7 +75,7 @@ RealNumType matrixEvolveRoot(const RealNumType* const vec1,
                              const RealNumType seq1_region_plength_observation2node)
 {
   RealNumType result{ 0 };
-  for (int i = 0; i < length; ++i, mutation_mat_row += length)
+  for (StateType i = 0; i < length; ++i, mutation_mat_row += length)
   {
     // NHANLT NOTE: UNSURE
     // tot2: likelihood that we can observe seq1_state elvoving from i (from root) (account for the fact that the observation might have occurred on the other side of the phylogeny with respect to the root)

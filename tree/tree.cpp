@@ -3956,7 +3956,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
                         RealNumType* mutation_mat_row = model.mutation_mat;
-                        RealNumType tot = matrixEvolveRoot<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]), seq1_state,
+                        RealNumType tot = matrixEvolveRoot<num_states>(&((*seq2_region->likelihood)[0]), seq1_state,
                           model.root_freqs, transposed_mut_mat_row, mutation_mat_row, total_blength, seq1_region->plength_observation2node);
                         // NHANLT NOTE: UNCLEAR
                         // why we need to divide tot by root_freqs[seq1_state]
