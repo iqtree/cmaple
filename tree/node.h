@@ -10,11 +10,6 @@
 class Node {
 public:
     /**
-        Node's id
-    */
-    int id;
-
-    /**
     Flag to prevent traversing the same part of the tree multiple times.
     */
     bool outdated;
@@ -23,10 +18,7 @@ public:
         TRUE if this node is the top node in a phylogenetic node structure
      */
     bool is_top;
-    /**
-        Sequence name
-     */
-    std::string seq_name;
+
     
     /**
         Likelihood of the subtree rooted at this node.
@@ -68,7 +60,11 @@ public:
         Vector of sequences that are less informative than the sequence of this node
      */
     std::vector<std::string> less_info_seqs;
-
+    
+    /**
+        Sequence name
+     */
+    std::string seq_name;
     /**
         Flexible string attributes
      

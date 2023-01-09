@@ -2,7 +2,6 @@
 using namespace std;
 Node::Node(bool is_top_node)
 {
-    id = -1;
     seq_name = "";
     length = 0;
     is_top = is_top_node;
@@ -16,7 +15,6 @@ Node::Node(bool is_top_node)
 
 Node::Node(int n_id, string n_seq_name)
 {
-    id = n_id;
     seq_name = std::move(n_seq_name);
     length = 0;
     is_top = false;
@@ -30,7 +28,6 @@ Node::Node(int n_id, string n_seq_name)
 
 Node::Node(string n_seq_name)
 {
-    id = -1;
     seq_name = std::move(n_seq_name);
     length = 0;
     is_top = true;
