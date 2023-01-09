@@ -7,7 +7,7 @@
 
 #include "seqregions.h"
 #include <cassert>
-
+#include <utils/matrix.h>
 
 RealNumType updateLHwithModel(int num_states, const Model& model,
   const SeqRegion::LHType& prior,
@@ -582,13 +582,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     memcpy(root_vec.data(), model.root_freqs, sizeof(RealNumType)* num_states);
                     
                     RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-                    for (StateType i = 0; i < num_states; ++i)
-                    {
-                        if (i == seq1_state)
-                            root_vec[i] *= (1.0 + transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
-                        else
-                            root_vec[i] *= transposed_mut_mat_row[i] * seq1_region->plength_observation2node;
-                    }
+                    assert(num_states == 4);
+                    updateVecWithState<4>(root_vec.data(), seq1_state, transposed_mut_mat_row, seq1_region->plength_observation2node);
                     
                     updateLHwithMat(num_states, model.transposed_mut_mat, root_vec, *new_lh, length_to_root);
                 }
@@ -597,13 +592,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     if (total_blength_1 > 0)
                     {
                         RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                        for (StateType i = 0; i < num_states; ++i)
-                        {
-                            if (i == seq1_state)
-                              new_lh_value[i] = 1.0 + mutation_mat_row[i] * total_blength_1;
-                            else
-                              new_lh_value[i] = mutation_mat_row[i] * total_blength_1;
-                        }
+                        assert(num_states == 4);
+                        setVecWithState<4>(new_lh_value.data(), seq1_state, mutation_mat_row, total_blength_1);
                     }
                     else
                     {
@@ -636,18 +626,12 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     if (seq2_state == TYPE_R)
                         seq2_state = aln.ref_seq[end_pos];
                     
+                    // TODO: this seems a weird operation on `new_lh_value` (since it was just created anew and is all 00000)!
+                    // please check this makes sense!
                     if (total_blength_2 > 0)
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                        for (StateType i = 0; i < num_states; ++i)
-                        {
-                            if (i == seq2_state)
-                                new_lh_value[i] *= 1.0 + transposed_mut_mat_row[i] * total_blength_2;
-                            else
-                              new_lh_value[i] *= transposed_mut_mat_row[i] * total_blength_2;
-                            
-                            sum_new_lh += new_lh_value[i];
-                        }
+                        sum_new_lh = updateVecWithState<4>(new_lh_value.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
                     }
                     else
                     {

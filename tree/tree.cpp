@@ -3824,10 +3824,8 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                         RealNumType tot3 = 0;
                         if (total_blength > 0)
                         {
-                            for (StateType j = 0; j < num_states; ++j)
-                                tot3 += mutation_mat_row[j] * seq2_region->getLH(j);
-                            
-                            tot3 *= total_blength;
+                          tot3 = dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
+                          tot3 *= total_blength;
                         }
                         
                         // NHANLT NOTE:
@@ -4220,11 +4218,8 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                     if (seq2_state == TYPE_R)
                         seq2_state = aln.ref_seq[end_pos];
                     
-                    RealNumType tot2 = 0;
                     RealNumType *transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                    for (StateType j = 0; j < num_states; ++j)
-                        tot2 += transposed_mut_mat_row[j] * seq1_region->getLH(j);
-                    
+                    RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region->likelihood)[0]));
                     total_factor *= seq1_region->getLH(seq2_state) + blength13 * tot2;
                 }
             }
