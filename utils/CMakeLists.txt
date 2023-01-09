@@ -3,6 +3,7 @@ tools.cpp tools.h
 timeutil.h
 operatingsystem.cpp operatingsystem.h
 gzstream.h gzstream.cpp
+matrix.h
 )
 
 target_link_libraries(utils)
