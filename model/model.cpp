@@ -164,8 +164,9 @@ void Model::updateMutationMat(StateType num_states)
     
     // compute the total rate regarding the root freqs
     RealNumType total_rate = 0;
-    for (StateType i = 0; i < num_states; ++i)
-        total_rate -= root_freqs[i] * diagonal_mut_mat[i];
+    assert(num_states == 4);
+    total_rate -= dotProduct<4>(root_freqs, diagonal_mut_mat);
+    
     // inverse total_rate
     total_rate = 1.0 / total_rate;
     

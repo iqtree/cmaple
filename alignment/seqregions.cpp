@@ -20,8 +20,8 @@ RealNumType updateLHwithModel(int num_states, const Model& model,
         RealNumType tot = 0;
         if (total_blength > 0) // TODO: avoid
         {
-            for (StateType j = 0; j < num_states; ++j)
-                tot += mutation_mat_row[j] * prior[j];
+            assert(num_states == 4);
+            tot += dotProduct<4>(&(prior)[0], mutation_mat_row);
 
             tot *= total_blength;
         }
@@ -42,8 +42,8 @@ RealNumType updateLHwithMat(int num_states, const RealNumType* mat_row,
     for (StateType i = 0; i < num_states; ++i, mat_row += num_states)
     {
       RealNumType tot = 0;
-      for (StateType j = 0; j < num_states; ++j)
-          tot += mat_row[j] * prior[j];
+      assert(num_states == 4);
+      tot += dotProduct<4>(&(prior)[0], mat_row);
 
       tot *= total_blength;
       tot += prior[i];
@@ -64,8 +64,8 @@ RealNumType updateMultLHwithMat(int num_states, const RealNumType* mat_row,
         RealNumType tot = 0;
         if (total_blength > 0) // TODO: avoid
         {
-            for (StateType j = 0; j < num_states; ++j)
-                tot += mat_row[j] * prior[j];
+            assert(num_states == 4);
+            tot += dotProduct<4>(&(prior)[0], mat_row);
 
             tot *= total_blength;
         }
@@ -1101,8 +1101,8 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const Alignment& aln, const Mode
         else if (region.type == TYPE_O)
         {
             RealNumType tot = 0;
-            for (StateType i = 0; i < num_states; ++i)
-                tot += model.root_freqs[i] * region.getLH(i);
+            assert(num_states == 4);
+            tot += dotProduct<4>(&(*region.likelihood)[0], model.root_freqs);
             log_factor *= tot;
         }
         

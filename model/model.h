@@ -1,6 +1,7 @@
 #include <string>
 #include "utils/tools.h"
 #include "alignment/alignment.h"
+#include "utils/matrix.h"
 
 #ifndef MODEL_H
 #define MODEL_H

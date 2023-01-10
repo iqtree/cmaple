@@ -3302,8 +3302,8 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
             // l = log(1 + q_xx * t + sum(q_xy * t)
             // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
             // coeff1 = numerator = q_xx + sum(q_xy)
-            for (StateType j = 0; j < num_states; ++j)
-              coeff1 += mutation_mat_row[j] * seq2_region->getLH(j);
+              assert(num_states == 4);
+              coeff1 += dotProduct<4>(&(*seq2_region->likelihood)[0], mutation_mat_row);
           }
 
           // NHANLT NOTES:
@@ -3437,8 +3437,8 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
                 // l = log(1 + q_xx * t + sum(q_xy * t)
                 // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
                 // coeff1 = numerator = q_xx + sum(q_xy)
-                for (StateType j = 0; j < num_states; ++j)
-                    coeff1 += mutation_mat_row[j] * seq2_region->getLH(j);
+                assert(num_states == 4);
+                coeff1 += dotProduct<4>(&(*seq2_region->likelihood)[0], mutation_mat_row);
             }
             
             // NHANLT NOTES:
