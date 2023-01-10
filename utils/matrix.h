@@ -143,3 +143,28 @@ void updateCoeffs(RealNumType* const root_freqs, RealNumType* const transposed_m
         coeff1 += mutation_mat_row[i] * likelihood[i];
     }
 }
+
+template <StateType length>
+void setVecByProduct(RealNumType* const set_vec, const RealNumType* const vec1, const RealNumType* const vec2)
+{
+    for (StateType j = 0; j < length; ++j)
+        set_vec[j] = vec1[j] * vec2[j];
+}
+
+/* NHANLT: I'm not sure if there is an AVX instruction to reset all entries of a vector to zero */
+template <StateType length>
+void resetVec(RealNumType* const set_vec)
+{
+    for (StateType i = 0; i < length; ++i)
+        set_vec[i] = 0;
+}
+
+template <StateType length>
+RealNumType resetLhVecExceptState(RealNumType* const set_vec, const StateType state, const RealNumType state_lh)
+{
+    resetVec<length>(set_vec);
+    
+    set_vec[state] = state_lh;
+    
+    return state_lh;
+}

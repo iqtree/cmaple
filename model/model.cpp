@@ -89,8 +89,8 @@ void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
     inverse_root_freqs = new RealNumType[num_states];
     
     // init root_freqs
-    for (StateType i = 0; i < num_states; ++i)
-        root_freqs[i] = 0;
+    assert(num_states == 4);
+    resetVec<4>(root_freqs);
     
     // browse all sites in the ref one by one to count bases
     for (PositionType i = 0; i < seq_length; ++i)
@@ -197,9 +197,9 @@ void Model::updateMutationMat(StateType num_states)
     RealNumType* transposed_mut_mat_row = transposed_mut_mat;
     RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
     
+    assert(num_states == 4);
     for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states, freq_j_transposed_ij_row += num_states)
-        for (StateType j = 0; j < num_states; ++j)
-            freq_j_transposed_ij_row[j] = root_freqs[j] * transposed_mut_mat_row[j];
+        setVecByProduct<4>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
 }
 
 void Model::initMutationMat(string n_model_name, StateType num_states)
