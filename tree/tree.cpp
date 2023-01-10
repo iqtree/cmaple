@@ -4110,9 +4110,8 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                         RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
                         RealNumType tot3 = (seq2_region->getLH(i) > 0.1) ? 1 : 0;
                         
-                        for (StateType j = 0; j < num_states; ++j)
-                            if (seq2_region->getLH(j) > 0.1)
-                                tot3 += mutation_mat_row[j];
+                        tot3 += sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
+
                         tot3 *= total_blength;
                         
                         tot += tot2 * tot3;
@@ -4134,9 +4133,8 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                 {
                     RealNumType tot = 0;
                     RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                    for (StateType i = 0; i < num_states; ++i)
-                        if (seq2_region->getLH(i) > 0.1)
-                            tot += mutation_mat_row[i];
+                    
+                    tot += sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
                     
                     if (seq1_region->plength_observation2node >= 0)
                         total_factor *= tot * (blength + seq1_region->plength_observation2node);
@@ -4186,8 +4184,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
             {
                 RealNumType tot2 = 0;
                 
-                for (StateType j = 0; j < num_states; ++j)
-                    tot2 += (seq2_region->getLH(j) > 0.1) ? mutation_mat_row[j] : 0;
+                tot2 += sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
                 
                 tot2 *= blength13;
                 
@@ -4251,9 +4248,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                         RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
                             
                         RealNumType tot3 = 0;
-                        for (StateType j = 0; j < num_states; ++j)
-                            if (seq2_region->getLH(j) > 0.1)
-                                tot3 += mutation_mat_row[j];
+                        tot3 += sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
                         
                         if (seq2_region->getLH(i) > 0.1)
                             tot += tot2 * (1.0 + blength15 * tot3);
@@ -4272,9 +4267,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
                 else
                 {
                     RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                    for (StateType j = 0; j < num_states; ++j)
-                        if (seq2_region->getLH(j) > 0.1)
-                            tot += mutation_mat_row[j];
+                    tot += sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
                     
                     total_factor *= tot * tmp_blength;
                 }

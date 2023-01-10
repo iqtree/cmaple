@@ -43,6 +43,16 @@ RealNumType dotProduct(const RealNumType* const vec1, const RealNumType* const v
   return result;
 }
 
+template <StateType length>
+RealNumType sumMutationByLh(const RealNumType* const vec1, const RealNumType* const vec2)
+{
+    RealNumType result{0};
+    for (StateType j = 0; j < length; ++j)
+        result += (vec1[j] > 0.1 ? vec2[j] : 0);
+    
+  return result;
+}
+
 
 template <StateType length>
 RealNumType matrixEvolve(const RealNumType* const vec1,
