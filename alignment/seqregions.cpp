@@ -522,15 +522,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                     if (total_blength_2 > 0)
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                        for (StateType i = 0; i < num_states; ++i)
-                        {
-                            if (i == seq2_state)
-                              new_lh_value[i] *= (1.0 + transposed_mut_mat_row[i] * total_blength_2);
-                            else
-                              new_lh_value[i] *= (transposed_mut_mat_row[i] * total_blength_2);
-                                
-                            sum_new_lh += new_lh_value[i];
-                        }
+                        assert(num_states == 4);
+                        sum_new_lh += updateVecWithState<4>(new_lh_value.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
                     }
                     else
                     {
@@ -538,9 +531,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
                         {
                             if (i != seq2_state)
                               new_lh_value[i] = 0;
-                            
-                            sum_new_lh += new_lh_value[i];
                         }
+                        sum_new_lh += new_lh_value[seq2_state];
                     }
                 }
                 
@@ -919,15 +911,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     if (total_blength_2 > 0)
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                        for (StateType i = 0; i < num_states; ++i)
-                        {
-                            if (seq2_state == i)
-                                new_lh_value[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
-                            else
-                              new_lh_value[i] *= (transposed_mut_mat_row[i] * total_blength_2);
-                            
-                            sum_lh += new_lh_value[i];
-                        }
+                        assert(num_states == 4);
+                        sum_lh += updateVecWithState<4>(new_lh_value.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
                         
                         // normalize new partial lh
                         // normalize the new partial likelihood
@@ -978,13 +963,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                 {
                     RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
                     
-                    for (StateType i = 0; i < num_states; ++i)
-                    {
-                        if (seq1_state == i)
-                          new_lh_value[i] = 1 + transposed_mut_mat_row[i] * total_blength_1;
-                        else
-                          new_lh_value[i] = transposed_mut_mat_row[i] * total_blength_1;
-                    }
+                    assert(num_states == 4);
+                    setVecWithState<4>(new_lh_value.data(), seq1_state, transposed_mut_mat_row, total_blength_1);
                 }
                 else
                 {
@@ -1031,15 +1011,8 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     if (total_blength_2 > 0)
                     {
                         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                        for (StateType i = 0; i < num_states; ++i)
-                        {
-                            if (seq2_state == i)
-                              new_lh_value[i] *= (1 + transposed_mut_mat_row[i] * total_blength_2);
-                            else
-                              new_lh_value[i] *= (transposed_mut_mat_row[i] * total_blength_2);
-                            
-                            sum_lh += new_lh_value[i];
-                        }
+                        assert(num_states == 4);
+                        sum_lh += updateVecWithState<4>(new_lh_value.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
                         
                         // normalize the new partial likelihood
                         normalize_arr(new_lh->data(), num_states, sum_lh);

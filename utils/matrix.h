@@ -129,10 +129,7 @@ void setVecWithState(RealNumType* const set_vec, const StateType seq1_state,
   const RealNumType factor)
 {
   for (StateType i = 0; i < length; ++i)
-  {
-    if (i == seq1_state)
-      set_vec[i] = 1.0 + vec[i] * factor;
-    else
-      set_vec[i] = vec[i] * factor;
-  }
+    set_vec[i] = vec[i] * factor;
+
+    set_vec[seq1_state] += 1.0;
 }
