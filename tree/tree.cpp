@@ -3805,22 +3805,12 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                         // NHANLT NOTE: UNSURE
                         // tot2: likelihood that we can observe seq1_state elvoving from i at root (account for the fact that the observation might have occurred on the other side of the phylogeny with respect to the root)
                         // tot2 = root_freqs[seq1_state] * (1 + mut[seq1_state,seq1_state] * plength_observation2node) + root_freqs[i] * mut[i,seq1_state] * plength_observation2node
-                        RealNumType tot2;
-                        
-                        if (seq1_state == i)
-                            tot2 = model.root_freqs[i] * (1.0 + transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
-                        else
-                            tot2 = model.root_freqs[i] * (transposed_mut_mat_row[i] * seq1_region->plength_observation2node);
+                        RealNumType tot2 = model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node + (seq1_state == i ? model.root_freqs[i] : 0);
                         
                         // NHANLT NOTE:
                         // tot3: likelihood of i evolves to j
                         // tot3 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] * total_blength * lh(seq2,j)
-                        RealNumType tot3 = 0;
-                        if (total_blength > 0)
-                        {
-                          tot3 = dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
-                          tot3 *= total_blength;
-                        }
+                        RealNumType tot3 = total_blength > 0 ? (total_blength * dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]))) : 0;
                         
                         // NHANLT NOTE:
                         // tot = tot2 * tot3
