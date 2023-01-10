@@ -133,3 +133,13 @@ void setVecWithState(RealNumType* const set_vec, const StateType seq1_state,
 
     set_vec[seq1_state] += 1.0;
 }
+
+template <StateType length>
+void updateCoeffs(RealNumType* const root_freqs, RealNumType* const transposed_mut_mat_row, RealNumType* const likelihood, RealNumType* const mutation_mat_row, const RealNumType factor, RealNumType& coeff0, RealNumType& coeff1)
+{
+    for (StateType i = 0; i < length; ++i)
+    {
+        coeff0 += root_freqs[i] * transposed_mut_mat_row[i] * factor * likelihood[i];
+        coeff1 += mutation_mat_row[i] * likelihood[i];
+    }
+}

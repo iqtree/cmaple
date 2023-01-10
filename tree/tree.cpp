@@ -3287,11 +3287,8 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
 
             RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
 
-            for (StateType i = 0; i < num_states; ++i)
-            {
-              coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->getLH(i);
-              coeff1 += mutation_mat_row[i] * seq2_region->getLH(i);
-            }
+            assert(num_states == 4);
+            updateCoeffs<4>(model.root_freqs, transposed_mut_mat_row, &(*seq2_region->likelihood)[0], mutation_mat_row, seq1_region->plength_observation2node, coeff0, coeff1);
 
             coeff1 *= model.root_freqs[seq1_state];
           }
@@ -3422,11 +3419,8 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
 
                 RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
                                     
-                for (StateType i = 0; i < num_states; ++i)
-                {
-                    coeff0 += model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node * seq2_region->getLH(i);
-                    coeff1 += mutation_mat_row[i] * seq2_region->getLH(i);
-                }
+                assert(num_states == 4);
+                updateCoeffs<4>(model.root_freqs, transposed_mut_mat_row, &(*seq2_region->likelihood)[0], mutation_mat_row, seq1_region->plength_observation2node, coeff0, coeff1);
                 
                 coeff1 *= model.root_freqs[seq1_state];
             }
