@@ -5,7 +5,6 @@
 //  Created by Nhan Ly-Trong on 24/01/2022.
 //
 
-#include "mutationindel.h"
 #include "seqregions.h"
 
 #ifndef SEQUENCE_H
