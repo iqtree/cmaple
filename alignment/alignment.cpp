@@ -211,7 +211,7 @@ void Alignment::readSequences(char* aln_path, StrVector &sequences, StrVector &s
     }
 }
 
-string Alignment::generateRef(StrVector &sequences, bool only_extract_diff)
+string Alignment::generateRef(StrVector &sequences)
 {
     // validate the input sequences
     if (sequences.size() == 0 || sequences[0].length() == 0)
@@ -254,14 +254,13 @@ string Alignment::generateRef(StrVector &sequences, bool only_extract_diff)
     }
     
     // parse ref_sequence into vector of states
-    if (!only_extract_diff)
-        parseRefSeq(ref_str);
+    parseRefSeq(ref_str);
     
     // return the reference genome
     return ref_str;
 }
 
-string Alignment::readRef(char* ref_path, bool only_extract_diff)
+string Alignment::readRef(char* ref_path)
 {
     ASSERT(ref_path);
     if (!fileExists(ref_path))
@@ -283,8 +282,7 @@ string Alignment::readRef(char* ref_path, bool only_extract_diff)
     ref_str = str_sequences[0];
     
     // parse ref_str into vector of states (if necessary)
-    if (!only_extract_diff)
-        parseRefSeq(ref_str);
+    parseRefSeq(ref_str);
     
     return ref_str;
 }
@@ -419,7 +417,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
     }
 }
 
-void Alignment::parseRefSeq(string ref_sequence)
+void Alignment::parseRefSeq(string& ref_sequence)
 {
     ref_seq.resize(ref_sequence.length());
     
@@ -432,7 +430,11 @@ void Alignment::parseRefSeq(string ref_sequence)
         
         // validate the ref state
         if (ref_seq[i] >= num_states)
-            outError("Invalid reference state found at site " + convertPosTypeToString(i));
+        {
+            ref_sequence[i] = convertState2Char(0);
+            outWarning("Invalid reference state found at site " + convertPosTypeToString(i) + " was replaced by a default state " + ref_sequence[i]);
+            ref_seq[i] = 0;
+        }
     }
 }
 
@@ -445,7 +447,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     
     // read the reference sequence (if the user supplies it)
     if (ref_path)
-        readRef(ref_path, false);
+        readRef(ref_path);
     
     // init dummy variables
     string seq_name = "";
@@ -1045,9 +1047,9 @@ void Alignment::extractDiffFile(Params& params)
     string ref_sequence;
     // read the reference sequence from file (if the user supplies it)
     if (params.ref_path)
-        ref_sequence = readRef(params.ref_path, params.only_extract_diff);
+        ref_sequence = readRef(params.ref_path);
     else
-        ref_sequence = generateRef(sequences, params.only_extract_diff);
+        ref_sequence = generateRef(sequences);
     
     // prepare output (Diff) file
     // init diff_path if it's null

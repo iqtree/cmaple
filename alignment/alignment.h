@@ -80,14 +80,14 @@ public:
         @param sequences the input sequences; only_extract_diff: TRUE to only extract Diff file without running inference
         @return a reference genome
      */
-    std::string generateRef(StrVector &sequences, bool only_extract_diff);
+    std::string generateRef(StrVector &sequences);
     
     /**
         Read a reference genome from file
         @param ref_path; only_extract_diff: TRUE to only extract Diff file without running inference
         @return a reference genome
      */
-    std::string readRef(char* ref_path, bool only_extract_diff);
+    std::string readRef(char* ref_path);
     
     /**
         Extract Mutation from sequences regarding the reference sequence
@@ -116,7 +116,7 @@ public:
         Parse the reference sequence into vector of state
         @param ref_sequence reference genome in string
      */
-    void parseRefSeq(std::string ref_sequence);
+    void parseRefSeq(std::string& ref_sequence);
     
     /**
         Convert a state ID, indexed from 0, to a raw character
