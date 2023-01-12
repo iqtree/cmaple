@@ -2,8 +2,11 @@ enable_testing()
 
 add_executable(
   maintest          ## todo: should be called 'SeqRegions_test'
-  seqregions_test.h seqregions_test.cpp
-  tree_test.h tree_test.cpp
+  #seqregions_test.h seqregions_test.cpp
+  #tree_test.h tree_test.cpp
+  sequence_test.cpp
+  seqregion_test.cpp
+  mutation_test.cpp
 )
 target_link_libraries(
   maintest
