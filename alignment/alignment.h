@@ -138,5 +138,12 @@ public:
         @param hamming_weight weight to calculate the hamming distance
     */
     void sortSeqsByDistances(RealNumType hamming_weight);
+    
+    /**
+        Compute the distance between a sequence and the ref sequence
+        distance = num_differents * hamming_weight + num_ambiguities
+        @param hamming_weight weight to calculate the hamming distance
+    */
+    PositionType computeSeqDistance(Sequence& sequence, RealNumType hamming_weight);
 };
 #endif

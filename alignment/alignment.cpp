@@ -327,6 +327,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
         if (!only_extract_diff)
         {
             data.emplace_back(seq_names[i]);
+            sequence = &data.back();
         }
         
         // init dummy variables
@@ -958,6 +959,43 @@ StateType Alignment::convertChar2State(char state) {
     }
 }
 
+PositionType Alignment::computeSeqDistance(Sequence& sequence, RealNumType hamming_weight)
+{
+    // dummy variables
+    PositionType num_ambiguities = 0;
+    PositionType num_diffs = 0;
+    
+    // browse mutations one by one
+    for (const auto& mutation: sequence)
+    {
+        switch (mutation.type)
+        {
+            case TYPE_R: // Type R does not exist in Mutations (only in Regions)
+                outError("Sorry! Something went wrong. Invalid mutation type (type R).");
+                break;
+            case TYPE_N: // handle unsequenced sites ('-' or 'N')
+            case TYPE_DEL:
+            case TYPE_O: // handle ambiguity
+                num_ambiguities += mutation.getLength();
+                ++num_diffs;
+                break;
+            default:
+                // handle normal character
+                if (mutation.type < num_states)
+                    ++num_diffs;
+                else
+                {
+                    ++num_diffs;
+                    ++num_ambiguities;
+                }
+                break;
+        }
+    }
+    
+    // calculate and record the distance of the current sequence
+    return num_diffs * hamming_weight + num_ambiguities;
+}
+
 void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
 {
    // init dummy variables
@@ -969,39 +1007,10 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     for (PositionType i = 0; i < num_seqs; ++i)
     {
         // dummy variables
-        PositionType num_ambiguities = 0;
-        PositionType num_diffs = 0;
         sequence_indexes[i] = i;
         
-        // browse mutations one by one
-        for (const auto& mutation: data[i])
-        {
-            switch (mutation.type)
-            {
-                case TYPE_R: // Type R does not exist in Mutations (only in Regions)
-                    outError("Sorry! Something went wrong. Invalid mutation type (type R).");
-                    break;
-                case TYPE_N: // handle unsequenced sites ('-' or 'N')
-                case TYPE_DEL:
-                case TYPE_O: // handle ambiguity
-                    num_ambiguities += mutation.getLength();
-                    ++num_diffs;
-                    break;
-                default:
-                    // handle normal character
-                    if (mutation.type < num_states)
-                        ++num_diffs;
-                    else
-                    {
-                        ++num_diffs;
-                        ++num_ambiguities;
-                    }
-                    break;
-            }
-        }
-        
         // calculate and record the distance of the current sequence
-        distances[i] = num_diffs * hamming_weight + num_ambiguities;
+        distances[i] = computeSeqDistance(data[i], hamming_weight);
         
         // NHANLT: debug
         //distances[i] *= 1000;
