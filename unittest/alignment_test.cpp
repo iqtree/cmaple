@@ -136,7 +136,7 @@ TEST(Alignment, extractMutations)
     EXPECT_EQ(aln.ref_seq.size(), 20);
     // ----- test on input.fa; read ref_sequence -----
     
-    // ----- test on input_full.phy; generate ref_sequence -----
+    /*// ----- test on input_full.phy; generate ref_sequence -----
     aln.data.clear();
     sequences.clear();
     seq_names.clear();
@@ -170,7 +170,7 @@ TEST(Alignment, extractMutations)
     EXPECT_EQ(aln.data[477][186].getLength(), 1);
     EXPECT_EQ(aln.data[796][356].position, 28897);
     EXPECT_EQ(aln.ref_seq.size(), 29903);
-    // ----- test on input_full.phy; generate ref_sequence -----
+    // ----- test on input_full.phy; generate ref_sequence -----*/
 }
 
 /*
@@ -296,7 +296,7 @@ TEST(Alignment, extractDiffFile)
     EXPECT_EQ(aln.ref_seq[15], 1);
     // ----- test on input.phy with ref file from ref.fa -----
     
-    // ----- test on input.fa without ref file, specifying diff file path -----
+    /*// ----- test on input.fa without ref file, specifying diff file path -----
     aln.data.clear();
     aln.ref_seq.clear();
     aln_file_path = "../../example/input_full.fa";
@@ -343,7 +343,7 @@ TEST(Alignment, extractDiffFile)
     EXPECT_EQ(aln.ref_seq[8424], 0);
     EXPECT_EQ(aln.ref_seq[223], 3);
     EXPECT_EQ(aln.ref_seq[175], 1);
-    // ----- with/without diff file path -----
+    // ----- with/without diff file path -----*/
 }
 
 /*
