@@ -92,11 +92,6 @@ SeqRegions::~SeqRegions()
 {
 }
 
-void SeqRegions::deleteRegions()
-{
-  clear();
-}
-
 int SeqRegions::compareWithSample(const SeqRegions& sequence2, PositionType seq_length, StateType num_states) const
 {
     ASSERT(seq_length > 0);
@@ -395,7 +390,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
     
     // init merged_regions
     if (merged_regions)
-        merged_regions->deleteRegions();
+        merged_regions->clear();
     else
         merged_regions = new SeqRegions();
     
@@ -703,7 +698,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
     
     // init merged_regions
     if (merged_regions)
-        merged_regions->deleteRegions();
+        merged_regions->clear();
     else
         merged_regions = new SeqRegions();
 

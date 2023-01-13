@@ -42,11 +42,6 @@ public:
     ~SeqRegions();
     
     /**
-    *  Delete all region items one by one
-    */
-    void deleteRegions();
-    
-    /**
         Add a new region and automatically merged consecutive R regions
      */
     static void addNonConsecutiveRRegion(SeqRegions* const regions, const StateType new_region_type, const RealNumType plength_observation2node, const RealNumType plength_observation2root, const PositionType end_pos, const RealNumType threshold_prob)
