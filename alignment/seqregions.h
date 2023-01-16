@@ -137,7 +137,7 @@ public:
     /**
         Compute the likelihood by merging the lower lh with root frequencies
      */
-    RealNumType computeAbsoluteLhAtRoot(const Alignment& aln, const Model& model, std::vector< std::vector<PositionType> > &cumulative_base);
+    RealNumType computeAbsoluteLhAtRoot(const StateType num_states, const Model& model, std::vector< std::vector<PositionType> > &cumulative_base);
     
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others

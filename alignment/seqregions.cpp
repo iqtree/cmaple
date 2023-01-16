@@ -1025,12 +1025,11 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
     return log_lh;
 }
 
-RealNumType SeqRegions::computeAbsoluteLhAtRoot(const Alignment& aln, const Model& model, vector< vector<PositionType> > &cumulative_base)
+RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, const Model& model, vector< vector<PositionType> > &cumulative_base)
 {
     // dummy variables
     RealNumType log_lh = 0;
     RealNumType log_factor = 1;
-    const StateType num_states = aln.num_states;
     PositionType start_pos = 0;
     const SeqRegions& regions = *this;
     
