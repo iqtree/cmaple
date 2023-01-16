@@ -142,7 +142,56 @@ public:
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others
      */
-    StateType simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold) const;
+    static StateType simplifyO(RealNumType* const partial_lh, StateType ref_state, StateType num_states, RealNumType threshold)
+    {
+        // dummy variables
+        ASSERT(partial_lh);
+        RealNumType max_prob = 0;
+        StateType max_index = 0;
+        StateType high_prob_count = 0;
+        
+        // Check all states one by one
+        for (StateType i = 0; i < num_states; ++i)
+        {
+            // record the state with the highest likelihood
+            if (partial_lh[i] > max_prob)
+            {
+                max_prob = partial_lh[i];
+                max_index = i;
+            }
+            
+            // count the number of states that have the likelihood greater than a threshold
+            if (partial_lh[i] > threshold)
+                ++high_prob_count;
+        }
+        
+        // if the partial lh concentrates at a specific state -> return new state
+        if (high_prob_count == 1)
+        {
+            // new state matches with the reference state
+            if (max_index == ref_state)
+                return TYPE_R;
+            // return a nucleotide
+            else
+                return max_index;
+        }
+        // otherwise, cannot simplify
+        else
+            return TYPE_O;
+    }
+    
+    static void addSimplifiedO(const PositionType end_pos, SeqRegion::LHType& new_lh, const Alignment& aln, const RealNumType threshold_prob, SeqRegions* merged_regions)
+    {
+        StateType new_state = SeqRegions::simplifyO(new_lh.data(), aln.ref_seq[end_pos], aln.num_states, threshold_prob);
+
+        if (new_state == TYPE_O)
+            merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+        else
+        {
+            // add a new region and try to merge consecutive R regions together
+            SeqRegions::addNonConsecutiveRRegion(merged_regions, new_state, -1, -1, end_pos, threshold_prob);
+        }
+    }
     
     /**
         For testing only, export codes to re-contruct this seqregions

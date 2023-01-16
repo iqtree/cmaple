@@ -407,20 +407,20 @@ TEST(SeqRegions, simplifyO)
     auto new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.1,0.3,0.2,0.4};
     (*new_lh) = new_lh_value;
-    EXPECT_EQ(seqregions1.simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_O) ;
+    EXPECT_EQ(SeqRegions::simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_O) ;
     
     SeqRegion::LHType new_lh_value1{1.0 - 3 * threshold_prob, threshold_prob, threshold_prob, threshold_prob};
     (*new_lh) = new_lh_value1;
-    EXPECT_EQ(seqregions1.simplifyO(new_lh->data(), 2, 4, threshold_prob), 0) ;
+    EXPECT_EQ(SeqRegions::simplifyO(new_lh->data(), 2, 4, threshold_prob), 0) ;
     
     new_lh->data()[1] += new_lh->data()[2];
     new_lh->data()[2] = 0;
-    EXPECT_EQ(seqregions1.simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_O) ;
+    EXPECT_EQ(SeqRegions::simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_O) ;
     
     new_lh->data()[2] = new_lh->data()[0];
     new_lh->data()[0] = new_lh->data()[3];
     new_lh->data()[1] = new_lh->data()[3];
-    EXPECT_EQ(seqregions1.simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_R) ;
+    EXPECT_EQ(SeqRegions::simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_R) ;
 }
 
 /*
