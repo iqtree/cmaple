@@ -290,7 +290,7 @@ void merge_N_RACGT(const SeqRegion& reg_racgt, const RealNumType lower_plength, 
   }
 
   // add a new region and try to merge consecutive R regions together
-  SeqRegions::addNonConsecutiveRRegion(&merged_regions, reg_racgt.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
+  SeqRegions::addNonConsecutiveRRegion(merged_regions, reg_racgt.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
 }
 
 void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const Model& model, const StateType num_states, SeqRegions& merged_regions)
@@ -361,7 +361,7 @@ void merge_RACGT_N(const SeqRegion& reg_n, const RealNumType upper_plength, cons
     plength_observation2node = upper_plength;
 
   // add a new region and try to merge consecutive R regions together
-  SeqRegions::addNonConsecutiveRRegion(&merged_regions, reg_n.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
+  SeqRegions::addNonConsecutiveRRegion(merged_regions, reg_n.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
 }
 
 bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const StateType num_states, SeqRegions* &merged_regions)
@@ -378,21 +378,21 @@ bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_reg
         }
         
         // add a new region and try to merge consecutive R regions together
-        SeqRegions::addNonConsecutiveRRegion(merged_regions, seq2_region.type, -1, -1, end_pos, threshold_prob);
+        SeqRegions::addNonConsecutiveRRegion(*merged_regions, seq2_region.type, -1, -1, end_pos, threshold_prob);
         return true;
     }
     // due to 0 distance, the entry will be of same type as entry1
     else if ((seq1_region.type < num_states || seq1_region.type == TYPE_R) && total_blength_1 <= 0)
     {
         // add a new region and try to merge consecutive R regions together
-        SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type, -1, -1, end_pos, threshold_prob);
+        SeqRegions::addNonConsecutiveRRegion(*merged_regions, seq1_region.type, -1, -1, end_pos, threshold_prob);
         return true;
     }
     
     return false;
 }
 
-void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions* merged_regions)
+void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
@@ -439,7 +439,7 @@ void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, 
     SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, merged_regions);
 }
 
-void merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions* merged_regions)
+void merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     
@@ -450,7 +450,7 @@ void merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength
     SeqRegions::addSimplifiedO(end_pos, new_lh, aln, threshold_prob, merged_regions);
 }
 
-void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const Model& model, const Alignment& aln, SeqRegions* merged_regions)
+void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     RealNumType sum_new_lh = 0;
@@ -475,10 +475,10 @@ void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_ble
     normalize_arr(new_lh.data(), num_states, sum_new_lh);
 
     // add new region into the merged regions
-    merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+    merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
 }
 
-void merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions* merged_regions)
+void merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     StateType seq1_state = seq1_region.type;
@@ -605,7 +605,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
         else if (seq1_region->type == seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R))
         {
             // add a new region and try to merge consecutive R regions together
-            addNonConsecutiveRRegion(merged_regions, seq1_region->type, -1, -1, end_pos, threshold_prob);
+            addNonConsecutiveRRegion(*merged_regions, seq1_region->type, -1, -1, end_pos, threshold_prob);
         }
         // cases where the new genome list entry will likely be of type "O"
         else
@@ -637,12 +637,12 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
             // seq1_entry = O and seq2_entry = O/R/ACGT
             else if (seq1_region->type == TYPE_O)
             {
-                merge_O_ORACGT(*seq1_region, *seq2_region, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+                merge_O_ORACGT(*seq1_region, *seq2_region, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, *merged_regions);
             }
             // seq1_entry = R/ACGT and seq2_entry = O/R/ACGT
             else
             {
-                merge_RACGT_ORACGT(*seq1_region, *seq2_region, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+                merge_RACGT_ORACGT(*seq1_region, *seq2_region, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, *merged_regions);
             }
         }
 
@@ -738,7 +738,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     plength_observation2node = plength2;
             
             // add a new region and try to merge consecutive R regions together
-            addNonConsecutiveRRegion(merged_regions, seq2_region->type, plength_observation2node, -1, end_pos, threshold_prob);
+            addNonConsecutiveRRegion(*merged_regions, seq2_region->type, plength_observation2node, -1, end_pos, threshold_prob);
         }
         // seq2_entry = 'N'
         // seq1_entry = 'O' and seq2_entry = N
@@ -776,7 +776,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     plength_observation2node = plength1;
             
             // add a new region and try to merge consecutive R regions together
-            addNonConsecutiveRRegion(merged_regions, seq1_region->type, plength_observation2node, -1, end_pos, threshold_prob);
+            addNonConsecutiveRRegion(*merged_regions, seq1_region->type, plength_observation2node, -1, end_pos, threshold_prob);
         }
         // neither seq1_entry nor seq2_entry = N
         else
@@ -801,7 +801,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
             if (seq1_region->type == seq2_region->type && (seq1_region->type == TYPE_R || seq1_region->type < num_states))
             {
                 // add a new region and try to merge consecutive R regions together
-                addNonConsecutiveRRegion(merged_regions, seq1_region->type, -1, -1, end_pos, threshold_prob);
+                addNonConsecutiveRRegion(*merged_regions, seq1_region->type, -1, -1, end_pos, threshold_prob);
                 
                 if (return_log_lh)
                 {
@@ -850,7 +850,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         
                     // normalize the new partial likelihood
                     normalize_arr(new_lh->data(), num_states, sum_lh);
-                    SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, merged_regions);
+                    SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, *merged_regions);
                     
                     if (return_log_lh)
                         log_lh += log(sum_lh);
@@ -871,7 +871,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         // normalize new partial lh
                         // normalize the new partial likelihood
                         normalize_arr(new_lh->data(), num_states, sum_lh);
-                        SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, merged_regions);
+                        SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, *merged_regions);
                         
                         if (return_log_lh)
                             log_lh += log(sum_lh);
@@ -886,7 +886,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         }
                         
                         // add a new region and try to merge consecutive R regions together
-                        addNonConsecutiveRRegion(merged_regions, seq2_region->type, -1, -1, end_pos, threshold_prob);
+                        addNonConsecutiveRRegion(*merged_regions, seq2_region->type, -1, -1, end_pos, threshold_prob);
                     
                         if (return_log_lh)
                             log_lh += log(new_lh_value[seq2_state]);
@@ -927,7 +927,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         
                     // normalize the new partial likelihood
                     normalize_arr(new_lh->data(), num_states, sum_lh);
-                    SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, merged_regions);
+                    SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, *merged_regions);
                     
                     if (return_log_lh)
                         log_lh += log(sum_lh);
@@ -947,7 +947,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                         
                         // normalize the new partial likelihood
                         normalize_arr(new_lh->data(), num_states, sum_lh);
-                        SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, merged_regions);
+                        SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, *merged_regions);
                         
                         if (return_log_lh)
                             log_lh += log(sum_lh);
@@ -955,7 +955,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
                     else
                     {
                         // add a new region and try to merge consecutive R regions together
-                        addNonConsecutiveRRegion(merged_regions, seq2_region->type, -1, -1, end_pos, threshold_prob);
+                        addNonConsecutiveRRegion(*merged_regions, seq2_region->type, -1, -1, end_pos, threshold_prob);
                     
                         if (return_log_lh)
                             log_lh += log(new_lh_value[seq2_state]);

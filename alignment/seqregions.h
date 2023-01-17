@@ -44,13 +44,13 @@ public:
     /**
         Add a new region and automatically merged consecutive R regions
      */
-    static void addNonConsecutiveRRegion(SeqRegions* const regions, const StateType new_region_type, const RealNumType plength_observation2node, const RealNumType plength_observation2root, const PositionType end_pos, const RealNumType threshold_prob)
+    static void addNonConsecutiveRRegion(SeqRegions& regions, const StateType new_region_type, const RealNumType plength_observation2node, const RealNumType plength_observation2root, const PositionType end_pos, const RealNumType threshold_prob)
     {
         // cannot merge consecutive R regions if no region exists in regions
-        if (!regions->empty())
+        if (!regions.empty())
         {
             // try to merge consecutive R regions
-            SeqRegion& last_region = regions->back();
+            SeqRegion& last_region = regions.back();
             if (new_region_type == TYPE_R
                 && last_region.type == TYPE_R
                 && fabs(last_region.plength_observation2node - plength_observation2node) < threshold_prob
@@ -64,7 +64,7 @@ public:
         }
         
         // if we cannot merge new region into existing R region => just add a new one
-        regions->emplace_back(new_region_type, end_pos, plength_observation2node, plength_observation2root);
+        regions.emplace_back(new_region_type, end_pos, plength_observation2node, plength_observation2root);
     }
     
     /**
@@ -180,12 +180,12 @@ public:
             return TYPE_O;
     }
     
-    static void addSimplifiedO(const PositionType end_pos, SeqRegion::LHType& new_lh, const Alignment& aln, const RealNumType threshold_prob, SeqRegions* merged_regions)
+    static void addSimplifiedO(const PositionType end_pos, SeqRegion::LHType& new_lh, const Alignment& aln, const RealNumType threshold_prob, SeqRegions& merged_regions)
     {
         StateType new_state = SeqRegions::simplifyO(new_lh.data(), aln.ref_seq[end_pos], aln.num_states, threshold_prob);
 
         if (new_state == TYPE_O)
-            merged_regions->emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+            merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
         else
         {
             // add a new region and try to merge consecutive R regions together
