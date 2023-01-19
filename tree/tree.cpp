@@ -3721,6 +3721,21 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
     return total_improvement;
 }
 
+void rescaleTotalFactor(RealNumType& lh_cost, RealNumType& total_factor)
+{
+    // approximately update lh_cost and total_factor
+    if (total_factor <= MIN_CARRY_OVER)
+    {
+        if (total_factor < MIN_POSITIVE)
+            return MIN_NEGATIVE;
+        
+        //lh_cost += log(total_factor);
+        //total_factor = 1.0;
+        total_factor *= MAX_POSITIVE;
+        lh_cost -= LOG_MAX_POSITIVE;
+    }
+}
+
 RealNumType Tree::calculateSubTreePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
 {
     return (this->*calculateSubTreePlacementCostPointer)(cumulative_rate, parent_regions, child_regions, blength);
@@ -3989,23 +4004,224 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
                 return MIN_NEGATIVE;
         }
          
-        // approximately update lh_cost and total_factor
-        if (total_factor <= MIN_CARRY_OVER)
-        {
-            if (total_factor < MIN_POSITIVE)
-                return MIN_NEGATIVE;
-            
-            //lh_cost += log(total_factor);
-            //total_factor = 1.0;
-            total_factor *= MAX_POSITIVE;
-            lh_cost -= LOG_MAX_POSITIVE;
-        }
+        // avoid underflow on total_factor
+        rescaleTotalFactor(lh_cost, total_factor);
         
         // update pos
         pos = end_pos + 1;
     }
     
     return lh_cost + log(total_factor);
+}
+
+void calculateSampleCost_R_R(const SeqRegion& seq1_region, const RealNumType* const cumulative_rate, const RealNumType blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
+{
+    if (seq1_region.plength_observation2node < 0 && seq1_region.plength_observation2root < 0)
+        lh_cost += blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+    else
+    {
+        RealNumType total_blength = blength + seq1_region.plength_observation2node;
+        if (seq1_region.plength_observation2root < 0)
+            lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+        else
+            // here contribution from root frequency gets added and subtracted so it's ignored
+            lh_cost += (total_blength + seq1_region.plength_observation2root) * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+    }
+}
+
+template <const StateType num_states>
+void calculateSampleCost_R_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, const StateType seq1_state, RealNumType& lh_cost, RealNumType& total_factor, const Model& model)
+{
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        RealNumType total_blength = seq1_region.plength_observation2root + blength;
+        
+        if (seq2_region.getLH(seq1_state) > 0.1)
+        {
+            total_blength += seq1_region.plength_observation2node;
+            
+            // here contribution from root frequency can also be also ignored
+            lh_cost += model.diagonal_mut_mat[seq1_state] * total_blength;
+        }
+        else
+        {
+            RealNumType tot = 0;
+            RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
+            RealNumType* mutation_mat_row = model.mutation_mat;
+                                
+            for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+            {
+                RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region.plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
+                RealNumType tot3 = ((seq2_region.getLH(i) > 0.1) ? 1 : 0) + sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
+                
+                tot += tot2 * tot3 * total_blength;
+            }
+            
+            total_factor *= tot * model.inverse_root_freqs[seq1_state];
+        }
+    }
+    else
+    {
+        if (seq2_region.getLH(seq1_state) > 0.1)
+        {
+            if (seq1_region.plength_observation2node >= 0)
+                lh_cost += model.diagonal_mut_mat[seq1_state] * (blength + seq1_region.plength_observation2node);
+            else
+                lh_cost += model.diagonal_mut_mat[seq1_state] * blength;
+        }
+        else
+        {
+            RealNumType tot = 0;
+            RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+            
+            tot += sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
+            
+            if (seq1_region.plength_observation2node >= 0)
+                total_factor *= tot * (blength + seq1_region.plength_observation2node);
+            else
+                total_factor *= tot * blength;
+        }
+    }
+}
+
+void calculateSampleCost_R_ACGT(const SeqRegion& seq1_region, const RealNumType blength, const StateType seq1_state, const StateType seq2_state, RealNumType& total_factor, const Model& model)
+{
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        // TODO: can cache model.mutation_mat[model.row_index[seq1_state] * model.diagonal_mut_mat[seq1_state]
+        // TODO: can cache  model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * model.diagonal_mut_mat[seq2_state]
+        RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region.plength_observation2node);
+        
+        RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region.plength_observation2root));
+                                                                                                                                                                                    
+        total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
+    }
+    else
+    {
+        total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + (seq1_region.plength_observation2node < 0 ? 0 : seq1_region.plength_observation2node));
+    }
+}
+
+template <const StateType num_states>
+void calculateSampleCost_O_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, RealNumType& total_factor, const Model& model)
+{
+    RealNumType blength13 = blength;
+    if (seq1_region.plength_observation2node >= 0)
+    {
+        blength13 = seq1_region.plength_observation2node;
+        if (blength > 0)
+            blength13 += blength;
+    }
+    
+    RealNumType tot = 0;
+    
+    RealNumType* mutation_mat_row = model.mutation_mat;
+                        
+    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+    {
+        RealNumType tot2 = blength13 * sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
+        
+        tot += (tot2 + (seq2_region.getLH(i) > 0.1 ? 1 : 0)) * seq1_region.getLH(i);
+    }
+        
+    total_factor *= tot;
+}
+
+template <const StateType num_states>
+void calculateSampleCost_O_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, const PositionType end_pos, RealNumType& total_factor, const Alignment& aln, const Model& model)
+{
+    RealNumType blength13 = blength;
+    if (seq1_region.plength_observation2node >= 0)
+    {
+        blength13 = seq1_region.plength_observation2node;
+        if (blength > 0)
+            blength13 += blength;
+    }
+    
+    StateType seq2_state = seq2_region.type;
+    if (seq2_state == TYPE_R)
+        seq2_state = aln.ref_seq[end_pos];
+    
+    RealNumType *transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+    RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region.likelihood)[0]));
+    total_factor *= seq1_region.getLH(seq2_state) + blength13 * tot2;
+}
+
+void calculateSampleCost_identicalACGT(const SeqRegion& seq1_region, const RealNumType blength, RealNumType& lh_cost, const Model& model)
+{
+    RealNumType total_blength = blength;
+    total_blength += (seq1_region.plength_observation2node < 0 ? 0 : seq1_region.plength_observation2node);
+    total_blength += (seq1_region.plength_observation2root < 0 ? 0 : seq1_region.plength_observation2root);
+
+    lh_cost += model.diagonal_mut_mat[seq1_region.type] * total_blength;
+}
+
+template <const StateType num_states>
+void calculateSampleCost_ACGT_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, RealNumType& lh_cost, RealNumType& total_factor, const Model& model)
+{
+    StateType seq1_state = seq1_region.type;
+    RealNumType tot = 0.0;
+    
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        RealNumType blength15 = blength + seq1_region.plength_observation2root;
+        
+        if (seq2_region.getLH(seq1_state) > 0.1)
+            lh_cost += model.diagonal_mut_mat[seq1_state] * (blength15 + seq1_region.plength_observation2node);
+        else
+        {
+            RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
+            RealNumType* mutation_mat_row = model.mutation_mat;
+                                
+            for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+            {
+                RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region.plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
+                    
+                RealNumType tot3 = sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
+                
+                tot += tot2 * blength15 * tot3 + (seq2_region.getLH(i) > 0.1 ? tot2 : 0);
+            }
+            
+            total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
+        }
+    }
+    else
+    {
+        RealNumType tmp_blength = blength + (seq1_region.plength_observation2node < 0 ? 0 : seq1_region.plength_observation2node);
+        if (seq2_region.getLH(seq1_state) > 0.1)
+            lh_cost += model.diagonal_mut_mat[seq1_state] * tmp_blength;
+        else
+        {
+            RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+            tot += sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
+            
+            total_factor *= tot * tmp_blength;
+        }
+    }
+}
+
+void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, const PositionType end_pos, RealNumType& total_factor, const Alignment& aln, const Model& model)
+{
+    StateType seq1_state = seq1_region.type;
+    StateType seq2_state = seq2_region.type;
+    if (seq2_state == TYPE_R)
+        seq2_state = aln.ref_seq[end_pos];
+    
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        // here we ignore contribution of non-parsimonious mutational histories
+        RealNumType seq1_state_evoloves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + seq1_region.plength_observation2root) * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region.plength_observation2node);
+        
+        RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region.plength_observation2root));
+        
+        total_factor *= (seq1_state_evoloves_seq2_state + seq2_state_evolves_seq1_state);
+    }
+    else
+    {
+        RealNumType tmp_blength = ((seq1_region.plength_observation2node < 0) ? blength : blength + seq1_region.plength_observation2node);
+        
+        total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * tmp_blength;
+    }
 }
 
 RealNumType Tree::calculateSamplePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
@@ -4056,228 +4272,49 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
         // 2.1. e1.type = R and e2.type = R
         if (s1s2 == RR) [[likely]]
         {
-            if (seq1_region->plength_observation2node < 0 && seq1_region->plength_observation2root < 0)
-                lh_cost += blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-            else
-            {
-                total_blength = blength + seq1_region->plength_observation2node;
-                if (seq1_region->plength_observation2root < 0)
-                    lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-                else
-                    // here contribution from root frequency gets added and subtracted so it's ignored
-                    lh_cost += (total_blength + seq1_region->plength_observation2root) * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-            }
+            calculateSampleCost_R_R(*seq1_region, cumulative_rate, blength, pos, end_pos, lh_cost);
         }
         // 2.2. e1.type = R and e2.type = O
         else if (s1s2 == RO)
         {
-            StateType seq1_state = aln.ref_seq[end_pos];
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                total_blength = seq1_region->plength_observation2root + blength;
-                
-                if (seq2_region->getLH(seq1_state) > 0.1)
-                {
-                    total_blength += seq1_region->plength_observation2node;
-                    
-                    // here contribution from root frequency can also be also ignored
-                    lh_cost += model.diagonal_mut_mat[seq1_state] * total_blength;
-                }
-                else
-                {
-                    RealNumType tot = 0;
-                    RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                                        
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
-                        RealNumType tot3 = ((seq2_region->getLH(i) > 0.1) ? 1 : 0) + sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
-                        
-                        tot += tot2 * tot3 * total_blength;
-                    }
-                    
-                    total_factor *= tot * model.inverse_root_freqs[seq1_state];
-                }
-            }
-            else
-            {
-                if (seq2_region->getLH(seq1_state) > 0.1)
-                {
-                    if (seq1_region->plength_observation2node >= 0)
-                        lh_cost += model.diagonal_mut_mat[seq1_state] * (blength + seq1_region->plength_observation2node);
-                    else
-                        lh_cost += model.diagonal_mut_mat[seq1_state] * blength;
-                }
-                else
-                {
-                    RealNumType tot = 0;
-                    RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                    
-                    tot += sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
-                    
-                    if (seq1_region->plength_observation2node >= 0)
-                        total_factor *= tot * (blength + seq1_region->plength_observation2node);
-                    else
-                        total_factor *= tot * blength;
-                }
-            }
+            calculateSampleCost_R_O<num_states>(*seq1_region, *seq2_region, blength, aln.ref_seq[end_pos], lh_cost, total_factor, model);
         }
         // 2.3. e1.type = R and e2.type = A/C/G/T
         else if (seq1_region->type == TYPE_R)
         {
-            StateType seq1_state = aln.ref_seq[end_pos];
-            StateType seq2_state = seq2_region->type;
-            
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                // TODO: can cache model.mutation_mat[model.row_index[seq1_state] * model.diagonal_mut_mat[seq1_state]
-                // TODO: can cache  model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * model.diagonal_mut_mat[seq2_state]
-                RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
-                
-                RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
-                                                                                                                                                                                            
-                total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
-            }
-            else
-            {
-                total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node));
-            }
+            calculateSampleCost_R_ACGT(*seq1_region, blength, aln.ref_seq[end_pos], seq2_region->type, total_factor, model);
         }
         // 3. e1.type = O
         // 3.1. e1.type = O and e2.type = O
         else if (s1s2 == OO)
         {
-            RealNumType blength13 = blength;
-            if (seq1_region->plength_observation2node >= 0)
-            {
-                blength13 = seq1_region->plength_observation2node;
-                if (blength > 0)
-                    blength13 += blength;
-            }
-            
-            RealNumType tot = 0;
-            
-            RealNumType* mutation_mat_row = model.mutation_mat;
-                                
-            for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-            {
-                RealNumType tot2 = blength13 * sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
-                
-                tot += (tot2 + (seq2_region->getLH(i) > 0.1 ? 1 : 0)) * seq1_region->getLH(i);
-            }
-                
-            total_factor *= tot;
+            calculateSampleCost_O_O<4>(*seq1_region, *seq2_region, blength, total_factor, model);
         }
         // 3.2. e1.type = O and e2.type = R or A/C/G/T
         else if (seq1_region->type == TYPE_O)
         {
-            RealNumType blength13 = blength;
-            if (seq1_region->plength_observation2node >= 0)
-            {
-                blength13 = seq1_region->plength_observation2node;
-                if (blength > 0)
-                    blength13 += blength;
-            }
-            
-            StateType seq2_state = seq2_region->type;
-            if (seq2_state == TYPE_R)
-                seq2_state = aln.ref_seq[end_pos];
-            
-            RealNumType *transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-            RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region->likelihood)[0]));
-            total_factor *= seq1_region->getLH(seq2_state) + blength13 * tot2;
+            calculateSampleCost_O_RACGT<num_states>(*seq1_region, *seq2_region, blength, end_pos, total_factor, aln, model);
         }
         // 4. e1.type = A/C/G/T
         // 4.1. e1.type =  e2.type
         else if (seq1_region->type == seq2_region->type)
         {
-            total_blength = blength;
-            total_blength += (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
-            total_blength += (seq1_region->plength_observation2root < 0 ? 0 : seq1_region->plength_observation2root);
-
-            lh_cost += model.diagonal_mut_mat[seq1_region->type] * total_blength;
+            calculateSampleCost_identicalACGT(*seq1_region, blength, lh_cost, model);
         }
         // e1.type = A/C/G/T and e2.type = O/A/C/G/T
         // 4.2. e1.type = A/C/G/T and e2.type = O
         else if (seq2_region->type == TYPE_O)
         {
-            StateType seq1_state = seq1_region->type;
-            RealNumType tot = 0.0;
-            
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                RealNumType blength15 = blength + seq1_region->plength_observation2root;
-                
-                if (seq2_region->getLH(seq1_state) > 0.1)
-                    lh_cost += model.diagonal_mut_mat[seq1_state] * (blength15 + seq1_region->plength_observation2node);
-                else
-                {
-                    RealNumType* freq_j_transposed_ij_row = model.freq_j_transposed_ij + model.row_index[seq1_state];
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                                        
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        RealNumType tot2 = freq_j_transposed_ij_row[i] * seq1_region->plength_observation2node + ((seq1_state == i) ? model.root_freqs[i] : 0);
-                            
-                        RealNumType tot3 = sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
-                        
-                        tot += tot2 * blength15 * tot3 + (seq2_region->getLH(i) > 0.1 ? tot2 : 0);
-                    }
-                    
-                    total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
-                }
-            }
-            else
-            {
-                RealNumType tmp_blength = blength + (seq1_region->plength_observation2node < 0 ? 0 : seq1_region->plength_observation2node);
-                if (seq2_region->getLH(seq1_state) > 0.1)
-                    lh_cost += model.diagonal_mut_mat[seq1_state] * tmp_blength;
-                else
-                {
-                    RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                    tot += sumMutationByLh<num_states>(&(*seq2_region->likelihood)[0], mutation_mat_row);
-                    
-                    total_factor *= tot * tmp_blength;
-                }
-            }
+            calculateSampleCost_ACGT_O<4>(*seq1_region, *seq2_region, blength, lh_cost, total_factor, model);
         }
         // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
         else
         {
-            StateType seq1_state = seq1_region->type;
-            StateType seq2_state = seq2_region->type;
-            if (seq2_state == TYPE_R)
-                seq2_state = aln.ref_seq[end_pos];
-            
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                // here we ignore contribution of non-parsimonious mutational histories
-                RealNumType seq1_state_evoloves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * (blength + seq1_region->plength_observation2root) * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
-                
-                RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * (blength + seq1_region->plength_observation2root));
-                
-                total_factor *= (seq1_state_evoloves_seq2_state + seq2_state_evolves_seq1_state);
-            }
-            else
-            {
-                RealNumType tmp_blength = ((seq1_region->plength_observation2node < 0) ? blength : blength + seq1_region->plength_observation2node);
-                
-                total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * tmp_blength;
-            }
+            calculateSampleCost_ACGT_RACGT(*seq1_region, *seq2_region, blength, end_pos, total_factor, aln, model);
         }
          
-        // approximately update lh_cost and total_factor
-        if (total_factor <= MIN_CARRY_OVER)
-        {
-            if (total_factor < MIN_POSITIVE)
-                return MIN_NEGATIVE;
-            
-            //lh_cost += log(total_factor);
-            //total_factor = 1.0;
-            total_factor *= MAX_POSITIVE;
-            lh_cost -= LOG_MAX_POSITIVE;
-        }
+        // avoid underflow on total_factor
+        rescaleTotalFactor(lh_cost, total_factor);
         
         // update pos
         pos = end_pos + 1;
