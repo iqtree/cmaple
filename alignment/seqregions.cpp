@@ -877,24 +877,24 @@ bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion&
         seq1_state = aln.ref_seq[end_pos];
     
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
-    auto& new_lh_value = *new_lh;
+    //auto& new_lh_value = *new_lh;
     RealNumType sum_lh = 0;
     
     assert(num_states == 4);
     if (total_blength_1 > 0)
     {
         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-        setVecWithState<4>(new_lh_value.data(), seq1_state, transposed_mut_mat_row, total_blength_1);
+        setVecWithState<4>(new_lh->data(), seq1_state, transposed_mut_mat_row, total_blength_1);
     }
     else
-        resetLhVecExceptState<4>(new_lh_value.data(), seq1_state, 1);
+        resetLhVecExceptState<4>(new_lh->data(), seq1_state, 1);
 
     // seq1_entry = R/ACGT and seq2_entry = O
     if (seq2_region.type == TYPE_O)
-        return merge_RACGT_O_TwoLowers(seq2_region, total_blength_2, end_pos, aln, model, threshold_prob, new_lh_value, log_lh, merged_regions, return_log_lh);
+        return merge_RACGT_O_TwoLowers(seq2_region, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, return_log_lh);
     
     // otherwise, seq1_entry = R/ACGT and seq2_entry = R/ACGT
-    return merge_RACGT_RACGT_TwoLowers(seq2_region, total_blength_2, end_pos, aln, model, threshold_prob, new_lh_value, sum_lh, log_lh, merged_regions, return_log_lh);
+    return merge_RACGT_RACGT_TwoLowers(seq2_region, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, return_log_lh);
 }
   
 bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, RealNumType* cumulative_rate, SeqRegions* merged_regions, const bool return_log_lh)
