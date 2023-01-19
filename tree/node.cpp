@@ -138,7 +138,7 @@ SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, R
                 SeqRegions* regions2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
                 
                 // compute partial_lh
-                regions1->mergeTwoLowers(partial_lh, next_node_1->length, regions2, next_node_2->length, aln, model, threshold_prob, cumulative_rate);
+                regions1->mergeTwoLowers(partial_lh, next_node_1->length, *regions2, next_node_2->length, aln, model, threshold_prob, cumulative_rate);
             }
             // otherwise -> partial_lh is the upper left/right regions
             else

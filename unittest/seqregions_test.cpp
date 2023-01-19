@@ -5840,61 +5840,61 @@ TEST(SeqRegions, mergeTwoLowers)
     SeqRegions* merged_regions_ptr = nullptr;
     
     genTestData4(seqregions1, seqregions2, output_regions, 1);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 1 -----
     
     // ----- Test 2 -----
     genTestData4(seqregions1, seqregions2, output_regions, 2);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, &seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 2 -----
     
     // ----- Test 3 -----
     genTestData4(seqregions1, seqregions2, output_regions, 3);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, &seqregions2, 0.00013381954434445151344394708825547013475443236529827, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, seqregions2, 0.00013381954434445151344394708825547013475443236529827, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 3 -----
     
     // ----- Test 4 -----
     genTestData4(seqregions1, seqregions2, output_regions, 4);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 4 -----
     
     // ----- Test 5 -----
     genTestData4(seqregions1, seqregions2, output_regions, 5);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, &seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 5 -----
     
     // ----- Test 6 -----
     genTestData4(seqregions1, seqregions2, output_regions, 6);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 6 -----
     
     // ----- Test 7 -----
     genTestData4(seqregions1, seqregions2, output_regions, 7);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 7 -----
     
     // ----- Test 8 -----
     genTestData4(seqregions1, seqregions2, output_regions, 8);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 8 -----
     
     // ----- Test 9 -----
     genTestData4(seqregions1, seqregions2, output_regions, 9);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 9 -----
     
     // ----- Test 10 -----
     genTestData4(seqregions1, seqregions2, output_regions, 10);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 10 -----
 }

@@ -126,7 +126,7 @@ public:
         @param cumulative_rate the cumulative rates of the reference sequence
         @param return_log_lh TRUE to return the log likelihood
      */
-    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold, RealNumType* cumulative_rate, bool return_log_lh = false);
+    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions& regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold, RealNumType* cumulative_rate, const bool return_log_lh = false) const;
     
     /**
         Compute total lh/upper left_right for root node

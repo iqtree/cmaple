@@ -271,7 +271,7 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
             // update lower likelihoods
             SeqRegions* merged_two_lower_regions = NULL;
             SeqRegions* old_lower_regions = NULL;
-            other_next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->mergeTwoLowers(merged_two_lower_regions, other_next_node_distance, this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob, cumulative_rate);
+            other_next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->mergeTwoLowers(merged_two_lower_regions, other_next_node_distance, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob, cumulative_rate);
             
             if (!merged_two_lower_regions || merged_two_lower_regions->size() == 0)
             {
@@ -918,7 +918,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 if (updating_node->need_updating)
                 {
                     SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
+                    other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
                     
                     // skip if bottom_regions is null (inconsistent)
                     if (!bottom_regions)
@@ -1042,7 +1042,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                         if (!bottom_regions)
                         {
                             SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                            other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
+                            other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
                             
                             // skip if bottom_regions is null (inconsistent)
                             if (!bottom_regions)
@@ -1430,7 +1430,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
         next_node_1->partial_lh = best_child_regions;
         best_child_regions = NULL;
         upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *subtree_regions, best_blength, aln, model, threshold_prob);
-        selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, subtree_regions, best_blength, aln, model, threshold_prob, cumulative_rate);
+        selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, *subtree_regions, best_blength, aln, model, threshold_prob, cumulative_rate);
         RealNumType mid_branch_length = new_internal_node->length * 0.5;
         upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, mid_branch_length, *new_internal_node->partial_lh, mid_branch_length, aln, model, threshold_prob);
         new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
@@ -1580,7 +1580,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
             
             // merge 2 lower vector into one
             SeqRegions* merged_root_sample_regions = NULL;
-            RealNumType new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, default_blength, subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate, true);
+            RealNumType new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, default_blength, *subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate, true);
             
             new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
             best_parent_lh = new_root_lh - old_root_lh;
@@ -1594,7 +1594,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
             while (new_blength > min_blength)
             {
                 // merge 2 lower vector into one
-                new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate, true);
+                new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, *subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate, true);
                 
                 new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                 RealNumType diff_root_lh = new_root_lh - old_root_lh;
@@ -1754,7 +1754,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
             next_node_1->partial_lh = best_child_regions;
             best_child_regions = NULL;
             upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *subtree_regions, best_length, aln, model, threshold_prob);
-            best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, best_child->length, subtree_regions, best_length, aln, model, threshold_prob, cumulative_rate);
+            best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, best_child->length, *subtree_regions, best_length, aln, model, threshold_prob, cumulative_rate);
             RealNumType mid_branch_length = new_internal_node->length * 0.5;
             upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, mid_branch_length, *new_internal_node->partial_lh, mid_branch_length, aln, model, threshold_prob);
             new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
@@ -1787,7 +1787,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 best_parent_regions = NULL;
                 
                 if (selected_node == root)
-                    lower_regions->mergeTwoLowers(best_parent_regions, -1, subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate);
+                    lower_regions->mergeTwoLowers(best_parent_regions, -1, *subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate);
                 else
                     best_parent_regions = new SeqRegions(selected_node->total_lh);
             }
@@ -1804,7 +1804,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 if (best_length2 <= 0)
                 {
                     best_length2 = min_blength;
-                    new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, subtree_regions, best_length2, aln, model, threshold_prob, cumulative_rate, true);
+                    new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, *subtree_regions, best_length2, aln, model, threshold_prob, cumulative_rate, true);
                     
                     new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                     
@@ -1818,7 +1818,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 {
                     RealNumType new_blength = best_length2 * 0.5;
                     
-                    new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, subtree_regions, new_blength, aln, model, threshold_prob, cumulative_rate, true);
+                    new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, *subtree_regions, new_blength, aln, model, threshold_prob, cumulative_rate, true);
                     
                     new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                     
@@ -1841,7 +1841,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                     while (best_length2 < max_blength)
                     {
                         RealNumType new_blength = best_length2 + best_length2;
-                        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, subtree_regions, new_blength, aln, model, threshold_prob, cumulative_rate, true);
+                        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, *subtree_regions, new_blength, aln, model, threshold_prob, cumulative_rate, true);
                         new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                         RealNumType root_lh_diff = new_root_lh - old_root_lh;
                         
@@ -1862,7 +1862,7 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                 // try with length zero
                 if (best_length2 < min_blength + min_blength)
                 {
-                    new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, subtree_regions, -1, aln, model, threshold_prob, cumulative_rate, true);
+                    new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, best_root_blength, *subtree_regions, -1, aln, model, threshold_prob, cumulative_rate, true);
                     new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                     RealNumType root_lh_diff = new_root_lh - old_root_lh;
                     if (root_lh_diff > best_parent_lh)
@@ -2040,14 +2040,14 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
                         
                 // update all likelihood regions
                 SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                lower_regions->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, subtree_regions, best_length, aln, model, threshold_prob, cumulative_rate);
+                lower_regions->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, *subtree_regions, best_length, aln, model, threshold_prob, cumulative_rate);
                 if (!new_internal_node->partial_lh)
                 {
                     outWarning("Problem, non lower likelihood while placing subtree -> set best branch length to min length");
                     best_length = min_blength;
                     subtree->length = best_length;
                     subtree->neighbor->length = best_length;
-                    lower_regions->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, subtree_regions, best_length, aln, model, threshold_prob, cumulative_rate);
+                    lower_regions->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, *subtree_regions, best_length, aln, model, threshold_prob, cumulative_rate);
                 }
                 
                 upper_left_right_regions->mergeUpperLower(next_node_1->partial_lh, new_internal_node->length, *lower_regions, selected_node->length, aln, model, threshold_prob);
@@ -2228,7 +2228,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
         next_node_1->partial_lh = best_child_regions;
         best_child_regions = NULL;
         upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_blength, aln, model, threshold_prob);
-        selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, sample, best_blength, aln, model, threshold_prob, cumulative_rate);
+        selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, *sample, best_blength, aln, model, threshold_prob, cumulative_rate);
         RealNumType half_branch_length = new_internal_node->length * 0.5;
         upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
         new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
@@ -2309,7 +2309,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
             SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             
             // merge 2 lower vector into one
-            new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, default_blength, sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
+            new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, default_blength, *sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
             
             new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
             best_parent_lh = new_root_lh - old_root_lh;
@@ -2324,7 +2324,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
             while (new_blength > min_blength)
             {
                 // merge 2 lower vector into one
-                new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
+                new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, *sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
                 
                 new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                 RealNumType diff_root_lh = new_root_lh-old_root_lh;
@@ -2466,7 +2466,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
             next_node_1->partial_lh = best_child_regions;
             best_child_regions = NULL;
             upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_length, aln, model, threshold_prob);
-            best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, best_child->length, sample, best_length, aln, model, threshold_prob, cumulative_rate);
+            best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, best_child->length, *sample, best_length, aln, model, threshold_prob, cumulative_rate);
             RealNumType half_branch_length = new_internal_node->length * 0.5;
             upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
             new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
@@ -2504,7 +2504,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
                 best_parent_regions = NULL;
                 
                 if (selected_node == root)
-                    selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(best_parent_regions, -1, sample, default_blength, aln, model, threshold_prob, cumulative_rate);
+                    selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(best_parent_regions, -1, *sample, default_blength, aln, model, threshold_prob, cumulative_rate);
                 else
                     best_parent_regions = new SeqRegions(selected_node->total_lh);
             }
@@ -2521,7 +2521,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
                 {
                     RealNumType new_blength = best_length2 * 0.5;
                     
-                    new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, sample, new_blength, aln, model, threshold_prob, cumulative_rate, true);
+                    new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, *sample, new_blength, aln, model, threshold_prob, cumulative_rate, true);
                     
                     new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                     
@@ -2544,7 +2544,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
                     while (best_length2 < max_blength)
                     {
                         RealNumType new_blength = best_length2 * 2;
-                        new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, sample, new_blength, aln, model, threshold_prob, cumulative_rate, true);
+                        new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, *sample, new_blength, aln, model, threshold_prob, cumulative_rate, true);
                         new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                         RealNumType root_lh_diff = new_root_lh - old_root_lh;
                         
@@ -2565,7 +2565,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
                 // try with length zero
                 if (best_length2 < min_blength)
                 {
-                    new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, sample, -1, aln, model, threshold_prob, cumulative_rate, true);
+                    new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, *sample, -1, aln, model, threshold_prob, cumulative_rate, true);
                     new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
                     RealNumType root_lh_diff = new_root_lh - old_root_lh;
                     if (root_lh_diff > best_parent_lh)
@@ -2759,7 +2759,7 @@ void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string 
                 next_node_1->partial_lh = best_parent_regions;
                 best_parent_regions = NULL;
                 upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_length, aln, model, threshold_prob);
-                selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, sample, best_length, aln, model, threshold_prob, cumulative_rate);
+                selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, *sample, best_length, aln, model, threshold_prob, cumulative_rate);
                 RealNumType half_branch_length = new_internal_node->length * 0.5;
                 upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
                 new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
@@ -2854,7 +2854,7 @@ void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate, RealNumType default_
                 SeqRegions* new_lower_lh = NULL;
                 SeqRegions* lower_lh_1 = next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
                 SeqRegions* lower_lh_2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                lower_lh_1->mergeTwoLowers(new_lower_lh, next_node_1->length, lower_lh_2, next_node_2->length, aln, model, params->threshold_prob, cumulative_rate);
+                lower_lh_1->mergeTwoLowers(new_lower_lh, next_node_1->length, *lower_lh_2, next_node_2->length, aln, model, params->threshold_prob, cumulative_rate);
                  
                 // if new_lower_lh is NULL -> we need to update the branch lengths connecting the current node to its children
                 if (!new_lower_lh)

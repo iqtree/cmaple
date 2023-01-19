@@ -944,14 +944,14 @@ bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& se
     return true;
 }
 
-RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool return_log_lh)
+RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions& regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, const bool return_log_lh) const
 {
     // init variables
     RealNumType log_lh = 0;
     PositionType pos = 0;
     const StateType num_states = aln.num_states;
     const SeqRegions& seq1_regions = *this;
-    const SeqRegions& seq2_regions = *regions2;
+    const SeqRegions& seq2_regions = regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
     const PositionType seq_length = aln.ref_seq.size();
