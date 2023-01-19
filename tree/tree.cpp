@@ -3736,6 +3736,218 @@ void rescaleTotalFactor(RealNumType& lh_cost, RealNumType& total_factor)
     }
 }
 
+void calculateSubtreeCost_R_R(const SeqRegion& seq1_region, const RealNumType* const cumulative_rate, RealNumType& total_blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
+{
+    if (seq1_region.plength_observation2root >= 0)
+      total_blength += seq1_region.plength_observation2node;
+
+    // NHANLT NOTE:
+    // approximation log(1+x)~x
+    if (total_blength > 0)
+      lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+}
+
+template <const StateType num_states>
+void calculateSubtreeCost_R_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const StateType seq1_state, RealNumType& total_factor, const Model& model)
+{
+    RealNumType tot = 0;
+    
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+        RealNumType* mutation_mat_row = model.mutation_mat;
+                            
+        for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+        {
+            // NHANLT NOTE: UNSURE
+            // tot2: likelihood that we can observe seq1_state elvoving from i at root (account for the fact that the observation might have occurred on the other side of the phylogeny with respect to the root)
+            // tot2 = root_freqs[seq1_state] * (1 + mut[seq1_state,seq1_state] * plength_observation2node) + root_freqs[i] * mut[i,seq1_state] * plength_observation2node
+            RealNumType tot2 = model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region.plength_observation2node + (seq1_state == i ? model.root_freqs[i] : 0);
+            
+            // NHANLT NOTE:
+            // tot3: likelihood of i evolves to j
+            // tot3 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] * total_blength * lh(seq2,j)
+            RealNumType tot3 = total_blength > 0 ? (total_blength * dotProduct<num_states>(mutation_mat_row, &((*seq2_region.likelihood)[0]))) : 0;
+            
+            // NHANLT NOTE:
+            // tot = tot2 * tot3
+            tot += tot2 * (seq2_region.getLH(i) + tot3);
+        }
+        
+        // NHANLT NOTE: UNCLEAR
+        // why we need to divide tot by root_freqs[seq1_state]
+        tot *= model.inverse_root_freqs[seq1_state];
+    }
+    else
+    {
+        // NHANLT NOTE:
+        // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
+        if (total_blength > 0)
+        {
+            const RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+            tot += dotProduct<num_states>(mutation_mat_row, &((*seq2_region.likelihood)[0]));
+            tot *= total_blength;
+        }
+        tot += seq2_region.getLH(seq1_state);
+    }
+    total_factor *= tot;
+}
+
+bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region, const RealNumType total_blength, const StateType seq1_state, const StateType seq2_state, RealNumType& total_factor, const Model& model)
+{
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        if (total_blength > 0)
+        {
+            // NHANLT NOTE: UNSURE
+            // seq1_state_evolves_seq2_state = (1) the likelihood that seq1_state evolves to seq2_state * (2) the likelihood that seq1_state unchanges from the observing position
+            // (1) = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength
+            // (2) = (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region.plength_observation2node)
+            RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region.plength_observation2node);
+            
+            // NHANLT NOTE: UNCLEAR
+            // consider the inverse process of the above
+            // seq2_state_evolves_seq1_state = (1) the likelihood that seq2_state evolves to seq1_state * (2) the likelihood that seq2_state unchanges from the observing position
+            // (1) = root_freqs[seq2_state] / root_freqs[seq1_state] * mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node
+            // (2) = (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength)
+            RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength);
+            
+            total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
+        }
+        // NHANLT NOTE:
+        // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
+        else
+            total_factor *= model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node;
+    }
+    // NHANLT NOTE:
+    // add the likelihood that seq1_state evoles to seq2_state = mut[seq1_state,seq2_state] * total_blength
+    else if (total_blength > 0)
+        total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength;
+    else
+        return false; // return MIN_NEGATIVE;
+    
+    // no error
+    return true;
+}
+
+template <const StateType num_states>
+void calculateSubtreeCost_O_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, RealNumType& total_factor, const Model& model)
+{
+    if (total_blength > 0)
+    {
+      total_factor *= matrixEvolve<num_states>(&((*seq1_region.likelihood)[0]), &((*seq2_region.likelihood)[0]), model.mutation_mat, total_blength);
+    }
+    // NHANLT NOTE:
+    // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
+    else
+    {
+      total_factor *= dotProduct<num_states>(&((*seq1_region.likelihood)[0]), &((*seq2_region.likelihood)[0]));
+    }
+}
+
+template <const StateType num_states>
+void calculateSubtreeCost_O_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType& total_factor, const Alignment& aln, const Model& model)
+{
+    StateType seq2_state = seq2_region.type;
+    if (seq2_state == TYPE_R)
+        seq2_state = aln.ref_seq[end_pos];
+    
+    if (total_blength > 0)
+    {
+        // NHANLT NOTE:
+        // tot2: likelihood of i evolves to seq2_state
+        // tot2 = (1 + mut[seq2_state,seq2_state] * total_blength) * lh(seq1,seq2_state) + lh(seq1,i) * mut[i,seq2_state] * total_blength
+        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+        RealNumType tot2 = dotProduct<num_states>(&((*seq1_region.likelihood)[0]), transposed_mut_mat_row);
+        total_factor *= seq1_region.getLH(seq2_state) + total_blength * tot2;
+    }
+    // NHANLT NOTE:
+    // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
+    else
+        total_factor *= seq1_region.getLH(seq2_state);
+}
+
+void calculateSubtreeCost_identicalACGT(const SeqRegion& seq1_region, RealNumType& total_blength, RealNumType& lh_cost, const Model& model)
+{
+    if (seq1_region.plength_observation2root >= 0)
+        total_blength += seq1_region.plength_observation2node;
+    
+    // NHANLT NOTE:
+    // the likelihood that seq1_state unchanges
+    if (total_blength > 0)
+        lh_cost += model.diagonal_mut_mat[seq1_region.type] * total_blength;
+}
+
+template <const StateType num_states>
+void calculateSubtreeCost_ACGT_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, RealNumType& total_factor, const Model& model)
+{
+    StateType seq1_state = seq1_region.type;
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+        RealNumType* mutation_mat_row = model.mutation_mat;
+        RealNumType tot = matrixEvolveRoot<num_states>(&((*seq2_region.likelihood)[0]), seq1_state,
+          model.root_freqs, transposed_mut_mat_row, mutation_mat_row, total_blength, seq1_region.plength_observation2node);
+        // NHANLT NOTE: UNCLEAR
+        // why we need to divide tot by root_freqs[seq1_state]
+        total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
+    }
+    else
+    {
+        RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+        
+        // NHANLT NOTE:
+        // tot = the likelihood of seq1_state evolving to j
+        // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
+        RealNumType tot = dotProduct<num_states>(mutation_mat_row, &((*seq2_region.likelihood)[0]));
+        tot *= total_blength;
+        tot += seq2_region.getLH(seq1_state);
+        total_factor *= tot;
+    }
+}
+
+bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType& total_factor, const Alignment& aln, const Model& model)
+{
+    StateType seq1_state = seq1_region.type;
+    StateType seq2_state = seq2_region.type;
+    if (seq2_state == TYPE_R)
+        seq2_state = aln.ref_seq[end_pos];
+    
+    if (seq1_region.plength_observation2root >= 0)
+    {
+        if (total_blength > 0)
+        {
+            // NHANLT NOTE: UNSURE
+            // seq1_state_evolves_seq2_state = (1) the likelihood that seq1_state evolves to seq2_state * (2) the likelihood that seq1_state unchanges from the observing position
+            // (1) = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength
+            // (2) = (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region.plength_observation2node)
+            RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region.plength_observation2node);
+            
+            // NHANLT NOTE: UNCLEAR
+            // consider the inverse process of the above
+            // seq2_state_evolves_seq1_state = (1) the likelihood that seq2_state evolves to seq1_state * (2) the likelihood that seq2_state unchanges from the observing position
+            // (1) = root_freqs[seq2_state] / root_freqs[seq1_state] * mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node
+            // (2) = (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength)
+            RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength);
+            
+            total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
+        }
+        // NHANLT NOTE:
+        // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
+        else
+            total_factor *= model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region.plength_observation2node;
+    }
+    // NHANLT NOTE:
+    // add the likelihood that seq1_state evoles to seq2_state = mut[seq1_state,seq2_state] * total_blength
+    else if (total_blength > 0)
+        total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength;
+    else
+        return false; // return MIN_NEGATIVE;
+    
+    // no error
+    return true;
+}
+
 RealNumType Tree::calculateSubTreePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
 {
     return (this->*calculateSubTreePlacementCostPointer)(cumulative_rate, parent_regions, child_regions, blength);
@@ -3796,212 +4008,45 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
         // 2.1. e1.type = R and e2.type = R
         if (s1s2 == RR) [[likely]]
         {
-            if (seq1_region->plength_observation2root >= 0)
-              total_blength += seq1_region->plength_observation2node;
-
-            // NHANLT NOTE:
-            // approximation log(1+x)~x
-            if (total_blength > 0)
-              lh_cost += total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+            calculateSubtreeCost_R_R(*seq1_region, cumulative_rate, total_blength, pos, end_pos, lh_cost);
         }
         // 2.2. e1.type = R and e2.type = O
         else if (s1s2 == RO)
-            {
-                RealNumType tot = 0;
-                StateType seq1_state = aln.ref_seq[end_pos];
-                
-                if (seq1_region->plength_observation2root >= 0)
-                {
-                    RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-                    RealNumType* mutation_mat_row = model.mutation_mat;
-                                        
-                    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                    {
-                        // NHANLT NOTE: UNSURE
-                        // tot2: likelihood that we can observe seq1_state elvoving from i at root (account for the fact that the observation might have occurred on the other side of the phylogeny with respect to the root)
-                        // tot2 = root_freqs[seq1_state] * (1 + mut[seq1_state,seq1_state] * plength_observation2node) + root_freqs[i] * mut[i,seq1_state] * plength_observation2node
-                        RealNumType tot2 = model.root_freqs[i] * transposed_mut_mat_row[i] * seq1_region->plength_observation2node + (seq1_state == i ? model.root_freqs[i] : 0);
-                        
-                        // NHANLT NOTE:
-                        // tot3: likelihood of i evolves to j
-                        // tot3 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] * total_blength * lh(seq2,j)
-                        RealNumType tot3 = total_blength > 0 ? (total_blength * dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]))) : 0;
-                        
-                        // NHANLT NOTE:
-                        // tot = tot2 * tot3
-                        tot += tot2 * (seq2_region->getLH(i) + tot3);
-                    }
-                    
-                    // NHANLT NOTE: UNCLEAR
-                    // why we need to divide tot by root_freqs[seq1_state]
-                    tot *= model.inverse_root_freqs[seq1_state];
-                }
-                else
-                {
-                    // NHANLT NOTE:
-                    // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
-                    if (total_blength > 0)
-                    {
-                        const RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                        tot += dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
-                        tot *= total_blength;
-                    }
-                    tot += seq2_region->getLH(seq1_state);
-                }
-                total_factor *= tot;
-            }
+        {
+            calculateSubtreeCost_R_O<num_states>(*seq1_region, *seq2_region, total_blength, aln.ref_seq[end_pos], total_factor, model);
+        }
         // 2.3. e1.type = R and e2.type = A/C/G/T
         else if (seq1_region->type == TYPE_R)
-            {
-                const StateType seq1_state = aln.ref_seq[end_pos];
-                const StateType seq2_state = seq2_region->type;
-                
-                if (seq1_region->plength_observation2root >= 0)
-                {
-                    if (total_blength > 0)
-                    {
-                        // NHANLT NOTE: UNSURE
-                        // seq1_state_evolves_seq2_state = (1) the likelihood that seq1_state evolves to seq2_state * (2) the likelihood that seq1_state unchanges from the observing position
-                        // (1) = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength
-                        // (2) = (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node)
-                        RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
-                        
-                        // NHANLT NOTE: UNCLEAR
-                        // consider the inverse process of the above
-                        // seq2_state_evolves_seq1_state = (1) the likelihood that seq2_state evolves to seq1_state * (2) the likelihood that seq2_state unchanges from the observing position
-                        // (1) = root_freqs[seq2_state] / root_freqs[seq1_state] * mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node
-                        // (2) = (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength)
-                        RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength);
-                        
-                        total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
-                    }
-                    // NHANLT NOTE:
-                    // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
-                    else
-                        total_factor *= model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
-                }
-                // NHANLT NOTE:
-                // add the likelihood that seq1_state evoles to seq2_state = mut[seq1_state,seq2_state] * total_blength
-                else if (total_blength > 0)
-                    total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength;
-                else
-                    return MIN_NEGATIVE;
-            }
-        
+        {
+            if (!calculateSubtreeCost_R_ACGT(*seq1_region, total_blength, aln.ref_seq[end_pos], seq2_region->type, total_factor, model)) return MIN_NEGATIVE;
+        }
         // 3. e1.type = O
         // 3.1. e1.type = O and e2.type = O
         else if (s1s2 == OO)
         {
-            if (total_blength > 0)
-            {
-              total_factor *= matrixEvolve<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]), model.mutation_mat, total_blength);
-            }
-            // NHANLT NOTE:
-            // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
-            else
-            {
-              total_factor *= dotProduct<num_states>(&((*seq1_region->likelihood)[0]), &((*seq2_region->likelihood)[0]));
-            }
+            calculateSubtreeCost_O_O<num_states>(*seq1_region, *seq2_region, total_blength, total_factor, model);
         }
         // 3.2. e1.type = O and e2.type = R or A/C/G/T
         else if (seq1_region->type == TYPE_O)
         {
-            StateType seq2_state = seq2_region->type;
-            if (seq2_state == TYPE_R)
-                seq2_state = aln.ref_seq[end_pos];
-            
-            if (total_blength > 0)
-            {
-                // NHANLT NOTE:
-                // tot2: likelihood of i evolves to seq2_state
-                // tot2 = (1 + mut[seq2_state,seq2_state] * total_blength) * lh(seq1,seq2_state) + lh(seq1,i) * mut[i,seq2_state] * total_blength
-                RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                RealNumType tot2 = dotProduct<num_states>(&((*seq1_region->likelihood)[0]), transposed_mut_mat_row);
-                total_factor *= seq1_region->getLH(seq2_state) + total_blength * tot2;
-            }
-            // NHANLT NOTE:
-            // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
-            else
-                total_factor *= seq1_region->getLH(seq2_state);
+            calculateSubtreeCost_O_RACGT<num_states>(*seq1_region, *seq2_region, total_blength, end_pos, total_factor, aln, model);
         }
         // 4. e1.type = A/C/G/T
         // 4.1. e1.type =  e2.type
         else if (seq1_region->type == seq2_region->type)
         {
-            if (seq1_region->plength_observation2root >= 0)
-                total_blength += seq1_region->plength_observation2node;
-            
-            // NHANLT NOTE:
-            // the likelihood that seq1_state unchanges
-            if (total_blength > 0)
-                lh_cost += model.diagonal_mut_mat[seq1_region->type] * total_blength;
+            calculateSubtreeCost_identicalACGT(*seq1_region, total_blength, lh_cost, model);
         }
         // e1.type = A/C/G/T and e2.type = O/A/C/G/T
         // 4.2. e1.type = A/C/G/T and e2.type = O
         else if (seq2_region->type == TYPE_O)
         {
-            StateType seq1_state = seq1_region->type;
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-                RealNumType* mutation_mat_row = model.mutation_mat;
-                RealNumType tot = matrixEvolveRoot<num_states>(&((*seq2_region->likelihood)[0]), seq1_state,
-                  model.root_freqs, transposed_mut_mat_row, mutation_mat_row, total_blength, seq1_region->plength_observation2node);
-                // NHANLT NOTE: UNCLEAR
-                // why we need to divide tot by root_freqs[seq1_state]
-                total_factor *= (tot * model.inverse_root_freqs[seq1_state]);
-            }
-            else
-            {
-                RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-                
-                // NHANLT NOTE:
-                // tot = the likelihood of seq1_state evolving to j
-                // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) + mut[seq1_state,j] * total_blength * lh(seq2,j)
-                RealNumType tot = dotProduct<num_states>(mutation_mat_row, &((*seq2_region->likelihood)[0]));
-                tot *= total_blength;
-                tot += seq2_region->getLH(seq1_state);
-                total_factor *= tot;
-            }
+            calculateSubtreeCost_ACGT_O<num_states>(*seq1_region, *seq2_region, total_blength, total_factor, model);
         }
         // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
         else
         {
-            StateType seq1_state = seq1_region->type;
-            StateType seq2_state = seq2_region->type;
-            if (seq2_state == TYPE_R)
-                seq2_state = aln.ref_seq[end_pos];
-            
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                if (total_blength > 0)
-                {
-                    // NHANLT NOTE: UNSURE
-                    // seq1_state_evolves_seq2_state = (1) the likelihood that seq1_state evolves to seq2_state * (2) the likelihood that seq1_state unchanges from the observing position
-                    // (1) = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength
-                    // (2) = (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node)
-                    RealNumType seq1_state_evolves_seq2_state = model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength * (1.0 + model.diagonal_mut_mat[seq1_state] * seq1_region->plength_observation2node);
-                    
-                    // NHANLT NOTE: UNCLEAR
-                    // consider the inverse process of the above
-                    // seq2_state_evolves_seq1_state = (1) the likelihood that seq2_state evolves to seq1_state * (2) the likelihood that seq2_state unchanges from the observing position
-                    // (1) = root_freqs[seq2_state] / root_freqs[seq1_state] * mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node
-                    // (2) = (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength)
-                    RealNumType seq2_state_evolves_seq1_state = model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node * (1.0 + model.diagonal_mut_mat[seq2_state] * total_blength);
-                    
-                    total_factor *= seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
-                }
-                // NHANLT NOTE:
-                // the same as above but total_blength = 0 then we simplify the formula to save the runtime (avoid multiplying with 0)
-                else
-                    total_factor *= model.freqi_freqj_qij[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
-            }
-            // NHANLT NOTE:
-            // add the likelihood that seq1_state evoles to seq2_state = mut[seq1_state,seq2_state] * total_blength
-            else if (total_blength > 0)
-                total_factor *= model.mutation_mat[model.row_index[seq1_state] + seq2_state] * total_blength;
-            else
-                return MIN_NEGATIVE;
+            if (!calculateSubtreeCost_ACGT_RACGT(*seq1_region, *seq2_region, total_blength, end_pos, total_factor, aln, model)) return MIN_NEGATIVE;
         }
          
         // avoid underflow on total_factor
