@@ -2759,13 +2759,12 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
 }
 
 /*
-    Generate testing data (seqregions1, seqregions2, merged_seqregions)
+    Generate testing data (seqregions1, seqregions2) for testing mergeUpperLower() and mergeTwoLowers()
  */
-void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& merged_regions, int test_case)
+void genTestData3_0(SeqRegions& seqregions1, SeqRegions& seqregions2, int test_case)
 {
     seqregions1.clear();
     seqregions2.clear();
-    merged_regions.clear();
     
     switch (test_case)
     {
@@ -2795,19 +2794,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,28142,-1,-1);
             seqregions2.emplace_back(1,28143,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            merged_regions.emplace_back(1,240,-1,-1);
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,11188,-1,-1);
-            merged_regions.emplace_back(3,11189,-1,-1);
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,23401,-1,-1);
-            merged_regions.emplace_back(0,23402,-1,-1);
-            merged_regions.emplace_back(250,28142,-1,-1);
-            merged_regions.emplace_back(1,28143,-1,-1);
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 2:
@@ -2838,40 +2824,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,29740,-1,-1);
             seqregions2.emplace_back(0,29741,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            merged_regions.emplace_back(1,240,-1,-1);
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,23401,-1,-1);
-            auto new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
-            (*new_lh) = new_lh_value;
-            merged_regions.emplace_back(251,23402,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,28142,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value1{9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875};
-            (*new_lh) = new_lh_value1;
-            merged_regions.emplace_back(251,28143,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,28165,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value2{0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06};
-            (*new_lh) = new_lh_value2;
-            merged_regions.emplace_back(251,28166,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,28873,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            (*new_lh) = new_lh_value2;
-            merged_regions.emplace_back(251,28874,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,28876,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            (*new_lh) = new_lh_value2;
-            merged_regions.emplace_back(251,28877,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,29740,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            (*new_lh) = new_lh_value2;
-            merged_regions.emplace_back(251,29741,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 3:
@@ -2904,52 +2856,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,29740,-1,-1);
             seqregions2.emplace_back(0,29741,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            auto new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value3{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
-            (*new_lh) = new_lh_value3;
-            merged_regions.emplace_back(251,240,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,8780,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            (*new_lh) = new_lh_value3;
-            merged_regions.emplace_back(251,8781,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,18754,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value4{2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,0.59998393993535814594508792652050033211708068847656};
-            (*new_lh) = new_lh_value4;
-            merged_regions.emplace_back(251,18755,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,22466,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            (*new_lh) = new_lh_value4;
-            merged_regions.emplace_back(251,22467,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,23401,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value5{0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05};
-            (*new_lh) = new_lh_value5;
-            merged_regions.emplace_back(251,23402,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,28142,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            (*new_lh) = new_lh_value3;
-            merged_regions.emplace_back(251,28143,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,28876,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value6{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05};
-            (*new_lh) = new_lh_value6;
-            merged_regions.emplace_back(251,28877,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,29708,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value7{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
-            (*new_lh) = new_lh_value7;
-            merged_regions.emplace_back(251,29709,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,29740,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            (*new_lh) = new_lh_value6;
-            merged_regions.emplace_back(251,29741,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 4:
@@ -2982,21 +2888,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,28142,-1,-1);
             seqregions2.emplace_back(1,28143,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            merged_regions.emplace_back(1,240,-1,-1);
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,8780,-1,-1);
-            merged_regions.emplace_back(3,8781,-1,-1);
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,17856,-1,-1);
-            merged_regions.emplace_back(2,17857,-1,-1);
-            merged_regions.emplace_back(250,23401,-1,-1);
-            merged_regions.emplace_back(0,23402,-1,-1);
-            merged_regions.emplace_back(250,28142,-1,-1);
-            merged_regions.emplace_back(1,28143,-1,-1);
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 5:
@@ -3041,21 +2932,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,29857,-1,-1);
             seqregions2.emplace_back(250,29858,8.3637215215282185738071563108064765401650220155716e-05,-1);
             seqregions2.emplace_back(252,29890,-1,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            merged_regions.emplace_back(1,240,-1,-1);
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,8780,-1,-1);
-            merged_regions.emplace_back(3,8781,-1,-1);
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,23401,-1,-1);
-            merged_regions.emplace_back(0,23402,-1,-1);
-            merged_regions.emplace_back(250,26086,-1,-1);
-            merged_regions.emplace_back(3,26087,-1,-1);
-            merged_regions.emplace_back(250,28142,-1,-1);
-            merged_regions.emplace_back(1,28143,-1,-1);
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 6:
@@ -3114,29 +2990,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,29740,-1,-1);
             seqregions2.emplace_back(0,29741,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            merged_regions.emplace_back(1,240,-1,-1);
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,8780,-1,-1);
-            merged_regions.emplace_back(3,8781,-1,-1);
-            merged_regions.emplace_back(250,11228,-1,-1);
-            merged_regions.emplace_back(3,11229,-1,-1);
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,23401,-1,-1);
-            merged_regions.emplace_back(0,23402,-1,-1);
-            merged_regions.emplace_back(250,28142,-1,-1);
-            merged_regions.emplace_back(1,28143,-1,-1);
-            merged_regions.emplace_back(250,28165,-1,-1);
-            merged_regions.emplace_back(0,28166,-1,-1);
-            merged_regions.emplace_back(250,28876,-1,-1);
-            merged_regions.emplace_back(0,28877,-1,-1);
-            merged_regions.emplace_back(250,29736,-1,-1);
-            merged_regions.emplace_back(3,29737,-1,-1);
-            merged_regions.emplace_back(250,29740,-1,-1);
-            merged_regions.emplace_back(0,29741,-1,-1);
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 7:
@@ -3181,26 +3034,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,29865,-1,-1);
             seqregions2.emplace_back(252,29867,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
-            merged_regions.emplace_back(250,11,6.6909772172225756721973544127735067377216182649136e-05,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            merged_regions.emplace_back(1,240,-1,-1);
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,3177,-1,-1);
-            merged_regions.emplace_back(0,3178,-1,-1);
-            merged_regions.emplace_back(250,6980,-1,-1);
-            merged_regions.emplace_back(3,6981,-1,-1);
-            merged_regions.emplace_back(250,8780,-1,-1);
-            merged_regions.emplace_back(3,8781,-1,-1);
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,23401,-1,-1);
-            merged_regions.emplace_back(0,23402,-1,-1);
-            merged_regions.emplace_back(250,28142,-1,-1);
-            merged_regions.emplace_back(1,28143,-1,-1);
-            merged_regions.emplace_back(250,29866,-1,-1);
-            merged_regions.emplace_back(250,29867,6.6909772172225756721973544127735067377216182649136e-05,-1);
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 8:
@@ -3265,53 +3098,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,29740,-1,-1);
             seqregions2.emplace_back(0,29741,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
-            merged_regions.emplace_back(250,239,-1,-1);
-            merged_regions.emplace_back(1,240,-1,-1);
-            merged_regions.emplace_back(250,1267,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value4{0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10};
-            (*new_lh) = new_lh_value4;
-            merged_regions.emplace_back(251,1268,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,3035,-1,-1);
-            merged_regions.emplace_back(1,3036,-1,-1);
-            merged_regions.emplace_back(250,8780,-1,-1);
-            merged_regions.emplace_back(3,8781,-1,-1);
-            merged_regions.emplace_back(250,11228,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value5{5.5759387092817078802929955938516570768115343526006e-06,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,0.49999442406129068761089229155913926661014556884766};
-            (*new_lh) = new_lh_value5;
-            merged_regions.emplace_back(251,11229,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,14371,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value6{0.99999721161091070786852696983260102570056915283203,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10,2.7982277946960444848486499948455024505689081593118e-10};
-            (*new_lh) = new_lh_value6;
-            merged_regions.emplace_back(251,14372,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,14406,-1,-1);
-            merged_regions.emplace_back(1,14407,-1,-1);
-            merged_regions.emplace_back(250,17857,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value7{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
-            (*new_lh) = new_lh_value7;
-            merged_regions.emplace_back(251,17858,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,21362,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value8{2.7982277946960444848486499948455024505689081593118e-10,0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06};
-            (*new_lh) = new_lh_value8;
-            merged_regions.emplace_back(251,21363,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,23401,-1,-1);
-            merged_regions.emplace_back(0,23402,-1,-1);
-            merged_regions.emplace_back(250,28142,-1,-1);
-            merged_regions.emplace_back(1,28143,-1,-1);
-            merged_regions.emplace_back(250,28165,-1,-1);
-            new_lh = std::make_unique<SeqRegion::LHType>();
-            SeqRegion::LHType new_lh_value9{0.99995538913255155311077260193997062742710113525391,1.1193098382510832E-9,4.4608628828755082513634472318742041352379601448774e-05,1.1193098382510834E-9};
-            (*new_lh) = new_lh_value9;
-            merged_regions.emplace_back(251,28166,0,0,std::move(new_lh));
-            merged_regions.emplace_back(250,28876,-1,-1);
-            merged_regions.emplace_back(0,28877,-1,-1);
-            merged_regions.emplace_back(250,29740,-1,-1);
-            merged_regions.emplace_back(0,29741,-1,-1);
-            merged_regions.emplace_back(250,29890,-1,-1);
             break;
         }
         case 9:
@@ -3378,10 +3164,318 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
             seqregions2.emplace_back(250,29740,-1,-1);
             seqregions2.emplace_back(0,29741,-1,-1);
             seqregions2.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 10:
+        {
+            seqregions1.emplace_back(250,12,3.3454886086112878360986772063867533688608091324568e-05,-1);
+            seqregions1.emplace_back(250,239,-1,-1);
+            seqregions1.emplace_back(1,240,-1,-1);
+            seqregions1.emplace_back(250,3035,-1,-1);
+            seqregions1.emplace_back(1,3036,-1,-1);
+            seqregions1.emplace_back(250,8780,-1,-1);
+            seqregions1.emplace_back(3,8781,-1,-1);
+            seqregions1.emplace_back(250,14406,-1,-1);
+            seqregions1.emplace_back(1,14407,-1,-1);
+            seqregions1.emplace_back(250,17745,-1,-1);
+            seqregions1.emplace_back(3,17746,-1,-1);
+            seqregions1.emplace_back(250,17856,-1,-1);
+            seqregions1.emplace_back(2,17857,-1,-1);
+            seqregions1.emplace_back(250,18058,-1,-1);
+            seqregions1.emplace_back(3,18059,-1,-1);
+            seqregions1.emplace_back(250,23401,-1,-1);
+            seqregions1.emplace_back(0,23402,-1,-1);
+            seqregions1.emplace_back(250,28142,-1,-1);
+            seqregions1.emplace_back(1,28143,-1,-1);
+            seqregions1.emplace_back(250,29874,-1,-1);
+            seqregions1.emplace_back(250,29881,3.3454886086112878360986772063867533688608091324568e-05,-1);
+            seqregions1.emplace_back(250,29890,6.6909772172225756721973544127735067377216182649136e-05,-1);
+            seqregions2.emplace_back(250,239,-1,-1);
+            seqregions2.emplace_back(1,240,-1,-1);
+            seqregions2.emplace_back(250,3035,-1,-1);
+            seqregions2.emplace_back(1,3036,-1,-1);
+            seqregions2.emplace_back(250,8780,-1,-1);
+            seqregions2.emplace_back(3,8781,-1,-1);
+            seqregions2.emplace_back(250,14406,-1,-1);
+            seqregions2.emplace_back(1,14407,-1,-1);
+            seqregions2.emplace_back(250,17745,-1,-1);
+            seqregions2.emplace_back(3,17746,-1,-1);
+            seqregions2.emplace_back(250,17856,-1,-1);
+            seqregions2.emplace_back(2,17857,-1,-1);
+            seqregions2.emplace_back(250,18058,-1,-1);
+            seqregions2.emplace_back(3,18059,-1,-1);
+            seqregions2.emplace_back(250,23401,-1,-1);
+            seqregions2.emplace_back(0,23402,-1,-1);
+            seqregions2.emplace_back(250,28142,-1,-1);
+            seqregions2.emplace_back(1,28143,-1,-1);
+            seqregions2.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+/*
+    Generate output data (merged_seqregions) for testing mergeUpperLower()
+ */
+void genOutputData3_1(SeqRegions& merged_regions, int test_case)
+{
+    merged_regions.clear();
+    
+    switch (test_case)
+    {
+        case 1:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,11188,-1,-1);
+            merged_regions.emplace_back(3,11189,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 2:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
+            (*new_lh) = new_lh_value;
+            merged_regions.emplace_back(251,23402,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28142,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value1{9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875};
+            (*new_lh) = new_lh_value1;
+            merged_regions.emplace_back(251,28143,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28165,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value2{0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06};
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,28166,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28873,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,28874,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28876,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,28877,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29740,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,29741,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 3:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value3{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
+            (*new_lh) = new_lh_value3;
+            merged_regions.emplace_back(251,240,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            (*new_lh) = new_lh_value3;
+            merged_regions.emplace_back(251,8781,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,18754,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value4{2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,0.59998393993535814594508792652050033211708068847656};
+            (*new_lh) = new_lh_value4;
+            merged_regions.emplace_back(251,18755,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,22466,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            (*new_lh) = new_lh_value4;
+            merged_regions.emplace_back(251,22467,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,23401,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value5{0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05};
+            (*new_lh) = new_lh_value5;
+            merged_regions.emplace_back(251,23402,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28142,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            (*new_lh) = new_lh_value3;
+            merged_regions.emplace_back(251,28143,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28876,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value6{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05};
+            (*new_lh) = new_lh_value6;
+            merged_regions.emplace_back(251,28877,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29708,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value7{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
+            (*new_lh) = new_lh_value7;
+            merged_regions.emplace_back(251,29709,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29740,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            (*new_lh) = new_lh_value6;
+            merged_regions.emplace_back(251,29741,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 4:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,17856,-1,-1);
+            merged_regions.emplace_back(2,17857,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 5:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,26086,-1,-1);
+            merged_regions.emplace_back(3,26087,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 6:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,11228,-1,-1);
+            merged_regions.emplace_back(3,11229,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,28165,-1,-1);
+            merged_regions.emplace_back(0,28166,-1,-1);
+            merged_regions.emplace_back(250,28876,-1,-1);
+            merged_regions.emplace_back(0,28877,-1,-1);
+            merged_regions.emplace_back(250,29736,-1,-1);
+            merged_regions.emplace_back(3,29737,-1,-1);
+            merged_regions.emplace_back(250,29740,-1,-1);
+            merged_regions.emplace_back(0,29741,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 7:
+        {
+            merged_regions.emplace_back(250,11,6.6909772172225756721973544127735067377216182649136e-05,-1);
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,3177,-1,-1);
+            merged_regions.emplace_back(0,3178,-1,-1);
+            merged_regions.emplace_back(250,6980,-1,-1);
+            merged_regions.emplace_back(3,6981,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29866,-1,-1);
+            merged_regions.emplace_back(250,29867,6.6909772172225756721973544127735067377216182649136e-05,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 8:
+        {
             merged_regions.emplace_back(250,239,-1,-1);
             merged_regions.emplace_back(1,240,-1,-1);
             merged_regions.emplace_back(250,1267,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value4{0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10};
+            (*new_lh) = new_lh_value4;
+            merged_regions.emplace_back(251,1268,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,11228,-1,-1);
             new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value5{5.5759387092817078802929955938516570768115343526006e-06,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,0.49999442406129068761089229155913926661014556884766};
+            (*new_lh) = new_lh_value5;
+            merged_regions.emplace_back(251,11229,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,14371,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value6{0.99999721161091070786852696983260102570056915283203,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10,2.7982277946960444848486499948455024505689081593118e-10};
+            (*new_lh) = new_lh_value6;
+            merged_regions.emplace_back(251,14372,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,17857,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value7{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
+            (*new_lh) = new_lh_value7;
+            merged_regions.emplace_back(251,17858,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,21362,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value8{2.7982277946960444848486499948455024505689081593118e-10,0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06};
+            (*new_lh) = new_lh_value8;
+            merged_regions.emplace_back(251,21363,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,28165,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value9{0.99995538913255155311077260193997062742710113525391,1.1193098382510832E-9,4.4608628828755082513634472318742041352379601448774e-05,1.1193098382510834E-9};
+            (*new_lh) = new_lh_value9;
+            merged_regions.emplace_back(251,28166,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28876,-1,-1);
+            merged_regions.emplace_back(0,28877,-1,-1);
+            merged_regions.emplace_back(250,29740,-1,-1);
+            merged_regions.emplace_back(0,29741,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 9:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,1267,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
             SeqRegion::LHType new_lh_value5{0.99999442305078967141440671184682287275791168212891,5.5966272240860645628430121287970669397004996881151e-10,5.5758298847802999098784669518291678969035274349153e-06,5.5966272240860645628430121287970669397004996881151e-10};
             (*new_lh) = new_lh_value5;
             merged_regions.emplace_back(251,1268,0,0,std::move(new_lh));
@@ -3434,47 +3528,6 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
         }
         case 10:
         {
-            seqregions1.emplace_back(250,12,3.3454886086112878360986772063867533688608091324568e-05,-1);
-            seqregions1.emplace_back(250,239,-1,-1);
-            seqregions1.emplace_back(1,240,-1,-1);
-            seqregions1.emplace_back(250,3035,-1,-1);
-            seqregions1.emplace_back(1,3036,-1,-1);
-            seqregions1.emplace_back(250,8780,-1,-1);
-            seqregions1.emplace_back(3,8781,-1,-1);
-            seqregions1.emplace_back(250,14406,-1,-1);
-            seqregions1.emplace_back(1,14407,-1,-1);
-            seqregions1.emplace_back(250,17745,-1,-1);
-            seqregions1.emplace_back(3,17746,-1,-1);
-            seqregions1.emplace_back(250,17856,-1,-1);
-            seqregions1.emplace_back(2,17857,-1,-1);
-            seqregions1.emplace_back(250,18058,-1,-1);
-            seqregions1.emplace_back(3,18059,-1,-1);
-            seqregions1.emplace_back(250,23401,-1,-1);
-            seqregions1.emplace_back(0,23402,-1,-1);
-            seqregions1.emplace_back(250,28142,-1,-1);
-            seqregions1.emplace_back(1,28143,-1,-1);
-            seqregions1.emplace_back(250,29874,-1,-1);
-            seqregions1.emplace_back(250,29881,3.3454886086112878360986772063867533688608091324568e-05,-1);
-            seqregions1.emplace_back(250,29890,6.6909772172225756721973544127735067377216182649136e-05,-1);
-            seqregions2.emplace_back(250,239,-1,-1);
-            seqregions2.emplace_back(1,240,-1,-1);
-            seqregions2.emplace_back(250,3035,-1,-1);
-            seqregions2.emplace_back(1,3036,-1,-1);
-            seqregions2.emplace_back(250,8780,-1,-1);
-            seqregions2.emplace_back(3,8781,-1,-1);
-            seqregions2.emplace_back(250,14406,-1,-1);
-            seqregions2.emplace_back(1,14407,-1,-1);
-            seqregions2.emplace_back(250,17745,-1,-1);
-            seqregions2.emplace_back(3,17746,-1,-1);
-            seqregions2.emplace_back(250,17856,-1,-1);
-            seqregions2.emplace_back(2,17857,-1,-1);
-            seqregions2.emplace_back(250,18058,-1,-1);
-            seqregions2.emplace_back(3,18059,-1,-1);
-            seqregions2.emplace_back(250,23401,-1,-1);
-            seqregions2.emplace_back(0,23402,-1,-1);
-            seqregions2.emplace_back(250,28142,-1,-1);
-            seqregions2.emplace_back(1,28143,-1,-1);
-            seqregions2.emplace_back(250,29890,-1,-1);
             merged_regions.emplace_back(250,239,-1,-1);
             merged_regions.emplace_back(1,240,-1,-1);
             merged_regions.emplace_back(250,3035,-1,-1);
@@ -3502,12 +3555,374 @@ void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
 }
 
 /*
+    Generate output data (merged_seqregions) for testing mergeTwoLowers()
+ */
+void genOutputData3_2(SeqRegions& merged_regions, int test_case)
+{
+    merged_regions.clear();
+    
+    switch (test_case)
+    {
+        case 1:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,11188,-1,-1);
+            merged_regions.emplace_back(3,11189,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 2:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
+            (*new_lh) = new_lh_value;
+            merged_regions.emplace_back(251,23402,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28142,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value1{9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875};
+            (*new_lh) = new_lh_value1;
+            merged_regions.emplace_back(251,28143,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28165,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value2{0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06};
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,28166,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28873,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value3{0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06};
+            (*new_lh) = new_lh_value3;
+            merged_regions.emplace_back(251,28874,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28876,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value4{0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06};
+            (*new_lh) = new_lh_value4;
+            merged_regions.emplace_back(251,28877,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29740,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value5{0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06,0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06};
+            (*new_lh) = new_lh_value5;
+            merged_regions.emplace_back(251,29741,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 3:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
+            (*new_lh) = new_lh_value;
+            merged_regions.emplace_back(251,240,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value1{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
+            (*new_lh) = new_lh_value1;
+            merged_regions.emplace_back(251,8781,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,18754,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value2{2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,0.59998393993535814594508792652050033211708068847656};
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,18755,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,22466,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value3{2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,0.59998393993535814594508792652050033211708068847656};
+            (*new_lh) = new_lh_value3;
+            merged_regions.emplace_back(251,22467,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,23401,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value4{0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05};
+            (*new_lh) = new_lh_value4;
+            merged_regions.emplace_back(251,23402,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28142,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value5{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
+            (*new_lh) = new_lh_value5;
+            merged_regions.emplace_back(251,28143,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28876,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value6{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05};
+            (*new_lh) = new_lh_value6;
+            merged_regions.emplace_back(251,28877,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29708,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value7{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
+            (*new_lh) = new_lh_value7;
+            merged_regions.emplace_back(251,29709,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29740,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value8{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05};
+            (*new_lh) = new_lh_value8;
+            merged_regions.emplace_back(251,29741,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 4:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,17856,-1,-1);
+            merged_regions.emplace_back(2,17857,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 5:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,26086,-1,-1);
+            merged_regions.emplace_back(3,26087,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 6:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,11228,-1,-1);
+            merged_regions.emplace_back(3,11229,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,28165,-1,-1);
+            merged_regions.emplace_back(0,28166,-1,-1);
+            merged_regions.emplace_back(250,28876,-1,-1);
+            merged_regions.emplace_back(0,28877,-1,-1);
+            merged_regions.emplace_back(250,29736,-1,-1);
+            merged_regions.emplace_back(3,29737,-1,-1);
+            merged_regions.emplace_back(250,29740,-1,-1);
+            merged_regions.emplace_back(0,29741,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 7:
+        {
+            merged_regions.emplace_back(250,11,6.6909772172225756721973544127735067377216182649136e-05,-1);
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,3177,-1,-1);
+            merged_regions.emplace_back(0,3178,-1,-1);
+            merged_regions.emplace_back(250,6980,-1,-1);
+            merged_regions.emplace_back(3,6981,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29866,-1,-1);
+            merged_regions.emplace_back(250,29867,6.6909772172225756721973544127735067377216182649136e-05,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 8:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,1267,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value{0.44442861163664077,1.2436159615250004E-10,0.0000012389946240511395,1.2436159615250004E-10};
+            (*new_lh) = new_lh_value;
+            merged_regions.emplace_back(251,1268,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,11228,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value1{5.5759387092817078802929955938516570768115343526006e-06,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,0.49999442406129068761089229155913926661014556884766};
+            (*new_lh) = new_lh_value1;
+            merged_regions.emplace_back(251,11229,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,14371,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value2{0.44442861163664077,0.0000012389946240511395,1.2436159615250004E-10,1.2436159615250004E-10};
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,14372,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,17857,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value3{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
+            (*new_lh) = new_lh_value3;
+            merged_regions.emplace_back(251,17858,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,21362,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value4{1.2436159615250004E-10,0.44442861163664077,1.2436159615250004E-10,0.0000012389946240511395};
+            (*new_lh) = new_lh_value4;
+            merged_regions.emplace_back(251,21363,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,28165,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value5{0.16664870042553384,1.8653985162265207E-10,0.0000074343016727235307,1.8653985162265212E-10};
+            (*new_lh) = new_lh_value5;
+            merged_regions.emplace_back(251,28166,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28876,-1,-1);
+            merged_regions.emplace_back(0,28877,-1,-1);
+            merged_regions.emplace_back(250,29740,-1,-1);
+            merged_regions.emplace_back(0,29741,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 9:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,1267,-1,-1);
+            auto new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value{0.44441980007814447,2.4872658233953994E-10,0.000002478023022472343,2.4872658233953994E-10};
+            (*new_lh) = new_lh_value;
+            merged_regions.emplace_back(251,1268,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14371,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value1{0.44441980007814447,0.000002478023022472343,2.4872658233953994E-10,2.4872658233953994E-10};
+            (*new_lh) = new_lh_value1;
+            merged_regions.emplace_back(251,14372,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,16573,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value2{7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781,7.4346402191731947664294494204639818235591519623995e-06,0.33332094226630137878686355179524980485439300537109};
+            (*new_lh) = new_lh_value2;
+            merged_regions.emplace_back(251,16574,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,17857,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value3{7.4346402191731947664294494204639818235591519623995e-06,0.33332094226630137878686355179524980485439300537109,7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781};
+            (*new_lh) = new_lh_value3;
+            merged_regions.emplace_back(251,17858,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,21362,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value4{2.4872658233953994E-10,0.44441980007814447,2.4872658233953994E-10,0.000002478023022472343};
+            (*new_lh) = new_lh_value4;
+            merged_regions.emplace_back(251,21363,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,26311,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value5{7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781,7.4346402191731947664294494204639818235591519623995e-06,0.33332094226630137878686355179524980485439300537109};
+            (*new_lh) = new_lh_value5;
+            merged_regions.emplace_back(251,26312,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,28165,-1,-1);
+            new_lh = std::make_unique<SeqRegion::LHType>();
+            SeqRegion::LHType new_lh_value6{0.16664281519091029,3.7307900958885143E-10,0.000014868575700676886,3.7307900958885153E-10};
+            (*new_lh) = new_lh_value6;
+            merged_regions.emplace_back(251,28166,0,0,std::move(new_lh));
+            merged_regions.emplace_back(250,28876,-1,-1);
+            merged_regions.emplace_back(0,28877,-1,-1);
+            merged_regions.emplace_back(250,29740,-1,-1);
+            merged_regions.emplace_back(0,29741,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        case 10:
+        {
+            merged_regions.emplace_back(250,239,-1,-1);
+            merged_regions.emplace_back(1,240,-1,-1);
+            merged_regions.emplace_back(250,3035,-1,-1);
+            merged_regions.emplace_back(1,3036,-1,-1);
+            merged_regions.emplace_back(250,8780,-1,-1);
+            merged_regions.emplace_back(3,8781,-1,-1);
+            merged_regions.emplace_back(250,14406,-1,-1);
+            merged_regions.emplace_back(1,14407,-1,-1);
+            merged_regions.emplace_back(250,17745,-1,-1);
+            merged_regions.emplace_back(3,17746,-1,-1);
+            merged_regions.emplace_back(250,17856,-1,-1);
+            merged_regions.emplace_back(2,17857,-1,-1);
+            merged_regions.emplace_back(250,18058,-1,-1);
+            merged_regions.emplace_back(3,18059,-1,-1);
+            merged_regions.emplace_back(250,23401,-1,-1);
+            merged_regions.emplace_back(0,23402,-1,-1);
+            merged_regions.emplace_back(250,28142,-1,-1);
+            merged_regions.emplace_back(1,28143,-1,-1);
+            merged_regions.emplace_back(250,29890,-1,-1);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+/*
+    Generate testing data (seqregions1, seqregions2, merged_seqregions) for testing mergeUpperLower()
+ */
+void genTestData3(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& merged_regions, int test_case)
+{
+    genTestData3_0(seqregions1, seqregions2, test_case);
+    genOutputData3_1(merged_regions, test_case);
+}
+    
+/*
+    Generate testing data (seqregions1, seqregions2, merged_seqregions) for mergeTwoLowers()
+ */
+void genTestData4(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& merged_regions, int test_case)
+{
+    genTestData3_0(seqregions1, seqregions2, test_case);
+    genOutputData3_2(merged_regions, test_case);
+}
+
+/*
  Test mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, const SeqRegions& lower_regions, RealNumType lower_plength, const
  Alignment& aln, const Model& model, RealNumType threshold) const
  */
 TEST(SeqRegions, mergeUpperLower)
 {
-    // NOTE: if plength_observation2root > 0 then must be plength_observation2node != -1;
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
@@ -4164,7 +4579,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     (*new_lh1) = new_lh_value1;
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 3213;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4178,7 +4593,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     log_lh = 0;
     total_blength_2 = 1e-5;
     (*new_lh1) = new_lh_value1;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4192,7 +4607,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     log_lh = 0;
     total_blength_2 = 0;
     (*new_lh1) = new_lh_value1;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4207,7 +4622,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = -1;
     SeqRegion::LHType new_lh_value2{1.1151877415789591228433182135137968771232408471406e-05,1.2436575683940661210420103588707597258578019250308e-10,0.99998884787385255989988763758447021245956420898438,1.2436575683940661210420103588707597258578019250308e-10};
     (*new_lh1) = new_lh_value2;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4222,7 +4637,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = 0;
     SeqRegion::LHType new_lh_value3{0.80000178432426516383912940000300295650959014892578,8.9216213262436184458807272856795123061601771041751e-06,0.19998037243308225408000566858390811830759048461914,8.9216213262436184458807272856795123061601771041751e-06};
     (*new_lh1) = new_lh_value3;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4237,7 +4652,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = 121e-5;
     SeqRegion::LHType new_lh_value4{0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10};
     (*new_lh1) = new_lh_value4;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4252,7 +4667,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = 121e-5;
     SeqRegion::LHType new_lh_value5{0.99999442305078967141440671184682287275791168212891,5.5758298847802999098784669518291678969035274349153e-06,5.5966272240860645628430121287970669397004996881151e-10,5.5966272240860645628430121287970669397004996881151e-10};
     *seqregion1.likelihood = new_lh_value5;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4265,7 +4680,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = -1;
     SeqRegion::LHType new_lh_value6{0.80000044606912734668213715849560685455799102783203,2.2303456366633140507259747825630213924341660458595e-06,2.2303456366633140507259747825630213924341660458595e-06,0.1999950932395993530299449503218056634068489074707};
     *seqregion1.likelihood = new_lh_value6;
-    merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true);
+    EXPECT_TRUE(merge_O_O_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4273,4 +4688,1213 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     SeqRegion::LHType new_lh_value_merge7{0.12684809781766063,1.3059895886789165E-10,0.87315190141833243,6.3340794416577515E-10};
     EXPECT_EQ(log_lh, -0.22314300087916599802);
     // ----- Test 8 -----
+}
+
+/*
+ Test  merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ */
+TEST(SeqRegions, merge_O_RACGT_TwoLowers)
+{
+    Alignment aln;
+    Model model;
+    Params params = Params::getInstance();
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
+    // Init params, aln, and model
+    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    // dummy variables
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params.threshold_prob;
+    
+    // ----- Test 1 -----
+    SeqRegions* merged_regions = new SeqRegions();
+    RealNumType log_lh = 0;
+    RealNumType sum_lh = 0;
+    SeqRegion seqregion1(TYPE_R, 243, -1, -1);
+    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value1{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
+    (*new_lh1) = new_lh_value1;
+    RealNumType total_blength_2 = -1;
+    const PositionType end_pos = 243;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 1);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -10.528349200671567);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    log_lh = 0;
+    total_blength_2 = 1e-5;
+    seqregion1.type = 1;
+    (*new_lh1) = new_lh_value1;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 2);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge1{0.011816164293335018,0.88299798641181038,8.0375755307632964E-7,0.10518504553730158};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge1);
+    EXPECT_EQ(log_lh, -10.403932725076588);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    log_lh = 0;
+    total_blength_2 = 0;
+    seqregion1.type = 0;
+    (*new_lh1) = new_lh_value1;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 3);
+    EXPECT_EQ(merged_regions->back().type, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.510852390898630326354634689778);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    log_lh = 0;
+    total_blength_2 = -1;
+    seqregion1.type = 2;
+    SeqRegion::LHType new_lh_value2{1.1151877415789591228433182135137968771232408471406e-05,1.2436575683940661210420103588707597258578019250308e-10,0.99998884787385255989988763758447021245956420898438,1.2436575683940661210420103588707597258578019250308e-10};
+    (*new_lh1) = new_lh_value2;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 4);
+    EXPECT_EQ(merged_regions->back().type, 2);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -1.1152188332861237853011436571559755748239695094526e-05);
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    log_lh = 0;
+    total_blength_2 = 0;
+    seqregion1.type = TYPE_R;
+    SeqRegion::LHType new_lh_value3{0.80000178432426516383912940000300295650959014892578,8.9216213262436184458807272856795123061601771041751e-06,0.19998037243308225408000566858390811830759048461914,8.9216213262436184458807272856795123061601771041751e-06};
+    (*new_lh1) = new_lh_value3;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 5);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -11.627032864857458349661101237870752811431884765625);
+    // ----- Test 5 -----
+    
+    // ----- Test 6 -----
+    log_lh = 0;
+    total_blength_2 = 121e-5;
+    seqregion1.type = 0;
+    SeqRegion::LHType new_lh_value4{0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10};
+    (*new_lh1) = new_lh_value4;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 6);
+    EXPECT_EQ(merged_regions->back().type, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.00038188154788715934556328490678822618065169081091881);
+    // ----- Test 6 -----
+    
+    // ----- Test 7 -----
+    log_lh = 0;
+    total_blength_2 = 121e-5;
+    seqregion1.type = 3;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 7);
+    EXPECT_EQ(merged_regions->back().type, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.00028553809857495332426985390483764604141470044851303);
+    // ----- Test 7 -----
+    
+    // ----- Test 8 -----
+    log_lh = 0;
+    total_blength_2 = -1;
+    seqregion1.type = TYPE_R;
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 8);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    SeqRegion::LHType new_lh_value_merge7{0.12684809781766063,1.3059895886789165E-10,0.87315190141833243,6.3340794416577515E-10};
+    EXPECT_EQ(log_lh, -37.4289599328077855489027570001780986785888671875);
+    // ----- Test 8 -----
+}
+
+/*
+ Test merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ */
+TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
+{
+    Alignment aln;
+    Model model;
+    Params params = Params::getInstance();
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
+    // Init params, aln, and model
+    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    // dummy variables
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params.threshold_prob;
+    
+    // ----- Test 1 -----
+    SeqRegions* merged_regions = new SeqRegions();
+    RealNumType log_lh = 0;
+    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
+    (*new_lh) = new_lh_value;
+    SeqRegion seqregion1(TYPE_O, 412, -1, -1, std::move(new_lh));
+    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value1{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
+    (*new_lh1) = new_lh_value1;
+    SeqRegion seqregion2(TYPE_O, 412, -1, -1, std::move(new_lh1));
+    RealNumType total_blength_1 = -1;
+    RealNumType total_blength_2 = -1;
+    const PositionType end_pos = 412;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 1);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge{0.99963572952385693,3.4820599267114684E-9,0.00031223631362821728,0.000052030680454886103};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge);
+    EXPECT_EQ(log_lh, -2.5901247759055703);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    log_lh = 0;
+    total_blength_1 = -1;
+    total_blength_2 = 32e-5;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 2);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge1{0.9993205977222771,2.4282817638871146E-9,0.00067939799763484592,1.851806273068163E-9};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge1);
+    EXPECT_EQ(log_lh, -2.0790653485332990513256845588330179452896118164062);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    log_lh = 0;
+    total_blength_1 = 143e-7;
+    total_blength_2 = 0;
+    SeqRegion::LHType new_lh_value2{2.7879382638950842936132173272012479969816922675818e-06,0.49999721206173608489820026079542003571987152099609,2.7879382638950842936132173272012479969816922675818e-06,0.49999721206173608489820026079542003571987152099609};
+    (*seqregion1.likelihood) = new_lh_value2;
+    seqregion2.type = 0;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 3);
+    EXPECT_EQ(merged_regions->back().type, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -12.484754332344007110577877028845250606536865234375);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = 12e-10;
+    seqregion2.type = 3;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 4);
+    EXPECT_EQ(merged_regions->back().type, 3);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.69315275629224570863584631297271698713302612304688);
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    log_lh = 0;
+    total_blength_1 = 1e-5;
+    total_blength_2 = 68e-4;
+    SeqRegion::LHType new_lh_value3{8.3640013382402129011325767060647251582850003615022e-06,0.24998327199732350845096107150311581790447235107422,8.3640013382402129011325767060647251582850003615022e-06,0.74999999999999988897769753748434595763683319091797};
+    (*seqregion1.likelihood) = new_lh_value3;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 5);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge5{0.0000090841953188726001,0.00016521455452187341,2.7570486522508116E-8,0.00037798930109716154};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge5);
+    EXPECT_EQ(log_lh, 0.00055724163839606082743172166260592348407953977584839);
+    // ----- Test 5 -----
+    
+    // ----- Test 6 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = 15e-2;
+    seqregion2.type = TYPE_O;
+    SeqRegion::LHType new_lh_value6{0.39998126426090857554740409796067979186773300170898,1.3382670779607485874503763900733588343427982181311e-05,0.59999197039753215943136410714942030608654022216797,1.3382670779607485874503763900733588343427982181311e-05};
+    (*seqregion2.likelihood) = new_lh_value6;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 6);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge6{0.000099915947241675934,0.10965211286069129,0.00013202204674923939,0.890115949145318};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge6);
+    EXPECT_EQ(log_lh, -3.40271550630699692874259199015796184539794921875);
+    // ----- Test 6 -----
+    
+    // ----- Test 7 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = 0;
+    SeqRegion::LHType new_lh_value4{7.4346402191731947664294494204639818235591519623995e-06,0.33332094226630137878686355179524980485439300537109,7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781};
+    (*seqregion1.likelihood) = new_lh_value4;
+    seqregion2.type = 1;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 7);
+    EXPECT_EQ(merged_regions->back().type, 1);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -1.0986494625601461727626428910298272967338562011719);
+    // ----- Test 7 -----
+    
+    // ----- Test 8 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = -1;
+    seqregion2.type = TYPE_O;
+    SeqRegion::LHType new_lh_value7{2.4874076016223502201974116939081453636628538106379e-10,7.4343638397288813108904244331132105116921593435109e-06,2.4874076016223502201974116939081453636628538106379e-10,0.99999256513867862405930964087019674479961395263672};
+    (*seqregion2.likelihood) = new_lh_value7;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 8);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge8{2.7739677142300221E-15,0.0000037170713771481666,2.7739677142300221E-15,0.9999962829286173};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge8);
+    EXPECT_EQ(log_lh, -0.40547254324585230156330339923442807048559188842773);
+    // ----- Test 8 -----
+    
+    // ----- Test 9 -----
+    log_lh = 0;
+    total_blength_1 = 437e-6;
+    total_blength_2 = -1;
+    SeqRegion::LHType new_lh_value5{0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06};
+    (*seqregion1.likelihood) = new_lh_value5;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 9);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.69321920665096659064374762238003313541412353515625);
+    // ----- Test 9 -----
+    
+    // ----- Test 10 -----
+    log_lh = 0;
+    total_blength_1 = -1;
+    total_blength_2 = 0;
+    seqregion2.type = 2;
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 10);
+    EXPECT_EQ(merged_regions->back().type, 2);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.69315833249954661443581471758079715073108673095703);
+    // ----- Test 10 -----
+}
+
+/*
+ Test merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ */
+TEST(SeqRegions, merge_RACGT_O_TwoLowers)
+{
+    Alignment aln;
+    Model model;
+    Params params = Params::getInstance();
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
+    // Init params, aln, and model
+    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    // dummy variables
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params.threshold_prob;
+    
+    // ----- Test 1 -----
+    SeqRegions* merged_regions = new SeqRegions();
+    RealNumType log_lh = 0;
+    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
+    (*new_lh) = new_lh_value;
+    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value1{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
+    (*new_lh1) = new_lh_value1;
+    SeqRegion seqregion2(TYPE_O, 412, -1, -1, std::move(new_lh1));
+    RealNumType total_blength_2 = -1;
+    const PositionType end_pos = 412;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 1);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge{0.999635729523856930711644963594,3.48205992671146837419631824906e-09,0.000312236313628217279116106031012,5.20306804548861033901142880698e-05};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge);
+    EXPECT_EQ(log_lh, -2.5901247759055703312469631782732903957366943359375);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    log_lh = 0;
+    total_blength_2 = 1e-3;
+    (*seqregion2.likelihood) = new_lh_value1;
+    SeqRegion::LHType new_lh_value2{6.9955421312460765020272434505291649434188805400936e-11,6.9955421312460765020272434505291649434188805400936e-11,0.99999686351370775660996059741592034697532653808594,3.1363463814122085285697027340345854895531374495476e-06};
+    (*new_lh) = new_lh_value2;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 2);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge2{9.02597705818903812311447803357e-08,9.66903454131082698149291275817e-11,0.997304647644765784875175995694,0.00269526199877322038961358074971};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge2);
+    EXPECT_EQ(log_lh, -7.6737265825075411385114421136677265167236328125);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    log_lh = 0;
+    total_blength_2 = 0;
+    SeqRegion::LHType new_lh_value3{4.9563776809356656518181297177427779843128519132733e-06,4.9563776809356656518181297177427779843128519132733e-06,0.11109844481259316395505010177657823078334331512451,0.88889164243204510373885796070680953562259674072266};
+    (*seqregion2.likelihood) = new_lh_value3;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 3);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge3{6.37132369003884032904877487979e-06,4.9747095246365812296955045472e-10,0.999904410245811336999111063051,8.92179330276898546660951927478e-05};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge3);
+    EXPECT_EQ(log_lh, -2.3307688028059012630421875655883923172950744628906);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    log_lh = 0;
+    total_blength_2 = 213e-7;
+    (*seqregion2.likelihood) = new_lh_value1;
+    SeqRegion::LHType new_lh_value4{2.6136903006998423677005767562508964374501374550164e-06,0.062492812351673081294745060176865081302821636199951,2.6136903006998423677005767562508964374501374550164e-06,0.93750196026772558699491355582722462713718414306641};
+    (*new_lh) = new_lh_value4;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 4);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge4{4.18220729036683253488498879236e-06,6.6470825462486196933439668022e-06,2.51442378530120592451234655152e-10,0.999989170458721043921457294346};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge4);
+    EXPECT_EQ(log_lh, -0.98093450214178112833707245954428799450397491455078);
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    log_lh = 0;
+    total_blength_2 = -1;
+    SeqRegion::LHType new_lh_value5{9.9498152920206932387357935649403392619483099679201e-10,8.9219993723549547142565030455330088443588465452194e-05,9.9498152920206932387357935649403392619483099679201e-10,0.99991077801631333965559633725206367671489715576172};
+    (*seqregion2.likelihood) = new_lh_value5;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 5);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge5{1.27418556907770044148197133294e-05,8.92108976770603789461719368425e-05,8.92108976770603653936447807737e-05,0.999808836348955121131609757867};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge5);
+    EXPECT_EQ(log_lh, -11.537315404593238454822312633041292428970336914062);
+    // ----- Test 5 -----
+    
+    // ----- Test 6 -----
+    log_lh = 0;
+    total_blength_2 = 0;
+    (*seqregion2.likelihood) = new_lh_value1;
+    SeqRegion::LHType new_lh_value6{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
+    (*new_lh) = new_lh_value6;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 6);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge6{1.67277228426044177343658819757e-05,6.6917607757947737928509723826e-05,7.46265281119078188993421229841e-10,0.999916353923134160197605524445};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge6);
+    EXPECT_EQ(log_lh, -1.6094591028973106450195018624071963131427764892578);
+    // ----- Test 6 -----
+    
+    // ----- Test 7 -----
+    log_lh = 0;
+    total_blength_2 = 3163e-7;
+    SeqRegion::LHType new_lh_value7{1.2436575683940661210420103588707597258578019250308e-10,1.1151877415789591228433182135137968771232408471406e-05,1.2436575683940661210420103588707597258578019250308e-10,0.99998884787385255989988763758447021245956420898438};
+    (*seqregion2.likelihood) = new_lh_value7;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 7);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge7{0.0166262913969323911089759349125,2.33062694270459372499967876102e-05,0.93180971485701069578766464474,0.0515406874766299802348434866417};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge7);
+    EXPECT_EQ(log_lh, -8.5724436071309479956426002900116145610809326171875);
+    // ----- Test 7 -----
+    
+    // ----- Test 8 -----
+    log_lh = 0;
+    total_blength_2 = 163e-10;
+    (*seqregion2.likelihood) = new_lh_value1;
+    SeqRegion::LHType new_lh_value8{0.74997769674260927885711680573876947164535522460938,0.24998327274350143345493791002809302881360054016113,1.9515256944661845116837164959555650511902058497071e-05,1.9515256944661845116837164959555650511902058497071e-05};
+    (*new_lh) = new_lh_value8;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 8);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge8{0.999967777775584876209791218571,1.48753723892170687314673652168e-05,1.16113808009755283430647568722e-09,1.73456908878727982935719770241e-05};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge8);
+    EXPECT_EQ(log_lh, -0.79853198337463082712162076859385706484317779541016);
+    // ----- Test 8 -----
+    
+    // ----- Test 9 -----
+    log_lh = 0;
+    total_blength_2 = 0;
+    SeqRegion::LHType new_lh_value9{0.99997490659690790870683940738672390580177307128906,2.5092097243268992381179730011275808010395849123597e-05,6.5292438309787796439726148030194621818544931102224e-10,6.5292438309787796439726148030194621818544931102224e-10};
+    (*seqregion2.likelihood) = new_lh_value9;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 9);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -2.0796618090328400363375749293481931090354919433594);
+    // ----- Test 9 -----
+}
+
+/*
+ Test merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ */
+TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
+{
+    Alignment aln;
+    Model model;
+    Params params = Params::getInstance();
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
+    // Init params, aln, and model
+    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    // dummy variables
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params.threshold_prob;
+    
+    // ----- Test 1 -----
+    SeqRegions* merged_regions = new SeqRegions();
+    RealNumType log_lh = 0;
+    RealNumType sum_lh = 0;
+    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value{9.7580559722090576469559833339140197949745925143361e-06,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,0.12497560486006949187487435892762732692062854766846};
+    (*new_lh) = new_lh_value;
+    SeqRegion seqregion2(TYPE_R, 412, -1, -1);
+    RealNumType total_blength_2 = -1;
+    const PositionType end_pos = 412;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 1);
+    EXPECT_EQ(merged_regions->back().type, seqregion2.type);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -11.537417360554178102916011994238942861557006835938);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 3.1363463814122085285697027340345854895531374495476e-06;
+    seqregion2.type = 0;
+    SeqRegion::LHType new_lh_value2{6.9955421312460765020272434505291649434188805400936e-11,3.1363463814122085285697027340345854895531374495476e-06,0.99999686351370775660996059741592034697532653808594,6.9955421312460765020272434505291649434188805400936e-11};
+    (*new_lh) = new_lh_value2;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 2);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge2{7.35069993527212464743542108536e-05,1.00511327029477612984332841189e-06,0.999925487870280349511631357018,1.70965639624293546874861604245e-11};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge2);
+    EXPECT_EQ(log_lh, -13.865034049156509610156717826612293720245361328125);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 0;
+    seqregion2.type = TYPE_R;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 3);
+    EXPECT_EQ(merged_regions->back().type, seqregion2.type);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -11.537417360554178102916011994238942861557006835938);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 0.062492812351673081294745060176865081302821636199951;
+    seqregion2.type = 1;
+    SeqRegion::LHType new_lh_value4{0.062492812351673081294745060176865081302821636199951,0.93750196026772558699491355582722462713718414306641,2.6136903006998423677005767562508964374501374550164e-06,2.6136903006998423677005767562508964374501374550164e-06};
+    (*new_lh) = new_lh_value4;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 4);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge4{0.000276015672152719990402325311862,0.9997238125720525614426037464,1.76015102091620514116593592541e-08,1.54154284403481275470771598261e-07};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge4);
+    EXPECT_EQ(log_lh, -0.16879625050215649184615074318571714684367179870605);
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = -1;
+    seqregion2.type = 0;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 5);
+    EXPECT_EQ(merged_regions->back().type, seqregion2.type);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -11.537417360554178102916011994238942861557006835938);
+    // ----- Test 5 -----
+    
+    // ----- Test 6 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 0.49999442406129068761089229155913926661014556884766;
+    seqregion2.type = 3;
+    SeqRegion::LHType new_lh_value6{0.49999442406129068761089229155913926661014556884766,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,5.5759387092817078802929955938516570768115343526006e-06};
+    (*new_lh) = new_lh_value6;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 6);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge6{0.0540225020296241503769962832848,0.945967079514273279094993540639,4.82257467713597815899819951091e-06,5.59588142544069931037494305959e-06};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge6);
+    EXPECT_EQ(log_lh, -0.9987216763314137324414332397282123565673828125);
+    // ----- Test 6 -----
+    
+    // ----- Test 7 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 1.2436575683940661210420103588707597258578019250308e-10;
+    seqregion2.type = 0;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 7);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge7{0.99999649823344849419726187989,1.20936802836750174748186692148e-11,3.38363623651822093845354007258e-06,1.18118221219596752754965953997e-07};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge7);
+    EXPECT_EQ(log_lh, -11.537413858823567736067161604296416044235229492188);
+    // ----- Test 7 -----
+    
+    // ----- Test 8 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 1.9515256944661845116837164959555650511902058497071e-05;
+    seqregion2.type = TYPE_R;
+    SeqRegion::LHType new_lh_value8{0.74997769674260927885711680573876947164535522460938,1.9515256944661845116837164959555650511902058497071e-05,1.9515256944661845116837164959555650511902058497071e-05,0.24998327274350143345493791002809302881360054016113};
+    (*new_lh) = new_lh_value8;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 8);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge8{0.999999517409988936122999803047,4.93812459495446616345023798386e-11,1.54077796167036529766850756536e-10,4.82386551824058610632602311225e-07};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge8);
+    EXPECT_EQ(log_lh, -0.28771792989182387589863765242625959217548370361328);
+    // ----- Test 8 -----
+    
+    // ----- Test 9 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 0;
+    seqregion2.type = 1;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 9);
+    EXPECT_EQ(merged_regions->back().type, seqregion2.type);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -11.537417360554178102916011994238942861557006835938);
+    // ----- Test 9 -----
+    
+    // ----- Test 10 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = -1;
+    seqregion2.type = 2;
+    (*new_lh) = new_lh_value;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 10);
+    EXPECT_EQ(merged_regions->back().type, seqregion2.type);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.13352581660808454655509081021591555327177047729492);
+    // ----- Test 10 -----
+    
+    // ----- Test 11 -----
+    log_lh = 0;
+    sum_lh = 0;
+    total_blength_2 = 6.5292438309787796439726148030194621818544931102224e-10;
+    seqregion2.type = TYPE_R;
+    SeqRegion::LHType new_lh_value11{2.5092097243268992381179730011275808010395849123597e-05,0.99997490659690790870683940738672390580177307128906,6.5292438309787796439726148030194621818544931102224e-10,6.5292438309787796439726148030194621818544931102224e-10};
+    (*new_lh) = new_lh_value11;
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 11);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge11{0.999997469693585716576933464239,2.53030640795433316882884731969e-06,5.15495543614262290103202928001e-15,1.25992117026322114735542991217e-15};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge11);
+    EXPECT_EQ(log_lh, -10.592955082179518200291568064130842685699462890625);
+    // ----- Test 11 -----
+}
+
+
+/*
+ Test merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ */
+TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
+{
+    Alignment aln;
+    Model model;
+    Params params = Params::getInstance();
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
+    // Init params, aln, and model
+    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    // dummy variables
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params.threshold_prob;
+    
+    // ----- Test 1 -----
+    SeqRegions* merged_regions = new SeqRegions();
+    RealNumType log_lh = 0;
+    SeqRegion seqregion1(TYPE_R, 43223);
+    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value1{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
+    (*new_lh1) = new_lh_value1;
+    SeqRegion seqregion2(TYPE_O, 43223, -1, -1, std::move(new_lh1));
+    RealNumType total_blength_1 = 1326e-5;
+    RealNumType total_blength_2 = -1;
+    const PositionType end_pos = 43223;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 1);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    EXPECT_EQ(log_lh, -6.7833577173188217557253665290772914886474609375);
+    SeqRegion::LHType new_lh_value_merge1{0.0235298053213485250378944613203,0.455403998389659003809271098362,9.50936657505749543661116574e-05,0.520971102623241977269685776264};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge1);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    log_lh = 0;
+    total_blength_1 = -1;
+    total_blength_2 = 32e-5;
+    seqregion1.type = 2;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 2);
+    EXPECT_EQ(merged_regions->back().type, 2);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -9.23984298142250537466679816134274005889892578125);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    log_lh = 0;
+    total_blength_1 = 143e-7;
+    total_blength_2 = 0;
+    seqregion1.type = TYPE_R;
+    seqregion2.type = 1;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 3);
+    EXPECT_EQ(merged_regions->back().type, 1);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -13.485791369259754191034517134539783000946044921875);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = 12e-10;
+    seqregion1.type = 0;
+    seqregion2.type = 3;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 4);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -23.07170390644744628616535919718444347381591796875);
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    log_lh = 0;
+    total_blength_1 = 1e-5;
+    total_blength_2 = 68e-4;
+    seqregion1.type = 1;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 5);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    SeqRegion::LHType new_lh_value_merge5{0.000899932704475660738205333721851,0.999091155743592085336501895654,2.83758240671473494537067026877e-06,6.0739695257571569122004295771e-06};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge5);
+    EXPECT_EQ(log_lh, -7.3204796410357877434194051602389663457870483398438);
+    // ----- Test 5 -----
+    
+    // ----- Test 6 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = 15e-2;
+    seqregion1.type = 2;
+    seqregion2.type = TYPE_O;
+    SeqRegion::LHType new_lh_value6{1.3382670779607485874503763900733588343427982181311e-05,1.3382670779607485874503763900733588343427982181311e-05,0.39998126426090857554740409796067979186773300170898,0.59999197039753215943136410714942030608654022216797};
+    (*seqregion2.likelihood) = new_lh_value6;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 6);
+    EXPECT_EQ(merged_regions->back().type, 2);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.92777401003210746566196576168294996023178100585938);
+ 
+    // ----- Test 6 -----
+    
+    // ----- Test 7 -----
+    log_lh = 0;
+    total_blength_1 = 0.13121;
+    total_blength_2 = 0;
+    seqregion1.type = TYPE_R;
+    seqregion2.type = 1;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 7);
+    EXPECT_EQ(merged_regions->back().type, 1);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -4.3614965344258544988065295910928398370742797851562);
+    // ----- Test 7 -----
+    
+    // ----- Test 8 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = -1;
+    seqregion1.type = 3;
+    seqregion2.type = TYPE_O;
+    SeqRegion::LHType new_lh_value7{0.99999256513867862405930964087019674479961395263672,7.4343638397288813108904244331132105116921593435109e-06,2.4874076016223502201974116939081453636628538106379e-10,2.4874076016223502201974116939081453636628538106379e-10};
+    (*seqregion2.likelihood) = new_lh_value7;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 8);
+    EXPECT_EQ(merged_regions->back().type, 3);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -22.114609885656182797220026259310543537139892578125);
+    // ----- Test 8 -----
+    
+    // ----- Test 9 -----
+    log_lh = 0;
+    total_blength_1 = 437e-6;
+    total_blength_2 = -1;
+    seqregion1.type = 3;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 9);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -10.266336989163672654967740527354180812835693359375);
+    // ----- Test 9 -----
+    
+    // ----- Test 10 -----
+    log_lh = 0;
+    total_blength_1 = 0;
+    total_blength_2 = 42.165e-8;
+    seqregion1.type = 2;
+    seqregion2.type = 3;
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 10);
+    EXPECT_EQ(merged_regions->back().type, 2);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -15.129806325448386772336561989504843950271606445312);
+    // ----- Test 10 -----
+}
+
+/*
+ Test merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, RealNumType* cumulative_rate, SeqRegions* merged_regions, const bool return_log_lh)
+ */
+TEST(SeqRegions, merge_notN_notN_TwoLowers)
+{
+    Alignment aln;
+    Model model;
+    Params params = Params::getInstance();
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
+    // Init params, aln, and model
+    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    // dummy variables
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params.threshold_prob;
+    
+    // ----- Test 1 -----
+    SeqRegions* merged_regions = new SeqRegions();
+    RealNumType log_lh = 0;
+    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value{0.42855939517854246822992081433767452836036682128906,0.57141073458160607234646022334345616400241851806641,1.4935119925781397759922616841343767646321794018149e-05,1.4935119925781397759922616841343767646321794018149e-05};
+    (*new_lh) = new_lh_value;
+    SeqRegion seqregion1(TYPE_O, 1412, -1, -1, std::move(new_lh));
+    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    SeqRegion::LHType new_lh_value1{0.61110448521316429459915298139094375073909759521484,1.1926616304335032169438128579752600444408017210662e-05,1.1926616304335032169438128579752600444408017210662e-05,0.38887166155422708824218602785549592226743698120117};
+    (*new_lh1) = new_lh_value1;
+    SeqRegion seqregion2(TYPE_O, 1412, -1, -1, std::move(new_lh1));
+    RealNumType plength1 = -1;
+    RealNumType plength2 = -1;
+    const PositionType end_pos = 1412;
+    const PositionType pos = 1355;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 1);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    EXPECT_EQ(log_lh, -1.3397650685348243548844493489013984799385070800781);
+    SeqRegion::LHType new_lh_value_merge1{0.999951803463153265916218970233,2.60206546527806729897022708364e-05,6.80109025377646455925279108979e-10,2.21752020848110232805524416611e-05};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge1);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    log_lh = 0;
+    plength1 = -1;
+    plength2 = 1.3382670779607485874503763900733588343427982181311e-05;
+    seqregion1.type = TYPE_R;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 2);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.0007633997783012927721910112488501454208744689822197);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    log_lh = 0;
+    plength1 = 3.4820599267114684E-9;
+    plength2 = 3.283e-9;
+    seqregion1.type = 2;
+    seqregion2.type = 0;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 3);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    EXPECT_EQ(log_lh, -20.199112063767703517669360735453665256500244140625);
+    SeqRegion::LHType new_lh_value_merge3{0.410245869594259182644435668408,6.40012426019357435068582000991e-11,0.589754130146332378181739386491,1.95407241773354552292205525266e-10};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge3);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    log_lh = 0;
+    plength1 = 0;
+    plength2 = 0.00031223631362821728;
+    seqregion1.type = TYPE_R;
+    seqregion2.type = 3;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 4);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -8.5224663158967093323781227809377014636993408203125);
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    log_lh = 0;
+    plength1 = 1e-5;
+    plength2 = 0.000052030680454886103;
+    seqregion1.type = 3;
+    SeqRegion::LHType new_lh_value3{4.9383548301647924830444502664050787643645890057087e-05,0.71422131017848822231997019116533920168876647949219,4.9383548301647924830444502664050787643645890057087e-05,0.28567992272490849714472460618708282709121704101562};
+    (*seqregion2.likelihood) = new_lh_value3;
+    seqregion2.type = TYPE_O;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 5);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    EXPECT_EQ(log_lh, -1.2528228994081356262313420302234590053558349609375);
+    SeqRegion::LHType new_lh_value_merge5{1.47064689584769381918621458095e-10,3.48425531256729660231630241185e-05,1.38799271102831098152142401229e-09,0.99996515591181689419641998029};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge5);
+    // ----- Test 5 -----
+    
+    // ----- Test 6 -----
+    log_lh = 0;
+    plength1 = 0;
+    plength2 = 8.3640013382402129011325767060647251582850003615022e-06;
+    seqregion1.type = 1;
+    seqregion2.type = TYPE_O;
+    SeqRegion::LHType new_lh_value6{6.6911562987199814600764238847752096717158565297723e-06,0.39999063238118182095348629445652477443218231201172,6.6911562987199814600764238847752096717158565297723e-06,0.59999598530622066938633452082285657525062561035156};
+    (*seqregion2.likelihood) = new_lh_value6;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 6);
+    EXPECT_EQ(merged_regions->back().type, 1);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -0.91630994861674031071174795215483754873275756835938);
+    // ----- Test 6 -----
+    
+    // ----- Test 7 -----
+    log_lh = 0;
+    plength1 = 0;
+    plength2 = 0;
+    SeqRegion::LHType new_lh_value4{4.430579981880772584663374230178360321796837695274e-10,0.99999581732016740165391865957644768059253692626953,4.430579981880772584663374230178360321796837695274e-10,4.181793716486326507387246559366289488934853579849e-06};
+    (*seqregion1.likelihood) = new_lh_value4;
+    seqregion1.type = TYPE_O;
+    seqregion2.type = 1;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 7);
+    EXPECT_EQ(merged_regions->back().type, 1);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -4.1826885800280286031383250588966404848179081454873e-06);
+    // ----- Test 7 -----
+    
+    // ----- Test 8 -----
+    log_lh = 0;
+    plength1 = 0;
+    plength2 = -1;
+    seqregion1.type = TYPE_R;
+    seqregion2.type = TYPE_O;
+    SeqRegion::LHType new_lh_value7{1.1815113248226830777267349123884135342343881802663e-09,0.9999702585027225865133004845120012760162353515625,1.1815113248226830777267349123884135342343881802663e-09,2.9739134254674524059092188821296076639555394649506e-05};
+    (*seqregion2.likelihood) = new_lh_value7;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 8);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -20.556471434224643957122680149041116237640380859375);
+    // ----- Test 8 -----
+    
+    // ----- Test 9 -----
+    log_lh = 0;
+    plength1 = 3.4820599267114684E-9;
+    plength2 = -1;
+    SeqRegion::LHType new_lh_value5{6.6911562987199814600764238847752096717158565297723e-06,0.39999063238118182095348629445652477443218231201172,6.6911562987199814600764238847752096717158565297723e-06,0.59999598530622066938633452082285657525062561035156};
+    (*seqregion1.likelihood) = new_lh_value5;
+    seqregion1.type = TYPE_O;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 8); // consecutive R regions -> merged
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -11.914505989884778713872037769760936498641967773438);
+    // ----- Test 9 -----
+    
+    // ----- Test 10 -----
+    log_lh = 0;
+    plength1 = -1;
+    plength2 = 231.65e-8;
+    seqregion1.type = 2;
+    seqregion2.type = 2;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 9);
+    EXPECT_EQ(merged_regions->back().type, 2);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -2.389727728309945835126872418219257099281094269827e-06);
+    // ----- Test 10 -----
+    
+    // ----- Test 11 -----
+    log_lh = 0;
+    plength1 = 5.5759387092817078802929955938516570768115343526006e-06;
+    plength2 = 0;
+    SeqRegion::LHType new_lh_value11{4.181793716486327354420193813666628557257354259491e-06,0.99999581732016751267622112209210172295570373535156,4.430579981880772584663374230178360321796837695274e-10,4.430579981880772584663374230178360321796837695274e-10};
+    (*seqregion1.likelihood) = new_lh_value11;
+    seqregion1.type = TYPE_O;
+    seqregion2.type = TYPE_R;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 10);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -14.492793795180125115962255222257226705551147460938);
+    // ----- Test 11 -----
+    
+    // ----- Test 12 -----
+    log_lh = 0;
+    plength1 = -1;
+    plength2 = 3.4820599267114684E-5;
+    seqregion1.type = 3;
+    seqregion2.type = 1;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 11);
+    EXPECT_EQ(merged_regions->back().type, 3);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -10.491958394947619837012098287232220172882080078125);
+    // ----- Test 12 -----
+    
+    // ----- Test 13 -----
+    log_lh = 0;
+    plength1 = 143e-7;
+    plength2 = 2.7879382638950842936132173272012479969816922675818e-06;
+    SeqRegion::LHType new_lh_value13{0.33332094226630137878686355179524980485439300537109,7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781,7.4346402191731947664294494204639818235591519623995e-06};
+    (*seqregion1.likelihood) = new_lh_value13;
+    seqregion1.type = TYPE_O;
+    seqregion2.type = 0;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 12);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    EXPECT_EQ(log_lh, 0.28767119359422399504921941115753725171089172363281);
+    SeqRegion::LHType new_lh_value_merge13{0.249993404024937859730925993063,1.7944514993369046267887038812e-12,4.22949001176853426491232144577e-07,1.78315422997564743574952224173e-12};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge13);
+    // ----- Test 13 -----
+    
+    // ----- Test 14 -----
+    log_lh = 0;
+    plength1 = 0;
+    plength2 = 0.31223631362821728e-10;
+    seqregion1.type = 1;
+    seqregion2.type = 3;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 13);
+    EXPECT_EQ(merged_regions->back().type, 1);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -23.857798413868291476092053926549851894378662109375);
+    // ----- Test 14 -----
+    
+    // ----- Test 15 -----
+    log_lh = 0;
+    plength1 = 8.364001338240212901132e-5;
+    plength2 = 0.2168e-4;
+    seqregion1.type = TYPE_R;
+    SeqRegion::LHType new_lh_value15{9.9493714778138372440088605107603655919312757305306e-10,0.99996654175612176285170562550774775445461273193359,9.9493714778138372440088605107603655919312757305306e-10,3.345625400403152548828300538730218249838799238205e-05};
+    (*seqregion2.likelihood) = new_lh_value15;
+    seqregion2.type = TYPE_O;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 14);
+    EXPECT_EQ(merged_regions->back().type, TYPE_O);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, 0);
+    EXPECT_EQ(log_lh, -11.502067070054362574182960088364779949188232421875);
+    SeqRegion::LHType new_lh_value_merge15{2.13259105287923615202651250744e-06,0.804503715022567122971963726741,0.195330717008421000935314282287,0.000163435377959033966777449564667};
+    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge15);
+    // ----- Test 15 -----
+    
+    // ----- Test 16 -----
+    log_lh = 0;
+    plength1 = 0;
+    plength2 = 1.09085755475e-2;
+    seqregion1.type = 2;
+    seqregion2.type = TYPE_O;
+    SeqRegion::LHType new_lh_value16{1.5333235876614054963434918832376752106938511133194e-05,0.99996236262065618660699328756891191005706787109375,1.1152071733605872690944446623539931806590175256133e-05,1.1152071733605872690944446623539931806590175256133e-05};
+    (*seqregion2.likelihood) = new_lh_value16;
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_EQ(merged_regions->size(), 15);
+    EXPECT_EQ(merged_regions->back().type, TYPE_R);
+    EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
+    EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
+    EXPECT_EQ(log_lh, -6.903698068549179112096680910326540470123291015625);
+    // ----- Test 16 -----
+}
+
+/*
+ Test mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool return_log_lh)
+ */
+TEST(SeqRegions, mergeTwoLowers)
+{
+    Alignment aln;
+    Model model;
+    Params params = Params::getInstance();
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
+    // Init params, aln, and model
+    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base, "JC");
+    // dummy variables
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params.threshold_prob;
+    
+    // ----- Test 1 -----
+    SeqRegions seqregions1, seqregions2, output_regions;
+    SeqRegions* merged_regions_ptr = nullptr;
+    
+    genTestData4(seqregions1, seqregions2, output_regions, 1);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 2);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, &seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 3);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, &seqregions2, 0.00013381954434445151344394708825547013475443236529827, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 4);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 5);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, &seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 5 -----
+    
+    // ----- Test 6 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 6);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 6 -----
+    
+    // ----- Test 7 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 7);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 7 -----
+    
+    // ----- Test 8 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 8);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 8 -----
+    
+    // ----- Test 9 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 9);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, &seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 9 -----
+    
+    // ----- Test 10 -----
+    genTestData4(seqregions1, seqregions2, output_regions, 10);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, &seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    EXPECT_EQ(*merged_regions_ptr, output_regions);
+    // ----- Test 10 -----
 }
