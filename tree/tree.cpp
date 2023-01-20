@@ -587,6 +587,248 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
     }
 }
 
+void Tree::addStartingNodes(const Node* const node, Node* const other_child_node, RealNumType* cumulative_rate, const RealNumType threshold_prob, SeqRegions* &parent_upper_lr_regions, const RealNumType best_lh_diff, stack<UpdatingNode*> &node_stack)
+{
+    // node is not the root
+    if (node != root)
+    {
+        parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* other_child_node_regions = other_child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+       
+        // add nodes (sibling and parent of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
+        RealNumType branch_length = other_child_node->length;
+        if (node->length > 0)
+            branch_length = branch_length > 0 ? branch_length + node->length : node->length;
+        
+        node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions, branch_length, true, best_lh_diff, 0, false));
+        node_stack.push(new UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true, best_lh_diff, 0, false));
+    }
+    // node is root
+    else
+    {
+        // there is only one sample outside of the subtree doesn't need to be considered
+        if (other_child_node->next)
+        {
+            // add nodes (children of the sibling of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
+            Node* grand_child_1 = other_child_node->next->neighbor;
+            Node* grand_child_2 = other_child_node->next->next->neighbor;
+            
+            SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_2->length);
+            node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0, true));
+            
+            SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_1->length);
+            node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0, true));
+        }
+    }
+}
+
+// NOTE: top_node != null <=> case when crawling up from child to parent
+// otherwise, top_node == null <=> case we are moving from a parent to a child
+bool Tree::examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, RealNumType* cumulative_rate, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node, SeqRegions* &bottom_regions)
+{
+    Node* at_node = top_node ? top_node: updating_node->node;
+    SeqRegions* mid_branch_regions = NULL;
+    // get or recompute the lh regions at the mid-branch position
+    if (updating_node->need_updating)
+    {
+        // recompute mid_branch_regions in case when crawling up from child to parent
+        if (top_node)
+        {
+            Node* other_child = updating_node->node->getOtherNextNode()->neighbor;
+            SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
+                                
+            // skip if bottom_regions is null (inconsistent)
+            if (!bottom_regions)
+            {
+                // delete updating_node
+                delete updating_node;
+
+                return false; // continue;
+            }
+           
+            // compute new mid-branch regions
+            SeqRegions* upper_lr_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            RealNumType mid_branch_length = top_node->length * 0.5;
+            upper_lr_regions->mergeUpperLower(mid_branch_regions, mid_branch_length, *bottom_regions, mid_branch_length, aln, model, threshold_prob);
+        }
+        // recompute mid_branch_regions in case we are moving from a parent to a child
+        else
+        {
+            SeqRegions* lower_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            RealNumType mid_branch_length = updating_node->branch_length * 0.5;
+            updating_node->incoming_regions->mergeUpperLower(mid_branch_regions, mid_branch_length, *lower_regions, mid_branch_length, aln, model, threshold_prob);
+        }
+    }
+    else
+        mid_branch_regions = at_node->mid_branch_lh;
+    
+    // skip if mid_branch_regions is null (branch length == 0)
+    if (!mid_branch_regions)
+    {
+        // delete bottom_regions if it's existed
+        if (bottom_regions) delete bottom_regions;
+                            
+        // delete updating_node
+        delete updating_node;
+        
+        return false; // continue;
+    }
+    
+    // compute the placement cost
+    // if (search_subtree_placement)
+    lh_diff_mid_branch = calculateSubTreePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);
+    /*else
+        lh_diff_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);*/
+    
+    if (top_node && best_node == top_node) // only update in case when crawling up from child to parent
+        best_up_lh_diff = lh_diff_mid_branch;
+    
+    // if this position is better than the best position found so far -> record it
+    if (lh_diff_mid_branch > best_lh_diff)
+    {
+        best_node = at_node;
+        best_lh_diff = lh_diff_mid_branch;
+        is_mid_branch = true;
+        updating_node->failure_count = 0;
+        if (top_node) best_down_lh_diff = lh_diff_at_node; // only update in case when crawling up from child to parent
+    }
+    else if (top_node && lh_diff_at_node >= (best_lh_diff - threshold_prob))
+        best_up_lh_diff = lh_diff_mid_branch;
+        
+    // delete mid_branch_regions
+    if (updating_node->need_updating) delete mid_branch_regions;
+    
+    // no error
+    return true;
+}
+
+// NOTE: top_node != null <=> case when crawling up from child to parent
+// otherwise, top_node == null <=> case we are moving from a parent to a child
+bool Tree::examineSubTreePlacementAtNode(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, RealNumType* cumulative_rate, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node)
+{
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    
+    Node* at_node = top_node ? top_node: updating_node->node;
+    SeqRegions* at_node_regions = NULL;
+    bool delete_at_node_regions = false;
+    if (updating_node->need_updating)
+    {
+        delete_at_node_regions = true;
+        // get or recompute the lh regions at the current node position
+        
+        SeqRegions* updating_node_partial = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        if (top_node)
+        {
+            updating_node_partial->mergeUpperLower(at_node_regions, -1, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob);
+        }
+        else
+        {
+            updating_node->incoming_regions->mergeUpperLower(at_node_regions, updating_node->branch_length, *updating_node_partial, -1, aln, model, threshold_prob);
+        }
+        
+        // stop updating if the difference between the new and old regions is insignificant
+        if  (!at_node_regions->areDiffFrom(*at_node->total_lh, seq_length, num_states, &params.value()))
+            updating_node->need_updating = false;
+    }
+    else
+        at_node_regions = at_node->total_lh;
+
+    // skip if at_node_regions is null (branch length == 0)
+    if (!at_node_regions)
+    {
+        // delete updating_node
+        delete updating_node;
+        
+        // continue;
+        return false;
+    }
+    
+    //if (search_subtree_placement)
+    lh_diff_at_node = calculateSubTreePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);
+    /*else
+        lh_diff_at_node = calculateSamplePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);*/
+    
+    // if this position is better than the best position found so far -> record it
+    if (lh_diff_at_node > best_lh_diff)
+    {
+        best_node = at_node;
+        best_lh_diff = lh_diff_at_node;
+        is_mid_branch = false;
+        updating_node->failure_count = 0;
+        if (!top_node) best_up_lh_diff = lh_diff_mid_branch; // only update in case we are moving from a parent to a child
+    }
+    else if (!top_node && lh_diff_mid_branch >= (best_lh_diff - threshold_prob)) // only update in case we are moving from a parent to a child
+    {
+        best_up_lh_diff = updating_node->likelihood_diff;
+        best_down_lh_diff = lh_diff_at_node;
+    }
+    // placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
+    else if (lh_diff_at_node < (updating_node->likelihood_diff - params->thresh_log_lh_failure))
+        ++updating_node->failure_count;
+        
+    // delete at_node_regions
+    if (delete_at_node_regions) delete at_node_regions;
+    
+    // no error
+    return true;
+}
+
+bool keepTraversing(const RealNumType& best_lh_diff, const RealNumType& lh_diff_at_node, const bool& strict_stop_seeking_placement_subtree, UpdatingNode* const updating_node, const int& failure_limit_subtree, const RealNumType& thresh_log_lh_subtree, const bool able2traverse = true)
+{
+    /*if (search_subtree_placement)
+    {*/
+    if (strict_stop_seeking_placement_subtree)
+    {
+        if (updating_node->failure_count <= failure_limit_subtree && lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree) && able2traverse)
+            return true;
+    }
+    else
+    {
+        if ((updating_node->failure_count <= failure_limit_subtree || lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree))
+            && able2traverse)
+            return true;
+    }
+    /*}
+    else
+    {
+        if (params->strict_stop_seeking_placement_sample)
+        {
+            if (updating_node->failure_count <= params->failure_limit_sample && lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample)
+                && updating_node->node->next)
+                    return true;
+        }
+        else
+        {
+            if ((updating_node->failure_count <= params->failure_limit_sample || lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample))
+                && updating_node->node->next)
+                    return true;
+        }
+    }*/
+    
+    // default
+    return false;
+}
+
+void Tree::addChildSeekSubtreePlacement(Node* const child_1, Node* const child_2, const RealNumType& lh_diff_at_node, RealNumType* cumulative_rate, UpdatingNode* const updating_node, stack<UpdatingNode*>& node_stack, const RealNumType threshold_prob)
+{
+    // add child_1 to node_stack
+    SeqRegions* upper_lr_regions = NULL;
+    SeqRegions* lower_regions = child_2->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    // get or recompute the upper left/right regions of the children node
+    if (updating_node->need_updating)
+        updating_node->incoming_regions->mergeUpperLower(upper_lr_regions, updating_node->branch_length, *lower_regions, child_2->length, aln, model, threshold_prob);
+    else
+    {
+        if (child_1->neighbor->partial_lh)
+            upper_lr_regions = child_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    }
+    // traverse to this child's subtree
+    if (upper_lr_regions)
+        node_stack.push(new UpdatingNode(child_1, upper_lr_regions, child_1->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
+}
+
 void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, bool short_range_search, Node* child_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement, SeqRegions* sample_regions)
 {
     // init variables
@@ -623,37 +865,9 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
     // get the lower regions of the child node
     subtree_regions = child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
     
-    // node is not the root
-    if (node != root)
-    {
-        parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* other_child_node_regions = other_child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-       
-        // add nodes (sibling and parent of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
-        RealNumType branch_length = other_child_node->length;
-        if (node->length > 0)
-            branch_length = branch_length > 0 ? branch_length + node->length : node->length;
-        
-        node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions, branch_length, true, best_lh_diff, 0, false));
-        node_stack.push(new UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true, best_lh_diff, 0, false));
-    }
-    // node is root
-    else
-    {
-        // there is only one sample outside of the subtree doesn't need to be considered
-        if (other_child_node->next)
-        {
-            // add nodes (children of the sibling of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
-            Node* grand_child_1 = other_child_node->next->neighbor;
-            Node* grand_child_2 = other_child_node->next->next->neighbor;
-            
-            SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_2->length);
-            node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0, true));
-            
-            SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_1->length);
-            node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0, true));
-        }
-    }
+    // add starting nodes to start seek placement for the subtree
+    addStartingNodes(node, other_child_node, cumulative_rate, threshold_prob, parent_upper_lr_regions, best_lh_diff, node_stack);
+    
     /*}
      // search a placement for a new sample
     else
@@ -697,99 +911,15 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 // avoid adding to the old position where the subtree was just been removed from
                 if (updating_node->node != root && updating_node->node->neighbor->getTopNode() != node)
                 {
-                    SeqRegions* mid_branch_regions = NULL;
-                    // get or recompute the lh regions at the mid-branch position
-                    if (updating_node->need_updating)
-                    {
-                        SeqRegions* lower_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                        RealNumType mid_branch_length = updating_node->branch_length * 0.5;
-                        updating_node->incoming_regions->mergeUpperLower(mid_branch_regions, mid_branch_length, *lower_regions, mid_branch_length, aln, model, threshold_prob);
-                    }
-                    else
-                        mid_branch_regions = updating_node->node->mid_branch_lh;
-                    
-                    // skip if mid_branch_regions is null (branch length == 0)
-                    if (!mid_branch_regions)
-                    {
-                        // delete updating_node
-                        delete updating_node;
-                        
-                        continue;
-                    }
-                    
-                    // compute the placement cost
-                    // if (search_subtree_placement)
-                    lh_diff_mid_branch = calculateSubTreePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);
-                    /*else
-                        lh_diff_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);*/
-                    
-                    // if this position is better than the best position found so far -> record it
-                    if (lh_diff_mid_branch > best_lh_diff)
-                    {
-                        best_node = updating_node->node;
-                        best_lh_diff = lh_diff_mid_branch;
-                        is_mid_branch = true;
-                        updating_node->failure_count = 0;
-                    }
-                        
-                    // delete mid_branch_regions
-                    if (updating_node->need_updating) delete mid_branch_regions;
+                    SeqRegions* bottom_regions = NULL;
+                    if (!examineSubtreePlacementMidBranch(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, NULL, bottom_regions)) continue;
                 }
                 // set the placement cost at the mid-branch position the most negative value if branch length is zero -> we can't place the subtree on that branch
                 else
                     lh_diff_mid_branch = MIN_NEGATIVE;
                     
                 // now try appending exactly at node
-                SeqRegions* at_node_regions = NULL;
-                bool delete_at_node_regions = false;
-                if (updating_node->need_updating)
-                {
-                    delete_at_node_regions = true;
-                    // get or recompute the lh regions at the current node position
-                    SeqRegions* lower_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    updating_node->incoming_regions->mergeUpperLower(at_node_regions, updating_node->branch_length, *lower_regions, -1, aln, model, threshold_prob);
-                    
-                    // stop updating if the difference between the new and old regions is insignificant
-                    if  (!at_node_regions->areDiffFrom(*updating_node->node->total_lh, seq_length, num_states, &params.value()))
-                        updating_node->need_updating = false;
-                }
-                else
-                    at_node_regions = updating_node->node->total_lh;
-
-                // skip if at_node_regions is null (branch length == 0)
-                if (!at_node_regions)
-                {
-                    // delete updating_node
-                    delete updating_node;
-                    
-                    continue;
-                }
-                
-                //if (search_subtree_placement)
-                lh_diff_at_node = calculateSubTreePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);
-                /*else
-                    lh_diff_at_node = calculateSamplePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);*/
-                
-                // if this position is better than the best position found so far -> record it
-                if (lh_diff_at_node > best_lh_diff)
-                {
-                    best_node = updating_node->node;
-                    best_lh_diff = lh_diff_at_node;
-                    is_mid_branch = false;
-                    updating_node->failure_count = 0;
-                    best_up_lh_diff = lh_diff_mid_branch;
-                }
-                else if (lh_diff_mid_branch >= (best_lh_diff - threshold_prob))
-                {
-                    best_up_lh_diff = updating_node->likelihood_diff;
-                    best_down_lh_diff = lh_diff_at_node;
-                }
-                // placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
-                else if (lh_diff_at_node < (updating_node->likelihood_diff - params->thresh_log_lh_failure))
-                    ++updating_node->failure_count;
-                    
-                // delete at_node_regions
-                if (delete_at_node_regions) delete at_node_regions;
+                if(!examineSubTreePlacementAtNode(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, NULL)) continue;
             }
             // set the placement cost at the current node position at the most negative value if branch length is zero -> we can't place the subtree on that branch
             else
@@ -797,72 +927,17 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             
             // keep crawling down into children nodes unless the stop criteria for the traversal are satisfied.
             // check the stop criteria
-            bool keep_traversing = false;
-            /*if (search_subtree_placement)
-            {*/
-            if (strict_stop_seeking_placement_subtree)
-            {
-                if (updating_node->failure_count <= failure_limit_subtree && lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree) && updating_node->node->next)
-                    keep_traversing = true;
-            }
-            else
-            {
-                if ((updating_node->failure_count <= failure_limit_subtree || lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree))
-                    && updating_node->node->next)
-                    keep_traversing = true;
-            }
-            /*}
-            else
-            {
-                if (params->strict_stop_seeking_placement_sample)
-                {
-                    if (updating_node->failure_count <= params->failure_limit_sample && lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample)
-                        && updating_node->node->next)
-                            keep_traversing = true;
-                }
-                else
-                {
-                    if ((updating_node->failure_count <= params->failure_limit_sample || lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample))
-                        && updating_node->node->next)
-                            keep_traversing = true;
-                }
-            }*/
-            
             // keep traversing further down to the children
-            if (keep_traversing)
+            if (keepTraversing(best_lh_diff, lh_diff_at_node, strict_stop_seeking_placement_subtree, updating_node, failure_limit_subtree, thresh_log_lh_subtree, updating_node->node->next))
             {
                 Node* child_1 = updating_node->node->getOtherNextNode()->neighbor;
                 Node* child_2 = child_1->neighbor->getOtherNextNode()->neighbor;
                 
                 // add child_1 to node_stack
-                SeqRegions* upper_lr_regions = NULL;
-                SeqRegions* lower_regions = child_2->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                // get or recompute the upper left/right regions of the children node
-                if (updating_node->need_updating)
-                    updating_node->incoming_regions->mergeUpperLower(upper_lr_regions, updating_node->branch_length, *lower_regions, child_2->length, aln, model, threshold_prob);
-                else
-                {
-                    if (child_1->neighbor->partial_lh)
-                        upper_lr_regions = child_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                }
-                // traverse to this child's subtree
-                if (upper_lr_regions)
-                    node_stack.push(new UpdatingNode(child_1, upper_lr_regions, child_1->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
+                addChildSeekSubtreePlacement(child_1, child_2, lh_diff_at_node, cumulative_rate, updating_node, node_stack, threshold_prob);
                 
                 // add child_2 to node_stack
-                upper_lr_regions = NULL;
-                lower_regions = child_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                // get or recompute the upper left/right regions of the children node
-                if (updating_node->need_updating)
-                    updating_node->incoming_regions->mergeUpperLower(upper_lr_regions, updating_node->branch_length, *lower_regions, child_1->length, aln, model, threshold_prob);
-                else
-                {
-                    if (child_2->neighbor->partial_lh)
-                        upper_lr_regions = child_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                }
-                // traverse to this child's subtree
-                if (upper_lr_regions)
-                    node_stack.push(new UpdatingNode(child_2, upper_lr_regions, child_2->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
+                addChildSeekSubtreePlacement(child_2, child_1, lh_diff_at_node, cumulative_rate, updating_node, node_stack, threshold_prob);
             }
         }
         // case when crawling up from child to parent
@@ -873,51 +948,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             // append directly at the node
             if (top_node->length > 0 || top_node == root)
             {
-                SeqRegions* at_node_regions = NULL;
-                bool delete_at_node_regions = false;
-                // get or recompute the regions when placing the subtree at the current node position
-                if (updating_node->need_updating)
-                {
-                    delete_at_node_regions = true;
-                    
-                    SeqRegions* upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    upper_lr_regions->mergeUpperLower(at_node_regions, -1, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob);
-                    
-                    // skip if at_node_regions is null
-                    if (!at_node_regions)
-                    {
-                        // print("Removing a node created an inconsistency while moving up.")
-                        // delete updating_node
-                        delete updating_node;
-                        
-                        continue;
-                    }
-                    // stop updating if the difference between the new and old regions is insignificant
-                    else if (!at_node_regions->areDiffFrom(*top_node->total_lh, seq_length, num_states, &params.value()))
-                        updating_node->need_updating = false;
-                }
-                else
-                    at_node_regions = top_node->total_lh;
-                 
-                // compute the placement cost
-                //if (search_subtree_placement)
-                lh_diff_at_node = calculateSubTreePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);
-                /*else
-                    lh_diff_at_node = calculateSamplePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);*/
-                    
-                // delete at_node_regions
-                if (delete_at_node_regions) delete at_node_regions;
-                
-                // placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
-                if (lh_diff_at_node < (updating_node->likelihood_diff - params->thresh_log_lh_failure))
-                    ++updating_node->failure_count;
-                else if (lh_diff_at_node > best_lh_diff)
-                {
-                    best_node = top_node;
-                    best_lh_diff = lh_diff_at_node;
-                    is_mid_branch = false;
-                    updating_node->failure_count = 0;
-                }
+                if (!examineSubTreePlacementAtNode(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, top_node)) continue;
             }
             // if placement cost at new position gets worse -> restore to the old one
             else
@@ -928,65 +959,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             SeqRegions* bottom_regions = NULL;
             if (top_node->length > 0 && top_node != root)
             {
-                SeqRegions* mid_branch_regions = NULL;
-                // get or recompute the regions when placing the subtree at the mid-branch position
-                if (updating_node->need_updating)
-                {
-                    SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
-                    
-                    // skip if bottom_regions is null (inconsistent)
-                    if (!bottom_regions)
-                    {
-                        // delete updating_node
-                        delete updating_node;
-
-                        continue;
-                    }
-                   
-                    // compute new mid-branch regions
-                    SeqRegions* upper_lr_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    RealNumType mid_branch_length = top_node->length * 0.5;
-                    upper_lr_regions->mergeUpperLower(mid_branch_regions, mid_branch_length, *bottom_regions, mid_branch_length, aln, model, threshold_prob);
-                }
-                else
-                    mid_branch_regions = top_node->mid_branch_lh;
-                
-                // skip if mid_branch_regions is null (inconsistent)
-                if (!mid_branch_regions)
-                {
-                    // delete bottom_regions if it's existed
-                    if (bottom_regions) delete bottom_regions;
-                    
-                    // delete updating_node
-                    delete updating_node;
-                    
-                    continue;
-                }
-                
-                // compute the placement cost
-                //if (search_subtree_placement)
-                lh_diff_mid_branch = calculateSubTreePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);
-                /*else
-                    lh_diff_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);*/
-                    
-                // delete mid_branch_regions
-                if (updating_node->need_updating) delete mid_branch_regions;
-                
-                if (best_node == top_node)
-                    best_up_lh_diff = lh_diff_mid_branch;
-                
-                // if this position is better than the best position found so far -> record it
-                if (lh_diff_mid_branch > best_lh_diff)
-                {
-                    best_node = top_node;
-                    best_lh_diff = lh_diff_mid_branch;
-                    is_mid_branch = true;
-                    updating_node->failure_count = 0;
-                    best_down_lh_diff = lh_diff_at_node;
-                }
-                else if (lh_diff_at_node >= (best_lh_diff - threshold_prob))
-                    best_up_lh_diff = lh_diff_mid_branch;
+                if (!examineSubtreePlacementMidBranch(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, top_node, bottom_regions)) continue;
             }
             // set the placement cost at the mid-branch position at the most negative value if branch length is zero -> we can't place the subtree on that branch
             // NHANLT: we actually don't need to do that since lh_diff_mid_branch will never be read
@@ -994,30 +967,8 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 // lh_diff_mid_branch = MIN_NEGATIVE;
             
             // check stop rule of the traversal process
-            bool keep_traversing = false;
-            /*if (search_subtree_placement)
-            {*/
-            if (strict_stop_seeking_placement_subtree)
-            {
-                if (updating_node->failure_count <= failure_limit_subtree && lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree))
-                    keep_traversing = true;
-            }
-            else if (updating_node->failure_count <= failure_limit_subtree || lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree))
-                keep_traversing = true;
-            /*    }
-            else
-            {
-                if (params->strict_stop_seeking_placement_sample)
-                {
-                    if (updating_node->failure_count <= params->failure_limit_sample && lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample))
-                        keep_traversing = true;
-                }
-                else if (updating_node->failure_count <= params->failure_limit_sample || lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample))
-                    keep_traversing = true;
-            }*/
-            
             // keep traversing upwards
-            if (keep_traversing)
+            if (keepTraversing(best_lh_diff, lh_diff_at_node, strict_stop_seeking_placement_subtree, updating_node, failure_limit_subtree, thresh_log_lh_subtree))
             {
                 // keep crawling up into parent and sibling node
                 // case the node is not the root

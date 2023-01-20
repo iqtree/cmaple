@@ -80,6 +80,27 @@ private:
        Traverse downwards polytomy for more fine-grained placement
     */
     void finetuneSamplePlacementAtNode(const Node* const selected_node, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, const SeqRegions* const sample_regions, const RealNumType default_blength, const RealNumType min_blength_mid);
+    
+    /**
+       Add start nodes for seeking a placement for a subtree
+    */
+    void addStartingNodes(const Node* const node, Node* const other_child_node, RealNumType* cumulative_rate, const RealNumType threshold_prob, SeqRegions* &parent_upper_lr_regions, const RealNumType best_lh_diff, std::stack<UpdatingNode*> &node_stack);
+    
+    /**
+       Examine placing a subtree at a mid-branch point
+    */
+    bool examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, RealNumType* cumulative_rate, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node, SeqRegions* &bottom_regions);
+    
+    /**
+       Examine placing a subtree as a descendant of an existing node
+    */
+    bool examineSubTreePlacementAtNode(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, RealNumType* cumulative_rate, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node);
+    
+    /**
+       Add a child node for downwards traversal when seeking a new subtree placement
+    */
+    void addChildSeekSubtreePlacement(Node* const child_1, Node* const child_2, const RealNumType& lh_diff_at_node, RealNumType* cumulative_rate, UpdatingNode* const updating_node, std::stack<UpdatingNode*>& node_stack, const RealNumType threshold_prob);
+    
 public:
     /**
         Program parameters
