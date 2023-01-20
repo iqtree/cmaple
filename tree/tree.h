@@ -66,7 +66,20 @@ private:
     */
     RealNumType calculateDerivative(std::vector<RealNumType> &coefficient_vec, RealNumType delta_t);
 
+    /**
+       Examine placing a sample at a mid-branch point
+    */
+    void examineSamplePlacementMidBranch(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_mid_branch, RealNumType* cumulative_rate, TraversingNode& current_extended_node, const SeqRegions* const sample_regions, const RealNumType default_blength);
     
+    /**
+       Examine placing a sample as a descendant of an existing node
+    */
+    void examineSamplePlacementAtNode(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, TraversingNode& current_extended_node, const SeqRegions* const sample_regions, const RealNumType default_blength);\
+    
+    /**
+       Traverse downwards polytomy for more fine-grained placement
+    */
+    void finetuneSamplePlacementAtNode(const Node* const selected_node, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, const SeqRegions* const sample_regions, const RealNumType default_blength, const RealNumType min_blength_mid);
 public:
     /**
         Program parameters

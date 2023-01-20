@@ -406,7 +406,113 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
     }
 }
 
-void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff , bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid)
+void Tree::examineSamplePlacementMidBranch(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_mid_branch, RealNumType* cumulative_rate, TraversingNode& current_extended_node, const SeqRegions* const sample_regions, const RealNumType default_blength)
+{
+    // compute the placement cost
+    lh_diff_mid_branch = calculateSamplePlacementCost(cumulative_rate, current_extended_node.node->mid_branch_lh, sample_regions, default_blength);
+    
+    // record the best_lh_diff if lh_diff_mid_branch is greater than the best_lh_diff ever
+    if (lh_diff_mid_branch > best_lh_diff)
+    {
+        best_lh_diff = lh_diff_mid_branch;
+        selected_node = current_extended_node.node;
+        current_extended_node.failure_count = 0;
+        is_mid_branch = true;
+    }
+}
+
+void Tree::examineSamplePlacementAtNode(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, TraversingNode& current_extended_node, const SeqRegions* const sample_regions, const RealNumType default_blength)
+{
+    // compute the placement cost
+    lh_diff_at_node = calculateSamplePlacementCost(cumulative_rate, current_extended_node.node->total_lh, sample_regions, default_blength);
+    
+    // record the best_lh_diff if lh_diff_at_node is greater than the best_lh_diff ever
+    if (lh_diff_at_node > best_lh_diff)
+    {
+        best_lh_diff = lh_diff_at_node;
+        selected_node = current_extended_node.node;
+        current_extended_node.failure_count = 0;
+        is_mid_branch = false;
+        best_up_lh_diff = lh_diff_mid_branch;
+    }
+    else if (lh_diff_mid_branch >= (best_lh_diff - params->threshold_prob))
+    {
+        best_up_lh_diff = current_extended_node.likelihood_diff;
+        best_down_lh_diff = lh_diff_at_node;
+        best_child = current_extended_node.node;
+    }
+    // placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
+    else if (lh_diff_at_node < (current_extended_node.likelihood_diff - params->thresh_log_lh_failure))
+        ++current_extended_node.failure_count;
+}
+
+void Tree::finetuneSamplePlacementAtNode(const Node* const selected_node, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, const SeqRegions* const sample_regions, const RealNumType default_blength, const RealNumType min_blength_mid)
+{
+    // current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node to find out if the best placement is actually in any of the branches below the current node.
+    Node* neighbor_node;
+    stack<Node*> node_stack;
+    FOR_NEIGHBOR(selected_node, neighbor_node)
+        node_stack.push(neighbor_node);
+    
+    while (!node_stack.empty())
+    {
+        Node* node = node_stack.top();
+        node_stack.pop();
+
+        if (node->length <= 0)
+        {
+            FOR_NEIGHBOR(node, neighbor_node)
+                node_stack.push(neighbor_node);
+        }
+        else
+        {
+            // now try to place on the current branch below the best node, at an height above the mid-branch.
+            RealNumType new_blength = node->length * 0.5;
+            RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
+            SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+            SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+            SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh);
+
+            // try to place new sample along the upper half of the current branch
+            while (true)
+            {
+                // compute the placement cost
+                RealNumType new_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, sample_regions, default_blength);
+                
+                // record new_best_lh_mid_branch
+                if (new_lh_mid_branch > new_best_lh_mid_branch)
+                    new_best_lh_mid_branch = new_lh_mid_branch;
+                // otherwise, stop trying along the current branch
+                else
+                    break;
+                
+                // stop trying if reaching the minimum branch length
+                if (new_blength <= min_blength_mid)
+                    break;
+             
+                // try at different position along the current branch
+                new_blength *= 0.5;
+
+                // get new mid_branch_regions based on the new_blength
+                upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, *lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
+            }
+            
+            // delete mid_branch_regions
+            delete mid_branch_regions;
+            
+            //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
+            
+            // record new best_down_lh_diff
+            if (new_best_lh_mid_branch > best_down_lh_diff)
+            {
+                best_down_lh_diff = new_best_lh_mid_branch;
+                best_child = node;
+            }
+        }
+    }
+}
+
+void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid)
 {
     // init variables
     // output variables
@@ -442,17 +548,7 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
         // 1. try first placing as a descendant of the mid-branch point of the branch above the current node
         if (current_node != root && current_node->length > 0)
         {
-            // compute the placement cost
-            lh_diff_mid_branch = calculateSamplePlacementCost(cumulative_rate, current_node->mid_branch_lh, sample_regions, default_blength);
-            
-            // record the best_lh_diff if lh_diff_mid_branch is greater than the best_lh_diff ever
-            if (lh_diff_mid_branch > best_lh_diff)
-            {
-                best_lh_diff = lh_diff_mid_branch;
-                selected_node = current_node;
-                current_extended_node.failure_count = 0;
-                is_mid_branch = true;
-            }
+            examineSamplePlacementMidBranch(selected_node, best_lh_diff, is_mid_branch, lh_diff_mid_branch, cumulative_rate, current_extended_node, sample_regions, default_blength);
         }
         // otherwise, don't consider mid-branch point
         else
@@ -461,27 +557,7 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
         // 2. try to place as descendant of the current node (this is skipped if the node has top branch length 0 and so is part of a polytomy).
         if (current_node == root || current_node->length > 0)
         {
-            // compute the placement cost
-            lh_diff_at_node = calculateSamplePlacementCost(cumulative_rate, current_node->total_lh, sample_regions, default_blength);
-            
-            // record the best_lh_diff if lh_diff_at_node is greater than the best_lh_diff ever
-            if (lh_diff_at_node > best_lh_diff)
-            {
-                best_lh_diff = lh_diff_at_node;
-                selected_node = current_node;
-                current_extended_node.failure_count = 0;
-                is_mid_branch = false;
-                best_up_lh_diff = lh_diff_mid_branch;
-            }
-            else if (lh_diff_mid_branch >= (best_lh_diff - params->threshold_prob))
-            {
-                best_up_lh_diff = current_extended_node.likelihood_diff;
-                best_down_lh_diff = lh_diff_at_node;
-                best_child = current_node;
-            }
-            // placement at current node is considered failed if placement likelihood is not improved by a certain margin compared to best placement so far for the nodes above it.
-            else if (lh_diff_at_node < (current_extended_node.likelihood_diff - params->thresh_log_lh_failure))
-                ++current_extended_node.failure_count;
+            examineSamplePlacementAtNode(selected_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, current_extended_node, sample_regions, default_blength);
         }
         else
             lh_diff_at_node = current_extended_node.likelihood_diff;
@@ -507,68 +583,7 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
     // if best position so far is the descendant of a node -> explore further at its children
     if (!is_mid_branch)
     {
-        // current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node to find out if the best placement is actually in any of the branches below the current node.
-        Node* neighbor_node;
-        stack<Node*> node_stack;
-        FOR_NEIGHBOR(selected_node, neighbor_node)
-            node_stack.push(neighbor_node);
-        
-        while (!node_stack.empty())
-        {
-            Node* node = node_stack.top();
-            node_stack.pop();
-
-            if (node->length <= 0)
-            {
-                FOR_NEIGHBOR(node, neighbor_node)
-                    node_stack.push(neighbor_node);
-            }
-            else
-            {
-                // now try to place on the current branch below the best node, at an height above the mid-branch.
-                RealNumType new_blength = node->length * 0.5;
-                RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
-                SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh);
-
-                // try to place new sample along the upper half of the current branch
-                while (true)
-                {
-                    // compute the placement cost
-                    RealNumType new_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, sample_regions, default_blength);
-                    
-                    // record new_best_lh_mid_branch
-                    if (new_lh_mid_branch > new_best_lh_mid_branch)
-                        new_best_lh_mid_branch = new_lh_mid_branch;
-                    // otherwise, stop trying along the current branch
-                    else
-                        break;
-                    
-                    // stop trying if reaching the minimum branch length
-                    if (new_blength <= min_blength_mid)
-                        break;
-                 
-                    // try at different position along the current branch
-                    new_blength *= 0.5;
-
-                    // get new mid_branch_regions based on the new_blength
-                    upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, *lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
-                }
-                
-                // delete mid_branch_regions
-                delete mid_branch_regions;
-                
-                //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
-                
-                // record new best_down_lh_diff
-                if (new_best_lh_mid_branch > best_down_lh_diff)
-                {
-                    best_down_lh_diff = new_best_lh_mid_branch;
-                    best_child = node;
-                }
-            }
-        }
+        finetuneSamplePlacementAtNode(selected_node, best_down_lh_diff, best_child, cumulative_rate, sample_regions, default_blength, min_blength_mid);
     }
 }
 
