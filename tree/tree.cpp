@@ -2316,7 +2316,7 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
     RealNumType best_child_lh = MIN_NEGATIVE;
     RealNumType best_child_blength_split = 0;
     RealNumType best_parent_lh;
-    RealNumType best_parent_split = 0;
+    RealNumType best_parent_blength_split = 0;
     RealNumType best_root_blength = -1;
     StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -2386,7 +2386,7 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
         best_parent_lh = new_root_lh - old_root_lh;
         best_root_blength = default_blength;
         
-        if (best_parent_regions) delete best_parent_regions;
+        // if (best_parent_regions) delete best_parent_regions;
         best_parent_regions = merged_root_sample_regions;
         merged_root_sample_regions = NULL;
         
@@ -2420,15 +2420,17 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
     // selected_node is not root
     else
     {
-        RealNumType best_split = 0.5;
-        RealNumType best_split_lh = best_up_lh_diff;
+        // RealNumType best_split = 0.5;
+        // RealNumType best_split_lh = best_up_lh_diff;
+        best_parent_lh = best_up_lh_diff;
+        best_parent_blength_split = 0.5 * selected_node->length;
         SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
         SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        if (best_parent_regions) delete best_parent_regions;
+        // if (best_parent_regions) delete best_parent_regions;
         best_parent_regions = new SeqRegions(selected_node->mid_branch_lh);
         // upper_left_right_regions->mergeUpperLower(best_parent_regions, selected_node->length * 0.5, lower_regions, selected_node->length * 0.5, aln, model, threshold_prob);
-        RealNumType new_split = 0.25;
-        RealNumType new_branch_length_split = new_split * selected_node->length;
+        // RealNumType new_split = 0.25;
+        RealNumType new_branch_length_split = 0.25 * selected_node->length;
         
         SeqRegions* new_parent_regions = NULL;
         while (new_branch_length_split > min_blength)
@@ -2437,10 +2439,12 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
             
             RealNumType placement_cost = calculateSamplePlacementCost(cumulative_rate, new_parent_regions, sample, default_blength);
             
-            if (placement_cost > best_split_lh)
+            if (placement_cost > best_parent_lh) // best_split_lh)
             {
-                best_split_lh = placement_cost;
-                best_split = new_split;
+                best_parent_lh = placement_cost; // best_split_lh = placement_cost;
+                best_parent_blength_split = new_branch_length_split;
+                new_branch_length_split *= 0.5;
+                // best_split = new_split;
                 if (best_parent_regions) delete best_parent_regions;
                 best_parent_regions = new_parent_regions;
                 new_parent_regions = NULL;
@@ -2448,14 +2452,14 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
             else
                 break;
             
-            new_split = best_split * 0.5;
-            new_branch_length_split = new_split * selected_node->length;
+            // new_split = best_split * 0.5;
+            // new_branch_length_split = new_split * selected_node->length;
         }
         // delete new_parent_regions
         if (new_parent_regions) delete new_parent_regions;
         
-        best_parent_lh = best_split_lh;
-        best_parent_split = best_split;
+        // best_parent_lh = best_split_lh;
+        // best_parent_split = best_split;
     }
     
     // if the best placement is below the selected_node => add an internal node below the selected_node
@@ -2532,7 +2536,7 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
         if (best_lh_diff >= best_parent_lh)
         {
             best_root_blength = -1;
-            best_parent_split = -1;
+            best_parent_blength_split = -1;
             best_parent_lh = best_lh_diff;
             if (best_parent_regions) delete best_parent_regions;
             best_parent_regions = NULL;
@@ -2716,9 +2720,9 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
             next_node_2->next = next_node_1;
             next_node_1->next = new_internal_node;
             
-            RealNumType down_distance = selected_node->length * best_parent_split;
+            RealNumType down_distance = best_parent_blength_split;
             RealNumType top_distance = selected_node->length - down_distance;
-            if (best_parent_split < 0)
+            if (best_parent_blength_split < 0)
             {
                 down_distance = -1;
                 top_distance = selected_node->length;
