@@ -117,9 +117,24 @@ private:
     void placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, const RealNumType best_up_lh_diff, const RealNumType best_down_lh_diff, Node* const best_child, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength);
     
     /**
-        Check whether we can obtain a higher likelihood with a short branch
+        Check whether we can obtain a higher likelihood with a shorter length for an existing branch
      */
     bool tryShorterBranch(const RealNumType current_blength, SeqRegions* &best_child_regions, const SeqRegions* const sample, const SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_split_lh, RealNumType &best_branch_length_split, const RealNumType default_blength, const RealNumType min_blength, const bool tryFirstBranch);
+    
+    /**
+        Check whether we can obtain a higher likelihood with a shorter length for the new branch
+     */
+    bool tryShorterNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, RealNumType* cumulative_rate, const RealNumType min_blength);
+    
+    /**
+        Check whether we can obtain a higher likelihood with a longer length for the new branch
+     */
+    void tryLongerNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, RealNumType* cumulative_rate, const RealNumType max_blength);
+    
+    /**
+        Estimate the length for a new branch
+     */
+    void estimateLengthNewBranch(const RealNumType best_split_lh, const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType* cumulative_rate, const RealNumType min_blength, const RealNumType max_blength);
     
 public:
     /**
