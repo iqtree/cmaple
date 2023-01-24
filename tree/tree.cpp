@@ -2050,33 +2050,29 @@ void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_
         delete best_child_regions;
 }
 
-void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength)
+bool Tree::tryShorterBranch(const RealNumType current_blength, SeqRegions* &best_child_regions, const SeqRegions* const sample, const SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_split_lh, RealNumType &best_branch_length_split, const RealNumType default_blength, const RealNumType min_blength, const bool tryFirstBranch)
 {
-    // dummy variables
-    const RealNumType threshold_prob = params->threshold_prob;
-    SeqRegions* best_parent_regions = NULL;
-    SeqRegions* best_child_regions = NULL;
-    
-    SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-    RealNumType best_split = 0.5;
-    RealNumType best_split_lh = best_lh_diff;
-    RealNumType new_split = 0.25;
-    best_child_regions = new SeqRegions(selected_node->mid_branch_lh);
-    //selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(best_child_regions, selected_node->length * 0.5, selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), selected_node->length * 0.5, aln, model, threshold_prob);
     SeqRegions* new_parent_regions = NULL;
-    SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-    RealNumType new_branch_length_split = new_split * selected_node->length;
-
-    // try different positions on the existing branch
+    bool found_new_split = false;
+    RealNumType new_branch_length_split = 0.25 * current_blength;
+    
     while (new_branch_length_split > min_blength)
     {
-        upper_left_right_regions->mergeUpperLower(new_parent_regions, new_branch_length_split, *lower_regions,  selected_node->length - new_branch_length_split, aln, model, threshold_prob);
+        // try on the first or second branch
+        if (tryFirstBranch)
+            upper_left_right_regions->mergeUpperLower(new_parent_regions, new_branch_length_split, *lower_regions,  current_blength - new_branch_length_split, aln, model, params->threshold_prob);
+        else
+            upper_left_right_regions->mergeUpperLower(new_parent_regions, current_blength - new_branch_length_split, *lower_regions, new_branch_length_split, aln, model, params->threshold_prob);
+        
         RealNumType placement_cost = calculateSamplePlacementCost(cumulative_rate, new_parent_regions, sample, default_blength);
         
         if (placement_cost > best_split_lh)
         {
             best_split_lh = placement_cost;
-            best_split = new_split;
+            best_branch_length_split = new_branch_length_split;
+            new_branch_length_split *= 0.5;
+            found_new_split = true;
+            // best_split = new_split;
             
             if (best_child_regions) delete best_child_regions;
             best_child_regions = new_parent_regions;
@@ -2085,15 +2081,69 @@ void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const 
         else
             break;
         
-        new_split = best_split * 0.5;
-        new_branch_length_split = new_split * selected_node->length;
+        // new_split = best_split * 0.5;
+        // new_branch_length_split = new_split * current_blength;
     }
     
-    if (best_split > 0.49)
+    // delete new_parent_regions
+    if (new_parent_regions) delete new_parent_regions;
+    
+    return found_new_split;
+}
+
+void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength)
+{
+    // dummy variables
+    const RealNumType threshold_prob = params->threshold_prob;
+    SeqRegions* best_parent_regions = NULL;
+    SeqRegions* best_child_regions = NULL;
+    
+    SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    // RealNumType best_split = 0.5;
+    RealNumType best_split_lh = best_lh_diff;
+    RealNumType best_branch_length_split = 0.5 * selected_node->length;
+    // RealNumType new_split = 0.25;
+    best_child_regions = new SeqRegions(selected_node->mid_branch_lh);
+    //selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(best_child_regions, selected_node->length * 0.5, selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), selected_node->length * 0.5, aln, model, threshold_prob);
+    // SeqRegions* new_parent_regions = NULL;
+    SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    // RealNumType new_branch_length_split = 0.25 * selected_node->length;
+
+    // try different positions on the existing branch
+    bool found_new_split = tryShorterBranch(selected_node->length, best_child_regions, sample, upper_left_right_regions, lower_regions, cumulative_rate, best_split_lh, best_branch_length_split, default_blength, min_blength, true);
+    /*bool found_new_split = false;
+    while (new_branch_length_split > min_blength)
     {
-        new_split = 0.25;
-        new_branch_length_split = new_split * selected_node->length;
-        while (new_branch_length_split > min_blength)
+        upper_left_right_regions->mergeUpperLower(new_parent_regions, new_branch_length_split, *lower_regions,  selected_node->length - new_branch_length_split, aln, model, threshold_prob);
+        RealNumType placement_cost = calculateSamplePlacementCost(cumulative_rate, new_parent_regions, sample, default_blength);
+        
+        if (placement_cost > best_split_lh)
+        {
+            best_split_lh = placement_cost;
+            best_branch_length_split = new_branch_length_split;
+            new_branch_length_split *= 0.5;
+            found_new_split = true;
+            // best_split = new_split;
+            
+            if (best_child_regions) delete best_child_regions;
+            best_child_regions = new_parent_regions;
+            new_parent_regions = NULL;
+        }
+        else
+            break;
+        
+        // new_split = best_split * 0.5;
+        // new_branch_length_split = new_split * selected_node->length;
+    }*/
+    
+    // if (best_split > 0.49)
+    if (!found_new_split)
+    {
+        // try on the second branch
+        found_new_split = tryShorterBranch(selected_node->length, best_child_regions, sample, upper_left_right_regions, lower_regions, cumulative_rate, best_split_lh, best_branch_length_split, default_blength, min_blength, false);
+        // new_split = 0.25;
+        // new_branch_length_split = new_split * selected_node->length;
+        /*while (new_branch_length_split > min_blength)
         {
             upper_left_right_regions->mergeUpperLower(new_parent_regions, selected_node->length - new_branch_length_split, *lower_regions, new_branch_length_split, aln, model, threshold_prob);
             
@@ -2101,7 +2151,10 @@ void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const 
             if (placement_cost > best_split_lh)
             {
                 best_split_lh = placement_cost;
-                best_split = new_split;
+                best_branch_length_split = new_branch_length_split;
+                new_branch_length_split *= 0.5;
+                found_new_split = true;
+                // best_split = new_split;
                 
                 if (best_child_regions) delete best_child_regions;
                 best_child_regions = new_parent_regions;
@@ -2110,15 +2163,16 @@ void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const 
             else
                 break;
             
-            new_split = best_split * 0.5;
-            new_branch_length_split = new_split * selected_node->length;
-        }
-        if (best_split < 0.49)
-            best_split = 1.0 - best_split;
+            // new_split = best_split * 0.5;
+            // new_branch_length_split = new_split * selected_node->length;
+        }*/
+        if (found_new_split) // (best_split < 0.49)
+            // best_split = 1.0 - best_split;
+            best_branch_length_split = selected_node->length - best_branch_length_split;
     }
     
     // delete new_parent_regions
-    if (new_parent_regions) delete new_parent_regions;
+    // if (new_parent_regions) delete new_parent_regions;
     
     // now try different lengths for the new branch
     RealNumType new_branch_lh = best_split_lh;
@@ -2170,7 +2224,7 @@ void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const 
     
     new_internal_node->neighbor = selected_node->neighbor;
     selected_node->neighbor->neighbor = new_internal_node;
-    RealNumType top_distance = selected_node->length * best_split;
+    RealNumType top_distance = best_branch_length_split; // selected_node->length * best_split;
     new_internal_node->length = top_distance;
     new_internal_node->neighbor->length = top_distance;
     
