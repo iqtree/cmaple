@@ -136,6 +136,11 @@ private:
      */
     void estimateLengthNewBranch(const RealNumType best_split_lh, const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType* cumulative_rate, const RealNumType min_blength, const RealNumType max_blength);
     
+    /**
+        Connect a new sample to a branch
+     */
+    void connectNewSample2Branch(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, const RealNumType best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength);
+    
 public:
     /**
         Program parameters

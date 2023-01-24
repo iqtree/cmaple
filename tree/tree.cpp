@@ -2164,6 +2164,64 @@ void Tree::estimateLengthNewBranch(const RealNumType best_split_lh, const SeqReg
     }
 }
 
+void Tree::connectNewSample2Branch(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, const RealNumType best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength)
+{
+    const RealNumType threshold_prob = params->threshold_prob;
+    
+    // create new internal node and append child to it
+    Node* new_internal_node = new Node(true);
+    Node* next_node_1 = new Node();
+    Node* next_node_2 = new Node();
+    Node* new_sample_node = new Node(seq_name);
+    
+    new_internal_node->next = next_node_2;
+    next_node_2->next = next_node_1;
+    next_node_1->next = new_internal_node;
+    
+    new_internal_node->neighbor = sibling_node->neighbor;
+    sibling_node->neighbor->neighbor = new_internal_node;
+    new_internal_node->length = top_distance;
+    new_internal_node->neighbor->length = top_distance;
+    
+    sibling_node->neighbor = next_node_2;
+    next_node_2->neighbor = sibling_node;
+    sibling_node->length = down_distance;
+    sibling_node->neighbor->length = down_distance;
+    
+    new_sample_node->neighbor = next_node_1;
+    next_node_1->neighbor = new_sample_node;
+    new_sample_node->length = best_blength;
+    new_sample_node->neighbor->length = best_blength;
+    
+    new_sample_node->partial_lh = sample;
+    next_node_1->partial_lh = best_child_regions;
+    best_child_regions = NULL;
+    upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_blength, aln, model, threshold_prob);
+    sibling_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *sample, best_blength, aln, model, threshold_prob, cumulative_rate);
+    RealNumType half_branch_length = new_internal_node->length * 0.5;
+    upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
+    new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
+    
+    if (!new_internal_node->total_lh || new_internal_node->total_lh->empty())
+        outError("Problem, None vector when placing sample, below node");
+    
+    if (best_blength > 0)
+    {
+        new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_sample_node == root);
+        RealNumType half_branch_length = new_sample_node->length * 0.5;
+        next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
+    }
+    
+    // update pseudo_count
+    model.updatePesudoCount(aln, *next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), *sample);
+
+    // iteratively traverse the tree to update partials from the current node
+    stack<Node*> node_stack;
+    node_stack.push(sibling_node);
+    node_stack.push(new_internal_node->neighbor);
+    updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+}
+
 void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength)
 {
     // dummy variables
@@ -2251,59 +2309,7 @@ void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const 
     estimateLengthNewBranch(best_split_lh, best_child_regions, sample, best_blength, cumulative_rate, min_blength, max_blength);
     
     // create new internal node and append child to it
-    Node* new_internal_node = new Node(true);
-    Node* next_node_1 = new Node();
-    Node* next_node_2 = new Node();
-    Node* new_sample_node = new Node(seq_name);
-    
-    new_internal_node->next = next_node_2;
-    next_node_2->next = next_node_1;
-    next_node_1->next = new_internal_node;
-    
-    new_internal_node->neighbor = selected_node->neighbor;
-    selected_node->neighbor->neighbor = new_internal_node;
-    RealNumType top_distance = best_branch_length_split; // selected_node->length * best_split;
-    new_internal_node->length = top_distance;
-    new_internal_node->neighbor->length = top_distance;
-    
-    selected_node->neighbor = next_node_2;
-    next_node_2->neighbor = selected_node;
-    RealNumType down_distance = selected_node->length - top_distance;
-    selected_node->length = down_distance;
-    selected_node->neighbor->length = down_distance;
-    
-    new_sample_node->neighbor = next_node_1;
-    next_node_1->neighbor = new_sample_node;
-    new_sample_node->length = best_blength;
-    new_sample_node->neighbor->length = best_blength;
-    
-    new_sample_node->partial_lh = sample;
-    next_node_1->partial_lh = best_child_regions;
-    best_child_regions = NULL;
-    upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_blength, aln, model, threshold_prob);
-    selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, *sample, best_blength, aln, model, threshold_prob, cumulative_rate);
-    RealNumType half_branch_length = new_internal_node->length * 0.5;
-    upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
-    new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
-    
-    if (!new_internal_node->total_lh || new_internal_node->total_lh->empty())
-        outError("Problem, None vector when placing sample, below node");
-    
-    if (best_blength > 0)
-    {
-        new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_sample_node == root);
-        RealNumType half_branch_length = new_sample_node->length * 0.5;
-        next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
-    }
-    
-    // update pseudo_count
-    model.updatePesudoCount(aln, *next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), *sample);
-
-    // iteratively traverse the tree to update partials from the current node
-    stack<Node*> node_stack;
-    node_stack.push(selected_node);
-    node_stack.push(new_internal_node->neighbor);
-    updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+    connectNewSample2Branch(sample, seq_name, selected_node, best_branch_length_split, selected_node->length - best_branch_length_split, best_blength, best_child_regions, upper_left_right_regions, cumulative_rate, default_blength, max_blength, min_blength);
     
     // delete best_parent_regions and best_child_regions
     if (best_child_regions)
@@ -2474,60 +2480,7 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
         estimateLengthNewBranch(best_child_lh, best_child_regions, sample, best_length, cumulative_rate, min_blength, max_blength);
         
         // create new internal node and append child to it
-        Node* new_internal_node = new Node(true);
-        Node* next_node_1 = new Node();
-        Node* next_node_2 = new Node();
-        Node* new_sample_node = new Node(seq_name);
-        
-        new_internal_node->next = next_node_2;
-        next_node_2->next = next_node_1;
-        next_node_1->next = new_internal_node;
-        
-        new_internal_node->neighbor = best_child->neighbor;
-        best_child->neighbor->neighbor = new_internal_node;
-        RealNumType top_distance = best_child_blength_split; //best_child->length * best_child_split;
-        new_internal_node->length = top_distance;
-        new_internal_node->neighbor->length = top_distance;
-            
-        best_child->neighbor = next_node_2;
-        next_node_2->neighbor = best_child;
-        RealNumType down_distance = best_child->length - best_child_blength_split; // best_child->length * (1 - best_child_split);
-        best_child->length = down_distance;
-        best_child->neighbor->length = down_distance;
-        
-        new_sample_node->neighbor = next_node_1;
-        next_node_1->neighbor = new_sample_node;
-        new_sample_node->length = best_length;
-        new_sample_node->neighbor->length = best_length;
-        
-        new_sample_node->partial_lh = sample;
-        next_node_1->partial_lh = best_child_regions;
-        best_child_regions = NULL;
-        upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_length, aln, model, threshold_prob);
-        best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, best_child->length, *sample, best_length, aln, model, threshold_prob, cumulative_rate);
-        RealNumType half_branch_length = new_internal_node->length * 0.5;
-        upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
-        new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
-        
-        /*if (top_distance >= 2 * min_blengthForMidNode)
-            createFurtherMidNodes(new_internal_node,this_node_upper_left_right_regions)*/
-        if (best_length > 0)
-        {
-            new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_sample_node == root);
-            RealNumType half_branch_length = new_sample_node->length * 0.5;
-            next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
-            /*if best_length>=2*min_blengthForMidNode:
-                createFurtherMidNodes(new_sample_node,best_child_regions)*/
-        }
-        
-        // update pseudo_count
-        model.updatePesudoCount(aln, *next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), *sample);
-
-        // iteratively traverse the tree to update partials from the current node
-        stack<Node*> node_stack;
-        node_stack.push(best_child);
-        node_stack.push(new_internal_node->neighbor);
-        updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+        connectNewSample2Branch(sample, seq_name, best_child, best_child_blength_split, best_child->length - best_child_blength_split, best_length, best_child_regions, upper_left_right_regions, cumulative_rate, default_blength, max_blength, min_blength);
     }
     // otherwise, add new parent to the selected_node
     else
@@ -2711,15 +2664,6 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
             estimateLengthNewBranch(best_parent_lh, best_parent_regions, sample, best_length, cumulative_rate, min_blength, max_blength);
             
             // now create new internal node and append child to it
-            Node* new_internal_node = new Node(true);
-            Node* next_node_1 = new Node();
-            Node* next_node_2 = new Node();
-            Node* new_sample_node = new Node(seq_name);
-            
-            new_internal_node->next = next_node_2;
-            next_node_2->next = next_node_1;
-            next_node_1->next = new_internal_node;
-            
             RealNumType down_distance = best_parent_blength_split;
             RealNumType top_distance = selected_node->length - down_distance;
             if (best_parent_blength_split < 0)
@@ -2736,65 +2680,7 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
                 /*
                 node.furtherMidNodes=None*/
             }
-            
-            // attach to the parent node
-            new_internal_node->neighbor = selected_node->neighbor;
-            selected_node->neighbor->neighbor = new_internal_node;
-            new_internal_node->length = top_distance;
-            new_internal_node->neighbor->length = top_distance;
-            
-            // attach to the right child
-            selected_node->neighbor = next_node_2;
-            next_node_2->neighbor = selected_node;
-            selected_node->length = down_distance;
-            selected_node->neighbor->length = down_distance;
-            
-            // attach to the left child
-            new_sample_node->neighbor = next_node_1;
-            next_node_1->neighbor = new_sample_node;
-            new_sample_node->length = best_length;
-            new_sample_node->neighbor->length = best_length;
-            
-            new_sample_node->partial_lh = sample;
-            next_node_1->partial_lh = best_parent_regions;
-            best_parent_regions = NULL;
-            upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_length, aln, model, threshold_prob);
-            selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, selected_node->length, *sample, best_length, aln, model, threshold_prob, cumulative_rate);
-            RealNumType half_branch_length = new_internal_node->length * 0.5;
-            upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
-            new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
-            //mergeLhUpDown(new_internal_node->total_lh, best_parent_regions, -1, sample, best_length);
-            
-            if (!new_internal_node->total_lh || new_internal_node->total_lh->size() == 0)
-            {
-                outError("Problem, None vector when placing sample, new parent");
-                /*print(best_parent_regions)
-                print(upper_left_right_regions)
-                print(sample)
-                print(best_length)
-                print(top_distance)
-                print(down_distance)*/
-            }
-            
-            /*if (top_distance >= 2 * min_blengthForMidNode)
-                createFurtherMidNodes(new_internal_node,this_node_upper_left_right_regions)*/
-            if (best_length > 0)
-            {
-                new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_sample_node == root);
-                RealNumType half_branch_length = new_sample_node->length * 0.5;
-                next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
-                /*if best_length>=2*min_blengthForMidNode:
-                    createFurtherMidNodes(new_sample_node,best_parent_regions)*/
-            }
-            
-            // update pseudo_count
-            model.updatePesudoCount(aln, *next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), *sample);
-
-            // iteratively traverse the tree to update partials from the current node
-            stack<Node*> node_stack;
-            node_stack.push(selected_node);
-            node_stack.push(new_internal_node->neighbor);
-            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+            connectNewSample2Branch(sample, seq_name, selected_node, top_distance, down_distance, best_length, best_parent_regions, upper_left_right_regions, cumulative_rate, default_blength, max_blength, min_blength);
         }
     }
     
