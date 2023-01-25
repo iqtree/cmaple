@@ -130,7 +130,7 @@ private:
     /**
         Estimate the length for a new branch at root
      */
-    void estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType max_blength, const RealNumType min_blength);
+    void estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType short_blength_thresh, const bool optional_check);
     
     /**
         Check whether we can obtain a higher likelihood with a shorter length for the new branch
@@ -156,6 +156,11 @@ private:
     void connectNewSample2Branch(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, const RealNumType best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength);
     
     /**
+        Connect a new sample to root
+     */
+    void connectNewSample2Root(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, SeqRegions* &best_parent_regions, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength);
+    
+    /**
         Place a subtree as a descendant of a node
      */
     void placeSubTreeAtNode(Node* const selected_node, Node* const subtree, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_mid);
@@ -170,6 +175,11 @@ private:
      */
     template<void (Tree::*updateRegionsSubTree)(Node* const, Node* const, Node* const, Node* const, SeqRegions* &, const SeqRegions* const, const  SeqRegions* const, const SeqRegions* const, RealNumType*, RealNumType &, const RealNumType)>
     void connectSubTree2Branch(const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const subtree, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, RealNumType &best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength);
+    
+    /**
+        Connect a subtree to root
+     */
+    void connectSubTree2Root(Node* const subtree, const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, SeqRegions* &best_parent_regions, RealNumType* cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength);
     
     /**
         Update next_node_1->partial_lh and new_internal_node->partial_lh after placing a subtree in common cases (e.g., at a mid-branch point, under a node)
