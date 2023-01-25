@@ -137,7 +137,13 @@ void CMaple::buildInitialTree()
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
         if (selected_node)
-            tree.placeNewSample(selected_node, lower_regions, sequence->seq_name, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength);
+        {
+            if (is_mid_branch)
+                tree.placeNewSampleMidBranch(selected_node, lower_regions, sequence->seq_name, best_lh_diff, cumulative_rate, default_blength, max_blength, min_blength);
+            // otherwise, best lk so far is for appending directly to existing node
+            else
+                tree.placeNewSampleAtNode(selected_node, lower_regions, sequence->seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate,  cumulative_base, default_blength, max_blength, min_blength);
+        }
         else
             delete lower_regions;
         

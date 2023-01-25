@@ -1225,7 +1225,12 @@ void Tree::applySPR(Node* subtree, Node* best_node, bool is_mid_branch, RealNumT
     
     // replace the node and re-update the vector lists
     SeqRegions* subtree_lower_regions = subtree->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-    placeSubtree(best_node, subtree, subtree_lower_regions, is_mid_branch, branch_length, best_lh_diff, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
+    // try to place the new sample as a descendant of a mid-branch point
+    if (is_mid_branch && best_node != root)
+        placeSubTreeMidBranch(best_node, subtree, subtree_lower_regions, branch_length, best_lh_diff, cumulative_rate, default_blength, max_blength, min_blength);
+    // otherwise, best lk so far is for appending directly to existing node
+    else
+        placeSubTreeAtNode(best_node, subtree, subtree_lower_regions, branch_length, best_lh_diff, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
 }
 
 void Tree::updateRegionsPlaceSubTree(Node* const subtree, Node* const next_node_1, Node* const sibling_node, Node* const new_internal_node, SeqRegions* &best_child_regions, const SeqRegions* const subtree_regions, const  SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_blength, const RealNumType min_blength)
@@ -1724,27 +1729,6 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
         delete best_parent_regions;
     if (best_child_regions)
         delete best_child_regions;
-}
-
-void Tree::placeSubtree(Node* selected_node, Node* subtree, SeqRegions* subtree_regions, bool is_mid_branch, RealNumType new_branch_length, RealNumType new_lh, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)
-{
-    // in case of a polytomy, reach first the top of the polytomy, which is the only node at which appending is allowed.
-    // NHANLT: this block seems to be unnecessary: (1) it doesn't affect the result in my tests with up to 10K sequences; (2) it is removed from new versions of MAPLE;
-    /*if (selected_node)
-        while (selected_node->length <= 0 && selected_node != root)
-            selected_node = selected_node->neighbor->getTopNode();*/
-    ASSERT(selected_node);
-    
-    // try to place the new sample as a descendant of a mid-branch point
-    if (is_mid_branch && selected_node != root)
-    {
-        placeSubTreeMidBranch(selected_node, subtree, subtree_regions, new_branch_length, new_lh, cumulative_rate, default_blength, max_blength, min_blength);
-    }
-    // otherwise, best lk so far is for appending directly to existing node
-    else
-    {
-        placeSubTreeAtNode(selected_node, subtree, subtree_regions, new_branch_length, new_lh, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
-    }
 }
 
 template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqRegions* const, const SeqRegions* const, RealNumType)>
@@ -2259,20 +2243,6 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
         delete best_parent_regions;
     if (best_child_regions)
         delete best_child_regions;
-}
-
-void Tree::placeNewSample(Node* selected_node, SeqRegions* sample, const string &seq_name, RealNumType best_lh_diff , bool is_mid_branch, RealNumType best_up_lh_diff, RealNumType best_down_lh_diff, Node* best_child, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
-{
-    // try to place the new sample as a descendant of a mid-branch point
-    if (is_mid_branch)
-    {
-        placeNewSampleMidBranch(selected_node, sample, seq_name, best_lh_diff, cumulative_rate, default_blength, max_blength, min_blength);
-    }
-    // otherwise, best lk so far is for appending directly to existing node
-    else
-    {
-        placeNewSampleAtNode(selected_node, sample, seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate,  cumulative_base, default_blength, max_blength, min_blength);
-    }
 }
 
 void Tree::refreshAllLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
