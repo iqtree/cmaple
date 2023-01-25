@@ -1058,7 +1058,7 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
     return log_lh;
 }
 
-SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength)
+SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength) const
 {
     SeqRegions* total_lh = new SeqRegions();
     total_lh->reserve(this->size()); // avoid realloc of vector data
