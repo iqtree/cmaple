@@ -1932,6 +1932,135 @@ void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const 
         delete best_child_regions;
 }
 
+void Tree::tryShorterBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_root_blength, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType min_blength)
+{
+    SeqRegions* merged_root_sample_regions = NULL;
+    RealNumType new_blength = 0.5 * best_root_blength;
+    
+    while (new_blength > min_blength)
+    {
+        // merge 2 lower vector into one
+        RealNumType new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, *sample, fixed_blength, aln, model, params->threshold_prob, cumulative_rate, true);
+        new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        
+        if (new_root_lh > best_parent_lh)
+        {
+            best_parent_lh = new_root_lh;
+            best_root_blength = new_blength;
+            new_blength *= 0.5;
+            
+            if (best_parent_regions) delete best_parent_regions;
+            best_parent_regions = merged_root_sample_regions;
+            merged_root_sample_regions = NULL;
+        }
+        else
+            break;
+    }
+    
+    // delete merged_root_sample_regions
+    if (merged_root_sample_regions) delete merged_root_sample_regions;
+}
+
+bool Tree::tryShorterNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType min_blength)
+{
+    SeqRegions* new_root_lower_regions = NULL;
+    bool found_new_split = false;
+    RealNumType new_blength = best_length;
+    RealNumType new_root_lh = 0;
+    
+    while (best_length > min_blength)
+    {
+        new_blength *= 0.5;
+        
+        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model, params->threshold_prob, cumulative_rate, true);
+        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        
+        if (new_root_lh > best_parent_lh)
+        {
+            best_parent_lh = new_root_lh;
+            best_length = new_blength;
+            found_new_split = true;
+            
+            if (best_parent_regions) delete best_parent_regions;
+            best_parent_regions = new_root_lower_regions;
+            new_root_lower_regions = NULL;
+        }
+        else
+            break;
+    }
+    
+    // delete new_root_lower_regions
+    if (new_root_lower_regions) delete new_root_lower_regions;
+    
+    return found_new_split;
+}
+
+bool Tree::tryLongerNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType max_blength)
+{
+    SeqRegions* new_root_lower_regions = NULL;
+    bool found_new_split = false;
+    RealNumType new_blength = best_length;
+    RealNumType new_root_lh = 0;
+    
+    while (best_length < max_blength)
+    {
+        new_blength += new_blength;
+        
+        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model, params->threshold_prob, cumulative_rate, true);
+        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        
+        if (new_root_lh > best_parent_lh)
+        {
+            best_parent_lh = new_root_lh;
+            best_length = new_blength;
+            found_new_split = true;
+            
+            if (best_parent_regions) delete best_parent_regions;
+            best_parent_regions = new_root_lower_regions;
+            new_root_lower_regions = NULL;
+        }
+        else
+            break;
+    }
+    
+    // delete new_root_lower_regions
+    if (new_root_lower_regions) delete new_root_lower_regions;
+    
+    return found_new_split;
+}
+
+void Tree::estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType max_blength, const RealNumType min_blength)
+{
+    // try shorter lengths
+    bool found_new_split = tryShorterNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length, best_parent_lh, cumulative_rate, cumulative_base, fixed_blength, min_blength);
+    
+    // try longer lengths
+    if (!found_new_split)
+        tryLongerNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length, best_parent_lh, cumulative_rate, cumulative_base, fixed_blength, max_blength);
+    
+    
+    // try with length zero
+    if (best_length < min_blength)
+    {
+        SeqRegions* new_root_lower_regions = NULL;
+        
+        RealNumType new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, -1, aln, model, params->threshold_prob, cumulative_rate, true);
+        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        
+        if (new_root_lh > best_parent_lh)
+        {
+            best_length = -1;
+            // best_parent_lh = root_lh_diff; // best_parent_lh will never be read
+            if (best_parent_regions) delete best_parent_regions;
+            best_parent_regions = new_root_lower_regions;
+            new_root_lower_regions = NULL;
+        }
+        
+        // delete new_root_lower_regions
+        if (new_root_lower_regions) delete new_root_lower_regions;
+    }
+}
+
 void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, const RealNumType best_up_lh_diff, const RealNumType best_down_lh_diff, Node* const best_child, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength)
 {
     // dummy variables
@@ -1964,47 +2093,20 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
     if (root == selected_node)
     {
         old_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
-        RealNumType new_root_lh;
-        SeqRegions* merged_root_sample_regions = NULL;
         SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
         
         // merge 2 lower vector into one
-        new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, default_blength, *sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
+        RealNumType new_root_lh = lower_regions->mergeTwoLowers(best_parent_regions, default_blength, *sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
         
-        new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
-        best_parent_lh = new_root_lh - old_root_lh;
+        new_root_lh += best_parent_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
+        best_parent_lh = new_root_lh;
+        
+        // try shorter branch lengths
         best_root_blength = default_blength;
+        tryShorterBranchAtRoot(sample, lower_regions, best_parent_regions, best_root_blength, best_parent_lh, cumulative_rate, cumulative_base, default_blength, min_blength);
         
-        // if (best_parent_regions) delete best_parent_regions;
-        best_parent_regions = merged_root_sample_regions;
-        merged_root_sample_regions = NULL;
-        
-        RealNumType new_blength = 0.5 * default_blength;
-        
-        while (new_blength > min_blength)
-        {
-            // merge 2 lower vector into one
-            new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, *sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
-            
-            new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
-            RealNumType diff_root_lh = new_root_lh-old_root_lh;
-            if (diff_root_lh > best_parent_lh)
-            {
-                best_parent_lh = diff_root_lh;
-                best_root_blength = new_blength;
-                
-                if (best_parent_regions) delete best_parent_regions;
-                best_parent_regions = merged_root_sample_regions;
-                merged_root_sample_regions = NULL;
-            }
-            else
-                break;
-            
-            new_blength = best_root_blength * 0.5;
-        }
-        
-        // delete merged_root_sample_regions
-        if (merged_root_sample_regions) delete merged_root_sample_regions;
+        // update best_parent_lh (taking into account old_root_lh)
+        best_parent_lh -= old_root_lh;
     }
     // selected_node is not root
     else
@@ -2058,73 +2160,14 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
         if (selected_node == root)
         {
             // now try different lengths for right branch
+            best_parent_lh += old_root_lh;
             RealNumType best_length2 = default_blength;
-            SeqRegions* new_root_lower_regions = NULL;
-            RealNumType new_root_lh = 0;
+            const SeqRegions* const lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
             
-            while (best_length2 > min_blength)
-            {
-                RealNumType new_blength = best_length2 * 0.5;
-                
-                new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, *sample, new_blength, aln, model, threshold_prob, cumulative_rate, true);
-                
-                new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
-                
-                RealNumType root_lh_diff = new_root_lh - old_root_lh;
-                if (root_lh_diff > best_parent_lh)
-                {
-                    best_parent_lh = root_lh_diff;
-                    best_length2 = new_blength;
-                    
-                    if (best_parent_regions) delete best_parent_regions;
-                    best_parent_regions = new_root_lower_regions;
-                    new_root_lower_regions = NULL;
-                }
-                else
-                    break;
-            }
+            estimateLengthNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length2, best_parent_lh, cumulative_rate, cumulative_base, best_root_blength, max_blength, min_blength);
             
-            if (best_length2 > 0.7 * default_blength)
-            {
-                while (best_length2 < max_blength)
-                {
-                    RealNumType new_blength = best_length2 * 2;
-                    new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, *sample, new_blength, aln, model, threshold_prob, cumulative_rate, true);
-                    new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
-                    RealNumType root_lh_diff = new_root_lh - old_root_lh;
-                    
-                    if (root_lh_diff > best_parent_lh)
-                    {
-                        best_parent_lh = root_lh_diff;
-                        best_length2 = new_blength;
-                        
-                        if (best_parent_regions) delete best_parent_regions;
-                        best_parent_regions = new_root_lower_regions;
-                        new_root_lower_regions = NULL;
-                    }
-                    else
-                        break;
-                }
-            }
-            
-            // try with length zero
-            if (best_length2 < min_blength)
-            {
-                new_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_root_lower_regions, best_root_blength, *sample, -1, aln, model, threshold_prob, cumulative_rate, true);
-                new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
-                RealNumType root_lh_diff = new_root_lh - old_root_lh;
-                if (root_lh_diff > best_parent_lh)
-                {
-                    best_length2 = -1;
-                    // best_parent_lh = root_lh_diff; // best_parent_lh will never be read
-                    if (best_parent_regions) delete best_parent_regions;
-                    best_parent_regions = new_root_lower_regions;
-                    new_root_lower_regions = NULL;
-                }
-            }
-
-            // delete new_root_lower_regions
-            if (new_root_lower_regions) delete new_root_lower_regions;
+            // update best_parent_lh (taking into account old_root_lh)
+            best_parent_lh -= old_root_lh;
             
             // add new root node into tree
             Node* new_root = new Node(true);

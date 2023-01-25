@@ -113,6 +113,26 @@ private:
     bool tryShorterBranch(const RealNumType current_blength, SeqRegions* &best_child_regions, const SeqRegions* const sample, const SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_split_lh, RealNumType &best_branch_length_split, const RealNumType new_branch_length, const RealNumType min_blength, const bool try_first_branch);
     
     /**
+        Check whether we can obtain a higher likelihood with a shorter length at root
+     */
+    void tryShorterBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_root_blength, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType min_blength);
+    
+    /**
+        Check whether we can obtain a higher likelihood with a shorter length for the new branch at root
+     */
+    bool tryShorterNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_root_blength, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType min_blength);
+    
+    /**
+        Check whether we can obtain a higher likelihood with a longer length for the new branch at root
+     */
+    bool tryLongerNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType max_blength);
+    
+    /**
+        Estimate the length for a new branch at root
+     */
+    void estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType max_blength, const RealNumType min_blength);
+    
+    /**
         Check whether we can obtain a higher likelihood with a shorter length for the new branch
      */
     template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqRegions* const, const SeqRegions* const, RealNumType)>
