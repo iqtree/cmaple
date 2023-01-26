@@ -1410,26 +1410,11 @@ void Tree::connectSubTree2Root(Node* const subtree, const SeqRegions* const subt
     updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
 }
 
-void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_mid)
+void Tree::handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, RealNumType* cumulative_rate, const RealNumType half_min_blength_mid, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType &best_child_blength_split, SeqRegions* &best_child_regions)
 {
-    // dummy variables
-    RealNumType best_child_lh;
-    RealNumType best_child_blength_split = -1;
-    RealNumType best_parent_lh;
-    RealNumType best_parent_blength_split = 0;
-    SeqRegions* best_parent_regions = NULL;
-    RealNumType best_root_blength = -1;
-    StateType num_states = aln.num_states;
-    RealNumType threshold_prob = params->threshold_prob;
-    SeqRegions* best_child_regions = NULL;
-    
-    // We first explore placement just below the best placement node for more fine-grained placement within its descendant branches (accounting for polytomies).
-    RealNumType best_down_lh_diff = MIN_NEGATIVE;
-    Node* best_child = NULL;
-    
     // current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node to find out if the best placement is actually in any of the branches below the current node.
     stack<Node*> new_node_stack;
-    const RealNumType half_min_blength_mid = min_blength_mid * 0.5;
+    const RealNumType threshold_prob = params->threshold_prob;
     Node* neighbor_node;
     FOR_NEIGHBOR(selected_node, neighbor_node)
         new_node_stack.push(neighbor_node);
@@ -1485,6 +1470,25 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
             if (mid_branch_regions) delete mid_branch_regions;
         }
     }
+}
+
+void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_mid)
+{
+    // dummy variables
+    const StateType num_states = aln.num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
+    RealNumType best_child_lh;
+    RealNumType best_child_blength_split = -1;
+    RealNumType best_parent_lh;
+    RealNumType best_parent_blength_split = 0;
+    SeqRegions* best_parent_regions = NULL;
+    RealNumType best_root_blength = -1;
+    SeqRegions* best_child_regions = NULL;
+    RealNumType best_down_lh_diff = MIN_NEGATIVE;
+    Node* best_child = NULL;
+    
+    // We first explore placement just below the best placement node for more fine-grained placement within its descendant branches (accounting for polytomies).
+    handlePolytomyPlaceSubTree(selected_node, subtree_regions, new_branch_length, cumulative_rate, params->half_min_blength_mid, best_down_lh_diff, best_child, best_child_blength_split, best_child_regions);
     
     // place the new sample as a descendant of an existing node
     if (best_child)

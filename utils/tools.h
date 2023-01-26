@@ -391,6 +391,11 @@ public:
     RealNumType min_blength_mid_factor;
     
     /**
+    *  half of min_blength_mid
+    */
+    RealNumType half_min_blength_mid;
+    
+    /**
     *  Threshold to determine whether a changed partial is different from its former value
     */
     RealNumType thresh_diff_update;

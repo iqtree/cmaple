@@ -191,6 +191,11 @@ private:
      */
     void updateRegionsPlaceSubTreeAbove(Node* const subtree, Node* const next_node_1, Node* const sibling_node, Node* const new_internal_node, SeqRegions* &best_child_regions, const SeqRegions* const subtree_regions, const  SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_length, const RealNumType min_blength);
     
+    /**
+        Handle polytomy when placing a subtree
+     */
+    void handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, RealNumType* cumulative_rate, const RealNumType half_min_blength_mid, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType &best_child_blength_split, SeqRegions* &best_child_regions);
+    
 public:
     /**
         Program parameters
