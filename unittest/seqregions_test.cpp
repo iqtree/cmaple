@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "alignment/seqregions.h"
-#include "alignment/seqregions.cpp"
 
 /*
  Test addNonConsecutiveRRegion()
