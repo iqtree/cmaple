@@ -728,22 +728,22 @@ bool Tree::examineSubTreePlacementAtNode(Node* &best_node, RealNumType &best_lh_
             updating_node->incoming_regions->mergeUpperLower(at_node_regions, updating_node->branch_length, *updating_node_partial, -1, aln, model, threshold_prob);
         }
         
+        // skip if at_node_regions is null (branch length == 0)
+        if (!at_node_regions)
+        {
+            // delete updating_node
+            delete updating_node;
+            
+            // continue;
+            return false;
+        }
+        
         // stop updating if the difference between the new and old regions is insignificant
         if  (!at_node_regions->areDiffFrom(*at_node->total_lh, seq_length, num_states, &params.value()))
             updating_node->need_updating = false;
     }
     else
         at_node_regions = at_node->total_lh;
-
-    // skip if at_node_regions is null (branch length == 0)
-    if (!at_node_regions)
-    {
-        // delete updating_node
-        delete updating_node;
-        
-        // continue;
-        return false;
-    }
     
     //if (search_subtree_placement)
     lh_diff_at_node = calculateSubTreePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);
