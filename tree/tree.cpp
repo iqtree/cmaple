@@ -907,6 +907,8 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
         // delete bottom_regions
         if (bottom_regions) delete bottom_regions;
     }
+    
+    return true;
 }
 
 void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, bool short_range_search, Node* child_node, RealNumType &removed_blength, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength_mid, bool search_subtree_placement, SeqRegions* sample_regions)
@@ -3107,21 +3109,6 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
     return total_improvement;
 }
 
-void rescaleTotalFactor(RealNumType& lh_cost, RealNumType& total_factor)
-{
-    // approximately update lh_cost and total_factor
-    if (total_factor <= MIN_CARRY_OVER)
-    {
-        if (total_factor < MIN_POSITIVE)
-            return MIN_NEGATIVE;
-        
-        //lh_cost += log(total_factor);
-        //total_factor = 1.0;
-        total_factor *= MAX_POSITIVE;
-        lh_cost -= LOG_MAX_POSITIVE;
-    }
-}
-
 void calculateSubtreeCost_R_R(const SeqRegion& seq1_region, const RealNumType* const cumulative_rate, RealNumType& total_blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
 {
     if (seq1_region.plength_observation2root >= 0)
@@ -3436,7 +3423,17 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
         }
          
         // avoid underflow on total_factor
-        rescaleTotalFactor(lh_cost, total_factor);
+        // approximately update lh_cost and total_factor
+        if (total_factor <= MIN_CARRY_OVER)
+        {
+            if (total_factor < MIN_POSITIVE)
+                return MIN_NEGATIVE;
+            
+            //lh_cost += log(total_factor);
+            //total_factor = 1.0;
+            total_factor *= MAX_POSITIVE;
+            lh_cost -= LOG_MAX_POSITIVE;
+        }
         
         // update pos
         pos = end_pos + 1;
@@ -3745,7 +3742,17 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
         }
          
         // avoid underflow on total_factor
-        rescaleTotalFactor(lh_cost, total_factor);
+        // approximately update lh_cost and total_factor
+        if (total_factor <= MIN_CARRY_OVER)
+        {
+            if (total_factor < MIN_POSITIVE)
+                return MIN_NEGATIVE;
+            
+            //lh_cost += log(total_factor);
+            //total_factor = 1.0;
+            total_factor *= MAX_POSITIVE;
+            lh_cost -= LOG_MAX_POSITIVE;
+        }
         
         // update pos
         pos = end_pos + 1;

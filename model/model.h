@@ -2,6 +2,7 @@
 #include "utils/tools.h"
 #include "alignment/alignment.h"
 #include "utils/matrix.h"
+#include <cassert>
 
 #ifndef MODEL_H
 #define MODEL_H
