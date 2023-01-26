@@ -46,6 +46,7 @@ public:
      */
     RealNumType length;
     
+private:
     /**
         Next node in the circle of neighbors. For tips, circle = NULL
      */
@@ -55,7 +56,24 @@ public:
         Neighbor node in the phylo tree
      */
     Node* neighbor;
-    
+public:
+  /// just to measure execution time;
+  Node* getNext() const {
+    return next;
+  }
+  void setNext(Node* n)
+  {
+    next = n;
+  }
+
+  Node* getNeighbor() const { 
+    return neighbor; 
+  }
+  void setNeighbor(Node* n)
+  {
+    neighbor = n;
+  }
+
     /**
         Vector of sequences that are less informative than the sequence of this node
      */
@@ -201,8 +219,8 @@ public:
 #endif
 
 #define FOR_NEXT(node, next_node) \
-for(next_node = node->next; next_node && next_node != node; next_node = next_node->next)
+for(next_node = node->getNext(); next_node && next_node != node; next_node = next_node->getNext())
 
 #define FOR_NEIGHBOR(node, neighbor_node) \
-if (node->next) \
-for(neighbor_node = node->next->neighbor; neighbor_node && neighbor_node != node->neighbor; neighbor_node = neighbor_node->neighbor->next->neighbor)
+if (node->getNext()) \
+for(neighbor_node = node->getNext()->getNeighbor(); neighbor_node && neighbor_node != node->getNeighbor(); neighbor_node = neighbor_node->getNeighbor()->getNext()->getNeighbor())
