@@ -104,6 +104,196 @@ string Tree::exportTreeString(bool binary, Node* node)
     return output;
 }
 
+void Tree::updateMidBranchLh(Node* const node, const SeqRegions* const parent_upper_regions, stack<Node*> &node_stack, bool &update_blength, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength)
+{
+    // update vector of regions at mid-branch point
+    SeqRegions* mid_branch_regions = NULL;
+    SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+    RealNumType half_branch_length = node->length * 0.5;
+    parent_upper_regions->mergeUpperLower(mid_branch_regions, half_branch_length, *lower_regions, half_branch_length, aln, model, params->threshold_prob);
+    
+    if (!mid_branch_regions)
+    {
+        if (node->length > 1e-100)
+            outError("inside updatePartialLh(), from parent: should not have happened since node->length > 0");
+        updateZeroBlength(node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+        update_blength = true;
+    }
+    else
+    {
+        // update likelihood at the mid-branch point
+        if (node->mid_branch_lh) delete node->mid_branch_lh;
+        node->mid_branch_lh = mid_branch_regions;
+        mid_branch_regions = NULL;
+    }
+    
+    // delete mid_branch_regions
+    if (mid_branch_regions) delete mid_branch_regions;
+}
+
+SeqRegions* Tree::computeUpperLeftRightRegions(Node* const next_node, Node* const node, const SeqRegions* const parent_upper_regions, stack<Node*> &node_stack, bool &update_blength, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength)
+{
+    SeqRegions* upper_left_right_regions = NULL;
+    
+    SeqRegions* lower_regions = next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+    parent_upper_regions->mergeUpperLower(upper_left_right_regions, node->length, *lower_regions, next_node->length, aln, model, params->threshold_prob);
+    
+    // handle cases when new regions is null/empty
+    if (!upper_left_right_regions || upper_left_right_regions->size() == 0)
+        handleNullNewRegions(node, (node->length <= 0 && next_node->length <= 0), node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength, "Strange: None vector from non-zero distances in updatePartialLh() from parent direction.");
+    
+    return upper_left_right_regions;
+}
+
+void Tree::updateNewPartialIfDifferent(Node* const next_node, SeqRegions* &upper_left_right_regions, std::stack<Node*> &node_stack, RealNumType* const cumulative_rate, const PositionType seq_length)
+{
+    if (next_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
+    {
+        replacePartialLH(next_node->partial_lh, upper_left_right_regions);
+        node_stack.push(next_node->neighbor);
+    }
+}
+
+void Tree::updatePartialLhFromParent(Node* const node, stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const PositionType seq_length, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength)
+{
+    bool update_blength = false;
+    
+    // if necessary, update the total probabilities at the mid node.
+    if (node->length > 0)
+    {
+        // update vector of regions at mid-branch point
+        updateMidBranchLh(node, parent_upper_regions, node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength);
+        
+        // if necessary, update the total probability vector.
+        if (!update_blength)
+        {
+            node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, node == root);
+            
+            if (!node->total_lh || node->total_lh->size() == 0)
+                outError("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
+        }
+    }
+    
+    // at valid internal node, update upLeft and upRight, and if necessary add children to node_stack.
+    if (node->next && !update_blength)
+    {
+        Node* next_node_1 = node->next;
+        Node* next_node_2 = next_node_1->next;
+        
+        // compute new upper left/right for next_node_1
+        SeqRegions* upper_left_right_regions_1 = computeUpperLeftRightRegions(next_node_1, node, parent_upper_regions, node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength);
+        SeqRegions* upper_left_right_regions_2 = NULL;
+        
+        // compute new upper left/right for next_node_1
+        if (!update_blength)
+            upper_left_right_regions_2 = computeUpperLeftRightRegions(next_node_2, node, parent_upper_regions, node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength);
+        
+        if (!update_blength)
+        {
+            // update new partiallh for next_node_1
+            updateNewPartialIfDifferent(next_node_1, upper_left_right_regions_2, node_stack, cumulative_rate, seq_length);
+            
+            // update new partiallh for next_node_2
+            updateNewPartialIfDifferent(next_node_2, upper_left_right_regions_1, node_stack, cumulative_rate, seq_length);
+        }
+        
+        // delete upper_left_right_regions_1, upper_left_right_regions_2
+        if (upper_left_right_regions_1) delete upper_left_right_regions_1;
+        if (upper_left_right_regions_2) delete upper_left_right_regions_2;
+    }
+}
+
+void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const bool is_non_root, const PositionType seq_length, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength)
+{
+    bool update_blength = false;
+    Node* top_node = NULL;
+    Node* other_next_node = NULL;
+    Node* next_node = NULL;
+    FOR_NEXT(node, next_node)
+    {
+        if (next_node->is_top)
+            top_node = next_node;
+        else
+            other_next_node = next_node;
+    }
+    
+    ASSERT(top_node && other_next_node);
+    
+    RealNumType this_node_distance = node->length;
+    RealNumType other_next_node_distance = other_next_node->length;
+    SeqRegions* this_node_lower_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+    
+    // update lower likelihoods
+    SeqRegions* merged_two_lower_regions = NULL;
+    SeqRegions* old_lower_regions = NULL;
+    other_next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->mergeTwoLowers(merged_two_lower_regions, other_next_node_distance, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob, cumulative_rate);
+    
+    if (!merged_two_lower_regions || merged_two_lower_regions->size() == 0)
+    {
+        handleNullNewRegions(node->neighbor, (this_node_distance <= 0 && other_next_node_distance <= 0), node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength, "Strange: None vector from non-zero distances in updatePartialLh() from child direction.");
+    }
+    else
+    {
+        replacePartialLH(old_lower_regions, top_node->partial_lh);
+        top_node->partial_lh = merged_two_lower_regions;
+        merged_two_lower_regions = NULL;
+    }
+
+    // delete merged_two_lower_regions
+    if (merged_two_lower_regions) delete merged_two_lower_regions;
+    
+    // update total likelihood
+    if (!update_blength)
+    {
+        if (top_node->length > 0 || top_node == root)
+        {
+            SeqRegions* new_total_lh_regions = top_node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, top_node == root, false);
+            
+            if (!new_total_lh_regions)
+            {
+                handleNullNewRegions(top_node, (top_node->length <= 0), node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength, "Strange: None vector from non-zero distances in updatePartialLh() from child direction while doing overall likelihood.");
+            }
+            else
+                replacePartialLH(top_node->total_lh, new_total_lh_regions);
+            
+            // delete new_total_lh_regions
+            if (new_total_lh_regions) delete new_total_lh_regions;
+        }
+    }
+    
+    // update total mid-branches likelihood
+    if (!update_blength && top_node->length > 0 && is_non_root)
+        updateMidBranchLh(top_node, parent_upper_regions, node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength);
+    
+    if (!update_blength)
+    {
+        // update likelihoods at parent node
+        if (top_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
+            node_stack.push(top_node->neighbor);
+
+        // update likelihoods at sibling node
+        SeqRegions* new_upper_regions = NULL;
+        if (is_non_root)
+            parent_upper_regions->mergeUpperLower(new_upper_regions, top_node->length, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob);
+        else
+            new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln.num_states, model, this_node_distance);
+        
+        if (!new_upper_regions || new_upper_regions->size() == 0)
+        {
+            handleNullNewRegions(top_node, (top_node->length <= 0 && this_node_distance <= 0), node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength, "Strange: None vector from non-zero distances in updatePartialLh() from child direction, new_upper_regions.");
+        }
+        // update partiallh of other_next_node if the new one is different from the current one
+        else
+            updateNewPartialIfDifferent(other_next_node, new_upper_regions, node_stack, cumulative_rate, seq_length);
+            
+        // delete new_upper_regions
+       if (new_upper_regions) delete new_upper_regions;
+    }
+            
+    // delete old_lower_regions
+    if (old_lower_regions) delete old_lower_regions;
+}
+
 void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength)
 {
     (this->*updatePartialLhPointer)(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
@@ -112,7 +302,7 @@ void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rat
 template <const StateType num_states>
 void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumulative_rate, RealNumType default_blength, RealNumType min_blength, RealNumType max_blength)
 {
-    PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln.ref_seq.size();
     
     while (!node_stack.empty())
     {
@@ -124,7 +314,6 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
         //if (node->seq_name == "25")
             cout << "dsdas";*/
         
-        bool update_blength = false;
         node->getTopNode()->outdated = true;
         
         SeqRegions* parent_upper_regions = NULL;
@@ -136,272 +325,12 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
         if (node->is_top)
         {
             ASSERT(is_non_root);
-            
-            // if necessary, update the total probabilities at the mid node.
-            if (node->length > 0)
-            {
-                // update vector of regions at mid-branch point
-                SeqRegions* mid_branch_regions = NULL;
-                SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                RealNumType half_branch_length = node->length * 0.5;
-                parent_upper_regions->mergeUpperLower(mid_branch_regions, half_branch_length, *lower_regions, half_branch_length, aln, model, params->threshold_prob);
-                
-                if (!mid_branch_regions)
-                {
-                    if (node->length > 1e-100)
-                        outError("inside updatePartialLh(), from parent: should not have happened since node->length > 0");
-                    updateZeroBlength(node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                    update_blength = true;
-                }
-                else
-                {
-                    // update likelihood at the mid-branch point
-                    if (node->mid_branch_lh) delete node->mid_branch_lh;
-                    node->mid_branch_lh = mid_branch_regions;
-                    mid_branch_regions = NULL;
-
-                    /*if (node.dist>=2*minBLenForMidNode_
-                        createFurtherMidNodes(node,parent_upper_regions)*/
-                }
-                
-                // delete mid_branch_regions
-                if (mid_branch_regions) delete mid_branch_regions;
-                
-                // if necessary, update the total probability vector.
-                if (!update_blength)
-                {
-                    node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, node == root);
-                    if (!node->total_lh || node->total_lh->size() == 0)
-                    {
-                        outError("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
-                        
-                        /*updateZeroBlength(nodeList,node,mutMatrix)
-                        update_blength=True
-                        exit()*/
-                    }
-                }
-            }
-            
-            // at valid internal node, update upLeft and upRight, and if necessary add children to node_stack.
-            if (node->next && !update_blength)
-            {
-                Node* next_node_1 = node->next;
-                Node* next_node_2 = next_node_1->next;
-                
-                SeqRegions* upper_left_right_regions_1 = NULL;
-                SeqRegions* upper_left_right_regions_2 = NULL;
-                SeqRegions* lower_regions_1 = next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                parent_upper_regions->mergeUpperLower(upper_left_right_regions_1, node->length, *lower_regions_1, next_node_1->length, aln, model, params->threshold_prob);
-                
-                if (!upper_left_right_regions_1 || upper_left_right_regions_1->size() == 0)
-                {
-                    if (node->length <= 0 && next_node_1->length <= 0)
-                        updateZeroBlength(node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                    else
-                        outError("Strange: None vector from non-zero distances in updatePartialLh() from parent direction.");
-                    
-                    update_blength = true;
-                }
-                
-                if (!update_blength)
-                {
-                    SeqRegions* lower_regions_2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                    parent_upper_regions->mergeUpperLower(upper_left_right_regions_2, node->length, *lower_regions_2, next_node_2->length, aln, model, params->threshold_prob);
-                    
-                    if (!upper_left_right_regions_2 || upper_left_right_regions_2->size() == 0)
-                    {
-                        if (node->length <= 0 && next_node_2->length <= 0)
-                        {
-                            updateZeroBlength(node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                            update_blength = true;
-                        }
-                        else
-                            outError("Strange: None vector from non-zero distances in updatePartialLh() from parent direction, child0.");
-                    }
-                }
-                
-                if (!update_blength)
-                {
-                    if (next_node_1->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->areDiffFrom(*upper_left_right_regions_2, seq_length, num_states, &params.value()))
-                    {
-                        delete next_node_1->partial_lh;
-                        next_node_1->partial_lh = upper_left_right_regions_2;
-                        upper_left_right_regions_2 = NULL;
-                        node_stack.push(next_node_1->neighbor);
-                    }
-                    
-                    if (next_node_2->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->areDiffFrom(*upper_left_right_regions_1, seq_length, num_states, &params.value()))
-                    {
-                        delete next_node_2->partial_lh;
-                        next_node_2->partial_lh = upper_left_right_regions_1;
-                        upper_left_right_regions_1 = NULL;
-                        
-                        node_stack.push(next_node_2->neighbor);
-                    }
-                }
-                
-                // delete upper_left_right_regions_1, upper_left_right_regions_2
-                if (upper_left_right_regions_1) delete upper_left_right_regions_1;
-                if (upper_left_right_regions_2) delete upper_left_right_regions_2;
-            }
+            updatePartialLhFromParent(node, node_stack, parent_upper_regions, seq_length, cumulative_rate, default_blength, min_blength, max_blength);
         }
         // otherwise, change in likelihoods is coming from a child.
         else
         {
-            Node* top_node = NULL;
-            Node* other_next_node = NULL;
-            Node* next_node = NULL;
-            FOR_NEXT(node, next_node)
-            {
-                if (next_node->is_top)
-                    top_node = next_node;
-                else
-                    other_next_node = next_node;
-            }
-            
-            ASSERT(top_node && other_next_node);
-            
-            RealNumType this_node_distance = node->length;
-            RealNumType other_next_node_distance = other_next_node->length;
-            
-            SeqRegions* this_node_lower_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-            // Regions* this_node_upper_left_right_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-            SeqRegions* next_node_upper_left_right_regions = other_next_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-            
-            // update lower likelihoods
-            SeqRegions* merged_two_lower_regions = NULL;
-            SeqRegions* old_lower_regions = NULL;
-            other_next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->mergeTwoLowers(merged_two_lower_regions, other_next_node_distance, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob, cumulative_rate);
-            
-            if (!merged_two_lower_regions || merged_two_lower_regions->size() == 0)
-            {
-                if (this_node_distance <= 0 && other_next_node_distance <= 0)
-                {
-                    updateZeroBlength(node->neighbor, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                    update_blength = true;
-                }
-                else
-                {
-                    outError("Strange: None vector from non-zero distances in updatePartialLh() from child direction.");
-                    /*print(this_node_distance)
-                    print(this_node_lower_regions)
-                    print(other_next_node_distance)
-                    print(otherChildVect)
-                    exit()*/
-                }
-            }
-            else
-            {
-                if (old_lower_regions) delete old_lower_regions;
-                old_lower_regions = top_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                top_node->partial_lh = merged_two_lower_regions;
-                merged_two_lower_regions = NULL;
-            }
-
-            // delete merged_two_lower_regions
-            if (merged_two_lower_regions) delete merged_two_lower_regions;
-            
-            // update total likelihood
-            if (!update_blength)
-            {
-                if (top_node->length > 0 || top_node == root)
-                {
-                    SeqRegions* new_total_lh_regions = top_node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, top_node == root, false);
-                    
-                    if (!new_total_lh_regions && top_node->length <= 0)
-                    {
-                        updateZeroBlength(top_node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                        update_blength = true;
-                    }
-                    else if (!new_total_lh_regions)
-                        outError("Strange: None vector from non-zero distances in updatePartialLh() from child direction while doing overall likelihood.");
-                    else
-                    {
-                        // init top_node->total_lh
-                        if (top_node->total_lh) delete top_node->total_lh;
-                        top_node->total_lh = new_total_lh_regions;
-                        new_total_lh_regions = NULL;
-                    }
-                    
-                    // delete new_total_lh_regions
-                    if (new_total_lh_regions) delete new_total_lh_regions;
-                }
-            }
-            
-            // update total mid-branches likelihood
-            if (!update_blength)
-            {
-                if (top_node->length > 0 && is_non_root)
-                {
-                    SeqRegions* new_mid_regions = NULL;
-                    SeqRegions* tmp_lower_regions = top_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                    RealNumType half_branch_length = top_node->length * 0.5;
-                    parent_upper_regions->mergeUpperLower(new_mid_regions, half_branch_length, *tmp_lower_regions, half_branch_length, aln, model, params->threshold_prob);
-                    
-                    if (!new_mid_regions)
-                    {
-                        updateZeroBlength(top_node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                        update_blength = true;
-                        // print("inside updatePartials(), from child: should not have happened since node.dist>0")
-                    }
-                    else
-                    {
-                        if (top_node->mid_branch_lh) delete top_node->mid_branch_lh;
-                        top_node->mid_branch_lh = new_mid_regions;
-                        new_mid_regions = NULL;
-                        /*if node.dist>=2*minBLenForMidNode:
-                            createFurtherMidNodes(node,parent_upper_regions)*/
-                    }
-                        
-                    // delete new_mid_regions
-                    if (new_mid_regions) delete new_mid_regions;
-                }
-            }
-            
-            if (!update_blength)
-            {
-                // update likelihoods at parent node
-                if (top_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->areDiffFrom(*old_lower_regions, seq_length, num_states, &params.value()))
-                {
-                    if (root != top_node)
-                        node_stack.push(top_node->neighbor);
-                }
-
-                // update likelihoods at sibling node
-                SeqRegions* new_upper_regions = NULL;
-                if (is_non_root)
-                    parent_upper_regions->mergeUpperLower(new_upper_regions, top_node->length, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob);
-                else
-                    new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->computeTotalLhAtRoot(num_states, model, this_node_distance);
-                
-                if (!new_upper_regions || new_upper_regions->size() == 0)
-                {
-                    if (top_node->length <= 0 && this_node_distance <= 0)
-                    {
-                        updateZeroBlength(top_node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                        update_blength = true;
-                    }
-                    else
-                        outError("Strange: None vector from non-zero distances in updatePartialLh() from child direction, new_upper_regions.");
-                }
-                else
-                {
-                    if (next_node_upper_left_right_regions->areDiffFrom(*new_upper_regions, seq_length, num_states, &params.value()))
-                    {
-                        if (other_next_node->partial_lh) delete other_next_node->partial_lh;
-                        other_next_node->partial_lh = new_upper_regions;
-                        new_upper_regions = NULL;
-                        
-                        node_stack.push(other_next_node->neighbor);
-                    }
-                }
-                    
-                    // delete new_upper_regions
-                   if (new_upper_regions) delete new_upper_regions;
-            }
-                    
-            // delete old_lower_regions
-            if (old_lower_regions) delete old_lower_regions;
+            updatePartialLhFromChildren(node, node_stack, parent_upper_regions, is_non_root,seq_length, cumulative_rate, default_blength, min_blength, max_blength);
         }
     }
 }
@@ -1671,11 +1600,13 @@ template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqReg
 bool Tree::tryShorterNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, RealNumType* cumulative_rate, const RealNumType min_blength)
 {
     bool found_new_split = false;
+    RealNumType new_blength = best_blength;
+    RealNumType placement_cost;
     
     while (best_blength > min_blength)
     {
-        RealNumType new_blength = best_blength * 0.5;
-        RealNumType placement_cost = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, new_blength);
+        new_blength *= 0.5;
+        placement_cost = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, new_blength);
         
         if (placement_cost > new_branch_lh)
         {
@@ -1693,10 +1624,13 @@ bool Tree::tryShorterNewBranch(const SeqRegions* const best_child_regions, const
 template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqRegions* const, const SeqRegions* const, RealNumType)>
 void Tree::tryLongerNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, RealNumType* cumulative_rate, const RealNumType long_blength_thresh)
 {
+    RealNumType new_blength = best_blength;
+    RealNumType placement_cost;
+    
     while (best_blength < long_blength_thresh)
     {
-        RealNumType new_blength = best_blength + best_blength;
-        RealNumType placement_cost = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, new_blength);
+        new_blength += new_blength;
+        placement_cost = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, new_blength);
         if (placement_cost > new_branch_lh)
         {
             new_branch_lh = placement_cost;
@@ -2323,30 +2257,15 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType defau
                 if (node->length > 0)
                 {
                     // update the total lh
-                    if (node->total_lh)
-                    {
-                        delete node->total_lh;
-                        node->total_lh = NULL;
-                    }
                     node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, node == root);
                     
                     if (!node->total_lh)
                         outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
-                    else
-                    {
-                        // update total lh at the mid-branch point
-                        if (node->mid_branch_lh)
-                        {
-                            delete node->mid_branch_lh;
-                            node->mid_branch_lh = NULL;
-                        }
-                        SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                        RealNumType half_branch_length = node->length * 0.5;
-                        parent_upper_lr_lh->mergeUpperLower(node->mid_branch_lh, half_branch_length, *lower_lh, half_branch_length, aln, model, threshold_prob);
-                        
-                        /*if node.dist>=2*minBLenForMidNode:
-                            createFurtherMidNodes(node,upper_lr_lh)*/
-                    }
+
+                    // update mid_branch_lh
+                    SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    RealNumType half_branch_length = node->length * 0.5;
+                    parent_upper_lr_lh->mergeUpperLower(node->mid_branch_lh, half_branch_length, *lower_lh, half_branch_length, aln, model, threshold_prob);
                 }
                 
                 // if the current node is an internal node (~having children) -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
@@ -3772,35 +3691,12 @@ void Tree::updateZeroBlength(Node* node, stack<Node*> &node_stack, RealNumType t
     RealNumType best_lh = calculateSamplePlacementCost(cumulative_rate, upper_left_right_regions, lower_regions, default_blength);
     RealNumType best_length = default_blength;
     
-    while (best_length > min_blength)
-    {
-        RealNumType new_blength = best_length * 0.5;
-        RealNumType new_lh = calculateSamplePlacementCost(cumulative_rate, upper_left_right_regions, lower_regions, new_blength);
-        
-        if (new_lh > best_lh)
-        {
-            best_lh = new_lh;
-            best_length = new_blength;
-        }
-        else
-            break;
-    }
+    // try shorter lengths
+    bool found_new_best_length = tryShorterNewBranch<&Tree::calculateSamplePlacementCost>(upper_left_right_regions, lower_regions, best_length, best_lh, cumulative_rate, min_blength);
     
-    if (best_length > 0.7 * default_blength)
-    {
-        while (best_length < max_blength)
-        {
-            RealNumType new_blength = best_length + best_length;
-            RealNumType new_lh = calculateSamplePlacementCost(cumulative_rate, upper_left_right_regions, lower_regions, new_blength);
-            if (new_lh > best_lh)
-            {
-                best_lh = new_lh;
-                best_length = new_blength;
-            }
-            else
-                break;
-        }
-    }
+    // try longer lengths
+    if (!found_new_best_length)
+        tryLongerNewBranch<&Tree::calculateSamplePlacementCost>(upper_left_right_regions, lower_regions, best_length, best_lh, cumulative_rate, max_blength);
     
     // update best_length
     top_node->length = best_length;

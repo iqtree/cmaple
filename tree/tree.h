@@ -196,6 +196,55 @@ private:
      */
     void handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, RealNumType* cumulative_rate, const RealNumType half_min_blength_mid, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType &best_child_blength_split, SeqRegions* &best_child_regions);
     
+    /**
+        Update likelihood at mid-branch point
+     */
+    void updateMidBranchLh(Node* const node, const SeqRegions* const parent_upper_regions, std::stack<Node*> &node_stack, bool &update_blength, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength);
+    
+    /**
+        Compute Upper Left/Right regions at a node, updating the top branch length if neccessary
+     */
+    SeqRegions* computeUpperLeftRightRegions(Node* const next_node, Node* const node, const SeqRegions* const parent_upper_regions, std::stack<Node*> &node_stack, bool &update_blength, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength);
+    
+    /**
+        Update the PartialLh (seqregions) at a node if the new one is different from the current one
+     */
+    void updateNewPartialIfDifferent(Node* const next_node, SeqRegions* &upper_left_right_regions, std::stack<Node*> &node_stack, RealNumType* const cumulative_rate, const PositionType seq_length);
+    
+    /**
+        Handle cases when the new seqregions is null/empty: (1) update the branch length; or (2) return an error message
+     */
+    void inline handleNullNewRegions(Node* const node_update_zero_blength, const bool do_update_zeroblength, std::stack<Node*> &node_stack, bool &update_blength, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength, const std::string err_msg)
+    {
+        if (do_update_zeroblength)
+        {
+            updateZeroBlength(node_update_zero_blength, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+            update_blength = true;
+        }
+        else
+            outError(err_msg);
+    }
+    
+    /**
+        Replace a seqregions by a new one
+     */
+    inline void replacePartialLH(SeqRegions* &old_regions, SeqRegions* &new_regions)
+    {
+        if (old_regions) delete old_regions;
+        old_regions = new_regions;
+        new_regions = NULL;
+    }
+    
+    /**
+        Update partial_lh comming from the parent node
+     */
+    void updatePartialLhFromParent(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const PositionType seq_length, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength);
+    
+    /**
+        Update partial_lh comming from the children
+     */
+    void updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const bool is_non_root, const PositionType seq_length, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength);
+    
 public:
     /**
         Program parameters
