@@ -49,10 +49,6 @@ public:
     /** The phylogenetic tree */
     Tree tree;
     
-    /** tree-related params */
-    RealNumType default_blength;
-    RealNumType min_blength, max_blength, min_blength_mid, min_blength_sensitivity;
-    
     /**
     *  CMaple constructor
     */

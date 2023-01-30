@@ -386,19 +386,9 @@ public:
     RealNumType max_blength_factor;
     
     /**
-    *  Half of the maximum branch length
-    */
-    RealNumType half_max_blength;
-    
-    /**
     *  The minium branch length (for mid-branch point) to try for placement
     */
     RealNumType min_blength_mid_factor;
-    
-    /**
-    *  half of min_blength_mid
-    */
-    RealNumType half_min_blength_mid;
     
     /**
     *  Threshold to determine whether a changed partial is different from its former value
