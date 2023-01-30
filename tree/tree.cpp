@@ -2737,7 +2737,7 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
     size_t iseq2 = 0;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
-    RealNumType* cumulative_rate = model.cumulative_rate;
+    const RealNumType* const &cumulative_rate = model.cumulative_rate;
     
     // avoid reallocations
     coefficient_vec.reserve(parent_regions->countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
@@ -2976,7 +2976,7 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search)
     return total_improvement;
 }
 
-void calculateSubtreeCost_R_R(const SeqRegion& seq1_region, const RealNumType* const cumulative_rate, RealNumType& total_blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
+void calculateSubtreeCost_R_R(const SeqRegion& seq1_region, const RealNumType* const &cumulative_rate, RealNumType& total_blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
 {
     if (seq1_region.plength_observation2root >= 0)
       total_blength += seq1_region.plength_observation2node;
@@ -3308,7 +3308,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
     return lh_cost + log(total_factor);
 }
 
-void calculateSampleCost_R_R(const SeqRegion& seq1_region, const RealNumType* const cumulative_rate, const RealNumType blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
+void calculateSampleCost_R_R(const SeqRegion& seq1_region, const RealNumType* const &cumulative_rate, const RealNumType blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
 {
     if (seq1_region.plength_observation2node < 0 && seq1_region.plength_observation2root < 0)
         lh_cost += blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);

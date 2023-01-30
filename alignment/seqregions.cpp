@@ -704,7 +704,7 @@ void merge_N_RACGT_TwoLowers(const SeqRegion& seq2_region, const PositionType en
 
 void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
 {
-    const RealNumType* const cumulative_rate = model.cumulative_rate;
+    const RealNumType* const &cumulative_rate = model.cumulative_rate;
     
     // add a new region and try to merge consecutive R regions together
     SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type, -1, -1, end_pos, threshold_prob);
