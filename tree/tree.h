@@ -64,7 +64,7 @@ private:
        Calculate derivative starting from coefficients.
        @return derivative
     */
-    RealNumType calculateDerivative(std::vector<RealNumType> &coefficient_vec, RealNumType delta_t);
+    RealNumType calculateDerivative(const std::vector<RealNumType> &coefficient_vec, const RealNumType delta_t);
 
     /**
        Examine placing a sample at a mid-branch point
@@ -245,6 +245,71 @@ private:
      */
     void updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const bool is_non_root, const PositionType seq_length, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength);
     
+    /**
+        Compute the mid-branch region for a node/branch
+     */
+    inline void computeMidBranchRegions(Node* const node, SeqRegions* &regions_2_update, const SeqRegions &parent_upper_lr_lh, RealNumType* const cumulative_rate)
+    {
+        SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+        RealNumType half_branch_length = node->length * 0.5;
+        parent_upper_lr_lh.mergeUpperLower(regions_2_update, half_branch_length, *lower_lh, half_branch_length, aln, model, params->threshold_prob);
+    }
+    
+    /**
+        Refresh all non-lowerlhs traversing from a parent node
+     */
+    void refreshNonLowerLhsFromParent(Node* &node, Node* &last_node, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength);
+    
+    /**
+        Refresh upper left/right regions
+     */
+    void refreshUpperLR(Node* const node, Node* const next_node, SeqRegions* &replaced_regions, const SeqRegions &parent_upper_lr_lh, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength);
+    
+    /**
+        Calculate coefficients when merging R with O to estimate a branch length
+     */
+    void estimateBlength_R_O(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec);
+    
+    /**
+        Calculate coefficients when merging R with ACGT to estimate a branch length
+     */
+    void estimateBlength_R_ACGT(const SeqRegion* const seq1_region, const StateType seq2_state, const RealNumType total_blength, const PositionType end_pos, std::vector<RealNumType> &coefficient_vec);
+    
+    /**
+        Calculate coefficients when merging O with X(i.e., O, R, ACGT) to estimate a branch length
+     */
+    void estimateBlength_O_X(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec);
+    
+    /**
+        Calculate coefficients when merging ACGT with O to estimate a branch length
+     */
+    void estimateBlength_ACGT_O(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec);
+    
+    /**
+        Calculate coefficients when merging ACGT with R/ACGT to estimate a branch length
+     */
+    void estimateBlength_ACGT_RACGT(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, const PositionType end_pos, std::vector<RealNumType> &coefficient_vec);
+    
+    /**
+        Estimate a branch length from coefficients
+     */
+    RealNumType estimateBlengthFromCoeffs(RealNumType &coefficient, const std::vector<RealNumType> coefficient_vec, const RealNumType min_blength_sensitivity);
+    
+    /**
+        Handle branch length changed when improve a subtree
+     */
+    void handleBlengthChanged(Node* const node, const RealNumType best_blength, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength);
+    
+    /**
+        Optimize a branch length before seeking an SPR move for a subtree
+     */
+    void optimizeBlengthBeforeSeekingSPR(Node* const node, RealNumType &best_blength, RealNumType &best_lh, bool &blength_changed, const SeqRegions* const parent_upper_lr_lh, const SeqRegions* const lower_lh, RealNumType* const cumulative_rate, const RealNumType min_blength);
+    
+    /**
+        Check and apply SPR move
+     */
+    void checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, Node* const node, Node* const best_node, Node* const parent_node, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated, RealNumType* const cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_mid);
+    
 public:
     /**
         Program parameters
@@ -326,7 +391,7 @@ public:
         Apply SPR move
         pruning a subtree then regrafting it to a new position
      */
-    void applySPR(Node* subtree, Node* best_node, bool is_mid_branch, RealNumType branch_length, RealNumType best_lh_diff, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid);
+    void applySPR(Node* const subtree, Node* const best_node, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff, RealNumType *cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_mid);
     
     /**
         Traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
@@ -348,12 +413,12 @@ public:
         Try to optimize branch lengths of the tree
         @return num of improvements
      */
-    PositionType optimizeBranchLengths(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_sensitivity);
+    PositionType optimizeBranchLengths(RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_sensitivity);
     
     /**
         Estimate the length of a branch using the derivative of the likelihood cost function wrt the branch length
      */
-    RealNumType estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, const RealNumType* const cumulative_rate, RealNumType min_blength_sensitivity);
+    RealNumType estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, const RealNumType* const cumulative_rate, const RealNumType min_blength_sensitivity);
     
     /**
         Calculate the placement cost of a sample
@@ -366,7 +431,6 @@ public:
         @param child_regions: vector of regions of the new sample
      */
     RealNumType calculateSubTreePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength);
-
 };
 
 #endif

@@ -108,9 +108,7 @@ void Tree::updateMidBranchLh(Node* const node, const SeqRegions* const parent_up
 {
     // update vector of regions at mid-branch point
     SeqRegions* mid_branch_regions = NULL;
-    SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-    RealNumType half_branch_length = node->length * 0.5;
-    parent_upper_regions->mergeUpperLower(mid_branch_regions, half_branch_length, *lower_regions, half_branch_length, aln, model, params->threshold_prob);
+    computeMidBranchRegions(node, mid_branch_regions, *parent_upper_regions, cumulative_rate);
     
     if (!mid_branch_regions)
         handleNullNewRegions(node, (node->length <= 1e-100), node_stack, update_blength, cumulative_rate, default_blength, min_blength, max_blength, "inside updatePartialLh(), from parent: should not have happened since node->length > 0");
@@ -1067,7 +1065,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
     }*/
 }
 
-void Tree::applySPR(Node* subtree, Node* best_node, bool is_mid_branch, RealNumType branch_length, RealNumType best_lh_diff, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)
+void Tree::applySPR(Node* const subtree, Node* const best_node, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_mid)
 {
     // remove subtree from the tree
     Node* parent_subtree = subtree->neighbor->getTopNode();
@@ -2185,6 +2183,80 @@ void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate, RealNumType default_
     }
 }
 
+void Tree::refreshUpperLR(Node* const node, Node* const next_node, SeqRegions* &replaced_regions, const SeqRegions &parent_upper_lr_lh, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength)
+{
+    // recalculate the upper left/right lh of the current node
+    const RealNumType threshold_prob = params->threshold_prob;
+    SeqRegions* new_upper_lr_lh = NULL;
+    SeqRegions* lower_lh = next_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    parent_upper_lr_lh.mergeUpperLower(new_upper_lr_lh, node->length, *lower_lh, next_node->length, aln, model, threshold_prob);
+    
+    // if the upper left/right lh is null -> try to increase the branch length
+    if (!new_upper_lr_lh)
+    {
+        if (next_node->length <= 0)
+        {
+            stack<Node*> node_stack;
+            updateZeroBlength(next_node->neighbor, node_stack, threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+        }
+        else if (node->length <= 0)
+        {
+            stack<Node*> node_stack;
+            updateZeroBlength(node, node_stack, threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
+            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+        }
+        else
+            outError("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
+    }
+    // otherwise, everything is good -> update upper left/right lh of the current node
+    else
+        replacePartialLH(replaced_regions, new_upper_lr_lh);
+    
+    // delete new_upper_lr_lh
+    if (new_upper_lr_lh) delete new_upper_lr_lh;
+}
+
+void Tree::refreshNonLowerLhsFromParent(Node* &node, Node* &last_node, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType min_blength, const RealNumType max_blength)
+{
+    const RealNumType threshold_prob = params->threshold_prob;
+    SeqRegions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    
+    // update the total lh, total lh at the mid-branch point of the current node
+    if (node->length > 0)
+    {
+        // update the total lh
+        node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, node == root);
+        if (!node->total_lh)
+            outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
+
+        // update mid_branch_lh
+        computeMidBranchRegions(node, node->mid_branch_lh, *parent_upper_lr_lh, cumulative_rate);
+    }
+    
+    // if the current node is an internal node (~having children) -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
+    if (!node->isLeave())
+    {
+        Node* next_node_1 = node->next;
+        Node* next_node_2 = next_node_1->next;
+        
+        // recalculate the FIRST upper left/right lh of the current node
+        refreshUpperLR(node, next_node_2, next_node_1->partial_lh, *parent_upper_lr_lh, cumulative_rate, default_blength, min_blength, max_blength);
+        
+        // recalculate the SECOND upper left/right lh of the current node
+        refreshUpperLR(node, next_node_1, next_node_2->partial_lh, *parent_upper_lr_lh, cumulative_rate, default_blength, min_blength, max_blength);
+        
+        // keep traversing downward to its firt child
+        node = next_node_1->neighbor;
+    }
+    // if the current node is a leaf -> traverse upward to its parent
+    else
+    {
+        last_node = node;
+        node = node->neighbor;
+    }
+}
+
 void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength)
 {
     // dummy variables
@@ -2195,8 +2267,6 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType defau
     Node* node = root;
     
     // update the total lh at root
-    delete node->total_lh;
-    node->total_lh = NULL;
     node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, true);
     
     // if the root has children -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
@@ -2217,96 +2287,7 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate, RealNumType defau
         {
             // we reach a top node by a downward traversing
             if (node->is_top)
-            {
-                SeqRegions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                
-                // update the total lh, total lh at the mid-branch point of the current node
-                if (node->length > 0)
-                {
-                    // update the total lh
-                    node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, node == root);
-                    
-                    if (!node->total_lh)
-                        outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
-
-                    // update mid_branch_lh
-                    SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    RealNumType half_branch_length = node->length * 0.5;
-                    parent_upper_lr_lh->mergeUpperLower(node->mid_branch_lh, half_branch_length, *lower_lh, half_branch_length, aln, model, threshold_prob);
-                }
-                
-                // if the current node is an internal node (~having children) -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
-                if (!node->isLeave())
-                {
-                    Node* next_node_1 = node->next;
-                    Node* next_node_2 = next_node_1->next;
-                    
-                    // recalculate the FIRST upper left/right lh of the current node
-                    SeqRegions* new_upper_lr_lh = NULL;
-                    SeqRegions* lower_lh = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    parent_upper_lr_lh->mergeUpperLower(new_upper_lr_lh, node->length, *lower_lh, next_node_2->length, aln, model, threshold_prob);
-                    
-                    // if the upper left/right lh is null -> try to increase the branch length
-                    if (!new_upper_lr_lh)
-                    {
-                        if (next_node_2->length <= 0)
-                        {
-                            stack<Node*> node_stack;
-                            updateZeroBlength(next_node_2->neighbor, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
-                        }
-                        else if (node->length <= 0)
-                        {
-                            stack<Node*> node_stack;
-                            updateZeroBlength(node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
-                        }
-                        else
-                            outError("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
-                    }
-                    // otherwise, everything is good -> update upper left/right lh of the current node
-                    else
-                        replacePartialLH(next_node_1->partial_lh, new_upper_lr_lh);
-                    
-                    // recalculate the SECOND upper left/right lh of the current node
-                    lower_lh = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                    parent_upper_lr_lh->mergeUpperLower(new_upper_lr_lh, node->length, *lower_lh, next_node_1->length, aln, model, threshold_prob);
-                    
-                    // if the upper left/right lh is null -> try to increase the branch length
-                    if (!new_upper_lr_lh)
-                    {
-                        if (next_node_1->length <= 0)
-                        {
-                            stack<Node*> node_stack;
-                            updateZeroBlength(next_node_1->neighbor, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
-                        }
-                        else if (node->length <= 0)
-                        {
-                            stack<Node*> node_stack;
-                            updateZeroBlength(node, node_stack, params->threshold_prob, cumulative_rate, default_blength, min_blength, max_blength);
-                            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
-                        }
-                        else
-                            outError("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
-                    }
-                    // otherwise, everything is good -> update upper left/right lh of the current node
-                    else
-                        replacePartialLH(next_node_2->partial_lh, new_upper_lr_lh);
-                    
-                    // delete new_upper_lr_lh
-                    if (new_upper_lr_lh) delete new_upper_lr_lh;
-                    
-                    // keep traversing downward to its firt child
-                    node = next_node_1->neighbor;
-                }
-                // if the current node is a leaf -> traverse upward to its parent
-                else
-                {
-                    last_node = node;
-                    node = node->neighbor;
-                }
-            }
+                refreshNonLowerLhsFromParent(node, last_node, cumulative_rate, default_blength, min_blength, max_blength);
             // we reach the current node by an upward traversing from its children
             else
             {
@@ -2417,7 +2398,7 @@ RealNumType Tree::improveEntireTree(bool short_range_search, RealNumType *cumula
     return total_improvement;
 }
 
-PositionType Tree::optimizeBranchLengths(RealNumType *cumulative_rate, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_sensitivity)
+PositionType Tree::optimizeBranchLengths(RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_sensitivity)
 {
     // start from the root's children
     stack<Node*> node_stack;
@@ -2454,7 +2435,8 @@ PositionType Tree::optimizeBranchLengths(RealNumType *cumulative_rate, RealNumTy
             
             if (best_length > 0 || node->length > 0)
             {
-                if (best_length <= 0 || node->length <= 0 || (node->length > 1.01 * best_length) || (node->length < 0.99 * best_length))
+                RealNumType diff_thresh = 0.01 * best_length;
+                if (best_length <= 0 || node->length <= 0 || (node->length > (best_length + diff_thresh)) || (node->length < (best_length - diff_thresh)))
                 {
                     node->length = best_length;
                     node->neighbor->length = node->length;
@@ -2473,12 +2455,259 @@ PositionType Tree::optimizeBranchLengths(RealNumType *cumulative_rate, RealNumTy
     return num_improvement;
 }
 
+void Tree::estimateBlength_R_O(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec)
+{
+    const StateType seq1_state = aln.ref_seq[end_pos];
+    RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+    RealNumType coeff0 = seq2_region->getLH(seq1_state);
+    RealNumType coeff1 = 0;
+
+    if (seq1_region->plength_observation2root >= 0)
+    {
+      coeff0 *= model.root_freqs[seq1_state];
+
+      RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+
+      assert(aln.num_states == 4);
+      updateCoeffs<4>(model.root_freqs, transposed_mut_mat_row, &(*seq2_region->likelihood)[0], mutation_mat_row, seq1_region->plength_observation2node, coeff0, coeff1);
+
+      coeff1 *= model.root_freqs[seq1_state];
+    }
+    else
+    {
+      // NHANLT NOTES:
+      // x = seq1_state
+      // l = log(1 + q_xx * t + sum(q_xy * t)
+      // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+      // coeff1 = numerator = q_xx + sum(q_xy)
+        assert(aln.num_states == 4);
+        coeff1 += dotProduct<4>(&(*seq2_region->likelihood)[0], mutation_mat_row);
+    }
+
+    // NHANLT NOTES:
+    // l = log(1 + q_xx * t + sum(q_xy * t)
+    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+    // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
+    if (total_blength > 0)
+      coeff0 += coeff1 * total_blength;
+
+    // NHANLT NOTES:
+    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0
+    if (coeff1 < 0)
+      coefficient += coeff1 / coeff0;
+    else
+      coefficient_vec.push_back(coeff0 / coeff1);
+}
+
+void Tree::estimateBlength_R_ACGT(const SeqRegion* const seq1_region, const StateType seq2_state, const RealNumType total_blength, const PositionType end_pos, std::vector<RealNumType> &coefficient_vec)
+{
+    if (seq1_region->plength_observation2root >= 0)
+    {
+        StateType seq1_state = aln.ref_seq[end_pos];
+        
+        RealNumType coeff1 = model.root_freqs[seq1_state] * model.mutation_mat[model.row_index[seq1_state] + seq2_state];
+        RealNumType coeff0 = model.root_freqs[seq2_state] * model.mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
+        
+        if (total_blength > 0)
+            coeff0 += coeff1 * total_blength;
+        
+        coefficient_vec.push_back(coeff0 / coeff1);
+    }
+    // NHANLT: add else here, otherwise, coefficient_vec.push_back(total_blength > 0 ? total_blength : 0) is called even when (seq1_region->plength_observation2root >= 0)
+    else
+        // NHANLT NOTES:
+        // l = log(q_xy * t)
+        // l' = q_xy / (q_xy * t) = 1 / t
+        coefficient_vec.push_back(total_blength > 0 ? total_blength : 0);
+}
+
+void Tree::estimateBlength_O_X(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec)
+{
+    const StateType num_states = aln.num_states;
+    RealNumType coeff0 = 0;
+    RealNumType coeff1 = 0;
+    
+    // 3.1. e1.type = O and e2.type = O
+    if (seq2_region->type == TYPE_O)
+    {
+        RealNumType* mutation_mat_row = model.mutation_mat;
+        
+        // NHANLT NOTES:
+        // l = log(sum_x(1 + q_xx * t + sum_y(q_xy * t)))
+        // l' = [sum_x(q_xx + sum_y(q_xy))]/[sum_x(1 + q_xx * t + sum_y(q_xy * t))]
+        // coeff1 = numerator = sum_x(q_xx + sum_y(q_xy))
+        // coeff0 = denominator = sum_x(1 + q_xx * t + sum_y(q_xy * t))
+        for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+        {
+            RealNumType seq1_lh_i = seq1_region->getLH(i);
+            coeff0 += seq1_lh_i * seq2_region->getLH(i);
+            
+            for (StateType j = 0; j < num_states; ++j)
+                coeff1 += seq1_lh_i * seq2_region->getLH(j) * mutation_mat_row[j];
+        }
+    }
+    // 3.2. e1.type = O and e2.type = R or A/C/G/T
+    else
+    {
+        StateType seq2_state = seq2_region->type;
+        if (seq2_state == TYPE_R)
+            seq2_state = aln.ref_seq[end_pos];
+        
+        coeff0 = seq1_region->getLH(seq2_state);
+
+        // NHANLT NOTES:
+        // y = seq2_state
+        // l = log(1 + q_yy * t + sum_x(q_xy * t)
+        // l' = [q_yy + sum_x(q_xy))]/[1 + q_xx * t + sum_y(q_xy * t)]
+        // coeff1 = numerator = q_yy + sum_x(q_xy))
+        // coeff0 = denominator = 1 + q_xx * t + sum_y(q_xy * t)
+        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+        assert(num_states == 4);
+        coeff1 += dotProduct<4>(&(*seq1_region->likelihood)[0], transposed_mut_mat_row);
+    }
+    
+    if (total_blength > 0)
+        coeff0 += coeff1 * total_blength;
+    
+    // NHANLT NOTES:
+    // l' = coeff1 / coeff0
+    if (coeff1 < 0)
+        coefficient += coeff1 / coeff0;
+    else
+        coefficient_vec.push_back(coeff0 / coeff1);
+}
+
+void Tree::estimateBlength_ACGT_O(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec)
+{
+    StateType seq1_state = seq1_region->type;
+    RealNumType coeff0 = seq2_region->getLH(seq1_state);
+    RealNumType coeff1 = 0;
+    
+    RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+    
+    if (seq1_region->plength_observation2root >= 0)
+    {
+        coeff0 *= model.root_freqs[seq1_state];
+
+        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+                            
+        assert(aln.num_states == 4);
+        updateCoeffs<4>(model.root_freqs, transposed_mut_mat_row, &(*seq2_region->likelihood)[0], mutation_mat_row, seq1_region->plength_observation2node, coeff0, coeff1);
+        
+        coeff1 *= model.root_freqs[seq1_state];
+    }
+    else
+    {
+        // NHANLT NOTES:
+        // x = seq1_state
+        // l = log(1 + q_xx * t + sum(q_xy * t)
+        // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+        // coeff1 = numerator = q_xx + sum(q_xy)
+        assert(aln.num_states == 4);
+        coeff1 += dotProduct<4>(&(*seq2_region->likelihood)[0], mutation_mat_row);
+    }
+    
+    // NHANLT NOTES:
+    // l = log(1 + q_xx * t + sum(q_xy * t)
+    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
+    // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
+    if (total_blength > 0)
+        coeff0 += coeff1 * total_blength;
+    
+    // NHANLT NOTES:
+    // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0;
+    if (coeff1 < 0)
+        coefficient += coeff1 / coeff0;
+    else
+        coefficient_vec.push_back(coeff0 / coeff1);
+}
+
+void Tree::estimateBlength_ACGT_RACGT(const SeqRegion* const seq1_region, const SeqRegion* const seq2_region, const RealNumType total_blength, const PositionType end_pos, std::vector<RealNumType> &coefficient_vec)
+{
+    RealNumType coeff0 = 0;
+    StateType seq1_state = seq1_region->type;
+    StateType seq2_state = seq2_region->type;
+    if (seq2_state == TYPE_R)
+        seq2_state = aln.ref_seq[end_pos];
+    
+    if (seq1_region->plength_observation2root >= 0)
+    {
+        coeff0 = model.root_freqs[seq2_state] * model.mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
+        RealNumType coeff1 = model.root_freqs[seq1_state] * model.mutation_mat[model.row_index[seq1_state] + seq2_state];
+        
+        if (total_blength > 0)
+            coeff0 += coeff1 * total_blength;
+        
+        coeff0 /= coeff1;
+    }
+    // NHANLT NOTES:
+    // l = log(q_xy * t)
+    // l' = q_xy / (q_xy * t) = 1 / t
+    else if (total_blength > 0)
+        coeff0 = total_blength;
+    
+    coefficient_vec.push_back(coeff0);
+}
+
+RealNumType Tree::estimateBlengthFromCoeffs(RealNumType &coefficient, const std::vector<RealNumType> coefficient_vec, const RealNumType min_blength_sensitivity)
+{
+    coefficient = -coefficient;
+    PositionType num_coefficients = coefficient_vec.size();
+    if (num_coefficients == 0)
+        return -1;
+
+    // Get min and max coefficients
+    RealNumType min_coefficient = coefficient_vec[0];
+    RealNumType max_coefficient = coefficient_vec[0];
+    for (PositionType i = 1; i < num_coefficients; ++i)
+    {
+        RealNumType coefficient_i = coefficient_vec[i];
+        if (coefficient_i < min_coefficient)
+            min_coefficient = coefficient_i;
+        if (coefficient_i > max_coefficient)
+            max_coefficient = coefficient_i;
+    }
+    
+    RealNumType num_coefficients_over_coefficient = num_coefficients / coefficient;
+    RealNumType tDown = num_coefficients_over_coefficient - min_coefficient;
+    if (tDown <= 0)
+        return 0;
+    RealNumType derivative_tDown = calculateDerivative(coefficient_vec, tDown);
+    
+    RealNumType tUp = num_coefficients_over_coefficient - max_coefficient;
+    if (tUp < 0)
+    {
+        if (min_coefficient > 0)
+            tUp = 0;
+        else
+            tUp = min_blength_sensitivity;
+    }
+    RealNumType derivative_tUp = calculateDerivative(coefficient_vec, tUp);
+    
+    if ((derivative_tDown > coefficient + min_blength_sensitivity) || (derivative_tUp < coefficient - min_blength_sensitivity))
+        if ((derivative_tUp < coefficient - min_blength_sensitivity) && (tUp == 0))
+            return 0;
+    
+    while (tDown - tUp > min_blength_sensitivity)
+    {
+        RealNumType tMiddle = (tUp + tDown) * 0.5;
+        RealNumType derivative_tMiddle = calculateDerivative(coefficient_vec, tMiddle);
+        
+        if (derivative_tMiddle > coefficient)
+            tUp = tMiddle;
+        else
+            tDown = tMiddle;
+    }
+    
+    return tUp;
+}
+
 using DoubleState = uint16_t;
 static constexpr DoubleState RR = (DoubleState(TYPE_R) << 8) | TYPE_R;
 static constexpr DoubleState RO = (DoubleState(TYPE_R) << 8) | TYPE_O;
 static constexpr DoubleState OO = (DoubleState(TYPE_O) << 8) | TYPE_O;
 
-RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, const RealNumType* const cumulative_rate, RealNumType min_blength_sensitivity)
+RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, const RealNumType* const cumulative_rate, const RealNumType min_blength_sensitivity)
 {
     // init dummy variables
     RealNumType coefficient = 0;
@@ -2541,125 +2770,17 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
         // 2.2. e1.type = R and e2.type = O
         else if (s1s2 == RO)
         {
-          StateType seq1_state = aln.ref_seq[end_pos];
-          RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-
-          RealNumType coeff0 = seq2_region->getLH(seq1_state);
-          RealNumType coeff1 = 0;
-
-          if (seq1_region->plength_observation2root >= 0)
-          {
-            coeff0 *= model.root_freqs[seq1_state];
-
-            RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-
-            assert(num_states == 4);
-            updateCoeffs<4>(model.root_freqs, transposed_mut_mat_row, &(*seq2_region->likelihood)[0], mutation_mat_row, seq1_region->plength_observation2node, coeff0, coeff1);
-
-            coeff1 *= model.root_freqs[seq1_state];
-          }
-          else
-          {
-            // NHANLT NOTES:
-            // x = seq1_state
-            // l = log(1 + q_xx * t + sum(q_xy * t)
-            // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
-            // coeff1 = numerator = q_xx + sum(q_xy)
-              assert(num_states == 4);
-              coeff1 += dotProduct<4>(&(*seq2_region->likelihood)[0], mutation_mat_row);
-          }
-
-          // NHANLT NOTES:
-          // l = log(1 + q_xx * t + sum(q_xy * t)
-          // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
-          // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
-          if (total_blength > 0)
-            coeff0 += coeff1 * total_blength;
-
-          // NHANLT NOTES:
-          // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0
-          if (coeff1 < 0)
-            coefficient += coeff1 / coeff0;
-          else
-            coefficient_vec.push_back(coeff0 / coeff1);
+            estimateBlength_R_O(seq1_region, seq2_region, total_blength, end_pos, coefficient, coefficient_vec);
         }
         // 2.3. e1.type = R and e2.type = A/C/G/T
         else if (seq1_region->type == TYPE_R)
         {
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                StateType seq1_state = aln.ref_seq[end_pos];
-                StateType seq2_state = seq2_region->type;
-                
-                RealNumType coeff1 = model.root_freqs[seq1_state] * model.mutation_mat[model.row_index[seq1_state] + seq2_state];
-                RealNumType coeff0 = model.root_freqs[seq2_state] * model.mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
-                
-                if (total_blength > 0)
-                    coeff0 += coeff1 * total_blength;
-                
-                coefficient_vec.push_back(coeff0 / coeff1);
-            }
-            // NHANLT: add else here, otherwise, coefficient_vec.push_back(total_blength > 0 ? total_blength : 0) is called even when (seq1_region->plength_observation2root >= 0)
-            else
-                // NHANLT NOTES:
-                // l = log(q_xy * t)
-                // l' = q_xy / (q_xy * t) = 1 / t
-                coefficient_vec.push_back(total_blength > 0 ? total_blength : 0);
+            estimateBlength_R_ACGT(seq1_region, seq2_region->type, total_blength, end_pos, coefficient_vec);
         }
         // 3. e1.type = O
         else if (seq1_region->type == TYPE_O)
         {
-            RealNumType coeff0 = 0;
-            RealNumType coeff1 = 0;
-            
-            // 3.1. e1.type = O and e2.type = O
-            if (seq2_region->type == TYPE_O)
-            {
-                RealNumType* mutation_mat_row = model.mutation_mat;
-                
-                // NHANLT NOTES:
-                // l = log(sum_x(1 + q_xx * t + sum_y(q_xy * t)))
-                // l' = [sum_x(q_xx + sum_y(q_xy))]/[sum_x(1 + q_xx * t + sum_y(q_xy * t))]
-                // coeff1 = numerator = sum_x(q_xx + sum_y(q_xy))
-                // coeff0 = denominator = sum_x(1 + q_xx * t + sum_y(q_xy * t))
-                for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-                {
-                    RealNumType seq1_lh_i = seq1_region->getLH(i);
-                    coeff0 += seq1_lh_i * seq2_region->getLH(i);
-                    
-                    for (StateType j = 0; j < num_states; ++j)
-                        coeff1 += seq1_lh_i * seq2_region->getLH(j) * mutation_mat_row[j];
-                }
-            }
-            // 3.2. e1.type = O and e2.type = R or A/C/G/T
-            else
-            {
-                StateType seq2_state = seq2_region->type;
-                if (seq2_state == TYPE_R)
-                    seq2_state = aln.ref_seq[end_pos];
-                
-                coeff0 = seq1_region->getLH(seq2_state);
-
-                // NHANLT NOTES:
-                // y = seq2_state
-                // l = log(1 + q_yy * t + sum_x(q_xy * t)
-                // l' = [q_yy + sum_x(q_xy))]/[1 + q_xx * t + sum_y(q_xy * t)]
-                // coeff1 = numerator = q_yy + sum_x(q_xy))
-                // coeff0 = denominator = 1 + q_xx * t + sum_y(q_xy * t)
-                RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
-                assert(num_states == 4);
-                coeff1 += dotProduct<4>(&(*seq1_region->likelihood)[0], transposed_mut_mat_row);
-            }
-            
-            if (total_blength > 0)
-                coeff0 += coeff1 * total_blength;
-            
-            // NHANLT NOTES:
-            // l' = coeff1 / coeff0
-            if (coeff1 < 0)
-                coefficient += coeff1 / coeff0;
-            else
-                coefficient_vec.push_back(coeff0 / coeff1);
+            estimateBlength_O_X(seq1_region, seq2_region, total_blength, end_pos, coefficient, coefficient_vec);
         }
         // 4. e1.type = A/C/G/T
         // 4.1. e1.type =  e2.type
@@ -2673,74 +2794,12 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
         // 4.2. e1.type = A/C/G/T and e2.type = O
         else if (seq2_region->type == TYPE_O)
         {
-            StateType seq1_state = seq1_region->type;
-            RealNumType coeff0 = seq2_region->getLH(seq1_state);
-            RealNumType coeff1 = 0;
-            
-            RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
-            
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                coeff0 *= model.root_freqs[seq1_state];
-
-                RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
-                                    
-                assert(num_states == 4);
-                updateCoeffs<4>(model.root_freqs, transposed_mut_mat_row, &(*seq2_region->likelihood)[0], mutation_mat_row, seq1_region->plength_observation2node, coeff0, coeff1);
-                
-                coeff1 *= model.root_freqs[seq1_state];
-            }
-            else
-            {
-                // NHANLT NOTES:
-                // x = seq1_state
-                // l = log(1 + q_xx * t + sum(q_xy * t)
-                // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
-                // coeff1 = numerator = q_xx + sum(q_xy)
-                assert(num_states == 4);
-                coeff1 += dotProduct<4>(&(*seq2_region->likelihood)[0], mutation_mat_row);
-            }
-            
-            // NHANLT NOTES:
-            // l = log(1 + q_xx * t + sum(q_xy * t)
-            // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
-            // coeff0 = denominator = 1 + q_xx * t + sum(q_xy * t)
-            if (total_blength > 0)
-                coeff0 += coeff1 * total_blength;
-            
-            // NHANLT NOTES:
-            // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)] = coeff1 / coeff0;
-            if (coeff1 < 0)
-                coefficient += coeff1 / coeff0;
-            else
-                coefficient_vec.push_back(coeff0 / coeff1);
+            estimateBlength_ACGT_O(seq1_region, seq2_region, total_blength, coefficient, coefficient_vec);
         }
         // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
         else
         {
-            RealNumType coeff0 = 0;
-            StateType seq1_state = seq1_region->type;
-            StateType seq2_state = seq2_region->type;
-            if (seq2_state == TYPE_R)
-                seq2_state = aln.ref_seq[end_pos];
-            
-            if (seq1_region->plength_observation2root >= 0)
-            {
-                coeff0 = model.root_freqs[seq2_state] * model.mutation_mat[model.row_index[seq2_state] + seq1_state] * seq1_region->plength_observation2node;
-                RealNumType coeff1 = model.root_freqs[seq1_state] * model.mutation_mat[model.row_index[seq1_state] + seq2_state];
-                
-                if (total_blength > 0)
-                    coeff0 += coeff1 * total_blength;
-                
-                coeff0 /= coeff1;
-            }
-            // NHANLT NOTES:
-            // l = log(q_xy * t)
-            // l' = q_xy / (q_xy * t) = 1 / t
-            else if (total_blength > 0)
-                coeff0 = total_blength;
-            
-            coefficient_vec.push_back(coeff0);
+            estimateBlength_ACGT_RACGT(seq1_region, seq2_region, total_blength, end_pos, coefficient_vec);
         }
         
         // update pos
@@ -2748,58 +2807,10 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
     }
     
     // now optimized branch length based on coefficients
-    coefficient = -coefficient;
-    PositionType num_coefficients = coefficient_vec.size();
-    if (num_coefficients == 0)
-        return -1;
-
-    // Get min and max coefficients
-    RealNumType min_coefficient = coefficient_vec[0];
-    RealNumType max_coefficient = coefficient_vec[0];
-    for (PositionType i = 1; i < num_coefficients; ++i)
-    {
-        RealNumType coefficient_i = coefficient_vec[i];
-        if (coefficient_i < min_coefficient)
-            min_coefficient = coefficient_i;
-        if (coefficient_i > max_coefficient)
-            max_coefficient = coefficient_i;
-    }
-    
-    RealNumType num_coefficients_over_coefficient = num_coefficients / coefficient;
-    RealNumType tDown = num_coefficients_over_coefficient - min_coefficient;
-    if (tDown <= 0)
-        return 0;
-    RealNumType derivative_tDown = calculateDerivative(coefficient_vec, tDown);
-    
-    RealNumType tUp = num_coefficients_over_coefficient - max_coefficient;
-    if (tUp < 0)
-    {
-        if (min_coefficient > 0)
-            tUp = 0;
-        else
-            tUp = min_blength_sensitivity;
-    }
-    RealNumType derivative_tUp = calculateDerivative(coefficient_vec, tUp);
-    
-    if ((derivative_tDown > coefficient + min_blength_sensitivity) || (derivative_tUp < coefficient - min_blength_sensitivity))
-        if ((derivative_tUp < coefficient - min_blength_sensitivity) && (tUp == 0))
-            return 0;
-    
-    while (tDown - tUp > min_blength_sensitivity)
-    {
-        RealNumType tMiddle = (tUp + tDown) * 0.5;
-        RealNumType derivative_tMiddle = calculateDerivative(coefficient_vec, tMiddle);
-        
-        if (derivative_tMiddle > coefficient)
-            tUp = tMiddle;
-        else
-            tDown = tMiddle;
-    }
-    
-    return tUp;
+    return estimateBlengthFromCoeffs(coefficient, coefficient_vec, min_blength_sensitivity);
 }
 
-RealNumType Tree::calculateDerivative(vector<RealNumType> &coefficient_vec, RealNumType delta_t)
+RealNumType Tree::calculateDerivative(const vector<RealNumType> &coefficient_vec, const RealNumType delta_t)
 {
     RealNumType result = 0;
     
@@ -2809,12 +2820,87 @@ RealNumType Tree::calculateDerivative(vector<RealNumType> &coefficient_vec, Real
     return result;
 }
 
+void Tree::handleBlengthChanged(Node* const node, const RealNumType best_blength, RealNumType* const cumulative_rate, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength)
+{
+    node->length = best_blength;
+    node->neighbor->length = node->length;
+    
+    stack<Node*> node_stack;
+    node_stack.push(node);
+    node_stack.push(node->neighbor);
+    updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
+}
+
+void Tree::optimizeBlengthBeforeSeekingSPR(Node* const node, RealNumType &best_blength, RealNumType &best_lh, bool &blength_changed, const SeqRegions* const parent_upper_lr_lh, const SeqRegions* const lower_lh, RealNumType* const cumulative_rate, const RealNumType min_blength)
+{
+    RealNumType original_lh = best_lh;
+    
+    // try different branch lengths for the current node placement (just in case branch length can be improved, in which case it counts both as tree improvment and better strategy to find a new placement).
+    if (node->length <= 0)
+    {
+        best_blength = min_blength;
+        best_lh = calculateSubTreePlacementCost(cumulative_rate, parent_upper_lr_lh, lower_lh, best_blength);
+    }
+    
+    // cache best_blength
+    const RealNumType cached_blength = best_blength;
+
+    // try shorter branch lengths
+    bool found_new_blength = tryShorterNewBranch<&Tree::calculateSubTreePlacementCost>(parent_upper_lr_lh, lower_lh, best_blength, best_lh, cumulative_rate, min_blength + min_blength);
+    
+    // try longer branch lengths
+    if (!found_new_blength)
+        tryLongerNewBranch<&Tree::calculateSubTreePlacementCost>(parent_upper_lr_lh, lower_lh, best_blength, best_lh, cumulative_rate, params->half_max_blength);
+    
+    // update blength_changed
+    if (cached_blength != best_blength)
+        blength_changed = true;
+    
+    if (node->length <= 0 && original_lh > best_lh)
+        best_lh = original_lh;
+}
+
+void Tree::checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, Node* const node, Node* const best_node, Node* const parent_node, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated, RealNumType* const cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType default_blength, const RealNumType max_blength, const RealNumType min_blength, const RealNumType min_blength_mid)
+{
+    if (best_node == parent_node)
+        outWarning("Strange, re-placement is at same node");
+    else if ((best_node == parent_node->next->neighbor || best_node == parent_node->next->next->neighbor) && is_mid_node)
+        cout << "Re-placement is above sibling node";
+    else [[likely]]
+    {
+        // reach the top of a multifurcation, which is the only place in a multifurcatio where placement is allowed.
+        Node* top_polytomy = best_node;
+        while (top_polytomy->length <= 0 && top_polytomy!= root)
+            top_polytomy = top_polytomy->neighbor->getTopNode();
+        
+        if (top_polytomy != best_node)
+            outWarning("Strange, placement node not at top of polytomy");
+        
+        // reach the top of the multifurcation of the parent
+        Node* parent_top_polytomy = parent_node;
+        while (parent_top_polytomy->length <= 0 && parent_top_polytomy != root)
+            parent_top_polytomy = parent_top_polytomy->neighbor->getTopNode();
+        
+        if (!(parent_top_polytomy == top_polytomy && !is_mid_node))
+        {
+            total_improvement = best_lh_diff - best_lh;
+            
+            if (verbose_mode == VB_DEBUG)
+                cout << "In improveSubTree() found SPR move with improvement " << total_improvement << endl;
+            
+            // apply an SPR move
+            applySPR(node, best_node, is_mid_node, best_blength, best_lh_diff, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
+            
+            topology_updated = true;
+        }
+    }
+}
+
 RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base, RealNumType default_blength, RealNumType max_blength, RealNumType min_blength, RealNumType min_blength_mid)
 {
     // dummy variables
-    RealNumType threshold_prob = params->threshold_prob;
-    RealNumType threshold_prob2 = params->threshold_prob2;
-    RealNumType thresh_placement_cost = short_range_search ? params->thresh_placement_cost_short_search : params->thresh_placement_cost;
+    const RealNumType threshold_prob = params->threshold_prob;
+    const RealNumType thresh_placement_cost = short_range_search ? params->thresh_placement_cost_short_search : params->thresh_placement_cost;
     RealNumType total_improvement = 0;
     bool blength_changed = false; // true if a branch length has been changed
     
@@ -2822,80 +2908,21 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
     if (node != root)
     {
         // evaluate current placement
-        Node* parent_node = node->neighbor->getTopNode();
         SeqRegions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        
-        // score of current tree
-        RealNumType best_blength = node->length;
         SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        RealNumType best_blength = node->length;
         RealNumType best_lh = calculateSubTreePlacementCost(cumulative_rate, parent_upper_lr_lh, lower_lh, best_blength);
-        RealNumType original_lh = best_lh;
         
         // optimize branch length
         if (best_lh < thresh_placement_cost)
-        {
-            // try different branch lengths for the current node placement (just in case branch length can be improved, in which case it counts both as tree improvment and better strategy to find a new placement).
-            if (node->length <= 0)
-            {
-                best_blength = min_blength;
-                best_lh = calculateSubTreePlacementCost(cumulative_rate, parent_upper_lr_lh, lower_lh, best_blength);
-            }
-            
-            RealNumType best_split = 1;
-            RealNumType new_split = 0.5;
-            RealNumType new_bl_split = new_split * best_blength;
-            while (new_bl_split > min_blength)
-            {
-                RealNumType new_lh = calculateSubTreePlacementCost(cumulative_rate, parent_upper_lr_lh, lower_lh, new_bl_split);
-                
-                if (new_lh > best_lh)
-                {
-                    best_lh = new_lh;
-                    best_split = new_split;
-                    blength_changed = true;
-                }
-                else
-                    break;
-                
-                new_split = best_split * 0.5;
-                new_bl_split = new_split * best_blength;
-            }
-            
-            if (best_split > 0.7)
-            {
-                new_split = 2;
-                RealNumType new_bl_split = new_split * best_blength;
-                while (new_bl_split < max_blength)
-                {
-                    RealNumType new_lh = calculateSubTreePlacementCost(cumulative_rate, parent_upper_lr_lh, lower_lh, new_bl_split);
-                    
-                    if (new_lh > best_lh)
-                    {
-                        best_lh = new_lh;
-                        best_split = new_split;
-                        blength_changed = true;
-                    }
-                    else
-                        break;
-                    
-                    new_split = best_split * 2;
-                    new_bl_split = new_split * best_blength;
-                }
-            }
-            
-            best_blength = best_blength * best_split;
-            
-            if (node->length <= 0)
-                if (original_lh > best_lh)
-                    best_lh = original_lh;
-        }
+            optimizeBlengthBeforeSeekingSPR(node, best_blength, best_lh, blength_changed, parent_upper_lr_lh, lower_lh, cumulative_rate, min_blength);
            
         // find new placement
         if (best_lh < thresh_placement_cost)
         {
             // now find the best place on the tree where to re-attach the subtree rooted at "node" but to do that we need to consider new vector probabilities after removing the node that we want to replace this is done using findBestParentTopology().
             bool topology_updated = false;
-            
+            Node* parent_node = node->neighbor->getTopNode();
             Node* best_node = NULL;
             RealNumType best_lh_diff = best_lh;
             bool is_mid_node = false;
@@ -2907,81 +2934,24 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
             seekSubTreePlacement(best_node, best_lh_diff, is_mid_node, best_up_lh_diff, best_down_lh_diff, best_child, short_range_search, node, best_blength, cumulative_rate, default_blength, min_blength_mid, true, NULL);
             
             // validate the new placement cost
-            if (best_lh_diff > threshold_prob2)
+            if (best_lh_diff > params->threshold_prob2)
                 outError("Strange, lh cost is positive");
             else if (best_lh_diff < -1e50)
                 outError("Likelihood cost is very heavy, this might mean that the reference used is not the same used to generate the input diff file");
             
             if (best_lh_diff + thresh_placement_cost > best_lh)
             {
-                if (best_node == parent_node)
-                    outWarning("Strange, re-placement is at same node");
-                else if ((best_node == parent_node->next->neighbor || best_node == parent_node->next->next->neighbor) && is_mid_node)
-                    cout << "Re-placement is above sibling node";
-                else
-                {
-                    // reach the top of a multifurcation, which is the only place in a multifurcatio where placement is allowed.
-                    Node* top_polytomy = best_node;
-                    while (top_polytomy->length <= 0 && top_polytomy!= root)
-                        top_polytomy = top_polytomy->neighbor->getTopNode();
-                    
-                    if (top_polytomy != best_node)
-                        outWarning("Strange, placement node not at top of polytomy");
-                    
-                    // reach the top of the multifurcation of the parent
-                    Node* parent_top_polytomy = parent_node;
-                    PositionType parent_top_count = 0;
-                    while (parent_top_polytomy->length <= 0 && parent_top_polytomy != root)
-                    {
-                        parent_top_polytomy = parent_top_polytomy->neighbor->getTopNode();
-                        parent_top_count += 1;
-                    }
-                    
-                    if (!(parent_top_polytomy == top_polytomy && !is_mid_node))
-                    {
-                        total_improvement = best_lh_diff - best_lh;
-                        
-                        if (verbose_mode == VB_DEBUG)
-                            cout << "In improveSubTree() found SPR move with improvement " << total_improvement << endl;
-                        
-                        // apply an SPR move
-                        applySPR(node, best_node, is_mid_node, best_blength, best_lh_diff, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
-                        
-                        topology_updated = true;
-                    }
-                }
+                // check and apply SPR move
+                checkAndApplySPR(best_lh_diff, best_blength, best_lh, node, best_node, parent_node, is_mid_node, total_improvement, topology_updated, cumulative_rate, cumulative_base, default_blength, max_blength, min_blength, min_blength_mid);
+                
                 if (!topology_updated && blength_changed)
-                {
-                    node->length = best_blength;
-                    node->neighbor->length = node->length;
-                    
-                    stack<Node*> node_stack;
-                    node_stack.push(node);
-                    node_stack.push(node->neighbor);
-                    updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
-                }
+                    handleBlengthChanged(node, best_blength, cumulative_rate, default_blength, max_blength, min_blength);
             }
             else if (blength_changed)
-            {
-                node->length = best_blength;
-                node->neighbor->length = node->length;
-                
-                stack<Node*> node_stack;
-                node_stack.push(node);
-                node_stack.push(node->neighbor);
-                updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
-            }
+                handleBlengthChanged(node, best_blength, cumulative_rate, default_blength, max_blength, min_blength);
         }
         else if (blength_changed)
-        {
-            node->length = best_blength;
-            node->neighbor->length = node->length;
-            
-            stack<Node*> node_stack;
-            node_stack.push(node);
-            node_stack.push(node->neighbor);
-            updatePartialLh(node_stack, cumulative_rate, default_blength, min_blength, max_blength);
-        }
+            handleBlengthChanged(node, best_blength, cumulative_rate, default_blength, max_blength, min_blength);
     }
                         
     return total_improvement;

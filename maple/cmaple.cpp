@@ -87,6 +87,7 @@ void CMaple::preInference()
     min_blength_mid = tree.params->min_blength_mid_factor * default_blength;
     min_blength_sensitivity = min_blength * 1e-5;
     tree.params->half_min_blength_mid = min_blength_mid * 0.5;
+    tree.params->half_max_blength = max_blength * 0.5;
     
     // compute thresholds for approximations
     tree.params->threshold_prob2 = tree.params->threshold_prob * tree.params->threshold_prob;
