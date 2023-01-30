@@ -684,7 +684,7 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initAlnModelParams(Params& params, Alignment& aln, Model& model, RealNumType* &cumulative_rate, std::vector< std::vector<PositionType> >& cumulative_base, const std::string model_name = "GTR")
+void initAlnModelParams(Params& params, Alignment& aln, Model& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     initDefaultValue(params);
@@ -698,22 +698,20 @@ void initAlnModelParams(Params& params, Alignment& aln, Model& model, RealNumTyp
     // init the mutation matrix from a model name
     model.initMutationMat(params.model_name, aln.num_states);
     // compute cumulative rates of the ref sequence
-    model.computeCumulativeRate(cumulative_rate, cumulative_base, aln);
+    model.computeCumulativeRate(aln);
 }
 
 /*
- Test computeAbsoluteLhAtRoot(const Alignment& aln, const Model& model, std::vector< std::vector<PositionType> > &cumulative_base)
+ Test computeAbsoluteLhAtRoot(const Alignment& aln, const Model& model)
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -721,18 +719,18 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
     // ----- Simple tests -----
     SeqRegions seqregions1;
     seqregions1.emplace_back(TYPE_R, seq_length - 1);
-    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot(num_states, model, cumulative_base), -40547.865582541948);
+    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot(num_states, model), -40547.865582541948);
     
     seqregions1.emplace(seqregions1.begin(), 3, 3242);
     seqregions1.emplace(seqregions1.begin(), TYPE_R, 3241);
-    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot(num_states, model, cumulative_base), -40547.372963956892);
+    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot(num_states, model), -40547.372963956892);
     
     auto new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.1,0.3,0.2,0.4};
     (*new_lh) = new_lh_value;
     seqregions1.emplace(seqregions1.begin(), TYPE_O, 243, 0, -1, std::move(new_lh));
     seqregions1.emplace(seqregions1.begin(), TYPE_R, 242);
-    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot(num_states, model, cumulative_base), -40547.053844652924);
+    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot(num_states, model), -40547.053844652924);
     // ----- Simple tests -----
     
     // Generate complex seqregions
@@ -740,15 +738,15 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
     genTestData2(seqregions2, seqregions3, seqregions4);
     
     // ----- Test 1 on a more complex seqregions -----
-    EXPECT_EQ(seqregions2.computeAbsoluteLhAtRoot(num_states, model, cumulative_base), -40547.644608026116);
+    EXPECT_EQ(seqregions2.computeAbsoluteLhAtRoot(num_states, model), -40547.644608026116);
     // ----- Test 1 on a more complex seqregions -----
     
     // ----- Test 2 on a more complex seqregions -----
-    EXPECT_EQ(seqregions3.computeAbsoluteLhAtRoot(num_states, model, cumulative_base), -40548.188644939095);
+    EXPECT_EQ(seqregions3.computeAbsoluteLhAtRoot(num_states, model), -40548.188644939095);
     // ----- Test 2 on a more complex seqregions -----
     
     // ----- Test 3 on a more complex seqregions -----
-    EXPECT_EQ(seqregions4.computeAbsoluteLhAtRoot(num_states, model, cumulative_base), -40548.424295613549);
+    EXPECT_EQ(seqregions4.computeAbsoluteLhAtRoot(num_states, model), -40548.424295613549);
     // ----- Test 3 on a more complex seqregions -----
 }
 
@@ -760,11 +758,9 @@ TEST(SeqRegions, computeTotalLhAtRoot)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -837,11 +833,9 @@ TEST(SeqRegions, merge_N_O)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -971,11 +965,9 @@ TEST(SeqRegions, merge_N_RACGT)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1313,11 +1305,9 @@ TEST(SeqRegions, merge_O_N)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1437,11 +1427,9 @@ TEST(SeqRegions, merge_RACGT_N)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1779,11 +1767,9 @@ TEST(SeqRegions, merge_Zero_Distance)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1900,11 +1886,9 @@ TEST(SeqRegions, merge_O_ORACGT)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -2034,11 +2018,9 @@ TEST(SeqRegions, merge_RACGT_O)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -2130,11 +2112,9 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -2295,11 +2275,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -3925,11 +3903,9 @@ TEST(SeqRegions, mergeUpperLower)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base, "JC");
+    initAlnModelParams(params, aln, model, "JC");
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -4007,11 +3983,9 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -4126,11 +4100,9 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -4462,18 +4434,16 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 }
 
 /*
- Test merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType* cumulative_rate, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
+ Test merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -4487,7 +4457,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     RealNumType total_blength_2 = -1;
     RealNumType log_lh = 0;
     SeqRegion seqregion1(TYPE_R, 3442, -1, -1);
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, cumulative_rate, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4500,7 +4470,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = 0;
     log_lh = 0;
     seqregion1.type = 0;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, cumulative_rate, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4513,7 +4483,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = 13e-4;
     log_lh = 0;
     seqregion1.type = 3;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, cumulative_rate, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4526,7 +4496,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = -1;
     log_lh = 0;
     seqregion1.type = TYPE_R;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, cumulative_rate, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4539,7 +4509,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = 0.04231;
     log_lh = 0;
     seqregion1.type = 1;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, cumulative_rate, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4556,11 +4526,9 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -4697,11 +4665,9 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -4829,11 +4795,9 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -5009,11 +4973,9 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -5176,11 +5138,9 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -5371,11 +5331,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -5537,18 +5495,16 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 }
 
 /*
- Test merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, RealNumType* cumulative_rate, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base);
+    initAlnModelParams(params, aln, model);
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -5569,7 +5525,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     RealNumType plength2 = -1;
     const PositionType end_pos = 1412;
     const PositionType pos = 1355;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5585,7 +5541,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 1.3382670779607485874503763900733588343427982181311e-05;
     seqregion1.type = TYPE_R;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5599,7 +5555,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 3.283e-9;
     seqregion1.type = 2;
     seqregion2.type = 0;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5615,7 +5571,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 0.00031223631362821728;
     seqregion1.type = TYPE_R;
     seqregion2.type = 3;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5631,7 +5587,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     SeqRegion::LHType new_lh_value3{4.9383548301647924830444502664050787643645890057087e-05,0.71422131017848822231997019116533920168876647949219,4.9383548301647924830444502664050787643645890057087e-05,0.28567992272490849714472460618708282709121704101562};
     (*seqregion2.likelihood) = new_lh_value3;
     seqregion2.type = TYPE_O;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5649,7 +5605,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value6{6.6911562987199814600764238847752096717158565297723e-06,0.39999063238118182095348629445652477443218231201172,6.6911562987199814600764238847752096717158565297723e-06,0.59999598530622066938633452082285657525062561035156};
     (*seqregion2.likelihood) = new_lh_value6;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5665,7 +5621,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value4;
     seqregion1.type = TYPE_O;
     seqregion2.type = 1;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5681,7 +5637,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value7{1.1815113248226830777267349123884135342343881802663e-09,0.9999702585027225865133004845120012760162353515625,1.1815113248226830777267349123884135342343881802663e-09,2.9739134254674524059092188821296076639555394649506e-05};
     (*seqregion2.likelihood) = new_lh_value7;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5697,7 +5653,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value5;
     seqregion1.type = TYPE_O;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8); // consecutive R regions -> merged
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5711,7 +5667,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 231.65e-8;
     seqregion1.type = 2;
     seqregion2.type = 2;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 9);
     EXPECT_EQ(merged_regions->back().type, 2);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5727,7 +5683,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value11;
     seqregion1.type = TYPE_O;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 10);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5741,7 +5697,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 3.4820599267114684E-5;
     seqregion1.type = 3;
     seqregion2.type = 1;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 11);
     EXPECT_EQ(merged_regions->back().type, 3);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5757,7 +5713,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value13;
     seqregion1.type = TYPE_O;
     seqregion2.type = 0;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 12);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5773,7 +5729,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 0.31223631362821728e-10;
     seqregion1.type = 1;
     seqregion2.type = 3;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 13);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5789,7 +5745,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     SeqRegion::LHType new_lh_value15{9.9493714778138372440088605107603655919312757305306e-10,0.99996654175612176285170562550774775445461273193359,9.9493714778138372440088605107603655919312757305306e-10,3.345625400403152548828300538730218249838799238205e-05};
     (*seqregion2.likelihood) = new_lh_value15;
     seqregion2.type = TYPE_O;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 14);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5807,7 +5763,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value16{1.5333235876614054963434918832376752106938511133194e-05,0.99996236262065618660699328756891191005706787109375,1.1152071733605872690944446623539931806590175256133e-05,1.1152071733605872690944446623539931806590175256133e-05};
     (*seqregion2.likelihood) = new_lh_value16;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, cumulative_rate, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 15);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5817,18 +5773,16 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
 }
 
 /*
- Test mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool return_log_lh)
+ Test mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold_prob, bool return_log_lh)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
     Alignment aln;
     Model model;
     Params params = Params::getInstance();
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     // Init params, aln, and model
-    initAlnModelParams(params, aln, model, cumulative_rate, cumulative_base, "JC");
+    initAlnModelParams(params, aln, model, "JC");
     // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -5839,61 +5793,61 @@ TEST(SeqRegions, mergeTwoLowers)
     SeqRegions* merged_regions_ptr = nullptr;
     
     genTestData4(seqregions1, seqregions2, output_regions, 1);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 1 -----
     
     // ----- Test 2 -----
     genTestData4(seqregions1, seqregions2, output_regions, 2);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 2 -----
     
     // ----- Test 3 -----
     genTestData4(seqregions1, seqregions2, output_regions, 3);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, seqregions2, 0.00013381954434445151344394708825547013475443236529827, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, seqregions2, 0.00013381954434445151344394708825547013475443236529827, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 3 -----
     
     // ----- Test 4 -----
     genTestData4(seqregions1, seqregions2, output_regions, 4);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 4 -----
     
     // ----- Test 5 -----
     genTestData4(seqregions1, seqregions2, output_regions, 5);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 5 -----
     
     // ----- Test 6 -----
     genTestData4(seqregions1, seqregions2, output_regions, 6);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 6 -----
     
     // ----- Test 7 -----
     genTestData4(seqregions1, seqregions2, output_regions, 7);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 7 -----
     
     // ----- Test 8 -----
     genTestData4(seqregions1, seqregions2, output_regions, 8);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 8 -----
     
     // ----- Test 9 -----
     genTestData4(seqregions1, seqregions2, output_regions, 9);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 9 -----
     
     // ----- Test 10 -----
     genTestData4(seqregions1, seqregions2, output_regions, 10);
-    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob, cumulative_rate);
+    seqregions1.mergeTwoLowers(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 10 -----
 }

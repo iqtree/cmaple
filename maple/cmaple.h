@@ -42,9 +42,6 @@ private:
     void exportOutput(const std::string &filename);
     
 public:
-    /** Model-related parameters */
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
     
     /** The phylogenetic tree */
     Tree tree;

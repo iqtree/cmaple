@@ -17,10 +17,6 @@ CMaple::CMaple(Params n_params)
 
 CMaple::~CMaple()
 {
-    if (cumulative_rate)
-    {
-        delete[] cumulative_rate;
-    }
 }
 
 void CMaple::loadInput()
@@ -75,7 +71,7 @@ void CMaple::preInference()
     tree.model.initMutationMat(tree.params->model_name, tree.aln.num_states);
     
     // compute cumulative rates of the ref sequence
-    tree.model.computeCumulativeRate(cumulative_rate, cumulative_base, tree.aln);
+    tree.model.computeCumulativeRate(tree.aln);
     
     // setup function pointers in tree
     tree.setup();
@@ -100,7 +96,7 @@ void CMaple::buildInitialTree()
     Node* root = new Node(sequence->seq_name);
     tree.root = root;
     root->partial_lh = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
-    root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, cumulative_rate, true);
+    root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, true);
     
     // move to the next sequence in the alignment
     ++sequence;
@@ -113,7 +109,7 @@ void CMaple::buildInitialTree()
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
-            tree.model.updateMutationMatEmpirical(cumulative_rate, cumulative_base, aln);
+            tree.model.updateMutationMatEmpirical(aln);
         
         // NHANLT: debug
         /*if ((*sequence)->seq_name == "39")
@@ -126,16 +122,16 @@ void CMaple::buildInitialTree()
         RealNumType best_up_lh_diff = MIN_NEGATIVE;
         RealNumType best_down_lh_diff = MIN_NEGATIVE;
         Node* best_child = NULL;
-        tree.seekSamplePlacement(tree.root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate);
+        tree.seekSamplePlacement(tree.root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child);
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
         if (selected_node)
         {
             if (is_mid_branch)
-                tree.placeNewSampleMidBranch(selected_node, lower_regions, sequence->seq_name, best_lh_diff, cumulative_rate);
+                tree.placeNewSampleMidBranch(selected_node, lower_regions, sequence->seq_name, best_lh_diff);
             // otherwise, best lk so far is for appending directly to existing node
             else
-                tree.placeNewSampleAtNode(selected_node, lower_regions, sequence->seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate,  cumulative_base);
+                tree.placeNewSampleAtNode(selected_node, lower_regions, sequence->seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child);
         }
         else
             delete lower_regions;
@@ -162,7 +158,7 @@ void CMaple::buildInitialTree()
     cout << " - Time spent on building an initial tree: " << end - start << endl;
     
     // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
-    tree.refreshAllLhs(cumulative_rate);
+    tree.refreshAllLhs();
 }
 
 void CMaple::optimizeTree()
@@ -197,7 +193,7 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
         tree.setAllNodeOutdated();
         
         // traverse the tree from root to try improvements on the entire tree
-        RealNumType improvement = tree.improveEntireTree(short_range_search, cumulative_rate, cumulative_base);
+        RealNumType improvement = tree.improveEntireTree(short_range_search);
         
         // stop trying if the improvement is so small
         if (improvement < tree.params->thresh_entire_tree_improvement)
@@ -209,7 +205,7 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         for (int j = 0; j < 20; ++j)
         {
-            improvement = tree.improveEntireTree(short_range_search, cumulative_rate, cumulative_base);
+            improvement = tree.improveEntireTree(short_range_search);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
             
             // stop trying if the improvement is so small
@@ -238,7 +234,7 @@ void CMaple::optimizeBranchLengthsOfTree()
     tree.setAllNodeOutdated();
    
     // traverse the tree from root to optimize branch lengths
-    PositionType num_improvement = tree.optimizeBranchLengths(cumulative_rate);
+    PositionType num_improvement = tree.optimizeBranchLengths();
    
     // run improvements only on the nodes that have been affected by some changes in the last round, and so on
     for (int j = 0; j < 20; ++j)
@@ -249,7 +245,7 @@ void CMaple::optimizeBranchLengthsOfTree()
           //  break;
         
         // traverse the tree from root to optimize branch lengths
-        num_improvement = tree.optimizeBranchLengths(cumulative_rate);
+        num_improvement = tree.optimizeBranchLengths();
     }
 
     // show the runtime for optimize the branch lengths

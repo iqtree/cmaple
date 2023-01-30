@@ -123,10 +123,9 @@ public:
         @param aln the alignment
         @param model the model of evolution
         @param threshold the threshold for approximation
-        @param cumulative_rate the cumulative rates of the reference sequence
         @param return_log_lh TRUE to return the log likelihood
      */
-    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions& regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold, RealNumType* cumulative_rate, const bool return_log_lh = false) const;
+    RealNumType mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions& regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold, const bool return_log_lh = false) const;
     
     /**
         Compute total lh/upper left_right for root node
@@ -137,7 +136,7 @@ public:
     /**
         Compute the likelihood by merging the lower lh with root frequencies
      */
-    RealNumType computeAbsoluteLhAtRoot(const StateType num_states, const Model& model, std::vector< std::vector<PositionType> > &cumulative_base);
+    RealNumType computeAbsoluteLhAtRoot(const StateType num_states, const Model& model);
     
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others
@@ -265,7 +264,7 @@ void merge_N_RACGT_TwoLowers(const SeqRegion& seq2_region, const PositionType en
 /**
     MergeTwoLowers case identicalRACGT
  */
-void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType* cumulative_rate, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh);
+void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh);
 
 /**
     MergeTwoLowers case O_O
@@ -300,7 +299,7 @@ bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion&
 /**
     MergeTwoLowers case notN_notN
  */
-bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, RealNumType* cumulative_rate, SeqRegions* merged_regions, const bool return_log_lh);
+bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh);
 
 
 #endif

@@ -122,14 +122,14 @@ string Tree::exportTreeString(bool binary, Node* node)
     return output;
 }
 
-void Tree::updateMidBranchLh(Node* const node, const SeqRegions* const parent_upper_regions, stack<Node*> &node_stack, bool &update_blength, RealNumType* const cumulative_rate)
+void Tree::updateMidBranchLh(Node* const node, const SeqRegions* const parent_upper_regions, stack<Node*> &node_stack, bool &update_blength)
 {
     // update vector of regions at mid-branch point
     SeqRegions* mid_branch_regions = NULL;
-    computeMidBranchRegions(node, mid_branch_regions, *parent_upper_regions, cumulative_rate);
+    computeMidBranchRegions(node, mid_branch_regions, *parent_upper_regions);
     
     if (!mid_branch_regions)
-        handleNullNewRegions(node, (node->length <= 1e-100), node_stack, update_blength, cumulative_rate, "inside updatePartialLh(), from parent: should not have happened since node->length > 0");
+        handleNullNewRegions(node, (node->length <= 1e-100), node_stack, update_blength, "inside updatePartialLh(), from parent: should not have happened since node->length > 0");
     // update likelihood at the mid-branch point
     else
         replacePartialLH(node->mid_branch_lh, mid_branch_regions);
@@ -138,29 +138,29 @@ void Tree::updateMidBranchLh(Node* const node, const SeqRegions* const parent_up
     if (mid_branch_regions) delete mid_branch_regions;
 }
 
-SeqRegions* Tree::computeUpperLeftRightRegions(Node* const next_node, Node* const node, const SeqRegions* const parent_upper_regions, stack<Node*> &node_stack, bool &update_blength, RealNumType* const cumulative_rate)
+SeqRegions* Tree::computeUpperLeftRightRegions(Node* const next_node, Node* const node, const SeqRegions* const parent_upper_regions, stack<Node*> &node_stack, bool &update_blength)
 {
     SeqRegions* upper_left_right_regions = NULL;
-    SeqRegions* lower_regions = next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+    SeqRegions* lower_regions = next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
     parent_upper_regions->mergeUpperLower(upper_left_right_regions, node->length, *lower_regions, next_node->length, aln, model, params->threshold_prob);
     
     // handle cases when new regions is null/empty
     if (!upper_left_right_regions || upper_left_right_regions->size() == 0)
-        handleNullNewRegions(node, (node->length <= 0 && next_node->length <= 0), node_stack, update_blength, cumulative_rate, "Strange: None vector from non-zero distances in updatePartialLh() from parent direction.");
+        handleNullNewRegions(node, (node->length <= 0 && next_node->length <= 0), node_stack, update_blength, "Strange: None vector from non-zero distances in updatePartialLh() from parent direction.");
     
     return upper_left_right_regions;
 }
 
-void Tree::updateNewPartialIfDifferent(Node* const next_node, SeqRegions* &upper_left_right_regions, std::stack<Node*> &node_stack, RealNumType* const cumulative_rate, const PositionType seq_length)
+void Tree::updateNewPartialIfDifferent(Node* const next_node, SeqRegions* &upper_left_right_regions, std::stack<Node*> &node_stack, const PositionType seq_length)
 {
-    if (next_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
+    if (next_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
     {
         replacePartialLH(next_node->partial_lh, upper_left_right_regions);
         node_stack.push(next_node->neighbor);
     }
 }
 
-void Tree::updatePartialLhFromParent(Node* const node, stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const PositionType seq_length, RealNumType* const cumulative_rate)
+void Tree::updatePartialLhFromParent(Node* const node, stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const PositionType seq_length)
 {
     bool update_blength = false;
     
@@ -168,12 +168,12 @@ void Tree::updatePartialLhFromParent(Node* const node, stack<Node*> &node_stack,
     if (node->length > 0)
     {
         // update vector of regions at mid-branch point
-        updateMidBranchLh(node, parent_upper_regions, node_stack, update_blength, cumulative_rate);
+        updateMidBranchLh(node, parent_upper_regions, node_stack, update_blength);
         
         // if necessary, update the total probability vector.
         if (!update_blength)
         {
-            node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, node == root);
+            node->computeTotalLhAtNode(aln, model, params->threshold_prob, node == root);
             
             if (!node->total_lh || node->total_lh->size() == 0)
                 outError("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
@@ -187,20 +187,20 @@ void Tree::updatePartialLhFromParent(Node* const node, stack<Node*> &node_stack,
         Node* next_node_2 = next_node_1->next;
         
         // compute new upper left/right for next_node_1
-        SeqRegions* upper_left_right_regions_1 = computeUpperLeftRightRegions(next_node_1, node, parent_upper_regions, node_stack, update_blength, cumulative_rate);
+        SeqRegions* upper_left_right_regions_1 = computeUpperLeftRightRegions(next_node_1, node, parent_upper_regions, node_stack, update_blength);
         SeqRegions* upper_left_right_regions_2 = NULL;
         
         // compute new upper left/right for next_node_1
         if (!update_blength)
-            upper_left_right_regions_2 = computeUpperLeftRightRegions(next_node_2, node, parent_upper_regions, node_stack, update_blength, cumulative_rate);
+            upper_left_right_regions_2 = computeUpperLeftRightRegions(next_node_2, node, parent_upper_regions, node_stack, update_blength);
         
         if (!update_blength)
         {
             // update new partiallh for next_node_1
-            updateNewPartialIfDifferent(next_node_1, upper_left_right_regions_2, node_stack, cumulative_rate, seq_length);
+            updateNewPartialIfDifferent(next_node_1, upper_left_right_regions_2, node_stack, seq_length);
             
             // update new partiallh for next_node_2
-            updateNewPartialIfDifferent(next_node_2, upper_left_right_regions_1, node_stack, cumulative_rate, seq_length);
+            updateNewPartialIfDifferent(next_node_2, upper_left_right_regions_1, node_stack, seq_length);
         }
         
         // delete upper_left_right_regions_1, upper_left_right_regions_2
@@ -209,7 +209,7 @@ void Tree::updatePartialLhFromParent(Node* const node, stack<Node*> &node_stack,
     }
 }
 
-void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const bool is_non_root, const PositionType seq_length, RealNumType* const cumulative_rate)
+void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const bool is_non_root, const PositionType seq_length)
 {
     bool update_blength = false;
     Node* top_node = NULL;
@@ -227,16 +227,16 @@ void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node
     
     RealNumType this_node_distance = node->length;
     RealNumType other_next_node_distance = other_next_node->length;
-    SeqRegions* this_node_lower_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+    SeqRegions* this_node_lower_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
     
     // update lower likelihoods
     SeqRegions* merged_two_lower_regions = NULL;
     SeqRegions* old_lower_regions = NULL;
-    other_next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->mergeTwoLowers(merged_two_lower_regions, other_next_node_distance, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob, cumulative_rate);
+    other_next_node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob)->mergeTwoLowers(merged_two_lower_regions, other_next_node_distance, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob);
     
     if (!merged_two_lower_regions || merged_two_lower_regions->size() == 0)
     {
-        handleNullNewRegions(node->neighbor, (this_node_distance <= 0 && other_next_node_distance <= 0), node_stack, update_blength, cumulative_rate, "Strange: None vector from non-zero distances in updatePartialLh() from child direction.");
+        handleNullNewRegions(node->neighbor, (this_node_distance <= 0 && other_next_node_distance <= 0), node_stack, update_blength, "Strange: None vector from non-zero distances in updatePartialLh() from child direction.");
     }
     else
     {
@@ -253,11 +253,11 @@ void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node
     {
         if (top_node->length > 0 || top_node == root)
         {
-            SeqRegions* new_total_lh_regions = top_node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, top_node == root, false);
+            SeqRegions* new_total_lh_regions = top_node->computeTotalLhAtNode(aln, model, params->threshold_prob, top_node == root, false);
             
             if (!new_total_lh_regions)
             {
-                handleNullNewRegions(top_node, (top_node->length <= 0), node_stack, update_blength, cumulative_rate, "Strange: None vector from non-zero distances in updatePartialLh() from child direction while doing overall likelihood.");
+                handleNullNewRegions(top_node, (top_node->length <= 0), node_stack, update_blength, "Strange: None vector from non-zero distances in updatePartialLh() from child direction while doing overall likelihood.");
             }
             else
                 replacePartialLH(top_node->total_lh, new_total_lh_regions);
@@ -269,12 +269,12 @@ void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node
     
     // update total mid-branches likelihood
     if (!update_blength && top_node->length > 0 && is_non_root)
-        updateMidBranchLh(top_node, parent_upper_regions, node_stack, update_blength, cumulative_rate);
+        updateMidBranchLh(top_node, parent_upper_regions, node_stack, update_blength);
     
     if (!update_blength)
     {
         // update likelihoods at parent node
-        if (top_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
+        if (top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
             node_stack.push(top_node->neighbor);
 
         // update likelihoods at sibling node
@@ -282,15 +282,15 @@ void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node
         if (is_non_root)
             parent_upper_regions->mergeUpperLower(new_upper_regions, top_node->length, *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob);
         else
-            new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln.num_states, model, this_node_distance);
+            new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob)->computeTotalLhAtRoot(aln.num_states, model, this_node_distance);
         
         if (!new_upper_regions || new_upper_regions->size() == 0)
         {
-            handleNullNewRegions(top_node, (top_node->length <= 0 && this_node_distance <= 0), node_stack, update_blength, cumulative_rate, "Strange: None vector from non-zero distances in updatePartialLh() from child direction, new_upper_regions.");
+            handleNullNewRegions(top_node, (top_node->length <= 0 && this_node_distance <= 0), node_stack, update_blength, "Strange: None vector from non-zero distances in updatePartialLh() from child direction, new_upper_regions.");
         }
         // update partiallh of other_next_node if the new one is different from the current one
         else
-            updateNewPartialIfDifferent(other_next_node, new_upper_regions, node_stack, cumulative_rate, seq_length);
+            updateNewPartialIfDifferent(other_next_node, new_upper_regions, node_stack, seq_length);
             
         // delete new_upper_regions
        if (new_upper_regions) delete new_upper_regions;
@@ -300,13 +300,13 @@ void Tree::updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node
     if (old_lower_regions) delete old_lower_regions;
 }
 
-void Tree::updatePartialLh(stack<Node*> &node_stack, RealNumType* cumulative_rate)
+void Tree::updatePartialLh(stack<Node*> &node_stack)
 {
-    (this->*updatePartialLhPointer)(node_stack, cumulative_rate);
+    (this->*updatePartialLhPointer)(node_stack);
 }
 
 template <const StateType num_states>
-void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumulative_rate)
+void Tree::updatePartialLhTemplate(stack<Node*> &node_stack)
 {
     const PositionType seq_length = aln.ref_seq.size();
     
@@ -325,26 +325,26 @@ void Tree::updatePartialLhTemplate(stack<Node*> &node_stack, RealNumType* cumula
         SeqRegions* parent_upper_regions = NULL;
         bool is_non_root = root != node->getTopNode();
         if (is_non_root)
-            parent_upper_regions = node->getTopNode()->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+            parent_upper_regions = node->getTopNode()->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
             
         // change in likelihoods is coming from parent node
         if (node->is_top)
         {
             ASSERT(is_non_root);
-            updatePartialLhFromParent(node, node_stack, parent_upper_regions, seq_length, cumulative_rate);
+            updatePartialLhFromParent(node, node_stack, parent_upper_regions, seq_length);
         }
         // otherwise, change in likelihoods is coming from a child.
         else
         {
-            updatePartialLhFromChildren(node, node_stack, parent_upper_regions, is_non_root,seq_length, cumulative_rate);
+            updatePartialLhFromChildren(node, node_stack, parent_upper_regions, is_non_root,seq_length);
         }
     }
 }
 
-void Tree::examineSamplePlacementMidBranch(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_mid_branch, RealNumType* cumulative_rate, TraversingNode& current_extended_node, const SeqRegions* const sample_regions)
+void Tree::examineSamplePlacementMidBranch(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_mid_branch, TraversingNode& current_extended_node, const SeqRegions* const sample_regions)
 {
     // compute the placement cost
-    lh_diff_mid_branch = calculateSamplePlacementCost(cumulative_rate, current_extended_node.node->mid_branch_lh, sample_regions, default_blength);
+    lh_diff_mid_branch = calculateSamplePlacementCost(current_extended_node.node->mid_branch_lh, sample_regions, default_blength);
     
     // record the best_lh_diff if lh_diff_mid_branch is greater than the best_lh_diff ever
     if (lh_diff_mid_branch > best_lh_diff)
@@ -356,10 +356,10 @@ void Tree::examineSamplePlacementMidBranch(Node* &selected_node, RealNumType &be
     }
 }
 
-void Tree::examineSamplePlacementAtNode(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, TraversingNode& current_extended_node, const SeqRegions* const sample_regions)
+void Tree::examineSamplePlacementAtNode(Node* &selected_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, TraversingNode& current_extended_node, const SeqRegions* const sample_regions)
 {
     // compute the placement cost
-    lh_diff_at_node = calculateSamplePlacementCost(cumulative_rate, current_extended_node.node->total_lh, sample_regions, default_blength);
+    lh_diff_at_node = calculateSamplePlacementCost(current_extended_node.node->total_lh, sample_regions, default_blength);
     
     // record the best_lh_diff if lh_diff_at_node is greater than the best_lh_diff ever
     if (lh_diff_at_node > best_lh_diff)
@@ -381,7 +381,7 @@ void Tree::examineSamplePlacementAtNode(Node* &selected_node, RealNumType &best_
         ++current_extended_node.failure_count;
 }
 
-void Tree::finetuneSamplePlacementAtNode(const Node* const selected_node, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate, const SeqRegions* const sample_regions)
+void Tree::finetuneSamplePlacementAtNode(const Node* const selected_node, RealNumType &best_down_lh_diff, Node* &best_child, const SeqRegions* const sample_regions)
 {
     // current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node to find out if the best placement is actually in any of the branches below the current node.
     Node* neighbor_node;
@@ -404,15 +404,15 @@ void Tree::finetuneSamplePlacementAtNode(const Node* const selected_node, RealNu
             // now try to place on the current branch below the best node, at an height above the mid-branch.
             RealNumType new_blength = node->length * 0.5;
             RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
-            SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-            SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+            SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+            SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob);
             SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh);
 
             // try to place new sample along the upper half of the current branch
             while (true)
             {
                 // compute the placement cost
-                RealNumType new_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, sample_regions, default_blength);
+                RealNumType new_lh_mid_branch = calculateSamplePlacementCost(mid_branch_regions, sample_regions, default_blength);
                 
                 // record new_best_lh_mid_branch
                 if (new_lh_mid_branch > new_best_lh_mid_branch)
@@ -435,7 +435,7 @@ void Tree::finetuneSamplePlacementAtNode(const Node* const selected_node, RealNu
             // delete mid_branch_regions
             delete mid_branch_regions;
             
-            //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
+            //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(node->mid_branch_lh, sample_regions, default_blength);
             
             // record new best_down_lh_diff
             if (new_best_lh_mid_branch > best_down_lh_diff)
@@ -447,7 +447,7 @@ void Tree::finetuneSamplePlacementAtNode(const Node* const selected_node, RealNu
     }
 }
 
-void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType* cumulative_rate)
+void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegions* sample_regions, Node* &selected_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child)
 {
     // init variables
     // output variables
@@ -483,7 +483,7 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
         // 1. try first placing as a descendant of the mid-branch point of the branch above the current node
         if (current_node != root && current_node->length > 0)
         {
-            examineSamplePlacementMidBranch(selected_node, best_lh_diff, is_mid_branch, lh_diff_mid_branch, cumulative_rate, current_extended_node, sample_regions);
+            examineSamplePlacementMidBranch(selected_node, best_lh_diff, is_mid_branch, lh_diff_mid_branch, current_extended_node, sample_regions);
         }
         // otherwise, don't consider mid-branch point
         else
@@ -492,7 +492,7 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
         // 2. try to place as descendant of the current node (this is skipped if the node has top branch length 0 and so is part of a polytomy).
         if (current_node == root || current_node->length > 0)
         {
-            examineSamplePlacementAtNode(selected_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, cumulative_rate, current_extended_node, sample_regions);
+            examineSamplePlacementAtNode(selected_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child, current_extended_node, sample_regions);
         }
         else
             lh_diff_at_node = current_extended_node.likelihood_diff;
@@ -518,17 +518,17 @@ void Tree::seekSamplePlacement(Node* start_node, const string &seq_name, SeqRegi
     // if best position so far is the descendant of a node -> explore further at its children
     if (!is_mid_branch)
     {
-        finetuneSamplePlacementAtNode(selected_node, best_down_lh_diff, best_child, cumulative_rate, sample_regions);
+        finetuneSamplePlacementAtNode(selected_node, best_down_lh_diff, best_child, sample_regions);
     }
 }
 
-void Tree::addStartingNodes(const Node* const node, Node* const other_child_node, RealNumType* cumulative_rate, const RealNumType threshold_prob, SeqRegions* &parent_upper_lr_regions, const RealNumType best_lh_diff, stack<UpdatingNode*> &node_stack)
+void Tree::addStartingNodes(const Node* const node, Node* const other_child_node, const RealNumType threshold_prob, SeqRegions* &parent_upper_lr_regions, const RealNumType best_lh_diff, stack<UpdatingNode*> &node_stack)
 {
     // node is not the root
     if (node != root)
     {
-        parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* other_child_node_regions = other_child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        SeqRegions* other_child_node_regions = other_child_node->getPartialLhAtNode(aln, model, threshold_prob);
        
         // add nodes (sibling and parent of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
         RealNumType branch_length = other_child_node->length;
@@ -548,10 +548,10 @@ void Tree::addStartingNodes(const Node* const node, Node* const other_child_node
             Node* grand_child_1 = other_child_node->next->neighbor;
             Node* grand_child_2 = other_child_node->next->next->neighbor;
             
-            SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_2->length);
+            SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, true, false, grand_child_2->length);
             node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0, true));
             
-            SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true, false, grand_child_1->length);
+            SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, true, false, grand_child_1->length);
             node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0, true));
         }
     }
@@ -559,7 +559,7 @@ void Tree::addStartingNodes(const Node* const node, Node* const other_child_node
 
 // NOTE: top_node != null <=> case when crawling up from child to parent
 // otherwise, top_node == null <=> case we are moving from a parent to a child
-bool Tree::examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, RealNumType* cumulative_rate, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node, SeqRegions* &bottom_regions)
+bool Tree::examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node, SeqRegions* &bottom_regions)
 {
     Node* at_node = top_node ? top_node: updating_node->node;
     SeqRegions* mid_branch_regions = NULL;
@@ -570,8 +570,8 @@ bool Tree::examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_
         if (top_node)
         {
             Node* other_child = updating_node->node->getOtherNextNode()->neighbor;
-            SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-            other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob);
+            other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob);
                                 
             // skip if bottom_regions is null (inconsistent)
             if (!bottom_regions)
@@ -583,14 +583,14 @@ bool Tree::examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_
             }
            
             // compute new mid-branch regions
-            SeqRegions* upper_lr_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* upper_lr_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             RealNumType mid_branch_length = top_node->length * 0.5;
             upper_lr_regions->mergeUpperLower(mid_branch_regions, mid_branch_length, *bottom_regions, mid_branch_length, aln, model, threshold_prob);
         }
         // recompute mid_branch_regions in case we are moving from a parent to a child
         else
         {
-            SeqRegions* lower_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* lower_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob);
             RealNumType mid_branch_length = updating_node->branch_length * 0.5;
             updating_node->incoming_regions->mergeUpperLower(mid_branch_regions, mid_branch_length, *lower_regions, mid_branch_length, aln, model, threshold_prob);
         }
@@ -612,9 +612,9 @@ bool Tree::examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_
     
     // compute the placement cost
     // if (search_subtree_placement)
-    lh_diff_mid_branch = calculateSubTreePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);
+    lh_diff_mid_branch = calculateSubTreePlacementCost(mid_branch_regions, subtree_regions, removed_blength);
     /*else
-        lh_diff_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);*/
+        lh_diff_mid_branch = calculateSamplePlacementCost( mid_branch_regions, subtree_regions, removed_blength);*/
     
     if (top_node && best_node == top_node) // only update in case when crawling up from child to parent
         best_up_lh_diff = lh_diff_mid_branch;
@@ -640,7 +640,7 @@ bool Tree::examineSubtreePlacementMidBranch(Node* &best_node, RealNumType &best_
 
 // NOTE: top_node != null <=> case when crawling up from child to parent
 // otherwise, top_node == null <=> case we are moving from a parent to a child
-bool Tree::examineSubTreePlacementAtNode(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, RealNumType* cumulative_rate, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node)
+bool Tree::examineSubTreePlacementAtNode(Node* &best_node, RealNumType &best_lh_diff, bool& is_mid_branch, RealNumType& lh_diff_at_node, RealNumType& lh_diff_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, UpdatingNode* const updating_node, const SeqRegions* const subtree_regions, const RealNumType threshold_prob, const RealNumType removed_blength, Node* const top_node)
 {
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -653,7 +653,7 @@ bool Tree::examineSubTreePlacementAtNode(Node* &best_node, RealNumType &best_lh_
         delete_at_node_regions = true;
         // get or recompute the lh regions at the current node position
         
-        SeqRegions* updating_node_partial = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* updating_node_partial = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob);
         if (top_node)
         {
             updating_node_partial->mergeUpperLower(at_node_regions, -1, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob);
@@ -681,9 +681,9 @@ bool Tree::examineSubTreePlacementAtNode(Node* &best_node, RealNumType &best_lh_
         at_node_regions = at_node->total_lh;
     
     //if (search_subtree_placement)
-    lh_diff_at_node = calculateSubTreePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);
+    lh_diff_at_node = calculateSubTreePlacementCost(at_node_regions, subtree_regions, removed_blength);
     /*else
-        lh_diff_at_node = calculateSamplePlacementCost(cumulative_rate, at_node_regions, subtree_regions, removed_blength);*/
+        lh_diff_at_node = calculateSamplePlacementCost(at_node_regions, subtree_regions, removed_blength);*/
     
     // if this position is better than the best position found so far -> record it
     if (lh_diff_at_node > best_lh_diff)
@@ -746,32 +746,32 @@ bool keepTraversing(const RealNumType& best_lh_diff, const RealNumType& lh_diff_
     return false;
 }
 
-void Tree::addChildSeekSubtreePlacement(Node* const child_1, Node* const child_2, const RealNumType& lh_diff_at_node, RealNumType* cumulative_rate, UpdatingNode* const updating_node, stack<UpdatingNode*>& node_stack, const RealNumType threshold_prob)
+void Tree::addChildSeekSubtreePlacement(Node* const child_1, Node* const child_2, const RealNumType& lh_diff_at_node, UpdatingNode* const updating_node, stack<UpdatingNode*>& node_stack, const RealNumType threshold_prob)
 {
     // add child_1 to node_stack
     SeqRegions* upper_lr_regions = NULL;
-    SeqRegions* lower_regions = child_2->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* lower_regions = child_2->getPartialLhAtNode(aln, model, threshold_prob);
     // get or recompute the upper left/right regions of the children node
     if (updating_node->need_updating)
         updating_node->incoming_regions->mergeUpperLower(upper_lr_regions, updating_node->branch_length, *lower_regions, child_2->length, aln, model, threshold_prob);
     else
     {
         if (child_1->neighbor->partial_lh)
-            upper_lr_regions = child_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            upper_lr_regions = child_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
     }
     // traverse to this child's subtree
     if (upper_lr_regions)
         node_stack.push(new UpdatingNode(child_1, upper_lr_regions, child_1->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
 }
 
-bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const other_child, SeqRegions* &parent_upper_lr_regions, SeqRegions* &bottom_regions, const RealNumType& lh_diff_at_node, RealNumType* cumulative_rate, UpdatingNode* const updating_node, std::stack<UpdatingNode*>& node_stack, const RealNumType threshold_prob)
+bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const other_child, SeqRegions* &parent_upper_lr_regions, SeqRegions* &bottom_regions, const RealNumType& lh_diff_at_node, UpdatingNode* const updating_node, std::stack<UpdatingNode*>& node_stack, const RealNumType threshold_prob)
 {
     // keep crawling up into parent and sibling node
     // case the node is not the root
     if (top_node != root)
     {
         // first pass the crawling down the other child (sibling)
-        parent_upper_lr_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        parent_upper_lr_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         
         SeqRegions* upper_lr_regions = NULL;
         // get or recompute the upper left/right regions of the sibling node
@@ -780,7 +780,7 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
         else
         {
             if (updating_node->node->partial_lh)
-                upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob);
         }
 
         // add sibling node to node_stack for traversing later; skip if upper_lr_regions is null (inconsistent)
@@ -803,8 +803,8 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
         {
             if (!bottom_regions)
             {
-                SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-                other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob, cumulative_rate);
+                SeqRegions* other_child_lower_regions = other_child->getPartialLhAtNode(aln, model, threshold_prob);
+                other_child_lower_regions->mergeTwoLowers(bottom_regions, other_child->length, *updating_node->incoming_regions, updating_node->branch_length, aln, model, threshold_prob);
                 
                 // skip if bottom_regions is null (inconsistent)
                 if (!bottom_regions)
@@ -819,7 +819,7 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
         else
         {
             if (bottom_regions) delete bottom_regions;
-            bottom_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            bottom_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob);
         }
         
         // add the parent node to node_stack for traversing later
@@ -834,7 +834,7 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
         if (updating_node->need_updating)
             upper_lr_regions = updating_node->incoming_regions->computeTotalLhAtRoot(aln.num_states, model, updating_node->branch_length);
         else
-            upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob);
         
         // add the sibling node to node_stack for traversing later
         node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
@@ -846,7 +846,7 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
     return true;
 }
 
-void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, bool short_range_search, Node* child_node, RealNumType &removed_blength, RealNumType* cumulative_rate, bool search_subtree_placement, SeqRegions* sample_regions)
+void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, bool &is_mid_branch, RealNumType &best_up_lh_diff, RealNumType &best_down_lh_diff, Node* &best_child, bool short_range_search, Node* child_node, RealNumType &removed_blength, bool search_subtree_placement, SeqRegions* sample_regions)
 {
     // init variables
     Node* node = child_node->neighbor->getTopNode();
@@ -880,10 +880,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
     /*if (search_subtree_placement)
     {*/
     // get the lower regions of the child node
-    subtree_regions = child_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    subtree_regions = child_node->getPartialLhAtNode(aln, model, threshold_prob);
     
     // add starting nodes to start seek placement for the subtree
-    addStartingNodes(node, other_child_node, cumulative_rate, threshold_prob, parent_upper_lr_regions, best_lh_diff, node_stack);
+    addStartingNodes(node, other_child_node, threshold_prob, parent_upper_lr_regions, best_lh_diff, node_stack);
     
     /*}
      // search a placement for a new sample
@@ -896,8 +896,8 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
         // node is not the root
         if (node != root)
         {
-            SeqRegions* lower_regions = new SeqRegions(node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
-            parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* lower_regions = new SeqRegions(node->getPartialLhAtNode(aln, model, threshold_prob), num_states);
+            parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             
             // add the parent node of the current node into node_stack for traversing to seek the placement for the new sample
             node_stack.push(new UpdatingNode(node->neighbor, lower_regions, node->length, false, down_lh, 0));
@@ -907,7 +907,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
         Node* neighbor_node;
         FOR_NEIGHBOR(node, neighbor_node)
         {
-            SeqRegions* upper_lr_regions = new SeqRegions(neighbor_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), num_states);
+            SeqRegions* upper_lr_regions = new SeqRegions(neighbor_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob), num_states);
             node_stack.push(new UpdatingNode(neighbor_node, upper_lr_regions, neighbor_node->length, false, down_lh, 0));
         }
      }*/
@@ -929,14 +929,14 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 if (updating_node->node != root && updating_node->node->neighbor->getTopNode() != node)
                 {
                     SeqRegions* bottom_regions = NULL;
-                    if (!examineSubtreePlacementMidBranch(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, NULL, bottom_regions)) continue;
+                    if (!examineSubtreePlacementMidBranch(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, NULL, bottom_regions)) continue;
                 }
                 // set the placement cost at the mid-branch position the most negative value if branch length is zero -> we can't place the subtree on that branch
                 else
                     lh_diff_mid_branch = MIN_NEGATIVE;
                     
                 // now try appending exactly at node
-                if(!examineSubTreePlacementAtNode(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, NULL)) continue;
+                if(!examineSubTreePlacementAtNode(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, NULL)) continue;
             }
             // set the placement cost at the current node position at the most negative value if branch length is zero -> we can't place the subtree on that branch
             else
@@ -951,10 +951,10 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                 Node* child_2 = child_1->neighbor->getOtherNextNode()->neighbor;
                 
                 // add child_1 to node_stack
-                addChildSeekSubtreePlacement(child_1, child_2, lh_diff_at_node, cumulative_rate, updating_node, node_stack, threshold_prob);
+                addChildSeekSubtreePlacement(child_1, child_2, lh_diff_at_node, updating_node, node_stack, threshold_prob);
                 
                 // add child_2 to node_stack
-                addChildSeekSubtreePlacement(child_2, child_1, lh_diff_at_node, cumulative_rate, updating_node, node_stack, threshold_prob);
+                addChildSeekSubtreePlacement(child_2, child_1, lh_diff_at_node, updating_node, node_stack, threshold_prob);
             }
         }
         // case when crawling up from child to parent
@@ -965,7 +965,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             // append directly at the node
             if (top_node->length > 0 || top_node == root)
             {
-                if (!examineSubTreePlacementAtNode(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, top_node)) continue;
+                if (!examineSubTreePlacementAtNode(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, top_node)) continue;
             }
             // if placement cost at new position gets worse -> restore to the old one
             else
@@ -976,7 +976,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             SeqRegions* bottom_regions = NULL;
             if (top_node->length > 0 && top_node != root)
             {
-                if (!examineSubtreePlacementMidBranch(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, cumulative_rate, updating_node, subtree_regions, threshold_prob, removed_blength, top_node, bottom_regions)) continue;
+                if (!examineSubtreePlacementMidBranch(best_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, top_node, bottom_regions)) continue;
             }
             // set the placement cost at the mid-branch position at the most negative value if branch length is zero -> we can't place the subtree on that branch
             // NHANLT: we actually don't need to do that since lh_diff_mid_branch will never be read
@@ -987,7 +987,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             // keep traversing upwards
             if (keepTraversing(best_lh_diff, lh_diff_at_node, strict_stop_seeking_placement_subtree, updating_node, failure_limit_subtree, thresh_log_lh_subtree))
             {
-                if(!addNeighborsSeekSubtreePlacement(top_node, other_child, parent_upper_lr_regions, bottom_regions, lh_diff_at_node, cumulative_rate, updating_node, node_stack, threshold_prob)) continue;
+                if(!addNeighborsSeekSubtreePlacement(top_node, other_child, parent_upper_lr_regions, bottom_regions, lh_diff_at_node, updating_node, node_stack, threshold_prob)) continue;
             }
             else
             {
@@ -1014,7 +1014,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             while (parent_node->length <= 0 && parent_node != root)
                 parent_node = parent_node->neighbor->getTopNode();
             
-            best_up_lh_diff = calculateSamplePlacementCost(cumulative_rate, parent_node->total_lh, subtree_regions, removed_blength);
+            best_up_lh_diff = calculateSamplePlacementCost(parent_node->total_lh, subtree_regions, removed_blength);
             child_node = best_node;
         }
         else
@@ -1041,15 +1041,15 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                     // now try to place on the current branch below the best node, at an height above the mid-branch.
                     RealNumType new_blength = node->length * 0.5;
                     RealNumType new_best_lh_mid_branch = MIN_NEGATIVE;
-                    SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                    SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
+                    SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+                    SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, params->threshold_prob);
                     SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh, aln.num_states);
 
                     // try to place new sample along the upper half of the current branch
                     while (true)
                     {
                         // compute the placement cost
-                        RealNumType new_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, removed_blength);
+                        RealNumType new_lh_mid_branch = calculateSamplePlacementCost(mid_branch_regions, subtree_regions, removed_blength);
                         
                         // record new_best_lh_mid_branch
                         if (new_lh_mid_branch > new_best_lh_mid_branch)
@@ -1069,7 +1069,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
                         upper_lr_regions->mergeUpperLower(mid_branch_regions, new_blength, lower_regions, node->length - new_blength, aln, model, params->threshold_prob);
                     }
                     
-                    //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(cumulative_rate, node->mid_branch_lh, sample_regions, default_blength);
+                    //RealNumType new_best_lh_mid_branch = calculateSamplePlacementCost(node->mid_branch_lh, sample_regions, default_blength);
                     
                     // record new best_down_lh_diff
                     if (new_best_lh_mid_branch > best_down_lh_diff)
@@ -1083,7 +1083,7 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
     }*/
 }
 
-void Tree::applySPR(Node* const subtree, Node* const best_node, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base)
+void Tree::applySPR(Node* const subtree, Node* const best_node, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff)
 {
     // remove subtree from the tree
     Node* parent_subtree = subtree->neighbor->getTopNode();
@@ -1123,7 +1123,7 @@ void Tree::applySPR(Node* const subtree, Node* const best_node, const bool is_mi
         sibling_subtree->length = 0;
 
         // recompute the total lh regions at sibling
-        sibling_subtree->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true);
+        sibling_subtree->computeTotalLhAtNode(aln, model, threshold_prob, true);
         
         // traverse downwards (to childrens of the sibling) to update their lh regions
         if (sibling_subtree->next)
@@ -1133,18 +1133,18 @@ void Tree::applySPR(Node* const subtree, Node* const best_node, const bool is_mi
             Node* next_node_2 = next_node_1->next;
             
             if (next_node_1->partial_lh) delete next_node_1->partial_lh;
-            SeqRegions* lower_reions = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* lower_reions = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             next_node_1->partial_lh = lower_reions->computeTotalLhAtRoot(num_states, model, next_node_2->length);
             
             if (next_node_2->partial_lh) delete next_node_2->partial_lh;
-            lower_reions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            lower_reions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             next_node_2->partial_lh = lower_reions->computeTotalLhAtRoot(num_states, model, next_node_1->length);
             
             // add children to node_stack for further traversing and updating likelihood regions
             stack<Node*> node_stack;
             node_stack.push(next_node_1->neighbor);
             node_stack.push(next_node_2->neighbor);
-            updatePartialLh(node_stack, cumulative_rate);
+            updatePartialLh(node_stack);
         }
     }
     // case when the sibling_subtree is non-root node
@@ -1157,44 +1157,44 @@ void Tree::applySPR(Node* const subtree, Node* const best_node, const bool is_mi
         stack<Node*> node_stack;
         node_stack.push(sibling_subtree);
         node_stack.push(sibling_subtree->neighbor);
-        updatePartialLh(node_stack, cumulative_rate);
+        updatePartialLh(node_stack);
     }
     
     // replace the node and re-update the vector lists
-    SeqRegions* subtree_lower_regions = subtree->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* subtree_lower_regions = subtree->getPartialLhAtNode(aln, model, threshold_prob);
     // try to place the new sample as a descendant of a mid-branch point
     if (is_mid_branch && best_node != root)
-        placeSubTreeMidBranch(best_node, subtree, subtree_lower_regions, branch_length, best_lh_diff, cumulative_rate);
+        placeSubTreeMidBranch(best_node, subtree, subtree_lower_regions, branch_length, best_lh_diff);
     // otherwise, best lk so far is for appending directly to existing node
     else
-        placeSubTreeAtNode(best_node, subtree, subtree_lower_regions, branch_length, best_lh_diff, cumulative_rate, cumulative_base);
+        placeSubTreeAtNode(best_node, subtree, subtree_lower_regions, branch_length, best_lh_diff);
 }
 
-void Tree::updateRegionsPlaceSubTree(Node* const subtree, Node* const next_node_1, Node* const sibling_node, Node* const new_internal_node, SeqRegions* &best_child_regions, const SeqRegions* const subtree_regions, const  SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_blength)
+void Tree::updateRegionsPlaceSubTree(Node* const subtree, Node* const next_node_1, Node* const sibling_node, Node* const new_internal_node, SeqRegions* &best_child_regions, const SeqRegions* const subtree_regions, const  SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType &best_blength)
 {
     // update next_node_1->partial_lh
     replacePartialLH(next_node_1->partial_lh, best_child_regions);
 
     // update new_internal_node->partial_lh
-    sibling_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *subtree_regions, best_blength, aln, model, params->threshold_prob, cumulative_rate);
+    sibling_node->getPartialLhAtNode(aln, model, params->threshold_prob)->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *subtree_regions, best_blength, aln, model, params->threshold_prob);
 }
 
-void Tree::updateRegionsPlaceSubTreeAbove(Node* const subtree, Node* const next_node_1, Node* const sibling_node, Node* const new_internal_node, SeqRegions* &best_child_regions, const SeqRegions* const subtree_regions, const  SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_length)
+void Tree::updateRegionsPlaceSubTreeAbove(Node* const subtree, Node* const next_node_1, Node* const sibling_node, Node* const new_internal_node, SeqRegions* &best_child_regions, const SeqRegions* const subtree_regions, const  SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType &best_length)
 {
-    sibling_node->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *subtree_regions, best_length, aln, model, params->threshold_prob, cumulative_rate);
+    sibling_node->getPartialLhAtNode(aln, model, params->threshold_prob)->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *subtree_regions, best_length, aln, model, params->threshold_prob);
     if (!new_internal_node->partial_lh)
     {
         outWarning("Problem, non lower likelihood while placing subtree -> set best branch length to min length");
         best_length = min_blength;
         subtree->length = best_length;
         subtree->neighbor->length = best_length;
-        lower_regions->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *subtree_regions, best_length, aln, model, params->threshold_prob, cumulative_rate);
+        lower_regions->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *subtree_regions, best_length, aln, model, params->threshold_prob);
     }
     upper_left_right_regions->mergeUpperLower(next_node_1->partial_lh, new_internal_node->length, *lower_regions, sibling_node->length, aln, model, params->threshold_prob);
 }
 
-template<void (Tree::*updateRegionsSubTree)(Node* const, Node* const, Node* const, Node* const, SeqRegions* &, const SeqRegions* const, const  SeqRegions* const, const SeqRegions* const, RealNumType*, RealNumType&)>
-void Tree::connectSubTree2Branch(const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const subtree, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, RealNumType &best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions, RealNumType* cumulative_rate)
+template<void (Tree::*updateRegionsSubTree)(Node* const, Node* const, Node* const, Node* const, SeqRegions* &, const SeqRegions* const, const  SeqRegions* const, const SeqRegions* const, RealNumType&)>
+void Tree::connectSubTree2Branch(const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const subtree, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, RealNumType &best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions)
 {
     const RealNumType threshold_prob = params->threshold_prob;
     
@@ -1227,12 +1227,12 @@ void Tree::connectSubTree2Branch(const SeqRegions* const subtree_regions, const 
     subtree->neighbor->length = best_blength;
             
     // update all likelihood regions
-    (this->*updateRegionsSubTree)(subtree, next_node_1, sibling_node, new_internal_node, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, cumulative_rate, best_blength);
+    (this->*updateRegionsSubTree)(subtree, next_node_1, sibling_node, new_internal_node, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, best_blength);
     
     upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *subtree_regions, best_blength, aln, model, threshold_prob);
     RealNumType mid_branch_length = new_internal_node->length * 0.5;
     upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, mid_branch_length, *new_internal_node->partial_lh, mid_branch_length, aln, model, threshold_prob);
-    new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
+    new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, new_internal_node == root);
     
     if (!new_internal_node->total_lh || new_internal_node->total_lh->size() == 0)
         outError("Problem, None vector when re-placing sample, placing subtree at mid-branch point");
@@ -1245,27 +1245,27 @@ void Tree::connectSubTree2Branch(const SeqRegions* const subtree_regions, const 
     node_stack.push(sibling_node);
     node_stack.push(subtree);
     node_stack.push(new_internal_node->neighbor);
-    updatePartialLh(node_stack, cumulative_rate);
+    updatePartialLh(node_stack);
 }
 
-void Tree::placeSubTreeMidBranch(Node* const selected_node, Node* const subtree, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh, RealNumType* cumulative_rate)
+void Tree::placeSubTreeMidBranch(Node* const selected_node, Node* const subtree, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh)
 {
     SeqRegions* best_child_regions = NULL;
     RealNumType threshold_prob = params->threshold_prob;
-    SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
     // RealNumType best_split = 0.5;
     RealNumType best_blength_split = selected_node->length * 0.5;
     RealNumType best_split_lh = new_lh;
     // RealNumType new_split = 0.25;
     best_child_regions = new SeqRegions(selected_node->mid_branch_lh);
-    SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
 
     // try different positions on the existing branch
-    bool found_new_split = tryShorterBranch<&Tree::calculateSubTreePlacementCost>(selected_node->length, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, cumulative_rate, best_split_lh, best_blength_split, new_branch_length, true);
+    bool found_new_split = tryShorterBranch<&Tree::calculateSubTreePlacementCost>(selected_node->length, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, best_split_lh, best_blength_split, new_branch_length, true);
     
     if (!found_new_split)
     {
-        found_new_split = tryShorterBranch<&Tree::calculateSubTreePlacementCost>(selected_node->length, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, cumulative_rate, best_split_lh, best_blength_split, new_branch_length, false);
+        found_new_split = tryShorterBranch<&Tree::calculateSubTreePlacementCost>(selected_node->length, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, best_split_lh, best_blength_split, new_branch_length, false);
         
         if (found_new_split)
             best_blength_split = selected_node->length - best_blength_split;
@@ -1273,17 +1273,17 @@ void Tree::placeSubTreeMidBranch(Node* const selected_node, Node* const subtree,
     
     // now try different lengths for the new branch
     RealNumType best_blength = new_branch_length;
-    estimateLengthNewBranch<&Tree::calculateSubTreePlacementCost>(best_split_lh, best_child_regions, subtree_regions, best_blength, cumulative_rate, max_blength, double_min_blength, (new_branch_length <= 0));
+    estimateLengthNewBranch<&Tree::calculateSubTreePlacementCost>(best_split_lh, best_child_regions, subtree_regions, best_blength, max_blength, double_min_blength, (new_branch_length <= 0));
     
     // attach subtree to the branch above the selected node
-    connectSubTree2Branch<&Tree::updateRegionsPlaceSubTree>(subtree_regions, NULL, subtree, selected_node, best_blength_split, selected_node->length - best_blength_split, best_blength, best_child_regions, upper_left_right_regions, cumulative_rate);
+    connectSubTree2Branch<&Tree::updateRegionsPlaceSubTree>(subtree_regions, NULL, subtree, selected_node, best_blength_split, selected_node->length - best_blength_split, best_blength, best_child_regions, upper_left_right_regions);
     
     // delete best_child_regions
     if (best_child_regions)
         delete best_child_regions;
 }
 
-void Tree::connectSubTree2Root(Node* const subtree, const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, SeqRegions* &best_parent_regions, RealNumType* cumulative_rate)
+void Tree::connectSubTree2Root(Node* const subtree, const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, SeqRegions* &best_parent_regions)
 {
     // re-use internal nodes
     Node* next_node_1 = subtree->neighbor;
@@ -1324,7 +1324,7 @@ void Tree::connectSubTree2Root(Node* const subtree, const SeqRegions* const subt
     replacePartialLH(new_root->partial_lh, best_parent_regions);
     if (new_root->mid_branch_lh) delete new_root->mid_branch_lh;
     new_root->mid_branch_lh = NULL;
-    new_root->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, true);
+    new_root->computeTotalLhAtNode(aln, model, params->threshold_prob, true);
     if (next_node_1->partial_lh) delete next_node_1->partial_lh;
     next_node_1->partial_lh = lower_regions->computeTotalLhAtRoot(aln.num_states, model, best_root_blength);
     if (next_node_2->partial_lh) delete next_node_2->partial_lh;
@@ -1340,10 +1340,10 @@ void Tree::connectSubTree2Root(Node* const subtree, const SeqRegions* const subt
     stack<Node*> node_stack;
     node_stack.push(sibling_node);
     node_stack.push(subtree);
-    updatePartialLh(node_stack, cumulative_rate);
+    updatePartialLh(node_stack);
 }
 
-void Tree::handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, RealNumType* cumulative_rate, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType &best_child_blength_split, SeqRegions* &best_child_regions)
+void Tree::handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, RealNumType &best_down_lh_diff, Node* &best_child, RealNumType &best_child_blength_split, SeqRegions* &best_child_regions)
 {
     // current node might be part of a polytomy (represented by 0 branch lengths) so we want to explore all the children of the current node to find out if the best placement is actually in any of the branches below the current node.
     stack<Node*> new_node_stack;
@@ -1368,14 +1368,14 @@ void Tree::handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegion
             // now try to place on the current branch below the best node, at an height above or equal to the mid-branch.
             // RealNumType tmp_best_lh_diff = MIN_NEGATIVE;
             SeqRegions* mid_branch_regions = new SeqRegions(node->mid_branch_lh);
-            SeqRegions* parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-            SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* parent_upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+            SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, threshold_prob);
             RealNumType new_branch_length_split = 0.5 * node->length;
             RealNumType tmp_lh_diff;
             
             while (true)
             {
-                tmp_lh_diff = calculateSubTreePlacementCost(cumulative_rate, mid_branch_regions, subtree_regions, new_branch_length);
+                tmp_lh_diff = calculateSubTreePlacementCost(mid_branch_regions, subtree_regions, new_branch_length);
                 
                 // if better placement found -> record it
                 if (tmp_lh_diff > best_down_lh_diff)
@@ -1403,7 +1403,7 @@ void Tree::handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegion
     }
 }
 
-void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh, RealNumType* cumulative_rate, vector< vector<PositionType> > &cumulative_base)
+void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, const SeqRegions* const subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh)
 {
     // dummy variables
     const StateType num_states = aln.num_states;
@@ -1419,18 +1419,18 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
     Node* best_child = NULL;
     
     // We first explore placement just below the best placement node for more fine-grained placement within its descendant branches (accounting for polytomies).
-    handlePolytomyPlaceSubTree(selected_node, subtree_regions, new_branch_length, cumulative_rate, best_down_lh_diff, best_child, best_child_blength_split, best_child_regions);
+    handlePolytomyPlaceSubTree(selected_node, subtree_regions, new_branch_length, best_down_lh_diff, best_child, best_child_blength_split, best_child_regions);
     
     // place the new sample as a descendant of an existing node
     if (best_child)
     {
-        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* lower_regions = best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        SeqRegions* lower_regions = best_child->getPartialLhAtNode(aln, model, threshold_prob);
         best_child_lh = best_down_lh_diff;
         best_child_blength_split = (best_child_blength_split == -1) ? (0.5 * best_child->length) : best_child_blength_split;
         
         // try with a shorter branch length
-        tryShorterBranch<&Tree::calculateSubTreePlacementCost>(best_child->length, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, cumulative_rate, best_child_lh, best_child_blength_split, new_branch_length, true);
+        tryShorterBranch<&Tree::calculateSubTreePlacementCost>(best_child->length, best_child_regions, subtree_regions, upper_left_right_regions, lower_regions, best_child_lh, best_child_blength_split, new_branch_length, true);
     }
     else
         best_child_lh = MIN_NEGATIVE;
@@ -1439,17 +1439,17 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
     RealNumType old_root_lh = MIN_NEGATIVE;
     if (root == selected_node)
     {
-        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        old_root_lh = lower_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
+        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
+        old_root_lh = lower_regions->computeAbsoluteLhAtRoot(num_states, model);
         
         // merge 2 lower vector into one
-        best_parent_lh = lower_regions->mergeTwoLowers(best_parent_regions, default_blength, *subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate, true);
+        best_parent_lh = lower_regions->mergeTwoLowers(best_parent_regions, default_blength, *subtree_regions, new_branch_length, aln, model, threshold_prob, true);
         
-        best_parent_lh += best_parent_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
+        best_parent_lh += best_parent_regions->computeAbsoluteLhAtRoot(num_states, model);
         
         // Try shorter branch lengths at root
         best_root_blength = default_blength;
-        tryShorterBranchAtRoot(subtree_regions, lower_regions, best_parent_regions, best_root_blength, best_parent_lh, cumulative_rate, cumulative_base, new_branch_length);
+        tryShorterBranchAtRoot(subtree_regions, lower_regions, best_parent_regions, best_root_blength, best_parent_lh, new_branch_length);
         
         // update best_parent_lh (taking into account old_root_lh)
         best_parent_lh -= old_root_lh;
@@ -1458,14 +1458,14 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
     // try to append just above node
     else
     {
-        SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
         best_parent_regions = new SeqRegions(selected_node->mid_branch_lh);
-        best_parent_lh = calculateSubTreePlacementCost(cumulative_rate, best_parent_regions, subtree_regions, new_branch_length);
+        best_parent_lh = calculateSubTreePlacementCost(best_parent_regions, subtree_regions, new_branch_length);
         best_parent_blength_split = 0.5 * selected_node->length;
         
         // try with a shorter split
-        tryShorterBranch<&Tree::calculateSubTreePlacementCost>(selected_node->length, best_parent_regions, subtree_regions, upper_left_right_regions, lower_regions, cumulative_rate, best_parent_lh, best_parent_blength_split, new_branch_length, false);
+        tryShorterBranch<&Tree::calculateSubTreePlacementCost>(selected_node->length, best_parent_regions, subtree_regions, upper_left_right_regions, lower_regions, best_parent_lh, best_parent_blength_split, new_branch_length, false);
     }
     
     // if the best placement is below the selected_node => add an internal node below the selected_node
@@ -1477,19 +1477,19 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
     {
         ASSERT(best_child);
         
-        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         
         // now try different lengths for the new branch
         RealNumType best_length = new_branch_length;
-        estimateLengthNewBranch<&Tree::calculateSubTreePlacementCost>(best_child_lh, best_child_regions, subtree_regions, best_length, cumulative_rate, max_blength, double_min_blength, (new_branch_length <= 0));
+        estimateLengthNewBranch<&Tree::calculateSubTreePlacementCost>(best_child_lh, best_child_regions, subtree_regions, best_length, max_blength, double_min_blength, (new_branch_length <= 0));
         
         // attach subtree to the phylogenetic tree (below the selected_node ~ above the child node)
-        connectSubTree2Branch<&Tree::updateRegionsPlaceSubTree>(subtree_regions, NULL, subtree, best_child, best_child_blength_split, best_child->length - best_child_blength_split, best_length, best_child_regions, upper_left_right_regions, cumulative_rate);
+        connectSubTree2Branch<&Tree::updateRegionsPlaceSubTree>(subtree_regions, NULL, subtree, best_child, best_child_blength_split, best_child->length - best_child_blength_split, best_length, best_child_regions, upper_left_right_regions);
     }
     // otherwise, add new parent to the selected_node
     else
     {
-        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
         
         // new parent is actually part of a polytomy since best placement is exactly at the node
         if (new_lh >= best_parent_lh)
@@ -1501,7 +1501,7 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
             best_parent_regions = NULL;
             
             if (selected_node == root)
-                lower_regions->mergeTwoLowers(best_parent_regions, -1, *subtree_regions, new_branch_length, aln, model, threshold_prob, cumulative_rate);
+                lower_regions->mergeTwoLowers(best_parent_regions, -1, *subtree_regions, new_branch_length, aln, model, threshold_prob);
             else
                 best_parent_regions = new SeqRegions(selected_node->total_lh);
         }
@@ -1514,22 +1514,22 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
             
             // estimate the new branch length
             RealNumType best_length2 = new_branch_length;
-            estimateLengthNewBranchAtRoot(subtree_regions, lower_regions, best_parent_regions, best_length2, best_parent_lh, cumulative_rate, cumulative_base, best_root_blength, double_min_blength, new_branch_length <= 0);
+            estimateLengthNewBranchAtRoot(subtree_regions, lower_regions, best_parent_regions, best_length2, best_parent_lh, best_root_blength, double_min_blength, new_branch_length <= 0);
             
             // update best_parent_lh (taking into account old_root_lh)
             best_parent_lh -= old_root_lh;
             
             // attach subtree to the phylogenetic tree (exactly at the seleted root node)
-            connectSubTree2Root(subtree, subtree_regions, lower_regions, selected_node, best_root_blength, best_length2, best_parent_regions, cumulative_rate);
+            connectSubTree2Root(subtree, subtree_regions, lower_regions, selected_node, best_root_blength, best_length2, best_parent_regions);
         }
         //add parent to non-root node (place subtree exactly at the selected non-root node)
         else
         {
-            SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             
             // estimate the length for the new branch
             RealNumType best_length = new_branch_length;
-            estimateLengthNewBranch<&Tree::calculateSubTreePlacementCost>(best_parent_lh, best_parent_regions, subtree_regions, best_length, cumulative_rate, new_branch_length * 10, double_min_blength, (new_branch_length <= 0));
+            estimateLengthNewBranch<&Tree::calculateSubTreePlacementCost>(best_parent_lh, best_parent_regions, subtree_regions, best_length, new_branch_length * 10, double_min_blength, (new_branch_length <= 0));
             
             // attach subtree to the phylogenetic tree (exactly at the selected non-root node)
             RealNumType down_distance = best_parent_blength_split;
@@ -1546,7 +1546,7 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
                 selected_node->mid_branch_lh = NULL;
             }
             
-            connectSubTree2Branch<&Tree::updateRegionsPlaceSubTreeAbove>(subtree_regions, lower_regions, subtree, selected_node, top_distance, down_distance, best_length, best_child_regions, upper_left_right_regions, cumulative_rate);
+            connectSubTree2Branch<&Tree::updateRegionsPlaceSubTreeAbove>(subtree_regions, lower_regions, subtree, selected_node, top_distance, down_distance, best_length, best_child_regions, upper_left_right_regions);
         }
     }
     
@@ -1557,8 +1557,8 @@ void Tree::placeSubTreeAtNode(Node* const selected_node, Node* const subtree, co
         delete best_child_regions;
 }
 
-template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqRegions* const, const SeqRegions* const, RealNumType)>
-bool Tree::tryShorterBranch(const RealNumType current_blength, SeqRegions* &best_child_regions, const SeqRegions* const sample, const SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType* cumulative_rate, RealNumType &best_split_lh, RealNumType &best_branch_length_split, const RealNumType new_branch_length, const bool try_first_branch)
+template <RealNumType(Tree::*calculatePlacementCost)(const SeqRegions* const, const SeqRegions* const, RealNumType)>
+bool Tree::tryShorterBranch(const RealNumType current_blength, SeqRegions* &best_child_regions, const SeqRegions* const sample, const SeqRegions* const upper_left_right_regions, const SeqRegions* const lower_regions, RealNumType &best_split_lh, RealNumType &best_branch_length_split, const RealNumType new_branch_length, const bool try_first_branch)
 {
     SeqRegions* new_parent_regions = NULL;
     bool found_new_split = false;
@@ -1573,7 +1573,7 @@ bool Tree::tryShorterBranch(const RealNumType current_blength, SeqRegions* &best
             upper_left_right_regions->mergeUpperLower(new_parent_regions, current_blength - new_branch_length_split, *lower_regions, new_branch_length_split, aln, model, params->threshold_prob);
         
         // calculate placement_cost
-        RealNumType placement_cost = (this->*calculatePlacementCost)(cumulative_rate, new_parent_regions, sample, new_branch_length);
+        RealNumType placement_cost = (this->*calculatePlacementCost)(new_parent_regions, sample, new_branch_length);
         
         if (placement_cost > best_split_lh)
         {
@@ -1594,8 +1594,8 @@ bool Tree::tryShorterBranch(const RealNumType current_blength, SeqRegions* &best
     return found_new_split;
 }
 
-template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqRegions* const, const SeqRegions* const, RealNumType)>
-bool Tree::tryShorterNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, RealNumType* cumulative_rate, const RealNumType short_blength_thresh)
+template <RealNumType(Tree::*calculatePlacementCost)(const SeqRegions* const, const SeqRegions* const, RealNumType)>
+bool Tree::tryShorterNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, const RealNumType short_blength_thresh)
 {
     bool found_new_split = false;
     RealNumType new_blength = best_blength;
@@ -1604,7 +1604,7 @@ bool Tree::tryShorterNewBranch(const SeqRegions* const best_child_regions, const
     while (best_blength > short_blength_thresh)
     {
         new_blength *= 0.5;
-        placement_cost = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, new_blength);
+        placement_cost = (this->*calculatePlacementCost)(best_child_regions, sample, new_blength);
         
         if (placement_cost > new_branch_lh)
         {
@@ -1619,8 +1619,8 @@ bool Tree::tryShorterNewBranch(const SeqRegions* const best_child_regions, const
     return found_new_split;
 }
 
-template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqRegions* const, const SeqRegions* const, RealNumType)>
-void Tree::tryLongerNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, RealNumType* cumulative_rate, const RealNumType long_blength_thresh)
+template <RealNumType(Tree::*calculatePlacementCost)(const SeqRegions* const, const SeqRegions* const, RealNumType)>
+void Tree::tryLongerNewBranch(const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType &new_branch_lh, const RealNumType long_blength_thresh)
 {
     RealNumType new_blength = best_blength;
     RealNumType placement_cost;
@@ -1628,7 +1628,7 @@ void Tree::tryLongerNewBranch(const SeqRegions* const best_child_regions, const 
     while (best_blength < long_blength_thresh)
     {
         new_blength += new_blength;
-        placement_cost = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, new_blength);
+        placement_cost = (this->*calculatePlacementCost)(best_child_regions, sample, new_blength);
         if (placement_cost > new_branch_lh)
         {
             new_branch_lh = placement_cost;
@@ -1639,8 +1639,8 @@ void Tree::tryLongerNewBranch(const SeqRegions* const best_child_regions, const 
     }
 }
 
-template <RealNumType(Tree::*calculatePlacementCost)(RealNumType* , const SeqRegions* const, const SeqRegions* const, RealNumType)>
-void Tree::estimateLengthNewBranch(const RealNumType best_split_lh, const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, RealNumType* cumulative_rate, const RealNumType long_blength_thresh, const RealNumType short_blength_thresh, const bool optional_check)
+template <RealNumType(Tree::*calculatePlacementCost)(const SeqRegions* const, const SeqRegions* const, RealNumType)>
+void Tree::estimateLengthNewBranch(const RealNumType best_split_lh, const SeqRegions* const best_child_regions, const SeqRegions* const sample, RealNumType &best_blength, const RealNumType long_blength_thresh, const RealNumType short_blength_thresh, const bool optional_check)
 {
     RealNumType new_branch_lh = best_split_lh;
     
@@ -1648,26 +1648,26 @@ void Tree::estimateLengthNewBranch(const RealNumType best_split_lh, const SeqReg
     if (optional_check)
     {
         best_blength = min_blength;
-        new_branch_lh = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, best_blength);
+        new_branch_lh = (this->*calculatePlacementCost)(best_child_regions, sample, best_blength);
     }
     
     // try shorter lengths for the new branch
-    bool found_new_blength = tryShorterNewBranch<calculatePlacementCost>(best_child_regions, sample, best_blength, new_branch_lh, cumulative_rate, min_blength);
+    bool found_new_blength = tryShorterNewBranch<calculatePlacementCost>(best_child_regions, sample, best_blength, new_branch_lh, min_blength);
     
     // try longer lengths for the new branch
     if (optional_check || !found_new_blength) // (best_blength > 0.7 * default_blength)
-        tryLongerNewBranch<calculatePlacementCost>(best_child_regions, sample, best_blength, new_branch_lh, cumulative_rate, long_blength_thresh);
+        tryLongerNewBranch<calculatePlacementCost>(best_child_regions, sample, best_blength, new_branch_lh, long_blength_thresh);
     
     // try zero-length for the new branch
     if (best_blength < short_blength_thresh)
     {
-        RealNumType zero_branch_lh = (this->*calculatePlacementCost)(cumulative_rate, best_child_regions, sample, -1);
+        RealNumType zero_branch_lh = (this->*calculatePlacementCost)(best_child_regions, sample, -1);
         if (zero_branch_lh > new_branch_lh)
             best_blength = -1;
     }
 }
 
-void Tree::connectNewSample2Branch(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, const RealNumType best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions, RealNumType* cumulative_rate)
+void Tree::connectNewSample2Branch(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, const RealNumType best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions)
 {
     const RealNumType threshold_prob = params->threshold_prob;
     
@@ -1700,50 +1700,50 @@ void Tree::connectNewSample2Branch(SeqRegions* const sample, const std::string &
     next_node_1->partial_lh = best_child_regions;
     best_child_regions = NULL;
     upper_left_right_regions->mergeUpperLower(next_node_2->partial_lh, new_internal_node->length, *sample, best_blength, aln, model, threshold_prob);
-    sibling_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *sample, best_blength, aln, model, threshold_prob, cumulative_rate);
+    sibling_node->getPartialLhAtNode(aln, model, threshold_prob)->mergeTwoLowers(new_internal_node->partial_lh, sibling_node->length, *sample, best_blength, aln, model, threshold_prob);
     RealNumType half_branch_length = new_internal_node->length * 0.5;
     upper_left_right_regions->mergeUpperLower(new_internal_node->mid_branch_lh, half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln, model, threshold_prob);
-    new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_internal_node == root);
+    new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, new_internal_node == root);
     
     if (!new_internal_node->total_lh || new_internal_node->total_lh->empty())
         outError("Problem, None vector when placing sample, below node");
     
     if (best_blength > 0)
     {
-        new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_sample_node == root);
+        new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, new_sample_node == root);
         RealNumType half_branch_length = new_sample_node->length * 0.5;
-        next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
+        next_node_1->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
     }
     
     // update pseudo_count
-    model.updatePesudoCount(aln, *next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate), *sample);
+    model.updatePesudoCount(aln, *next_node_1->getPartialLhAtNode(aln, model, threshold_prob), *sample);
 
     // iteratively traverse the tree to update partials from the current node
     stack<Node*> node_stack;
     node_stack.push(sibling_node);
     node_stack.push(new_internal_node->neighbor);
-    updatePartialLh(node_stack, cumulative_rate);
+    updatePartialLh(node_stack);
 }
 
-void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, RealNumType* cumulative_rate)
+void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff)
 {
     // dummy variables
     const RealNumType threshold_prob = params->threshold_prob;
     SeqRegions* best_child_regions = NULL;
     
-    SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
     RealNumType best_split_lh = best_lh_diff;
     RealNumType best_branch_length_split = 0.5 * selected_node->length;
     best_child_regions = new SeqRegions(selected_node->mid_branch_lh);
-    SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
     
     // try different positions on the existing branch
-    bool found_new_split = tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node->length, best_child_regions, sample, upper_left_right_regions, lower_regions, cumulative_rate, best_split_lh, best_branch_length_split, default_blength, true);
+    bool found_new_split = tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node->length, best_child_regions, sample, upper_left_right_regions, lower_regions, best_split_lh, best_branch_length_split, default_blength, true);
     
     if (!found_new_split)
     {
         // try on the second branch
-        found_new_split = tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node->length, best_child_regions, sample, upper_left_right_regions, lower_regions, cumulative_rate, best_split_lh, best_branch_length_split, default_blength, false);
+        found_new_split = tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node->length, best_child_regions, sample, upper_left_right_regions, lower_regions, best_split_lh, best_branch_length_split, default_blength, false);
         
         if (found_new_split)
             best_branch_length_split = selected_node->length - best_branch_length_split;
@@ -1751,17 +1751,17 @@ void Tree::placeNewSampleMidBranch(Node* const selected_node, SeqRegions* const 
     
     // now try different lengths for the new branch
     RealNumType best_blength = default_blength;
-    estimateLengthNewBranch<&Tree::calculateSamplePlacementCost>(best_split_lh, best_child_regions, sample, best_blength, cumulative_rate, max_blength, min_blength, false);
+    estimateLengthNewBranch<&Tree::calculateSamplePlacementCost>(best_split_lh, best_child_regions, sample, best_blength, max_blength, min_blength, false);
     
     // create new internal node and append child to it
-    connectNewSample2Branch(sample, seq_name, selected_node, best_branch_length_split, selected_node->length - best_branch_length_split, best_blength, best_child_regions, upper_left_right_regions, cumulative_rate);
+    connectNewSample2Branch(sample, seq_name, selected_node, best_branch_length_split, selected_node->length - best_branch_length_split, best_blength, best_child_regions, upper_left_right_regions);
     
     // delete best_parent_regions and best_child_regions
     if (best_child_regions)
         delete best_child_regions;
 }
 
-void Tree::tryShorterBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_root_blength, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength)
+void Tree::tryShorterBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_root_blength, RealNumType &best_parent_lh, const RealNumType fixed_blength)
 {
     SeqRegions* merged_root_sample_regions = NULL;
     RealNumType new_blength = 0.5 * best_root_blength;
@@ -1770,8 +1770,8 @@ void Tree::tryShorterBranchAtRoot(const SeqRegions* const sample, const SeqRegio
     while (new_blength > min_blength)
     {
         // merge 2 lower vector into one
-        new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, *sample, fixed_blength, aln, model, params->threshold_prob, cumulative_rate, true);
-        new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        new_root_lh = lower_regions->mergeTwoLowers(merged_root_sample_regions, new_blength, *sample, fixed_blength, aln, model, params->threshold_prob, true);
+        new_root_lh += merged_root_sample_regions->computeAbsoluteLhAtRoot(aln.num_states, model);
         
         if (new_root_lh > best_parent_lh)
         {
@@ -1789,7 +1789,7 @@ void Tree::tryShorterBranchAtRoot(const SeqRegions* const sample, const SeqRegio
     if (merged_root_sample_regions) delete merged_root_sample_regions;
 }
 
-bool Tree::tryShorterNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength)
+bool Tree::tryShorterNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, const RealNumType fixed_blength)
 {
     SeqRegions* new_root_lower_regions = NULL;
     bool found_new_split = false;
@@ -1800,8 +1800,8 @@ bool Tree::tryShorterNewBranchAtRoot(const SeqRegions* const sample, const SeqRe
     {
         new_blength *= 0.5;
         
-        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model, params->threshold_prob, cumulative_rate, true);
-        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model, params->threshold_prob, true);
+        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model);
         
         if (new_root_lh > best_parent_lh)
         {
@@ -1821,7 +1821,7 @@ bool Tree::tryShorterNewBranchAtRoot(const SeqRegions* const sample, const SeqRe
     return found_new_split;
 }
 
-bool Tree::tryLongerNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength)
+bool Tree::tryLongerNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, const RealNumType fixed_blength)
 {
     SeqRegions* new_root_lower_regions = NULL;
     bool found_new_split = false;
@@ -1832,8 +1832,8 @@ bool Tree::tryLongerNewBranchAtRoot(const SeqRegions* const sample, const SeqReg
     {
         new_blength += new_blength;
         
-        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model, params->threshold_prob, cumulative_rate, true);
-        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model, params->threshold_prob, true);
+        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model);
         
         if (new_root_lh > best_parent_lh)
         {
@@ -1853,25 +1853,25 @@ bool Tree::tryLongerNewBranchAtRoot(const SeqRegions* const sample, const SeqReg
     return found_new_split;
 }
 
-void Tree::estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const RealNumType fixed_blength, const RealNumType short_blength_thresh, const bool optional_check)
+void Tree::estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const SeqRegions* const lower_regions, SeqRegions* &best_parent_regions, RealNumType &best_length, RealNumType &best_parent_lh, const RealNumType fixed_blength, const RealNumType short_blength_thresh, const bool optional_check)
 {
     if (optional_check)
     {
         SeqRegions* new_root_lower_regions = NULL;
         best_length = min_blength;
-        best_parent_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, best_length, aln, model, params->threshold_prob, cumulative_rate, true);
+        best_parent_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, best_length, aln, model, params->threshold_prob, true);
         
-        best_parent_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        best_parent_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model);
         
         replacePartialLH(best_parent_regions, new_root_lower_regions);
     }
     
     // try shorter lengths
-    bool found_new_split = tryShorterNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length, best_parent_lh, cumulative_rate, cumulative_base, fixed_blength);
+    bool found_new_split = tryShorterNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length, best_parent_lh, fixed_blength);
     
     // try longer lengths
     if (optional_check || !found_new_split)
-        tryLongerNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length, best_parent_lh, cumulative_rate, cumulative_base, fixed_blength);
+        tryLongerNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length, best_parent_lh, fixed_blength);
     
     
     // try with length zero
@@ -1879,8 +1879,8 @@ void Tree::estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const S
     {
         SeqRegions* new_root_lower_regions = NULL;
         
-        RealNumType new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, -1, aln, model, params->threshold_prob, cumulative_rate, true);
-        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model, cumulative_base);
+        RealNumType new_root_lh = lower_regions->mergeTwoLowers(new_root_lower_regions, fixed_blength, *sample, -1, aln, model, params->threshold_prob, true);
+        new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot(aln.num_states, model);
         
         if (new_root_lh > best_parent_lh)
         {
@@ -1893,7 +1893,7 @@ void Tree::estimateLengthNewBranchAtRoot(const SeqRegions* const sample, const S
     }
 }
 
-void Tree::connectNewSample2Root(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, SeqRegions* &best_parent_regions, RealNumType* cumulative_rate)
+void Tree::connectNewSample2Root(SeqRegions* const sample, const std::string &seq_name, Node* const sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, SeqRegions* &best_parent_regions)
 {
     const RealNumType threshold_prob = params->threshold_prob;
     
@@ -1930,9 +1930,9 @@ void Tree::connectNewSample2Root(SeqRegions* const sample, const std::string &se
     
     new_root->partial_lh = best_parent_regions;
     best_parent_regions = NULL;
-    new_root->total_lh = new_root->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, true);
+    new_root->total_lh = new_root->computeTotalLhAtNode(aln, model, threshold_prob, true);
 
-    next_node_1->partial_lh = sibling_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln.num_states, model, best_root_blength);
+    next_node_1->partial_lh = sibling_node->getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(aln.num_states, model, best_root_blength);
     next_node_2->partial_lh = sample->computeTotalLhAtRoot(aln.num_states, model, best_length2);
     
     new_sample_node->partial_lh = sample;
@@ -1949,9 +1949,9 @@ void Tree::connectNewSample2Root(SeqRegions* const sample, const std::string &se
     
     if (best_length2 > 0)
     {
-        new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, new_sample_node == root);
+        new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, new_sample_node == root);
         RealNumType half_branch_length = new_sample_node->length * 0.5;
-        next_node_1->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
+        next_node_1->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
         
         /*if best_length2>=2*min_blengthForMidNode:
             createFurtherMidNodes(new_root.children[1],new_root.probVectUpLeft)*/
@@ -1963,10 +1963,10 @@ void Tree::connectNewSample2Root(SeqRegions* const sample, const std::string &se
     // iteratively traverse the tree to update partials from the current node
     stack<Node*> node_stack;
     node_stack.push(sibling_node);
-    updatePartialLh(node_stack, cumulative_rate);
+    updatePartialLh(node_stack);
 }
 
-void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, const RealNumType best_up_lh_diff, const RealNumType best_down_lh_diff, Node* const best_child, RealNumType* cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base)
+void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sample, const std::string &seq_name, const RealNumType best_lh_diff, const RealNumType best_up_lh_diff, const RealNumType best_down_lh_diff, Node* const best_child)
 {
     // dummy variables
     RealNumType best_child_lh = MIN_NEGATIVE;
@@ -1984,31 +1984,31 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
     {
         best_child_lh = best_down_lh_diff;
         best_child_blength_split = 0.5 * best_child->length;
-        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* lower_regions = best_child->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        SeqRegions* lower_regions = best_child->getPartialLhAtNode(aln, model, threshold_prob);
         // if (best_child_regions) delete best_child_regions;
         best_child_regions = new SeqRegions(best_child->mid_branch_lh);
         
         // try a shorter split
-        tryShorterBranch<&Tree::calculateSamplePlacementCost>(best_child->length, best_child_regions, sample, upper_left_right_regions, lower_regions, cumulative_rate, best_child_lh, best_child_blength_split, default_blength, true);
+        tryShorterBranch<&Tree::calculateSamplePlacementCost>(best_child->length, best_child_regions, sample, upper_left_right_regions, lower_regions, best_child_lh, best_child_blength_split, default_blength, true);
     }
     
     // if node is root, try to place as sibling of the current root.
     RealNumType old_root_lh = MIN_NEGATIVE;
     if (root == selected_node)
     {
-        old_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
-        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        old_root_lh = selected_node->getPartialLhAtNode(aln, model, threshold_prob)->computeAbsoluteLhAtRoot(num_states, model);
+        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
         
         // merge 2 lower vector into one
-        RealNumType new_root_lh = lower_regions->mergeTwoLowers(best_parent_regions, default_blength, *sample, default_blength, aln, model, threshold_prob, cumulative_rate, true);
+        RealNumType new_root_lh = lower_regions->mergeTwoLowers(best_parent_regions, default_blength, *sample, default_blength, aln, model, threshold_prob, true);
         
-        new_root_lh += best_parent_regions->computeAbsoluteLhAtRoot(num_states, model, cumulative_base);
+        new_root_lh += best_parent_regions->computeAbsoluteLhAtRoot(num_states, model);
         best_parent_lh = new_root_lh;
         
         // try shorter branch lengths
         best_root_blength = default_blength;
-        tryShorterBranchAtRoot(sample, lower_regions, best_parent_regions, best_root_blength, best_parent_lh, cumulative_rate, cumulative_base, default_blength);
+        tryShorterBranchAtRoot(sample, lower_regions, best_parent_regions, best_root_blength, best_parent_lh, default_blength);
         
         // update best_parent_lh (taking into account old_root_lh)
         best_parent_lh -= old_root_lh;
@@ -2020,13 +2020,13 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
         // RealNumType best_split_lh = best_up_lh_diff;
         best_parent_lh = best_up_lh_diff;
         best_parent_blength_split = 0.5 * selected_node->length;
-        SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        SeqRegions* lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
         // if (best_parent_regions) delete best_parent_regions;
         best_parent_regions = new SeqRegions(selected_node->mid_branch_lh);
         
         // try a shorter split
-        tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node->length, best_parent_regions, sample, upper_left_right_regions, lower_regions, cumulative_rate, best_parent_lh, best_parent_blength_split, default_blength, false);
+        tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node->length, best_parent_regions, sample, upper_left_right_regions, lower_regions, best_parent_lh, best_parent_blength_split, default_blength, false);
     }
     
     // if the best placement is below the selected_node => add an internal node below the selected_node
@@ -2034,14 +2034,14 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
     {
         ASSERT(best_child);
         
-        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* upper_left_right_regions = best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         
         // Estimate the length for the new branch
         RealNumType best_length = default_blength;
-        estimateLengthNewBranch<&Tree::calculateSamplePlacementCost>(best_child_lh, best_child_regions, sample, best_length, cumulative_rate, max_blength, min_blength, false);
+        estimateLengthNewBranch<&Tree::calculateSamplePlacementCost>(best_child_lh, best_child_regions, sample, best_length, max_blength, min_blength, false);
         
         // create new internal node and append child to it
-        connectNewSample2Branch(sample, seq_name, best_child, best_child_blength_split, best_child->length - best_child_blength_split, best_length, best_child_regions, upper_left_right_regions, cumulative_rate);
+        connectNewSample2Branch(sample, seq_name, best_child, best_child_blength_split, best_child->length - best_child_blength_split, best_length, best_child_regions, upper_left_right_regions);
     }
     // otherwise, add new parent to the selected_node
     else
@@ -2056,7 +2056,7 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
             best_parent_regions = NULL;
             
             if (selected_node == root)
-                selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeTwoLowers(best_parent_regions, -1, *sample, default_blength, aln, model, threshold_prob, cumulative_rate);
+                selected_node->getPartialLhAtNode(aln, model, threshold_prob)->mergeTwoLowers(best_parent_regions, -1, *sample, default_blength, aln, model, threshold_prob);
             else
                 best_parent_regions = new SeqRegions(selected_node->total_lh);
         }
@@ -2067,25 +2067,25 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
             // now try different lengths for right branch
             best_parent_lh += old_root_lh;
             RealNumType best_length2 = default_blength;
-            const SeqRegions* const lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            const SeqRegions* const lower_regions = selected_node->getPartialLhAtNode(aln, model, threshold_prob);
             
-            estimateLengthNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length2, best_parent_lh, cumulative_rate, cumulative_base, best_root_blength, min_blength, false);
+            estimateLengthNewBranchAtRoot(sample, lower_regions, best_parent_regions, best_length2, best_parent_lh, best_root_blength, min_blength, false);
             
             // update best_parent_lh (taking into account old_root_lh)
             best_parent_lh -= old_root_lh;
             
             // add new sample to a new root
-            connectNewSample2Root(sample, seq_name, selected_node, best_root_blength, best_length2, best_parent_regions, cumulative_rate);
+            connectNewSample2Root(sample, seq_name, selected_node, best_root_blength, best_length2, best_parent_regions);
         }
         //add parent to non-root node
         else
         {
-            SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+            SeqRegions* upper_left_right_regions = selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             
             // now try different lengths for the new branch
             RealNumType new_branch_length_lh = best_parent_lh;
             RealNumType best_length = default_blength;
-            estimateLengthNewBranch<&Tree::calculateSamplePlacementCost>(best_parent_lh, best_parent_regions, sample, best_length, cumulative_rate, max_blength, min_blength, false);
+            estimateLengthNewBranch<&Tree::calculateSamplePlacementCost>(best_parent_lh, best_parent_regions, sample, best_length, max_blength, min_blength, false);
             
             // now create new internal node and append child to it
             RealNumType down_distance = best_parent_blength_split;
@@ -2104,7 +2104,7 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
                 /*
                 node.furtherMidNodes=None*/
             }
-            connectNewSample2Branch(sample, seq_name, selected_node, top_distance, down_distance, best_length, best_parent_regions, upper_left_right_regions, cumulative_rate);
+            connectNewSample2Branch(sample, seq_name, selected_node, top_distance, down_distance, best_length, best_parent_regions, upper_left_right_regions);
         }
     }
     
@@ -2115,16 +2115,16 @@ void Tree::placeNewSampleAtNode(Node* const selected_node, SeqRegions* const sam
         delete best_child_regions;
 }
 
-void Tree::refreshAllLhs(RealNumType *cumulative_rate)
+void Tree::refreshAllLhs()
 {
     // 1. update all the lower lhs along the tree
-    refreshAllLowerLhs(cumulative_rate);
+    refreshAllLowerLhs();
     
     // 2. update all the non-lower lhs along the tree
-    refreshAllNonLowerLhs(cumulative_rate);
+    refreshAllNonLowerLhs();
 }
 
-void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate)
+void Tree::refreshAllLowerLhs()
 {
     // start from root
     Node* node = root;
@@ -2161,9 +2161,9 @@ void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate)
                 Node* next_node_2 = next_node_1->next;
                 
                 SeqRegions* new_lower_lh = NULL;
-                SeqRegions* lower_lh_1 = next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                SeqRegions* lower_lh_2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob, cumulative_rate);
-                lower_lh_1->mergeTwoLowers(new_lower_lh, next_node_1->length, *lower_lh_2, next_node_2->length, aln, model, params->threshold_prob, cumulative_rate);
+                SeqRegions* lower_lh_1 = next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+                SeqRegions* lower_lh_2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+                lower_lh_1->mergeTwoLowers(new_lower_lh, next_node_1->length, *lower_lh_2, next_node_2->length, aln, model, params->threshold_prob);
                  
                 // if new_lower_lh is NULL -> we need to update the branch lengths connecting the current node to its children
                 if (!new_lower_lh)
@@ -2173,14 +2173,14 @@ void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate)
                         stack<Node*> node_stack;
                         // NHANLT: note different from original maple
                         // updateBLen(nodeList,node,mutMatrix) -> the below codes update from next_node_1 instead of top_node
-                        updateZeroBlength(next_node_1->neighbor, node_stack, params->threshold_prob, cumulative_rate);
-                        updatePartialLh(node_stack, cumulative_rate);
+                        updateZeroBlength(next_node_1->neighbor, node_stack, params->threshold_prob);
+                        updatePartialLh(node_stack);
                     }
                     else if (next_node_2->length <= 0)
                     {
                         stack<Node*> node_stack;
-                        updateZeroBlength(next_node_2->neighbor, node_stack, params->threshold_prob, cumulative_rate);
-                        updatePartialLh(node_stack, cumulative_rate);
+                        updateZeroBlength(next_node_2->neighbor, node_stack, params->threshold_prob);
+                        updatePartialLh(node_stack);
                     }
                     else
                         outError("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
@@ -2201,12 +2201,12 @@ void Tree::refreshAllLowerLhs(RealNumType *cumulative_rate)
     }
 }
 
-void Tree::refreshUpperLR(Node* const node, Node* const next_node, SeqRegions* &replaced_regions, const SeqRegions &parent_upper_lr_lh, RealNumType* const cumulative_rate)
+void Tree::refreshUpperLR(Node* const node, Node* const next_node, SeqRegions* &replaced_regions, const SeqRegions &parent_upper_lr_lh)
 {
     // recalculate the upper left/right lh of the current node
     const RealNumType threshold_prob = params->threshold_prob;
     SeqRegions* new_upper_lr_lh = NULL;
-    SeqRegions* lower_lh = next_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* lower_lh = next_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
     parent_upper_lr_lh.mergeUpperLower(new_upper_lr_lh, node->length, *lower_lh, next_node->length, aln, model, threshold_prob);
     
     // if the upper left/right lh is null -> try to increase the branch length
@@ -2215,14 +2215,14 @@ void Tree::refreshUpperLR(Node* const node, Node* const next_node, SeqRegions* &
         if (next_node->length <= 0)
         {
             stack<Node*> node_stack;
-            updateZeroBlength(next_node->neighbor, node_stack, threshold_prob, cumulative_rate);
-            updatePartialLh(node_stack, cumulative_rate);
+            updateZeroBlength(next_node->neighbor, node_stack, threshold_prob);
+            updatePartialLh(node_stack);
         }
         else if (node->length <= 0)
         {
             stack<Node*> node_stack;
-            updateZeroBlength(node, node_stack, threshold_prob, cumulative_rate);
-            updatePartialLh(node_stack, cumulative_rate);
+            updateZeroBlength(node, node_stack, threshold_prob);
+            updatePartialLh(node_stack);
         }
         else
             outError("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
@@ -2235,21 +2235,21 @@ void Tree::refreshUpperLR(Node* const node, Node* const next_node, SeqRegions* &
     if (new_upper_lr_lh) delete new_upper_lr_lh;
 }
 
-void Tree::refreshNonLowerLhsFromParent(Node* &node, Node* &last_node, RealNumType* const cumulative_rate)
+void Tree::refreshNonLowerLhsFromParent(Node* &node, Node* &last_node)
 {
     const RealNumType threshold_prob = params->threshold_prob;
-    SeqRegions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
     
     // update the total lh, total lh at the mid-branch point of the current node
     if (node->length > 0)
     {
         // update the total lh
-        node->computeTotalLhAtNode(aln, model, threshold_prob, cumulative_rate, node == root);
+        node->computeTotalLhAtNode(aln, model, threshold_prob, node == root);
         if (!node->total_lh)
             outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
 
         // update mid_branch_lh
-        computeMidBranchRegions(node, node->mid_branch_lh, *parent_upper_lr_lh, cumulative_rate);
+        computeMidBranchRegions(node, node->mid_branch_lh, *parent_upper_lr_lh);
     }
     
     // if the current node is an internal node (~having children) -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
@@ -2259,10 +2259,10 @@ void Tree::refreshNonLowerLhsFromParent(Node* &node, Node* &last_node, RealNumTy
         Node* next_node_2 = next_node_1->next;
         
         // recalculate the FIRST upper left/right lh of the current node
-        refreshUpperLR(node, next_node_2, next_node_1->partial_lh, *parent_upper_lr_lh, cumulative_rate);
+        refreshUpperLR(node, next_node_2, next_node_1->partial_lh, *parent_upper_lr_lh);
         
         // recalculate the SECOND upper left/right lh of the current node
-        refreshUpperLR(node, next_node_1, next_node_2->partial_lh, *parent_upper_lr_lh, cumulative_rate);
+        refreshUpperLR(node, next_node_1, next_node_2->partial_lh, *parent_upper_lr_lh);
         
         // keep traversing downward to its firt child
         node = next_node_1->neighbor;
@@ -2275,7 +2275,7 @@ void Tree::refreshNonLowerLhsFromParent(Node* &node, Node* &last_node, RealNumTy
     }
 }
 
-void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate)
+void Tree::refreshAllNonLowerLhs()
 {
     // dummy variables
     StateType num_states = aln.num_states;
@@ -2285,7 +2285,7 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate)
     Node* node = root;
     
     // update the total lh at root
-    node->computeTotalLhAtNode(aln, model, params->threshold_prob, cumulative_rate, true);
+    node->computeTotalLhAtNode(aln, model, params->threshold_prob, true);
     
     // if the root has children -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
     if (!node->isLeave())
@@ -2294,9 +2294,9 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate)
         Node* next_node_1 = node->next;
         Node* next_node_2 = next_node_1->next;
         delete next_node_1->partial_lh;
-        next_node_1->partial_lh = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(num_states, model, next_node_2->length);
+        next_node_1->partial_lh = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(num_states, model, next_node_2->length);
         delete next_node_2->partial_lh;
-        next_node_2->partial_lh = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(num_states, model, next_node_1->length);
+        next_node_2->partial_lh = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(num_states, model, next_node_1->length);
         
         // traverse the tree downward and update the non-lower genome lists for all other nodes of the tree.
         Node* last_node = NULL;
@@ -2305,7 +2305,7 @@ void Tree::refreshAllNonLowerLhs(RealNumType *cumulative_rate)
         {
             // we reach a top node by a downward traversing
             if (node->is_top)
-                refreshNonLowerLhsFromParent(node, last_node, cumulative_rate);
+                refreshNonLowerLhsFromParent(node, last_node);
             // we reach the current node by an upward traversing from its children
             else
             {
@@ -2350,7 +2350,7 @@ void Tree::setAllNodeOutdated()
     }
 }
 
-RealNumType Tree::improveEntireTree(bool short_range_search, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base)
+RealNumType Tree::improveEntireTree(bool short_range_search)
 {
     // start from the root
     stack<Node*> node_stack;
@@ -2387,7 +2387,7 @@ RealNumType Tree::improveEntireTree(bool short_range_search, RealNumType *cumula
                 reCalculateAllGenomeLists(root,mutMatrix, checkExistingAreCorrect=True)*/
             
             // do SPR moves to improve the tree
-            RealNumType improvement = improveSubTree(node, short_range_search, cumulative_rate, cumulative_base);
+            RealNumType improvement = improveSubTree(node, short_range_search);
             
             /*if checkEachSPR:
                 #print(" apparent improvement "+str(improvement))
@@ -2416,7 +2416,7 @@ RealNumType Tree::improveEntireTree(bool short_range_search, RealNumType *cumula
     return total_improvement;
 }
 
-PositionType Tree::optimizeBranchLengths(RealNumType* const cumulative_rate)
+PositionType Tree::optimizeBranchLengths()
 {
     // start from the root's children
     stack<Node*> node_stack;
@@ -2437,8 +2437,8 @@ PositionType Tree::optimizeBranchLengths(RealNumType* const cumulative_rate)
         Node* node = node_stack.top();
         node_stack.pop();
         
-        SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* upper_lr_regions = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model, threshold_prob);
         
         // add all children of the current nodes to the stack for further traversing later
         neighbor_node = NULL;
@@ -2449,7 +2449,7 @@ PositionType Tree::optimizeBranchLengths(RealNumType* const cumulative_rate)
         if (node->outdated)
         {
             // estimate the branch length
-            RealNumType best_length = estimateBranchLength(upper_lr_regions, lower_regions, cumulative_rate);
+            RealNumType best_length = estimateBranchLength(upper_lr_regions, lower_regions);
             
             if (best_length > 0 || node->length > 0)
             {
@@ -2464,7 +2464,7 @@ PositionType Tree::optimizeBranchLengths(RealNumType* const cumulative_rate)
                     stack<Node*> new_node_stack;
                     new_node_stack.push(node);
                     new_node_stack.push(node->neighbor);
-                    updatePartialLh(new_node_stack, cumulative_rate);
+                    updatePartialLh(new_node_stack);
                 }
             }
         }
@@ -2725,7 +2725,7 @@ static constexpr DoubleState RR = (DoubleState(TYPE_R) << 8) | TYPE_R;
 static constexpr DoubleState RO = (DoubleState(TYPE_R) << 8) | TYPE_O;
 static constexpr DoubleState OO = (DoubleState(TYPE_O) << 8) | TYPE_O;
 
-RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, const RealNumType* const cumulative_rate)
+RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, const SeqRegions* const child_regions)
 {
     // init dummy variables
     RealNumType coefficient = 0;
@@ -2737,6 +2737,7 @@ RealNumType Tree::estimateBranchLength(const SeqRegions* const parent_regions, c
     size_t iseq2 = 0;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
+    RealNumType* cumulative_rate = model.cumulative_rate;
     
     // avoid reallocations
     coefficient_vec.reserve(parent_regions->countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
@@ -2838,7 +2839,7 @@ RealNumType Tree::calculateDerivative(const vector<RealNumType> &coefficient_vec
     return result;
 }
 
-void Tree::handleBlengthChanged(Node* const node, const RealNumType best_blength, RealNumType* const cumulative_rate)
+void Tree::handleBlengthChanged(Node* const node, const RealNumType best_blength)
 {
     node->length = best_blength;
     node->neighbor->length = node->length;
@@ -2846,10 +2847,10 @@ void Tree::handleBlengthChanged(Node* const node, const RealNumType best_blength
     stack<Node*> node_stack;
     node_stack.push(node);
     node_stack.push(node->neighbor);
-    updatePartialLh(node_stack, cumulative_rate);
+    updatePartialLh(node_stack);
 }
 
-void Tree::optimizeBlengthBeforeSeekingSPR(Node* const node, RealNumType &best_blength, RealNumType &best_lh, bool &blength_changed, const SeqRegions* const parent_upper_lr_lh, const SeqRegions* const lower_lh, RealNumType* const cumulative_rate)
+void Tree::optimizeBlengthBeforeSeekingSPR(Node* const node, RealNumType &best_blength, RealNumType &best_lh, bool &blength_changed, const SeqRegions* const parent_upper_lr_lh, const SeqRegions* const lower_lh)
 {
     RealNumType original_lh = best_lh;
     
@@ -2857,18 +2858,18 @@ void Tree::optimizeBlengthBeforeSeekingSPR(Node* const node, RealNumType &best_b
     if (node->length <= 0)
     {
         best_blength = min_blength;
-        best_lh = calculateSubTreePlacementCost(cumulative_rate, parent_upper_lr_lh, lower_lh, best_blength);
+        best_lh = calculateSubTreePlacementCost(parent_upper_lr_lh, lower_lh, best_blength);
     }
     
     // cache best_blength
     const RealNumType cached_blength = best_blength;
 
     // try shorter branch lengths
-    bool found_new_blength = tryShorterNewBranch<&Tree::calculateSubTreePlacementCost>(parent_upper_lr_lh, lower_lh, best_blength, best_lh, cumulative_rate, double_min_blength);
+    bool found_new_blength = tryShorterNewBranch<&Tree::calculateSubTreePlacementCost>(parent_upper_lr_lh, lower_lh, best_blength, best_lh, double_min_blength);
     
     // try longer branch lengths
     if (!found_new_blength)
-        tryLongerNewBranch<&Tree::calculateSubTreePlacementCost>(parent_upper_lr_lh, lower_lh, best_blength, best_lh, cumulative_rate, half_max_blength);
+        tryLongerNewBranch<&Tree::calculateSubTreePlacementCost>(parent_upper_lr_lh, lower_lh, best_blength, best_lh, half_max_blength);
     
     // update blength_changed
     if (cached_blength != best_blength)
@@ -2878,7 +2879,7 @@ void Tree::optimizeBlengthBeforeSeekingSPR(Node* const node, RealNumType &best_b
         best_lh = original_lh;
 }
 
-void Tree::checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, Node* const node, Node* const best_node, Node* const parent_node, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated, RealNumType* const cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base)
+void Tree::checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, Node* const node, Node* const best_node, Node* const parent_node, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated)
 {
     if (best_node == parent_node)
         outWarning("Strange, re-placement is at same node");
@@ -2907,14 +2908,14 @@ void Tree::checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType be
                 cout << "In improveSubTree() found SPR move with improvement " << total_improvement << endl;
             
             // apply an SPR move
-            applySPR(node, best_node, is_mid_node, best_blength, best_lh_diff, cumulative_rate, cumulative_base);
+            applySPR(node, best_node, is_mid_node, best_blength, best_lh_diff);
             
             topology_updated = true;
         }
     }
 }
 
-RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumType *cumulative_rate, vector< vector<PositionType> > &cumulative_base)
+RealNumType Tree::improveSubTree(Node* node, bool short_range_search)
 {
     // dummy variables
     const RealNumType threshold_prob = params->threshold_prob;
@@ -2926,14 +2927,14 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
     if (node != root)
     {
         // evaluate current placement
-        SeqRegions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+        SeqRegions* parent_upper_lr_lh = node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, threshold_prob);
         RealNumType best_blength = node->length;
-        RealNumType best_lh = calculateSubTreePlacementCost(cumulative_rate, parent_upper_lr_lh, lower_lh, best_blength);
+        RealNumType best_lh = calculateSubTreePlacementCost(parent_upper_lr_lh, lower_lh, best_blength);
         
         // optimize branch length
         if (best_lh < thresh_placement_cost)
-            optimizeBlengthBeforeSeekingSPR(node, best_blength, best_lh, blength_changed, parent_upper_lr_lh, lower_lh, cumulative_rate);
+            optimizeBlengthBeforeSeekingSPR(node, best_blength, best_lh, blength_changed, parent_upper_lr_lh, lower_lh);
            
         // find new placement
         if (best_lh < thresh_placement_cost)
@@ -2949,7 +2950,7 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
             Node* best_child = NULL;
             
             // seek a new placement for the subtree
-            seekSubTreePlacement(best_node, best_lh_diff, is_mid_node, best_up_lh_diff, best_down_lh_diff, best_child, short_range_search, node, best_blength, cumulative_rate, true, NULL);
+            seekSubTreePlacement(best_node, best_lh_diff, is_mid_node, best_up_lh_diff, best_down_lh_diff, best_child, short_range_search, node, best_blength, true, NULL);
             
             // validate the new placement cost
             if (best_lh_diff > params->threshold_prob2)
@@ -2960,16 +2961,16 @@ RealNumType Tree::improveSubTree(Node* node, bool short_range_search, RealNumTyp
             if (best_lh_diff + thresh_placement_cost > best_lh)
             {
                 // check and apply SPR move
-                checkAndApplySPR(best_lh_diff, best_blength, best_lh, node, best_node, parent_node, is_mid_node, total_improvement, topology_updated, cumulative_rate, cumulative_base);
+                checkAndApplySPR(best_lh_diff, best_blength, best_lh, node, best_node, parent_node, is_mid_node, total_improvement, topology_updated);
                 
                 if (!topology_updated && blength_changed)
-                    handleBlengthChanged(node, best_blength, cumulative_rate);
+                    handleBlengthChanged(node, best_blength);
             }
             else if (blength_changed)
-                handleBlengthChanged(node, best_blength, cumulative_rate);
+                handleBlengthChanged(node, best_blength);
         }
         else if (blength_changed)
-            handleBlengthChanged(node, best_blength, cumulative_rate);
+            handleBlengthChanged(node, best_blength);
     }
                         
     return total_improvement;
@@ -3187,15 +3188,14 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegi
     return true;
 }
 
-RealNumType Tree::calculateSubTreePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
+RealNumType Tree::calculateSubTreePlacementCost(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
 {
-    return (this->*calculateSubTreePlacementCostPointer)(cumulative_rate, parent_regions, child_regions, blength);
+    return (this->*calculateSubTreePlacementCostPointer)(parent_regions, child_regions, blength);
 }
 
 // this implementation derives from appendProbNode
 template <const StateType num_states>
 RealNumType Tree::calculateSubTreePlacementCostTemplate(
-  RealNumType* cumulative_rate, 
   const SeqRegions* const parent_regions, 
   const SeqRegions* const child_regions, 
   RealNumType blength)
@@ -3247,7 +3247,7 @@ RealNumType Tree::calculateSubTreePlacementCostTemplate(
         // 2.1. e1.type = R and e2.type = R
         if (s1s2 == RR) [[likely]]
         {
-            calculateSubtreeCost_R_R(*seq1_region, cumulative_rate, total_blength, pos, end_pos, lh_cost);
+            calculateSubtreeCost_R_R(*seq1_region, model.cumulative_rate, total_blength, pos, end_pos, lh_cost);
         }
         // 2.2. e1.type = R and e2.type = O
         else if (s1s2 == RO)
@@ -3518,14 +3518,14 @@ void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegio
     }
 }
 
-RealNumType Tree::calculateSamplePlacementCost(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
+RealNumType Tree::calculateSamplePlacementCost(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
 {
-    return (this->*calculateSamplePlacementCostPointer)(cumulative_rate, parent_regions, child_regions, blength);
+    return (this->*calculateSamplePlacementCostPointer)(parent_regions, child_regions, blength);
 }
 
 // this implementation derives from appendProb
 template <const StateType num_states>
-RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_rate, const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
+RealNumType Tree::calculateSamplePlacementCostTemplate(const SeqRegions* const parent_regions, const SeqRegions* const child_regions, RealNumType blength)
 {     // 10% of total runtime
     // init dummy variables
     RealNumType lh_cost = 0;
@@ -3566,7 +3566,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
         // 2.1. e1.type = R and e2.type = R
         if (s1s2 == RR) [[likely]]
         {
-            calculateSampleCost_R_R(*seq1_region, cumulative_rate, blength, pos, end_pos, lh_cost);
+            calculateSampleCost_R_R(*seq1_region, model.cumulative_rate, blength, pos, end_pos, lh_cost);
         }
         // 2.2. e1.type = R and e2.type = O
         else if (s1s2 == RO)
@@ -3627,23 +3627,23 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(RealNumType* cumulative_r
     return lh_cost + log(total_factor);
 }
 
-void Tree::updateZeroBlength(Node* node, stack<Node*> &node_stack, RealNumType threshold_prob, RealNumType* cumulative_rate)
+void Tree::updateZeroBlength(Node* node, stack<Node*> &node_stack, RealNumType threshold_prob)
 {
     // get the top node in the phylo-node
     Node* top_node = node->getTopNode();
     ASSERT(top_node);
-    SeqRegions* upper_left_right_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-    SeqRegions* lower_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+    SeqRegions* upper_left_right_regions = top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+    SeqRegions* lower_regions = top_node->getPartialLhAtNode(aln, model, threshold_prob);
     
-    RealNumType best_lh = calculateSamplePlacementCost(cumulative_rate, upper_left_right_regions, lower_regions, default_blength);
+    RealNumType best_lh = calculateSamplePlacementCost(upper_left_right_regions, lower_regions, default_blength);
     RealNumType best_length = default_blength;
     
     // try shorter lengths
-    bool found_new_best_length = tryShorterNewBranch<&Tree::calculateSamplePlacementCost>(upper_left_right_regions, lower_regions, best_length, best_lh, cumulative_rate, min_blength);
+    bool found_new_best_length = tryShorterNewBranch<&Tree::calculateSamplePlacementCost>(upper_left_right_regions, lower_regions, best_length, best_lh, min_blength);
     
     // try longer lengths
     if (!found_new_best_length)
-        tryLongerNewBranch<&Tree::calculateSamplePlacementCost>(upper_left_right_regions, lower_regions, best_length, best_lh, cumulative_rate, max_blength);
+        tryLongerNewBranch<&Tree::calculateSamplePlacementCost>(upper_left_right_regions, lower_regions, best_length, best_lh, max_blength);
     
     // update best_length
     top_node->length = best_length;

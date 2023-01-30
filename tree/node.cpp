@@ -120,7 +120,7 @@ string Node::exportString(bool binary)
     return "";
 }
 
-SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate)
+SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob)
 {
     // if partial_lh has not yet computed (~NULL) -> compute it from next nodes
     if (!partial_lh)
@@ -133,12 +133,12 @@ SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, R
             {
                 // extract the two lower vectors of regions
                 Node* next_node_1 = next;
-                SeqRegions* regions1 = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                SeqRegions* regions1 = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
                 Node* next_node_2 = next_node_1->next;
-                SeqRegions* regions2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                SeqRegions* regions2 = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
                 
                 // compute partial_lh
-                regions1->mergeTwoLowers(partial_lh, next_node_1->length, *regions2, next_node_2->length, aln, model, threshold_prob, cumulative_rate);
+                regions1->mergeTwoLowers(partial_lh, next_node_1->length, *regions2, next_node_2->length, aln, model, threshold_prob);
             }
             // otherwise -> partial_lh is the upper left/right regions
             else
@@ -152,16 +152,16 @@ SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, R
                 
                 if (next_node_1->is_top)
                 {
-                    upper_regions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    upper_regions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
                     upper_blength = next_node_1->length;
-                    lower_regions = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    lower_regions = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
                     lower_blength = next_node_2->length;
                 }
                 else
                 {
-                    upper_regions = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    upper_regions = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
                     upper_blength = next_node_2->length;
-                    lower_regions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
+                    lower_regions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
                     lower_blength = next_node_1->length;
                 }
                 
@@ -178,18 +178,18 @@ SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, R
     return partial_lh;
 }
 
-SeqRegions* Node::computeTotalLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update, RealNumType blength)
+SeqRegions* Node::computeTotalLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, bool is_root, bool update, RealNumType blength)
 {
     SeqRegions* new_regions = NULL;
     
     // if node is root
     if (is_root)
-        new_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->computeTotalLhAtRoot(aln.num_states, model, blength);
+        new_regions = getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(aln.num_states, model, blength);
     // if not is normal nodes
     else
     {
-        SeqRegions* lower_regions = getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate);
-        neighbor->getPartialLhAtNode(aln, model, threshold_prob, cumulative_rate)->mergeUpperLower(new_regions, length, *lower_regions, blength, aln, model, threshold_prob);
+        SeqRegions* lower_regions = getPartialLhAtNode(aln, model, threshold_prob);
+        neighbor->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_regions, length, *lower_regions, blength, aln, model, threshold_prob);
     }
     
     // update if necessary

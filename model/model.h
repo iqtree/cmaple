@@ -23,6 +23,10 @@ public:
     /** Pseudo mutation count */
     RealNumType* pseu_mutation_count;
     
+    /** cumulative rates/bases*/
+    RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<PositionType> > cumulative_base;
+    
     /**
         Caches to reduce runtime
      */
@@ -64,12 +68,12 @@ public:
     /**
         Compute cumulative rate of the ref genome
      */
-    void computeCumulativeRate(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const Alignment& aln);
+    void computeCumulativeRate(const Alignment& aln);
     
     /**
         Update the mutation matrix periodically from the empirical count of mutations
      */
-    void updateMutationMatEmpirical(RealNumType *&cumulative_rate, std::vector< std::vector<PositionType> > &cumulative_base, const Alignment& aln);
+    void updateMutationMatEmpirical(const Alignment& aln);
     
     /**
         Update pseudocounts from new sample to improve the estimate of the substitution rates

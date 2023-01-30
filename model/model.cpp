@@ -76,6 +76,11 @@ Model::~Model()
         delete[] row_index;
         row_index = NULL;
     }
+    
+    if (cumulative_rate)
+    {
+        delete[] cumulative_rate;
+    }
 }
 
 void Model::extractRefInfo(vector<StateType> ref_seq, StateType num_states)
@@ -276,7 +281,7 @@ void Model::initMutationMat(string n_model_name, StateType num_states)
     }
 }
 
-void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, const Alignment& aln)
+void Model::computeCumulativeRate(const Alignment& aln)
 {
     PositionType sequence_length = aln.ref_seq.size();
     ASSERT(sequence_length > 0);
@@ -302,7 +307,7 @@ void Model::computeCumulativeRate(RealNumType *&cumulative_rate, vector< vector<
         
 }
 
-void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< vector<PositionType> > &cumulative_base, const Alignment& aln)
+void Model::updateMutationMatEmpirical(const Alignment& aln)
 {
     // don't update JC model parameters
     if (model_name == "JC" || model_name == "jc") return;
@@ -330,7 +335,7 @@ void Model::updateMutationMatEmpirical(RealNumType *&cumulative_rate, vector< ve
     
     // update the cumulative_rate
     if (update)
-        computeCumulativeRate(cumulative_rate, cumulative_base, aln);
+        computeCumulativeRate(aln);
     
     // delete tmp_diagonal_mutation_mat
     delete[] tmp_diagonal_mut_mat;

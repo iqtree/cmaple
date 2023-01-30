@@ -117,12 +117,12 @@ public:
     /**
         Get/(or compute) partial_lh of a node
      */
-    SeqRegions* getPartialLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate);
+    SeqRegions* getPartialLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob);
     
     /**
         Compute the total likelihood vector for a node.
     */
-    SeqRegions* computeTotalLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, RealNumType* cumulative_rate, bool is_root, bool update = true, RealNumType blength = -1);
+    SeqRegions* computeTotalLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, bool is_root, bool update = true, RealNumType blength = -1);
 };
 
 /** An extension of node storing more dummy data used for browsing all nodes in a stack  */
