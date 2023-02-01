@@ -46,6 +46,17 @@ TEST(Alignment, readSequences)
     EXPECT_EQ(aln.ref_seq[0], 0);
     EXPECT_EQ(aln.ref_seq[10], 3);
     EXPECT_EQ(aln.ref_seq[18], 1);
+    
+    // Test generateRef() with empty input
+    sequences.clear();
+    EXPECT_EXIT(aln.generateRef(sequences), ::testing::ExitedWithCode(2), ".*");
+    
+    // Test input not found
+    file_path = "../../example/notfound";
+    delete[] file_path_ptr;
+    file_path_ptr = new char[file_path.length() + 1];
+    strcpy(file_path_ptr, file_path.c_str());
+    EXPECT_EXIT(aln.readSequences(file_path_ptr, sequences, seq_names), ::testing::ExitedWithCode(2), ".*");
 }
 
 /*
@@ -65,6 +76,16 @@ TEST(Alignment, readRef)
     EXPECT_EQ(aln.ref_seq[2], 3);
     EXPECT_EQ(aln.ref_seq[7], 2);
     EXPECT_EQ(aln.ref_seq[11], 0);
+    
+    // Test readRef() with NULL
+    EXPECT_DEATH(aln.readRef(NULL), ".*");
+    
+    //  Test readRef() from not-found file
+    file_path = "../../example/notfound";
+    delete[] file_path_ptr;
+    file_path_ptr = new char[file_path.length() + 1];
+    strcpy(file_path_ptr, file_path.c_str());
+    EXPECT_EXIT(aln.readRef(file_path_ptr), ::testing::ExitedWithCode(2), ".*");
 }
 
 /*
@@ -135,6 +156,14 @@ TEST(Alignment, extractMutations)
     EXPECT_EQ(aln.data[9][0].position, 7);
     EXPECT_EQ(aln.ref_seq.size(), 20);
     // ----- test on input.fa; read ref_sequence -----
+    
+    // ----- Test to invalid data , violating ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out)
+    // str_sequences.size() != seq_names.size()
+    sequences.pop_back();
+    EXPECT_DEATH(aln.extractMutations(sequences, seq_names, ref_sequence, out, false), ".*");
+    // str_sequences.size() == 0
+    sequences.clear();
+    EXPECT_DEATH(aln.extractMutations(sequences, seq_names, ref_sequence, out, false), ".*");
     
     /*// ----- test on input_full.phy; generate ref_sequence -----
     aln.data.clear();
@@ -240,6 +269,24 @@ TEST(Alignment, readDiff)
     EXPECT_EQ(aln.ref_seq[467], 0);
     EXPECT_EQ(aln.ref_seq[1593], 1);
     // ----- test on test_5K.diff, load ref_seq from test_100.diff -----
+    
+    // ----- Test readDiff() with null input
+    EXPECT_DEATH(aln.readDiff(NULL, NULL), ".*");
+    
+    //  Test readDiff() from not-found file
+    diff_file_path = "../../example/notfound";
+    delete[] diff_file_path_ptr;
+    diff_file_path_ptr = new char[diff_file_path.length() + 1];
+    strcpy(diff_file_path_ptr, diff_file_path.c_str());
+    EXPECT_EXIT(aln.readDiff(diff_file_path_ptr, NULL), ::testing::ExitedWithCode(2), ".*");
+    
+    // ----- Test readDiff() with wrong format file
+    aln.data.clear();
+    diff_file_path = "../../example/input.fa";
+    delete[] diff_file_path_ptr;
+    diff_file_path_ptr = new char[diff_file_path.length() + 1];
+    strcpy(diff_file_path_ptr, diff_file_path.c_str());
+    EXPECT_EXIT(aln.readDiff(diff_file_path_ptr, NULL), ::testing::ExitedWithCode(2), ".*");
 }
 
 /*
@@ -295,6 +342,11 @@ TEST(Alignment, extractDiffFile)
     EXPECT_EQ(aln.ref_seq[2], 3);
     EXPECT_EQ(aln.ref_seq[15], 1);
     // ----- test on input.phy with ref file from ref.fa -----
+    
+    // ----- Test extractDiffFile() with null params.aln_path
+    delete params.aln_path;
+    params.aln_path = NULL;
+    EXPECT_DEATH(aln.extractDiffFile(params), ".*");
     
     /*// ----- test on input.fa without ref file, specifying diff file path -----
     aln.data.clear();
@@ -378,7 +430,9 @@ TEST(Alignment, convertChar2State)
 {
     Alignment aln;
     
-    // Note: We don't test invalid characters since CMaple will output an error msg and terminate;
+    // ----- Test convertChar2State() with an invalid state
+    EXPECT_DEATH(aln.convertChar2State('e'), ".*");
+    
     // convertChar2State requires input is a capital character
     
     EXPECT_EQ(aln.convertChar2State('-'), TYPE_DEL);

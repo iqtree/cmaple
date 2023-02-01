@@ -205,6 +205,12 @@ TEST(SeqRegion, constructor_3)
     EXPECT_EQ(seqregion8.getLH(1), 1.0 / 3);
     EXPECT_EQ(seqregion8.getLH(2), 1.0 / 3);
     EXPECT_EQ(seqregion8.getLH(3), 0);
+    
+    // Test constructor with invalid datatype
+    EXPECT_EXIT(SeqRegion invalidSeqRegion(1, 100, SEQ_PROTEIN, 20), ::testing::ExitedWithCode(2), ".*");
+    
+    // Test constructor with invalid state
+    EXPECT_EXIT(SeqRegion invalidSeqRegion(1+2+4+4, 100, SEQ_PROTEIN, 20), ::testing::ExitedWithCode(2), ".*");
 }
 
 /*

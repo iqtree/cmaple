@@ -2,6 +2,33 @@
 #include "alignment/seqregions.h"
 
 /*
+ Test constructor
+ */
+TEST(SeqRegions, constructor)
+{
+    SeqRegions seqregions1;
+    seqregions1.emplace_back(TYPE_R, 382, -1, 0.321);
+    seqregions1.emplace_back(TYPE_N, 654);
+    seqregions1.emplace_back(0, 655, 0);
+    seqregions1.emplace_back(TYPE_N, 1431);
+    seqregions1.emplace_back(3, 1432, 0.432, 0);
+    seqregions1.emplace_back(TYPE_N, 2431);
+    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    seqregions1.emplace_back(TYPE_O, 2432, 0, -1, std::move(new_lh));
+    seqregions1.emplace_back(TYPE_N, 3381);
+    seqregions1.emplace_back(TYPE_R, 3500, 0, 0.1321);
+    
+    SeqRegions seqregions2(&seqregions1);
+    EXPECT_EQ(seqregions2.size(), 9);
+    EXPECT_EQ(seqregions2.back().position, 3500);
+    EXPECT_EQ(seqregions2.back().plength_observation2node, 0);
+    EXPECT_EQ(seqregions2.back().plength_observation2root, 0.1321);
+    
+    // Test constructor with null param
+    EXPECT_EXIT(SeqRegions invalidSeqRegions(NULL), ::testing::ExitedWithCode(2), ".*");
+}
+
+/*
  Test addNonConsecutiveRRegion()
  */
 TEST(SeqRegions, addNonConsecutiveRRegion)
@@ -306,6 +333,9 @@ TEST(SeqRegions, compareWithSample)
     (*seqregions1[seqregions1.size() - 2].likelihood)[2] = 1.0 / 3;
     (*seqregions1[seqregions1.size() - 2].likelihood)[3] = 0;
     EXPECT_EQ(seqregions1.compareWithSample(seqregions3, 3500, 4), -1);
+    
+    // ----- Test compareWithSample() invalid sequence length
+    EXPECT_DEATH(seqregions1.compareWithSample(seqregions3, 0, 4), ".*");
 }
 
 /*
@@ -421,6 +451,9 @@ TEST(SeqRegions, simplifyO)
     new_lh->data()[0] = new_lh->data()[3];
     new_lh->data()[1] = new_lh->data()[3];
     EXPECT_EQ(SeqRegions::simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_R) ;
+    
+    // Test null lh
+    EXPECT_DEATH(SeqRegions::simplifyO(NULL, 2, 4, threshold_prob), ".*");
 }
 
 /*
