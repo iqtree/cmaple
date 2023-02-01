@@ -10,6 +10,26 @@
 /** Class of evolutionary models */
 class Model
 {
+private:
+    
+    /**
+        Init the mutation rate matrix from JC model
+        @param n_model_name: name of the model; num_states: the number of states
+     */
+    void initMutationMatJC(const StateType num_states);
+    
+    /**
+        Update the mutation rate matrix regarding the pseu_mutation_count
+        @param num_states: the number of states
+     */
+    void updateMutMatbyMutCount(const StateType num_states);
+    
+    /**
+        Update the mutation rate matrix
+        @param num_states: the number of states
+     */
+    void updateMutationMat(const StateType num_states);
+    
 public:
     /** Name of the model */
     std::string model_name;
@@ -51,19 +71,13 @@ public:
     /**
         Extract reference-related info (freqs, log_freqs)
      */
-    void extractRefInfo(std::vector<StateType> ref_seq, StateType num_states);
+    void extractRefInfo(const std::vector<StateType> &ref_seq, const StateType num_states);
     
     /**
         Init the mutation rate matrix from a model
         @param n_model_name: name of the model; num_states: the number of states
      */
-    void initMutationMat(std::string n_model_name, StateType num_states);
-    
-    /**
-        Update the mutation rate matrix regarding the pseu_mutation_count
-        @param num_states: the number of states
-     */
-    void updateMutationMat(StateType num_states);
+    void initMutationMat(const std::string n_model_name, const StateType num_states);
     
     /**
         Compute cumulative rate of the ref genome
