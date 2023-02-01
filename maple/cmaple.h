@@ -49,18 +49,18 @@ public:
     /**
     *  CMaple constructor
     */
-    CMaple();
+    CMaple() = default;
     
     /**
     *  CMaple constructor
      @param params user-specified parameters
     */
-    CMaple(Params params);
+    CMaple(Params params):tree(std::move(params)){};
     
     /**
     *  CMaple destructor
     */
-    ~CMaple();
+    ~CMaple() = default;
     
     /**
         Load input data
@@ -81,11 +81,6 @@ public:
         Complete the inference
      */
     void postInference();
-    
-    /**
-        Temporarily method for testing
-     */
-    void tmpTestingMethod();
 };
 
 /** Method to run CMaple */

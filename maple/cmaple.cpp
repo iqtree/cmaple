@@ -6,18 +6,6 @@
 
 #include "cmaple.h"
 using namespace std;
-CMaple::CMaple()
-{
-}
-
-CMaple::CMaple(Params n_params)
-  : tree(std::move(n_params))
-{
-}
-
-CMaple::~CMaple()
-{
-}
 
 void CMaple::loadInput()
 {
@@ -88,15 +76,14 @@ void CMaple::buildInitialTree()
     // dummy variables
     Alignment& aln = tree.aln;
     Model& model = tree.model;
-    StateType num_states = aln.num_states;
-    PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln.ref_seq.size();
     
     // place the root node
     Sequence* sequence = &tree.aln.data.front();
-    Node* root = new Node(sequence->seq_name);
-    tree.root = root;
-    root->partial_lh = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
-    root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, true);
+    tree.root = new Node(sequence->seq_name);
+    tree.root->partial_lh = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
+    tree.root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, true);
     
     // move to the next sequence in the alignment
     ++sequence;
@@ -127,6 +114,7 @@ void CMaple::buildInitialTree()
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
         if (selected_node)
         {
+            // place new sample as a descendant of a mid-branch point
             if (is_mid_branch)
                 tree.placeNewSampleMidBranch(selected_node, lower_regions, sequence->seq_name, best_lh_diff);
             // otherwise, best lk so far is for appending directly to existing node
@@ -148,9 +136,6 @@ void CMaple::buildInitialTree()
             exportOutput(output_file + "_init.treefile");
             exit(0);
         }*/
-           
-        
-        // don't delete lower_lh_seq as it is used as the lower lh regions of the newly adding tip
     }
     
     // show the runtime for building an initial tree
@@ -165,15 +150,16 @@ void CMaple::optimizeTree()
 {
     string output_file(tree.params->diff_path);
     exportOutput(output_file + "_init.treefile");
+    
     // run a short range search for tree topology improvement (if neccessary)
     if (tree.params->short_range_topo_search)
+    {
         optimizeTreeTopology(true);
-    
-    exportOutput(output_file + "_short_search.treefile");
+        exportOutput(output_file + "_short_search.treefile");
+    }
     
     // run a normal search for tree topology improvement
     optimizeTreeTopology();
-    
     exportOutput(output_file + "_topo.treefile");
     
     // do further optimization on branch lengths (if needed)
@@ -217,10 +203,9 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
     
     // show the runtime for optimize the tree
     auto end = getRealTime();
-    if (short_range_search)
-        cout << " - Time spent on a short range search for optimizing the tree topology: " << end - start << endl;
-    else
-        cout << " - Time spent on optimizing the tree topology: " << end - start << endl;
+    cout << " - Time spent on";
+    cout << (short_range_search ? " a short range search for" : "");
+    cout << " optimizing the tree topology: " << end - start << endl;
 }
 
 void CMaple::optimizeBranchLengthsOfTree()
@@ -281,13 +266,6 @@ void CMaple::exportOutput(const string &filename)
     out.close();
 }
 
-void CMaple::tmpTestingMethod()
-{
-    // test some new methods
-    
-    cout << endl;
-}
-
 void runCMaple(Params &params)
 {
     auto start = getRealTime();
@@ -309,9 +287,6 @@ void runCMaple(Params &params)
     
     // complete remaining stuff after the inference
     cmaple.postInference();
-    
-    // just test new method
-    cmaple.tmpTestingMethod();
     
     // show runtime
     auto end = getRealTime();
