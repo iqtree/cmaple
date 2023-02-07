@@ -35,7 +35,7 @@ public:
     std::string model_name;
     
     /** State frequencies*/
-    RealNumType *root_freqs;
+    RealNumType *root_freqs = nullptr;
     
     /** Mutation matrix */
     RealNumType *mutation_mat;
@@ -50,10 +50,10 @@ public:
     /**
         Caches to reduce runtime
      */
-    RealNumType *root_log_freqs; // log of state frequencies
+    RealNumType *root_log_freqs = nullptr; // log of state frequencies
     RealNumType *diagonal_mut_mat; // diagonal of the mutation matrix
     RealNumType *transposed_mut_mat; // the transposed matrix of the mutation matrix
-    RealNumType *inverse_root_freqs; // the inversed values of state frequencies
+    RealNumType *inverse_root_freqs = nullptr; // the inversed values of state frequencies
     RealNumType *freqi_freqj_qij; // freq(i) / freq(j) * Qij
     RealNumType *freq_j_transposed_ij; // freq[j] * transposed[i][j]
     StateType *row_index; // the starting index of row i: i * num_states

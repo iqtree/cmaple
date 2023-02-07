@@ -6,6 +6,7 @@ add_executable(
   maintest          ## todo: should be called 'SeqRegions_test'
   #tree_test.h tree_test.cpp
   seqregions_test.cpp
+  model_test.cpp
   alignment_test.cpp
   sequence_test.cpp
   seqregion_test.cpp

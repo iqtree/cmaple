@@ -209,6 +209,8 @@ void Model::updateMutationMat(const StateType num_states)
 
 void Model::initMutationMatJC(const StateType num_states)
 {
+    ASSERT(num_states == 4);
+    
     // update root_freqs
     const RealNumType log_freq = log(0.25);
     
@@ -264,6 +266,14 @@ void Model::initMutationMat(const string n_model_name, const StateType num_state
     uint16_t start_index = 0;
     for (StateType i = 0; i < num_states + 1; i++, start_index += num_states)
         row_index[i] = start_index;
+    
+    // init root_freqs, root_log_freqs, inverse_root_freqs if they have not yet been initialized
+    if (!root_freqs)
+    {
+        root_freqs = new RealNumType[num_states];
+        root_log_freqs = new RealNumType[num_states];
+        inverse_root_freqs = new RealNumType[num_states];
+    }
     
     // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
     uint16_t mat_size = row_index[num_states];
