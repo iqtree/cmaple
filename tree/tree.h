@@ -318,7 +318,13 @@ private:
     /**
         Check and apply SPR move
      */
-    void checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, Node* const node, Node* const best_node, Node* const parent_node, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated);
+    void checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, Node* const node, Node* const best_node, Node* const parent_node, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated);\
+    
+    /**
+        NHANLT - DELETE:
+        Get new (actual) depth of a node
+     */
+    unsigned short int getNewDepth(Node* node);
     
 public:
     /*

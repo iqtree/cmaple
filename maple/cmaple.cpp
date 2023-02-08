@@ -169,6 +169,14 @@ void CMaple::optimizeTree()
 
 void CMaple::optimizeTreeTopology(bool short_range_search)
 {
+    //  NHANLT - DELETE: reset the log file of the depths of pruning and regrafting branches
+    // open the tree file
+    string output_file(tree.params->diff_path);
+    ofstream out = ofstream(output_file + ".statistics.txt");
+    out << "Orig_prune \t Orig_Regraft \t Act_prune \t Act_regraft \t Dis_prune_regraft" << endl;
+    // close the output file
+    out.close();
+    
     // record the start time
     auto start = getRealTime();
     int num_tree_improvement = short_range_search ? 1 : tree.params->num_tree_improvement;

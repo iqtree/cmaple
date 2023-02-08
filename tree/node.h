@@ -18,7 +18,16 @@ public:
         TRUE if this node is the top node in a phylogenetic node structure
      */
     bool is_top;
-
+    
+    /**
+        NHANLT - DELETE: dummy variable to keep track of the depth of this node
+     */
+    unsigned short int depth;
+    
+    /**
+        NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+     */
+    unsigned short int distance_2_pruning;
     
     /**
         Likelihood of the subtree rooted at this node.

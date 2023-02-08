@@ -535,6 +535,9 @@ void Tree::addStartingNodes(const Node* const node, Node* const other_child_node
         if (node->length > 0)
             branch_length = branch_length > 0 ? branch_length + node->length : node->length;
         
+        //  NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+        node->neighbor->getTopNode()->distance_2_pruning = 1;
+        other_child_node->distance_2_pruning = 0;
         node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions, branch_length, true, best_lh_diff, 0, false));
         node_stack.push(new UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true, best_lh_diff, 0, false));
     }
@@ -547,6 +550,10 @@ void Tree::addStartingNodes(const Node* const node, Node* const other_child_node
             // add nodes (children of the sibling of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
             Node* grand_child_1 = other_child_node->next->neighbor;
             Node* grand_child_2 = other_child_node->next->next->neighbor;
+            
+            //  NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+            grand_child_1->distance_2_pruning = 1;
+            grand_child_2->distance_2_pruning = 1;
             
             SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, true, false, grand_child_2->length);
             node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0, true));
@@ -795,7 +802,9 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
             return false; // continue;
         }
         else
+        {
             node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
+        }
         
         // now pass the crawling up to the parent node
         // get or recompute the bottom regions (comming from 2 children) of the parent node
@@ -823,6 +832,8 @@ bool Tree::addNeighborsSeekSubtreePlacement(Node* const top_node, Node* const ot
         }
         
         // add the parent node to node_stack for traversing later
+        // NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+        top_node->neighbor->getTopNode()->distance_2_pruning = top_node->distance_2_pruning + 1;
         node_stack.push(new UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
     }
     // now consider case of root node -> only need to care about the sibling node
@@ -949,6 +960,9 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             {
                 Node* child_1 = updating_node->node->getOtherNextNode()->neighbor;
                 Node* child_2 = child_1->neighbor->getOtherNextNode()->neighbor;
+                //  NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+                child_1->distance_2_pruning = updating_node->node->distance_2_pruning + 1;
+                child_2->distance_2_pruning = updating_node->node->distance_2_pruning + 1;
                 
                 // add child_1 to node_stack
                 addChildSeekSubtreePlacement(child_1, child_2, lh_diff_at_node, updating_node, node_stack, threshold_prob);
@@ -987,6 +1001,8 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
             // keep traversing upwards
             if (keepTraversing(best_lh_diff, lh_diff_at_node, strict_stop_seeking_placement_subtree, updating_node, failure_limit_subtree, thresh_log_lh_subtree))
             {
+                // NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+                other_child->distance_2_pruning = top_node->distance_2_pruning + 1;
                 if(!addNeighborsSeekSubtreePlacement(top_node, other_child, parent_upper_lr_regions, bottom_regions, lh_diff_at_node, updating_node, node_stack, threshold_prob)) continue;
             }
             else
@@ -1196,6 +1212,16 @@ void Tree::updateRegionsPlaceSubTreeAbove(Node* const subtree, Node* const next_
 template<void (Tree::*updateRegionsSubTree)(Node* const, Node* const, Node* const, Node* const, SeqRegions* &, const SeqRegions* const, const  SeqRegions* const, const SeqRegions* const, RealNumType&)>
 void Tree::connectSubTree2Branch(const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const subtree, Node* const sibling_node, const RealNumType top_distance, const RealNumType down_distance, RealNumType &best_blength, SeqRegions* &best_child_regions, const SeqRegions* const upper_left_right_regions)
 {
+    //  NHANLT - DELETE: extremely uneffecient because opening file multiple times but just for testing
+    // log the depth of pruning and regrafting branches
+    // open the tree file
+    string output_file(params->diff_path);
+    ofstream out = ofstream(output_file + ".statistics.txt", std::ios_base::app);
+    // write depths: original pruning branch; original regrafting branch; actual pruning branch; actual regrafting branch; distance (regarding the number of branches) between the pruning and the regrafting branches
+    out << subtree->depth << "\t" << sibling_node->depth << "\t" << getNewDepth(subtree) << "\t" << getNewDepth(sibling_node) << "\t" << sibling_node->distance_2_pruning << endl;
+    // close the output file
+    out.close();
+    
     const RealNumType threshold_prob = params->threshold_prob;
     
     // re-use internal nodes
@@ -1285,6 +1311,16 @@ void Tree::placeSubTreeMidBranch(Node* const selected_node, Node* const subtree,
 
 void Tree::connectSubTree2Root(Node* const subtree, const SeqRegions* const subtree_regions, const SeqRegions* const lower_regions, Node* const sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, SeqRegions* &best_parent_regions)
 {
+    //  NHANLT - DELETE: extremely uneffecient because opening file multiple times but just for testing
+    // log the depth of pruning and regrafting branches
+    // open the tree file
+    string output_file(params->diff_path);
+    ofstream out = ofstream(output_file + ".statistics.txt", std::ios_base::app);
+    // write depths: original pruning branch; original regrafting branch; actual pruning branch; actual regrafting branch; distance (regarding the number of branches) between the pruning and the regrafting branches
+    out << subtree->depth << "\t" << sibling_node->depth << "\t" << getNewDepth(subtree) << "\t" << getNewDepth(sibling_node) << "\t" << sibling_node->distance_2_pruning << endl;
+    // close the output file
+    out.close();
+    
     // re-use internal nodes
     Node* next_node_1 = subtree->neighbor;
     Node* new_root = next_node_1->getTopNode();
@@ -1350,7 +1386,11 @@ void Tree::handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegion
     const RealNumType threshold_prob = params->threshold_prob;
     Node* neighbor_node;
     FOR_NEIGHBOR(selected_node, neighbor_node)
+    {
+        // NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+        neighbor_node->distance_2_pruning = selected_node->distance_2_pruning + 1;
         new_node_stack.push(neighbor_node);
+    }
     
     while (!new_node_stack.empty())
     {
@@ -1361,7 +1401,11 @@ void Tree::handlePolytomyPlaceSubTree(Node* const selected_node, const SeqRegion
         if (node->length <= 0)
         {
             FOR_NEIGHBOR(node, neighbor_node)
+            {
+                // NHANLT - DELETE: dummy variable to keep track of the distance of this node to the pruning branch
+                neighbor_node->distance_2_pruning = selected_node->distance_2_pruning + 1;
                 new_node_stack.push(neighbor_node);
+            }
         }
         else
         {
@@ -2333,6 +2377,9 @@ void Tree::setAllNodeOutdated()
     stack<Node*> node_stack;
     node_stack.push(root);
     
+    // NHANLT - DELETE: update depth
+    root->depth = 0;
+    
     // traverse downward to set all descentdant outdated
     while (!node_stack.empty())
     {
@@ -2346,8 +2393,32 @@ void Tree::setAllNodeOutdated()
         // traverse downward
         Node* neighbor_node;
         FOR_NEIGHBOR(node, neighbor_node)
+        {
+            // NHANLT - DELETE: update depth
+            neighbor_node->depth = node->depth + 1;
+            
             node_stack.push(neighbor_node);
+        }
     }
+}
+
+/**
+    NHANLT - DELETE:
+    Get new (actual) depth of a node
+ */
+unsigned short int Tree::getNewDepth(Node* node)
+{
+    node = node->getTopNode();
+    unsigned short int depth = 0;
+    
+    // traverse upwards
+    while (node != root)
+    {
+        node = node->neighbor->getTopNode();
+        depth++;
+    }
+    
+    return depth;
 }
 
 RealNumType Tree::improveEntireTree(bool short_range_search)
