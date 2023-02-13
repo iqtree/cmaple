@@ -1085,6 +1085,9 @@ void Tree::seekSubTreePlacement(Node* &best_node, RealNumType &best_lh_diff, boo
 
 void Tree::applySPR(Node* const subtree, Node* const best_node, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff)
 {
+    // record the SPR applied at this subtree
+    subtree->SPR_applied = true;
+    
     // remove subtree from the tree
     Node* parent_subtree = subtree->neighbor->getTopNode();
     Node* sibling_subtree = subtree->neighbor->getOtherNextNode()->neighbor;
@@ -2342,6 +2345,30 @@ void Tree::setAllNodeOutdated()
         
         // set the current node outdated
         node->outdated = true;
+        node->SPR_applied = false;
+        
+        // traverse downward
+        Node* neighbor_node;
+        FOR_NEIGHBOR(node, neighbor_node)
+            node_stack.push(neighbor_node);
+    }
+}
+
+void Tree::forgetSPRApplied()
+{
+    // start from the root
+    stack<Node*> node_stack;
+    node_stack.push(root);
+    
+    // traverse downward to set all descentdant outdated
+    while (!node_stack.empty())
+    {
+        // pick the top node from the stack
+        Node* node = node_stack.top();
+        node_stack.pop();
+        
+        // forget SPR_applied
+        node->SPR_applied = false;
         
         // traverse downward
         Node* neighbor_node;
@@ -2373,7 +2400,7 @@ RealNumType Tree::improveEntireTree(bool short_range_search)
             node_stack.push(neighbor_node);
         
         // only process outdated node to avoid traversing the same part of the tree multiple times
-        if (node->outdated)
+        if (node->outdated && !node->SPR_applied)
         {
             node->outdated = false;
             

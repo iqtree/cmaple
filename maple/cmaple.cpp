@@ -191,6 +191,9 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         for (int j = 0; j < 20; ++j)
         {
+            // forget SPR_applied flag to allow new SPR moves
+            tree.forgetSPRApplied();
+            
             improvement = tree.improveEntireTree(short_range_search);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
             

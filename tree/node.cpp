@@ -11,6 +11,7 @@ Node::Node(bool is_top_node)
     mid_branch_lh = NULL;
     total_lh = NULL;
     outdated = false;
+    SPR_applied = false;
 }
 
 Node::Node(int n_id, string n_seq_name)
@@ -24,6 +25,7 @@ Node::Node(int n_id, string n_seq_name)
     mid_branch_lh = NULL;
     total_lh = NULL;
     outdated = false;
+    SPR_applied = false;
 }
 
 Node::Node(string n_seq_name)
@@ -37,6 +39,7 @@ Node::Node(string n_seq_name)
     mid_branch_lh = NULL;
     total_lh = NULL;
     outdated = false;
+    SPR_applied = false;
 }
 
 Node::~Node()

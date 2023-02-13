@@ -419,6 +419,11 @@ public:
     void setAllNodeOutdated();
     
     /**
+        Forget SPR_applied flag
+     */
+    void forgetSPRApplied();
+    
+    /**
         Try to improve the entire tree with SPR moves
         @return total improvement
      */

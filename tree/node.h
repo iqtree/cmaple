@@ -10,10 +10,15 @@
 class Node {
 public:
     /**
-    Flag to prevent traversing the same part of the tree multiple times.
+    TRUE if the likelihoods were updated due to some SPR moves
     */
     bool outdated;
-
+    
+    /**
+    TRUE if we applied SPR move on the upper branch of this node
+    */
+    bool SPR_applied;
+    
     /**
         TRUE if this node is the top node in a phylogenetic node structure
      */
