@@ -266,8 +266,92 @@ void CMaple::exportOutput(const string &filename)
     out.close();
 }
 
+void test()
+{
+    // test phylonode is a leaf
+    Index tmp_index{0,RIGHT};
+    LeafNode leaf;
+    leaf.less_info_seqs.push_back("less_info_1");
+    leaf.seq_name_index = 100;
+    leaf.neighbor_index = std::move(Index(200, LEFT));
+    PhyloNode phylonode1(std::move(leaf));
+    std::cout << "Leaf node: " << std::endl;
+
+    //std::cout << "- (size of) total_lh: " << phylonode1.getTotalLh().size() << std::endl;
+    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(tmp_index).size() << std::endl;
+    std::cout << "- seq_name_index:" << phylonode1.getSeqNameIndex() << std::endl;
+    std::cout << "- neighbor_index: " << phylonode1.getNeighborIndex(tmp_index) << std::endl;
+    std::cout << "- (size of) less_info_seqs:" << phylonode1.getLessInfoSeqs().size() << std::endl;
+    
+    
+    // change total_lh
+    std::cout << " Update total_lh " << std::endl;
+    SeqRegions new_total_lh;
+    new_total_lh.reserve(10);
+    new_total_lh.emplace_back(0, 100);
+    phylonode1.setTotalLh(std::move(new_total_lh));
+    std::cout << "- (size of) total_lh (after updating): " << phylonode1.getTotalLh().size() << std::endl;
+    
+    std::cout << " Update partial_lh " << std::endl;
+    SeqRegions new_partial_lh = SeqRegions();
+    new_partial_lh.emplace_back(0, 100);
+    phylonode1.setPartialLh(tmp_index, std::move(new_partial_lh));
+    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(tmp_index).size() << std::endl;
+    
+    // test phylonode is an internal node
+    Index tmp_index1{300,TOP};
+    Index tmp_index2{300,LEFT};
+    Index tmp_index3{300,RIGHT};
+    InternalNode internal;
+    internal.neighbor_index = std::move(std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)});
+    PhyloNode phylonode2(std::move(internal));
+    std::cout << "Internal node: " << std::endl;
+    std::cout << "- (size of) partial_lh (top, left, right): ";
+    std::cout << phylonode2.getPartialLh(tmp_index1).size() << " ";
+    std::cout << phylonode2.getPartialLh(tmp_index2).size() << " ";
+    std::cout << phylonode2.getPartialLh(tmp_index3).size() << std::endl;
+    std::cout << "- neighbor_index (top, left, right): ";
+    std::cout << phylonode2.getNeighborIndex(tmp_index1) << " ";
+    std::cout << phylonode2.getNeighborIndex(tmp_index2) << " ";
+    std::cout << phylonode2.getNeighborIndex(tmp_index3) << std::endl;
+    
+    std::cout << " Update partial_lh at the left mininode" << std::endl;
+    SeqRegions new_partial_lh1 = SeqRegions();
+    new_partial_lh1.emplace_back(1, 200);
+    phylonode2.setPartialLh(tmp_index2, std::move(new_partial_lh1));
+    std::cout << "- (size of) partial_lh at the left mininode: " << phylonode2.getPartialLh(tmp_index2).size() << std::endl;
+    
+    // create a phylonode as an internal node
+    PhyloNode phylonode3;
+    
+    /*std::cout << "size of a single MiniNode (old):  " << sizeof(Node) << '\n';
+    // however, the actual memory allocated by the call to `new` will be larger, since the allocator used predefined block sizes:
+    Node* p = new Node();
+    Node* p2 = new Node();
+    auto diff = (char*)p2 - (char*)p;
+    std::cout << "size of a single MiniNode (old, when allocated by new): " << diff << '\n';
+
+    std::cout << "size of a full PhyloNode (new): " << sizeof(PhyloNode) << '\n';
+    std::cout << " + size of a InternalNode (new): " << sizeof(InternalNode) << '\n';
+    std::cout << " + size of a LeafNode (new): " << sizeof(LeafNode) << '\n';
+    std::cout << " + size of a std::variant (new): " << sizeof(std::variant<InternalNode, LeafNode>) << '\n';
+    std::cout << " + size of a myVariant (new): " << sizeof(MyVariant) << '\n';
+    
+    const int nr_seqs = 5e5;
+    const int old_nodes = nr_seqs * 3 + nr_seqs; // estimate: as many internal phylonodes (with 3 Node's each) as leaf nodes
+    const int pylonodes = nr_seqs * 2; // number of internal nodes equals leaf nodes
+    std::cout << "\n\nMemory usage:\n"
+    "  for " << nr_seqs/1000 << "k Seqs:\n"
+    "    old nodes (" << old_nodes/1000 << "k) allocated with 'new'  : " << diff * old_nodes / 1024/ 1024 << " MB\n"
+    "    new phylonodes (" << pylonodes/1000 << "k) in std::vector : " << sizeof(PhyloNode) * pylonodes / 1024/ 1024 << " MB\n";*/
+    
+    return EXIT_SUCCESS;
+}
+
 void runCMaple(Params &params)
 {
+    //test();
+    
     auto start = getRealTime();
     CMaple cmaple(params);
     

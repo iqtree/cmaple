@@ -6,6 +6,282 @@
 #ifndef NODE_H
 #define NODE_H
 
+// ########### BEGIN OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
+/** Index for a mininode of a phylonode */
+enum MiniIndex
+{
+    TOP,
+    LEFT,
+    RIGHT
+};
+
+/** Holds a space efficient index into a vector<PhyloNode> and subindex for the MiniNode inside the Phylonode */
+struct Index
+{
+    Index(uint32_t vec_index, MiniIndex mi)
+    {
+        setVectorIndex(vec_index);
+        setMiniIndex(mi);
+    }
+
+    MiniIndex getMiniIndex() const
+    {
+        return MiniIndex(value_ >> 30);
+    }
+    
+    void setMiniIndex(MiniIndex mi)
+    {
+        value_ = (value_ & keep_value) | (uint32_t(mi) << 30);
+    }
+
+    uint32_t getVectorIndex() const
+    {
+        // kill the first two bits (they belong to the mini index)
+        return value_ & keep_value;
+    }
+    
+    void setVectorIndex(uint32_t vecindex)
+    {
+        value_ = (value_ & keep_mini) | vecindex;
+    }
+    
+    /** constructor */
+    Index() = default;
+    
+    /** deconstructor */
+    ~Index() = default;
+    
+private:
+    // stores two ints: 2bit for mini index, and 30 bit for vector index
+    // i.e.  MMVVVVV...VVVV
+    uint32_t value_;
+    // keep_value is: 0011111...111
+    static constexpr uint32_t keep_value = uint32_t(~0) >> 2;
+    // keep_mini is: 1100000...000
+    static constexpr uint32_t keep_mini = 3 << 30;
+};
+
+// just for testing
+/** operator<< */
+std::ostream& operator<<(std::ostream& os, const Index& index)
+{
+    os << index.getVectorIndex() << " " << index.getMiniIndex();
+    return os;
+}
+
+/** An internal node of the tree containing 3 minonodes*/
+struct InternalNode
+{
+    // There partial_lh(s) for the three mininodes, which represent the lower; upper left; upper right likelihoods
+    std::array<std::unique_ptr<SeqRegions>,3> partial_lh = {std::make_unique<SeqRegions>(SeqRegions()), std::make_unique<SeqRegions>(SeqRegions()), std::make_unique<SeqRegions>(SeqRegions())};
+    
+    // We need to keep track of the index of the neighbor miniNode
+    std::array<Index,3> neighbor_index;
+    
+    /** constructor */
+    InternalNode() = default;
+    
+    /// Move CTor
+    InternalNode(InternalNode&& internal) = default;
+    
+    /// Move Assignment
+    InternalNode& operator=(InternalNode&& internal) = default;
+    
+    /** deconstructor */
+    ~InternalNode()
+    {
+        std::cout << "~InternalNode()" << std::endl;
+    };
+}; // 40 (includes 4 byte padding at the end)
+
+/** A leaf node of the tree*/
+struct LeafNode
+{
+    // vector is wasteful here.. (24 bytes)
+    std::vector<std::string> less_info_seqs; // leafs only (contains seq_names)
+    // better use 2x4 bytes and store sequence names in a separate (global) vector
+    //uint32_t index_start;
+    //uint32_t index_end;   // but this requires some sorting... so lets not go there for now
+    // a quick improvement would be to implement our own vector
+    // which only takes 16 bytes (8 bytes for a pointer to heap memory + 4byte for size + 4 byte for capacity)
+
+    /// however we can quickly optimize the seq_name to just a char* and store sequence names as a really long contatenated global string
+    // std::string seq_name;  // too wasteful
+    //char* seq_name;
+    // and we can do even better when just storing an index into a combined string or a vector<string> (which would need to be provided externally)
+    uint32_t seq_name_index;
+    
+    //MiniNode leaf; // this leads to padding... so better list the members individually
+    // .. and in the right order
+    Index neighbor_index;
+    std::unique_ptr<SeqRegions> partial_lh = std::make_unique<SeqRegions>(SeqRegions());
+    
+    /** constructor */
+    LeafNode() = default;
+    
+    /// Move CTor
+    LeafNode(LeafNode&& leaf) = default;
+    
+    /// Move Assignment
+    LeafNode& operator=(LeafNode&& leaf) = default;
+    
+    /** deconstructor */
+    ~LeafNode()
+    {
+        std::cout << "~LeafNode()" << std::endl;
+    };
+}; // size: 40 bytes. no padding! :) -- we could bring this down to 32 bytes if need be
+
+/** An intermediate data structure to store either InternalNode or LeafNode */
+union MyVariant
+{
+    InternalNode internal;
+    LeafNode leaf;
+    
+    /** constructor */
+    MyVariant():internal() {};
+    
+    /** constructor */
+    MyVariant(LeafNode&& leaf_):leaf(std::move(leaf_)) {};
+    
+    /** constructor */
+    MyVariant(InternalNode&& internal_):internal(std::move(internal_)) {};
+    
+    /** deconstructor */
+    ~MyVariant() {};
+    
+    /** switch from  InternalNode to LeafNode */
+    void switch2LeafNode();
+    
+    /** switch from  LeafNode to InternalNode */
+    void switch2InternalNode();
+};
+
+struct OtherLh
+{
+    // lh[0] ~ total_lh
+    // lh[1] ~ mid_branch_lh;
+    SeqRegions lh[2];
+    
+    /** constructor */
+    OtherLh() = default;
+};
+
+/** An node in a phylogenetic tree, which could be either an internal or a leaf */
+struct PhyloNode
+{
+    // NHANLT: move total_lh, mid_branch_lh from MiniNode to PhyloNode
+    std::unique_ptr<OtherLh> other_lh = std::make_unique<OtherLh>(OtherLh());
+    
+    bool is_internal_ = true; // is our MyVariant an internal node or a leaf?
+    
+    // common members for Internal and Leaf nodes
+    bool outdated;
+    float length; // using float allows it to fit into the 6 bytes padding after the two bools.
+    // .. using a double would make PyhloNode 8 bytes larger
+    
+    /** constructor */
+    PhyloNode() = default;
+    
+    /** constructor */
+    PhyloNode(LeafNode&& leaf):data(std::move(leaf))
+    {
+        is_internal_ = false;
+    };
+    
+    /** constructor */
+    PhyloNode(InternalNode&& internal):data(std::move(internal))
+    {
+        is_internal_ = true;
+    };
+    
+    /** deconstructor */
+    ~PhyloNode()
+    {
+        std::cout << "~PhyloNode()" << std::endl;
+        
+        // delete MyVariant (data)
+        if (is_internal_)
+            data.internal.~InternalNode();
+        else
+            data.leaf.~LeafNode();
+    };
+    
+    /**
+        Get total_lh
+     */
+    SeqRegions& getTotalLh();
+    
+    /**
+        Set total_lh
+     */
+    void setTotalLh(SeqRegions&& total_lh);
+    
+    /**
+        Get mid_branch_lh
+     */
+    SeqRegions& getMidBranchLh();
+    
+    /**
+        Set mid_branch_lh
+     */
+    void setMidBranchLh(SeqRegions&& mid_branch_lh);
+    
+    /**
+        Get partial_lh
+     */
+    SeqRegions& getPartialLh(const Index index);
+    
+    /**
+        Set partial_lh
+     */
+    void setPartialLh(const Index index, SeqRegions&& partial_lh_);
+    
+    /**
+        Get the index of the neighbor node
+     */
+    Index getNeighborIndex(const Index index) const;
+    
+    /**
+        Set the index of the neighbor node
+     */
+    void setNeighborIndex(const Index index, const Index neighbor_index_);
+    
+    /**
+        Get the list of less-informative-sequences
+     */
+    std::vector<std::string>& getLessInfoSeqs();
+    
+    /**
+        Add less-informative-sequence
+     */
+    void addLessInfoSeqs(std::string&& seq_name);
+    
+    /**
+        Get the index of the sequence name
+     */
+    uint32_t getSeqNameIndex() const;
+    
+    /**
+        Set the index of the sequence name
+     */
+    void setSeqNameIndex(uint32_t seq_name_index_);
+    
+    /**
+        Update MyVariant to LeafNode
+     */
+    void updateMyVariant(LeafNode&& leaf);
+    
+    /**
+        Update MyVariant to InternalNode
+     */
+    void updateMyVariant(InternalNode&& internal);
+
+private:
+    MyVariant data;
+};
+// ########### END OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
+
 /** A node of the tree following the cyclic tree structure */
 class Node {
 public:
@@ -44,7 +320,7 @@ public:
     /**
         Length of branch connecting to parent
      */
-    RealNumType length;
+    double length;
     
     /**
         Next node in the circle of neighbors. For tips, circle = NULL

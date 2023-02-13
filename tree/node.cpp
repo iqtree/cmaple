@@ -1,5 +1,143 @@
 #include "node.h"
 using namespace std;
+
+// ########### BEGIN OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
+SeqRegions& PhyloNode::getTotalLh()
+{
+    return other_lh->lh[0];
+}
+
+void PhyloNode::setTotalLh(SeqRegions&& total_lh)
+{
+    other_lh->lh[0] = std::move(total_lh);
+}
+
+SeqRegions& PhyloNode::getMidBranchLh()
+{
+    return other_lh->lh[1];
+}
+
+void PhyloNode::setMidBranchLh(SeqRegions&& mid_branch_lh)
+{
+    other_lh->lh[1] = std::move(mid_branch_lh);
+}
+
+std::vector<std::string>& PhyloNode::getLessInfoSeqs()
+{
+    ASSERT(!is_internal_);
+    return data.leaf.less_info_seqs;
+}
+
+void PhyloNode::addLessInfoSeqs(std::string&& seq_name)
+{
+    ASSERT(!is_internal_);
+    data.leaf.less_info_seqs.push_back(std::move(seq_name));
+}
+
+SeqRegions& PhyloNode::getPartialLh(const Index index)
+{
+    // if it's an internal node
+    if (is_internal_)
+    {
+        // return the corresponding partial_lh based on the mini-index
+        return *data.internal.partial_lh[index.getMiniIndex()] ;
+    }
+    
+    // if it's a leaf
+    return *data.leaf.partial_lh;
+}
+
+void PhyloNode::setPartialLh(const Index index, SeqRegions&& partial_lh_)
+{
+    // if it's an internal node
+    if (is_internal_)
+    {
+        // update the corresponding partial_lh based on the mini-index
+        data.internal.partial_lh[index.getMiniIndex()] = std::make_unique<SeqRegions>(std::move(partial_lh_));
+    }
+    // if it's a leaf
+    else
+    {
+        // update the partial_lh
+        data.leaf.partial_lh = std::make_unique<SeqRegions>(std::move(partial_lh_));
+    }
+}
+
+Index PhyloNode::getNeighborIndex(const Index index) const
+{
+    // if it's an internal node
+    if (is_internal_)
+    {
+        // return the corresponding neighbor_index based on the mini-index
+        return data.internal.neighbor_index[index.getMiniIndex()] ;
+    }
+    
+    // if it's a leaf
+    return data.leaf.neighbor_index;
+}
+
+void PhyloNode::setNeighborIndex(const Index index, const Index neighbor_index_)
+{
+    // if it's an internal node
+    if (is_internal_)
+    {
+        // update the corresponding neighbor_index based on the mini-index
+        data.internal.neighbor_index[index.getMiniIndex()]  = neighbor_index_;
+    }
+    // if it's a leaf
+    else
+    {
+        data.leaf.neighbor_index = neighbor_index_;
+    }
+}
+
+uint32_t PhyloNode::getSeqNameIndex() const
+{
+    ASSERT(!is_internal_);
+    return data.leaf.seq_name_index;
+}
+
+void PhyloNode::setSeqNameIndex(uint32_t seq_name_index_)
+{
+    ASSERT(!is_internal_);
+    data.leaf.seq_name_index = seq_name_index_;
+}
+
+void PhyloNode::updateMyVariant(LeafNode&& leaf)
+{
+    ASSERT(!is_internal_ && "Wrong data type! data should be a leaf node");
+    
+    // update leaf
+    data.leaf = std::move(leaf);
+}
+
+void PhyloNode::updateMyVariant(InternalNode&& internal)
+{
+    ASSERT(is_internal_ && "Wrong data type! data should be an internal node");
+    
+    // update internal
+    data.internal = std::move(internal);
+}
+
+void MyVariant::switch2LeafNode()
+{
+    // explicitly release the first active-member (InternalNode)
+    internal.~InternalNode();
+    
+    // *** explicitly initialize the second active-member
+    new (&leaf) LeafNode;
+}
+
+void MyVariant::switch2InternalNode()
+{
+    // explicitly release the first active-member (LeafNode)
+    leaf.~LeafNode();
+    
+    // *** explicitly initialize the second active-member
+    new (&internal) InternalNode;
+}
+// ########### END OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
+
 Node::Node(bool is_top_node)
 {
     seq_name = "";
