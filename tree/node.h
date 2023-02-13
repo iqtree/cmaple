@@ -61,14 +61,6 @@ private:
     static constexpr uint32_t keep_mini = 3 << 30;
 };
 
-// just for testing
-/** operator<< */
-std::ostream& operator<<(std::ostream& os, const Index& index)
-{
-    os << index.getVectorIndex() << " " << index.getMiniIndex();
-    return os;
-}
-
 /** An internal node of the tree containing 3 minonodes*/
 struct InternalNode
 {
@@ -132,6 +124,16 @@ struct LeafNode
     };
 }; // size: 40 bytes. no padding! :) -- we could bring this down to 32 bytes if need be
 
+struct OtherLh
+{
+    // lh[0] ~ total_lh
+    // lh[1] ~ mid_branch_lh;
+    SeqRegions lh[2];
+    
+    /** constructor */
+    OtherLh() = default;
+};
+
 /** An intermediate data structure to store either InternalNode or LeafNode */
 union MyVariant
 {
@@ -155,16 +157,6 @@ union MyVariant
     
     /** switch from  LeafNode to InternalNode */
     void switch2InternalNode();
-};
-
-struct OtherLh
-{
-    // lh[0] ~ total_lh
-    // lh[1] ~ mid_branch_lh;
-    SeqRegions lh[2];
-    
-    /** constructor */
-    OtherLh() = default;
 };
 
 /** An node in a phylogenetic tree, which could be either an internal or a leaf */
@@ -280,6 +272,11 @@ struct PhyloNode
 private:
     MyVariant data;
 };
+
+// just for testing
+/** operator<< */
+std::ostream& operator<<(std::ostream& os, const Index& index);
+
 // ########### END OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
 
 /** A node of the tree following the cyclic tree structure */

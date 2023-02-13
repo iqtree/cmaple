@@ -2,6 +2,12 @@
 using namespace std;
 
 // ########### BEGIN OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
+std::ostream& operator<<(std::ostream& os, const Index& index)
+{
+    os << index.getVectorIndex() << " " << index.getMiniIndex();
+    return os;
+}
+
 SeqRegions& PhyloNode::getTotalLh()
 {
     return other_lh->lh[0];

@@ -305,7 +305,7 @@ void test()
     InternalNode internal;
     internal.neighbor_index = std::move(std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)});
     PhyloNode phylonode2(std::move(internal));
-    std::cout << "Internal node: " << std::endl;
+    std::cout << "\n\nInternal node: " << std::endl;
     std::cout << "- (size of) partial_lh (top, left, right): ";
     std::cout << phylonode2.getPartialLh(tmp_index1).size() << " ";
     std::cout << phylonode2.getPartialLh(tmp_index2).size() << " ";
@@ -324,7 +324,7 @@ void test()
     // create a phylonode as an internal node
     PhyloNode phylonode3;
     
-    /*std::cout << "size of a single MiniNode (old):  " << sizeof(Node) << '\n';
+    std::cout << "\n\n\nsize of a single MiniNode (old):  " << sizeof(Node) << '\n';
     // however, the actual memory allocated by the call to `new` will be larger, since the allocator used predefined block sizes:
     Node* p = new Node();
     Node* p2 = new Node();
@@ -343,14 +343,13 @@ void test()
     std::cout << "\n\nMemory usage:\n"
     "  for " << nr_seqs/1000 << "k Seqs:\n"
     "    old nodes (" << old_nodes/1000 << "k) allocated with 'new'  : " << diff * old_nodes / 1024/ 1024 << " MB\n"
-    "    new phylonodes (" << pylonodes/1000 << "k) in std::vector : " << sizeof(PhyloNode) * pylonodes / 1024/ 1024 << " MB\n";*/
-    
-    return EXIT_SUCCESS;
+    "    new phylonodes (" << pylonodes/1000 << "k) in std::vector : " << sizeof(PhyloNode) * pylonodes / 1024/ 1024 << " MB\n";
 }
 
 void runCMaple(Params &params)
 {
-    //test();
+    // NHANLT: test new funtions
+    test();
     
     auto start = getRealTime();
     CMaple cmaple(params);
