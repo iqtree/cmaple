@@ -508,7 +508,7 @@ void initDefaultValue(Params &params)
     params.ref_path = NULL;
     params.only_extract_diff = false;
     params.hamming_weight = 1000;
-    params.model_name = "JC";
+    params.model_name = "GTR";
     params.redo_inference = false;
     params.threshold_prob = 1e-8;
     params.mutation_update_period = 25;
