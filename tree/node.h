@@ -160,18 +160,19 @@ union MyVariant
 };
 
 /** An node in a phylogenetic tree, which could be either an internal or a leaf */
-struct PhyloNode
+class PhyloNode
 {
-    // NHANLT: move total_lh, mid_branch_lh from MiniNode to PhyloNode
-    std::unique_ptr<OtherLh> other_lh = std::make_unique<OtherLh>(OtherLh());
+    std::unique_ptr<OtherLh> other_lh_ = std::make_unique<OtherLh>(OtherLh());
     
-    bool is_internal_ = true; // is our MyVariant an internal node or a leaf?
+    const bool is_internal_; // is our MyVariant an internal node or a leaf?
     
-    // common members for Internal and Leaf nodes
-    bool outdated;
-    float length; // using float allows it to fit into the 6 bytes padding after the two bools.
+    /// common members for Internal and Leaf nodes
+    bool outdated_;
+    float length_; // using float allows it to fit into the 6 bytes padding after the two bools.
     // .. using a double would make PyhloNode 8 bytes larger
-    
+
+    MyVariant data_;    
+  public:
     /** constructor */
     PhyloNode() = default;
     
