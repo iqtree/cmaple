@@ -2412,7 +2412,7 @@ unsigned short int Tree::getNewDepth(Node* node)
     unsigned short int depth = 0;
     
     // traverse upwards
-    while (node != root)
+    while (node->neighbor)
     {
         node = node->neighbor->getTopNode();
         depth++;
