@@ -106,7 +106,7 @@ struct LeafNode
     //MiniNode leaf; // this leads to padding... so better list the members individually
     // .. and in the right order
     Index neighbor_index;
-    std::unique_ptr<SeqRegions> partial_lh = std::make_unique<SeqRegions>(SeqRegions());
+    std::unique_ptr<SeqRegions> partial_lh;
     
     /** constructor */
     LeafNode() = default;
