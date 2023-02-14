@@ -188,7 +188,7 @@ class PhyloNode
         is_internal_ = true;
     };
     
-    /** deconstructor */
+    /** destructor */
     ~PhyloNode()
     {
         std::cout << "~PhyloNode()" << std::endl;
