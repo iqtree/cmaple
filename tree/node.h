@@ -174,7 +174,12 @@ class PhyloNode
     MyVariant data_;    
   public:
     /** constructor */
-    PhyloNode() = default;
+    PhyloNode()
+    {
+      // could also be part of a separate class test, but we need to make sure that this is enforced and noone accidentally
+      // changes it
+      std::static_assert(sizeof(PhyloNode) == 64);  // make sure it fits on a cacheline
+    };
     
     /** constructor */
     PhyloNode(LeafNode&& leaf):data(std::move(leaf))
