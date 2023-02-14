@@ -156,7 +156,7 @@ private:
     // is our MyVariant an internal node or a leaf?
     const bool is_internal_;
     
-    /// flag to avoid traversing a clade multiple time during topology optimization
+    /// flag to avoid traversing a clade multiple times during topology optimization
     bool outdated_;
     
     // branch length
