@@ -271,8 +271,6 @@ class PhyloNode
      */
     void updateMyVariant(InternalNode&& internal);
 
-private:
-    MyVariant data;
 };
 
 // just for testing
