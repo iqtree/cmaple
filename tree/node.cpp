@@ -82,7 +82,7 @@ Index PhyloNode::getNeighborIndex(const MiniIndex index) const
     return data.leaf.neighbor_index;
 }
 
-void PhyloNode::setNeighborIndex(const Index index, const Index neighbor_index_)
+void PhyloNode::setNeighborIndex(const MiniIndex index, const Index neighbor_index_)
 {
     // if it's an internal node
     if (is_internal_)
