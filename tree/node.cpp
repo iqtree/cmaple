@@ -53,7 +53,7 @@ SeqRegions& PhyloNode::getPartialLh(const Index index)
     return *data.leaf.partial_lh;
 }
 
-void PhyloNode::setPartialLh(const Index index, SeqRegions&& partial_lh_)
+void PhyloNode::setPartialLh(const MiniIndex index, SeqRegions&& partial_lh_)
 {
     // if it's an internal node
     if (is_internal_)
