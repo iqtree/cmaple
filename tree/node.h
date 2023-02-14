@@ -8,7 +8,7 @@
 
 // ########### BEGIN OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
 /** Index for a mininode of a phylonode */
-enum MiniIndex
+enum MiniIndex : uint32_t
 {
     TOP,
     LEFT,
