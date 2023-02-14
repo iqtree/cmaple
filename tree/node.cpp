@@ -109,7 +109,7 @@ void PhyloNode::setSeqNameIndex(uint32_t seq_name_index_)
     data.leaf.seq_name_index = seq_name_index_;
 }
 
-void PhyloNode::updateMyVariant(LeafNode&& leaf)
+void PhyloNode::setNode(LeafNode&& leaf)
 {
     ASSERT(!is_internal_ && "Wrong data type! data should be a leaf node");
     
@@ -117,7 +117,7 @@ void PhyloNode::updateMyVariant(LeafNode&& leaf)
     data.leaf = std::move(leaf);
 }
 
-void PhyloNode::updateMyVariant(InternalNode&& internal)
+void PhyloNode::setNode(InternalNode&& internal)
 {
     ASSERT(is_internal_ && "Wrong data type! data should be an internal node");
     
