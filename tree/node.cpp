@@ -53,7 +53,7 @@ void PhyloNode::setLength(float new_length)
     length_ = new_length;
 }
 
-bool PhyloNode::isTop(const MiniIndex mini_index)
+bool PhyloNode::isTop(const MiniIndex mini_index) const
 {
     return (!is_internal_
             || mini_index == TOP);
