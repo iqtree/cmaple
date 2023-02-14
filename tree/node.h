@@ -182,16 +182,12 @@ class PhyloNode
     };
     
     /** constructor */
-    PhyloNode(LeafNode&& leaf):data(std::move(leaf))
-    {
-        is_internal_ = false;
-    };
+    PhyloNode(LeafNode&& leaf): is_internal_{false}, data_(std::move(leaf))
+    {};
     
     /** constructor */
-    PhyloNode(InternalNode&& internal):data(std::move(internal))
-    {
-        is_internal_ = true;
-    };
+    PhyloNode(InternalNode&& internal): is_internal_{true}, data(std::move(internal))
+    {};
     
     /** destructor */
     ~PhyloNode()
