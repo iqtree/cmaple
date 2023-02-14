@@ -40,7 +40,7 @@ void PhyloNode::addLessInfoSeqs(std::string&& seq_name)
     data.leaf.less_info_seqs.push_back(std::move(seq_name));
 }
 
-SeqRegions& PhyloNode::getPartialLh(const Index index)
+SeqRegions& PhyloNode::getPartialLh(const MiniIndex index)
 {
     // if it's an internal node
     if (is_internal_)
