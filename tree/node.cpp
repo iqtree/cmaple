@@ -33,7 +33,7 @@ bool PhyloNode::isInternal() const
     return is_internal_;
 }
 
-bool PhyloNode::isOutdated()
+bool PhyloNode::isOutdated() const
 {
     return outdated_;
 }
