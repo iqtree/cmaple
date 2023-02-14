@@ -18,38 +18,53 @@ enum MiniIndex : uint32_t
 /** Holds a space efficient index into a vector<PhyloNode> and subindex for the MiniNode inside the Phylonode */
 struct Index
 {
+    /**
+        constructor
+        it's required by the constructor of LeafNode
+     */
+    Index() = default;
+    
+    /**
+        constructor
+     */
     Index(uint32_t vec_index, MiniIndex mi)
     {
         setVectorIndex(vec_index);
         setMiniIndex(mi);
     }
 
+    /**
+        return the mini-index
+     */
     MiniIndex getMiniIndex() const
     {
         return MiniIndex(value_ >> 30);
     }
     
+    /**
+        set the mini-index
+     */
     void setMiniIndex(MiniIndex mi)
     {
         value_ = (value_ & keep_value) | (uint32_t(mi) << 30);
     }
 
+    /**
+        return the index of a phylonode
+     */
     uint32_t getVectorIndex() const
     {
         // kill the first two bits (they belong to the mini index)
         return value_ & keep_value;
     }
     
+    /**
+        set the index of a phylonode
+     */
     void setVectorIndex(uint32_t vecindex)
     {
         value_ = (value_ & keep_mini) | vecindex;
     }
-    
-    /** constructor */
-    Index() = default;
-    
-    /** deconstructor */
-    ~Index() = default;
     
 private:
     // stores two ints: 2bit for mini index, and 30 bit for vector index
@@ -65,32 +80,18 @@ private:
 struct InternalNode
 {
     // There partial_lh(s) for the three mininodes, which represent the lower; upper left; upper right likelihoods
-    std::array<std::unique_ptr<SeqRegions>,3> partial_lh;
+    std::array<std::unique_ptr<SeqRegions>,3> partial_lh_;
     
     // We need to keep track of the index of the neighbor miniNode
-    std::array<Index,3> neighbor_index;
+    std::array<Index,3> neighbor_index_;
     
-    /** constructor */
-    InternalNode() = default;
-    
-    /// Move CTor
-    InternalNode(InternalNode&& internal) = default;
-    
-    /// Move Assignment
-    InternalNode& operator=(InternalNode&& internal) = default;
-    
-    /** deconstructor */
-    ~InternalNode()
-    {
-        std::cout << "~InternalNode()" << std::endl;
-    };
 }; // 40 (includes 4 byte padding at the end)
 
 /** A leaf node of the tree*/
 struct LeafNode
 {
     // vector is wasteful here.. (24 bytes)
-    std::vector<std::string> less_info_seqs; // leafs only (contains seq_names)
+    std::vector<std::string> less_info_seqs_; // leafs only (contains seq_names)
     // better use 2x4 bytes and store sequence names in a separate (global) vector
     //uint32_t index_start;
     //uint32_t index_end;   // but this requires some sorting... so lets not go there for now
@@ -98,108 +99,87 @@ struct LeafNode
     // which only takes 16 bytes (8 bytes for a pointer to heap memory + 4byte for size + 4 byte for capacity)
 
     /// however we can quickly optimize the seq_name to just a char* and store sequence names as a really long contatenated global string
-    // std::string seq_name;  // too wasteful
-    //char* seq_name;
     // and we can do even better when just storing an index into a combined string or a vector<string> (which would need to be provided externally)
-    uint32_t seq_name_index;
+    uint32_t seq_name_index_;
     
-    //MiniNode leaf; // this leads to padding... so better list the members individually
-    // .. and in the right order
-    Index neighbor_index;
-    std::unique_ptr<SeqRegions> partial_lh;
+    // index to connect to its neighbor node
+    Index neighbor_index_;
+    
+    // The partial_lh (lower likelihood)
+    std::unique_ptr<SeqRegions> partial_lh_;
+  
+    /** constructor */
+    LeafNode() {};
     
     /** constructor */
-    LeafNode() = default;
-    
-    /// Move CTor
-    LeafNode(LeafNode&& leaf) = default;
-    
-    /// Move Assignment
-    LeafNode& operator=(LeafNode&& leaf) = default;
-    
-    /** deconstructor */
-    ~LeafNode()
-    {
-        std::cout << "~LeafNode()" << std::endl;
-    };
+    LeafNode(uint32_t new_seq_name_index):seq_name_index_(new_seq_name_index) {};
 }; // size: 40 bytes. no padding! :) -- we could bring this down to 32 bytes if need be
-
-struct OtherLh
-{
-    // lh[0] ~ total_lh
-    // lh[1] ~ mid_branch_lh;
-    SeqRegions lh[2];
-    
-    /** constructor */
-    OtherLh() = default;
-};
-
-/** An intermediate data structure to store either InternalNode or LeafNode */
-union MyVariant
-{
-    InternalNode internal;
-    LeafNode leaf;
-    
-    /** constructor */
-    MyVariant():internal() {};
-    
-    /** constructor */
-    MyVariant(LeafNode&& leaf_):leaf(std::move(leaf_)) {};
-    
-    /** constructor */
-    MyVariant(InternalNode&& internal_):internal(std::move(internal_)) {};
-    
-    /** deconstructor */
-    ~MyVariant() {};
-    
-    /** switch from  InternalNode to LeafNode */
-    void switch2LeafNode();
-    
-    /** switch from  LeafNode to InternalNode */
-    void switch2InternalNode();
-};
 
 /** An node in a phylogenetic tree, which could be either an internal or a leaf */
 class PhyloNode
 {
+private:
+    // store the total_lh and mid_branch_lh
+    struct OtherLh
+    {
+        SeqRegions lh[2];
+    };
+    
+    /** An intermediate data structure to store either InternalNode or LeafNode */
+    union MyVariant
+    {
+        InternalNode internal;
+        LeafNode leaf;
+        
+        /**
+            constructor
+            the compiler complains if I don't explicitly declare this function, it's required by the constructor/destructor of PhyloNode
+         */
+        MyVariant() {};
+        
+        /** constructor */
+        MyVariant(LeafNode&& leaf_):leaf(std::move(leaf_)) {};
+        
+        /** constructor */
+        MyVariant(InternalNode&& internal_):internal(std::move(internal_)) {};
+        
+        /**
+            destructor
+            the compiler complains if I don't explicitly declare this function, it's required by the constructor/destructor of PhyloNode
+         */
+        ~MyVariant() {};
+    };
+    
+    // total_lh and mid_branch_lh
     std::unique_ptr<OtherLh> other_lh_ = std::make_unique<OtherLh>(OtherLh());
     
-    const bool is_internal_; // is our MyVariant an internal node or a leaf?
+    // is our MyVariant an internal node or a leaf?
+    const bool is_internal_;
     
-    /// common members for Internal and Leaf nodes
+    /// flag to avoid traversing a clade multiple time during topology optimization
     bool outdated_;
+    
+    // branch length
     float length_; // using float allows it to fit into the 6 bytes padding after the two bools.
     // .. using a double would make PyhloNode 8 bytes larger
 
-    MyVariant data_;    
+    // store our node (leaf or internal)
+    MyVariant data_;
+    
   public:
     /** constructor */
-    PhyloNode()
+    PhyloNode(): is_internal_{true}
     {
-      // could also be part of a separate class test, but we need to make sure that this is enforced and noone accidentally
-      // changes it
-      std::static_assert(sizeof(PhyloNode) == 64);  // make sure it fits on a cacheline
+        // could also be part of a separate class test, but we need to make sure that this is enforced and noone accidentally
+        // changes it
+        static_assert(sizeof(PhyloNode) <= 64);  // make sure it fits on a cacheline
     };
     
     /** constructor */
-    PhyloNode(LeafNode&& leaf): is_internal_{false}, data_(std::move(leaf))
-    {};
+    PhyloNode(LeafNode&& leaf): is_internal_{false}, data_(std::move(leaf)) {};
     
     /** constructor */
-    PhyloNode(InternalNode&& internal): is_internal_{true}, data(std::move(internal))
-    {};
-    
-    /** destructor */
-    ~PhyloNode()
-    {
-        std::cout << "~PhyloNode()" << std::endl;
-        
-        // delete MyVariant (data)
-        if (is_internal_)
-            data.internal.~InternalNode();
-        else
-            data.leaf.~LeafNode();
-    };
+    PhyloNode(InternalNode&& internal): is_internal_{true}, data_(std::move(internal)) {};
     
     /**
         Get total_lh
@@ -222,24 +202,64 @@ class PhyloNode
     void setMidBranchLh(SeqRegions&& mid_branch_lh);
     
     /**
+        TRUE if it's an internal node
+     */
+    bool isInternal();
+    
+    /**
+        Get outdated_
+     */
+    bool isOutdated();
+    
+    /**
+        Set outdated_
+     */
+    void setOutdated(bool new_outdated);
+    
+    /**
+        Get length
+     */
+    float getLength();
+    
+    /**
+        Set length
+     */
+    void setLength(float new_length);
+    
+    /**
+        TRUE if it's a leaf or the top of the three mini-nodes of an internal node
+     */
+    bool isTop(const MiniIndex mini_index);
+    
+    /**
+        Update LeafNode
+     */
+    void setNode(LeafNode&& leaf);
+    
+    /**
+        Update InternalNode
+     */
+    void setNode(InternalNode&& internal);
+    
+    /**
         Get partial_lh
      */
-    SeqRegions& getPartialLh(const Index index);
+    SeqRegions& getPartialLh(const MiniIndex mini_index);
     
     /**
         Set partial_lh
      */
-    void setPartialLh(const Index index, SeqRegions&& partial_lh_);
+    void setPartialLh(const MiniIndex mini_index, SeqRegions&& partial_lh_);
     
     /**
         Get the index of the neighbor node
      */
-    Index getNeighborIndex(const Index index) const;
+    Index getNeighborIndex(const MiniIndex mini_index) const;
     
     /**
         Set the index of the neighbor node
      */
-    void setNeighborIndex(const Index index, const Index neighbor_index_);
+    void setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index_);
     
     /**
         Get the list of less-informative-sequences
@@ -259,18 +279,7 @@ class PhyloNode
     /**
         Set the index of the sequence name
      */
-    void setSeqNameIndex(uint32_t seq_name_index_);
-    
-    /**
-        Update MyVariant to LeafNode
-     */
-    void updateMyVariant(LeafNode&& leaf);
-    
-    /**
-        Update MyVariant to InternalNode
-     */
-    void updateMyVariant(InternalNode&& internal);
-
+    void setSeqNameIndex(const uint32_t seq_name_index_);
 };
 
 // just for testing
@@ -363,7 +372,7 @@ public:
     Node(bool is_top_node = false);
     
     /**
-        Deconstructor
+        destructor
      */
     ~Node();
     
@@ -427,7 +436,7 @@ public:
     TraversingNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff);
     
     /**
-        Deconstructor
+        destructor
      */
     ~TraversingNode();
 };
@@ -451,7 +460,7 @@ public:
     bool need_updating;
     
     /**
-        TRUE to delete incoming_regions with the deconstructor
+        TRUE to delete incoming_regions with the destructor
      */
     bool delete_regions;
     
@@ -466,7 +475,7 @@ public:
     UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count, bool n_delete_regions);
     
     /**
-        Deconstructor
+        destructor
      */
     ~UpdatingNode();
 };

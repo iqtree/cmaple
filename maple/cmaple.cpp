@@ -269,18 +269,18 @@ void CMaple::exportOutput(const string &filename)
 void test()
 {
     // test phylonode is a leaf
-    Index tmp_index{0,RIGHT};
+    MiniIndex mini_index{RIGHT};
+    Index tmp_index{0,mini_index};
     LeafNode leaf;
-    leaf.less_info_seqs.push_back("less_info_1");
-    leaf.seq_name_index = 100;
-    leaf.neighbor_index = std::move(Index(200, LEFT));
+    leaf.less_info_seqs_.push_back("less_info_1");
+    leaf.seq_name_index_ = 100;
+    leaf.neighbor_index_ = std::move(Index(200, LEFT));
     PhyloNode phylonode1(std::move(leaf));
     std::cout << "Leaf node: " << std::endl;
 
-    //std::cout << "- (size of) total_lh: " << phylonode1.getTotalLh().size() << std::endl;
-    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(tmp_index).size() << std::endl;
+    std::cout << "- (size of) total_lh: " << phylonode1.getTotalLh().size() << std::endl;
     std::cout << "- seq_name_index:" << phylonode1.getSeqNameIndex() << std::endl;
-    std::cout << "- neighbor_index: " << phylonode1.getNeighborIndex(tmp_index) << std::endl;
+    std::cout << "- neighbor_index: " << phylonode1.getNeighborIndex(mini_index) << std::endl;
     std::cout << "- (size of) less_info_seqs:" << phylonode1.getLessInfoSeqs().size() << std::endl;
     
     
@@ -295,31 +295,27 @@ void test()
     std::cout << " Update partial_lh " << std::endl;
     SeqRegions new_partial_lh = SeqRegions();
     new_partial_lh.emplace_back(0, 100);
-    phylonode1.setPartialLh(tmp_index, std::move(new_partial_lh));
-    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(tmp_index).size() << std::endl;
+    phylonode1.setPartialLh(mini_index, std::move(new_partial_lh));
+    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(mini_index).size() << std::endl;
     
     // test phylonode is an internal node
-    Index tmp_index1{300,TOP};
-    Index tmp_index2{300,LEFT};
-    Index tmp_index3{300,RIGHT};
+    MiniIndex mini_index1{TOP};
+    MiniIndex mini_index2{LEFT};
+    MiniIndex mini_index3{RIGHT};
     InternalNode internal;
-    internal.neighbor_index = std::move(std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)});
+    internal.neighbor_index_ = std::move(std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)});
     PhyloNode phylonode2(std::move(internal));
     std::cout << "\n\nInternal node: " << std::endl;
-    std::cout << "- (size of) partial_lh (top, left, right): ";
-    std::cout << phylonode2.getPartialLh(tmp_index1).size() << " ";
-    std::cout << phylonode2.getPartialLh(tmp_index2).size() << " ";
-    std::cout << phylonode2.getPartialLh(tmp_index3).size() << std::endl;
     std::cout << "- neighbor_index (top, left, right): ";
-    std::cout << phylonode2.getNeighborIndex(tmp_index1) << " ";
-    std::cout << phylonode2.getNeighborIndex(tmp_index2) << " ";
-    std::cout << phylonode2.getNeighborIndex(tmp_index3) << std::endl;
+    std::cout << phylonode2.getNeighborIndex(mini_index1) << " ";
+    std::cout << phylonode2.getNeighborIndex(mini_index2) << " ";
+    std::cout << phylonode2.getNeighborIndex(mini_index3) << std::endl;
     
     std::cout << " Update partial_lh at the left mininode" << std::endl;
     SeqRegions new_partial_lh1 = SeqRegions();
     new_partial_lh1.emplace_back(1, 200);
-    phylonode2.setPartialLh(tmp_index2, std::move(new_partial_lh1));
-    std::cout << "- (size of) partial_lh at the left mininode: " << phylonode2.getPartialLh(tmp_index2).size() << std::endl;
+    phylonode2.setPartialLh(mini_index2, std::move(new_partial_lh1));
+    std::cout << "- (size of) partial_lh at the left mininode: " << phylonode2.getPartialLh(mini_index2).size() << std::endl;
     
     // create a phylonode as an internal node
     PhyloNode phylonode3;
@@ -335,7 +331,6 @@ void test()
     std::cout << " + size of a InternalNode (new): " << sizeof(InternalNode) << '\n';
     std::cout << " + size of a LeafNode (new): " << sizeof(LeafNode) << '\n';
     std::cout << " + size of a std::variant (new): " << sizeof(std::variant<InternalNode, LeafNode>) << '\n';
-    std::cout << " + size of a myVariant (new): " << sizeof(MyVariant) << '\n';
     
     const int nr_seqs = 5e5;
     const int old_nodes = nr_seqs * 3 + nr_seqs; // estimate: as many internal phylonodes (with 3 Node's each) as leaf nodes
