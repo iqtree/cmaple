@@ -28,7 +28,7 @@ void PhyloNode::setMidBranchLh(SeqRegions&& mid_branch_lh)
     other_lh_->lh[1] = std::move(mid_branch_lh);
 }
 
-bool PhyloNode::isInternal()
+bool PhyloNode::isInternal() const
 {
     return is_internal_;
 }
