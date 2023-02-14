@@ -69,7 +69,7 @@ void PhyloNode::setPartialLh(const MiniIndex index, SeqRegions&& partial_lh_)
     }
 }
 
-Index PhyloNode::getNeighborIndex(const Index index) const
+Index PhyloNode::getNeighborIndex(const MiniIndex index) const
 {
     // if it's an internal node
     if (is_internal_)
