@@ -43,7 +43,7 @@ void PhyloNode::setOutdated(bool new_outdated)
     outdated_ = new_outdated;
 }
 
-float PhyloNode::getLength()
+float PhyloNode::getLength() const
 {
     return length_;
 }
