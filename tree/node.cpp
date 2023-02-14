@@ -132,7 +132,7 @@ void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbo
     }
 }
 
-std::vector<std::string>& PhyloNode::getLessInfoSeqs()
+const std::vector<std::string>& PhyloNode::getLessInfoSeqs() const
 {
     ASSERT(!is_internal_);
     return data_.leaf.less_info_seqs_;
