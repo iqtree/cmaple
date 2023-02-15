@@ -266,6 +266,11 @@ void CMaple::exportOutput(const string &filename)
     out.close();
 }
 
+void test2()
+{
+    
+}
+
 void test()
 {
     // test phylonode is a leaf
@@ -279,9 +284,9 @@ void test()
     std::cout << "Leaf node: " << std::endl;
 
     std::cout << "- (size of) total_lh: " << phylonode1.getTotalLh().size() << std::endl;
-    std::cout << "- seq_name_index:" << phylonode1.getSeqNameIndex() << std::endl;
+    std::cout << "- seq_name_index: " << phylonode1.getSeqNameIndex() << std::endl;
     std::cout << "- neighbor_index: " << phylonode1.getNeighborIndex(mini_index) << std::endl;
-    std::cout << "- (size of) less_info_seqs:" << phylonode1.getLessInfoSeqs().size() << std::endl;
+    std::cout << "- (size of) less_info_seqs: " << phylonode1.getLessInfoSeqs().size() << std::endl;
     
     
     // change total_lh
@@ -293,17 +298,24 @@ void test()
     std::cout << "- (size of) total_lh (after updating): " << phylonode1.getTotalLh().size() << std::endl;
     
     std::cout << " Update partial_lh " << std::endl;
-    SeqRegions new_partial_lh = SeqRegions();
-    new_partial_lh.emplace_back(0, 100);
+    std::unique_ptr<SeqRegions> new_partial_lh = std::make_unique<SeqRegions>(SeqRegions());
+    new_partial_lh->emplace_back(0, 100);
     phylonode1.setPartialLh(mini_index, std::move(new_partial_lh));
-    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(mini_index).size() << std::endl;
+    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(mini_index)->size() << std::endl;
+    
+    std::cout << " Update partial_lh 2nd time" << std::endl;
+    std::unique_ptr<SeqRegions> new_partial_lh2 = std::make_unique<SeqRegions>(SeqRegions());
+    new_partial_lh2->emplace_back(1, 200);
+    new_partial_lh2->emplace_back(2, 300);
+    phylonode1.setPartialLh(mini_index, std::move(new_partial_lh2));
+    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(mini_index)->size() << std::endl;
     
     // test phylonode is an internal node
     MiniIndex mini_index1{TOP};
     MiniIndex mini_index2{LEFT};
     MiniIndex mini_index3{RIGHT};
     InternalNode internal;
-    internal.neighbor_index_ = std::move(std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)});
+    internal.neighbor_index3_ = std::move(std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)});
     PhyloNode phylonode2(std::move(internal));
     std::cout << "\n\nInternal node: " << std::endl;
     std::cout << "- neighbor_index (top, left, right): ";
@@ -312,10 +324,11 @@ void test()
     std::cout << phylonode2.getNeighborIndex(mini_index3) << std::endl;
     
     std::cout << " Update partial_lh at the left mininode" << std::endl;
-    SeqRegions new_partial_lh1 = SeqRegions();
-    new_partial_lh1.emplace_back(1, 200);
+    std::unique_ptr<SeqRegions> new_partial_lh1 = std::make_unique<SeqRegions>(SeqRegions());
+    new_partial_lh1->emplace_back(0, 100);
+    new_partial_lh1->emplace_back(1, 200);
     phylonode2.setPartialLh(mini_index2, std::move(new_partial_lh1));
-    std::cout << "- (size of) partial_lh at the left mininode: " << phylonode2.getPartialLh(mini_index2).size() << std::endl;
+    std::cout << "- (size of) partial_lh at the left mininode: " << phylonode2.getPartialLh(mini_index2)->size() << std::endl;
     
     // create a phylonode as an internal node
     PhyloNode phylonode3;

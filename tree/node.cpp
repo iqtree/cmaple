@@ -10,22 +10,22 @@ std::ostream& operator<<(std::ostream& os, const Index& index)
 
 SeqRegions& PhyloNode::getTotalLh()
 {
-    return other_lh_->lh[0];
+    return other_lh_->getTotalLh();
 }
 
 void PhyloNode::setTotalLh(SeqRegions&& total_lh)
 {
-    other_lh_->lh[0] = std::move(total_lh);
+    other_lh_->setTotalLh(std::move(total_lh));
 }
 
 SeqRegions& PhyloNode::getMidBranchLh()
 {
-    return other_lh_->lh[1];
+    return other_lh_->getMidBranchLh();
 }
 
 void PhyloNode::setMidBranchLh(SeqRegions&& mid_branch_lh)
 {
-    other_lh_->lh[1] = std::move(mid_branch_lh);
+    other_lh_->setMidBranchLh(std::move(mid_branch_lh));
 }
 
 bool PhyloNode::isInternal() const
@@ -75,32 +75,32 @@ void PhyloNode::setNode(InternalNode&& internal)
     data_.internal = std::move(internal);
 }
 
-SeqRegions& PhyloNode::getPartialLh(const MiniIndex mini_index)
+std::unique_ptr<SeqRegions>& PhyloNode::getPartialLh(const MiniIndex mini_index)
 {
     // if it's an internal node
     if (is_internal_)
     {
         // return the corresponding partial_lh based on the mini-index
-        return *data_.internal.partial_lh_[mini_index] ;
+        return data_.internal.partial_lh3_[mini_index] ;
     }
     
     // if it's a leaf
-    return *data_.leaf.partial_lh_;
+    return data_.leaf.partial_lh_;
 }
 
-void PhyloNode::setPartialLh(const MiniIndex mini_index, SeqRegions&& partial_lh_)
+void PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions> partial_lh)
 {
     // if it's an internal node
     if (is_internal_)
     {
         // update the corresponding partial_lh based on the mini-index
-        data_.internal.partial_lh_[mini_index] = std::make_unique<SeqRegions>(std::move(partial_lh_));
+        data_.internal.partial_lh3_[mini_index] = std::move(partial_lh);
     }
     // if it's a leaf
     else
     {
         // update the partial_lh
-        data_.leaf.partial_lh_ = std::make_unique<SeqRegions>(std::move(partial_lh_));
+        data_.leaf.partial_lh_ = std::move(partial_lh);
     }
 }
 
@@ -110,7 +110,7 @@ Index PhyloNode::getNeighborIndex(const MiniIndex mini_index) const
     if (is_internal_)
     {
         // return the corresponding neighbor_index based on the mini-index
-        return data_.internal.neighbor_index_[mini_index] ;
+        return data_.internal.neighbor_index3_[mini_index] ;
     }
     
     // if it's a leaf
@@ -123,7 +123,7 @@ void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbo
     if (is_internal_)
     {
         // update the corresponding neighbor_index based on the mini-index
-        data_.internal.neighbor_index_[mini_index]  = neighbor_index_;
+        data_.internal.neighbor_index3_[mini_index]  = neighbor_index_;
     }
     // if it's a leaf
     else

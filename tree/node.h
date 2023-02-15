@@ -27,26 +27,26 @@ struct Index
     /**
         constructor
      */
-    Index(uint32_t vec_index, MiniIndex mi)
+    Index(uint32_t vec_index, uint32_t mini_index)
     {
         setVectorIndex(vec_index);
-        setMiniIndex(mi);
+        setMiniIndex(mini_index);
     }
 
     /**
         return the mini-index
      */
-    MiniIndex getMiniIndex() const
+    uint32_t getMiniIndex() const
     {
-        return MiniIndex(value_ >> 30);
+        return mini_index_;
     }
     
     /**
         set the mini-index
      */
-    void setMiniIndex(MiniIndex mi)
+    void setMiniIndex(uint32_t mini_index)
     {
-        value_ = (value_ & keep_value) | (uint32_t(mi) << 30);
+        mini_index_ = mini_index;
     }
 
     /**
@@ -54,26 +54,20 @@ struct Index
      */
     uint32_t getVectorIndex() const
     {
-        // kill the first two bits (they belong to the mini index)
-        return value_ & keep_value;
+        return vector_index_;
     }
     
     /**
         set the index of a phylonode
      */
-    void setVectorIndex(uint32_t vecindex)
+    void setVectorIndex(uint32_t vec_index)
     {
-        value_ = (value_ & keep_mini) | vecindex;
+        vector_index_ = vec_index;
     }
     
 private:
-    // stores two ints: 2bit for mini index, and 30 bit for vector index
-    // i.e.  MMVVVVV...VVVV
-    uint32_t value_;
-    // keep_value is: 0011111...111
-    static constexpr uint32_t keep_value = uint32_t(~0) >> 2;
-    // keep_mini is: 1100000...000
-    static constexpr uint32_t keep_mini = 3 << 30;
+    uint32_t vector_index_ : 30;
+    uint32_t mini_index_ : 2;
 };
 
 /** An internal node of the tree containing 3 minonodes*/
@@ -83,7 +77,7 @@ struct InternalNode
     std::array<std::unique_ptr<SeqRegions>,3> partial_lh3_;
     
     // We need to keep track of the index of the neighbor miniNode
-    std::array<Index,3> neighbor_index_;
+    std::array<Index,3> neighbor_index3_;
     
 }; // 40 (includes 4 byte padding at the end)
 
@@ -122,7 +116,40 @@ private:
     // store the total_lh and mid_branch_lh
     struct OtherLh
     {
-        SeqRegions lh[2];
+        /**
+            Get total_lh
+         */
+        SeqRegions& getTotalLh()
+        {
+            return lh_[0];
+        };
+        
+        /**
+            Set total_lh
+         */
+        void setTotalLh(SeqRegions&& total_lh)
+        {
+            lh_[0] = std::move(total_lh);
+        };
+        
+        /**
+            Get mid_branch_lh
+         */
+        SeqRegions& getMidBranchLh()
+        {
+            return lh_[1];
+        };
+        
+        /**
+            Set mid_branch_lh
+         */
+        void setMidBranchLh(SeqRegions&& mid_branch_lh)
+        {
+            lh_[1] = std::move(mid_branch_lh);
+        };
+        
+    private:
+        SeqRegions lh_[2];
     };
     
     /** An intermediate data structure to store either InternalNode or LeafNode */
@@ -153,6 +180,7 @@ private:
     // total_lh and mid_branch_lh
     std::unique_ptr<OtherLh> other_lh_ = std::make_unique<OtherLh>(OtherLh());
     
+    // NOTES: we can save 1 byte by using Bit Fields to store is_internal_ and outdated_ together
     // is our MyVariant an internal node or a leaf?
     const bool is_internal_;
     
@@ -162,6 +190,8 @@ private:
     // branch length
     float length_; // using float allows it to fit into the 6 bytes padding after the two bools.
     // .. using a double would make PyhloNode 8 bytes larger
+    
+    // NOTES: we still have 2-byte gap here
 
     // store our node (leaf or internal)
     MyVariant data_;
@@ -204,12 +234,12 @@ private:
     /**
         TRUE if it's an internal node
      */
-    bool isInternal();
+    bool isInternal() const;
     
     /**
         Get outdated_
      */
-    bool isOutdated();
+    bool isOutdated() const;
     
     /**
         Set outdated_
@@ -219,7 +249,7 @@ private:
     /**
         Get length
      */
-    float getLength();
+    float getLength() const;
     
     /**
         Set length
@@ -229,7 +259,7 @@ private:
     /**
         TRUE if it's a leaf or the top of the three mini-nodes of an internal node
      */
-    bool isTop(const MiniIndex mini_index);
+    bool isTop(const MiniIndex mini_index) const;
     
     /**
         Update LeafNode
@@ -244,12 +274,12 @@ private:
     /**
         Get partial_lh
      */
-    SeqRegions& getPartialLh(const MiniIndex mini_index);
+    std::unique_ptr<SeqRegions>& getPartialLh(const MiniIndex mini_index);
     
     /**
         Set partial_lh
      */
-    void setPartialLh(const MiniIndex mini_index, SeqRegions&& partial_lh_);
+    void setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>& partial_lh);
     
     /**
         Get the index of the neighbor node
@@ -264,7 +294,7 @@ private:
     /**
         Get the list of less-informative-sequences
      */
-    std::vector<std::string>& getLessInfoSeqs();
+    const std::vector<std::string>& getLessInfoSeqs() const;
     
     /**
         Add less-informative-sequence
