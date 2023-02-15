@@ -266,11 +266,6 @@ void CMaple::exportOutput(const string &filename)
     out.close();
 }
 
-void test2()
-{
-    
-}
-
 void test()
 {
     // test phylonode is a leaf
@@ -332,6 +327,8 @@ void test()
     
     // create a phylonode as an internal node
     PhyloNode phylonode3;
+    // test delete a phylonode created by a default constructor
+    phylonode3.~PhyloNode();
     
     std::cout << "\n\n\nsize of a single MiniNode (old):  " << sizeof(Node) << '\n';
     // however, the actual memory allocated by the call to `new` will be larger, since the allocator used predefined block sizes:
