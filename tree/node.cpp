@@ -88,7 +88,7 @@ std::unique_ptr<SeqRegions>& PhyloNode::getPartialLh(const MiniIndex mini_index)
     return data_.leaf.partial_lh_;
 }
 
-void PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>&& partial_lh)
+void PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>& partial_lh)
 {
     // if it's an internal node
     if (is_internal_)

@@ -288,7 +288,7 @@ private:
     /**
         Set partial_lh
      */
-    void setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>&& partial_lh);
+    void setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>& partial_lh);
     
     /**
         Get the index of the neighbor node
