@@ -8,24 +8,29 @@ std::ostream& operator<<(std::ostream& os, const Index& index)
     return os;
 }
 
-SeqRegions& PhyloNode::getTotalLh()
+std::unique_ptr<PhyloNode::OtherLh>& PhyloNode::getOtherLh()
 {
-    return other_lh_->getTotalLh();
+    return other_lh_;
 }
 
-void PhyloNode::setTotalLh(SeqRegions&& total_lh)
+std::unique_ptr<SeqRegions>& PhyloNode::getTotalLh()
 {
-    other_lh_->setTotalLh(std::move(total_lh));
+    return other_lh_->total_lh;
 }
 
-SeqRegions& PhyloNode::getMidBranchLh()
+void PhyloNode::setTotalLh(std::unique_ptr<SeqRegions>&& total_lh)
 {
-    return other_lh_->getMidBranchLh();
+    other_lh_->total_lh = std::move(total_lh);
 }
 
-void PhyloNode::setMidBranchLh(SeqRegions&& mid_branch_lh)
+std::unique_ptr<SeqRegions>& PhyloNode::getMidBranchLh()
 {
-    other_lh_->setMidBranchLh(std::move(mid_branch_lh));
+    return other_lh_->mid_branch_lh;
+}
+
+void PhyloNode::setMidBranchLh(std::unique_ptr<SeqRegions>&& mid_branch_lh)
+{
+    other_lh_->mid_branch_lh = std::move(mid_branch_lh);
 }
 
 bool PhyloNode::isInternal() const
@@ -64,7 +69,7 @@ void PhyloNode::setNode(LeafNode&& leaf)
     ASSERT(!is_internal_ && "Wrong data type! data should be a leaf node");
     
     // update leaf
-    data_.leaf = std::move(leaf);
+    data_.leaf_ = std::move(leaf);
 }
 
 void PhyloNode::setNode(InternalNode&& internal)
@@ -72,7 +77,12 @@ void PhyloNode::setNode(InternalNode&& internal)
     ASSERT(is_internal_ && "Wrong data type! data should be an internal node");
     
     // update internal
-    data_.internal = std::move(internal);
+    data_.internal_ = std::move(internal);
+}
+
+PhyloNode::MyVariant& PhyloNode::getNode()
+{
+    return data_;
 }
 
 std::unique_ptr<SeqRegions>& PhyloNode::getPartialLh(const MiniIndex mini_index)
@@ -81,11 +91,11 @@ std::unique_ptr<SeqRegions>& PhyloNode::getPartialLh(const MiniIndex mini_index)
     if (is_internal_)
     {
         // return the corresponding partial_lh based on the mini-index
-        return data_.internal.partial_lh3_[mini_index] ;
+        return data_.internal_.partial_lh3_[mini_index] ;
     }
     
     // if it's a leaf
-    return data_.leaf.partial_lh_;
+    return data_.leaf_.partial_lh_;
 }
 
 void PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>&& partial_lh)
@@ -94,13 +104,13 @@ void PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegi
     if (is_internal_)
     {
         // update the corresponding partial_lh based on the mini-index
-        data_.internal.partial_lh3_[mini_index] = std::move(partial_lh);
+        data_.internal_.partial_lh3_[mini_index] = std::move(partial_lh);
     }
     // if it's a leaf
     else
     {
         // update the partial_lh
-        data_.leaf.partial_lh_ = std::move(partial_lh);
+        data_.leaf_.partial_lh_ = std::move(partial_lh);
     }
 }
 
@@ -110,11 +120,11 @@ Index PhyloNode::getNeighborIndex(const MiniIndex mini_index) const
     if (is_internal_)
     {
         // return the corresponding neighbor_index based on the mini-index
-        return data_.internal.neighbor_index3_[mini_index] ;
+        return data_.internal_.neighbor_index3_[mini_index] ;
     }
     
     // if it's a leaf
-    return data_.leaf.neighbor_index_;
+    return data_.leaf_.neighbor_index_;
 }
 
 void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index_)
@@ -123,44 +133,73 @@ void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbo
     if (is_internal_)
     {
         // update the corresponding neighbor_index based on the mini-index
-        data_.internal.neighbor_index3_[mini_index]  = neighbor_index_;
+        data_.internal_.neighbor_index3_[mini_index]  = neighbor_index_;
     }
     // if it's a leaf
     else
     {
-        data_.leaf.neighbor_index_ = neighbor_index_;
+        data_.leaf_.neighbor_index_ = neighbor_index_;
     }
 }
 
 const std::vector<std::string>& PhyloNode::getLessInfoSeqs() const
 {
     ASSERT(!is_internal_);
-    return data_.leaf.less_info_seqs_;
+    return data_.leaf_.less_info_seqs_;
 }
 
 void PhyloNode::addLessInfoSeqs(std::string&& seq_name)
 {
     ASSERT(!is_internal_);
-    data_.leaf.less_info_seqs_.push_back(std::move(seq_name));
+    data_.leaf_.less_info_seqs_.push_back(std::move(seq_name));
 }
 
 uint32_t PhyloNode::getSeqNameIndex() const
 {
     ASSERT(!is_internal_);
-    return data_.leaf.seq_name_index_;
+    return data_.leaf_.seq_name_index_;
 }
 
 void PhyloNode::setSeqNameIndex(uint32_t seq_name_index_)
 {
     ASSERT(!is_internal_);
-    data_.leaf.seq_name_index_ = seq_name_index_;
+    data_.leaf_.seq_name_index_ = seq_name_index_;
+}
+
+void PhyloNode::updateTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+{
+    // if node is root
+    if (is_root)
+        setTotalLh(std::move(getPartialLh(mini_index)->computeTotalLhAtRoot(aln.num_states, model, blength)));
+    // if not is normal nodes
+    else
+    {
+        std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(mini_index);
+        neighbor.getPartialLh(getNeighborIndex(mini_index).getMiniIndex())->mergeUpperLower(getTotalLh(), getLength(), *lower_regions, blength, aln, model, threshold_prob);
+    }
+}
+
+std::unique_ptr<SeqRegions> PhyloNode::computeTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+{
+    std::unique_ptr<SeqRegions> total_lh = nullptr;
+    // if node is root
+    if (is_root)
+        total_lh = std::move(getPartialLh(mini_index)->computeTotalLhAtRoot(aln.num_states, model, blength));
+    // if not is normal nodes
+    else
+    {
+        std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(mini_index);
+        neighbor.getPartialLh(getNeighborIndex(mini_index).getMiniIndex())->mergeUpperLower(total_lh, getLength(), *lower_regions, blength, aln, model, threshold_prob);
+    }
+    
+    return total_lh;
 }
 
 // ########### END OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
 
 Node::Node(bool is_top_node)
 {
-    seq_name = "";
+    /*seq_name = "";
     length = 0;
     is_top = is_top_node;
     next = NULL;
@@ -168,12 +207,12 @@ Node::Node(bool is_top_node)
     partial_lh = NULL;
     mid_branch_lh = NULL;
     total_lh = NULL;
-    outdated = false;
+    outdated = false;*/
 }
 
 Node::Node(int n_id, string n_seq_name)
 {
-    seq_name = std::move(n_seq_name);
+    /*seq_name = std::move(n_seq_name);
     length = 0;
     is_top = false;
     next = NULL;
@@ -181,12 +220,12 @@ Node::Node(int n_id, string n_seq_name)
     partial_lh = NULL;
     mid_branch_lh = NULL;
     total_lh = NULL;
-    outdated = false;
+    outdated = false;*/
 }
 
 Node::Node(string n_seq_name)
 {
-    seq_name = std::move(n_seq_name);
+    /*seq_name = std::move(n_seq_name);
     length = 0;
     is_top = true;
     next = NULL;
@@ -194,23 +233,23 @@ Node::Node(string n_seq_name)
     partial_lh = NULL;
     mid_branch_lh = NULL;
     total_lh = NULL;
-    outdated = false;
+    outdated = false;*/
 }
 
 Node::~Node()
-{
+{/*
     if (partial_lh) delete partial_lh;
     if (total_lh) delete total_lh;
-    if (mid_branch_lh) delete mid_branch_lh;
+    if (mid_branch_lh) delete mid_branch_lh;*/
 }
 
 bool Node::isLeave()
-{
-    return next == NULL;
+{/*
+    return next == NULL;*/
 }
 
 Node* Node::getTopNode()
-{
+{/*
     if (this->is_top)
         return this;
     
@@ -223,11 +262,12 @@ Node* Node::getTopNode()
             return next_node;
     }
     
-    return NULL;
+    return NULL;*/
 }
 
 Node* Node::getOtherNextNode()
 {
+    /*
     Node* next_node;
     Node* node = this;
     
@@ -237,11 +277,11 @@ Node* Node::getOtherNextNode()
             return next_node;
     }
     
-    return NULL;
+    return NULL;*/
 }
 
 string Node::exportString(bool binary)
-{
+{/*
     if (isLeave())
     {
         string length_str = length < 0 ? "0" : convertDoubleToString(length);
@@ -273,7 +313,7 @@ string Node::exportString(bool binary)
             output += "):" + length_str;
             return output;
         }
-    }
+    }*/
     
     return "";
 }
@@ -281,7 +321,7 @@ string Node::exportString(bool binary)
 SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob)
 {
     // if partial_lh has not yet computed (~NULL) -> compute it from next nodes
-    if (!partial_lh)
+    /*if (!partial_lh)
     {        
         // the phylonode is an internal node
         if (next)
@@ -330,48 +370,24 @@ SeqRegions* Node::getPartialLhAtNode(const Alignment& aln, const Model& model, R
         // the phylonode is a tip, partial_lh must be already computed
         else
             outError("Something went wrong! Lower likelihood regions has not been computed at tip!");
-    }
+    }*/
     
     // return
     return partial_lh;
 }
 
-SeqRegions* Node::computeTotalLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, bool is_root, bool update, RealNumType blength)
-{
-    SeqRegions* new_regions = NULL;
-    
-    // if node is root
-    if (is_root)
-        new_regions = getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(aln.num_states, model, blength);
-    // if not is normal nodes
-    else
-    {
-        SeqRegions* lower_regions = getPartialLhAtNode(aln, model, threshold_prob);
-        neighbor->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_regions, length, *lower_regions, blength, aln, model, threshold_prob);
-    }
-    
-    // update if necessary
-    if (update)
-    {
-        if (total_lh) delete total_lh;
-        total_lh = new_regions;
-    }
-    
-    return new_regions;
-}
-
 TraversingNode::TraversingNode()
 {
-    node = NULL;
+    /*node = NULL;
     failure_count = 0;
-    likelihood_diff = 0;
+    likelihood_diff = 0;*/
 }
 
 TraversingNode::TraversingNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff)
 {
-    node = n_node;
+    /*node = n_node;
     failure_count = n_failure_count;
-    likelihood_diff = n_lh_diff;
+    likelihood_diff = n_lh_diff;*/
 }
 
 TraversingNode::~TraversingNode()
@@ -381,21 +397,21 @@ TraversingNode::~TraversingNode()
 
 UpdatingNode::UpdatingNode():TraversingNode()
 {
-    incoming_regions = NULL;
+   /* incoming_regions = NULL;
     branch_length = 0;
     need_updating = false;
-    delete_regions = false;
+    delete_regions = false;*/
 }
 
 UpdatingNode::UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count, bool n_delete_regions):TraversingNode(n_node, n_failure_count, n_lh_diff)
 {
-    incoming_regions = n_incoming_regions;
+    /*incoming_regions = n_incoming_regions;
     branch_length = n_branch_length;
     need_updating = n_need_updating;
-    delete_regions = n_delete_regions;
+    delete_regions = n_delete_regions;*/
 }
 
 UpdatingNode::~UpdatingNode()
 {
-    if (delete_regions && incoming_regions) delete incoming_regions;
+    /*if (delete_regions && incoming_regions) delete incoming_regions;*/
 }

@@ -27,7 +27,7 @@ struct Index
     /**
         constructor
      */
-    Index(uint32_t vec_index, uint32_t mini_index)
+    Index(uint32_t vec_index, MiniIndex mini_index)
     {
         setVectorIndex(vec_index);
         setMiniIndex(mini_index);
@@ -36,7 +36,7 @@ struct Index
     /**
         return the mini-index
      */
-    uint32_t getMiniIndex() const
+    MiniIndex getMiniIndex() const
     {
         return mini_index_;
     }
@@ -44,7 +44,7 @@ struct Index
     /**
         set the mini-index
      */
-    void setMiniIndex(uint32_t mini_index)
+    void setMiniIndex(MiniIndex mini_index)
     {
         mini_index_ = mini_index;
     }
@@ -67,7 +67,7 @@ struct Index
     
 private:
     uint32_t vector_index_ : 30;
-    uint32_t mini_index_ : 2;
+    MiniIndex mini_index_ : 2;
 };
 
 /** An internal node of the tree containing 3 minonodes*/
@@ -116,59 +116,36 @@ private:
     // store the total_lh and mid_branch_lh
     struct OtherLh
     {
-        /**
-            Get total_lh
-         */
-        SeqRegions& getTotalLh()
-        {
-            return lh_[0];
-        };
-        
-        /**
-            Set total_lh
-         */
-        void setTotalLh(SeqRegions&& total_lh)
-        {
-            lh_[0] = std::move(total_lh);
-        };
-        
-        /**
-            Get mid_branch_lh
-         */
-        SeqRegions& getMidBranchLh()
-        {
-            return lh_[1];
-        };
-        
-        /**
-            Set mid_branch_lh
-         */
-        void setMidBranchLh(SeqRegions&& mid_branch_lh)
-        {
-            lh_[1] = std::move(mid_branch_lh);
-        };
-        
-    private:
-        SeqRegions lh_[2];
+        std::unique_ptr<SeqRegions> total_lh;
+        std::unique_ptr<SeqRegions> mid_branch_lh;
     };
     
     /** An intermediate data structure to store either InternalNode or LeafNode */
     union MyVariant
     {
-        InternalNode internal;
-        LeafNode leaf;
+        InternalNode internal_;
+        LeafNode leaf_;
         
         /**
             constructor
             the compiler complains if I don't explicitly declare this function, it's required by the constructor/destructor of PhyloNode
          */
-        MyVariant():internal(std::move(InternalNode())) {};
+        MyVariant():internal_(std::move(InternalNode())) {};
         
         /** constructor */
-        MyVariant(LeafNode&& leaf_):leaf(std::move(leaf_)) {};
+        MyVariant(LeafNode&& leaf):leaf_(std::move(leaf)) {};
         
         /** constructor */
-        MyVariant(InternalNode&& internal_):internal(std::move(internal_)) {};
+        MyVariant(InternalNode&& internal):internal_(std::move(internal)) {};
+        
+        /** move constructor */
+        MyVariant(MyVariant&& myvariant, const bool is_internal)
+        {
+            if (is_internal)
+                internal_ = std::move(myvariant.internal_);
+            else
+                leaf_ = std::move(myvariant.leaf_);
+        };
         
         /**
             destructor
@@ -211,34 +188,43 @@ private:
     /** constructor */
     PhyloNode(InternalNode&& internal): is_internal_{true}, data_(std::move(internal)) {};
     
+    /** move constructor */
+    PhyloNode(PhyloNode&& node): is_internal_{node.isInternal()}, data_(std::move(node.getNode()), is_internal_),
+    other_lh_(std::move(node.getOtherLh())), outdated_(node.isOutdated()), length_(node.getLength()) {};
+    
     /** destructor */
     ~PhyloNode()
     {
         if (is_internal_)
-            data_.internal.~InternalNode();
+            data_.internal_.~InternalNode();
         else
-            data_.leaf.~LeafNode();
+            data_.leaf_.~LeafNode();
     }
+    
+    /**
+        Get other_lh_
+     */
+    std::unique_ptr<OtherLh>& getOtherLh();
     
     /**
         Get total_lh
      */
-    SeqRegions& getTotalLh();
+    std::unique_ptr<SeqRegions>& getTotalLh();
     
     /**
         Set total_lh
      */
-    void setTotalLh(SeqRegions&& total_lh);
+    void setTotalLh(std::unique_ptr<SeqRegions>&& total_lh);
     
     /**
         Get mid_branch_lh
      */
-    SeqRegions& getMidBranchLh();
+    std::unique_ptr<SeqRegions>& getMidBranchLh();
     
     /**
         Set mid_branch_lh
      */
-    void setMidBranchLh(SeqRegions&& mid_branch_lh);
+    void setMidBranchLh(std::unique_ptr<SeqRegions>&& mid_branch_lh);
     
     /**
         TRUE if it's an internal node
@@ -281,6 +267,11 @@ private:
     void setNode(InternalNode&& internal);
     
     /**
+        Get MyVariant data_
+     */
+    MyVariant& getNode();
+    
+    /**
         Get partial_lh
      */
     std::unique_ptr<SeqRegions>& getPartialLh(const MiniIndex mini_index);
@@ -319,6 +310,16 @@ private:
         Set the index of the sequence name
      */
     void setSeqNameIndex(const uint32_t seq_name_index_);
+    
+    /**
+        Update the total likelihood vector for a node.
+    */
+    void updateTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    
+    /**
+        Compute the total likelihood vector for a node.
+    */
+    std::unique_ptr<SeqRegions> computeTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
 };
 
 // just for testing
@@ -440,10 +441,7 @@ public:
      */
     SeqRegions* getPartialLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob);
     
-    /**
-        Compute the total likelihood vector for a node.
-    */
-    SeqRegions* computeTotalLhAtNode(const Alignment& aln, const Model& model, RealNumType threshold_prob, bool is_root, bool update = true, RealNumType blength = -1);
+    
 };
 
 /** An extension of node storing more dummy data used for browsing all nodes in a stack  */

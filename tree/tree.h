@@ -248,21 +248,21 @@ private:
     /**
         Update partial_lh comming from the parent node
      */
-    void updatePartialLhFromParent(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const PositionType seq_length);
+    void updatePartialLhFromParent(PhyloNode& node, const Index index, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const PositionType seq_length);
     
     /**
         Update partial_lh comming from the children
      */
-    void updatePartialLhFromChildren(Node* const node, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const bool is_non_root, const PositionType seq_length);
+    void updatePartialLhFromChildren(PhyloNode& node, const Index index, std::stack<Node*> &node_stack, const SeqRegions* const parent_upper_regions, const bool is_non_root, const PositionType seq_length);
     
     /**
         Compute the mid-branch region for a node/branch
      */
     inline void computeMidBranchRegions(Node* const node, SeqRegions* &regions_2_update, const SeqRegions &parent_upper_lr_lh)
     {
-        SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, params->threshold_prob);
+        /*SeqRegions* lower_lh = node->getPartialLhAtNode(aln, model, params->threshold_prob);
         RealNumType half_branch_length = node->length * 0.5;
-        parent_upper_lr_lh.mergeUpperLower(regions_2_update, half_branch_length, *lower_lh, half_branch_length, aln, model, params->threshold_prob);
+        parent_upper_lr_lh.mergeUpperLower(regions_2_update, half_branch_length, *lower_lh, half_branch_length, aln, model, params->threshold_prob);*/
     }
     
     /**
@@ -341,10 +341,15 @@ public:
      */
     Model model;
     
-    /**
-        Root node of the tree
+    /*
+        Vector of phylonodes
      */
-    Node* root = nullptr;
+    std::vector<PhyloNode> nodes;
+    
+    /*
+        (vector) Index of root in the vector of phylonodes
+     */
+    uint32_t root_vector_index;
     
     /**
         Constructor
@@ -354,7 +359,7 @@ public:
     /**
         Constructor
     */
-    Tree(Params&& params, Node* n_root = nullptr);
+    Tree(Params&& params);
     
     /**
         Destructor

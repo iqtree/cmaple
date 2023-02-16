@@ -18,9 +18,9 @@ Sequence::Sequence(string n_seq_name, vector<Mutation> n_mutations):
 {    
 }
 
-SeqRegions* Sequence::getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type)
+std::unique_ptr<SeqRegions> Sequence::getLowerLhVector(const PositionType sequence_length, const StateType num_states, const SeqType seq_type)
 {
-    SeqRegions* regions = new SeqRegions();
+    std::unique_ptr<SeqRegions> regions = make_unique<SeqRegions>(SeqRegions());
     regions->reserve(size() * 2); // avoid realloc of vector data (we could also count explicitly - see below), but that seems a bit slower (yet potentially more memory efficient)
 
     // count number of items we will need

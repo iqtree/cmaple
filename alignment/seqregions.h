@@ -116,7 +116,7 @@ public:
         @param model the model of evolution
         @param threshold the threshold for approximation
      */
-    void mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, const SeqRegions& lower_regions, RealNumType lower_plength, const
+    void mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions, RealNumType upper_plength, const SeqRegions& lower_regions, RealNumType lower_plength, const
                          Alignment& aln, const Model& model, RealNumType threshold) const;
     
     /**
@@ -136,7 +136,7 @@ public:
         Compute total lh/upper left_right for root node
         @param blength the branch length; (-1 by default).
      */
-    SeqRegions* computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength = -1) const;
+    std::unique_ptr<SeqRegions> computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength = -1) const;
     
     /**
         Compute the likelihood by merging the lower lh with root frequencies
@@ -234,7 +234,7 @@ void merge_RACGT_N(const SeqRegion& reg_n, const RealNumType upper_plength, cons
 /**
     MergeUpperLower case Zero_Distance
  */
-bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const StateType num_states, SeqRegions* &merged_regions);
+bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const StateType num_states, std::unique_ptr<SeqRegions>& merged_regions);
 
 /**
     MergeUpperLower case O_ORACGT

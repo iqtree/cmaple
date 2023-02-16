@@ -78,29 +78,33 @@ void CMaple::buildInitialTree()
     Model& model = tree.model;
     const StateType num_states = aln.num_states;
     const PositionType seq_length = aln.ref_seq.size();
+    const PositionType num_seqs = aln.data.size();
     
     // place the root node
+    tree.nodes.reserve(num_seqs + num_seqs);
+    tree.root_vector_index = 0;
+    tree.nodes.emplace_back(std::move(LeafNode(0)));
+    PhyloNode& root = tree.nodes[0];
     Sequence* sequence = &tree.aln.data.front();
-    tree.root = new Node(sequence->seq_name);
-    tree.root->partial_lh = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
-    tree.root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, true);
+    root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.seq_type)));
+    root.updateTotalLhAtNode(TOP, tree.nodes[0], aln, model, tree.params->threshold_prob, true);
     
     // move to the next sequence in the alignment
     ++sequence;
     
     // iteratively place other samples (sequences)
-    for (PositionType i = 1; i < (PositionType) aln.data.size(); ++i, ++sequence)
+    for (PositionType i = 1; i < num_seqs; ++i, ++sequence)
     {
         // get the lower likelihood vector of the current sequence
-        SeqRegions* lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
+        const std::unique_ptr<SeqRegions>& lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
             tree.model.updateMutationMatEmpirical(aln);
         
         // NHANLT: debug
-        /*if ((*sequence)->seq_name == "39")
-            cout << "debug" <<endl;*/
+        //if ((*sequence)->seq_name == "39")
+        //    cout << "debug" <<endl;
         
         // seek a position for new sample placement
         Node* selected_node = NULL;
@@ -121,21 +125,19 @@ void CMaple::buildInitialTree()
             else
                 tree.placeNewSampleAtNode(selected_node, lower_regions, sequence->seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child);
         }
-        else
-            delete lower_regions;
         
         // NHANLT: debug
         //cout << "Added node " << (*sequence)->seq_name << endl;
         //cout << (*sequence)->seq_name << endl;
         //cout << tree.exportTreeString() << ";" << endl;
         
-        /*if ((*sequence)->seq_name == "2219")
-        {
+        //if ((*sequence)->seq_name == "2219")
+        //{
             //cout << tree.exportTreeString() << ";" << endl;
-            string output_file(tree.params->diff_path);
-            exportOutput(output_file + "_init.treefile");
-            exit(0);
-        }*/
+            //string output_file(tree.params->diff_path);
+            //exportOutput(output_file + "_init.treefile");
+            //exit(0);
+        //}
     }
     
     // show the runtime for building an initial tree
@@ -143,12 +145,12 @@ void CMaple::buildInitialTree()
     cout << " - Time spent on building an initial tree: " << end - start << endl;
     
     // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
-    tree.refreshAllLhs();
+    tree.refreshAllLhs();*/
 }
 
 void CMaple::optimizeTree()
 {
-    string output_file(tree.params->diff_path);
+    /*string output_file(tree.params->diff_path);
     exportOutput(output_file + "_init.treefile");
     
     // run a short range search for tree topology improvement (if neccessary)
@@ -164,7 +166,7 @@ void CMaple::optimizeTree()
     
     // do further optimization on branch lengths (if needed)
     if (tree.params->optimize_branch_length)
-        optimizeBranchLengthsOfTree();
+        optimizeBranchLengthsOfTree();*/
 }
 
 void CMaple::optimizeTreeTopology(bool short_range_search)
@@ -256,14 +258,14 @@ void CMaple::postInference()
 
 void CMaple::exportOutput(const string &filename)
 {
-    // open the tree file
+    /*// open the tree file
     ofstream out = ofstream(filename);
     
     // write tree string into the tree file
     out << tree.exportTreeString(tree.params->export_binary_tree) << ";" << endl;
     
     // close the output file
-    out.close();
+    out.close();*/
 }
 
 void test()
@@ -278,7 +280,6 @@ void test()
     PhyloNode phylonode1(std::move(leaf));
     std::cout << "Leaf node: " << std::endl;
 
-    std::cout << "- (size of) total_lh: " << phylonode1.getTotalLh().size() << std::endl;
     std::cout << "- seq_name_index: " << phylonode1.getSeqNameIndex() << std::endl;
     std::cout << "- neighbor_index: " << phylonode1.getNeighborIndex(mini_index) << std::endl;
     std::cout << "- (size of) less_info_seqs: " << phylonode1.getLessInfoSeqs().size() << std::endl;
@@ -286,11 +287,11 @@ void test()
     
     // change total_lh
     std::cout << " Update total_lh " << std::endl;
-    SeqRegions new_total_lh;
-    new_total_lh.reserve(10);
-    new_total_lh.emplace_back(0, 100);
+    std::unique_ptr<SeqRegions> new_total_lh = std::make_unique<SeqRegions>(SeqRegions());
+    new_total_lh->reserve(10);
+    new_total_lh->emplace_back(0, 100);
     phylonode1.setTotalLh(std::move(new_total_lh));
-    std::cout << "- (size of) total_lh (after updating): " << phylonode1.getTotalLh().size() << std::endl;
+    std::cout << "- (size of) total_lh (after updating): " << phylonode1.getTotalLh()->size() << std::endl;
     
     std::cout << " Update partial_lh " << std::endl;
     std::unique_ptr<SeqRegions> new_partial_lh = std::make_unique<SeqRegions>(SeqRegions());

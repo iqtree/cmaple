@@ -364,7 +364,7 @@ void merge_RACGT_N(const SeqRegion& reg_n, const RealNumType upper_plength, cons
   SeqRegions::addNonConsecutiveRRegion(merged_regions, reg_n.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
 }
 
-bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const StateType num_states, SeqRegions* &merged_regions)
+bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const StateType num_states, std::unique_ptr<SeqRegions>& merged_regions)
 {
     // due to 0 distance, the entry will be of same type as entry2
     if ((seq2_region.type < num_states || seq2_region.type == TYPE_R) && total_blength_2 <= 0)
@@ -372,8 +372,7 @@ bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_reg
         if ((seq1_region.type < num_states || seq1_region.type == TYPE_R) && total_blength_1 <= 0)
         {
             //outError("Sorry! something went wrong. DEBUG: ((seq2_region->type < num_states || seq2_region->type == TYPE_R) && total_blength_2 == 0) && ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 == 0)");
-            delete merged_regions;
-            merged_regions = NULL;
+            merged_regions = nullptr;
             return true;
         }
         
@@ -537,7 +536,7 @@ static constexpr DoubleState RR = (DoubleState(TYPE_R) << 8) | TYPE_R;
 static constexpr DoubleState RO = (DoubleState(TYPE_R) << 8) | TYPE_O;
 static constexpr DoubleState OO = (DoubleState(TYPE_O) << 8) | TYPE_O;
 static constexpr DoubleState ON = (DoubleState(TYPE_O) << 8) | TYPE_N;
-void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
+void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
                                  RealNumType upper_plength, 
                                  const SeqRegions& lower_regions, 
                                  RealNumType lower_plength, const
@@ -555,10 +554,8 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
     const PositionType seq_length = aln.ref_seq.size();
     
     // init merged_regions
-    if (merged_regions)
-        merged_regions->clear();
-    else
-        merged_regions = new SeqRegions();
+    if (!merged_regions)
+        merged_regions = std::make_unique<SeqRegions>(SeqRegions());
     
     // avoid realloc of vector data (minimize memory footprint)
     merged_regions->reserve(countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
@@ -1061,10 +1058,10 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
     return log_lh;
 }
 
-SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength) const
+std::unique_ptr<SeqRegions> SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength) const
 {
-    SeqRegions* total_lh = new SeqRegions();
-    total_lh->reserve(this->size()); // avoid realloc of vector data
+    std::unique_ptr<SeqRegions> total_lh = std::make_unique<SeqRegions>(SeqRegions());
+    total_lh->reserve(size()); // avoid realloc of vector data
     for (const SeqRegion& elem : (*this))
     {
         const auto* const region = &elem;
