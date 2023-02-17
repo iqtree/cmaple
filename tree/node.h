@@ -12,7 +12,8 @@ enum MiniIndex : uint32_t
 {
     TOP,
     LEFT,
-    RIGHT
+    RIGHT,
+    UNDEFINED // to handle case return node = null
 };
 
 /** Holds a space efficient index into a vector<PhyloNode> and subindex for the MiniNode inside the Phylonode */
@@ -39,6 +40,14 @@ struct Index
     MiniIndex getMiniIndex() const
     {
         return mini_index_;
+    }
+    
+    /**
+        return the mini-index of the other next node (i.e., getFlipMiniIndex(LEFT) = RIGHT; getFlipMiniIndex(RIGHT) = LEFT)
+     */
+    MiniIndex getFlipMiniIndex() const
+    {
+        return MiniIndex(3 - mini_index_);
     }
     
     /**
@@ -85,7 +94,7 @@ struct InternalNode
 struct LeafNode
 {
     // vector is wasteful here.. (24 bytes)
-    std::vector<std::string> less_info_seqs_; // leafs only (contains seq_names)
+    std::vector<uint32_t> less_info_seqs_; // leafs only (contains seq_names)
     // better use 2x4 bytes and store sequence names in a separate (global) vector
     //uint32_t index_start;
     //uint32_t index_end;   // but this requires some sorting... so lets not go there for now
@@ -165,7 +174,7 @@ private:
     bool outdated_;
     
     // branch length
-    float length_; // using float allows it to fit into the 6 bytes padding after the two bools.
+    double length_ = 0; // using float allows it to fit into the 6 bytes padding after the two bools.
     // .. using a double would make PyhloNode 8 bytes larger
     
     // NOTES: we still have 2-byte gap here
@@ -190,7 +199,7 @@ private:
     
     /** move constructor */
     PhyloNode(PhyloNode&& node): is_internal_{node.isInternal()}, data_(std::move(node.getNode()), is_internal_),
-    other_lh_(std::move(node.getOtherLh())), outdated_(node.isOutdated()), length_(node.getLength()) {};
+    other_lh_(std::move(node.getOtherLh())), outdated_(node.isOutdated()), length_(node.getUpperLength()) {};
     
     /** destructor */
     ~PhyloNode()
@@ -242,14 +251,24 @@ private:
     void setOutdated(bool new_outdated);
     
     /**
-        Get length
+        Get length of the upper branch
      */
-    float getLength() const;
+    RealNumType getUpperLength() const;
     
     /**
-        Set length
+        Set length of the upper branch
      */
-    void setLength(float new_length);
+    void setUpperLength(const RealNumType new_length);
+    
+    /**
+        Get length of the corresponding branch connecting this (mini-)node; it could be an upper/lower branch
+     */
+    RealNumType getCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes) const;
+    
+    /**
+        Set length of the corresponding branch connecting this (mini-)node; it could be an upper/lower branch
+     */
+    void setCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes, const RealNumType new_length);
     
     /**
         TRUE if it's a leaf or the top of the three mini-nodes of an internal node
@@ -294,12 +313,12 @@ private:
     /**
         Get the list of less-informative-sequences
      */
-    const std::vector<std::string>& getLessInfoSeqs() const;
+    const std::vector<uint32_t>& getLessInfoSeqs() const;
     
     /**
         Add less-informative-sequence
      */
-    void addLessInfoSeqs(std::string&& seq_name);
+    void addLessInfoSeqs(uint32_t seq_name_index);
     
     /**
         Get the index of the sequence name
@@ -314,12 +333,22 @@ private:
     /**
         Update the total likelihood vector for a node.
     */
-    void updateTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    void updateTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
     
     /**
         Compute the total likelihood vector for a node.
     */
-    std::unique_ptr<SeqRegions> computeTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    std::unique_ptr<SeqRegions> computeTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    
+    /**
+        Get a vector of the indexes of neighbors
+    */
+    std::vector<Index> getNeighborIndexes(MiniIndex mini_index) const;
+    
+    /**
+        Export string: name + branch length
+     */
+    const std::string exportString(const bool binary, const Alignment& aln) const;
 };
 
 // just for testing
@@ -366,7 +395,7 @@ public:
     /**
         Length of branch connecting to parent
      */
-    double length;
+    double length = 0;
     
     /**
         Next node in the circle of neighbors. For tips, circle = NULL
@@ -448,19 +477,19 @@ public:
 class TraversingNode {
 public:
     /**
-        Pointer to a node
+        Index to a node
      */
-    Node* node;
+    Index node_index_;
     
     /**
         Count of the number of failures when traversing until the current node
      */
-    short int failure_count;
+    short int failure_count_;
     
     /**
         Cache the likelihood difference computed at the parent node
      */
-    RealNumType likelihood_diff;
+    RealNumType likelihood_diff_;
     
     /**
         Constructor
@@ -470,12 +499,7 @@ public:
     /**
         Constructor
      */
-    TraversingNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff);
-    
-    /**
-        destructor
-     */
-    ~TraversingNode();
+    TraversingNode(const Index node_index, const short int n_failure_count, const RealNumType n_lh_diff):node_index_(node_index), failure_count_(n_failure_count), likelihood_diff_(n_lh_diff) {};
 };
 
 /** An extension of node storing more dummy data used for updating nodes in the tree  */
@@ -509,7 +533,7 @@ public:
     /**
         Constructor
      */
-    UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count, bool n_delete_regions);
+    UpdatingNode(Index node_index, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count, bool n_delete_regions);
     
     /**
         destructor

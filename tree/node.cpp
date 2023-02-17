@@ -48,14 +48,40 @@ void PhyloNode::setOutdated(bool new_outdated)
     outdated_ = new_outdated;
 }
 
-float PhyloNode::getLength() const
+RealNumType PhyloNode::getUpperLength() const
 {
     return length_;
 }
 
-void PhyloNode::setLength(float new_length)
+void PhyloNode::setUpperLength(const double new_length)
 {
     length_ = new_length;
+}
+
+RealNumType PhyloNode::getCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes) const
+{
+    // if it's a left/right mini node -> return the length of the lower left/right branch
+    if (is_internal_ && mini_index != TOP)
+    {
+        Index neighbor_index = getNeighborIndex(mini_index);
+        return nodes[neighbor_index.getVectorIndex()].getUpperLength();
+    }
+    
+    // by default, return the length of the upper branch
+    return length_;
+}
+
+void PhyloNode::setCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes, const RealNumType new_length)
+{
+    // if it's a left/right mini node -> update the length of the lower left/right branch
+    if (is_internal_ && mini_index != TOP)
+    {
+        Index neighbor_index = getNeighborIndex(mini_index);
+        return nodes[neighbor_index.getVectorIndex()].setUpperLength(new_length);
+    }
+    // by default, return the length of the upper branch
+    else
+        length_ = new_length;
 }
 
 bool PhyloNode::isTop(const MiniIndex mini_index) const
@@ -142,16 +168,16 @@ void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbo
     }
 }
 
-const std::vector<std::string>& PhyloNode::getLessInfoSeqs() const
+const std::vector<uint32_t>& PhyloNode::getLessInfoSeqs() const
 {
     ASSERT(!is_internal_);
     return data_.leaf_.less_info_seqs_;
 }
 
-void PhyloNode::addLessInfoSeqs(std::string&& seq_name)
+void PhyloNode::addLessInfoSeqs(uint32_t seq_name_index)
 {
     ASSERT(!is_internal_);
-    data_.leaf_.less_info_seqs_.push_back(std::move(seq_name));
+    data_.leaf_.less_info_seqs_.push_back(seq_name_index);
 }
 
 uint32_t PhyloNode::getSeqNameIndex() const
@@ -166,33 +192,110 @@ void PhyloNode::setSeqNameIndex(uint32_t seq_name_index_)
     data_.leaf_.seq_name_index_ = seq_name_index_;
 }
 
-void PhyloNode::updateTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+std::vector<Index> PhyloNode::getNeighborIndexes(MiniIndex mini_index) const
+{
+    std::vector<Index> neighbor_indexes;
+    neighbor_indexes.reserve(2);
+    
+    // if it's an internal -> return the indexes of its 2 neighbors
+    if (isInternal())
+    {
+        // I don't use a loop here because I want to keep the order of neighbors same as those in the previous implementation of pointers
+        switch (mini_index)
+        {
+            case TOP:
+            {
+                neighbor_indexes.push_back(getNeighborIndex(RIGHT));
+                neighbor_indexes.push_back(getNeighborIndex(LEFT));
+                break;
+            }
+            case LEFT:
+            {
+                neighbor_indexes.push_back(getNeighborIndex(TOP));
+                neighbor_indexes.push_back(getNeighborIndex(RIGHT));
+                break;
+            }
+            case RIGHT:
+            {
+                neighbor_indexes.push_back(getNeighborIndex(LEFT));
+                neighbor_indexes.push_back(getNeighborIndex(TOP));
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    // if it's a leaf -> return an empty vector
+    
+    return neighbor_indexes;
+}
+
+void PhyloNode::updateTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     // if node is root
     if (is_root)
-        setTotalLh(std::move(getPartialLh(mini_index)->computeTotalLhAtRoot(aln.num_states, model, blength)));
+        setTotalLh(std::move(getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model, blength)));
     // if not is normal nodes
     else
     {
-        std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(mini_index);
-        neighbor.getPartialLh(getNeighborIndex(mini_index).getMiniIndex())->mergeUpperLower(getTotalLh(), getLength(), *lower_regions, blength, aln, model, threshold_prob);
+        std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
+        neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())->mergeUpperLower(getTotalLh(), getUpperLength(), *lower_regions, blength, aln, model, threshold_prob);
     }
 }
 
-std::unique_ptr<SeqRegions> PhyloNode::computeTotalLhAtNode(const MiniIndex mini_index, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+std::unique_ptr<SeqRegions> PhyloNode::computeTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     std::unique_ptr<SeqRegions> total_lh = nullptr;
     // if node is root
     if (is_root)
-        total_lh = std::move(getPartialLh(mini_index)->computeTotalLhAtRoot(aln.num_states, model, blength));
+        total_lh = std::move(getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model, blength));
     // if not is normal nodes
     else
     {
-        std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(mini_index);
-        neighbor.getPartialLh(getNeighborIndex(mini_index).getMiniIndex())->mergeUpperLower(total_lh, getLength(), *lower_regions, blength, aln, model, threshold_prob);
+        std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
+        neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())->mergeUpperLower(total_lh, getUpperLength(), *lower_regions, blength, aln, model, threshold_prob);
     }
     
     return total_lh;
+}
+
+const std::string PhyloNode::exportString(const bool binary, const Alignment& aln) const
+{
+    if (!isInternal())
+    {
+        string length_str = getUpperLength() < 0 ? "0" : convertDoubleToString(getUpperLength());
+        // without minor sequences -> simply return node's name and its branch length
+        const std::vector<uint32_t>& less_info_seqs = getLessInfoSeqs();
+        const PositionType num_less_info_seqs = less_info_seqs.size();
+        if (num_less_info_seqs == 0)
+            return aln.data[getSeqNameIndex()].seq_name + ":" + length_str;
+        // with minor sequences -> return minor sequences' names with zero branch lengths
+        else
+        {
+            string output = "(" + aln.data[getSeqNameIndex()].seq_name + ":0";
+            // export less informative sequences in binary tree format
+            if (binary)
+            {
+                string closing_brackets = "";
+                for (PositionType i = 0; i < num_less_info_seqs - 1; i++)
+                {
+                    output += ",(" + aln.data[less_info_seqs[i]].seq_name + ":0";
+                    closing_brackets += "):0";
+                }
+                output += "," + aln.data[less_info_seqs[num_less_info_seqs - 1]].seq_name + ":0" + closing_brackets;
+            }
+            // export less informative sequences in mutifurcating tree format
+            else
+            {
+                for (auto minor_seq_name_index : less_info_seqs)
+                    output += "," + aln.data[minor_seq_name_index].seq_name + ":0";
+            }
+            output += "):" + length_str;
+            return output;
+        }
+    }
+    
+    return "";
 }
 
 // ########### END OF NEW DATA STRUCTURES FOR PHYLOGENETIC NODES ###########
@@ -383,18 +486,6 @@ TraversingNode::TraversingNode()
     likelihood_diff = 0;*/
 }
 
-TraversingNode::TraversingNode(Node* n_node, short int n_failure_count, RealNumType n_lh_diff)
-{
-    /*node = n_node;
-    failure_count = n_failure_count;
-    likelihood_diff = n_lh_diff;*/
-}
-
-TraversingNode::~TraversingNode()
-{
-    // do nothing
-}
-
 UpdatingNode::UpdatingNode():TraversingNode()
 {
    /* incoming_regions = NULL;
@@ -403,7 +494,7 @@ UpdatingNode::UpdatingNode():TraversingNode()
     delete_regions = false;*/
 }
 
-UpdatingNode::UpdatingNode(Node* n_node, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count, bool n_delete_regions):TraversingNode(n_node, n_failure_count, n_lh_diff)
+UpdatingNode::UpdatingNode(Index node_index, SeqRegions* n_incoming_regions, RealNumType n_branch_length, bool n_need_updating, RealNumType n_lh_diff, short int n_failure_count, bool n_delete_regions):TraversingNode(node_index, n_failure_count, n_lh_diff)
 {
     /*incoming_regions = n_incoming_regions;
     branch_length = n_branch_length;

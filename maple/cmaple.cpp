@@ -87,16 +87,17 @@ void CMaple::buildInitialTree()
     PhyloNode& root = tree.nodes[0];
     Sequence* sequence = &tree.aln.data.front();
     root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.seq_type)));
-    root.updateTotalLhAtNode(TOP, tree.nodes[0], aln, model, tree.params->threshold_prob, true);
+    root.setTotalLh(std::move(root.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model)));
+    root.setUpperLength(0);
     
     // move to the next sequence in the alignment
     ++sequence;
     
     // iteratively place other samples (sequences)
-    for (PositionType i = 1; i < num_seqs; ++i, ++sequence)
+    for (uint32_t i = 1; i < num_seqs; ++i, ++sequence)
     {
         // get the lower likelihood vector of the current sequence
-        const std::unique_ptr<SeqRegions>& lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
+        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
@@ -107,23 +108,23 @@ void CMaple::buildInitialTree()
         //    cout << "debug" <<endl;
         
         // seek a position for new sample placement
-        Node* selected_node = NULL;
+        Index selected_node_index = Index(0, UNDEFINED);
         RealNumType best_lh_diff = MIN_NEGATIVE;
         bool is_mid_branch = false;
         RealNumType best_up_lh_diff = MIN_NEGATIVE;
         RealNumType best_down_lh_diff = MIN_NEGATIVE;
-        Node* best_child = NULL;
-        tree.seekSamplePlacement(tree.root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child);
+        Index best_child_index = Index(0, UNDEFINED);
+        tree.seekSamplePlacement(Index(tree.root_vector_index, TOP), i, lower_regions, selected_node_index, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child_index);
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
-        if (selected_node)
+        if (selected_node_index.getMiniIndex() != UNDEFINED)
         {
             // place new sample as a descendant of a mid-branch point
             if (is_mid_branch)
-                tree.placeNewSampleMidBranch(selected_node, lower_regions, sequence->seq_name, best_lh_diff);
+                tree.placeNewSampleMidBranch(selected_node_index, lower_regions, i, best_lh_diff);
             // otherwise, best lk so far is for appending directly to existing node
             else
-                tree.placeNewSampleAtNode(selected_node, lower_regions, sequence->seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child);
+                tree.placeNewSampleAtNode(selected_node_index, lower_regions, i, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child_index);
         }
         
         // NHANLT: debug
@@ -140,7 +141,7 @@ void CMaple::buildInitialTree()
         //}
     }
     
-    // show the runtime for building an initial tree
+   /* // show the runtime for building an initial tree
     auto end = getRealTime();
     cout << " - Time spent on building an initial tree: " << end - start << endl;
     
@@ -150,10 +151,10 @@ void CMaple::buildInitialTree()
 
 void CMaple::optimizeTree()
 {
-    /*string output_file(tree.params->diff_path);
+    string output_file(tree.params->diff_path);
     exportOutput(output_file + "_init.treefile");
     
-    // run a short range search for tree topology improvement (if neccessary)
+    /*// run a short range search for tree topology improvement (if neccessary)
     if (tree.params->short_range_topo_search)
     {
         optimizeTreeTopology(true);
@@ -258,14 +259,14 @@ void CMaple::postInference()
 
 void CMaple::exportOutput(const string &filename)
 {
-    /*// open the tree file
+    // open the tree file
     ofstream out = ofstream(filename);
     
     // write tree string into the tree file
-    out << tree.exportTreeString(tree.params->export_binary_tree) << ";" << endl;
+    out << tree.exportTreeString(tree.params->export_binary_tree, tree.root_vector_index) << ";" << endl;
     
     // close the output file
-    out.close();*/
+    out.close();
 }
 
 void test()
@@ -274,7 +275,7 @@ void test()
     MiniIndex mini_index{RIGHT};
     Index tmp_index{0,mini_index};
     LeafNode leaf;
-    leaf.less_info_seqs_.push_back("less_info_1");
+    leaf.less_info_seqs_.push_back(0);
     leaf.seq_name_index_ = 100;
     leaf.neighbor_index_ = std::move(Index(200, LEFT));
     PhyloNode phylonode1(std::move(leaf));
