@@ -1715,6 +1715,10 @@ void Tree::connectNewSample2Branch(SeqRegions* const sample, const std::string &
         next_node_1->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
     }
     
+    // NHANLT: LOGS FOR DEBUGGING
+    /*cout << "2Branch " << seq_name << " " << (best_blength > 0?new_sample_node->total_lh->size():0)<< " " << (best_blength > 0?new_sample_node->mid_branch_lh->size():0)<< " " << new_sample_node->partial_lh->size()<< " " << new_internal_node->total_lh->size()<< " " << new_internal_node->mid_branch_lh->size()<< " " << new_internal_node->partial_lh->size() << " " << next_node_1->partial_lh->size() << " " << next_node_2->partial_lh->size() << std::endl;
+    cout << std::setprecision(20) << new_internal_node->length << " " << sibling_node->length << " " << new_sample_node->length << std::endl;*/
+    
     // update pseudo_count
     model.updatePesudoCount(aln, *next_node_1->getPartialLhAtNode(aln, model, threshold_prob), *sample);
 
@@ -1956,6 +1960,10 @@ void Tree::connectNewSample2Root(SeqRegions* const sample, const std::string &se
         /*if best_length2>=2*min_blengthForMidNode:
             createFurtherMidNodes(new_root.children[1],new_root.probVectUpLeft)*/
     }
+    
+    // NHANLT: LOGS FOR DEBUGGING
+    /*cout << "2Root " << seq_name << " " << (best_length2 > 0 ?new_sample_node->total_lh->size():0)<< " " << (best_length2 > 0?new_sample_node->mid_branch_lh->size():0)<< " " << new_sample_node->partial_lh->size()<< " " << new_root->total_lh->size()<< " " << new_root->partial_lh->size() << " " << next_node_1->partial_lh->size() << " " << next_node_2->partial_lh->size() << std::endl;
+    cout << std::setprecision(20) << sibling_node->length << " " << new_sample_node->length << std::endl;*/
     
     // update tree->root;
     root = new_root;

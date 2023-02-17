@@ -644,6 +644,13 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
             {
                 merge_RACGT_ORACGT(*seq1_region, *seq2_region, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, *merged_regions);
             }
+            
+            // NHANLT: LOGS FOR DEBUGGING
+            /*if (merged_regions->at(merged_regions->size()-1).type == TYPE_O)
+            {
+                SeqRegion::LHType lh =  *merged_regions->at(merged_regions->size()-1).likelihood;
+                std::cout << "mergeUpLow " << pos << " " << std::setprecision(20) << lh[0] << " " << lh[1] << " " << lh[2] << " " << lh[3] << " " << std::endl;
+            }*/
         }
 
         // update pos
@@ -1011,6 +1018,13 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
         {
             if (!merge_notN_notN_TwoLowers(*seq1_region, *seq2_region, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, return_log_lh)) return MIN_NEGATIVE;
         }
+        
+        // NHANLT: LOGS FOR DEBUGGING
+        /*if (merged_regions->at(merged_regions->size()-1).type == TYPE_O)
+        {
+            SeqRegion::LHType lh =  *merged_regions->at(merged_regions->size()-1).likelihood;
+            std::cout << "merge2Low " << pos << " " << std::setprecision(20) << lh[0] << " " << lh[1] << " " << lh[2] << " " << lh[3] << " " << std::endl;
+        }*/
         // update pos
         pos = end_pos + 1;
     }
