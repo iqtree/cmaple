@@ -153,6 +153,11 @@ typedef uint8_t StateType;
 typedef int32_t PositionType;
 
 /**
+    Type of the number of sequences
+ */
+typedef uint32_t NumSeqsType;
+
+/**
     Type of segment lengths
  */
 typedef int16_t LengthType;
@@ -239,6 +244,88 @@ enum SeqType {
     verbose level on the screen
  */
 extern VerboseMode verbose_mode;
+
+/** Index for a mininode of a phylonode */
+enum MiniIndex : NumSeqsType
+{
+    TOP,
+    LEFT,
+    RIGHT,
+    UNDEFINED // to handle case return node = null
+};
+
+/*--------------------------- NODE's INDEX -----------------------------------*/
+/** Holds a space efficient index into a vector<PhyloNode> and subindex for the MiniNode inside the Phylonode */
+struct Index
+{
+    /**
+        constructor
+        it's required by the constructor of LeafNode
+     */
+    Index() = default;
+    
+    /**
+        constructor
+     */
+    Index(NumSeqsType vec_index, MiniIndex mini_index)
+    {
+        setVectorIndex(vec_index);
+        setMiniIndex(mini_index);
+    }
+
+    /**
+        return the mini-index
+     */
+    MiniIndex getMiniIndex() const
+    {
+        return mini_index_;
+    }
+    
+    /**
+        return the mini-index of the other next node (i.e., getFlipMiniIndex(LEFT) = RIGHT; getFlipMiniIndex(RIGHT) = LEFT)
+     */
+    MiniIndex getFlipMiniIndex() const
+    {
+        return MiniIndex(3 - mini_index_);
+    }
+    
+    /**
+        set the mini-index
+     */
+    void setMiniIndex(MiniIndex mini_index)
+    {
+        mini_index_ = mini_index;
+    }
+
+    /**
+        return the index of a phylonode
+     */
+    NumSeqsType getVectorIndex() const
+    {
+        return vector_index_;
+    }
+    
+    /**
+        set the index of a phylonode
+     */
+    void setVectorIndex(NumSeqsType vec_index)
+    {
+        vector_index_ = vec_index;
+    }
+    
+    /**
+        Check two indexes are equally
+     */
+    bool operator==(Index &rhs)
+    {
+        return (vector_index_ == rhs.getVectorIndex() && mini_index_ == rhs.getMiniIndex());
+    }
+    
+private:
+    NumSeqsType vector_index_ : 30;
+    MiniIndex mini_index_ : 2;
+};
+/*--------------------------- NODE's INDEX -----------------------------------*/
 
 
 /*--------------------------------------------------------------*/
@@ -444,6 +531,11 @@ public:
     *  path to output testing codes
     */
     char* output_testing;
+    
+    /*
+        TRUE to log debugging
+     */
+    // bool debug = false;
 };
 
 /*--------------------------------------------------------------*/

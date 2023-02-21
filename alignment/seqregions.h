@@ -36,11 +36,6 @@ public:
     */
     explicit SeqRegions(const std::unique_ptr<SeqRegions>& n_regions);
     
-    /**
-    *  Regions destructor
-    */
-    ~SeqRegions();
-    
     /// Move CTor
     SeqRegions(SeqRegions&& regions) = default;
     /// Move Assignment

@@ -94,7 +94,7 @@ void CMaple::buildInitialTree()
     ++sequence;
     
     // iteratively place other samples (sequences)
-    for (uint32_t i = 1; i < num_seqs; ++i, ++sequence)
+    for (NumSeqsType i = 1; i < num_seqs; ++i, ++sequence)
     {
         // get the lower likelihood vector of the current sequence
         std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
@@ -141,20 +141,21 @@ void CMaple::buildInitialTree()
         //}
     }
     
-   /* // show the runtime for building an initial tree
+    // show the runtime for building an initial tree
     auto end = getRealTime();
     cout << " - Time spent on building an initial tree: " << end - start << endl;
     
     // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
-    tree.refreshAllLhs();*/
+    tree.refreshAllLhs();
 }
 
 void CMaple::optimizeTree()
 {
+    // tree.params->debug = true;
     string output_file(tree.params->diff_path);
     exportOutput(output_file + "_init.treefile");
     
-    /*// run a short range search for tree topology improvement (if neccessary)
+    // run a short range search for tree topology improvement (if neccessary)
     if (tree.params->short_range_topo_search)
     {
         optimizeTreeTopology(true);
@@ -167,7 +168,7 @@ void CMaple::optimizeTree()
     
     // do further optimization on branch lengths (if needed)
     if (tree.params->optimize_branch_length)
-        optimizeBranchLengthsOfTree();*/
+        optimizeBranchLengthsOfTree();
 }
 
 void CMaple::optimizeTreeTopology(bool short_range_search)
@@ -332,12 +333,12 @@ void test()
     // test delete a phylonode created by a default constructor
     phylonode3.~PhyloNode();
     
-    std::cout << "\n\n\nsize of a single MiniNode (old):  " << sizeof(Node) << '\n';
+    /*std::cout << "\n\n\nsize of a single MiniNode (old):  " << sizeof(Node) << '\n';
     // however, the actual memory allocated by the call to `new` will be larger, since the allocator used predefined block sizes:
     Node* p = new Node();
     Node* p2 = new Node();
     auto diff = (char*)p2 - (char*)p;
-    std::cout << "size of a single MiniNode (old, when allocated by new): " << diff << '\n';
+    std::cout << "size of a single MiniNode (old, when allocated by new): " << diff << '\n';*/
 
     std::cout << "size of a full PhyloNode (new): " << sizeof(PhyloNode) << '\n';
     std::cout << " + size of a InternalNode (new): " << sizeof(InternalNode) << '\n';
@@ -349,7 +350,7 @@ void test()
     const int pylonodes = nr_seqs * 2; // number of internal nodes equals leaf nodes
     std::cout << "\n\nMemory usage:\n"
     "  for " << nr_seqs/1000 << "k Seqs:\n"
-    "    old nodes (" << old_nodes/1000 << "k) allocated with 'new'  : " << diff * old_nodes / 1024/ 1024 << " MB\n"
+    //"    old nodes (" << old_nodes/1000 << "k) allocated with 'new'  : " << diff * old_nodes / 1024/ 1024 << " MB\n"
     "    new phylonodes (" << pylonodes/1000 << "k) in std::vector : " << sizeof(PhyloNode) * pylonodes / 1024/ 1024 << " MB\n";
 }
 

@@ -88,10 +88,6 @@ SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions)
       push_back(SeqRegion::clone(region));
 } 
 
-SeqRegions::~SeqRegions()
-{
-}
-
 int SeqRegions::compareWithSample(const SeqRegions& sequence2, PositionType seq_length, StateType num_states) const
 {
     ASSERT(seq_length > 0);
@@ -642,7 +638,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
             }
             
             // NHANLT: LOGS FOR DEBUGGING
-            /*if (merged_regions->at(merged_regions->size()-1).type == TYPE_O)
+            /*if (Params::getInstance().debug && merged_regions->at(merged_regions->size()-1).type == TYPE_O)
             {
                 SeqRegion::LHType lh =  *merged_regions->at(merged_regions->size()-1).likelihood;
                 std::cout << "mergeUpLow " << pos << " " <<  std::setprecision(20) << lh[0] << " " << lh[1] << " " << lh[2] << " " << lh[3] << " " << std::endl;
@@ -1009,7 +1005,7 @@ RealNumType SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regio
         }
         
         // NHANLT: LOGS FOR DEBUGGING
-        /*if (merged_regions->at(merged_regions->size()-1).type == TYPE_O)
+        /*if (Params::getInstance().debug && merged_regions->at(merged_regions->size()-1).type == TYPE_O)
         {
             SeqRegion::LHType lh =  *merged_regions->at(merged_regions->size()-1).likelihood;
             std::cout << "merge2Low " << pos << " " << std::setprecision(20) << lh[0] << " " << lh[1] << " " << lh[2] << " " << lh[3] << " " << std::endl;
