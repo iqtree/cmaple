@@ -68,7 +68,7 @@ private:
         Try to improve a subtree rooted at node with SPR moves
         @return total improvement
      */
-    RealNumType improveSubTree(const Index index, bool short_range_search);
+    RealNumType improveSubTree(const Index index, PhyloNode& node, bool short_range_search);
     
     /**
        Calculate derivative starting from coefficients.
@@ -94,7 +94,7 @@ private:
     /**
        Add start nodes for seeking a placement for a subtree
     */
-    void addStartingNodes(const Index& node_index, const Index& other_child_node_index, const RealNumType threshold_prob, const RealNumType best_lh_diff, std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
+    void addStartingNodes(const Index& node_index, PhyloNode& node, const Index& other_child_node_index, const RealNumType threshold_prob, const RealNumType best_lh_diff, std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
     
     /**
        Examine placing a subtree at a mid-branch point
@@ -163,33 +163,33 @@ private:
     /**
         Connect a new sample to a branch
      */
-    void connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const NumSeqsType seq_name_index, const Index sibling_node_index, const RealNumType top_distance, const RealNumType down_distance, const RealNumType best_blength, std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions);
+    void connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const NumSeqsType seq_name_index, const Index sibling_node_index, PhyloNode& sibling_node, const RealNumType top_distance, const RealNumType down_distance, const RealNumType best_blength, std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions);
     
     /**
         Connect a new sample to root
      */
-    void connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const NumSeqsType seq_name_index, const Index sibling_node_index, const RealNumType best_root_blength, const RealNumType best_length2, std::unique_ptr<SeqRegions>& best_parent_regions);
+    void connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const NumSeqsType seq_name_index, const Index sibling_node_index, PhyloNode& sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, std::unique_ptr<SeqRegions>& best_parent_regions);
     
     /**
         Place a subtree as a descendant of a node
      */
-    void placeSubTreeAtNode(const Index selected_node_index, const Index subtree_index, const std::unique_ptr<SeqRegions>& subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh);
+    void placeSubTreeAtNode(const Index selected_node_index, const Index subtree_index, PhyloNode& subtree, const std::unique_ptr<SeqRegions>& subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh);
     
     /**
         Place a subtree at a mid-branch point
      */
-    void placeSubTreeMidBranch(const Index selected_node_index, const Index subtree_index, const std::unique_ptr<SeqRegions>& subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh);
+    void placeSubTreeMidBranch(const Index selected_node_index, const Index subtree_index, PhyloNode& subtree, const std::unique_ptr<SeqRegions>& subtree_regions, const RealNumType new_branch_length, const RealNumType new_lh);
     
     /**
         Connect a subtree to a branch
      */
     template<void (Tree::*updateRegionsSubTree)(PhyloNode&, PhyloNode&, PhyloNode&, std::unique_ptr<SeqRegions>&&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, RealNumType&)>
-    void connectSubTree2Branch(const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& lower_regions, const Index subtree_index, const Index sibling_node_index, const RealNumType top_distance, const RealNumType down_distance, RealNumType &best_blength, std::unique_ptr<SeqRegions>&& best_child_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions);
+    void connectSubTree2Branch(const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& lower_regions, const Index subtree_index, PhyloNode& subtree, const Index sibling_node_index, PhyloNode& sibling_node, const RealNumType top_distance, const RealNumType down_distance, RealNumType &best_blength, std::unique_ptr<SeqRegions>&& best_child_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions);
     
     /**
         Connect a subtree to root
      */
-    void connectSubTree2Root(const Index subtree_index, const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& lower_regions, const Index sibling_node_index, const RealNumType best_root_blength, const RealNumType best_length2, std::unique_ptr<SeqRegions>&& best_parent_regions);
+    void connectSubTree2Root(const Index subtree_index, PhyloNode& subtree, const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& lower_regions, const Index sibling_node_index, PhyloNode& sibling_node, const RealNumType best_root_blength, const RealNumType best_length2, std::unique_ptr<SeqRegions>&& best_parent_regions);
     
     /**
         Update next_node_1->partial_lh and new_internal_node->partial_lh after placing a subtree in common cases (e.g., at a mid-branch point, under a node)
@@ -204,17 +204,17 @@ private:
     /**
         Handle polytomy when placing a subtree
      */
-    void handlePolytomyPlaceSubTree(const Index selected_node_index, const std::unique_ptr<SeqRegions>& subtree_regions, const RealNumType new_branch_length, RealNumType& best_down_lh_diff, Index& best_child_index, RealNumType& best_child_blength_split, std::unique_ptr<SeqRegions>& best_child_regions);
+    void handlePolytomyPlaceSubTree(const Index selected_node_index, PhyloNode& selected_node, const std::unique_ptr<SeqRegions>& subtree_regions, const RealNumType new_branch_length, RealNumType& best_down_lh_diff, Index& best_child_index, RealNumType& best_child_blength_split, std::unique_ptr<SeqRegions>& best_child_regions);
     
     /**
         Update likelihood at mid-branch point
      */
-    void updateMidBranchLh(const Index index, const std::unique_ptr<SeqRegions>& parent_upper_regions, std::stack<Index> &node_stack, bool &update_blength);
+    void updateMidBranchLh(const Index node_index, PhyloNode& node, const std::unique_ptr<SeqRegions>& parent_upper_regions, std::stack<Index> &node_stack, bool &update_blength);
     
     /**
         Compute Upper Left/Right regions at a node, updating the top branch length if neccessary
      */
-    std::unique_ptr<SeqRegions> computeUpperLeftRightRegions(const Index node_index, const MiniIndex next_node_mini, const std::unique_ptr<SeqRegions>& parent_upper_regions, std::stack<Index> &node_stack, bool &update_blength);
+    std::unique_ptr<SeqRegions> computeUpperLeftRightRegions(const Index node_index, PhyloNode& node, const MiniIndex next_node_mini, const std::unique_ptr<SeqRegions>& parent_upper_regions, std::stack<Index> &node_stack, bool &update_blength);
     
     /**
         Update the PartialLh (seqregions) at a node if the new one is different from the current one
@@ -224,11 +224,11 @@ private:
     /**
         Handle cases when the new seqregions is null/empty: (1) update the branch length; or (2) return an error message
      */
-    void inline handleNullNewRegions(const Index index, const bool do_update_zeroblength, std::stack<Index> &node_stack, bool &update_blength, const std::string err_msg)
+    void inline handleNullNewRegions(const Index index, PhyloNode& node, const bool do_update_zeroblength, std::stack<Index> &node_stack, bool &update_blength, const std::string err_msg)
     {
         if (do_update_zeroblength)
         {
-            updateZeroBlength(index, node_stack);
+            updateZeroBlength(index, node, node_stack);
             update_blength = true;
         }
         else
@@ -263,7 +263,7 @@ private:
     /**
         Refresh upper left/right regions
      */
-    void refreshUpperLR(const Index node_index, const Index neighbor_index, std::unique_ptr<SeqRegions>& replaced_regions, const SeqRegions& parent_upper_lr_lh);
+    void refreshUpperLR(const Index node_index, PhyloNode& node, const Index neighbor_index, std::unique_ptr<SeqRegions>& replaced_regions, const SeqRegions& parent_upper_lr_lh);
     
     /**
         Calculate coefficients when merging R with O to estimate a branch length
@@ -308,7 +308,7 @@ private:
     /**
         Check and apply SPR move
      */
-    void checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, const Index node_index, const Index best_node_index, const Index parent_node_index, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated);
+    void checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType best_blength, const RealNumType best_lh, const Index node_index, PhyloNode& node, const Index best_node_index, const Index parent_node_index, const bool is_mid_node, RealNumType& total_improvement, bool& topology_updated);
     
     /**
         Create a new internal phylonode
@@ -379,7 +379,7 @@ public:
     /**
         Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
      */
-    void updateZeroBlength(const Index index, std::stack<Index> &node_stack);
+    void updateZeroBlength(const Index index, PhyloNode& node, std::stack<Index> &node_stack);
     
     /**
         Iteratively update partial_lh starting from the nodes in node_stack
@@ -411,7 +411,7 @@ public:
         Apply SPR move
         pruning a subtree then regrafting it to a new position
      */
-    void applySPR(const Index subtree_index, const Index best_node_index, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff);
+    void applySPR(const Index subtree_index, PhyloNode& subtree, const Index best_node_index, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff);
     
     /**
         Traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
