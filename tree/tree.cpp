@@ -298,14 +298,15 @@ void Tree::updatePartialLhTemplate(stack<Index> &node_stack)
         
         node.setOutdated(true);
         
-        std::unique_ptr<SeqRegions> parent_upper_regions = nullptr;
+        std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
         bool is_non_root = root_vector_index != node_index.getVectorIndex();
-        if (is_non_root)
+        /*if (is_non_root)
         {
             //parent_upper_regions = node->getTopNode()->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
             SeqRegions parent_upper_regions_clone = SeqRegions(getPartialLhAtNode(node.getNeighborIndex(TOP)));
             parent_upper_regions = std::make_unique<SeqRegions>(std::move(parent_upper_regions_clone));
-        }
+        }*/
+        const std::unique_ptr<SeqRegions>& parent_upper_regions = is_non_root ? getPartialLhAtNode(node.getNeighborIndex(TOP)) :  null_seqregions_ptr;
             
         // change in likelihoods is coming from parent node
         if (node_index.getMiniIndex() == TOP)
@@ -1454,7 +1455,7 @@ void Tree::placeSubTreeMidBranch(const Index selected_node_index, const Index su
     RealNumType best_blength_split = selected_node.getUpperLength() * 0.5;
     RealNumType best_split_lh = new_lh;
     // RealNumType new_split = 0.25;
-    std::unique_ptr<SeqRegions> best_child_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+    std::unique_ptr<SeqRegions> best_child_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
     const std::unique_ptr<SeqRegions>& lower_regions = selected_node.getPartialLh(TOP);
 
     // try different positions on the existing branch
@@ -1467,6 +1468,10 @@ void Tree::placeSubTreeMidBranch(const Index selected_node_index, const Index su
         if (found_new_split)
             best_blength_split = selected_node.getUpperLength() - best_blength_split;
     }
+    
+    // Delay cloning SeqRegions
+    if (!best_child_regions)
+        best_child_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
     
     // now try different lengths for the new branch
     RealNumType best_blength = new_branch_length;
@@ -1616,16 +1621,14 @@ void Tree::handlePolytomyPlaceSubTree(const Index selected_node_index, const std
         else
         {
             // now try to place on the current branch below the best node, at an height above or equal to the mid-branch.
-            std::unique_ptr<SeqRegions> mid_branch_regions = std::make_unique<SeqRegions>(std::move(node.getMidBranchLh())); // new SeqRegions(node->mid_branch_lh);
+            std::unique_ptr<SeqRegions> mid_branch_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(node.getMidBranchLh()))); // new SeqRegions(node->mid_branch_lh);
             const std::unique_ptr<SeqRegions>& parent_upper_lr_regions = getPartialLhAtNode(node.getNeighborIndex(TOP)); // node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             const std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP); // node->getPartialLhAtNode(aln, model, threshold_prob);
             RealNumType new_branch_length_split = 0.5 * node.getUpperLength(); // node->length;
-            RealNumType tmp_lh_diff;
+            RealNumType tmp_lh_diff = calculateSubTreePlacementCost(node.getMidBranchLh(), subtree_regions, new_branch_length);;
             
             while (true)
             {
-                tmp_lh_diff = calculateSubTreePlacementCost(mid_branch_regions, subtree_regions, new_branch_length);
-                
                 // if better placement found -> record it
                 if (tmp_lh_diff > best_down_lh_diff)
                 {
@@ -1635,13 +1638,16 @@ void Tree::handlePolytomyPlaceSubTree(const Index selected_node_index, const std
                     new_branch_length_split *= 0.5;
                     
                     // replacePartialLH(best_child_regions, mid_branch_regions);
-                    best_child_regions = std::move(mid_branch_regions);
+                    // Delay cloning SeqRegions
+                    best_child_regions = mid_branch_regions ? std::move(mid_branch_regions) : std::make_unique<SeqRegions>(std::move(SeqRegions(node.getMidBranchLh())));
                     
                     if (new_branch_length_split <= half_min_blength_mid)
                         break;
                     
                     // compute mid_branch_regions
                     parent_upper_lr_regions->mergeUpperLower(mid_branch_regions, new_branch_length_split, *lower_regions, node.getUpperLength() - new_branch_length_split, aln, model, threshold_prob);
+                    
+                    tmp_lh_diff = calculateSubTreePlacementCost(mid_branch_regions, subtree_regions, new_branch_length);
                 }
                 else
                     break;
@@ -1713,12 +1719,16 @@ void Tree::placeSubTreeAtNode(const Index selected_node_index, const Index subtr
     {
         const std::unique_ptr<SeqRegions>& upper_left_right_regions = getPartialLhAtNode(selected_node.getNeighborIndex(TOP)); // selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         const std::unique_ptr<SeqRegions>& lower_regions = selected_node.getPartialLh(TOP); // selected_node->getPartialLhAtNode(aln, model, threshold_prob);
-        best_parent_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
-        best_parent_lh = calculateSubTreePlacementCost(best_parent_regions, subtree_regions, new_branch_length);
+        best_parent_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+        best_parent_lh = calculateSubTreePlacementCost(selected_node.getMidBranchLh(), subtree_regions, new_branch_length);
         best_parent_blength_split = 0.5 * selected_node.getUpperLength();
         
         // try with a shorter split
         tryShorterBranch<&Tree::calculateSubTreePlacementCost>(selected_node.getUpperLength(), best_parent_regions, subtree_regions, upper_left_right_regions, lower_regions, best_parent_lh, best_parent_blength_split, new_branch_length, false);
+        
+        // Delay cloning SeqRegions
+        if (!best_parent_regions)
+            best_parent_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
     }
     
     // if the best placement is below the selected_node => add an internal node below the selected_node
@@ -2037,7 +2047,7 @@ void Tree::placeNewSampleMidBranch(const Index& selected_node_index, std::unique
     RealNumType best_split_lh = best_lh_diff;
     const RealNumType selected_node_blength = selected_node.getUpperLength();
     RealNumType best_branch_length_split = 0.5 * selected_node_blength;
-    best_child_regions =  std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+    best_child_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
     //selected_node->getPartialLhAtNode(aln, model, threshold_prob);
     const std::unique_ptr<SeqRegions>& lower_regions = selected_node.getPartialLh(TOP);
     
@@ -2052,6 +2062,10 @@ void Tree::placeNewSampleMidBranch(const Index& selected_node_index, std::unique
         if (found_new_split)
             best_branch_length_split = selected_node_blength - best_branch_length_split;
     }
+    
+    // Delay cloning SeqRegions
+    if (!best_child_regions)
+        best_child_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
     
     // now try different lengths for the new branch
     RealNumType best_blength = default_blength;
@@ -2336,12 +2350,16 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
         const std::unique_ptr<SeqRegions>& upper_left_right_regions = getPartialLhAtNode(best_child.getNeighborIndex(TOP)); // best_child->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         const std::unique_ptr<SeqRegions>& lower_regions = best_child.getPartialLh(TOP); // ->getPartialLhAtNode(aln, model, threshold_prob);
         // best_child_regions = new SeqRegions(best_child->mid_branch_lh);
-        SeqRegions best_child_mid_clone = SeqRegions(best_child.getMidBranchLh());
-        best_child_regions = std::make_unique<SeqRegions>(std::move(best_child_mid_clone));
+        // SeqRegions best_child_mid_clone = SeqRegions(best_child.getMidBranchLh());
+        best_child_regions = nullptr; // std::make_unique<SeqRegions>(std::move(best_child_mid_clone));
         
         // try a shorter split
         // tryShorterBranch<&Tree::calculateSamplePlacementCost>(best_child->length, best_child_regions, sample, upper_left_right_regions, lower_regions, best_child_lh, best_child_blength_split, default_blength, true);
         tryShorterBranch<&Tree::calculateSamplePlacementCost>(best_child.getUpperLength(), best_child_regions, sample, upper_left_right_regions, lower_regions, best_child_lh, best_child_blength_split, default_blength, true);
+        
+        // Delay cloning SeqRegions
+        if (!best_child_regions)
+            best_child_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(best_child.getMidBranchLh())));
     }
     
     // if node is root, try to place as sibling of the current root.
@@ -2376,12 +2394,16 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
         best_parent_regions = new SeqRegions(selected_node->mid_branch_lh);*/
         const std::unique_ptr<SeqRegions>& upper_left_right_regions = getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
         const std::unique_ptr<SeqRegions>& lower_regions = selected_node.getPartialLh(TOP);
-        SeqRegions seq_regions_clone = SeqRegions(selected_node.getMidBranchLh());
-        best_parent_regions = std::make_unique<SeqRegions>(std::move(seq_regions_clone));
+        // SeqRegions seq_regions_clone = SeqRegions(selected_node.getMidBranchLh());
+        best_parent_regions = nullptr; // std::make_unique<SeqRegions>(std::move(seq_regions_clone));
         
         // try a shorter split
         // tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node->length, best_parent_regions, sample, upper_left_right_regions, lower_regions, best_parent_lh, best_parent_blength_split, default_blength, false);
         tryShorterBranch<&Tree::calculateSamplePlacementCost>(selected_node.getUpperLength(), best_parent_regions, sample, upper_left_right_regions, lower_regions, best_parent_lh, best_parent_blength_split, default_blength, false);
+        
+        // Delay cloning SeqRegions
+        if (!best_parent_regions)
+            best_parent_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
     }
     
     // if the best placement is below the selected_node => add an internal node below the selected_node
