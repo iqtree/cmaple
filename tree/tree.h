@@ -94,7 +94,7 @@ private:
     /**
        Add start nodes for seeking a placement for a subtree
     */
-    void addStartingNodes(const Index& node_index, PhyloNode& node, const Index& other_child_node_index, const RealNumType threshold_prob, const RealNumType best_lh_diff, std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
+    void addStartingNodes(const Index& node_index, PhyloNode& node, const Index& other_child_node_index, const RealNumType best_lh_diff, std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
     
     /**
        Examine placing a subtree at a mid-branch point

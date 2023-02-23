@@ -528,7 +528,7 @@ void Tree::seekSamplePlacement(const Index start_node_index, const NumSeqsType s
     }
 }
 
-void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Index& other_child_node_index, const RealNumType threshold_prob, const RealNumType best_lh_diff, std::stack<std::unique_ptr<UpdatingNode>> &node_stack)
+void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Index& other_child_node_index, const RealNumType best_lh_diff, std::stack<std::unique_ptr<UpdatingNode>> &node_stack)
 {
     // dummy variables
     const NumSeqsType vec_index = node_index.getVectorIndex();
@@ -1012,7 +1012,7 @@ void Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &best_lh_dif
     // subtree_regions = child_node->getPartialLhAtNode(aln, model, threshold_prob);
     
     // add starting nodes to start seek placement for the subtree
-    addStartingNodes(node_index, node, other_child_node_index, threshold_prob, best_lh_diff, node_stack);
+    addStartingNodes(node_index, node, other_child_node_index, best_lh_diff, node_stack);
     
     //}
      // search a placement for a new sample
