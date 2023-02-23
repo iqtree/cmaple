@@ -1,7 +1,6 @@
 #include "traversingnode.h"
 
-#ifndef UPDATINGNODE_H
-#define UPDATINGNODE_H
+#pragma once
 
 /** An extension of node storing more dummy data used for updating nodes in the tree  */
 class UpdatingNode: public TraversingNode {
