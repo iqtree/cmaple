@@ -55,11 +55,6 @@ private:
     RealNumType calculateSubTreePlacementCostTemplate(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions, const RealNumType blength);
     
     /**
-        Traverse the intial tree from root to re-calculate all lower likelihoods regarding the latest/final estimated model parameters
-     */
-    void refreshAllLowerLhs();
-    
-    /**
         Traverse the intial tree from root to re-calculate all non-lower likelihoods regarding the latest/final estimated model parameters
      */
     void refreshAllNonLowerLhs();
@@ -453,6 +448,27 @@ public:
         @param child_regions: vector of regions of the new sample
      */
     RealNumType calculateSubTreePlacementCost(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions, const RealNumType blength);
+    
+    /**
+        Update lower lh of a node
+     */
+    void updateLowerLh(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length);
+    
+    /**
+        compute the likelihood contribution of (the upper branch of) a node
+     */
+    void computeLhContribution(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length);
+    
+    /**
+        Calculate the likelihood of the tree
+     */
+    RealNumType calculateTreeLh();
+    
+    /**
+        Employ Depth First Search to do a task
+     */
+    template <void(Tree::*task)(RealNumType&, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const Index, PhyloNode&, const Index, PhyloNode&, const PositionType&)>
+    RealNumType performDFS();
 };
 
 #endif

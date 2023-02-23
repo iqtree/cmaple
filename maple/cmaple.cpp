@@ -166,9 +166,18 @@ void CMaple::optimizeTree()
     optimizeTreeTopology();
     exportOutput(output_file + "_topo.treefile");
     
+    // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
+    // tree.refreshAllLhs();
+    
+    // output log-likelihood of the tree
+    // std::cout << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateTreeLh() << std::endl;
+    
     // do further optimization on branch lengths (if needed)
     if (tree.params->optimize_branch_length)
         optimizeBranchLengthsOfTree();
+    
+    // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
+    tree.performDFS<&Tree::updateLowerLh>();
 }
 
 void CMaple::optimizeTreeTopology(bool short_range_search)
@@ -234,7 +243,7 @@ void CMaple::optimizeBranchLengthsOfTree()
         // stop trying if the improvement is so small
         if (num_improvement < tree.params->thresh_entire_tree_improvement)
         //if (num_improvement == 0)
-          //  break;
+            break;
         
         // traverse the tree from root to optimize branch lengths
         num_improvement = tree.optimizeBranchLengths();
@@ -256,6 +265,10 @@ void CMaple::doInference()
 
 void CMaple::postInference()
 {
+    // output log-likelihood of the tree
+    std::cout << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
+    
+    // output treefile
     string output_file(tree.params->diff_path);
     output_file += ".treefile";
     exportOutput(output_file);

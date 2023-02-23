@@ -2494,106 +2494,10 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
 void Tree::refreshAllLhs()
 {
     // 1. update all the lower lhs along the tree
-    refreshAllLowerLhs();
+    performDFS<&Tree::updateLowerLh>();
     
     // 2. update all the non-lower lhs along the tree
     refreshAllNonLowerLhs();
-}
-
-void Tree::refreshAllLowerLhs()
-{
-    // start from root
-    Index node_index = Index(root_vector_index, TOP);
-    Index last_node_index = Index(0, UNDEFINED);
-    
-    // traverse to the deepest tip, update the lower lhs upward from the tips
-    while (node_index.getMiniIndex() != UNDEFINED) //node)
-    {
-        PhyloNode& node = nodes[node_index.getVectorIndex()];
-        // we reach a top node by a downward traversing
-        if (node_index.getMiniIndex() == TOP) //node->is_top)
-        {
-            // if the current node is a leaf -> we reach the deepest tip -> traversing upward to update the lower lh of it parent
-            if (!node.isInternal()) // node->isLeave())
-            {
-                /*last_node = node;
-                node = node->neighbor;*/
-                last_node_index = node_index;
-                node_index = node.getNeighborIndex(TOP);
-            }
-            // otherwise, keep traversing downward to find the deepest tip
-            else
-                // node = node->next->neighbor;
-                node_index = node.getNeighborIndex(RIGHT);
-        }
-        // we reach the current node by an upward traversing from its children
-        else
-        {
-            // if we reach the current node by an upward traversing from its first children -> traversing downward to its second children
-            if (node.getNeighborIndex(RIGHT) == last_node_index) // node->getTopNode()->next->neighbor == last_node)
-            {
-                // node = node->getTopNode()->next->next->neighbor;
-                node_index = node.getNeighborIndex(LEFT);
-            }
-            // otherwise, all children of the current node are updated -> update the lower lh of the current node
-            else
-            {
-                // calculate the new lower lh of the current node from its children
-                /*Node* top_node = node->getTopNode();
-                Node* next_node_1 = top_node->next;
-                Node* next_node_2 = next_node_1->next;*/
-                Index neighbor_1_index = node.getNeighborIndex(RIGHT);
-                Index neighbor_2_index = node.getNeighborIndex(LEFT);
-                PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
-                PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
-                
-                std::unique_ptr<SeqRegions> new_lower_lh = nullptr;
-                const std::unique_ptr<SeqRegions>& lower_lh_1 = neighbor_1.getPartialLh(TOP); // next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
-                const std::unique_ptr<SeqRegions>& lower_lh_2 = neighbor_2.getPartialLh(TOP); // next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
-                // lower_lh_1->mergeTwoLowers(new_lower_lh, next_node_1->length, *lower_lh_2, next_node_2->length, aln, model, params->threshold_prob);
-                lower_lh_1->mergeTwoLowers(new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, params->threshold_prob);
-                
-                // NHANLT: LOGS FOR DEBUGGING
-                /*if (params->debug)
-                    std::cout << "new_lower_lh " << new_lower_lh->size() << std::endl;*/
-                 
-                // if new_lower_lh is NULL -> we need to update the branch lengths connecting the current node to its children
-                if (!new_lower_lh)
-                {
-                    if (neighbor_1.getUpperLength() <= 0) // next_node_1->length <= 0)
-                    {
-                        stack<Index> node_stack;
-                        // NHANLT: note different from original maple
-                        // updateBLen(nodeList,node,mutMatrix) -> the below codes update from next_node_1 instead of top_node
-                        updateZeroBlength(neighbor_1_index, neighbor_1, node_stack); // next_node_1->neighbor, node_stack, params->threshold_prob);
-                        updatePartialLh(node_stack);
-                    }
-                    else if (neighbor_2.getUpperLength() <= 0) // next_node_2->length <= 0)
-                    {
-                        stack<Index> node_stack;
-                        updateZeroBlength(neighbor_2_index, neighbor_2, node_stack); // updateZeroBlength(next_node_2->neighbor, node_stack, params->threshold_prob);
-                        updatePartialLh(node_stack);
-                    }
-                    else
-                        outError("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
-                }
-                // otherwise, everything is good -> update the lower lh of the current node
-                else
-                    node.setPartialLh(TOP, std::move(new_lower_lh));
-                    // replacePartialLH(top_node->partial_lh, new_lower_lh);
-
-                // delete new_lower_lh
-                /* if (new_lower_lh)
-                    delete new_lower_lh;*/
-                
-                // traverse upward to the parent of the current node
-                /*last_node = top_node;
-                node = top_node->neighbor;*/
-                last_node_index = Index(node_index.getVectorIndex(), TOP);
-                node_index = node.getNeighborIndex(TOP);
-            }
-        }
-    }
 }
 
 void Tree::refreshUpperLR(const Index node_index, PhyloNode& node, const Index neighbor_index, std::unique_ptr<SeqRegions>& replaced_regions, const SeqRegions& parent_upper_lr_lh)
@@ -4168,4 +4072,129 @@ std::unique_ptr<SeqRegions>& Tree::getPartialLhAtNode(const Index index)
 {
     // may need assert(index.getVectorIndex() < nodes.size());
     return nodes[index.getVectorIndex()].getPartialLh(index.getMiniIndex());
+}
+
+RealNumType Tree::calculateTreeLh()
+{
+    // initialize the total_lh by the likelihood from root
+    RealNumType total_lh = nodes[root_vector_index].getPartialLh(TOP)->computeAbsoluteLhAtRoot(aln.num_states, model);
+    
+    // perform a DFS to add likelihood contributions from each internal nodes
+    total_lh += performDFS<&Tree::computeLhContribution>();
+   
+    // return total_lh
+    return total_lh;
+}
+
+void Tree::updateLowerLh(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length)
+{
+    lower_lh_1->mergeTwoLowers(new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, params->threshold_prob);
+    
+    // NHANLT: LOGS FOR DEBUGGING
+    /*if (params->debug)
+        std::cout << "new_lower_lh " << new_lower_lh->size() << std::endl;*/
+     
+    // if new_lower_lh is NULL -> we need to update the branch lengths connecting the current node to its children
+    if (!new_lower_lh)
+    {
+        if (neighbor_1.getUpperLength() <= 0) // next_node_1->length <= 0)
+        {
+            stack<Index> node_stack;
+            // NHANLT: note different from original maple
+            // updateBLen(nodeList,node,mutMatrix) -> the below codes update from next_node_1 instead of top_node
+            updateZeroBlength(neighbor_1_index, neighbor_1, node_stack); // next_node_1->neighbor, node_stack, params->threshold_prob);
+            updatePartialLh(node_stack);
+        }
+        else if (neighbor_2.getUpperLength() <= 0) // next_node_2->length <= 0)
+        {
+            stack<Index> node_stack;
+            updateZeroBlength(neighbor_2_index, neighbor_2, node_stack); // updateZeroBlength(next_node_2->neighbor, node_stack, params->threshold_prob);
+            updatePartialLh(node_stack);
+        }
+        else
+            outError("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
+    }
+    // otherwise, everything is good -> update the lower lh of the current node
+    else
+        node.setPartialLh(TOP, std::move(new_lower_lh));
+}
+
+void Tree::computeLhContribution(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length)
+{
+    total_lh += lower_lh_1->mergeTwoLowers(new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, params->threshold_prob, true);
+    
+    // if new_lower_lh is NULL
+    if (!new_lower_lh)
+        outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
+    // otherwise, everything is good -> update the lower lh of the current node
+    else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, aln.num_states, &params.value()))
+        outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
+}
+
+template <void(Tree::*task)(RealNumType&, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const Index, PhyloNode&, const Index, PhyloNode&, const PositionType&)>
+RealNumType Tree::performDFS()
+{
+    // dummy variables
+    RealNumType total_lh = 0;
+    const PositionType seq_length = aln.ref_seq.size();
+    
+    // start from root
+    Index node_index = Index(root_vector_index, TOP);
+    Index last_node_index = Index(0, UNDEFINED);
+    
+    // traverse to the deepest tip, calculate the likelihoods upward from the tips
+    while (node_index.getMiniIndex() != UNDEFINED) //node)
+    {
+        PhyloNode& node = nodes[node_index.getVectorIndex()];
+        // we reach a top node by a downward traversing
+        if (node_index.getMiniIndex() == TOP) //node->is_top)
+        {
+            // if the current node is a leaf -> we reach the deepest tip -> traversing upward to calculate the lh of its parent
+            if (!node.isInternal()) // node->isLeave())
+            {
+                /*last_node = node;
+                 node = node->neighbor;*/
+                last_node_index = node_index;
+                node_index = node.getNeighborIndex(TOP);
+            }
+            // otherwise, keep traversing downward to find the deepest tip
+            else
+                // node = node->next->neighbor;
+                node_index = node.getNeighborIndex(RIGHT);
+        }
+        // we reach the current node by an upward traversing from its children
+        else
+        {
+            // if we reach the current node by an upward traversing from its first children -> traversing downward to its second children
+            if (node.getNeighborIndex(RIGHT) == last_node_index) // node->getTopNode()->next->neighbor == last_node)
+            {
+                // node = node->getTopNode()->next->next->neighbor;
+                node_index = node.getNeighborIndex(LEFT);
+            }
+            // otherwise, all children of the current node are updated -> update the lower lh of the current node
+            else
+            {
+                // calculate the new lower lh of the current node from its children
+                /*Node* top_node = node->getTopNode();
+                 Node* next_node_1 = top_node->next;
+                 Node* next_node_2 = next_node_1->next;*/
+                Index neighbor_1_index = node.getNeighborIndex(RIGHT);
+                Index neighbor_2_index = node.getNeighborIndex(LEFT);
+                PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
+                PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
+                
+                std::unique_ptr<SeqRegions> new_lower_lh = nullptr;
+                const std::unique_ptr<SeqRegions>& lower_lh_1 = neighbor_1.getPartialLh(TOP); // next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+                const std::unique_ptr<SeqRegions>& lower_lh_2 = neighbor_2.getPartialLh(TOP); // next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+                // lower_lh_1->mergeTwoLowers(new_lower_lh, next_node_1->length, *lower_lh_2, next_node_2->length, aln, model, params->threshold_prob);
+                
+                (this->*task)(total_lh, new_lower_lh, node, lower_lh_1, lower_lh_2, neighbor_1_index, neighbor_1, neighbor_2_index, neighbor_2, seq_length);
+                
+                last_node_index = Index(node_index.getVectorIndex(), TOP);
+                node_index = node.getNeighborIndex(TOP);
+            }
+        }
+    }
+    
+    return total_lh;
 }
