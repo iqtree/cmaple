@@ -1063,7 +1063,7 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
 
 std::unique_ptr<SeqRegions> SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength) const
 {
-    std::unique_ptr<SeqRegions> total_lh = std::make_unique<SeqRegions>(SeqRegions());
+    auto total_lh = std::make_unique<SeqRegions>();
     total_lh->reserve(size()); // avoid realloc of vector data
     for (const SeqRegion& elem : (*this))
     {
