@@ -343,7 +343,7 @@ void test()
     std::cout << "size of a full PhyloNode (new): " << sizeof(PhyloNode) << '\n';
     std::cout << " + size of a InternalNode (new): " << sizeof(InternalNode) << '\n';
     std::cout << " + size of a LeafNode (new): " << sizeof(LeafNode) << '\n';
-    std::cout << " + size of a std::variant (new): " << sizeof(std::variant<InternalNode, LeafNode>) << '\n';
+    // std::cout << " + size of a std::variant (new): " << sizeof(std::variant<InternalNode, LeafNode>) << '\n';
     
     const int nr_seqs = 5e5;
     const int old_nodes = nr_seqs * 3 + nr_seqs; // estimate: as many internal phylonodes (with 3 Node's each) as leaf nodes
@@ -357,7 +357,7 @@ void test()
 void runCMaple(Params &params)
 {
     // NHANLT: test new funtions
-    test();
+    // test();
     
     auto start = getRealTime();
     CMaple cmaple(params);
