@@ -47,6 +47,16 @@ void PhyloNode::setOutdated(bool new_outdated)
     outdated_ = new_outdated;
 }
 
+const bool PhyloNode::isSPRApplied() const
+{
+    return spr_applied_;
+}
+
+void PhyloNode::setSPRApplied(bool spr_applied)
+{
+    spr_applied_ = spr_applied;
+}
+
 RealNumType PhyloNode::getUpperLength() const
 {
     return length_;

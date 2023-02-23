@@ -419,9 +419,11 @@ public:
     void refreshAllLhs();
     
     /**
-        Traverse the tree to set the outdated flag (which is used to prevent traversing the same part of the tree multiple times) of all nodes to TRUE
+        Traverse the tree to reset the outdated/spr_applied flags (which is used to prevent traversing the same part of the tree multiple times) of all nodes
+        outdated = true;
+        spr_applied = false;
      */
-    void setAllNodeOutdated();
+    void resetSPRFlags(const bool reset_outdated);
     
     /**
         Try to improve the entire tree with SPR moves

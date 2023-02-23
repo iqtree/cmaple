@@ -180,7 +180,7 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
     for (int i = 0; i < num_tree_improvement; ++i)
     {
         // first, set all nodes outdated
-        tree.setAllNodeOutdated();
+        tree.resetSPRFlags(true);
         
         // traverse the tree from root to try improvements on the entire tree
         RealNumType improvement = tree.improveEntireTree(short_range_search);
@@ -195,6 +195,9 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
         // run improvements only on the nodes that have been affected by some changes in the last round, and so on
         for (int j = 0; j < 20; ++j)
         {
+            // forget SPR_applied flag to allow new SPR moves
+            tree.resetSPRFlags(false);
+            
             improvement = tree.improveEntireTree(short_range_search);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
             
@@ -220,7 +223,7 @@ void CMaple::optimizeBranchLengthsOfTree()
     cout << "Start optimizing branch lengths" << endl;
     
     // first, set all nodes outdated
-    tree.setAllNodeOutdated();
+    tree.resetSPRFlags(true);
    
     // traverse the tree from root to optimize branch lengths
     PositionType num_improvement = tree.optimizeBranchLengths();

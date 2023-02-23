@@ -57,7 +57,11 @@ private:
     const bool is_internal_;
     
     /// flag to avoid traversing a clade multiple times during topology optimization
+    /// TRUE if the likelihoods were updated due to some SPR moves
     bool outdated_;
+    
+    // TRUE if we applied SPR move on the upper branch of this node
+    bool spr_applied_;
     
     // branch length
     float length_ = 0; // using float allows it to fit into the 6 bytes padding after the two bools.
@@ -85,7 +89,7 @@ private:
     
     /** move constructor */
     PhyloNode(PhyloNode&& node): is_internal_{node.isInternal()}, data_(std::move(node.getNode()), is_internal_),
-    other_lh_(std::move(node.getOtherLh())), outdated_(node.isOutdated()), length_(node.getUpperLength()) {};
+    other_lh_(std::move(node.getOtherLh())), outdated_(node.isOutdated()), spr_applied_(node.isSPRApplied()), length_(node.getUpperLength()) {};
     
     /** destructor */
     ~PhyloNode()
@@ -135,6 +139,16 @@ private:
         Set outdated_
      */
     void setOutdated(bool new_outdated);
+    
+    /**
+        Get spr_applied_
+     */
+    const bool isSPRApplied() const;
+    
+    /**
+        Set spr_applied_
+     */
+    void setSPRApplied(bool spr_applied);
     
     /**
         Get length of the upper branch

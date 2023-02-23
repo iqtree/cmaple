@@ -1225,6 +1225,9 @@ void Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &best_lh_dif
 
 void Tree::applySPR(const Index subtree_index, PhyloNode& subtree, const Index best_node_index, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff)
 {
+    // record the SPR applied at this subtree
+    subtree.setSPRApplied(true);
+
     // remove subtree from the tree
     const Index parent_index = subtree.getNeighborIndex(TOP);
     PhyloNode& parent_subtree = nodes[parent_index.getVectorIndex()]; // subtree->neighbor->getTopNode();
@@ -2767,7 +2770,7 @@ void Tree::refreshAllNonLowerLhs()
     }
 }
 
-void Tree::setAllNodeOutdated()
+void Tree::resetSPRFlags(const bool reset_outdated)
 {
     // start from the root
     stack<NumSeqsType> node_stack;
@@ -2781,7 +2784,9 @@ void Tree::setAllNodeOutdated()
         node_stack.pop();
         
         // set the current node outdated
-        node.setOutdated(true);
+        if (reset_outdated)
+            node.setOutdated(true);
+        node.setSPRApplied(false);
         
         // traverse downward
         /*for (Index neighbor_index:node.getNeighborIndexes(TOP))
@@ -2824,7 +2829,7 @@ RealNumType Tree::improveEntireTree(bool short_range_search)
         }
         
         // only process outdated node to avoid traversing the same part of the tree multiple times
-        if (node.isOutdated())
+        if (node.isOutdated() && !node.isSPRApplied())
         {
             node.setOutdated(false);
             
