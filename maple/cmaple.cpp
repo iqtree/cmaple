@@ -108,7 +108,7 @@ void CMaple::buildInitialTree()
         //    cout << "debug" <<endl;
         
         // seek a position for new sample placement
-        Index selected_node_index = Index(0, UNDEFINED);
+        Index selected_node_index;
         RealNumType best_lh_diff = MIN_NEGATIVE;
         bool is_mid_branch = false;
         RealNumType best_up_lh_diff = MIN_NEGATIVE;
