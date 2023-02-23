@@ -268,9 +268,8 @@ struct Index
         constructor
      */
     Index(NumSeqsType vec_index, MiniIndex mini_index)
+    : vec_index_(vec_index), mini_index_(mini_index)
     {
-        setVectorIndex(vec_index);
-        setMiniIndex(mini_index);
     }
 
     /**
