@@ -305,20 +305,20 @@ void test()
     
     // change total_lh
     std::cout << " Update total_lh " << std::endl;
-    std::unique_ptr<SeqRegions> new_total_lh = std::make_unique<SeqRegions>(SeqRegions());
+    std::unique_ptr<SeqRegions> new_total_lh = std::make_unique<SeqRegions>();
     new_total_lh->reserve(10);
     new_total_lh->emplace_back(0, 100);
     phylonode1.setTotalLh(std::move(new_total_lh));
     std::cout << "- (size of) total_lh (after updating): " << phylonode1.getTotalLh()->size() << std::endl;
     
     std::cout << " Update partial_lh " << std::endl;
-    std::unique_ptr<SeqRegions> new_partial_lh = std::make_unique<SeqRegions>(SeqRegions());
+    std::unique_ptr<SeqRegions> new_partial_lh = std::make_unique<SeqRegions>();
     new_partial_lh->emplace_back(0, 100);
     phylonode1.setPartialLh(mini_index, std::move(new_partial_lh));
     std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(mini_index)->size() << std::endl;
     
     std::cout << " Update partial_lh 2nd time" << std::endl;
-    std::unique_ptr<SeqRegions> new_partial_lh2 = std::make_unique<SeqRegions>(SeqRegions());
+    std::unique_ptr<SeqRegions> new_partial_lh2 = std::make_unique<SeqRegions>();
     new_partial_lh2->emplace_back(1, 200);
     new_partial_lh2->emplace_back(2, 300);
     phylonode1.setPartialLh(mini_index, std::move(new_partial_lh2));
@@ -338,7 +338,7 @@ void test()
     std::cout << phylonode2.getNeighborIndex(mini_index3) << std::endl;
     
     std::cout << " Update partial_lh at the left mininode" << std::endl;
-    std::unique_ptr<SeqRegions> new_partial_lh1 = std::make_unique<SeqRegions>(SeqRegions());
+    std::unique_ptr<SeqRegions> new_partial_lh1 = std::make_unique<SeqRegions>();
     new_partial_lh1->emplace_back(0, 100);
     new_partial_lh1->emplace_back(1, 200);
     phylonode2.setPartialLh(mini_index2, std::move(new_partial_lh1));

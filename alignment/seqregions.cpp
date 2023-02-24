@@ -550,7 +550,10 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
     const PositionType seq_length = aln.ref_seq.size();
     
     // init merged_regions
-    merged_regions = std::make_unique<SeqRegions>(SeqRegions());
+    if (merged_regions)
+        merged_regions->clear();
+    else
+        merged_regions = std::make_unique<SeqRegions>();
     
     // avoid realloc of vector data (minimize memory footprint)
     merged_regions->reserve(countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
@@ -954,7 +957,10 @@ RealNumType SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regio
     const PositionType seq_length = aln.ref_seq.size();
     
     // init merged_regions
-    merged_regions = std::make_unique<SeqRegions>(std::move(SeqRegions()));
+    if (merged_regions)
+        merged_regions->clear();
+    else
+        merged_regions = std::make_unique<SeqRegions>();
 
     // avoid realloc of vector data (minimize memory footprint)
     merged_regions->reserve(countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
