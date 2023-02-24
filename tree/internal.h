@@ -1,7 +1,7 @@
 #include "alignment/seqregions.h"
 
-#ifndef INTERNAL_H
-#define INTERNAL_H
+#pragma once
+
 /** An internal node of the tree containing 3 minonodes*/
 struct InternalNode
 {
@@ -12,5 +12,4 @@ struct InternalNode
     std::array<Index,3> neighbor_index3_;
     
 }; // 40 (includes 4 byte padding at the end)
-#endif
 

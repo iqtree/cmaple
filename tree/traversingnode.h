@@ -1,7 +1,6 @@
 #include "phylonode.h"
 
-#ifndef TRAVERSINGNODE_H
-#define TRAVERSINGNODE_H
+#pragma once
 
 /** An extension of node storing more dummy data used for browsing all nodes in a stack  */
 class TraversingNode {
@@ -52,5 +51,4 @@ public:
      */
     const RealNumType getLhDiff() const;
 };
-#endif
 

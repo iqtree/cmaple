@@ -53,5 +53,4 @@ public:
     void setUpdate(const bool need_update);
     
 };
-#endif
 

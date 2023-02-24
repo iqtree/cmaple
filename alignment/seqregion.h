@@ -10,8 +10,7 @@
 #include <array>
 #include <memory> // for unique_ptr
 
-#ifndef SEQREGION_H
-#define SEQREGION_H
+#pragma once
 
 /** A region in a sequence */
 class SeqRegion: public Mutation {
@@ -115,4 +114,3 @@ public:
      */
     bool operator==(const SeqRegion& seqregion_1) const;
 };
-#endif

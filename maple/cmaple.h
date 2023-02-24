@@ -9,8 +9,7 @@
 #include "utils/timeutil.h"
 #include "alignment/seqregions.h"
 
-#ifndef CMAPLE_H
-#define CMAPLE_H
+#pragma once
 
 /** CMaple class contains all main methods*/
 class CMaple {
@@ -85,4 +84,3 @@ public:
 
 /** Method to run CMaple */
 void runCMaple(Params &params);
-#endif

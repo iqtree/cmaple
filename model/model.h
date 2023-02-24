@@ -1,11 +1,13 @@
+
+#pragma once
+
 #include <string>
 #include "utils/tools.h"
 #include "alignment/alignment.h"
 #include "utils/matrix.h"
 #include <cassert>
 
-#ifndef MODEL_H
-#define MODEL_H
+class SeqRegions;
 
 /** Class of evolutionary models */
 class Model
@@ -96,4 +98,3 @@ public:
      */
     void updatePesudoCount(const Alignment& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
 };
-#endif

@@ -5,8 +5,7 @@
 //  Created by Nhan Ly-Trong on 24/01/2022.
 //
 
-#ifndef SEQREGIONS_H
-#define SEQREGIONS_H
+#pragma once
 
 #include "seqregion.h"
 #include "alignment.h"
@@ -14,6 +13,7 @@
 #include <algorithm>
 
 class Alignment;
+class Model;
 
 inline PositionType minFast(PositionType a, PositionType b)
 { // some compilers cannot optimize std::min as well as the ternary op
@@ -301,5 +301,3 @@ bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion&
  */
 bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
-
-#endif

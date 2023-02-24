@@ -1,8 +1,7 @@
 #include "internal.h"
 #include "leaf.h"
 
-#ifndef PHYLONODE_H
-#define PHYLONODE_H
+#pragma once
 
 /** An node in a phylogenetic tree, which could be either an internal or a leaf */
 class PhyloNode
@@ -254,5 +253,4 @@ private:
 // just for testing
 /** operator<< */
 std::ostream& operator<<(std::ostream& os, const Index& index);
-#endif
 

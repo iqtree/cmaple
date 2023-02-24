@@ -1,7 +1,6 @@
 #include "alignment/seqregions.h"
 
-#ifndef LEAF_H
-#define LEAF_H
+#pragma once
 
 /** A leaf node of the tree*/
 struct LeafNode
@@ -30,5 +29,4 @@ struct LeafNode
     /** constructor */
     LeafNode(NumSeqsType new_seq_name_index):seq_name_index_(new_seq_name_index) {};
 }; // size: 40 bytes. no padding! :) -- we could bring this down to 32 bytes if need be
-#endif
 

@@ -3,8 +3,7 @@
 #include "model/model.h"
 #include <optional>
 
-#ifndef TREE_H
-#define TREE_H
+#pragma once
 
 /** The tree structure */
 class Tree {
@@ -470,5 +469,3 @@ public:
     template <void(Tree::*task)(RealNumType&, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const Index, PhyloNode&, const Index, PhyloNode&, const PositionType&)>
     RealNumType performDFS();
 };
-
-#endif
