@@ -113,7 +113,7 @@ void CMaple::buildInitialTree()
         bool is_mid_branch = false;
         RealNumType best_up_lh_diff = MIN_NEGATIVE;
         RealNumType best_down_lh_diff = MIN_NEGATIVE;
-        Index best_child_index = Index(0, UNDEFINED);
+        Index best_child_index;
         tree.seekSamplePlacement(Index(tree.root_vector_index, TOP), i, lower_regions, selected_node_index, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child_index);
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree

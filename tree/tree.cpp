@@ -475,7 +475,7 @@ void Tree::seekSamplePlacement(const Index start_node_index, const NumSeqsType s
         if ((!is_internal) && (current_node.getPartialLh(TOP)->compareWithSample(*sample_regions, aln.ref_seq.size(), aln.num_states) == 1))
         {
             current_node.addLessInfoSeqs(seq_name_index);
-            selected_node_index = Index(0, UNDEFINED);
+            selected_node_index = Index();
             return;
         }
         
@@ -519,7 +519,7 @@ void Tree::seekSamplePlacement(const Index start_node_index, const NumSeqsType s
 
     // exploration of the tree is finished, and we are left with the node found so far with the best appending likelihood cost. Now we explore placement just below this node for more fine-grained placement within its descendant branches.
     best_down_lh_diff = MIN_NEGATIVE;
-    best_child_index = Index(0, UNDEFINED);;
+    best_child_index = Index();;
     
     // if best position so far is the descendant of a node -> explore further at its children
     if (!is_mid_branch)
@@ -1061,14 +1061,14 @@ void Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &best_lh_dif
                 if (current_node_vec != root_vector_index && current_node.getNeighborIndex(TOP).getVectorIndex() != vec_index) // updating_node->node != root && updating_node->node->neighbor->getTopNode() != node)
                 {
                     std::unique_ptr<SeqRegions> bottom_regions = nullptr;
-                    if (!examineSubtreePlacementMidBranch(best_node_index, current_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, Index(0, UNDEFINED), bottom_regions)) continue;
+                    if (!examineSubtreePlacementMidBranch(best_node_index, current_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, Index(), bottom_regions)) continue;
                 }
                 // set the placement cost at the mid-branch position the most negative value if branch length is zero -> we can't place the subtree on that branch
                 else
                     lh_diff_mid_branch = MIN_NEGATIVE;
                     
                 // now try appending exactly at node
-                if(!examineSubTreePlacementAtNode(best_node_index, current_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, Index(0, UNDEFINED))) continue;
+                if(!examineSubTreePlacementAtNode(best_node_index, current_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, Index())) continue;
             }
             // set the placement cost at the current node position at the most negative value if branch length is zero -> we can't place the subtree on that branch
             else
@@ -1506,7 +1506,7 @@ void Tree::connectSubTree2Root(const Index subtree_index, PhyloNode& subtree, co
     new_root->length = 0;*/
     
     new_root.setOutdated(true);
-    new_root.setNeighborIndex(TOP, Index(0, UNDEFINED));
+    new_root.setNeighborIndex(TOP, Index());
     new_root.setUpperLength(0);
     
     // connect the selected_node to new_internal_node (via next_node_2)
@@ -1667,7 +1667,7 @@ void Tree::placeSubTreeAtNode(const Index selected_node_index, const Index subtr
     RealNumType best_root_blength = -1;
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     RealNumType best_down_lh_diff = MIN_NEGATIVE;
-    Index best_child_index = Index(0, UNDEFINED);
+    Index best_child_index;
     const NumSeqsType selected_node_vec = selected_node_index.getVectorIndex();
     PhyloNode& selected_node = nodes[selected_node_vec];
     
@@ -2226,7 +2226,7 @@ void Tree::connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const NumS
     NumSeqsType new_root_vec_index = leaf_vec_index - 1;
     PhyloNode& new_root = nodes[new_root_vec_index];
     
-    new_root.setNeighborIndex(TOP, Index(0, UNDEFINED));
+    new_root.setNeighborIndex(TOP, Index());
     
     // attach the left child
     /*sibling_node->neighbor = next_node_2;
@@ -2640,7 +2640,7 @@ void Tree::refreshAllNonLowerLhs()
         // traverse the tree downward and update the non-lower genome lists for all other nodes of the tree.
         /*Node* last_node = NULL;
         node = next_node_1->neighbor;*/
-        Index last_node_index = Index(0, UNDEFINED);
+        Index last_node_index;
         Index node_index = neighbor_1_index;
         while (node_index.getMiniIndex() != UNDEFINED)
         {
@@ -3333,12 +3333,12 @@ RealNumType Tree::improveSubTree(const Index node_index, PhyloNode& node, bool s
             bool topology_updated = false;
             const Index parent_index = node.getNeighborIndex(TOP);
             // PhyloNode parent_node = nodes[parent_index.getVectorIndex()]; // node->neighbor->getTopNode();
-            Index best_node_index = Index(0, UNDEFINED);
+            Index best_node_index;
             RealNumType best_lh_diff = best_lh;
             bool is_mid_node = false;
             RealNumType best_up_lh_diff = MIN_NEGATIVE;
             RealNumType best_down_lh_diff = MIN_NEGATIVE;
-            Index best_child_index = Index(0, UNDEFINED);
+            Index best_child_index;
             
             // seek a new placement for the subtree
             seekSubTreePlacement(best_node_index, best_lh_diff, is_mid_node, best_up_lh_diff, best_down_lh_diff, best_child_index, short_range_search, node_index, best_blength); // , true, NULL);
@@ -4140,7 +4140,7 @@ RealNumType Tree::performDFS()
     
     // start from root
     Index node_index = Index(root_vector_index, TOP);
-    Index last_node_index = Index(0, UNDEFINED);
+    Index last_node_index;
     
     // traverse to the deepest tip, calculate the likelihoods upward from the tips
     while (node_index.getMiniIndex() != UNDEFINED) //node)
