@@ -170,11 +170,6 @@ private:
     void setCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes, const RealNumType new_length);
     
     /**
-        TRUE if it's a leaf or the top of the three mini-nodes of an internal node
-     */
-    bool isTop(const MiniIndex mini_index) const;
-    
-    /**
         Update LeafNode
      */
     void setNode(LeafNode&& leaf);

@@ -93,12 +93,6 @@ void PhyloNode::setCorrespondingLength(const MiniIndex mini_index, std::vector<P
         length_ = new_length;
 }
 
-bool PhyloNode::isTop(const MiniIndex mini_index) const
-{
-    return (!is_internal_
-            || mini_index == TOP);
-}
-
 void PhyloNode::setNode(LeafNode&& leaf)
 {
     ASSERT(!is_internal_ && "Wrong data type! data should be a leaf node");
