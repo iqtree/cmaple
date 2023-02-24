@@ -1,6 +1,6 @@
 ##################################################################
 # CMAPLE cmake build definition
-# Copyright (c) 2022 Bui Quang Minh, Nhan Ly-Trong
+# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Bui Quang Minh 
 ##################################################################
 
 # Windows example usages:
@@ -58,6 +58,7 @@ message("Setup clang-tidy")
 project(cmaple)
 add_definitions(-DCMAPLE)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # Enable IPO (LTO) by default
 
 # The version number.
 set (cmaple_VERSION_MAJOR 1)
