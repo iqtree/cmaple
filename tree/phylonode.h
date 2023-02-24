@@ -225,14 +225,9 @@ private:
     void setSeqNameIndex(const NumSeqsType seq_name_index_);
     
     /**
-        Update the total likelihood vector for a node.
-    */
-    void updateTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
-    
-    /**
         Compute the total likelihood vector for a node.
     */
-    std::unique_ptr<SeqRegions> computeTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
     
     /**
         Get a vector of the indexes of neighbors

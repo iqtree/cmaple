@@ -1067,9 +1067,13 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
     return log_lh;
 }
 
-std::unique_ptr<SeqRegions> SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength) const
+void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const StateType num_states, const Model& model, RealNumType blength) const
 {
-    auto total_lh = std::make_unique<SeqRegions>();
+    if (total_lh)
+        total_lh->clear();
+    else
+        total_lh = std::make_unique<SeqRegions>();
+    
     total_lh->reserve(size()); // avoid realloc of vector data
     for (const SeqRegion& elem : (*this))
     {
@@ -1124,8 +1128,6 @@ std::unique_ptr<SeqRegions> SeqRegions::computeTotalLhAtRoot(StateType num_state
             }
         }
     }
-    
-    return total_lh;
 }
 
 bool SeqRegions::operator==(const SeqRegions& seqregions_1) const

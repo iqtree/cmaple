@@ -131,7 +131,7 @@ public:
         Compute total lh/upper left_right for root node
         @param blength the branch length; (-1 by default).
      */
-    std::unique_ptr<SeqRegions> computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength = -1) const;
+    void computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const StateType num_states, const Model& model, RealNumType blength = -1) const;
     
     /**
         Compute the likelihood by merging the lower lh with root frequencies

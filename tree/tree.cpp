@@ -136,7 +136,7 @@ void Tree::updatePartialLhFromParent(const Index index, PhyloNode& node, stack<I
         if (!update_blength)
         {
             // node->computeTotalLhAtNode(aln, model, params->threshold_prob, node == root);
-            node.updateTotalLhAtNode(nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, index.getVectorIndex() == root_vector_index);
+            node.computeTotalLhAtNode(node.getTotalLh(), nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, index.getVectorIndex() == root_vector_index);
             
             if (!node.getTotalLh() || node.getTotalLh()->size() == 0)
                 outError("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
@@ -221,7 +221,8 @@ void Tree::updatePartialLhFromChildren(const Index index, PhyloNode& node, std::
         if (node.getUpperLength() > 0 || node_vec_index == root_vector_index) //(top_node->length > 0 || top_node == root)
         {
             // SeqRegions* new_total_lh_regions = top_node->computeTotalLhAtNode(aln, model, params->threshold_prob, top_node == root, false);
-            std::unique_ptr<SeqRegions> new_total_lh_regions = node.computeTotalLhAtNode(nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, node_vec_index == root_vector_index);
+            std::unique_ptr<SeqRegions> new_total_lh_regions = nullptr;
+            node.computeTotalLhAtNode(new_total_lh_regions, nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, node_vec_index == root_vector_index);
             
             if (!new_total_lh_regions)
             {
@@ -254,7 +255,7 @@ void Tree::updatePartialLhFromChildren(const Index index, PhyloNode& node, std::
             parent_upper_regions->mergeUpperLower(new_upper_regions, node.getUpperLength(), *this_node_lower_regions, this_node_distance, aln, model, params->threshold_prob);
         else
             //new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob)->computeTotalLhAtRoot(aln.num_states, model, this_node_distance);
-            new_upper_regions = getPartialLhAtNode(neighbor_index)->computeTotalLhAtRoot(aln.num_states, model, this_node_distance);
+             getPartialLhAtNode(neighbor_index)->computeTotalLhAtRoot(new_upper_regions, aln.num_states, model, this_node_distance);
         
         if (!new_upper_regions || new_upper_regions->size() == 0)
         {
@@ -567,7 +568,8 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
             // always unique_ptr<SeqRegions>& -> always automatically delete
             // SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln, model, threshold_prob, true, false, grand_child_2->length);
             // std::unique_ptr<SeqRegions> up_lr_regions_1 = grand_child_2.computeTotalLhAtNode(other_child_node, aln, model, threshold_prob, true, grand_child_2.getUpperLength());
-            std::unique_ptr<SeqRegions> up_lr_regions_1 = std::move(grand_child_2.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model, grand_child_2.getUpperLength()));
+            std::unique_ptr<SeqRegions> up_lr_regions_1 = nullptr;
+            grand_child_2.getPartialLh(TOP)->computeTotalLhAtRoot(up_lr_regions_1, aln.num_states, model, grand_child_2.getUpperLength());
             
             // node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0, true));
             std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
@@ -575,7 +577,8 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
             
             
             // SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, true, false, grand_child_1->length);
-            std::unique_ptr<SeqRegions> up_lr_regions_2 = std::move(grand_child_1.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model, grand_child_1.getUpperLength()));
+            std::unique_ptr<SeqRegions> up_lr_regions_2 = nullptr;
+            grand_child_1.getPartialLh(TOP)->computeTotalLhAtRoot(up_lr_regions_2, aln.num_states, model, grand_child_1.getUpperLength());
             
             // node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0, true));
             std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
@@ -948,7 +951,8 @@ bool Tree::addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const Index
         // get or recompute the upper left/right regions of the sibling node
         if (updating_node->needUpdate())
         {
-            std::unique_ptr<SeqRegions> upper_lr_regions = updating_node->getIncomingRegions()->computeTotalLhAtRoot(aln.num_states, model, updating_node->getBranchLength());
+            std::unique_ptr<SeqRegions> upper_lr_regions = nullptr;
+            updating_node->getIncomingRegions()->computeTotalLhAtRoot(upper_lr_regions, aln.num_states, model, updating_node->getBranchLength());
             
             std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
             node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(other_child_index, std::move(upper_lr_regions), null_seqregions_ptr, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
@@ -1275,7 +1279,7 @@ void Tree::applySPR(const Index subtree_index, PhyloNode& subtree, const Index b
 
         // recompute the total lh regions at sibling
         //sibling_subtree->computeTotalLhAtNode(aln, model, threshold_prob, true);
-        sibling_subtree.setTotalLh(std::move(sibling_subtree.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model)));
+        sibling_subtree.getPartialLh(TOP)->computeTotalLhAtRoot(sibling_subtree.getTotalLh(), aln.num_states, model);
         
         // traverse downwards (to childrens of the sibling) to update their lh regions
         if (sibling_subtree.isInternal()) //->next)
@@ -1291,13 +1295,13 @@ void Tree::applySPR(const Index subtree_index, PhyloNode& subtree, const Index b
             // if (next_node_1->partial_lh) delete next_node_1->partial_lh;
             const std::unique_ptr<SeqRegions>& lower_regions_2 = neighbor_2.getPartialLh(TOP); // next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             // next_node_1->partial_lh = lower_reions->computeTotalLhAtRoot(num_states, model, next_node_2->length);
-            sibling_subtree.setPartialLh(RIGHT, lower_regions_2->computeTotalLhAtRoot(num_states, model, neighbor_2.getUpperLength()));
+            lower_regions_2->computeTotalLhAtRoot(sibling_subtree.getPartialLh(RIGHT), num_states, model, neighbor_2.getUpperLength());
             
             // if (next_node_2->partial_lh) delete next_node_2->partial_lh;
             /*lower_reions = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             next_node_2->partial_lh = lower_reions->computeTotalLhAtRoot(num_states, model, next_node_1->length);*/
             const std::unique_ptr<SeqRegions>& lower_regions_1 = neighbor_1.getPartialLh(TOP);
-            sibling_subtree.setPartialLh(LEFT, lower_regions_1->computeTotalLhAtRoot(num_states, model, neighbor_1.getUpperLength()));
+            lower_regions_1->computeTotalLhAtRoot(sibling_subtree.getPartialLh(LEFT), num_states, model, neighbor_1.getUpperLength());
             
             // add children to node_stack for further traversing and updating likelihood regions
             stack<Index> node_stack;
@@ -1421,7 +1425,7 @@ void Tree::connectSubTree2Branch(const std::unique_ptr<SeqRegions>& subtree_regi
     upper_left_right_regions->mergeUpperLower(internal.getMidBranchLh(), mid_branch_length, *internal.getPartialLh(TOP), mid_branch_length, aln, model, threshold_prob);
     
     // new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, new_internal_node == root);
-    internal.updateTotalLhAtNode(nodes[parent_vec], aln, model, threshold_prob, internal_vec == root_vector_index);
+    internal.computeTotalLhAtNode(internal.getTotalLh(), nodes[parent_vec], aln, model, threshold_prob, internal_vec == root_vector_index);
     
     if (!internal.getTotalLh()) //->total_lh || new_internal_node->total_lh->size() == 0)
         outError("Problem, None vector when re-placing sample, placing subtree at mid-branch point");
@@ -1550,15 +1554,15 @@ void Tree::connectSubTree2Root(const Index subtree_index, PhyloNode& subtree, co
     new_root.setMidBranchLh(nullptr);
     
     //new_root->computeTotalLhAtNode(aln, model, params->threshold_prob, true);
-    new_root.setTotalLh(std::move(new_root.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model)));
+    new_root.getPartialLh(TOP)->computeTotalLhAtRoot(new_root.getTotalLh(), aln.num_states, model);
 
     /*if (next_node_1->partial_lh) delete next_node_1->partial_lh;
     next_node_1->partial_lh = lower_regions->computeTotalLhAtRoot(aln.num_states, model, best_root_blength);*/
-    new_root.setPartialLh(LEFT, lower_regions->computeTotalLhAtRoot(aln.num_states, model, best_root_blength));
+    lower_regions->computeTotalLhAtRoot(new_root.getPartialLh(LEFT), aln.num_states, model, best_root_blength);
     
     /*if (next_node_2->partial_lh) delete next_node_2->partial_lh;
     next_node_2->partial_lh = subtree_regions->computeTotalLhAtRoot(aln.num_states, model, best_length2);*/
-    new_root.setPartialLh(RIGHT, subtree_regions->computeTotalLhAtRoot(aln.num_states, model, best_length2));
+    subtree_regions->computeTotalLhAtRoot(new_root.getPartialLh(RIGHT), aln.num_states, model, best_length2);
     
     if (!new_root.getTotalLh()) // ->total_lh || new_root->total_lh->size() == 0)
         outWarning("Problem, None vector when re-placing sample, position root");
@@ -1992,7 +1996,7 @@ void Tree::connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const Nu
     upper_left_right_regions->mergeUpperLower(internal.getMidBranchLh(), half_branch_length, *(internal.getPartialLh(TOP)), half_branch_length, aln, model, threshold_prob);
     
     //new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, new_internal_node == root);
-    internal.updateTotalLhAtNode(parent_node, aln, model, threshold_prob, internal_vec_index == root_vector_index);
+    internal.computeTotalLhAtNode(internal.getTotalLh(), parent_node, aln, model, threshold_prob, internal_vec_index == root_vector_index);
     
     //if (!internal.getTotalLh() || internal.getTotalLh()->empty())
     if (!internal.getTotalLh())
@@ -2001,7 +2005,7 @@ void Tree::connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const Nu
     if (best_blength > 0)
     {
         // new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, new_sample_node == root);
-        leaf.updateTotalLhAtNode(internal, aln, model, threshold_prob, leaf_vec_index == root_vector_index);
+        leaf.computeTotalLhAtNode(leaf.getTotalLh(), internal, aln, model, threshold_prob, leaf_vec_index == root_vector_index);
         
         /*RealNumType half_branch_length = new_sample_node->length * 0.5;
         next_node_1->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);*/
@@ -2265,12 +2269,12 @@ void Tree::connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const NumS
     new_root.setPartialLh(TOP, std::move(best_parent_regions));
     
     // new_root->total_lh = new_root->computeTotalLhAtNode(aln, model, threshold_prob, true);
-    new_root.setTotalLh(std::move(new_root.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model)));
+    new_root.getPartialLh(TOP)->computeTotalLhAtRoot(new_root.getTotalLh(), aln.num_states, model);
 
     /*next_node_1->partial_lh = sibling_node->getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(aln.num_states, model, best_root_blength);
     next_node_2->partial_lh = sample->computeTotalLhAtRoot(aln.num_states, model, best_length2);*/
-    new_root.setPartialLh(LEFT, sibling_node.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model, best_root_blength));
-    new_root.setPartialLh(RIGHT, sample->computeTotalLhAtRoot(aln.num_states, model, best_length2));
+    sibling_node.getPartialLh(TOP)->computeTotalLhAtRoot(new_root.getPartialLh(LEFT), aln.num_states, model, best_root_blength);
+    sample->computeTotalLhAtRoot(new_root.getPartialLh(RIGHT), aln.num_states, model, best_length2);
     
     // new_sample_node->partial_lh = sample;
     leaf.setPartialLh(TOP, std::move(sample));
@@ -2288,7 +2292,7 @@ void Tree::connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const NumS
     if (best_length2 > 0)
     {
         //new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, new_sample_node == root);
-        leaf.updateTotalLhAtNode(new_root, aln, model, threshold_prob, leaf_vec_index = root_vector_index);
+        leaf.computeTotalLhAtNode(leaf.getTotalLh(), new_root, aln, model, threshold_prob, leaf_vec_index = root_vector_index);
         
         RealNumType half_branch_length = leaf.getUpperLength() * 0.5; // new_sample_node->length * 0.5;
         // next_node_1->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
@@ -2551,7 +2555,7 @@ void Tree::refreshNonLowerLhsFromParent(Index& node_index, Index& last_node_inde
     {
         // update the total lh
         // node->computeTotalLhAtNode(aln, model, threshold_prob, node == root);
-        node.updateTotalLhAtNode(parent_node, aln, model, threshold_prob, node_index.getVectorIndex() == root_vector_index);
+        node.computeTotalLhAtNode(node.getTotalLh(), parent_node, aln, model, threshold_prob, node_index.getVectorIndex() == root_vector_index);
         
         if (!node.getTotalLh())
             outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
@@ -2610,7 +2614,7 @@ void Tree::refreshAllNonLowerLhs()
     // update the total lh at root
     //node->computeTotalLhAtNode(aln, model, params->threshold_prob, true);
     PhyloNode& root = nodes[root_vector_index];
-    root.setTotalLh(std::move(root.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model)));
+    root.getPartialLh(TOP)->computeTotalLhAtRoot(root.getTotalLh(), aln.num_states, model);
     
     // if the root has children -> update its upper left/right lh then traverse downward to update non-lower lhs of other nodes
     if (root.isInternal()) // !node->isLeave())
@@ -2624,11 +2628,11 @@ void Tree::refreshAllNonLowerLhs()
         
         /*delete next_node_1->partial_lh;
         next_node_1->partial_lh = next_node_2->neighbor->getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(num_states, model, next_node_2->length);*/
-        root.setPartialLh(RIGHT, neighbor_2.getPartialLh(TOP)->computeTotalLhAtRoot(num_states, model, neighbor_2.getUpperLength()));
+        neighbor_2.getPartialLh(TOP)->computeTotalLhAtRoot(root.getPartialLh(RIGHT), num_states, model, neighbor_2.getUpperLength());
         
         /*delete next_node_2->partial_lh;
         next_node_2->partial_lh = next_node_1->neighbor->getPartialLhAtNode(aln, model, threshold_prob)->computeTotalLhAtRoot(num_states, model, next_node_1->length);*/
-        root.setPartialLh(LEFT, neighbor_1.getPartialLh(TOP)->computeTotalLhAtRoot(num_states, model, neighbor_1.getUpperLength()));
+        neighbor_1.getPartialLh(TOP)->computeTotalLhAtRoot(root.getPartialLh(LEFT), num_states, model, neighbor_1.getUpperLength());
         
         // NHANLT: LOGS FOR DEBUGGING
         /*if (params->debug)

@@ -233,33 +233,17 @@ void PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
     return neighbor_indexes;
 }*/
 
-void PhyloNode::updateTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     // if node is root
     if (is_root)
-        setTotalLh(std::move(getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model, blength)));
-    // if not is normal nodes
-    else
-    {
-        std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
-        neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())->mergeUpperLower(getTotalLh(), getUpperLength(), *lower_regions, blength, aln, model, threshold_prob);
-    }
-}
-
-std::unique_ptr<SeqRegions> PhyloNode::computeTotalLhAtNode(PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
-{
-    std::unique_ptr<SeqRegions> total_lh = nullptr;
-    // if node is root
-    if (is_root)
-        total_lh = std::move(getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model, blength));
+        getPartialLh(TOP)->computeTotalLhAtRoot(total_lh, aln.num_states, model, blength);
     // if not is normal nodes
     else
     {
         std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
         neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())->mergeUpperLower(total_lh, getUpperLength(), *lower_regions, blength, aln, model, threshold_prob);
     }
-    
-    return total_lh;
 }
 
 const std::string PhyloNode::exportString(const bool binary, const Alignment& aln) const

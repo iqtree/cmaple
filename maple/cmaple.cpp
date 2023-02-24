@@ -87,7 +87,7 @@ void CMaple::buildInitialTree()
     PhyloNode& root = tree.nodes[0];
     Sequence* sequence = &tree.aln.data.front();
     root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.seq_type)));
-    root.setTotalLh(std::move(root.getPartialLh(TOP)->computeTotalLhAtRoot(aln.num_states, model)));
+    root.getPartialLh(TOP)->computeTotalLhAtRoot(root.getTotalLh(), aln.num_states, model);
     root.setUpperLength(0);
     
     // move to the next sequence in the alignment
