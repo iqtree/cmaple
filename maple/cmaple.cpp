@@ -83,7 +83,7 @@ void CMaple::buildInitialTree()
     // place the root node
     tree.nodes.reserve(num_seqs + num_seqs);
     tree.root_vector_index = 0;
-    tree.nodes.emplace_back(std::move(LeafNode(0)));
+    tree.nodes.emplace_back(LeafNode(0));
     PhyloNode& root = tree.nodes[0];
     Sequence* sequence = &tree.aln.data.front();
     root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.seq_type)));
@@ -294,7 +294,7 @@ void test()
     LeafNode leaf;
     leaf.less_info_seqs_.push_back(0);
     leaf.seq_name_index_ = 100;
-    leaf.neighbor_index_ = std::move(Index(200, LEFT));
+    leaf.neighbor_index_ = Index(200, LEFT);
     PhyloNode phylonode1(std::move(leaf));
     std::cout << "Leaf node: " << std::endl;
 
@@ -329,7 +329,7 @@ void test()
     MiniIndex mini_index2{LEFT};
     MiniIndex mini_index3{RIGHT};
     InternalNode internal;
-    internal.neighbor_index3_ = std::move(std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)});
+    internal.neighbor_index3_ = std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)};
     PhyloNode phylonode2(std::move(internal));
     std::cout << "\n\nInternal node: " << std::endl;
     std::cout << "- neighbor_index (top, left, right): ";

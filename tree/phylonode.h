@@ -24,7 +24,7 @@ private:
             constructor
             the compiler complains if I don't explicitly declare this function, it's required by the constructor/destructor of PhyloNode
          */
-        MyVariant():internal_(std::move(InternalNode())) {};
+        MyVariant():internal_(InternalNode()) {};
         
         /** constructor */
         MyVariant(LeafNode&& leaf):leaf_(std::move(leaf)) {};

@@ -549,9 +549,9 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
         /*node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions, branch_length, true, best_lh_diff, 0, false));
         node_stack.push(new UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true, best_lh_diff, 0, false));*/
         std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
-        node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(node.getNeighborIndex(TOP), std::move(null_seqregions_ptr1), other_child_node_regions, branch_length, true, best_lh_diff, 0))));
+        node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(node.getNeighborIndex(TOP), std::move(null_seqregions_ptr1), other_child_node_regions, branch_length, true, best_lh_diff, 0)));
         std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
-        node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(other_child_node_index, std::move(null_seqregions_ptr2),  parent_upper_lr_regions, branch_length, true, best_lh_diff, 0))));
+        node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_node_index, std::move(null_seqregions_ptr2),  parent_upper_lr_regions, branch_length, true, best_lh_diff, 0)));
     }
     // node is root
     else
@@ -573,7 +573,7 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
             
             // node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1, grand_child_1->length, true, best_lh_diff, 0, true));
             std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(grand_child_1_index, std::move(up_lr_regions_1), null_seqregions_ptr1, grand_child_1.getUpperLength(), true, best_lh_diff, 0))));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(grand_child_1_index, std::move(up_lr_regions_1), null_seqregions_ptr1, grand_child_1.getUpperLength(), true, best_lh_diff, 0)));
             
             
             // SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln, model, threshold_prob, true, false, grand_child_1->length);
@@ -582,7 +582,7 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
             
             // node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2, grand_child_2->length, true, best_lh_diff, 0, true));
             std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(grand_child_2_index, std::move(up_lr_regions_2), null_seqregions_ptr2, grand_child_2.getUpperLength(), true, best_lh_diff, 0))));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(grand_child_2_index, std::move(up_lr_regions_2), null_seqregions_ptr2, grand_child_2.getUpperLength(), true, best_lh_diff, 0)));
         }
     }
 }
@@ -812,7 +812,7 @@ void Tree::addChildSeekSubtreePlacement(const Index child_1_index, const Index c
             // node_stack.push(new UpdatingNode(child_1, upper_lr_regions, child_1->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
             
             std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(child_1_index, std::move(upper_lr_regions), null_seqregions_ptr, child_1.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(child_1_index, std::move(upper_lr_regions), null_seqregions_ptr, child_1.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
         }
     }
     else
@@ -827,7 +827,7 @@ void Tree::addChildSeekSubtreePlacement(const Index child_1_index, const Index c
         {
             // node_stack.push(new UpdatingNode(child_1, upper_lr_regions, child_1->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));
             std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(child_1_index, std::move(null_seqregions_ptr), upper_lr_regions, child_1.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(child_1_index, std::move(null_seqregions_ptr), upper_lr_regions, child_1.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
         }
     }
 }
@@ -866,8 +866,8 @@ bool Tree::addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const Index
             else
             {
                 std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-                //node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(other_child_index, std::move(upper_lr_regions), null_seqregions_ptr, other_child->length, updating_node->need_updating_, lh_diff_at_node, updating_node->failure_count_))));
-                node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(other_child_index, std::move(upper_lr_regions), null_seqregions_ptr, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+                //node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_index, std::move(upper_lr_regions), null_seqregions_ptr, other_child->length, updating_node->need_updating_, lh_diff_at_node, updating_node->failure_count_)));
+                node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_index, std::move(upper_lr_regions), null_seqregions_ptr, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
             }
         }
         else
@@ -889,7 +889,7 @@ bool Tree::addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const Index
                 /*upper_lr_regions = updating_node->node->getPartialLhAtNode(aln, model, threshold_prob);
                 node_stack.push(new UpdatingNode(other_child, upper_lr_regions, other_child->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating));*/
                 std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-                node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(other_child_index, std::move(null_seqregions_ptr), upper_lr_regions, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+                node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_index, std::move(null_seqregions_ptr), upper_lr_regions, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
             }
         }
 
@@ -927,9 +927,9 @@ bool Tree::addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const Index
                 }
             }
             
-            // node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating))));
+            // node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating)));
             std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(current_node.getNeighborIndex(TOP), std::move(bottom_regions), null_seqregions_ptr, current_node.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(current_node.getNeighborIndex(TOP), std::move(bottom_regions), null_seqregions_ptr, current_node.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
         }
         else
         {
@@ -938,8 +938,8 @@ bool Tree::addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const Index
             std::unique_ptr<SeqRegions>& bottom_regions_ref = current_node.getPartialLh(TOP); // top_node->getPartialLhAtNode(aln, model, threshold_prob);
             
             std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-            // node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating))));
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(current_node.getNeighborIndex(TOP), std::move(null_seqregions_ptr), bottom_regions_ref, current_node.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+            // node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(top_node->neighbor, bottom_regions, top_node->length, updating_node->need_updating, lh_diff_at_node, updating_node->failure_count, updating_node->need_updating)));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(current_node.getNeighborIndex(TOP), std::move(null_seqregions_ptr), bottom_regions_ref, current_node.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
         }
         
         // add the parent node to node_stack for traversing later
@@ -955,14 +955,14 @@ bool Tree::addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const Index
             updating_node->getIncomingRegions()->computeTotalLhAtRoot(upper_lr_regions, aln.num_states, model, updating_node->getBranchLength());
             
             std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(other_child_index, std::move(upper_lr_regions), null_seqregions_ptr, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_index, std::move(upper_lr_regions), null_seqregions_ptr, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
         }
         else
         {
             std::unique_ptr<SeqRegions>& upper_lr_regions = current_node.getPartialLh(updating_node_mini); // updating_node->node->getPartialLhAtNode(aln, model, threshold_prob);
             
             std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-            node_stack.push(std::make_unique<UpdatingNode>(std::move(UpdatingNode(other_child_index, std::move(null_seqregions_ptr), upper_lr_regions, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount()))));
+            node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_index, std::move(null_seqregions_ptr), upper_lr_regions, other_child.getUpperLength(), updating_node->needUpdate(), lh_diff_at_node, updating_node->getFailureCount())));
         }
         
         // add the sibling node to node_stack for traversing later
@@ -1457,7 +1457,7 @@ void Tree::placeSubTreeMidBranch(const Index selected_node_index, const Index su
     RealNumType best_blength_split = selected_node.getUpperLength() * 0.5;
     RealNumType best_split_lh = new_lh;
     // RealNumType new_split = 0.25;
-    std::unique_ptr<SeqRegions> best_child_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+    std::unique_ptr<SeqRegions> best_child_regions = nullptr; // std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
     const std::unique_ptr<SeqRegions>& lower_regions = selected_node.getPartialLh(TOP);
 
     // try different positions on the existing branch
@@ -1473,7 +1473,7 @@ void Tree::placeSubTreeMidBranch(const Index selected_node_index, const Index su
     
     // Delay cloning SeqRegions
     if (!best_child_regions)
-        best_child_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+        best_child_regions = std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
     
     // now try different lengths for the new branch
     RealNumType best_blength = new_branch_length;
@@ -1620,7 +1620,7 @@ void Tree::handlePolytomyPlaceSubTree(const Index selected_node_index, PhyloNode
         else
         {
             // now try to place on the current branch below the best node, at an height above or equal to the mid-branch.
-            std::unique_ptr<SeqRegions> mid_branch_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(node.getMidBranchLh()))); // new SeqRegions(node->mid_branch_lh);
+            std::unique_ptr<SeqRegions> mid_branch_regions = nullptr; // std::make_unique<SeqRegions>(SeqRegions(node.getMidBranchLh())); // new SeqRegions(node->mid_branch_lh);
             const std::unique_ptr<SeqRegions>& parent_upper_lr_regions = getPartialLhAtNode(node.getNeighborIndex(TOP)); // node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             const std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP); // node->getPartialLhAtNode(aln, model, threshold_prob);
             RealNumType new_branch_length_split = 0.5 * node.getUpperLength(); // node->length;
@@ -1638,7 +1638,7 @@ void Tree::handlePolytomyPlaceSubTree(const Index selected_node_index, PhyloNode
                     
                     // replacePartialLH(best_child_regions, mid_branch_regions);
                     // Delay cloning SeqRegions
-                    best_child_regions = mid_branch_regions ? std::move(mid_branch_regions) : std::make_unique<SeqRegions>(std::move(SeqRegions(node.getMidBranchLh())));
+                    best_child_regions = mid_branch_regions ? std::move(mid_branch_regions) : std::make_unique<SeqRegions>(SeqRegions(node.getMidBranchLh()));
                     
                     if (new_branch_length_split <= half_min_blength_mid)
                         break;
@@ -1718,7 +1718,7 @@ void Tree::placeSubTreeAtNode(const Index selected_node_index, const Index subtr
     {
         const std::unique_ptr<SeqRegions>& upper_left_right_regions = getPartialLhAtNode(selected_node.getNeighborIndex(TOP)); // selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         const std::unique_ptr<SeqRegions>& lower_regions = selected_node.getPartialLh(TOP); // selected_node->getPartialLhAtNode(aln, model, threshold_prob);
-        best_parent_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+        best_parent_regions = nullptr; // std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
         best_parent_lh = calculateSubTreePlacementCost(selected_node.getMidBranchLh(), subtree_regions, new_branch_length);
         best_parent_blength_split = 0.5 * selected_node.getUpperLength();
         
@@ -1727,7 +1727,7 @@ void Tree::placeSubTreeAtNode(const Index selected_node_index, const Index subtr
         
         // Delay cloning SeqRegions
         if (!best_parent_regions)
-            best_parent_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+            best_parent_regions = std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
     }
     
     // if the best placement is below the selected_node => add an internal node below the selected_node
@@ -2044,7 +2044,7 @@ void Tree::placeNewSampleMidBranch(const Index& selected_node_index, std::unique
     RealNumType best_split_lh = best_lh_diff;
     const RealNumType selected_node_blength = selected_node.getUpperLength();
     RealNumType best_branch_length_split = 0.5 * selected_node_blength;
-    best_child_regions = nullptr; // std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+    best_child_regions = nullptr; // std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
     //selected_node->getPartialLhAtNode(aln, model, threshold_prob);
     const std::unique_ptr<SeqRegions>& lower_regions = selected_node.getPartialLh(TOP);
     
@@ -2062,7 +2062,7 @@ void Tree::placeNewSampleMidBranch(const Index& selected_node_index, std::unique
     
     // Delay cloning SeqRegions
     if (!best_child_regions)
-        best_child_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+        best_child_regions = std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
     
     // now try different lengths for the new branch
     RealNumType best_blength = default_blength;
@@ -2354,7 +2354,7 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
         
         // Delay cloning SeqRegions
         if (!best_child_regions)
-            best_child_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(best_child.getMidBranchLh())));
+            best_child_regions = std::make_unique<SeqRegions>(SeqRegions(best_child.getMidBranchLh()));
     }
     
     // if node is root, try to place as sibling of the current root.
@@ -2398,7 +2398,7 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
         
         // Delay cloning SeqRegions
         if (!best_parent_regions)
-            best_parent_regions = std::make_unique<SeqRegions>(std::move(SeqRegions(selected_node.getMidBranchLh())));
+            best_parent_regions = std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
     }
     
     // if the best placement is below the selected_node => add an internal node below the selected_node
@@ -4069,7 +4069,7 @@ void Tree::createAnInternalNode()
 
 void Tree::createALeafNode(const NumSeqsType new_seq_name_index)
 {
-    nodes.push_back(PhyloNode(std::move(LeafNode(new_seq_name_index))));
+    nodes.emplace_back(LeafNode(new_seq_name_index)); //(PhyloNode(std::move(LeafNode(new_seq_name_index))));
 }
 
 std::unique_ptr<SeqRegions>& Tree::getPartialLhAtNode(const Index index)
