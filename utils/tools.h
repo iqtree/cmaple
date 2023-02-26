@@ -272,7 +272,7 @@ struct Index
     /**
         return the mini-index
      */
-    MiniIndex getMiniIndex() const
+    const MiniIndex getMiniIndex() const
     {
         return mini_index_;
     }
@@ -280,7 +280,7 @@ struct Index
     /**
         return the mini-index of the other next node (i.e., getFlipMiniIndex(LEFT) = RIGHT; getFlipMiniIndex(RIGHT) = LEFT)
      */
-    MiniIndex getFlipMiniIndex() const
+    const MiniIndex getFlipMiniIndex() const
     {
         return MiniIndex(3 - mini_index_);
     }
@@ -296,7 +296,7 @@ struct Index
     /**
         return the index of a phylonode
      */
-    NumSeqsType getVectorIndex() const
+    const NumSeqsType getVectorIndex() const
     {
         return vector_index_;
     }

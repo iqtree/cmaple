@@ -136,7 +136,7 @@ void Tree::updatePartialLhFromParent(const Index index, PhyloNode& node, stack<I
         if (!update_blength)
         {
             // node->computeTotalLhAtNode(aln, model, params->threshold_prob, node == root);
-            node.computeTotalLhAtNode(node.getTotalLh(), nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, index.getVectorIndex() == root_vector_index);
+            node.computeTotalLhAtNode(node.getTotalLh(), nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, root_vector_index == index.getVectorIndex());
             
             if (!node.getTotalLh() || node.getTotalLh()->size() == 0)
                 outError("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
@@ -218,11 +218,11 @@ void Tree::updatePartialLhFromChildren(const Index index, PhyloNode& node, std::
     // update total likelihood
     if (!update_blength)
     {
-        if (node.getUpperLength() > 0 || node_vec_index == root_vector_index) //(top_node->length > 0 || top_node == root)
+        if (node.getUpperLength() > 0 || root_vector_index == node_vec_index) //(top_node->length > 0 || top_node == root)
         {
             // SeqRegions* new_total_lh_regions = top_node->computeTotalLhAtNode(aln, model, params->threshold_prob, top_node == root, false);
             std::unique_ptr<SeqRegions> new_total_lh_regions = nullptr;
-            node.computeTotalLhAtNode(new_total_lh_regions, nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, node_vec_index == root_vector_index);
+            node.computeTotalLhAtNode(new_total_lh_regions, nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, root_vector_index == node_vec_index);
             
             if (!new_total_lh_regions)
             {
@@ -245,7 +245,7 @@ void Tree::updatePartialLhFromChildren(const Index index, PhyloNode& node, std::
     if (!update_blength)
     {
         // update likelihoods at parent node
-        if (node.getPartialLh(TOP)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && node_vec_index != root_vector_index) //(top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
+        if (node.getPartialLh(TOP)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root_vector_index != node_vec_index) //(top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
             //node_stack.push(top_node->neighbor);
             node_stack.push(node.getNeighborIndex(TOP));
 
@@ -483,7 +483,7 @@ void Tree::seekSamplePlacement(const Index start_node_index, const NumSeqsType s
         const RealNumType current_node_blength = current_node.getUpperLength();
         
         // 1. try first placing as a descendant of the mid-branch point of the branch above the current node
-        if (current_node_vec != root_vector_index && current_node_blength > 0)
+        if (root_vector_index != current_node_vec && current_node_blength > 0)
         {
             examineSamplePlacementMidBranch(selected_node_index, current_node.getMidBranchLh(), best_lh_diff, is_mid_branch, lh_diff_mid_branch, current_extended_node, sample_regions);
         }
@@ -492,7 +492,7 @@ void Tree::seekSamplePlacement(const Index start_node_index, const NumSeqsType s
             lh_diff_mid_branch = MIN_NEGATIVE;
 
         // 2. try to place as descendant of the current node (this is skipped if the node has top branch length 0 and so is part of a polytomy).
-        if (current_node_vec == root_vector_index || current_node_blength > 0)
+        if (root_vector_index == current_node_vec || current_node_blength > 0)
         {
             examineSamplePlacementAtNode(selected_node_index, current_node.getTotalLh(), best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child_index, current_extended_node, sample_regions);
         }
@@ -536,7 +536,7 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
     PhyloNode& other_child_node = nodes[other_child_node_index.getVectorIndex()];
     
     // node is not the root
-    if (vec_index != root_vector_index)
+    if (root_vector_index != vec_index)
     {
         std::unique_ptr<SeqRegions>& parent_upper_lr_regions = getPartialLhAtNode(node.getNeighborIndex(TOP)); // node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         std::unique_ptr<SeqRegions>& other_child_node_regions = other_child_node.getPartialLh(TOP); // other_child_node->getPartialLhAtNode(aln, model, threshold_prob);
@@ -841,7 +841,7 @@ bool Tree::addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const Index
     
     // keep crawling up into parent and sibling node
     // case the node is not the root
-    if (updating_node_index.getVectorIndex() != root_vector_index)
+    if (root_vector_index != updating_node_index.getVectorIndex())
     {
         // first pass the crawling down the other child (sibling)
         
@@ -992,7 +992,7 @@ void Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &best_lh_dif
     RealNumType lh_diff_mid_branch = 0;
     RealNumType lh_diff_at_node = 0;
     // const std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-    // const std::unique_ptr<SeqRegions>& parent_upper_lr_regions = vec_index == root_vector_index ? null_seqregions_ptr : getPartialLhAtNode(node.getNeighborIndex(TOP));
+    // const std::unique_ptr<SeqRegions>& parent_upper_lr_regions = root_vector_index == vec_index ? null_seqregions_ptr : getPartialLhAtNode(node.getNeighborIndex(TOP));
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -1062,7 +1062,7 @@ void Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &best_lh_dif
             {
                 //  try to append mid-branch
                 // avoid adding to the old position where the subtree was just been removed from
-                if (current_node_vec != root_vector_index && current_node.getNeighborIndex(TOP).getVectorIndex() != vec_index) // updating_node->node != root && updating_node->node->neighbor->getTopNode() != node)
+                if (root_vector_index != current_node_vec && current_node.getNeighborIndex(TOP).getVectorIndex() != vec_index) // updating_node->node != root && updating_node->node->neighbor->getTopNode() != node)
                 {
                     std::unique_ptr<SeqRegions> bottom_regions = nullptr;
                     if (!examineSubtreePlacementMidBranch(best_node_index, current_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, Index(), bottom_regions)) continue;
@@ -1104,7 +1104,7 @@ void Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &best_lh_dif
             const Index top_node_index = Index(current_node_vec, TOP);
             
             // append directly at the node
-            if (current_node.getUpperLength() > 0 || current_node_vec == root_vector_index) // top_node->length > 0 || top_node == root)
+            if (current_node.getUpperLength() > 0 || root_vector_index == current_node_vec) // top_node->length > 0 || top_node == root)
             {
                 if (!examineSubTreePlacementAtNode(best_node_index, current_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, top_node_index)) continue;
             }
@@ -1115,7 +1115,7 @@ void Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &best_lh_dif
             // try appending mid-branch
             const Index other_child_index = current_node.getNeighborIndex(current_node_index.getFlipMiniIndex()); // updating_node->node->getOtherNextNode()->neighbor;
             std::unique_ptr<SeqRegions> bottom_regions = nullptr;
-            if (current_node.getUpperLength() > 0 && current_node_vec != root_vector_index) // top_node->length > 0 && top_node != root)
+            if (current_node.getUpperLength() > 0 && root_vector_index != current_node_vec) // top_node->length > 0 && top_node != root)
             {
                 if (!examineSubtreePlacementMidBranch(best_node_index, current_node, best_lh_diff, is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff, best_down_lh_diff, updating_node, subtree_regions, threshold_prob, removed_blength, top_node_index, bottom_regions)) continue;
             }
@@ -1242,7 +1242,7 @@ void Tree::applySPR(const Index subtree_index, PhyloNode& subtree, const Index b
     
     // connect grandparent to sibling
     const Index grandparent_index = parent_subtree.getNeighborIndex(TOP);
-    if (parent_index.getVectorIndex() != root_vector_index)
+    if (root_vector_index != parent_index.getVectorIndex())
     {
         // parent_subtree->neighbor->neighbor = sibling_subtree;
         nodes[grandparent_index.getVectorIndex()].setNeighborIndex(grandparent_index.getMiniIndex(), sibling_index);
@@ -1261,7 +1261,7 @@ void Tree::applySPR(const Index subtree_index, PhyloNode& subtree, const Index b
     
     // update likelihood lists after subtree removal
     // case when the sibling_subtree becomes the new root
-    if (parent_index.getVectorIndex() == root_vector_index) //!sibling_subtree->neighbor)
+    if (root_vector_index == parent_index.getVectorIndex()) //!sibling_subtree->neighbor)
     {
         // update root
         root_vector_index = sibling_index.getVectorIndex();
@@ -1326,7 +1326,7 @@ void Tree::applySPR(const Index subtree_index, PhyloNode& subtree, const Index b
     // replace the node and re-update the vector lists
     const std::unique_ptr<SeqRegions>& subtree_lower_regions = subtree.getPartialLh(TOP); // ->getPartialLhAtNode(aln, model, threshold_prob);
     // try to place the new sample as a descendant of a mid-branch point
-    if (is_mid_branch && best_node_index.getVectorIndex() != root_vector_index)
+    if (is_mid_branch && root_vector_index != best_node_index.getVectorIndex())
         placeSubTreeMidBranch(best_node_index, subtree_index, subtree, subtree_lower_regions, branch_length, best_lh_diff);
     // otherwise, best lk so far is for appending directly to existing node
     else
@@ -1425,7 +1425,7 @@ void Tree::connectSubTree2Branch(const std::unique_ptr<SeqRegions>& subtree_regi
     upper_left_right_regions->mergeUpperLower(internal.getMidBranchLh(), mid_branch_length, *internal.getPartialLh(TOP), mid_branch_length, aln, model, threshold_prob);
     
     // new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, new_internal_node == root);
-    internal.computeTotalLhAtNode(internal.getTotalLh(), nodes[parent_vec], aln, model, threshold_prob, internal_vec == root_vector_index);
+    internal.computeTotalLhAtNode(internal.getTotalLh(), nodes[parent_vec], aln, model, threshold_prob, root_vector_index == internal_vec);
     
     if (!internal.getTotalLh()) //->total_lh || new_internal_node->total_lh->size() == 0)
         outError("Problem, None vector when re-placing sample, placing subtree at mid-branch point");
@@ -1764,14 +1764,14 @@ void Tree::placeSubTreeAtNode(const Index selected_node_index, const Index subtr
             best_parent_regions = NULL;*/
             best_parent_regions = nullptr;
             
-            if (selected_node_vec == root_vector_index)
+            if (root_vector_index == selected_node_vec)
                 lower_regions->mergeTwoLowers(best_parent_regions, -1, *subtree_regions, new_branch_length, aln, model, threshold_prob);
             else
                 best_parent_regions = std::make_unique<SeqRegions>(std::move(selected_node.getTotalLh()));
         }
 
         // add parent to the root
-        if (selected_node_vec == root_vector_index)
+        if (root_vector_index == selected_node_vec)
         {
             // remove old_root_lh from best_parent_lh before estimating the new branch length
             best_parent_lh += old_root_lh;
@@ -1945,9 +1945,9 @@ void Tree::connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const Nu
     next_node_1->next = new_internal_node;*/
     createAnInternalNode();
     createALeafNode(seq_name_index);
-    NumSeqsType leaf_vec_index = nodes.size() - 1;
+    const NumSeqsType leaf_vec_index = nodes.size() - 1;
     PhyloNode& leaf = nodes[leaf_vec_index];
-    NumSeqsType internal_vec_index = leaf_vec_index - 1;
+    const NumSeqsType internal_vec_index = leaf_vec_index - 1;
     PhyloNode& internal = nodes[internal_vec_index];
     
     /*new_internal_node->neighbor = sibling_node->neighbor;
@@ -1996,7 +1996,7 @@ void Tree::connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const Nu
     upper_left_right_regions->mergeUpperLower(internal.getMidBranchLh(), half_branch_length, *(internal.getPartialLh(TOP)), half_branch_length, aln, model, threshold_prob);
     
     //new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob, new_internal_node == root);
-    internal.computeTotalLhAtNode(internal.getTotalLh(), parent_node, aln, model, threshold_prob, internal_vec_index == root_vector_index);
+    internal.computeTotalLhAtNode(internal.getTotalLh(), parent_node, aln, model, threshold_prob, root_vector_index == internal_vec_index);
     
     //if (!internal.getTotalLh() || internal.getTotalLh()->empty())
     if (!internal.getTotalLh())
@@ -2005,7 +2005,7 @@ void Tree::connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const Nu
     if (best_blength > 0)
     {
         // new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, new_sample_node == root);
-        leaf.computeTotalLhAtNode(leaf.getTotalLh(), internal, aln, model, threshold_prob, leaf_vec_index == root_vector_index);
+        leaf.computeTotalLhAtNode(leaf.getTotalLh(), internal, aln, model, threshold_prob, root_vector_index == leaf_vec_index);
         
         /*RealNumType half_branch_length = new_sample_node->length * 0.5;
         next_node_1->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);*/
@@ -2225,9 +2225,9 @@ void Tree::connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const NumS
     
     createAnInternalNode();
     createALeafNode(seq_name_index);
-    NumSeqsType leaf_vec_index = nodes.size() - 1;
+    const NumSeqsType leaf_vec_index = nodes.size() - 1;
     PhyloNode& leaf = nodes[leaf_vec_index];
-    NumSeqsType new_root_vec_index = leaf_vec_index - 1;
+    const NumSeqsType new_root_vec_index = leaf_vec_index - 1;
     PhyloNode& new_root = nodes[new_root_vec_index];
     
     new_root.setNeighborIndex(TOP, Index());
@@ -2292,7 +2292,7 @@ void Tree::connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const NumS
     if (best_length2 > 0)
     {
         //new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob, new_sample_node == root);
-        leaf.computeTotalLhAtNode(leaf.getTotalLh(), new_root, aln, model, threshold_prob, leaf_vec_index = root_vector_index);
+        leaf.computeTotalLhAtNode(leaf.getTotalLh(), new_root, aln, model, threshold_prob, root_vector_index == leaf_vec_index);
         
         RealNumType half_branch_length = leaf.getUpperLength() * 0.5; // new_sample_node->length * 0.5;
         // next_node_1->getPartialLhAtNode(aln, model, threshold_prob)->mergeUpperLower(new_sample_node->mid_branch_lh, half_branch_length, *sample, half_branch_length, aln, model, threshold_prob);
@@ -2429,7 +2429,7 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
             best_parent_regions = NULL;*/
             best_parent_regions = nullptr;
             
-            if (selected_node_vec_index == root_vector_index)
+            if (root_vector_index == selected_node_vec_index)
                 // selected_node->getPartialLhAtNode(aln, model, threshold_prob)->mergeTwoLowers(best_parent_regions, -1, *sample, default_blength, aln, model, threshold_prob);
                 selected_node.getPartialLh(TOP)->mergeTwoLowers(best_parent_regions, -1, *sample, default_blength, aln, model, threshold_prob);
             else
@@ -2441,7 +2441,7 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
         }
 
         // add parent to the root
-        if (selected_node_vec_index == root_vector_index)
+        if (root_vector_index == selected_node_vec_index)
         {
             // now try different lengths for right branch
             best_parent_lh += old_root_lh;
@@ -2555,7 +2555,7 @@ void Tree::refreshNonLowerLhsFromParent(Index& node_index, Index& last_node_inde
     {
         // update the total lh
         // node->computeTotalLhAtNode(aln, model, threshold_prob, node == root);
-        node.computeTotalLhAtNode(node.getTotalLh(), parent_node, aln, model, threshold_prob, node_index.getVectorIndex() == root_vector_index);
+        node.computeTotalLhAtNode(node.getTotalLh(), parent_node, aln, model, threshold_prob, root_vector_index == node_index.getVectorIndex());
         
         if (!node.getTotalLh())
             outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
@@ -3274,7 +3274,7 @@ void Tree::checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType be
         // reach the top of a multifurcation, which is the only place in a multifurcatio where placement is allowed.
         NumSeqsType top_polytomy_vec = best_node_vec;
 
-        while (nodes[top_polytomy_vec].getUpperLength() <= 0 && top_polytomy_vec != root_vector_index)// top_polytomy->length <= 0 && top_polytomy!= root)
+        while (nodes[top_polytomy_vec].getUpperLength() <= 0 && root_vector_index != top_polytomy_vec)// top_polytomy->length <= 0 && top_polytomy!= root)
         {
             // top_polytomy = top_polytomy->neighbor->getTopNode();
             top_polytomy_vec = nodes[top_polytomy_vec].getNeighborIndex(TOP).getVectorIndex();
@@ -3289,7 +3289,7 @@ void Tree::checkAndApplySPR(const RealNumType best_lh_diff, const RealNumType be
             parent_top_polytomy = parent_top_polytomy->neighbor->getTopNode();*/
         NumSeqsType parent_top_polytomy_vec = parent_node_vec;
 
-        while (nodes[parent_top_polytomy_vec].getUpperLength() <= 0 && parent_top_polytomy_vec != root_vector_index)
+        while (nodes[parent_top_polytomy_vec].getUpperLength() <= 0 && root_vector_index != parent_top_polytomy_vec)
             parent_top_polytomy_vec = nodes[parent_top_polytomy_vec].getNeighborIndex(TOP).getVectorIndex();
         
         if (!(parent_top_polytomy_vec == top_polytomy_vec && !is_mid_node))
@@ -3311,14 +3311,14 @@ RealNumType Tree::improveSubTree(const Index node_index, PhyloNode& node, bool s
 {
     // dummy variables
     ASSERT(node_index.getMiniIndex() == TOP);
-    NumSeqsType vec_index = node_index.getVectorIndex();
+    const NumSeqsType vec_index = node_index.getVectorIndex();
     const RealNumType threshold_prob = params->threshold_prob;
     const RealNumType thresh_placement_cost = short_range_search ? params->thresh_placement_cost_short_search : params->thresh_placement_cost;
     RealNumType total_improvement = 0;
     bool blength_changed = false; // true if a branch length has been changed
     
     // we avoid the root node since it cannot be re-placed with SPR moves
-    if (vec_index != root_vector_index)
+    if (root_vector_index != vec_index)
     {
         // evaluate current placement
         const std::unique_ptr<SeqRegions>& parent_upper_lr_lh = getPartialLhAtNode(node.getNeighborIndex(TOP)); // node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
