@@ -41,6 +41,11 @@ public:
     */
     ~SeqRegions();
     
+    /// Move CTor
+    SeqRegions(SeqRegions&& regions) = default;
+    /// Move Assignment
+    SeqRegions& operator=(SeqRegions&& regions) = default;
+    
     /**
         Add a new region and automatically merged consecutive R regions
      */
