@@ -265,6 +265,10 @@ void CMaple::doInference()
 
 void CMaple::postInference()
 {
+    // compute branch support if requested
+    if (tree.params->compute_aLRT_SH)
+        calculateBranchSupports();
+    
     // output log-likelihood of the tree
     std::cout << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
     
@@ -272,6 +276,20 @@ void CMaple::postInference()
     string output_file(tree.params->diff_path);
     output_file += ".treefile";
     exportOutput(output_file);
+}
+
+void CMaple::calculateBranchSupports()
+{
+    // record the start time
+    auto start = getRealTime();
+    cout << "Start calculating branch supports" << endl;
+    
+    // calculate branch supports
+    tree.calculateBranchSupports();
+    
+    // show the runtime for calculating branch supports
+    auto end = getRealTime();
+    cout << " - Time spent on calculating branch supports: " << end - start << endl;
 }
 
 void CMaple::exportOutput(const string &filename)

@@ -536,6 +536,7 @@ void initDefaultValue(Params &params)
     params.optimize_branch_length = true;
     params.short_range_topo_search = false;
     params.output_testing = NULL;
+    params.compute_aLRT_SH = false;
 }
 
 void parseArg(int argc, char *argv[], Params &params) {
@@ -701,6 +702,12 @@ void parseArg(int argc, char *argv[], Params &params) {
                     outError("Use --output-testing <FILE_PATH>");
                 
                 params.output_testing = argv[cnt];
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--branch-support") == 0) {
+                
+                params.compute_aLRT_SH = true;
 
                 continue;
             }

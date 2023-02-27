@@ -284,3 +284,15 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
     
     return "";
 }
+
+const NumSeqsType PhyloNode::getNodelhIndex() const
+{
+    ASSERT(isInternal());
+    return data_.internal_.node_lh_index_;
+}
+
+void PhyloNode::setNodeLhIndex(const NumSeqsType node_lh_index)
+{
+    ASSERT(isInternal());
+    data_.internal_.node_lh_index_ = node_lh_index;
+}

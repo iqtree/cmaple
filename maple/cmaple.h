@@ -40,6 +40,11 @@ private:
      */
     void exportOutput(const std::string &filename);
     
+    /**
+        calculate branch supports
+     */
+    void calculateBranchSupports();
+    
 public:
     
     /** The phylogenetic tree */

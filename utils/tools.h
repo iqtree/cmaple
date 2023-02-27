@@ -528,6 +528,11 @@ public:
     */
     char* output_testing;
     
+    /**
+    * TRUE to compute aLRT-SH
+    */
+    bool compute_aLRT_SH;
+    
     /*
         TRUE to log debugging
      */

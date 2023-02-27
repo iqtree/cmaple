@@ -346,6 +346,11 @@ public:
     std::vector<PhyloNode> nodes;
     
     /*
+        Vector of likelihood contributions of internal nodes
+     */
+    std::vector<NodeLh> node_lhs;
+    
+    /*
         (vector) Index of root in the vector of phylonodes
      */
     NumSeqsType root_vector_index;
@@ -468,4 +473,14 @@ public:
      */
     template <void(Tree::*task)(RealNumType&, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const Index, PhyloNode&, const Index, PhyloNode&, const PositionType&)>
     RealNumType performDFS();
+    
+    /**
+        Calculate branch supports
+     */
+    void calculateBranchSupports();
+    
+    /**
+        Calculate the likelihood of an NNI neighbor
+     */
+    RealNumType calculateNNILh(PhyloNode& node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, const RealNumType lh_at_root);
 };

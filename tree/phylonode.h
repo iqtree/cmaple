@@ -202,7 +202,7 @@ private:
     /**
         Set the index of the neighbor node
      */
-    void setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index_);
+    void setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index);
     
     /**
         Get the list of less-informative-sequences
@@ -222,12 +222,22 @@ private:
     /**
         Set the index of the sequence name
      */
-    void setSeqNameIndex(const NumSeqsType seq_name_index_);
+    void setSeqNameIndex(const NumSeqsType seq_name_index);
     
     /**
         Compute the total likelihood vector for a node.
     */
     void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    
+    /**
+        Get the index of the node likelihood
+     */
+    const NumSeqsType getNodelhIndex() const;
+    
+    /**
+        Set the index of the node likelihood
+     */
+    void setNodeLhIndex(const NumSeqsType node_lh_index);
     
     /**
         Get a vector of the indexes of neighbors
@@ -238,6 +248,15 @@ private:
         Export string: name + branch length
      */
     const std::string exportString(const bool binary, const Alignment& aln) const;
+};
+
+/** An intermediate data structure to store data for calculating aLRT-SH  */
+struct NodeLh
+{
+    RealNumType lh_contribution_;
+    std::vector<RealNumType> site_lh_contributions_;
+    
+    NodeLh(RealNumType lh_contribution):lh_contribution_(lh_contribution) {};
 };
 
 // just for testing
