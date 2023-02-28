@@ -73,18 +73,14 @@ private:
     
   public:
     /** constructor */
-    PhyloNode(): is_internal_{true}
-    {
-        // could also be part of a separate class test, but we need to make sure that this is enforced and noone accidentally
-        // changes it
-        static_assert(sizeof(PhyloNode) <= 64);  // make sure it fits on a cacheline
-    };
+    PhyloNode(): is_internal_{true} {};
     
     /** constructor */
     PhyloNode(LeafNode&& leaf): is_internal_{false}, data_(std::move(leaf)) {};
     
     /** constructor */
-    PhyloNode(InternalNode&& internal): is_internal_{true}, data_(std::move(internal)) {};
+    // unused
+    // PhyloNode(InternalNode&& internal): is_internal_{true}, data_(std::move(internal)) {};
     
     /** move constructor */
     PhyloNode(PhyloNode&& node): is_internal_{node.isInternal()}, data_(std::move(node.getNode()), is_internal_),

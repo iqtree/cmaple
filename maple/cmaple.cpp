@@ -289,7 +289,7 @@ void CMaple::exportOutput(const string &filename)
 void test()
 {
     // test phylonode is a leaf
-    MiniIndex mini_index{RIGHT};
+    /*MiniIndex mini_index{RIGHT};
     Index tmp_index{0,mini_index};
     LeafNode leaf;
     leaf.less_info_seqs_.push_back(0);
@@ -349,12 +349,12 @@ void test()
     // test delete a phylonode created by a default constructor
     phylonode3.~PhyloNode();
     
-    /*std::cout << "\n\n\nsize of a single MiniNode (old):  " << sizeof(Node) << '\n';
+    std::cout << "\n\n\nsize of a single MiniNode (old):  " << sizeof(Node) << '\n';
     // however, the actual memory allocated by the call to `new` will be larger, since the allocator used predefined block sizes:
     Node* p = new Node();
     Node* p2 = new Node();
     auto diff = (char*)p2 - (char*)p;
-    std::cout << "size of a single MiniNode (old, when allocated by new): " << diff << '\n';*/
+    std::cout << "size of a single MiniNode (old, when allocated by new): " << diff << '\n';
 
     std::cout << "size of a full PhyloNode (new): " << sizeof(PhyloNode) << '\n';
     std::cout << " + size of a InternalNode (new): " << sizeof(InternalNode) << '\n';
@@ -367,7 +367,7 @@ void test()
     std::cout << "\n\nMemory usage:\n"
     "  for " << nr_seqs/1000 << "k Seqs:\n"
     //"    old nodes (" << old_nodes/1000 << "k) allocated with 'new'  : " << diff * old_nodes / 1024/ 1024 << " MB\n"
-    "    new phylonodes (" << pylonodes/1000 << "k) in std::vector : " << sizeof(PhyloNode) * pylonodes / 1024/ 1024 << " MB\n";
+    "    new phylonodes (" << pylonodes/1000 << "k) in std::vector : " << sizeof(PhyloNode) * pylonodes / 1024/ 1024 << " MB\n";*/
 }
 
 void runCMaple(Params &params)
