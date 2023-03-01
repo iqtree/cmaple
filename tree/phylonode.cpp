@@ -296,3 +296,28 @@ void PhyloNode::setNodeLhIndex(const NumSeqsType node_lh_index)
     ASSERT(isInternal());
     data_.internal_.node_lh_index_ = node_lh_index;
 }
+
+const RealNumType NodeLh::getaLRT() const
+{
+    return aLRT_;
+}
+
+void NodeLh::setaLRT(const RealNumType aLRT)
+{
+    aLRT_ = aLRT;
+}
+
+const RealNumType NodeLh::getLhContribution() const
+{
+    return lh_contribution_;
+}
+
+void NodeLh::setLhContribution(const RealNumType lh_contribution)
+{
+    lh_contribution_ = lh_contribution;
+}
+
+std::vector<RealNumType>& NodeLh::getSiteLhContributions()
+{
+    return site_lh_contributions_;
+}

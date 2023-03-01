@@ -249,10 +249,51 @@ private:
 /** An intermediate data structure to store data for calculating aLRT-SH  */
 struct NodeLh
 {
-    RealNumType lh_contribution_;
-    std::vector<RealNumType> site_lh_contributions_;
+    /**
+        Get aLRT_
+     */
+    const RealNumType getaLRT() const;
     
+    /**
+        Set aLRT_
+     */
+    void setaLRT(const RealNumType aLRT);
+    
+    /**
+        Get lh_contribution_
+     */
+    const RealNumType getLhContribution() const;
+    
+    /**
+        Set lh_contribution_
+     */
+    void setLhContribution(const RealNumType lh_contribution);
+    
+    /**
+        Get site_lh_contributions_
+     */
+    std::vector<RealNumType>& getSiteLhContributions();
+    
+    /*
+        Constructor
+     */
     NodeLh(RealNumType lh_contribution):lh_contribution_(lh_contribution) {};
+    
+private:
+    /*
+        The aLRT value of the upper branch of this node
+     */
+    RealNumType aLRT_;
+    
+    /*
+        The likelihood contribution of this node to the total likelihood
+     */
+    RealNumType lh_contribution_;
+    
+    /*
+        The site-likelihood contribution of this node to the total likelihood
+     */
+    std::vector<RealNumType> site_lh_contributions_;
 };
 
 // just for testing

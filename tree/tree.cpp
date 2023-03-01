@@ -4239,29 +4239,48 @@ void Tree::calculateBranchSupports()
         const NumSeqsType node_vec = node_index.getVectorIndex();
         PhyloNode& node = nodes[node_vec];
         
+        // only consider internal branches
         if (node.isInternal())
         {
-            // show the likelihood contribution at this branch/node
-            // std::cout << "Lh contribution of node (node_vec) " << node_vec << " : " << node_lhs[node.getNodelhIndex()].lh_contribution_ << std::endl;
-            
-            // caculate aLRT
             const Index child_1_index = node.getNeighborIndex(RIGHT);
             const Index child_2_index = node.getNeighborIndex(LEFT);
-            PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
-            PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
-            const Index parent_index = node.getNeighborIndex(TOP);
-            PhyloNode& parent = nodes[parent_index.getVectorIndex()];
-            const Index sibling_index = parent.getNeighborIndex(parent_index.getFlipMiniIndex());
-            PhyloNode& sibling = nodes[sibling_index.getVectorIndex()];
             
-            // compute the likelihood differences between each nni neighbor and the current tree
-            const RealNumType nni_neighbor_1_lh_diff = calculateNNILh(node, child_1, child_2, sibling, parent, parent_index, lh_at_root);
-            const RealNumType nni_neighbor_2_lh_diff = calculateNNILh(node, child_2, child_1, sibling, parent, parent_index, lh_at_root);
-            // max_nni_neighbor_lh = LT2
-            const RealNumType max_nni_neighbor_lh = tree_total_lh + (nni_neighbor_1_lh_diff > nni_neighbor_2_lh_diff ? nni_neighbor_1_lh_diff : nni_neighbor_2_lh_diff);
-            // aLRT = 2(LT1 - LT2)
-            const RealNumType lt1_minus_lt2 = tree_total_lh - max_nni_neighbor_lh;
-            std::cout << "aLRT of the upper branch of node (node_vec) " << node_vec << " : " << (lt1_minus_lt2 + lt1_minus_lt2) << std::endl;
+            // only compute the aLRT for internal non-zero branches
+            if (node.getUpperLength() > 0)
+            {
+                // show the likelihood contribution at this branch/node
+                // std::cout << "Lh contribution of node (node_vec) " << node_vec << " : " << node_lhs[node.getNodelhIndex()].lh_contribution_ << std::endl;
+                
+                // caculate aLRT
+                PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
+                PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
+                const Index parent_index = node.getNeighborIndex(TOP);
+                PhyloNode& parent = nodes[parent_index.getVectorIndex()];
+                const Index sibling_index = parent.getNeighborIndex(parent_index.getFlipMiniIndex());
+                PhyloNode& sibling = nodes[sibling_index.getVectorIndex()];
+                
+                // compute the likelihood differences between each nni neighbor and the current tree
+                const RealNumType nni_neighbor_1_lh_diff = calculateNNILh(node, child_1, child_2, sibling, parent, parent_index, lh_at_root);
+                const RealNumType nni_neighbor_2_lh_diff = calculateNNILh(node, child_2, child_1, sibling, parent, parent_index, lh_at_root);
+                // max_nni_neighbor_lh = LT2
+                const RealNumType max_nni_neighbor_lh = tree_total_lh + (nni_neighbor_1_lh_diff > nni_neighbor_2_lh_diff ? nni_neighbor_1_lh_diff : nni_neighbor_2_lh_diff);
+                // aLRT = 2(LT1 - LT2)
+                const RealNumType lt1_minus_lt2 = tree_total_lh - max_nni_neighbor_lh;
+                
+                // update aLRT of the upper branch of this node
+                node_lhs[node.getNodelhIndex()].setaLRT(lt1_minus_lt2 + lt1_minus_lt2);
+                
+                // print out the aLRT (for debugging only)
+                std::cout << "aLRT of the upper branch of node (node_vec) " << node_vec << " : " << node_lhs[node.getNodelhIndex()].getaLRT() << std::endl;
+            }
+            // return zero for zero-length internal branches
+            else
+            {
+                node_lhs[node.getNodelhIndex()].setaLRT(0);
+                
+                // print out the aLRT (for debugging only)
+                std::cout << "aLRT of the upper zero-length branch of node (node_vec) " << node_vec << " : 000" << std::endl;
+            }
             
             // add its children into node_stack for further traversal
             node_stack.push(child_1_index);
@@ -4337,9 +4356,9 @@ RealNumType Tree::calculateNNILh(PhyloNode& current_node, PhyloNode& child_1, Ph
         
         // 7. caculate the likelihood contribution changed at
         // 7.1. the parent node
-        lh_diff += child_2_lower_lh->mergeTwoLowers(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, threshold_prob, true) - node_lhs[current_node.getNodelhIndex()].lh_contribution_;
+        lh_diff += child_2_lower_lh->mergeTwoLowers(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, threshold_prob, true) - node_lhs[current_node.getNodelhIndex()].getLhContribution();
         // 7.2. the new_parent node
-        lh_diff += parent_new_lower_lh->mergeTwoLowers(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].lh_contribution_;
+        lh_diff += parent_new_lower_lh->mergeTwoLowers(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].getLhContribution();
         // 7.3 the absolute likelihood at root
         lh_diff += new_parent_new_lower_lh->computeAbsoluteLhAtRoot(num_states, model) - lh_at_root;
     }
@@ -4417,9 +4436,9 @@ RealNumType Tree::calculateNNILh(PhyloNode& current_node, PhyloNode& child_1, Ph
         
         // 7. caculate the likelihood contribution changed at
         // 7.1. the parent node
-        lh_diff += child_2_lower_lh->mergeTwoLowers(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, threshold_prob, true) - node_lhs[current_node.getNodelhIndex()].lh_contribution_;
+        lh_diff += child_2_lower_lh->mergeTwoLowers(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, threshold_prob, true) - node_lhs[current_node.getNodelhIndex()].getLhContribution();
         // 7.2. the new_parent node
-        lh_diff += parent_new_lower_lh->mergeTwoLowers(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].lh_contribution_;
+        lh_diff += parent_new_lower_lh->mergeTwoLowers(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].getLhContribution();
         // 7.3. other ancestors on the path from the new_parent to root (stop when the change is insignificant)
         const PositionType seq_length = aln.ref_seq.size();
         const Params* params_ptr = &params.value();
@@ -4444,7 +4463,7 @@ RealNumType Tree::calculateNNILh(PhyloNode& current_node, PhyloNode& child_1, Ph
                     PhyloNode& tmp_parent = nodes[tmp_parent_vec];
                     PhyloNode& tmp_sibling = nodes[tmp_parent.getNeighborIndex(tmp_parent_index.getFlipMiniIndex()).getVectorIndex()];
                     
-                    lh_diff += new_lower_lh->mergeTwoLowers(tmp_new_lower_lh, tmp_blength, *(tmp_sibling.getPartialLh(TOP)), tmp_sibling.getUpperLength(), aln, model, params->threshold_prob, true) - node_lhs[tmp_parent.getNodelhIndex()].lh_contribution_;
+                    lh_diff += new_lower_lh->mergeTwoLowers(tmp_new_lower_lh, tmp_blength, *(tmp_sibling.getPartialLh(TOP)), tmp_sibling.getUpperLength(), aln, model, params->threshold_prob, true) - node_lhs[tmp_parent.getNodelhIndex()].getLhContribution();
                     
                     // move a step upwards
                     node_vec = tmp_parent_vec;
