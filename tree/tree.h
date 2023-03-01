@@ -442,6 +442,11 @@ public:
     RealNumType estimateBranchLength(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions);
     
     /**
+        Estimate the length of a branch and check whether the new branch is different from the current one
+     */
+    RealNumType estimateBranchLengthWithCheck(const std::unique_ptr<SeqRegions>& upper_lr_regions, const std::unique_ptr<SeqRegions>& lower_regions, const RealNumType current_blength);
+    
+    /**
         Calculate the placement cost of a sample
         @param child_regions: vector of regions of the new sample
      */
