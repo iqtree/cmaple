@@ -319,6 +319,36 @@ private:
      */
     std::unique_ptr<SeqRegions>& getPartialLhAtNode(const Index index);
     
+    /**
+        Calculate the likelihood of an NNI neighbor
+     */
+    bool calculateNNILh(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root);
+    
+    /**
+        Calculate the likelihood of an NNI neighbor on the branch connecting to root
+     */
+    bool calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root);
+    
+    /**
+        Calculate the likelihood of an NNI neighbor on the branch connecting to a non-root node
+     */
+    bool calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root);
+    
+    /**
+        Replace the current ML Tree by an NNI neighbor on a branch connecting to root
+     */
+    void replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength);
+    
+    /**
+        Replace the current ML Tree by an NNI neighbor on a branch connecting to a non-root node
+     */
+    void replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength, const RealNumType new_parent_best_blength);
+    
+    /**
+        Traverse downward to update the upper_left/right_region until the changes is insignificant
+     */
+    void updateUpperLR(std::stack<Index>& node_stack);
+    
 public:
     /*
      Branch length thresholds
@@ -485,7 +515,7 @@ public:
     void calculateBranchSupports();
     
     /**
-        Calculate the likelihood of an NNI neighbor
+        Show branch supports
      */
-    RealNumType calculateNNILh(PhyloNode& node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, const RealNumType lh_at_root);
+    void showBranchSupports();
 };

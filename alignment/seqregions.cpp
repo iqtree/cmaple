@@ -757,7 +757,7 @@ bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_ble
     {
         RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
         assert(num_states == 4);
-        sum_lh += updateVecWithState<4>(new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
+        sum_lh = updateVecWithState<4>(new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
         
         // normalize new partial lh
         // normalize the new partial likelihood

@@ -265,12 +265,15 @@ void CMaple::doInference()
 
 void CMaple::postInference()
 {
+    // output log-likelihood of the tree
+    std::cout << std::setprecision(20) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
+    
     // compute branch support if requested
     if (tree.params->compute_aLRT_SH)
         calculateBranchSupports();
     
     // output log-likelihood of the tree
-    std::cout << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
+    std::cout << std::setprecision(20) << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
     
     // output treefile
     string output_file(tree.params->diff_path);
@@ -286,6 +289,9 @@ void CMaple::calculateBranchSupports()
     
     // calculate branch supports
     tree.calculateBranchSupports();
+    
+    // show branch supports
+    tree.showBranchSupports();
     
     // show the runtime for calculating branch supports
     auto end = getRealTime();
