@@ -4254,7 +4254,7 @@ void Tree::showBranchSupports()
     }
 }
 
-void Tree::calculateBranchSupports()
+void Tree::calculate_aRLT()
 {
     // set all nodes outdated
     resetSPRFlags(true);
@@ -4342,6 +4342,24 @@ void Tree::calculateBranchSupports()
     }
     
     std::cout << std::setprecision(20) << "Expected tree_total_lh: " << tree_total_lh << std::endl;
+}
+
+void Tree::calculateBranchSupports()
+{
+    // 1. calculate aLRT for each internal branches, replacing the ML tree if a higher ML NNI neighbor was found
+    calculate_aRLT();
+    
+    // 2. calculate the site lh contributions
+    std::vector<RealNumType> site_lh_contributions, site_lh_at_root;
+    RealNumType total_lh = calculateSiteLhs(site_lh_contributions, site_lh_at_root);
+    
+    // validate the result
+    RealNumType tmp_total_lh = 0;
+    for (RealNumType site_lh : site_lh_contributions)
+        tmp_total_lh += site_lh;
+    for (RealNumType site_lh : site_lh_at_root)
+        tmp_total_lh += site_lh;
+    ASSERT(fabs(tmp_total_lh - total_lh) < 1e-6);
 }
 
 bool Tree::calculateNNILh(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root)
@@ -4857,4 +4875,83 @@ void Tree::updateUpperLR(std::stack<Index>& node_stack)
             
         }
     }
+}
+
+RealNumType Tree::calculateSiteLhs(std::vector<RealNumType>& site_lh_contributions, std::vector<RealNumType>& site_lh_root)
+{
+    // initialize the total_lh by the likelihood from root
+    const PositionType seq_length = aln.ref_seq.size();
+    const RealNumType threshold_prob = params->threshold_prob;
+    if (site_lh_contributions.size() != seq_length)
+    {
+        site_lh_contributions.resize(seq_length, 0);
+        site_lh_root.resize(seq_length, 0);
+    }
+    RealNumType total_lh = nodes[root_vector_index].getPartialLh(TOP)->computeSiteLhAtRoot(site_lh_root, aln.num_states, model);
+
+    // start from root
+    Index node_index = Index(root_vector_index, TOP);
+    Index last_node_index;
+    
+    // traverse to the deepest tip, calculate the likelihoods upward from the tips
+    while (node_index.getMiniIndex() != UNDEFINED) //node)
+    {
+        PhyloNode& node = nodes[node_index.getVectorIndex()];
+        // we reach a top node by a downward traversing
+        if (node_index.getMiniIndex() == TOP) //node->is_top)
+        {
+            // if the current node is a leaf -> we reach the deepest tip -> traversing upward to calculate the lh of its parent
+            if (!node.isInternal()) // node->isLeave())
+            {
+                /*last_node = node;
+                 node = node->neighbor;*/
+                last_node_index = node_index;
+                node_index = node.getNeighborIndex(TOP);
+            }
+            // otherwise, keep traversing downward to find the deepest tip
+            else
+                // node = node->next->neighbor;
+                node_index = node.getNeighborIndex(RIGHT);
+        }
+        // we reach the current node by an upward traversing from its children
+        else
+        {
+            // if we reach the current node by an upward traversing from its first children -> traversing downward to its second children
+            if (node.getNeighborIndex(RIGHT) == last_node_index) // node->getTopNode()->next->neighbor == last_node)
+            {
+                // node = node->getTopNode()->next->next->neighbor;
+                node_index = node.getNeighborIndex(LEFT);
+            }
+            // otherwise, all children of the current node are updated -> update the lower lh of the current node
+            else
+            {
+                // calculate the new lower lh of the current node from its children
+                /*Node* top_node = node->getTopNode();
+                 Node* next_node_1 = top_node->next;
+                 Node* next_node_2 = next_node_1->next;*/
+                Index neighbor_1_index = node.getNeighborIndex(RIGHT);
+                Index neighbor_2_index = node.getNeighborIndex(LEFT);
+                PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
+                PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
+                
+                std::unique_ptr<SeqRegions> new_lower_lh = nullptr;
+                const std::unique_ptr<SeqRegions>& lower_lh_1 = neighbor_1.getPartialLh(TOP); // next_node_1->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+                const std::unique_ptr<SeqRegions>& lower_lh_2 = neighbor_2.getPartialLh(TOP); // next_node_2->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
+                
+                total_lh += lower_lh_1->calculateSiteLhContributions(site_lh_contributions, new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, threshold_prob);
+                
+                // if new_lower_lh is NULL
+                if (!new_lower_lh)
+                    outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
+                // otherwise, everything is good -> update the lower lh of the current node
+                else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, aln.num_states, &params.value()))
+                    outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
+                
+                last_node_index = Index(node_index.getVectorIndex(), TOP);
+                node_index = node.getNeighborIndex(TOP);
+            }
+        }
+    }
+    
+    return total_lh;
 }

@@ -128,6 +128,19 @@ public:
     RealNumType mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool return_log_lh = false) const;
     
     /**
+        Calculate site-lh contributions by merging two lower likelihood vectors
+        This regions is one of the two lower regions
+        @param regions2 the other lower regions
+        @param plength1, plength2 the lengths of the lower branches
+        @param merged_regions the output regions by merging the upper and lower regions
+        @param aln the alignment
+        @param model the model of evolution
+        @param threshold the threshold for approximation
+        @param return_log_lh TRUE to return the log likelihood
+     */
+    RealNumType calculateSiteLhContributions(std::vector<RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const Model& model, const RealNumType threshold_prob) const;
+    
+    /**
         Compute total lh/upper left_right for root node
         @param blength the branch length; (-1 by default).
      */
@@ -137,6 +150,11 @@ public:
         Compute the likelihood by merging the lower lh with root frequencies
      */
     RealNumType computeAbsoluteLhAtRoot(const StateType num_states, const Model& model);
+    
+    /**
+        Compute the site likelihood at root by merging the lower lh with root frequencies
+     */
+    RealNumType computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_contributions, const StateType num_states, const Model& model);
     
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others

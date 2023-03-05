@@ -349,6 +349,16 @@ private:
      */
     void updateUpperLR(std::stack<Index>& node_stack);
     
+    /**
+        Calculate aLRT for each internal branches
+     */
+    void calculate_aRLT();
+    
+    /**
+        Perform a DFS to calculate the Site-lh-contribution
+     */
+    RealNumType calculateSiteLhs(std::vector<RealNumType>& site_lh_contributions, std::vector<RealNumType>& site_lh_root);
+    
 public:
     /*
      Branch length thresholds
