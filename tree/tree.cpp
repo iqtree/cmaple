@@ -3376,7 +3376,10 @@ RealNumType Tree::improveSubTree(const Index node_index, PhyloNode& node, bool s
 void calculateSubtreeCost_R_R(const SeqRegion& seq1_region, const RealNumType* const &cumulative_rate, RealNumType& total_blength, const PositionType pos, const PositionType end_pos, RealNumType& lh_cost)
 {
     if (seq1_region.plength_observation2root >= 0)
-      total_blength += seq1_region.plength_observation2node;
+    {
+        ASSERT(total_blength >= 0);
+        total_blength += seq1_region.plength_observation2node;
+    }
 
     // NHANLT NOTE:
     // approximation log(1+x)~x
