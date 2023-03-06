@@ -106,7 +106,6 @@ endif()
 ##################################################################
 
 
-
 ##################################################################
 # Setup compiler flags
 ##################################################################
@@ -169,6 +168,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(utils)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+add_subdirectory(sprng)
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
@@ -189,9 +189,14 @@ endif(Backtrace_FOUND)
 ##################################################################
 # setup linking flags
 ##################################################################
-
-# basic linking librararies
-target_link_libraries(cmaple utils model alignment tree maple)
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+	target_link_libraries(tree OpenMP::OpenMP_CXX)
+	target_link_libraries(cmaple maple tree alignment model utils sprng)
+else()
+	# basic linking librararies
+	target_link_libraries(cmaple utils model alignment tree maple sprng)
+endif()
 
 
 ##############################################################

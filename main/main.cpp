@@ -36,6 +36,36 @@ using namespace std;
 int main(int argc, char *argv[]) {
     parseArg(argc, argv, Params::getInstance());
     
+    // Show info
+    cout << "Seed:    " << Params::getInstance().ran_seed <<  " ";
+    init_random(Params::getInstance().ran_seed, true);
+    
+    // setup the number of threads for openmp
+#ifdef _OPENMP
+    if (Params::getInstance().num_threads >= 1) {
+        omp_set_num_threads(Params::getInstance().num_threads);
+        Params::getInstance().num_threads = omp_get_max_threads();
+    }
+//    int max_threads = omp_get_max_threads();
+    int max_procs = countPhysicalCPUCores();
+    cout << "OpenMP: ";
+    if (Params::getInstance().num_threads > 0)
+        cout << Params::getInstance().num_threads  << " threads";
+    else
+        cout << "auto-detect threads";
+    cout << " (" << max_procs << " CPU cores detected) \n";
+    if (Params::getInstance().num_threads  > max_procs) {
+        cout << endl;
+        outError("You have specified more threads than CPU cores available");
+    }
+    omp_set_max_active_levels(1);
+#else
+    if (Params::getInstance().num_threads != 1) {
+        cout << endl << endl;
+        outError("Number of threads must be 1 for sequential version.");
+    }
+#endif
+    
     // Measure runtime
     time_t start_time;
     

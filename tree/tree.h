@@ -2,6 +2,9 @@
 #include "alignment/alignment.h"
 #include "model/model.h"
 #include <optional>
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 
 #pragma once
 
@@ -358,6 +361,31 @@ private:
         Perform a DFS to calculate the Site-lh-contribution
      */
     RealNumType calculateSiteLhs(std::vector<RealNumType>& site_lh_contributions, std::vector<RealNumType>& site_lh_root);
+    
+    /**
+        Calculate aLRT-SH for each internal branches
+     */
+    void calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contributions, std::vector<RealNumType>& site_lh_root, const RealNumType& LT1);
+    
+    /**
+        Count aLRT-SH for an internal branch
+     */
+    PositionType count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contributions, std::vector<RealNumType>& site_lh_root, PhyloNode& node, const RealNumType& LT1);
+    
+    /**
+        Calculate the site-lh differences  between an NNI neighbor on the branch connecting to root and the ML tree
+     */
+    void calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std::vector<RealNumType>& site_lh_root_diff, const std::vector<RealNumType>& site_lh_root, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index);
+    
+    /**
+        Calculate the site-lh differences  between an NNI neighbor on the branch connecting to a non-root node and the ML tree
+     */
+    void calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vector<RealNumType>& site_lh_root_diff, const std::vector<RealNumType>& site_lh_root, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index);
+    
+    /**
+        Calculate the site-lh differences  between an NNI neighbor and the ML tree
+     */
+    void calSiteLhDiff(std::vector<RealNumType>& site_lh_diff, std::vector<RealNumType>& site_lh_root_diff, const std::vector<RealNumType>& site_lh_root, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index);
     
 public:
     /*

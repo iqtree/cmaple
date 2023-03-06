@@ -297,14 +297,35 @@ void PhyloNode::setNodeLhIndex(const NumSeqsType node_lh_index)
     data_.internal_.node_lh_index_ = node_lh_index;
 }
 
-const RealNumType NodeLh::getaLRT() const
+void NodeLh::setLhDiff2(const RealNumType lh_diff)
 {
-    return aLRT_;
+    neighbor_2_lh_diff_ = lh_diff;
 }
 
-void NodeLh::setaLRT(const RealNumType aLRT)
+const RealNumType NodeLh::getLhDiff2() const
 {
-    aLRT_ = aLRT;
+    return neighbor_2_lh_diff_;
+}
+
+void NodeLh::setLhDiff3(const RealNumType lh_diff)
+{
+    neighbor_3_lh_diff_ = lh_diff;
+}
+
+const RealNumType NodeLh::getLhDiff3() const
+{
+    return neighbor_3_lh_diff_;
+}
+
+const RealNumType NodeLh::get_aLRT() const
+{
+    /* aLRT = 2(LT1 - LT2)
+     <=> aLRT = 2(LT1 - max(LT2x,LT2y)); where LT2x, LT2y are the log lh of the two NNI neighbors of T1
+     <=> aLRT = 2(LT1 - max(diff_x + LT1, diff_y + LT1)); where diff_x = LT2x - LT1; and similarly to diff_y
+     <=> aLRT = 2(LT1 - max(diff_x, diff_y) - LT1)
+     <=> aLRT = 2(-max(diff_x, diff_y)) = 2 * (-max_nni_neighbor_lh_diff) = -max_nni_neighbor_lh_diff - max_nni_neighbor_lh_diff
+     */
+    return neighbor_2_lh_diff_ > neighbor_3_lh_diff_ ? - (neighbor_2_lh_diff_ + neighbor_2_lh_diff_) : - (neighbor_3_lh_diff_ + neighbor_3_lh_diff_);
 }
 
 const RealNumType NodeLh::getLhContribution() const
@@ -317,7 +338,12 @@ void NodeLh::setLhContribution(const RealNumType lh_contribution)
     lh_contribution_ = lh_contribution;
 }
 
-std::vector<RealNumType>& NodeLh::getSiteLhContributions()
+const RealNumType NodeLh::get_aLRT_SH() const
 {
-    return site_lh_contributions_;
+    return aLRT_SH_;
+}
+
+void NodeLh::set_aLRT_SH(const RealNumType aLRT_SH)
+{
+    aLRT_SH_ = aLRT_SH;
 }

@@ -29,6 +29,248 @@
 
 using namespace std;
 
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+
+#define RAN_STANDARD 1
+#define RAN_SPRNG    2
+#define RAN_RAND4    3
+
+#define RAN_TYPE 2
+
+#if RAN_TYPE == RAN_STANDARD
+
+int init_random(int seed) {
+    srand(seed);
+    cout << "(Using rand() - Standard Random Number Generator)" << endl;
+    // init random generator for AliSim
+    Params::getInstance().generator.seed(seed);
+    return seed;
+}
+
+int finish_random() {
+    return 0;
+}
+
+
+#elif RAN_TYPE == RAN_RAND4
+/******************************************************************************/
+/* random numbers generator  (Numerical recipes)                              */
+/******************************************************************************/
+
+/* variable */
+long _idum;
+
+/* definitions */
+#define IM1 2147483563
+#define IM2 2147483399
+#define AM (1.0/IM1)
+#define IMM1 (IM1-1)
+#define IA1 40014
+#define IA2 40692
+#define IQ1 53668
+#define IQ2 52774
+#define IR1 12211
+#define IR2 3791
+#define NTAB 32
+#define NDIV (1+IMM1/NTAB)
+#define EPS 1.2e-7
+#define RNMX (1.0-EPS)
+
+double randomunitintervall()
+/* Long period (> 2e18) random number generator. Returns a uniform random
+   deviate between 0.0 and 1.0 (exclusive of endpoint values).
+
+   Source:
+   Press et al., "Numerical recipes in C", Cambridge University Press, 1992
+   (chapter 7 "Random numbers", ran2 random number generator) */ {
+    int j;
+    long k;
+    static long _idum2 = 123456789;
+    static long iy = 0;
+    static long iv[NTAB];
+    double temp;
+
+    if (_idum <= 0) {
+        if (-(_idum) < 1)
+            _idum = 1;
+        else
+            _idum = -(_idum);
+        _idum2 = (_idum);
+        for (j = NTAB + 7; j >= 0; j--) {
+            k = (_idum) / IQ1;
+            _idum = IA1 * (_idum - k * IQ1) - k*IR1;
+            if (_idum < 0)
+                _idum += IM1;
+            if (j < NTAB)
+                iv[j] = _idum;
+        }
+        iy = iv[0];
+    }
+    k = (_idum) / IQ1;
+    _idum = IA1 * (_idum - k * IQ1) - k*IR1;
+    if (_idum < 0)
+        _idum += IM1;
+    k = _idum2 / IQ2;
+    _idum2 = IA2 * (_idum2 - k * IQ2) - k*IR2;
+    if (_idum2 < 0)
+        _idum2 += IM2;
+    j = iy / NDIV;
+    iy = iv[j] - _idum2;
+    iv[j] = _idum;
+    if (iy < 1)
+        iy += IMM1;
+    if ((temp = AM * iy) > RNMX)
+        return RNMX;
+    else
+        return temp;
+} /* randomunitintervall */
+
+#undef IM1
+#undef IM2
+#undef AM
+#undef IMM1
+#undef IA1
+#undef IA2
+#undef IQ1
+#undef IQ2
+#undef IR1
+#undef IR2
+#undef NTAB
+#undef NDIV
+#undef EPS
+#undef RNMX
+
+int init_random(int seed) /* RAND4 */ {
+    //    srand((unsigned) time(NULL));
+    //    if (seed < 0)
+    //     seed = rand();
+    _idum = -(long) seed;
+#ifndef PARALLEL
+    cout << "(Using RAND4 Random Number Generator)" << endl;
+#else /* PARALLEL */
+    {
+        int n;
+        if (PP_IamMaster) {
+            cout << "(Using RAND4 Random Number Generator with leapfrog method)" << endl;
+        }
+        for (n = 0; n < PP_Myid; n++)
+            (void) randomunitintervall();
+        if (verbose_mode >= VB_MED) {
+            cout << "(" << PP_Myid << ") !!! random seed set to " << seed << ", " << n << " drawn !!!" << endl;
+        }
+    }
+#endif
+    // init random generator for AliSim
+    Params::getInstance().generator.seed(seed);
+    return (seed);
+} /* initrandom */
+
+int finish_random() {
+    return 0;
+}
+/******************/
+
+#else /* SPRNG */
+
+/******************/
+
+int *randstream;
+
+int init_random(int seed, bool write_info, int** rstream) {
+    //    srand((unsigned) time(NULL));
+    if (seed < 0)
+        seed = make_sprng_seed();
+#ifndef PARALLEL
+    if (write_info)
+        cout << "(Using SPRNG - Scalable Parallel Random Number Generator)" << endl;
+    if (rstream) {
+        *rstream = init_sprng(0, 1, seed, SPRNG_DEFAULT); /*init stream*/
+    } else {
+        randstream = init_sprng(0, 1, seed, SPRNG_DEFAULT); /*init stream*/
+        if (verbose_mode >= VB_MED) {
+            print_sprng(randstream);
+        }
+    }
+#else /* PARALLEL */
+    if (PP_IamMaster && write_info) {
+        cout << "(Using SPRNG - Scalable Parallel Random Number Generator)" << endl;
+    }
+    /* MPI_Bcast(&seed, 1, MPI_UNSIGNED, PP_MyMaster, MPI_COMM_WORLD); */
+    if (rstream) {
+        *rstream = init_sprng(PP_Myid, PP_NumProcs, seed, SPRNG_DEFAULT); /*initialize stream*/
+    } else {
+        randstream = init_sprng(PP_Myid, PP_NumProcs, seed, SPRNG_DEFAULT); /*initialize stream*/
+        if (verbose_mode >= VB_MED) {
+            cout << "(" << PP_Myid << ") !!! random seed set to " << seed << " !!!" << endl;
+            print_sprng(randstream);
+        }
+    }
+#endif /* PARALLEL */
+    return (seed);
+} /* initrandom */
+
+int finish_random(int *rstream) {
+    if (rstream)
+        return free_sprng(rstream);
+    else
+        return free_sprng(randstream);
+}
+
+#endif /* USE_SPRNG */
+
+/******************/
+
+/* returns a random integer in the range [0; n - 1] */
+int random_int(int n, int *rstream) {
+    return (int) floor(random_double(rstream) * n);
+} /* randominteger */
+
+/* returns a random integer in the range [a; b] */
+int random_int(int a, int b) {
+    ASSERT(b > a);
+    //return a + (RAND_MAX * rand() + rand()) % (b + 1 - a);
+    return a + random_int(b - a);
+}
+
+double random_double(int *rstream) {
+#ifndef FIXEDINTRAND
+#ifndef PARALLEL
+#if RAN_TYPE == RAN_STANDARD
+    return ((double) rand()) / ((double) RAND_MAX + 1);
+#elif RAN_TYPE == RAN_SPRNG
+    if (rstream)
+        return sprng(rstream);
+    else
+        return sprng(randstream);
+#else /* NO_SPRNG */
+    return randomunitintervall();
+#endif /* NO_SPRNG */
+#else /* NOT PARALLEL */
+#if RAN_TYPE == RAN_SPRNG
+    if (rstream)
+        return sprng(rstream);
+    else
+        return sprng(randstream);
+#else /* NO_SPRNG */
+    int m;
+    for (m = 1; m < PP_NumProcs; m++)
+        (void) randomunitintervall();
+    PP_randn += (m - 1);
+    PP_rand++;
+    return randomunitintervall();
+#endif /* NO_SPRNG */
+#endif /* NOT PARALLEL */
+#else /* FIXEDINTRAND */
+    cerr << "!!! fixed \"random\" integers for testing purposes !!!" << endl;
+    return 0.0;
+#endif /* FIXEDINTRAND */
+
+}
+
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+
 VerboseMode verbose_mode;
 
 void printCopyright(ostream &out) {
@@ -537,6 +779,16 @@ void initDefaultValue(Params &params)
     params.short_range_topo_search = false;
     params.output_testing = NULL;
     params.compute_aLRT_SH = false;
+    params.aLRT_SH_replicates = 10000;
+    params.aLRT_SH_epsilon = 0.1;
+    params.num_threads = 1;
+    
+    // initialize random seed based on current time
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    //params.ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
+    params.ran_seed = (tv.tv_usec);
 }
 
 void parseArg(int argc, char *argv[], Params &params) {
@@ -711,6 +963,47 @@ void parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
+            if (strcmp(argv[cnt], "--replicates") == 0) {
+                ++cnt;
+                if (cnt >= argc)
+                    outError("Use --replicates <NUM_REPLICATES>");
+                
+                params.aLRT_SH_replicates = convert_int(argv[cnt]);
+                
+                if (params.aLRT_SH_replicates <= 0)
+                    outError("<NUM_REPLICATES> must be positive!");
+                continue;
+            }
+            if (strcmp(argv[cnt], "--epsilon") == 0) {
+                ++cnt;
+                if (cnt >= argc)
+                    outError("Use --epsilon <FLOATING_NUM>");
+                
+                params.aLRT_SH_epsilon = convert_real_number(argv[cnt]);
+                
+                continue;
+            }
+            if (strcmp(argv[cnt], "-seed") == 0 || strcmp(argv[cnt], "--seed") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    throw "Use -seed <random_seed>";
+                params.ran_seed = abs(convert_int(argv[cnt]));
+                continue;
+            }
+            if (strcmp(argv[cnt], "-nt") == 0 || strcmp(argv[cnt], "-c") == 0 ||
+                strcmp(argv[cnt], "-T") == 0  || strcmp(argv[cnt], "--threads") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                throw "Use -nt <num_threads|AUTO>";
+                if (iEquals(argv[cnt], "AUTO"))
+                    params.num_threads = 0;
+                else {
+                    params.num_threads = convert_int(argv[cnt]);
+                    if (params.num_threads < 1)
+                        throw "At least 1 thread please";
+                }
+                continue;
+            }
             
             // return invalid option
             string err = "Invalid \"";
@@ -807,6 +1100,14 @@ bool overwriteFile(char *filename) {
 void trimString(string &str) {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
     str.erase(str.find_last_not_of(" \n\r\t")+1);
+}
+
+int countPhysicalCPUCores() {
+    #ifdef _OPENMP
+    return omp_get_num_procs();
+    #else
+    return std::thread::hardware_concurrency();
+    #endif
 }
 
 Params& Params::getInstance() {

@@ -38,6 +38,9 @@
 #include <random>
 #include <sys/stat.h>
 #include <cfloat>
+#include <thread>
+#define SPRNG
+#include "sprng/sprng.h"
 
 #ifndef TOOLS_H
 #define TOOLS_H
@@ -533,6 +536,26 @@ public:
     */
     bool compute_aLRT_SH;
     
+    /**
+    * Number of replicates to compute aLRT-SH
+    */
+    PositionType aLRT_SH_replicates;
+    
+    /**
+    * epsilon value when computing aLRT-SH
+    */
+    RealNumType aLRT_SH_epsilon;
+    
+    /**
+    * number of threads
+    */
+    uint32_t num_threads;
+    
+    /**
+    * Random seed
+    */
+    uint64_t ran_seed;
+    
     /*
         TRUE to log debugging
      */
@@ -585,6 +608,47 @@ std::istream& safeGetline(std::istream& is, std::string& t);
 const char ERR_NO_TAXON[] = "Find no taxon with name ";
 const char ERR_NO_AREA[] = "Find no area with name ";
 const char ERR_NO_MEMORY[] = "Not enough memory!";
+
+/*--------------------------------------------------------------*/
+/* random number generator */
+/*--------------------------------------------------------------*/
+
+extern int *randstream;
+
+/**
+ * initialize the random number generator
+ * @param seed seed for generator
+ * @param write_info true to write information, false otherwise (default)
+ */
+int init_random(int seed, bool write_info = false, int** rstream = NULL);
+
+/**
+ * finalize random number generator (e.g. free memory
+ */
+int finish_random(int *rstream = NULL);
+
+/**
+ * returns a random integer in the range [0; n - 1]
+ * @param n upper-bound of random number
+ */
+int random_int(int n, int *rstream = NULL);
+
+/**
+ *  return a random integer in the range [a,b]
+ */
+//int randint(int a, int b);
+
+/**
+ * returns a random integer in the range [0; RAND_MAX - 1]
+ * = random_int(RAND_MAX)
+ */
+//int random_int(int *rstream = NULL);
+
+/**
+ * returns a random floating-point nuber in the range [0; 1)
+ */
+double random_double(int *rstream = NULL);
+
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
 
@@ -857,6 +921,11 @@ bool overwriteFile(char *filename);
     @param str (IN/OUT) string to be trimmed
 */
 void trimString(std::string &str);
+
+/**
+    get number of processor cores
+*/
+int countPhysicalCPUCores();
 
 /**
     Sort an array by quicksort

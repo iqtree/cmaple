@@ -291,7 +291,7 @@ void CMaple::calculateBranchSupports()
     tree.calculateBranchSupports();
     
     // show branch supports
-    tree.showBranchSupports();
+    // tree.showBranchSupports();
     
     // show the runtime for calculating branch supports
     auto end = getRealTime();

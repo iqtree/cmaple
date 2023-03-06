@@ -250,14 +250,29 @@ private:
 struct NodeLh
 {
     /**
-        Get aLRT_
+        Set neighbor_2_lh_diff_
      */
-    const RealNumType getaLRT() const;
+    void setLhDiff2(const RealNumType lh_diff);
     
     /**
-        Set aLRT_
+        Get neighbor_2_lh_diff_
      */
-    void setaLRT(const RealNumType aLRT);
+    const RealNumType getLhDiff2() const;
+    
+    /**
+        Set neighbor_3_lh_diff_
+     */
+    void setLhDiff3(const RealNumType lh_diff);
+    
+    /**
+        Get neighbor_3_lh_diff_
+     */
+    const RealNumType getLhDiff3() const;
+    
+    /**
+        Get aLRT
+     */
+    const RealNumType get_aLRT() const;
     
     /**
         Get lh_contribution_
@@ -270,9 +285,14 @@ struct NodeLh
     void setLhContribution(const RealNumType lh_contribution);
     
     /**
-        Get site_lh_contributions_
+        Get aLRT_SH
      */
-    std::vector<RealNumType>& getSiteLhContributions();
+    const RealNumType get_aLRT_SH() const;
+    
+    /**
+        Set aLRT_SH
+     */
+    void set_aLRT_SH(const RealNumType aLRT_SH);
     
     /*
         Constructor
@@ -281,19 +301,24 @@ struct NodeLh
     
 private:
     /*
-        The aLRT value of the upper branch of this node
+        The likelihood different between NNI neighbor 2 and the ML tree (T1)
      */
-    RealNumType aLRT_;
+    RealNumType neighbor_2_lh_diff_;
+    
+    /*
+        The likelihood different between NNI neighbor 3 and the ML tree (T1)
+     */
+    RealNumType neighbor_3_lh_diff_;
+    
+    /*
+        The aLRT_SH value of the upper branch
+     */
+    RealNumType aLRT_SH_;
     
     /*
         The likelihood contribution of this node to the total likelihood
      */
     RealNumType lh_contribution_;
-    
-    /*
-        The site-likelihood contribution of this node to the total likelihood
-     */
-    std::vector<RealNumType> site_lh_contributions_;
 };
 
 // just for testing
