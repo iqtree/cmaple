@@ -68,7 +68,7 @@ private:
     MyVariant data_;
     
   public:
-    /** constructor */
+    /** no default c'tor (inefficient) */
     PhyloNode() = delete;
 
     /** constructor */

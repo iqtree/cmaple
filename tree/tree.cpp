@@ -538,7 +538,8 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
     // node is not the root
     if (root_vector_index != vec_index)
     {
-        std::unique_ptr<SeqRegions>& parent_upper_lr_regions = getPartialLhAtNode(node.getNeighborIndex(TOP)); // node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
+        const Index parent_index = node.getNeighborIndex(TOP);
+        std::unique_ptr<SeqRegions>& parent_upper_lr_regions = getPartialLhAtNode(parent_index); // node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
         std::unique_ptr<SeqRegions>& other_child_node_regions = other_child_node.getPartialLh(TOP); // other_child_node->getPartialLhAtNode(aln, model, threshold_prob);
        
         // add nodes (sibling and parent of the current node) into node_stack which we will need to traverse to update their regions due to the removal of the sub tree
@@ -549,7 +550,7 @@ void Tree::addStartingNodes(const Index& node_index, PhyloNode& node, const Inde
         /*node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions, branch_length, true, best_lh_diff, 0, false));
         node_stack.push(new UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true, best_lh_diff, 0, false));*/
         std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
-        node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(node.getNeighborIndex(TOP), std::move(null_seqregions_ptr1), other_child_node_regions, branch_length, true, best_lh_diff, 0)));
+        node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(parent_index, std::move(null_seqregions_ptr1), other_child_node_regions, branch_length, true, best_lh_diff, 0)));
         std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
         node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_node_index, std::move(null_seqregions_ptr2),  parent_upper_lr_regions, branch_length, true, best_lh_diff, 0)));
     }
@@ -4064,7 +4065,7 @@ void Tree::updateZeroBlength(const Index index, PhyloNode& node, std::stack<Inde
 
 void Tree::createAnInternalNode()
 {
-    nodes.push_back(PhyloNode());
+    nodes.emplace_back(InternalNode());
 }
 
 void Tree::createALeafNode(const NumSeqsType new_seq_name_index)
