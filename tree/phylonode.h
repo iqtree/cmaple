@@ -19,20 +19,16 @@ private:
     {
         InternalNode internal_;
         LeafNode leaf_;
-        
-        /**
-            constructor
-            the compiler complains if I don't explicitly declare this function, it's required by the constructor/destructor of PhyloNode
-         */
-        MyVariant():internal_(InternalNode()) {};
-        
+          
+        MyVariant() = delete; ///< not needed (would incur overhead)
+
         /** constructor */
         MyVariant(LeafNode&& leaf):leaf_(std::move(leaf)) {};
         
         /** constructor */
         MyVariant(InternalNode&& internal):internal_(std::move(internal)) {};
         
-        /** move constructor */
+        /** move-like constructor */
         MyVariant(MyVariant&& myvariant, const bool is_internal)
         {
             if (is_internal)
@@ -73,26 +69,28 @@ private:
     
   public:
     /** constructor */
-    PhyloNode(): is_internal_{true} {};
-    
+    PhyloNode() = delete;
+
     /** constructor */
     PhyloNode(LeafNode&& leaf): is_internal_{false}, data_(std::move(leaf)) {};
     
     /** constructor */
-    // unused
-    // PhyloNode(InternalNode&& internal): is_internal_{true}, data_(std::move(internal)) {};
+    PhyloNode(InternalNode&& internal) noexcept: is_internal_{true}, data_(std::move(internal)) {};
     
     /** move constructor */
-    PhyloNode(PhyloNode&& node): is_internal_{node.isInternal()}, data_(std::move(node.getNode()), is_internal_),
-    other_lh_(std::move(node.getOtherLh())), outdated_(node.isOutdated()), spr_applied_(node.isSPRApplied()), length_(node.getUpperLength()) {};
+    PhyloNode(PhyloNode&& node) noexcept : is_internal_{node.is_internal_}, data_(std::move(node.data_), node.is_internal_),
+    other_lh_(std::move(node.other_lh_)), outdated_(node.outdated_), spr_applied_(node.spr_applied_), length_(node.length_) {};
     
     /** destructor */
     ~PhyloNode()
     {
-        if (is_internal_)
-            data_.internal_.~InternalNode();
-        else
-            data_.leaf_.~LeafNode();
+      // could also be part of a separate class test, but we need to make sure that this is enforced and noone accidentally
+      // changes it
+      static_assert(sizeof(PhyloNode) <= 64);  // make sure it fits on a cacheline
+      if (is_internal_)
+          data_.internal_.~InternalNode();
+      else
+          data_.leaf_.~LeafNode();
     }
     
     /**

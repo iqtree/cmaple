@@ -4068,7 +4068,7 @@ void Tree::updateZeroBlength(const Index index, PhyloNode& node, std::stack<Inde
 
 void Tree::createAnInternalNode()
 {
-    nodes.push_back(PhyloNode());
+    nodes.emplace_back(InternalNode());
 }
 
 void Tree::createALeafNode(const NumSeqsType new_seq_name_index)

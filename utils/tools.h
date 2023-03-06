@@ -340,7 +340,7 @@ const RealNumType LOG_MAX_POSITIVE = log(MAX_POSITIVE);
 
 template <class T> constexpr T getMinCarryOver();
 template<> constexpr double getMinCarryOver<double>() { return 1e-250; }; // of -308
-template<> constexpr float getMinCarryOver<float>() { return 1e-36; };    // of -38
+template<> constexpr float getMinCarryOver<float>() { return 1e-36f; };    // of -38
 
 const RealNumType MIN_CARRY_OVER = getMinCarryOver<RealNumType>();
 

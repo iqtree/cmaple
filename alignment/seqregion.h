@@ -86,9 +86,9 @@ public:
     //SeqRegion(SeqRegion* region, StateType num_states, bool copy_likelihood = true);
 
     /// Move CTor
-    SeqRegion(SeqRegion&& region) = default;
+    SeqRegion(SeqRegion&& region) noexcept = default;
     /// Move Assignment
-    SeqRegion& operator=(SeqRegion&& region) = default;
+    SeqRegion& operator=(SeqRegion&& region) noexcept = default;
 
     static inline SeqRegion clone(const SeqRegion& from)
     {

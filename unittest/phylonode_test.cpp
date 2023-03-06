@@ -11,7 +11,7 @@ TEST(PhyloNode, TestConstructors)
     EXPECT_LE(sizeof(PhyloNode), 64);
     
     // default constructor PhyloNode()
-    PhyloNode node1;
+    PhyloNode node1((InternalNode()));
     EXPECT_TRUE(node1.isInternal());
     // invalid access SeqNameIndex (from an internal node)
     EXPECT_DEATH(node1.getSeqNameIndex(), ".*");
@@ -44,7 +44,7 @@ TEST(PhyloNode, TestConstructors)
     Test get/setTotalLh()
  */
 TEST(PhyloNode, TestSetGetTotalLh) {
-    PhyloNode node;
+    PhyloNode node((InternalNode()));
     std::unique_ptr<SeqRegions> total_lh = std::make_unique<SeqRegions>();
     node.setTotalLh(std::move(total_lh));
     EXPECT_EQ(total_lh, nullptr);
@@ -58,7 +58,7 @@ TEST(PhyloNode, TestSetGetTotalLh) {
     Test get/setMidBranchLh()
  */
 TEST(PhyloNode, TestSetGetMidBranchLh) {
-    PhyloNode node;
+    PhyloNode node((InternalNode()));
     std::unique_ptr<SeqRegions> mid_branch_lh = std::make_unique<SeqRegions>();
     node.setMidBranchLh(std::move(mid_branch_lh));
     EXPECT_EQ(mid_branch_lh, nullptr);
@@ -71,7 +71,7 @@ TEST(PhyloNode, TestSetGetMidBranchLh) {
     Test get/setIsOutdated()
  */
 TEST(PhyloNode, TestSetGetOutdated) {
-    PhyloNode node;
+    PhyloNode node((InternalNode()));
     node.setOutdated(true);
     EXPECT_TRUE(node.isOutdated());
     
@@ -83,7 +83,7 @@ TEST(PhyloNode, TestSetGetOutdated) {
     Test get/setSPRApplied()
  */
 TEST(PhyloNode, TestSetGetSPRApplied) {
-    PhyloNode node;
+    PhyloNode node((InternalNode()));
     node.setSPRApplied(true);
     EXPECT_TRUE(node.isSPRApplied());
     
@@ -95,7 +95,7 @@ TEST(PhyloNode, TestSetGetSPRApplied) {
     Test get/setUpperLength()
  */
 TEST(PhyloNode, TestSetGetUpperLength) {
-    PhyloNode node;
+    PhyloNode node((InternalNode()));
     float blength = 1.23;
     node.setUpperLength(blength);
     EXPECT_EQ(float(node.getUpperLength()), blength);
@@ -115,7 +115,9 @@ TEST(PhyloNode, TestSetGetUpperLength) {
 TEST(PhyloNode, TestSetGetCorrespondingLength) {
     const int NUM_INTERNALS = 10;
     std::vector<PhyloNode> nodes;
-    nodes.resize(NUM_INTERNALS);
+    nodes.reserve(NUM_INTERNALS);
+    for (int i = 0; i < NUM_INTERNALS; ++i)
+        nodes.emplace_back(InternalNode());
     
     // test on a leaf
     LeafNode leaf1(100);
@@ -137,7 +139,7 @@ TEST(PhyloNode, TestSetGetCorrespondingLength) {
     EXPECT_EQ(node1.getCorrespondingLength(LEFT, nodes), node1.getUpperLength());
     
     // test on an internal node
-    PhyloNode node2;
+    PhyloNode node2((InternalNode()));
     node2.setNeighborIndex(TOP, Index(0, LEFT));
     node2.setNeighborIndex(RIGHT, Index(1, TOP));
     node2.setNeighborIndex(LEFT, Index(2, TOP));
@@ -199,7 +201,7 @@ TEST(PhyloNode, TestGetSetNodeWithRvalueLeaf)
 TEST(PhyloNode, TestGetSetNodeWithRvalueInternal)
 {
     // Create a phylonode to test
-    PhyloNode node;
+    PhyloNode node((InternalNode()));
     node.setNeighborIndex(RIGHT, Index(10, TOP));
     EXPECT_TRUE(node.isInternal());
     EXPECT_EQ(node.getNeighborIndex(TOP).getVectorIndex(), 0);
@@ -241,7 +243,7 @@ TEST(PhyloNode, TestAddGetLessInfoSeqs) {
     EXPECT_EQ(node1.getLessInfoSeqs().size(), 4);
     
     // invalid access lessinfoseqs (from an internal node)
-    PhyloNode node2;
+    PhyloNode node2((InternalNode()));
     EXPECT_DEATH(node2.getLessInfoSeqs(), ".*");
     EXPECT_DEATH(node2.addLessInfoSeqs(3), ".*");
 }
@@ -271,7 +273,7 @@ TEST(PhyloNode, TestGetSetPartialLh)
     EXPECT_EQ(node.getPartialLh(RIGHT), node.getPartialLh(TOP));
     
     // create another (internal) phylonode
-    PhyloNode node2;
+    PhyloNode node2((InternalNode()));
     EXPECT_EQ(node2.getPartialLh(TOP), nullptr);
     EXPECT_EQ(node2.getPartialLh(LEFT), nullptr);
     EXPECT_EQ(node2.getPartialLh(RIGHT), nullptr);
@@ -307,7 +309,7 @@ TEST(PhyloNode, TestExportString)
     }
     
     // test on an internal node
-    PhyloNode node1;
+    PhyloNode node1((InternalNode()));
     EXPECT_EQ(node1.exportString(true, aln), ""); // internal node returns ""
     EXPECT_EQ(node1.exportString(false, aln), ""); // internal node returns ""
     
@@ -398,8 +400,8 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     genTestData(seqregions1, seqregions2);
     
     // test on a root
-    PhyloNode neighbor;
-    PhyloNode node1;
+    PhyloNode neighbor((InternalNode()));
+    PhyloNode node1((InternalNode()));
     std::unique_ptr<SeqRegions> total_lh = nullptr;
     node1.setPartialLh(TOP, std::make_unique<SeqRegions>(std::move(seqregions1)));
     node1.computeTotalLhAtNode(total_lh, neighbor, aln, model, params.threshold_prob, true); // deafault blength = -1
