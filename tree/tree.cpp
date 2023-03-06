@@ -4501,11 +4501,12 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
     RealNumType prev_lh_diff = parent_new_lower_lh->calculateSiteLhContributions(site_lh_diff, new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, threshold_prob) - node_lhs[parent.getNodelhIndex()].getLhContribution() ;
     // 7.3. other ancestors on the path from the new_parent to root (stop when the change is insignificant)
     Index node_index = parent_index;
+    RealNumType bk_tmp_blength = parent_best_blength;
+    RealNumType bk_tmp_sibling_blength = child_1_best_blength;
+    std::unique_ptr<SeqRegions> bk_new_lower_lh = std::move(parent_new_lower_lh);
     std::unique_ptr<SeqRegions> new_lower_lh = std::move(new_parent_new_lower_lh);
     std::unique_ptr<SeqRegions> tmp_new_lower_lh = nullptr;
-    std::unique_ptr<SeqRegions> bk_new_lower_lh = nullptr;
     RealNumType tmp_blength = new_parent_best_blength;
-    RealNumType bk_tmp_blength = new_parent_best_blength;
     while (true)
     {
         NumSeqsType node_vec = node_index.getVectorIndex();
@@ -4532,6 +4533,7 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
                 
                 // move a step upwards
                 node_index = tmp_parent_index;
+                bk_tmp_sibling_blength = tmp_sibling.getUpperLength();
                 bk_tmp_blength = tmp_blength;
                 tmp_blength = tmp_parent.getUpperLength();
                 bk_new_lower_lh = std::move(new_lower_lh);
@@ -4556,9 +4558,7 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
         {
             // cancel the contribution of the last merging in site_lh_diff by adding it into site_lh_diff_old
             PhyloNode& tmp_sibling = nodes[node.getNeighborIndex(node_index.getFlipMiniIndex()).getVectorIndex()];
-            if (!bk_new_lower_lh)
-                bk_new_lower_lh = std::move(new_lower_lh);
-            bk_new_lower_lh->calculateSiteLhContributions(site_lh_diff_old, tmp_new_lower_lh, bk_tmp_blength, *(tmp_sibling.getPartialLh(TOP)), tmp_sibling.getUpperLength(), aln, model, params->threshold_prob);
+            bk_new_lower_lh->calculateSiteLhContributions(site_lh_diff_old, tmp_new_lower_lh, bk_tmp_blength, *(tmp_sibling.getPartialLh(TOP)), bk_tmp_sibling_blength, aln, model, params->threshold_prob);
             break;
         }
     }
@@ -4586,15 +4586,11 @@ void Tree::calSiteLhDiff(std::vector<RealNumType>& site_lh_diff, std::vector<Rea
     // if the (old) parent is root
     // for more information, pls see https://tinyurl.com/5n8m5c8y
     if (root_vector_index == parent_index.getVectorIndex())
-    {
-        return calSiteLhDiffRoot(site_lh_diff, site_lh_root_diff, site_lh_root, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index);
-    }
+        calSiteLhDiffRoot(site_lh_diff, site_lh_root_diff, site_lh_root, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index);
     // otherwise, the (old) parent node is non-root
     // for more information, pls see https://tinyurl.com/ymr49jy8
     else
-    {
-        return calSiteLhDiffNonRoot(site_lh_diff, site_lh_root_diff, site_lh_root, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index);
-    }
+        calSiteLhDiffNonRoot(site_lh_diff, site_lh_root_diff, site_lh_root, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index);
 }
 
 void findTwoLargest(const RealNumType a, const RealNumType b, const RealNumType c, RealNumType& largest, RealNumType& second_largest) {
