@@ -53,14 +53,14 @@ void Tree::setup()
     setupBlengthThresh();
 }
 
-const string Tree::exportTreeString(const bool binary, const NumSeqsType node_vec_index) const
+const string Tree::exportTreeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports) const
 {
     const PhyloNode& node = nodes[node_vec_index];
     string output = "(";
     
     // if it's a leaf
     if (!node.isInternal())
-        return node.exportString(binary, aln);
+        return node.exportString(binary, aln, show_branch_supports);
     // if it's an internal node
     else
     {
@@ -73,13 +73,14 @@ const string Tree::exportTreeString(const bool binary, const NumSeqsType node_ve
          output += ",";
          output += exportTreeString(binary, neighbor_index.getVectorIndex());
          }*/
-        output += exportTreeString(binary, node.getNeighborIndex(RIGHT).getVectorIndex());
+        output += exportTreeString(binary, node.getNeighborIndex(RIGHT).getVectorIndex(), show_branch_supports);
         output += ",";
-        output += exportTreeString(binary, node.getNeighborIndex(LEFT).getVectorIndex());
+        output += exportTreeString(binary, node.getNeighborIndex(LEFT).getVectorIndex(), show_branch_supports);
     }
 
+    string branch_support = show_branch_supports ? convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH()) : "";
     string length = node.getUpperLength() < 0 ? "0" : convertDoubleToString(node.getUpperLength());
-    output += "):" + length;
+    output += ")" + branch_support + ":" + length;
     
     return output;
 }
@@ -4728,7 +4729,7 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
 
 void Tree::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contributions, std::vector<RealNumType>& site_lh_root, const RealNumType& LT1)
 {
-    const RealNumType replicate_inverse = 1.0 / params->aLRT_SH_replicates;
+    const RealNumType replicate_inverse = 100.0 / params->aLRT_SH_replicates;
     
     // traverse tree to calculate aLRT-SH for each internal branch
     PhyloNode& root = nodes[root_vector_index];

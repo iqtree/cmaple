@@ -38,7 +38,7 @@ private:
     /**
         export output files
      */
-    void exportOutput(const std::string &filename);
+    void exportOutput(const std::string &filename, const bool show_branch_support = false);
     
     /**
         calculate branch supports

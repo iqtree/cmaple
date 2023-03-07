@@ -441,7 +441,7 @@ public:
     /**
         Export tree std::string in Newick format
      */
-    const std::string exportTreeString(const bool binary, const NumSeqsType node_vec_index) const;
+    const std::string exportTreeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports) const;
     
     /**
         Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()

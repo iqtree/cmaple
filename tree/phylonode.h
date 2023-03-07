@@ -241,7 +241,7 @@ private:
     /**
         Export string: name + branch length
      */
-    const std::string exportString(const bool binary, const Alignment& aln) const;
+    const std::string exportString(const bool binary, const Alignment& aln, const bool show_branch_supports) const;
 };
 
 /** An intermediate data structure to store data for calculating aLRT-SH  */

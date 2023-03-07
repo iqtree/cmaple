@@ -246,7 +246,7 @@ void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, Phyl
     }
 }
 
-const std::string PhyloNode::exportString(const bool binary, const Alignment& aln) const
+const std::string PhyloNode::exportString(const bool binary, const Alignment& aln, const bool show_branch_supports) const
 {
     if (!isInternal())
     {
@@ -259,6 +259,8 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
         // with minor sequences -> return minor sequences' names with zero branch lengths
         else
         {
+            string branch_support = show_branch_supports ? "0" : "";
+            
             string output = "(" + aln.data[getSeqNameIndex()].seq_name + ":0";
             // export less informative sequences in binary tree format
             if (binary)
@@ -267,7 +269,7 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
                 for (PositionType i = 0; i < num_less_info_seqs - 1; i++)
                 {
                     output += ",(" + aln.data[less_info_seqs[i]].seq_name + ":0";
-                    closing_brackets += "):0";
+                    closing_brackets += ")" + branch_support + ":0";
                 }
                 output += "," + aln.data[less_info_seqs[num_less_info_seqs - 1]].seq_name + ":0" + closing_brackets;
             }

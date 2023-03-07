@@ -278,7 +278,7 @@ void CMaple::postInference()
     // output treefile
     string output_file(tree.params->diff_path);
     output_file += ".treefile";
-    exportOutput(output_file);
+    exportOutput(output_file, tree.params->compute_aLRT_SH);
 }
 
 void CMaple::calculateBranchSupports()
@@ -298,13 +298,13 @@ void CMaple::calculateBranchSupports()
     cout << " - Time spent on calculating branch supports: " << end - start << endl;
 }
 
-void CMaple::exportOutput(const string &filename)
+void CMaple::exportOutput(const string &filename, const bool show_branch_support)
 {
     // open the tree file
     ofstream out = ofstream(filename);
     
     // write tree string into the tree file
-    out << tree.exportTreeString(tree.params->export_binary_tree, tree.root_vector_index) << ";" << endl;
+    out << tree.exportTreeString(tree.params->export_binary_tree, tree.root_vector_index, show_branch_support) << ";" << endl;
     
     // close the output file
     out.close();
