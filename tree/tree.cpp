@@ -4503,6 +4503,8 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
     Index node_index = parent_index;
     RealNumType bk_tmp_blength = parent_best_blength;
     RealNumType bk_tmp_sibling_blength = child_1_best_blength;
+    const Index current_node_index = child_1.getNeighborIndex(TOP);
+    NumSeqsType bk_sibling_vec = current_node.getNeighborIndex(current_node_index.getMiniIndex()).getVectorIndex();
     std::unique_ptr<SeqRegions> bk_new_lower_lh = std::move(parent_new_lower_lh);
     std::unique_ptr<SeqRegions> new_lower_lh = std::move(new_parent_new_lower_lh);
     std::unique_ptr<SeqRegions> tmp_new_lower_lh = nullptr;
@@ -4527,12 +4529,14 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
                 const Index tmp_parent_index = node.getNeighborIndex(TOP);
                 const NumSeqsType tmp_parent_vec = tmp_parent_index.getVectorIndex();
                 PhyloNode& tmp_parent = nodes[tmp_parent_vec];
-                PhyloNode& tmp_sibling = nodes[tmp_parent.getNeighborIndex(tmp_parent_index.getFlipMiniIndex()).getVectorIndex()];
+                const NumSeqsType tmp_sibling_vec = tmp_parent.getNeighborIndex(tmp_parent_index.getFlipMiniIndex()).getVectorIndex();
+                PhyloNode& tmp_sibling = nodes[tmp_sibling_vec];
                 
                 prev_lh_diff = new_lower_lh->calculateSiteLhContributions(site_lh_diff, tmp_new_lower_lh, tmp_blength, *(tmp_sibling.getPartialLh(TOP)), tmp_sibling.getUpperLength(), aln, model, params->threshold_prob) - node_lhs[tmp_parent.getNodelhIndex()].getLhContribution();
                 
                 // move a step upwards
                 node_index = tmp_parent_index;
+                bk_sibling_vec = tmp_sibling_vec;
                 bk_tmp_sibling_blength = tmp_sibling.getUpperLength();
                 bk_tmp_blength = tmp_blength;
                 tmp_blength = tmp_parent.getUpperLength();
@@ -4557,7 +4561,7 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
         else
         {
             // cancel the contribution of the last merging in site_lh_diff by adding it into site_lh_diff_old
-            PhyloNode& tmp_sibling = nodes[node.getNeighborIndex(node_index.getFlipMiniIndex()).getVectorIndex()];
+            PhyloNode& tmp_sibling = nodes[bk_sibling_vec];
             bk_new_lower_lh->calculateSiteLhContributions(site_lh_diff_old, tmp_new_lower_lh, bk_tmp_blength, *(tmp_sibling.getPartialLh(TOP)), bk_tmp_sibling_blength, aln, model, params->threshold_prob);
             break;
         }
