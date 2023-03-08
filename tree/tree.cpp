@@ -4429,7 +4429,15 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
     
     const std::unique_ptr<SeqRegions>& grand_parent_upper_lr = getPartialLhAtNode(parent.getNeighborIndex(TOP));
     std::unique_ptr<SeqRegions> best_parent_regions = nullptr;
-    const RealNumType parent_blength = parent.getUpperLength();
+    RealNumType parent_blength = parent.getUpperLength();
+    // update parent_blength if it's <= 0
+    if (parent_blength <= 0)
+    {
+        // dummy variables
+        RealNumType best_lh = MIN_NEGATIVE;
+        bool blength_changed = false;
+        optimizeBlengthBeforeSeekingSPR(parent, parent_blength, best_lh, blength_changed, grand_parent_upper_lr, parent_new_lower_lh);
+    }
     // because mid_branch_lh is outdated! => compute a new one
     const RealNumType parent_mid_blength = 0.5 * parent_blength;
     std::unique_ptr<SeqRegions> parent_new_mid_branch_lh = nullptr;
@@ -4908,7 +4916,15 @@ bool Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType
     
     const std::unique_ptr<SeqRegions>& grand_parent_upper_lr = getPartialLhAtNode(parent.getNeighborIndex(TOP));
     std::unique_ptr<SeqRegions> best_parent_regions = nullptr;
-    const RealNumType parent_blength = parent.getUpperLength();
+    RealNumType parent_blength = parent.getUpperLength();
+    // update parent_blength if it's <= 0
+    if (parent_blength <= 0)
+    {
+        // dummy variables
+        RealNumType best_lh = MIN_NEGATIVE;
+        bool blength_changed = false;
+        optimizeBlengthBeforeSeekingSPR(parent, parent_blength, best_lh, blength_changed, grand_parent_upper_lr, parent_new_lower_lh);
+    }
     // because mid_branch_lh is outdated! => compute a new one
     const RealNumType parent_mid_blength = 0.5 * parent_blength;
     std::unique_ptr<SeqRegions> parent_new_mid_branch_lh = nullptr;
