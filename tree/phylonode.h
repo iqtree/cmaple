@@ -78,8 +78,7 @@ private:
     PhyloNode(InternalNode&& internal) noexcept: is_internal_{true}, data_(std::move(internal)) {};
     
     /** move constructor */
-    PhyloNode(PhyloNode&& node) noexcept : is_internal_{node.is_internal_}, data_(std::move(node.data_), node.is_internal_),
-    other_lh_(std::move(node.other_lh_)), outdated_(node.outdated_), spr_applied_(node.spr_applied_), length_(node.length_) {};
+    PhyloNode(PhyloNode&& node) noexcept : is_internal_{node.is_internal_}, data_(std::move(node.data_), node.is_internal_), other_lh_(std::move(node.other_lh_)), outdated_(node.outdated_), spr_applied_(node.spr_applied_), length_(node.length_) {};
     
     /** destructor */
     ~PhyloNode()

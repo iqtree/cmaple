@@ -288,6 +288,11 @@ void CMaple::exportOutput(const string &filename)
 
 void test()
 {
+    std::vector<PhyloNode> nodes;
+    for (int i = 0; i < 100; i++)
+        nodes.emplace_back(InternalNode());
+    
+    std::cout << "Fdsfsd" <<std::endl;
     // test phylonode is a leaf
     /*MiniIndex mini_index{RIGHT};
     Index tmp_index{0,mini_index};
@@ -373,7 +378,7 @@ void test()
 void runCMaple(Params &params)
 {
     // NHANLT: test new funtions
-    // test();
+    test();
     
     auto start = getRealTime();
     CMaple cmaple(params);
