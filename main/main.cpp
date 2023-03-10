@@ -36,6 +36,11 @@ using namespace std;
 int main(int argc, char *argv[]) {
     parseArg(argc, argv, Params::getInstance());
     
+    cout << "Command:";
+    for (int i = 0; i < argc; i++)
+        cout << " " << argv[i];
+    cout << endl;
+    
     // Show info
     cout << "Seed:    " << Params::getInstance().ran_seed <<  " ";
     init_random(Params::getInstance().ran_seed, true);

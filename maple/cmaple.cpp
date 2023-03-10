@@ -256,11 +256,26 @@ void CMaple::optimizeBranchLengthsOfTree()
 
 void CMaple::doInference()
 {
-    // 1. Build an initial tree
-    buildInitialTree();
-    
-    // 2. Optimize the tree with SPR
-    optimizeTree();
+    // if users input a tree, an alignment and only need to compute aLRT-SH
+    if (tree.params->compute_aLRT_SH && tree.params->input_treefile)
+    {
+        tree.readTree(tree.params->input_treefile);
+        
+        // map leave and sequences in the alignment
+        // calculate the lowe_lh for each leaf
+        // update the seq_name index
+        
+        tree.refreshAllLhs();
+    }
+    // otherwise, infer a phylogenetic tree from the alignment
+    else
+    {
+        // 1. Build an initial tree
+        buildInitialTree();
+        
+        // 2. Optimize the tree with SPR
+        optimizeTree();
+    }
 }
 
 void CMaple::postInference()
@@ -277,8 +292,11 @@ void CMaple::postInference()
     
     // output treefile
     string output_file(tree.params->diff_path);
-    output_file += ".treefile";
-    exportOutput(output_file, tree.params->compute_aLRT_SH);
+    exportOutput(output_file + ".treefile");
+    
+    // output treefile
+    if (tree.params->compute_aLRT_SH)
+        exportOutput(output_file + "_aLRT_SH.treefile", true);
 }
 
 void CMaple::calculateBranchSupports()

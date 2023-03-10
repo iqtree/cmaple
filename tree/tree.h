@@ -310,12 +310,18 @@ private:
     /**
         Create a new internal phylonode
      */
-    void createAnInternalNode();
+    inline void createAnInternalNode()
+    {
+        nodes.emplace_back(InternalNode());
+    }
     
     /**
         Create a new leaf phylonode
      */
-    void createALeafNode(const NumSeqsType new_seq_name_index);
+    inline void createALeafNode(const NumSeqsType new_seq_name_index)
+    {
+        nodes.emplace_back(LeafNode(new_seq_name_index)); //(PhyloNode(std::move(LeafNode(new_seq_name_index))));
+    }
     
     /**
         Get partial_lh at a node by its index
@@ -386,6 +392,16 @@ private:
         Calculate the site-lh differences  between an NNI neighbor and the ML tree
      */
     void calSiteLhDiff(std::vector<RealNumType>& site_lh_diff, std::vector<RealNumType>& site_lh_root_diff, const std::vector<RealNumType>& site_lh_root, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index);
+    
+    /**
+        Read the next character from the treefile
+     */
+    const char readNextChar(std::istream& in, PositionType& in_line, PositionType& in_column, const char& current_ch = 0) const;
+    
+    /**
+        Read string from tree file to create new nodes
+     */
+    NumSeqsType parseFile(std::istream &infile, char& ch, RealNumType& branch_len, PositionType& in_line, PositionType& in_column, const std::map<std::string, NumSeqsType>& map_seqname_index);
     
 public:
     /*
@@ -556,4 +572,9 @@ public:
         Show branch supports
      */
     void showBranchSupports();
+    
+    /**
+        Read an input tree from a file
+     */
+    void readTree(const char* input_treefile);
 };

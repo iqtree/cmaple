@@ -4067,16 +4067,6 @@ void Tree::updateZeroBlength(const Index index, PhyloNode& node, std::stack<Inde
     node_stack.push(parent_index);
 }
 
-void Tree::createAnInternalNode()
-{
-    nodes.emplace_back(InternalNode());
-}
-
-void Tree::createALeafNode(const NumSeqsType new_seq_name_index)
-{
-    nodes.emplace_back(LeafNode(new_seq_name_index)); //(PhyloNode(std::move(LeafNode(new_seq_name_index))));
-}
-
 std::unique_ptr<SeqRegions>& Tree::getPartialLhAtNode(const Index index)
 {
     // may need assert(index.getVectorIndex() < nodes.size());
@@ -5402,4 +5392,311 @@ RealNumType Tree::calculateSiteLhs(std::vector<RealNumType>& site_lh_contributio
     }
     
     return total_lh;
+}
+
+NumSeqsType Tree::parseFile(std::istream &infile, char& ch, RealNumType& branch_len, PositionType& in_line, PositionType& in_column, const std::map<std::string, NumSeqsType>& map_seqname_index)
+{
+    int maxlen = 1000;
+    string seqname;
+    int seqlen;
+    RealNumType brlen = 0;
+
+    // create new node
+    NumSeqsType tmp_root_vec;
+    // start with "(" -> an internal node
+    if (ch == '(')
+    {
+        createAnInternalNode();
+        tmp_root_vec = nodes.size() - 1;
+    }
+    // otherwise, it's a leaf
+    else
+    {
+        createALeafNode(0);
+        tmp_root_vec = nodes.size() - 1;
+    }
+    
+    PhyloNode* const tmp_root = &nodes[tmp_root_vec];
+    
+    // start with "(" -> an internal node
+    if (ch == '(')
+    {
+        MiniIndex child_mini = RIGHT;
+        
+        ch = readNextChar(infile, in_line, in_column);
+        while (ch != ')' && !infile.eof())
+        {
+            const NumSeqsType tmp_node_vec = parseFile(infile, ch, brlen, in_line, in_column, map_seqname_index);
+            PhyloNode* const tmp_node = &nodes[tmp_node_vec];
+            
+            if (child_mini == UNDEFINED)
+                outError("Sorry! Currently CMaple has not yet supported multifurcating input tree. Please retry with a binary tree!");
+            
+            tmp_root->setNeighborIndex(child_mini, Index(tmp_node_vec, TOP));
+            tmp_node->setNeighborIndex(TOP, Index(tmp_root_vec, child_mini));
+            
+            // change to the second child
+            child_mini = (child_mini == RIGHT) ? LEFT : UNDEFINED;
+                
+            if (infile.eof())
+                throw "Expecting ')', but end of file instead";
+            if (ch == ',')
+                ch = readNextChar(infile, in_line, in_column);
+            else if (ch != ')') {
+                string err = "Expecting ')', but found '";
+                err += ch;
+                err += "' instead";
+                throw err;
+            }
+        }
+        if (!infile.eof()) ch = readNextChar(infile, in_line, in_column);
+    }
+    
+    // now read the node name
+    seqlen = 0;
+    char end_ch = 0;
+    if (ch == '\'' || ch == '"') end_ch = ch;
+    seqname = "";
+
+    while (!infile.eof() && seqlen < maxlen)
+    {
+        if (end_ch == 0) {
+            if (is_newick_token(ch) || controlchar(ch)) break;
+        }
+        seqname += ch;
+        seqlen++;
+        ch = infile.get();
+        in_column++;
+        if (end_ch != 0 && ch == end_ch) {
+            seqname += ch;
+            seqlen++;
+            break;
+        }
+    }
+    if ((controlchar(ch) || ch == '[' || ch == end_ch) && !infile.eof())
+        ch = readNextChar(infile, in_line, in_column, ch);
+    if (seqlen == maxlen)
+        throw "Too long name ( > 1000)";
+    if (!tmp_root->isInternal())
+        renameString(seqname);
+//    seqname[seqlen] = 0;
+    if (seqlen == 0 && !tmp_root->isInternal())
+        throw "Redundant double-bracket ‘((…))’ with closing bracket ending at";
+    if (seqlen > 0 && !tmp_root->isInternal())
+    {
+        auto it = map_seqname_index.find(seqname);
+        if (it == map_seqname_index.end())
+            outError("Leaf " + seqname + " is not found in the alignment. Please check and try again!");
+        else
+        {
+            const NumSeqsType sequence_index = it->second;
+            tmp_root->setSeqNameIndex(sequence_index);
+            tmp_root->setPartialLh(TOP, aln.data[sequence_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.seq_type));
+        }        
+    }
+    /*if (!tmp_root.isInternal()) {
+        // is a leaf, assign its ID
+        if (leafNum == 0)
+            Tree::root_vector_index = root;
+    }*/
+
+    if (ch == ';' || infile.eof())
+        return;
+    // parse branch length
+    if (ch == ':')
+    {
+        // string saved_comment = in_comment;
+        ch = readNextChar(infile, in_line, in_column);
+        /*if (in_comment.empty())
+            in_comment = saved_comment;*/
+        seqlen = 0;
+        seqname = "";
+        while (!is_newick_token(ch) && !controlchar(ch) && !infile.eof() && seqlen < maxlen)
+        {
+//            seqname[seqlen] = ch;
+            seqname += ch;
+            seqlen++;
+            ch = infile.get();
+            in_column++;
+        }
+        if ((controlchar(ch) || ch == '[') && !infile.eof())
+            ch = readNextChar(infile, in_line, in_column, ch);
+        if (seqlen == maxlen || infile.eof())
+            throw "branch length format error.";
+        branch_len = convert_real_number(seqname.c_str());
+    }
+    // handle the case of multiple-length branches but lack of the average branch length
+    // e.g A[0.1/0.2/0.3/0.4] instead of A[0.1/0.2/0.3/0.4]:0.25
+    /*else if (in_comment.length() > 0)
+    {
+        // set default average branch length at 0
+        string default_avg_length = "0";
+        parseBranchLength(default_avg_length, branch_len);
+    }*/
+    
+    return tmp_root_vec;
+}
+
+const char Tree::readNextChar(std::istream& in, PositionType& in_line, PositionType& in_column, const char& current_ch) const
+{
+    char ch;
+    if (current_ch == '[')
+        ch = current_ch;
+    else {
+        in.get(ch);
+        in_column++;
+        
+        if (ch == 10)
+        {
+            in_line++;
+            in_column = 1;
+        }
+    }
+    // check if ch is a control character (ascii <= 32)
+    while (controlchar(ch) && !in.eof())
+    {
+        in.get(ch);
+        in_column++;
+        
+        if (ch == 10)
+        {
+            in_line++;
+            in_column = 1;
+        }
+    }
+    /*in_comment = "";
+    // ignore comment
+    while (ch=='[' && !in.eof()) {
+        while (ch!=']' && !in.eof()) {
+            in.get(ch);
+            if (ch != ']')
+                in_comment += ch;
+            in_column++;
+            if (ch == 10) {
+                in_line++;
+                in_column = 1;
+            }
+        }
+        if (ch != ']') throw "Comments not ended with ]";
+        in_column++;
+        in.get(ch);
+        if (ch == 10) {
+            in_line++;
+            in_column = 1;
+        }
+        while (controlchar(ch) && !in.eof()) {
+            in_column++;
+            in.get(ch);
+            if (ch == 10) {
+                in_line++;
+                in_column = 1;
+            }
+        }
+    }*/
+    return ch;
+}
+
+void Tree::readTree(const char* input_treefile)
+{
+    // debug
+    std::vector<PhyloNode> vector_nodes;
+    vector_nodes.reserve(100);
+    for (int i = 0; i < 100; ++i)
+    {
+        /*PhyloNode p((LeafNode(0)));
+        nodes.push_back(std::move(p));*/
+        // createAnInternalNode();
+        PhyloNode p(InternalNode{});
+        vector_nodes.push_back(std::move(p));
+        //vector_nodes.emplace_back(InternalNode{});
+        //createALeafNode(0);
+    }
+    
+    // create a map between leave and sequences in the alignment
+    std::map<std::string, NumSeqsType> map_seqname_index;
+    const std::vector<Sequence>& sequences = aln.data;
+    for (NumSeqsType i = 0; i < sequences.size(); ++i)
+        map_seqname_index.emplace(sequences[i].seq_name, i);
+    
+    // open the treefile
+    ifstream in;
+    try {
+        in.exceptions(ios::failbit | ios::badbit);
+        in.open(input_treefile);
+        
+        PositionType in_line = 1;
+        PositionType in_column = 1;
+        //std::string in_comment{};
+        
+        try {
+            char ch;
+            ch = readNextChar(in, in_line, in_column);
+            if (ch != '(') {
+                cout << in.rdbuf() << endl;
+                throw "Tree file does not start with an opening-bracket '('";
+            }
+
+            RealNumType branch_len;
+            const NumSeqsType tmp_node_vec = parseFile(in, ch, branch_len, in_line, in_column, map_seqname_index);
+            
+            // set root
+            if (nodes[tmp_node_vec].isInternal())
+                root_vector_index = tmp_node_vec;
+            else
+            {
+                for (NumSeqsType i = 0; i < nodes.size(); ++i)
+                    if (nodes[i].isInternal())
+                    {
+                        root_vector_index = i;
+                        break;
+                    }
+            }
+            // 2018-01-05: assuming rooted tree if root node has two children
+            /*if (is_rooted || (branch_len != 0.0) || node->degree() == 2) {
+                if (branch_len == -1.0) branch_len = 0.0;
+                if (branch_len < 0.0)
+                    throw ERR_NEG_BRANCH;
+                root = newNode(leafNum, ROOT_NAME);
+                root->addNeighbor(node, branch_len);
+                node->addNeighbor(root, branch_len);
+                leafNum++;
+                rooted = true;
+                
+                // parse key/value from comment
+                string KEYWORD="&";
+                bool in_comment_contains_key_value = in_comment.length() > KEYWORD.length()
+                                                      && !in_comment.substr(0, KEYWORD.length()).compare(KEYWORD);
+                if (in_comment_contains_key_value)
+                    parseKeyValueFromComment(in_comment, root, node);
+                
+                
+            } else { // assign root to one of the neighbor of node, if any
+                FOR_NEIGHBOR_IT(node, NULL, it)
+                if ((*it)->node->isLeaf()) {
+                    root = (*it)->node;
+                    break;
+                }
+            }
+            // make sure that root is a leaf
+            ASSERT(root->isLeaf());*/
+
+            if (in.eof() || ch != ';')
+                throw "Tree file must be ended with a semi-colon ';'";
+        } catch (bad_alloc) {
+            outError(ERR_NO_MEMORY);
+        } catch (const char *str) {
+            outError(str, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+        } catch (string str) {
+            outError(str.c_str(), " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+        } catch (ios::failure) {
+            outError(ERR_READ_INPUT, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+        } catch (...) {
+            // anything else
+            outError(ERR_READ_ANY, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+        }
+        
+        in.close();
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, input_treefile);
+    }
 }

@@ -782,6 +782,7 @@ void initDefaultValue(Params &params)
     params.aLRT_SH_replicates = 10000;
     params.aLRT_SH_epsilon = 0.1;
     params.num_threads = 1;
+    params.input_treefile = NULL;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -824,6 +825,16 @@ void parseArg(int argc, char *argv[], Params &params) {
                     outError("Use --output-aln <ALIGNMENT_PATH>");
                 
                 params.output_aln = argv[cnt];
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--tree") == 0 || strcmp(argv[cnt], "-t") == 0) {
+                
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use -t <INPUT_TREEFILE>");
+                
+                params.input_treefile = argv[cnt];
 
                 continue;
             }
@@ -1100,6 +1111,17 @@ bool overwriteFile(char *filename) {
 void trimString(string &str) {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
     str.erase(str.find_last_not_of(" \n\r\t")+1);
+}
+
+bool renameString(string& name) {
+    bool renamed = false;
+    for (string::iterator i = name.begin(); i != name.end(); i++) {
+        if (!isalnum(*i) && (*i) != '_' && (*i) != '-' && (*i) != '.' && (*i) != '|' && (*i) != '/') {
+            (*i) = '_';
+            renamed = true;
+        }
+    }
+    return renamed;
 }
 
 int countPhysicalCPUCores() {

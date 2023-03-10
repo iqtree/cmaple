@@ -492,6 +492,11 @@ public:
     char* output_aln;
     
     /**
+    *  Path to an input tree
+    */
+    char* input_treefile;
+    
+    /**
     *       The number of attempts to improve the tree with SPR moves
     */
     int num_tree_improvement;
@@ -600,6 +605,24 @@ void outWarning(const std::string &warn);
 /** safe version of std::getline to deal with files from different platforms */ 
 std::istream& safeGetline(std::istream& is, std::string& t);
 
+/**
+        @return TRUE of ch is a control character (ascii <= 32)
+ */
+inline bool controlchar(char& ch) {
+    return ch <= 32;
+}
+
+inline bool is_newick_token(char& ch) {
+    return ch == ':' || ch == ';' || ch == ',' || ch == ')' || ch == '(' || ch == '[' || ch == ']';
+}
+
+/**
+    change unusual character in names into underscore (_)
+    @param[in/out] name string name
+    @return true if renamed, false otherwise
+ */
+bool renameString(std::string& name);
+
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
 /*
@@ -608,6 +631,9 @@ std::istream& safeGetline(std::istream& is, std::string& t);
 const char ERR_NO_TAXON[] = "Find no taxon with name ";
 const char ERR_NO_AREA[] = "Find no area with name ";
 const char ERR_NO_MEMORY[] = "Not enough memory!";
+const char ERR_NEG_BRANCH[] = "Negative branch length not allowed.";
+const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
+const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
 
 /*--------------------------------------------------------------*/
 /* random number generator */
