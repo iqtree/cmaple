@@ -31,10 +31,12 @@ private:
         /** move-like constructor */
         MyVariant(MyVariant&& myvariant, const bool is_internal)
         {
+            // note: none of our members are constructed, so using them (even as move target) is a bad idea
+            //       we need to construct them first
             if (is_internal)
-                internal_ = std::move(myvariant.internal_);
+                new(&internal_) InternalNode(std::move(myvariant.internal_));
             else
-                leaf_ = std::move(myvariant.leaf_);
+                new(&leaf_) LeafNode(std::move(myvariant.leaf_));
         };
         
         /**
