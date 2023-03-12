@@ -561,6 +561,11 @@ public:
     */
     uint64_t ran_seed;
     
+    /**
+    *  prefix output
+    */
+    char* output_prefix;
+    
     /*
         TRUE to log debugging
      */

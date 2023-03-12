@@ -43,8 +43,16 @@ void CMaple::preInference()
     ASSERT(tree.aln.ref_seq.size() > 0 && "Reference sequence is not found!");
     ASSERT(tree.aln.data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
     
+    // use diff_path as the output prefix if users didn't specify it
+    if (!tree.params->output_prefix)
+    {
+        string diff_path_str(tree.params->diff_path);
+        tree.params->output_prefix = new char[diff_path_str.length() + 1];
+        strcpy(tree.params->output_prefix, diff_path_str.c_str());
+    }
+    
     // check whether output file is already exists
-    string output_file(tree.params->diff_path);
+    string output_file(tree.params->output_prefix);
     output_file += ".treefile";
     if (!tree.params->redo_inference && fileExists(output_file))
         outError("File " + output_file + " already exists. Use `-redo` option if you really want to redo the analysis and overwrite all output files.\n");
@@ -135,7 +143,7 @@ void CMaple::buildInitialTree()
         //if ((*sequence)->seq_name == "2219")
         //{
             //cout << tree.exportTreeString() << ";" << endl;
-            //string output_file(tree.params->diff_path);
+            //string output_file(tree.params->output_prefix);
             //exportOutput(output_file + "_init.treefile");
             //exit(0);
         //}
@@ -152,7 +160,7 @@ void CMaple::buildInitialTree()
 void CMaple::optimizeTree()
 {
     // tree.params->debug = true;
-    string output_file(tree.params->diff_path);
+    string output_file(tree.params->output_prefix);
     exportOutput(output_file + "_init.treefile");
     
     // run a short range search for tree topology improvement (if neccessary)
@@ -291,7 +299,7 @@ void CMaple::postInference()
     std::cout << std::setprecision(20) << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
     
     // output treefile
-    string output_file(tree.params->diff_path);
+    string output_file(tree.params->output_prefix);
     exportOutput(output_file + ".treefile");
     
     // output treefile

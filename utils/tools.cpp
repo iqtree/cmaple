@@ -1,7 +1,9 @@
 /***************************************************************************
- *   Copyright (C) 2022 by                                            *
- *   BUI Quang Minh <m.bui@anu.edu.au>                                *
- *   Nhan Ly-Trong <trongnhan.uit@gmail.com>                                    *
+ *   Copyright (C) 2022 by
+ *   Nhan Ly-Trong <trongnhan.uit@gmail.com>
+ *   Chris Bielow <chris.bielow@fu-berlin.de>
+ *   BUI Quang Minh <m.bui@anu.edu.au>
+ *
  *                                                                         *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -783,6 +785,7 @@ void initDefaultValue(Params &params)
     params.aLRT_SH_epsilon = 0.1;
     params.num_threads = 1;
     params.input_treefile = NULL;
+    params.output_prefix = NULL;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -815,6 +818,16 @@ void parseArg(int argc, char *argv[], Params &params) {
                     outError("Use --diff <DIFF_PATH>");
                 
                 params.diff_path = argv[cnt];
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--prefix") == 0) {
+                
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use --prefix <OUTPUT_PREFIX>");
+                
+                params.output_prefix = argv[cnt];
 
                 continue;
             }
