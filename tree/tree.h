@@ -403,6 +403,16 @@ private:
      */
     NumSeqsType parseFile(std::istream &infile, char& ch, RealNumType& branch_len, PositionType& in_line, PositionType& in_column, const std::map<std::string, NumSeqsType>& map_seqname_index);
     
+    /**
+        Collapse leaves with zero-branch-lengths into a vector of less-info-seqs of a leaf
+     */
+    void collapseAllZeroLeave();
+    
+    /**
+        Collapse one zero-branch-length leaf into its sibling's vector of less-info-seqs
+     */
+    void collapseOneZeroLeaf(PhyloNode& node, Index& node_index, PhyloNode& neighbor_1, const Index neighbor_1_index, PhyloNode& neighbor_2);
+    
 public:
     /*
      Branch length thresholds
@@ -457,7 +467,7 @@ public:
     /**
         Export tree std::string in Newick format
      */
-    const std::string exportTreeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports) const;
+    const std::string exportTreeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports);
     
     /**
         Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()

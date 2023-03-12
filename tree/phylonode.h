@@ -203,7 +203,7 @@ private:
     /**
         Get the list of less-informative-sequences
      */
-    const std::vector<NumSeqsType>& getLessInfoSeqs() const;
+    std::vector<NumSeqsType>& getLessInfoSeqs();
     
     /**
         Add less-informative-sequence
@@ -243,7 +243,7 @@ private:
     /**
         Export string: name + branch length
      */
-    const std::string exportString(const bool binary, const Alignment& aln, const bool show_branch_supports) const;
+    const std::string exportString(const bool binary, const Alignment& aln, const bool show_branch_supports);
 };
 
 /** An intermediate data structure to store data for calculating aLRT-SH  */

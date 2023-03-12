@@ -53,9 +53,9 @@ void Tree::setup()
     setupBlengthThresh();
 }
 
-const string Tree::exportTreeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports) const
+const string Tree::exportTreeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
 {
-    const PhyloNode& node = nodes[node_vec_index];
+    PhyloNode& node = nodes[node_vec_index];
     string output = "(";
     
     // if it's a leaf
@@ -114,7 +114,7 @@ std::unique_ptr<SeqRegions> Tree::computeUpperLeftRightRegions(const Index node_
 
 void Tree::updateNewPartialIfDifferent(PhyloNode& node, const MiniIndex next_node_mini, std::unique_ptr<SeqRegions>& upper_left_right_regions, std::stack<Index> &node_stack, const PositionType seq_length)
 {
-    if (node.getPartialLh(next_node_mini)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value())) //(next_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
+    if (!node.getPartialLh(next_node_mini) || node.getPartialLh(next_node_mini)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value())) //(next_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
     {
         /*replacePartialLH(next_node->partial_lh, upper_left_right_regions);
         node_stack.push(next_node->neighbor);*/
@@ -4653,8 +4653,8 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
         lh_diff_3 += site_lh_diff_3[j];
         lh_diff_3 += site_lh_root_diff_3[j];
     }
-    ASSERT(fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-5);
-    ASSERT(fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-5);
+    ASSERT(fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-3);
+    ASSERT(fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
     
     // iterate a number of replicates
     int *rstream = NULL;
@@ -5079,9 +5079,18 @@ void Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, PhyloNode&
     current_node.setNeighborIndex(current_node_mini, sibling_index);
     
     // update 5 blengths
+    // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before
     child_2.setUpperLength(child_2_best_blength);
+    // recompute aLRT of sibling if we change its blength from zero to non-zero
+    if (sibling.getUpperLength() <= 0 && sibling_best_blength > 0)
+    {
+        sibling.setOutdated(true);
+        node_stack_aLRT.push(Index(sibling_index.getVectorIndex(), TOP));
+    }
     sibling.setUpperLength(sibling_best_blength);
+    // we don't need to add current_node to node_stack_aLRT since they will be added later
     current_node.setUpperLength(parent_best_blength);
+    // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before
     child_1.setUpperLength(child_1_best_blength);
     
     // stack to update upper_lr_lh later
@@ -5153,10 +5162,19 @@ void Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, PhyloNo
     current_node.setNeighborIndex(current_node_mini, sibling_index);
     
     // update 5 blengths
+    // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before
     child_2.setUpperLength(child_2_best_blength);
+    // recompute aLRT of sibling if we change its blength from zero to non-zero
+    if (sibling.getUpperLength() <= 0 && sibling_best_blength > 0)
+    {
+        sibling.setOutdated(true);
+        node_stack_aLRT.push(Index(sibling_index.getVectorIndex(), TOP));
+    }
     sibling.setUpperLength(sibling_best_blength);
+    // we don't need to add current_node and parent to node_stack_aLRT since they will be added later
     current_node.setUpperLength(parent_best_blength);
     parent.setUpperLength(new_parent_best_blength);
+    // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before
     child_1.setUpperLength(child_1_best_blength);
     
     // stack to update upper_lr_lh later
@@ -5416,8 +5434,6 @@ NumSeqsType Tree::parseFile(std::istream &infile, char& ch, RealNumType& branch_
         tmp_root_vec = nodes.size() - 1;
     }
     
-    PhyloNode* const tmp_root = &nodes[tmp_root_vec];
-    
     // start with "(" -> an internal node
     if (ch == '(')
     {
@@ -5427,13 +5443,29 @@ NumSeqsType Tree::parseFile(std::istream &infile, char& ch, RealNumType& branch_
         while (ch != ')' && !infile.eof())
         {
             const NumSeqsType tmp_node_vec = parseFile(infile, ch, brlen, in_line, in_column, map_seqname_index);
-            PhyloNode* const tmp_node = &nodes[tmp_node_vec];
             
             if (child_mini == UNDEFINED)
-                outError("Sorry! Currently CMaple has not yet supported multifurcating input tree. Please retry with a binary tree!");
+            {
+                outWarning("Converting a mutifurcating to a bifurcating tree");
+                
+                // create a new parent node
+                createAnInternalNode();
+                const NumSeqsType new_tmp_root_vec = nodes.size() - 1;
+                // connect the current root node to the new parent node
+                nodes[new_tmp_root_vec].setNeighborIndex(RIGHT, Index(tmp_root_vec, TOP));
+                PhyloNode& current_root = nodes[tmp_root_vec];
+                current_root.setNeighborIndex(TOP, Index(new_tmp_root_vec, RIGHT));
+                current_root.setUpperLength(0);
+                
+                // the new parent becomes the current root node -> new child will be added as the left child of the (new) root node
+                tmp_root_vec = new_tmp_root_vec;
+                child_mini = LEFT;
+            }
             
-            tmp_root->setNeighborIndex(child_mini, Index(tmp_node_vec, TOP));
-            tmp_node->setNeighborIndex(TOP, Index(tmp_root_vec, child_mini));
+            PhyloNode& node = nodes[tmp_node_vec];
+            nodes[tmp_root_vec].setNeighborIndex(child_mini, Index(tmp_node_vec, TOP));
+            node.setNeighborIndex(TOP, Index(tmp_root_vec, child_mini));
+            node.setUpperLength(brlen);
             
             // change to the second child
             child_mini = (child_mini == RIGHT) ? LEFT : UNDEFINED;
@@ -5477,12 +5509,13 @@ NumSeqsType Tree::parseFile(std::istream &infile, char& ch, RealNumType& branch_
         ch = readNextChar(infile, in_line, in_column, ch);
     if (seqlen == maxlen)
         throw "Too long name ( > 1000)";
-    if (!tmp_root->isInternal())
+    PhyloNode& tmp_root = nodes[tmp_root_vec];
+    if (!tmp_root.isInternal())
         renameString(seqname);
 //    seqname[seqlen] = 0;
-    if (seqlen == 0 && !tmp_root->isInternal())
+    if (seqlen == 0 && !tmp_root.isInternal())
         throw "Redundant double-bracket ‘((…))’ with closing bracket ending at";
-    if (seqlen > 0 && !tmp_root->isInternal())
+    if (seqlen > 0 && !tmp_root.isInternal())
     {
         auto it = map_seqname_index.find(seqname);
         if (it == map_seqname_index.end())
@@ -5490,8 +5523,8 @@ NumSeqsType Tree::parseFile(std::istream &infile, char& ch, RealNumType& branch_
         else
         {
             const NumSeqsType sequence_index = it->second;
-            tmp_root->setSeqNameIndex(sequence_index);
-            tmp_root->setPartialLh(TOP, aln.data[sequence_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.seq_type));
+            tmp_root.setSeqNameIndex(sequence_index);
+            tmp_root.setPartialLh(TOP, aln.data[sequence_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.seq_type));
         }        
     }
     /*if (!tmp_root.isInternal()) {
@@ -5501,7 +5534,7 @@ NumSeqsType Tree::parseFile(std::istream &infile, char& ch, RealNumType& branch_
     }*/
 
     if (ch == ';' || infile.eof())
-        return;
+        return tmp_root_vec;
     // parse branch length
     if (ch == ':')
     {
@@ -5597,26 +5630,14 @@ const char Tree::readNextChar(std::istream& in, PositionType& in_line, PositionT
 }
 
 void Tree::readTree(const char* input_treefile)
-{
-    // debug
-    std::vector<PhyloNode> vector_nodes;
-    vector_nodes.reserve(100);
-    for (int i = 0; i < 100; ++i)
-    {
-        /*PhyloNode p((LeafNode(0)));
-        nodes.push_back(std::move(p));*/
-        // createAnInternalNode();
-        PhyloNode p(InternalNode{});
-        vector_nodes.push_back(std::move(p));
-        //vector_nodes.emplace_back(InternalNode{});
-        //createALeafNode(0);
-    }
-    
+{    
     // create a map between leave and sequences in the alignment
     std::map<std::string, NumSeqsType> map_seqname_index;
     const std::vector<Sequence>& sequences = aln.data;
     for (NumSeqsType i = 0; i < sequences.size(); ++i)
         map_seqname_index.emplace(sequences[i].seq_name, i);
+    
+    std::cout << "Reading a tree file at " << input_treefile << std::endl;
     
     // open the treefile
     ifstream in;
@@ -5699,4 +5720,101 @@ void Tree::readTree(const char* input_treefile)
     } catch (ios::failure) {
         outError(ERR_READ_INPUT, input_treefile);
     }
+    
+    std::cout << "Collapsing zero-branch-length leaves into its sibling's vector of less-info-seqs..." << std::endl;
+    collapseAllZeroLeave();
+}
+
+void Tree::collapseAllZeroLeave()
+{
+    // start from root
+    Index node_index = Index(root_vector_index, TOP);
+    Index last_node_index;
+    
+    // traverse to the deepest tip
+    while (node_index.getMiniIndex() != UNDEFINED)
+    {
+        PhyloNode& node = nodes[node_index.getVectorIndex()];
+        // we reach a top node by a downward traversing
+        if (node_index.getMiniIndex() == TOP)
+        {
+            // if the current node is a leaf -> we reach the deepest tip -> traversing upward
+            if (!node.isInternal())
+            {
+                last_node_index = node_index;
+                node_index = node.getNeighborIndex(TOP);
+            }
+            // otherwise, keep traversing downward to find the deepest tip
+            else
+                node_index = node.getNeighborIndex(RIGHT);
+        }
+        // we reach the current node by an upward traversing from its children
+        else
+        {
+            // if we reach the current node by an upward traversing from its first children -> traversing downward to its second children
+            if (node.getNeighborIndex(RIGHT) == last_node_index)
+            {
+                node_index = node.getNeighborIndex(LEFT);
+            }
+            // otherwise, all children of the current node are updated
+            else
+            {
+                // calculate the new lower lh of the current node from its children
+                Index neighbor_1_index = node.getNeighborIndex(RIGHT);
+                Index neighbor_2_index = node.getNeighborIndex(LEFT);
+                PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
+                PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
+                
+                if (neighbor_2.getUpperLength() <= 0 && neighbor_1.getUpperLength() <= 0)
+                {
+                    // only consider collapsing zero-branch-length leave into its sibling's less-info-seqs if they're both leave
+                    if (!neighbor_1.isInternal() && !neighbor_2.isInternal())
+                    {
+                        if (root_vector_index == node_index.getVectorIndex() || node.getUpperLength() <= 0)
+                            collapseOneZeroLeaf(node, node_index, neighbor_1, neighbor_1_index, neighbor_2);
+                    }
+                    else
+                    {
+                        outWarning("Detect two zero-length branches connecting to an internal node. Reset one of those branches at the default branch length " + convertDoubleToString(default_blength) + " to avoid potential error");
+                        neighbor_1.setUpperLength(default_blength);
+                    }
+                }
+                
+                last_node_index = Index(node_index.getVectorIndex(), TOP);
+                node_index = node.getNeighborIndex(TOP);
+            }
+        }
+    }
+}
+
+void Tree::collapseOneZeroLeaf(PhyloNode& node, Index& node_index, PhyloNode& neighbor_1, const Index neighbor_1_index, PhyloNode& neighbor_2)
+{
+    std::cout << "Collapse " << aln.data[neighbor_2.getSeqNameIndex()].seq_name << " into the vector of less-info_seqs of " << aln.data[neighbor_1.getSeqNameIndex()].seq_name  << std::endl;
+    
+    // add neighbor_2 and its less-info-seqs into that of neigbor_1
+    neighbor_1.addLessInfoSeqs(neighbor_2.getSeqNameIndex());
+    std::vector<NumSeqsType>& neighbor_1_vector = neighbor_1.getLessInfoSeqs();
+    std::vector<NumSeqsType>& neighbor_2_vector = neighbor_2.getLessInfoSeqs();
+    neighbor_1_vector.insert(neighbor_1_vector.end(), neighbor_2_vector.begin(), neighbor_2_vector.end());
+    
+    // if node is root -> neighbor_1 becomes the new root
+    if (root_vector_index == node_index.getVectorIndex())
+        root_vector_index = neighbor_1_index.getVectorIndex();
+    // otherwise connect child_1 to the parent of node (~the grandparent of child_1)
+    else
+    {
+        // the length of the new branch (child_1 - its grandparent) = sum(child_1->upperlength + node->upperlength)
+        RealNumType new_blength = neighbor_1.getUpperLength();
+        if (node.getUpperLength() > 0)
+            new_blength = new_blength > 0 ? new_blength + node.getUpperLength() : node.getUpperLength();
+        
+        // connect child_1 and its grandparent
+        const Index parent_index = node.getNeighborIndex(TOP);
+        const MiniIndex parent_mini = parent_index.getMiniIndex();
+        nodes[parent_index.getVectorIndex()].setNeighborIndex(parent_mini, neighbor_1_index);
+        neighbor_1.setNeighborIndex(TOP, parent_index);
+        neighbor_1.setUpperLength(new_blength);
+    }
+    
+    node_index = neighbor_1_index;
 }

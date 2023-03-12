@@ -171,7 +171,7 @@ void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbo
     }
 }
 
-const std::vector<NumSeqsType>& PhyloNode::getLessInfoSeqs() const
+std::vector<NumSeqsType>& PhyloNode::getLessInfoSeqs()
 {
     ASSERT(!is_internal_);
     return data_.leaf_.less_info_seqs_;
@@ -246,13 +246,13 @@ void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, Phyl
     }
 }
 
-const std::string PhyloNode::exportString(const bool binary, const Alignment& aln, const bool show_branch_supports) const
+const std::string PhyloNode::exportString(const bool binary, const Alignment& aln, const bool show_branch_supports)
 {
     if (!isInternal())
     {
         string length_str = getUpperLength() < 0 ? "0" : convertDoubleToString(getUpperLength());
         // without minor sequences -> simply return node's name and its branch length
-        const std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
+        std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
         const PositionType num_less_info_seqs = less_info_seqs.size();
         if (num_less_info_seqs == 0)
             return aln.data[getSeqNameIndex()].seq_name + ":" + length_str;
@@ -279,7 +279,7 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
                 for (auto minor_seq_name_index : less_info_seqs)
                     output += "," + aln.data[minor_seq_name_index].seq_name + ":0";
             }
-            output += "):" + length_str;
+            output += ")" + branch_support + ":" + length_str;
             return output;
         }
     }
