@@ -4210,41 +4210,6 @@ RealNumType Tree::performDFS()
     return total_lh;
 }
 
-void Tree::showBranchSupports()
-{
-    // traverse tree from root
-    PhyloNode& root = nodes[root_vector_index];
-    std::stack<Index> node_stack;
-    if (root.isInternal())
-    {
-        node_stack.push(root.getNeighborIndex(RIGHT));
-        node_stack.push(root.getNeighborIndex(LEFT));
-    }
-    
-    while (!node_stack.empty())
-    {
-        const Index node_index = node_stack.top();
-        node_stack.pop();
-        const NumSeqsType node_vec = node_index.getVectorIndex();
-        PhyloNode& node = nodes[node_vec];
-        
-        // only consider internal branches
-        if (node.isInternal())
-        {
-            // add its children into node_stack for further traversal
-            node_stack.push(node.getNeighborIndex(RIGHT));
-            node_stack.push(node.getNeighborIndex(LEFT));
-            
-            // print out the aLRT (for debugging only)
-            std::cout << std::setprecision(20) << "aLRT-SH (node_vec: " << node_vec << "): " << node_lhs[node.getNodelhIndex()].get_aLRT_SH();
-            if (node.getUpperLength() <= 0)
-                std::cout << " (*zero-length branch) ";
-            std::cout << std::endl;
-        }
-        
-    }
-}
-
 void Tree::calculate_aRLT()
 {
     // set all nodes outdated
@@ -4331,7 +4296,7 @@ void Tree::calculate_aRLT()
         }
     }
     
-    std::cout << std::setprecision(20) << "Expected tree_total_lh: " << tree_total_lh << std::endl;
+    // std::cout << std::setprecision(20) << "Expected tree_total_lh: " << tree_total_lh << std::endl;
 }
 
 void Tree::calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std::vector<RealNumType>& site_lh_root_diff, const std::vector<RealNumType>& site_lh_root, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index)
@@ -4758,14 +4723,14 @@ void Tree::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contributions, st
                 node_lhs[node.getNodelhIndex()].set_aLRT_SH(replicate_inverse * count_aRLT_SH_branch(site_lh_contributions, site_lh_root, node, LT1));
                 
                 // print out the aLRT (for debugging only)
-                std::cout << std::setprecision(3) << "aLRT-SH (node_vec: " << node_vec << "): " << node_lhs[node.getNodelhIndex()].get_aLRT_SH() << std::endl;
+                // std::cout << std::setprecision(3) << "aLRT-SH (node_vec: " << node_vec << "): " << node_lhs[node.getNodelhIndex()].get_aLRT_SH() << std::endl;
             }
             // return zero for zero-length internal branches
             else
             {
                 node_lhs[node.getNodelhIndex()].set_aLRT_SH(0);
                 // print out the aLRT (for debugging only)
-                std::cout << std::setprecision(3) << "aLRT-SH (node_vec: " << node_vec << "): 0 (*zero-length branch)" << std::endl;
+                // std::cout << std::setprecision(3) << "aLRT-SH (node_vec: " << node_vec << "): 0 (*zero-length branch)" << std::endl;
             }
         }
     }

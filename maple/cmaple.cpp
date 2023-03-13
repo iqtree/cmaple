@@ -316,9 +316,6 @@ void CMaple::calculateBranchSupports()
     // calculate branch supports
     tree.calculateBranchSupports();
     
-    // show branch supports
-    // tree.showBranchSupports();
-    
     // show the runtime for calculating branch supports
     auto end = getRealTime();
     cout << " - Time spent on calculating branch supports: " << end - start << endl;

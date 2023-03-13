@@ -579,11 +579,6 @@ public:
     void calculateBranchSupports();
     
     /**
-        Show branch supports
-     */
-    void showBranchSupports();
-    
-    /**
         Read an input tree from a file
      */
     void readTree(const char* input_treefile);
