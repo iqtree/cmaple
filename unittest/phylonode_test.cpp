@@ -225,7 +225,7 @@ TEST(PhyloNode, TestGetSetNodeWithRvalueInternal)
     EXPECT_EQ(node.getNode().internal_.neighbor_index3_[0].getVectorIndex(), 0);
     
     // replace the current node by another leaf (invalid)
-    LeafNode leaf;
+    LeafNode leaf(0);
     EXPECT_DEATH(node.setNode(std::move(leaf)), ".*");
 }
 
@@ -310,26 +310,26 @@ TEST(PhyloNode, TestExportString)
     
     // test on an internal node
     PhyloNode node1((InternalNode()));
-    EXPECT_EQ(node1.exportString(true, aln), ""); // internal node returns ""
-    EXPECT_EQ(node1.exportString(false, aln), ""); // internal node returns ""
+    EXPECT_EQ(node1.exportString(true, aln, false), ""); // internal node returns ""
+    EXPECT_EQ(node1.exportString(false, aln, false), ""); // internal node returns ""
     
     // test on a leaf
     PhyloNode node2(LeafNode(1));
-    EXPECT_EQ(node2.exportString(true, aln), "sequence 1:0");
-    EXPECT_EQ(node2.exportString(false, aln), "sequence 1:0");
+    EXPECT_EQ(node2.exportString(true, aln, false), "sequence 1:0");
+    EXPECT_EQ(node2.exportString(false, aln, false), "sequence 1:0");
     
     // add a lessinfoseq
     node2.addLessInfoSeqs(3);
     node2.setUpperLength(-1);
-    EXPECT_EQ(node2.exportString(true, aln), "(sequence 1:0,sequence 3:0):0");
-    EXPECT_EQ(node2.exportString(false, aln), "(sequence 1:0,sequence 3:0):0");
+    EXPECT_EQ(node2.exportString(true, aln, false), "(sequence 1:0,sequence 3:0):0");
+    EXPECT_EQ(node2.exportString(false, aln, false), "(sequence 1:0,sequence 3:0):0");
     
     // add two more lessinfoseqs
     node2.addLessInfoSeqs(6);
     node2.addLessInfoSeqs(8);
     node2.setUpperLength(0.5);
-    EXPECT_EQ(node2.exportString(true, aln), "(sequence 1:0,(sequence 3:0,(sequence 6:0,sequence 8:0):0):0):0.5");
-    EXPECT_EQ(node2.exportString(false, aln), "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
+    EXPECT_EQ(node2.exportString(true, aln, false), "(sequence 1:0,(sequence 3:0,(sequence 6:0,sequence 8:0):0):0):0.5");
+    EXPECT_EQ(node2.exportString(false, aln, false), "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
 }
 
 /*
