@@ -269,10 +269,17 @@ void CMaple::doInference()
     {
         tree.readTree(tree.params->input_treefile);
         
-        // map leave and sequences in the alignment
-        // calculate the lowe_lh for each leaf
-        // update the seq_name index
+        // calculate all lower, upper left/right likelihoods
+        tree.refreshAllLhs();
         
+        // update model params
+        /*cout << " - Model params before updating: " << endl;
+        tree.showModelParams();*/
+        tree.updateModelParams();
+        /*cout << " - Model params after updating: " << endl;
+        tree.showModelParams();*/
+        
+        // refresh all lower, upper left/right likelihoods after updating model params
         tree.refreshAllLhs();
     }
     // otherwise, infer a phylogenetic tree from the alignment
@@ -305,6 +312,9 @@ void CMaple::postInference()
     // output treefile
     if (tree.params->compute_aLRT_SH)
         exportOutput(output_file + "_aLRT_SH.treefile", true);
+    
+    // output model params
+    tree.showModelParams();
 }
 
 void CMaple::calculateBranchSupports()

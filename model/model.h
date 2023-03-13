@@ -32,6 +32,16 @@ private:
      */
     void updateMutationMat(const StateType num_states);
     
+    /**
+        Export state frequencies at root
+     */
+    std::string exportRootFrequenciesStr(Alignment& aln);
+    
+    /**
+        Export Q matrix
+     */
+    std::string exportQMatrixStr(Alignment& aln);
+    
 public:
     /** Name of the model */
     std::string model_name;
@@ -97,4 +107,9 @@ public:
         @param sample_regions the genome list for the new sample.
      */
     void updatePesudoCount(const Alignment& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
+    
+    /**
+        Export model parameters to string
+     */
+    std::string exportString(Alignment& aln);
 };

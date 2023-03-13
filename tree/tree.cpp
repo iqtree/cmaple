@@ -5783,3 +5783,55 @@ void Tree::collapseOneZeroLeaf(PhyloNode& node, Index& node_index, PhyloNode& ne
     
     node_index = neighbor_1_index;
 }
+
+void Tree::updateModelParams()
+{
+    // start from root
+    Index node_index = Index(root_vector_index, TOP);
+    Index last_node_index;
+    
+    // traverse to the deepest tip
+    while (node_index.getMiniIndex() != UNDEFINED)
+    {
+        PhyloNode& node = nodes[node_index.getVectorIndex()];
+        // we reach a top node by a downward traversing
+        if (node_index.getMiniIndex() == TOP)
+        {
+            // if the current node is a leaf -> we reach the deepest tip -> traversing upward
+            if (!node.isInternal())
+            {
+                // update pseudo count of model
+                const Index parent_index = node.getNeighborIndex(TOP);
+                std::unique_ptr<SeqRegions>& upper_lr_regions = getPartialLhAtNode(parent_index);
+                std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
+                if (upper_lr_regions && lower_regions)
+                    model.updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
+                
+                last_node_index = node_index;
+                node_index = parent_index;
+            }
+            // otherwise, keep traversing downward to find the deepest tip
+            else
+                node_index = node.getNeighborIndex(RIGHT);
+        }
+        // we reach the current node by an upward traversing from its children
+        else
+        {
+            // if we reach the current node by an upward traversing from its first children -> traversing downward to its second children
+            if (node.getNeighborIndex(RIGHT) == last_node_index)
+            {
+                node_index = node.getNeighborIndex(LEFT);
+            }
+            // otherwise, all children of the current node are reached
+            else
+            {
+                // traverse upward
+                last_node_index = Index(node_index.getVectorIndex(), TOP);
+                node_index = node.getNeighborIndex(TOP);
+            }
+        }
+    }
+    
+    // update model params based on the pseudo count
+    model.updateMutationMatEmpirical(aln);
+}

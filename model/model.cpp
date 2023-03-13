@@ -396,3 +396,63 @@ void Model::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, 
         }
     }
 }
+
+std::string Model::exportRootFrequenciesStr(Alignment& aln)
+{
+    const StateType num_states = aln.num_states;
+    string output{};
+    string header{};
+    
+    for (StateType i = 0; i < num_states; ++i)
+    {
+        header += aln.convertState2Char(i);
+        header += "\t\t\t";
+        output += convertDoubleToString(root_freqs[i]) + "\t";
+    }
+    
+    return header + "\n" + output + "\n";
+}
+
+std::string Model::exportQMatrixStr(Alignment& aln)
+{
+    const StateType num_states = aln.num_states;
+    string output{};
+    
+    // generate header
+    output += "\t";
+    for (StateType i = 0; i < num_states; ++i)
+    {
+        output += aln.convertState2Char(i);
+        output += "\t\t\t";
+    }
+    output += "\n";
+    
+    RealNumType* mut_mat_row = mutation_mat;
+    for (StateType i = 0; i < num_states; ++i, mut_mat_row += num_states)
+    {
+        output += aln.convertState2Char(i);
+        output += "\t";
+        
+        for (StateType j = 0; j < num_states; ++j)
+            output += convertDoubleToString(mut_mat_row[j]) + "\t";
+        
+        output += "\n";
+    }
+    
+    return output;
+}
+
+std::string Model::exportString(Alignment& aln)
+{
+    string output{};
+    
+    // root frequencies
+    output += "\nROOT FREQUENCIES\n";
+    output += exportRootFrequenciesStr(aln);
+    
+    // Q matrix
+    output += "\nMUTATION MATRIX\n";
+    output += exportQMatrixStr(aln);
+    
+    return output;
+}

@@ -582,4 +582,17 @@ public:
         Read an input tree from a file
      */
     void readTree(const char* input_treefile);
+    
+    /**
+        Update model parameters from an alignment and a tree
+     */
+    void updateModelParams();
+    
+    /**
+        Show model parameters
+     */
+    inline void showModelParams()
+    {
+        std::cout << model.exportString(aln) << std::endl;
+    }
 };
