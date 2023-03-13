@@ -26,6 +26,7 @@
 #include "utils/timeutil.h"
 #include "utils/tools.h"
 #include "utils/operatingsystem.h" //for getOSName()
+#include <utils/logstream.h>
 #include "maple/cmaple.h"
 
 #include <stdlib.h>
@@ -33,9 +34,53 @@
 
 using namespace std;
 
+/** ############## Redirect output to a log file ############## **/
+LogStream logstream;
+void funcAbort(int signal_number)
+{
+    /*Your code goes here. You can output debugging info.
+      If you return from this function, and it was called
+      because abort() was called, your program will exit or crash anyway
+      (with a dialog box on Windows).
+     */
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(WIN32) && !defined(WIN64) && !defined(__CYGWIN__)
+    // print_stacktrace(cerr);
+#endif
+
+    cerr << endl << "*** CMAPLE CRASHES WITH SIGNAL ";
+    switch (signal_number) {
+        case SIGABRT: cerr << "ABORTED"; break;
+        case SIGFPE:  cerr << "ERRONEOUS NUMERIC"; break;
+        case SIGILL:  cerr << "ILLEGAL INSTRUCTION"; break;
+        case SIGSEGV: cerr << "SEGMENTATION FAULT"; break;
+#if !defined WIN32 && !defined _WIN32 && !defined __WIN32__ && !defined WIN64
+        case SIGBUS: cerr << "BUS ERROR"; break;
+#endif
+    }
+    cerr << endl;
+    cerr << "*** For bug report please send to developers:" << endl << "***    Log file: " << logstream.getLogFilePath();
+    cerr << endl << "***    Alignment files (if possible)" << endl;
+    logstream.funcExit();
+    signal(signal_number, SIG_DFL);
+}
+/** ############## Redirect output to a log file ############## **/
+
 int main(int argc, char *argv[]) {
     parseArg(argc, argv, Params::getInstance());
     
+    // Config log file
+    Params& params = Params::getInstance();
+    // atexit(logstream.funcExit);
+    logstream.startLogFile(params);
+    signal(SIGABRT, &funcAbort);
+    signal(SIGFPE, &funcAbort);
+    signal(SIGILL, &funcAbort);
+    signal(SIGSEGV, &funcAbort);
+#if !defined WIN32 && !defined _WIN32 && !defined __WIN32__ && !defined WIN64
+    signal(SIGBUS, &funcAbort);
+#endif
+    
+    // show general information
     cout << "Command:";
     for (int i = 0; i < argc; i++)
         cout << " " << argv[i];
@@ -43,7 +88,7 @@ int main(int argc, char *argv[]) {
     
     // Show info
     cout << "Seed:    " << Params::getInstance().ran_seed <<  " ";
-    init_random(Params::getInstance().ran_seed, true);
+    init_random(params.ran_seed, true);
     
     // setup the number of threads for openmp
 #ifdef _OPENMP
