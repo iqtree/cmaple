@@ -5756,8 +5756,8 @@ void Tree::collapseAllZeroLeave()
                     }
                     else
                     {
-                        outWarning("Detect two zero-length branches connecting to an internal node. Reset one of those branches at the default branch length " + convertDoubleToString(default_blength) + " to avoid potential error");
-                        neighbor_1.setUpperLength(default_blength);
+                        outWarning("Detect two zero-length branches connecting to an internal node. Reset one of those branches at the minmimum branch length " + convertDoubleToString(min_blength) + " to avoid potential error");
+                        neighbor_1.setUpperLength(min_blength);
                     }
                 }
                 
