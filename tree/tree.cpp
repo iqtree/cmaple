@@ -5576,7 +5576,7 @@ const char Tree::readNextChar(std::istream& in, PositionType& in_line, PositionT
             in_column = 1;
         }
     }
-    /*in_comment = "";
+    string in_comment = "";
     // ignore comment
     while (ch=='[' && !in.eof()) {
         while (ch!=']' && !in.eof()) {
@@ -5604,7 +5604,9 @@ const char Tree::readNextChar(std::istream& in, PositionType& in_line, PositionT
                 in_column = 1;
             }
         }
-    }*/
+        if (in_comment.length() > 0)
+            std::cout << "Ignore [" + in_comment +"]" << std::endl;
+    }
     return ch;
 }
 
