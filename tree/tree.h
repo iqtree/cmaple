@@ -413,6 +413,16 @@ private:
      */
     void collapseOneZeroLeaf(PhyloNode& node, Index& node_index, PhyloNode& neighbor_1, const Index neighbor_1_index, PhyloNode& neighbor_2);
     
+    /**
+        Update the pesudocount of the model based on the sequence of a leaf
+     */
+    void updatePesudoCountModel(PhyloNode& node, const Index node_index, const Index parent_index);
+    
+    /**
+        Expand the tree by placing one less-info-seq
+     */
+    void expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, const Index parent_index);
+    
 public:
     /*
      Branch length thresholds
@@ -568,7 +578,7 @@ public:
     RealNumType calculateTreeLh();
     
     /**
-        Employ Depth First Search to do a task
+        Employ Depth First Search to do a task at internal nodes
      */
     template <void(Tree::*task)(RealNumType&, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const Index, PhyloNode&, const Index, PhyloNode&, const PositionType&)>
     RealNumType performDFS();
@@ -595,4 +605,10 @@ public:
     {
         std::cout << model.exportString(aln) << std::endl;
     }
+    
+    /**
+        Employ Depth First Search to do a task at leaves
+     */
+    template <void(Tree::*task)(PhyloNode&, const Index, const Index)>
+    void performDFSAtLeave();
 };

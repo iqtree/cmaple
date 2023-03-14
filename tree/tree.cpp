@@ -4738,6 +4738,10 @@ void Tree::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contributions, st
 
 void Tree::calculateBranchSupports()
 {
+    // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one less-info-seq to make sure all we compute the aLRT of all internal branches
+    if (!params->input_treefile)
+        performDFSAtLeave<&Tree::expandTreeByOneLessInfoSeq>();
+    
     // 1. calculate aLRT for each internal branches, replacing the ML tree if a higher ML NNI neighbor was found
     calculate_aRLT();
     
@@ -5802,6 +5806,46 @@ void Tree::collapseOneZeroLeaf(PhyloNode& node, Index& node_index, PhyloNode& ne
 
 void Tree::updateModelParams()
 {
+    // perform a DFS -> at each leaf, update the pesudoCount of the model based on the sequence of that leaf
+    performDFSAtLeave<&Tree::updatePesudoCountModel>();
+    
+    // update model params based on the pseudo count
+    model.updateMutationMatEmpirical(aln);
+}
+
+void Tree::updatePesudoCountModel(PhyloNode& node, const Index node_index, const Index parent_index)
+{
+    std::unique_ptr<SeqRegions>& upper_lr_regions = getPartialLhAtNode(parent_index);
+    std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
+    if (upper_lr_regions && lower_regions)
+        model.updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
+}
+
+void Tree::expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, const Index parent_index)
+{
+    // don't expand the tree if the internal branch length is zero or this node doesn't have less-info-sequences
+    if (node.getLessInfoSeqs().empty() || node.getUpperLength() <= 0 || parent_index.getMiniIndex() == UNDEFINED) return;
+    std::vector<NumSeqsType>& less_info_seqs = node.getLessInfoSeqs();
+    const NumSeqsType seq_name_index = less_info_seqs.back();
+    less_info_seqs.pop_back();
+    
+    // debug
+    std::cout << "Add less-info-seq " + aln.data[seq_name_index].seq_name + " into the tree" << std::endl;
+    
+    // dummy variables
+    std::unique_ptr<SeqRegions> lower_regions = aln.data[seq_name_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.seq_type);
+    const std::unique_ptr<SeqRegions>& upper_left_right_regions = getPartialLhAtNode(parent_index);
+    std::unique_ptr<SeqRegions> best_child_regions = nullptr;
+    const RealNumType top_distance = node.getUpperLength();
+    upper_left_right_regions->mergeUpperLower(best_child_regions, top_distance, *(node.getPartialLh(TOP)), 0, aln, model, params->threshold_prob);
+    
+    // add a new node representing the less-info-seq
+    connectNewSample2Branch(lower_regions, seq_name_index, node_index, node, top_distance, 0, min_blength, best_child_regions, upper_left_right_regions);
+}
+
+template <void(Tree::*task)(PhyloNode&, const Index, const Index)>
+void Tree::performDFSAtLeave()
+{
     // start from root
     Index node_index = Index(root_vector_index, TOP);
     Index last_node_index;
@@ -5816,12 +5860,9 @@ void Tree::updateModelParams()
             // if the current node is a leaf -> we reach the deepest tip -> traversing upward
             if (!node.isInternal())
             {
-                // update pseudo count of model
+                // do some tasks at a leaf
                 const Index parent_index = node.getNeighborIndex(TOP);
-                std::unique_ptr<SeqRegions>& upper_lr_regions = getPartialLhAtNode(parent_index);
-                std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
-                if (upper_lr_regions && lower_regions)
-                    model.updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
+                (this->*task)(node, node_index, parent_index);
                 
                 last_node_index = node_index;
                 node_index = parent_index;
@@ -5847,7 +5888,4 @@ void Tree::updateModelParams()
             }
         }
     }
-    
-    // update model params based on the pseudo count
-    model.updateMutationMatEmpirical(aln);
 }
