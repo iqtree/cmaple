@@ -4846,13 +4846,20 @@ bool Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNumType& l
     // if we found an NNI neighbor with higher lh => replace the ML tree
     if (lh_diff > 0)
     {
-        std::cout << "Replace the ML tree by a newly found NNI neighbor tree (root), improving tree loglh by: " << lh_diff << std::endl;
-        // std::cout << "Tree lh (before replacing): " << calculateTreeLh() << std::endl;
-        replaceMLTreebyNNIRoot(node_stack_aLRT, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength);
-        // std::cout << "Tree lh (after replacing): " << calculateTreeLh() << std::endl;
-        
-        // return false to let us know that we found a new ML tree
-        return false;
+        // only replace the ML tree inferred by CMaple;
+        // if users input the tree -> don't replace the ML tree
+        if (!params->input_treefile)
+        {
+            std::cout << "Replace the ML tree by a newly found NNI neighbor tree (root), improving tree loglh by: " << lh_diff << std::endl;
+            // std::cout << "Tree lh (before replacing): " << calculateTreeLh() << std::endl;
+            replaceMLTreebyNNIRoot(node_stack_aLRT, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength);
+            // std::cout << "Tree lh (after replacing): " << calculateTreeLh() << std::endl;
+            
+            // return false to let us know that we found a new ML tree
+            return false;
+        }
+        else
+            outWarning("Found an NNI neighbor tree with a higher likelihood (by " + convertDoubleToString(lh_diff) + ") than the input tree");
     }
     
     return true;
@@ -5007,13 +5014,20 @@ bool Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType
     // if we found an NNI neighbor with higher lh => replace the ML tree
     if (lh_diff > 0)
     {
-        std::cout << "Replace the ML tree by a newly found NNI neighbor tree (non-root), improving tree loglh by: " << lh_diff << std::endl;
-        // std::cout << "Tree lh (before replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
-        replaceMLTreebyNNINonRoot(node_stack_aLRT, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength, new_parent_best_blength);
-        // std::cout << "Tree lh (after replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
-        
-        // return false to let us know that we found a new ML tree
-        return false;
+        // only replace the ML tree inferred by CMaple;
+        // if users input the tree -> don't replace the ML tree
+        if (!params->input_treefile)
+        {
+            std::cout << "Replace the ML tree by a newly found NNI neighbor tree (non-root), improving tree loglh by: " << lh_diff << std::endl;
+            // std::cout << "Tree lh (before replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
+            replaceMLTreebyNNINonRoot(node_stack_aLRT, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength, new_parent_best_blength);
+            // std::cout << "Tree lh (after replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
+            
+            // return false to let us know that we found a new ML tree
+            return false;
+        }
+        else
+            outWarning("Found an NNI neighbor tree with a higher likelihood (by " + convertDoubleToString(lh_diff) + ") than the input tree");
     }
     
     return true;
