@@ -530,7 +530,7 @@ public:
     /**
         Traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
      */
-    void refreshAllLhs();
+    void refreshAllLhs(bool avoid_using_upper_lr_lhs = false);
     
     /**
         Traverse the tree to reset the outdated/spr_applied flags (which is used to prevent traversing the same part of the tree multiple times) of all nodes
@@ -577,6 +577,12 @@ public:
         Update lower lh of a node
      */
     void updateLowerLh(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length);
+    
+    /**
+        Update lower lh of a node but avoid using UpperLeft/Right lhs to update zero-blength
+        This function is called after reading a tree from an input file, thus, UpperLeft/Right lhs have not yet been computed
+     */
+    void updateLowerLhAvoidUsingUpperLRLh(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length);
     
     /**
         compute the likelihood contribution of (the upper branch of) a node

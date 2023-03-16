@@ -2497,10 +2497,13 @@ void Tree::placeNewSampleAtNode(const Index selected_node_index, std::unique_ptr
         delete best_child_regions;*/
 }
 
-void Tree::refreshAllLhs()
+void Tree::refreshAllLhs(bool avoid_using_upper_lr_lhs)
 {
     // 1. update all the lower lhs along the tree
-    performDFS<&Tree::updateLowerLh>();
+    if (avoid_using_upper_lr_lhs)
+        performDFS<&Tree::updateLowerLhAvoidUsingUpperLRLh>();
+    else
+        performDFS<&Tree::updateLowerLh>();
     
     // 2. update all the non-lower lhs along the tree
     refreshAllNonLowerLhs();
@@ -4118,6 +4121,32 @@ void Tree::updateLowerLh(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new
         node.setPartialLh(TOP, std::move(new_lower_lh));
 }
 
+void Tree::updateLowerLhAvoidUsingUpperLRLh(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length)
+{
+    lower_lh_1->mergeTwoLowers(new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, params->threshold_prob);
+     
+    // if new_lower_lh is NULL -> we need to update the branch lengths connecting the current node to its children
+    if (!new_lower_lh)
+    {
+        outWarning("Set a zero branch length to the minmimum branch length " + convertDoubleToString(min_blength) + " to avoid computation error.");
+        
+        // set zero-length to the min_blength
+        if (neighbor_1.getUpperLength() <= 0) // next_node_1->length <= 0)
+            neighbor_1.setUpperLength(min_blength);
+        else if (neighbor_2.getUpperLength() <= 0) // next_node_2->length <= 0)
+            neighbor_2.setUpperLength(min_blength);
+        else
+            outError("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
+        
+        // recompute lower_lh
+        lower_lh_1->mergeTwoLowers(node.getPartialLh(TOP), neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, params->threshold_prob);
+
+    }
+    // otherwise, everything is good -> update the lower lh of the current node
+    else
+        node.setPartialLh(TOP, std::move(new_lower_lh));
+}
+
 void Tree::computeLhContribution(RealNumType& total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const Index neighbor_1_index, PhyloNode& neighbor_1, const Index neighbor_2_index, PhyloNode& neighbor_2, const PositionType& seq_length)
 {
     RealNumType lh_contribution = lower_lh_1->mergeTwoLowers(new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, params->threshold_prob, true);
@@ -4597,6 +4626,13 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
     const NodeLh& nodelh = node_lhs[node.getNodelhIndex()];
     const RealNumType LT2 = LT1 + nodelh.getLhDiff2();
     const RealNumType LT3 = LT1 + nodelh.getLhDiff3();
+    
+    // debug
+    /*if (!child_1.isInternal() && (aln.data[child_1.getSeqNameIndex()].seq_name == "42"))
+        std::cout << "sfdfds " <<std::endl;
+    
+    if (!child_2.isInternal() && (aln.data[child_2.getSeqNameIndex()].seq_name == "42"))
+        std::cout << "sfdfds " <<std::endl;*/
     
     // calculate site_lh differences
     // neighbor 2

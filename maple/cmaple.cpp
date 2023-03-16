@@ -270,7 +270,7 @@ void CMaple::doInference()
         tree.readTree(tree.params->input_treefile);
         
         // calculate all lower, upper left/right likelihoods
-        tree.refreshAllLhs();
+        tree.refreshAllLhs(true);
         
         // update model params
         /*cout << " - Model params before updating: " << endl;
