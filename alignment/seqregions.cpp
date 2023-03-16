@@ -1407,6 +1407,18 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
         
         // maintain start_pos
         start_pos = region.position + 1;
+        
+        // NhanLT: avoid underflow on log_factor
+        if (log_factor <= MIN_CARRY_OVER)
+        {
+            //if (log_factor < MIN_POSITIVE)
+            //    return MIN_NEGATIVE;
+            
+            //lh_cost += log(total_factor);
+            //total_factor = 1.0;
+            log_factor *= MAX_POSITIVE;
+            log_lh -= LOG_MAX_POSITIVE;
+        }
     }
 
     // update log_lh
@@ -1464,6 +1476,18 @@ RealNumType SeqRegions::computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_co
         
         // maintain start_pos
         start_pos = region.position + 1;
+        
+        // NhanLT: avoid underflow on log_factor
+        if (log_factor <= MIN_CARRY_OVER)
+        {
+            //if (log_factor < MIN_POSITIVE)
+            //    return MIN_NEGATIVE;
+            
+            //lh_cost += log(total_factor);
+            //total_factor = 1.0;
+            log_factor *= MAX_POSITIVE;
+            log_lh -= LOG_MAX_POSITIVE;
+        }
     }
 
     // update log_lh
