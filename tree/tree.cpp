@@ -4856,7 +4856,7 @@ bool Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNumType& l
         {
             std::cout << "Replace the ML tree by a newly found NNI neighbor tree (root), improving tree loglh by: " << lh_diff << std::endl;
             // std::cout << "Tree lh (before replacing): " << calculateTreeLh() << std::endl;
-            replaceMLTreebyNNIRoot(node_stack_aLRT, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength);
+            replaceMLTreebyNNIRoot(node_stack_aLRT, lh_diff, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength);
             // std::cout << "Tree lh (after replacing): " << calculateTreeLh() << std::endl;
             
             // return false to let us know that we found a new ML tree
@@ -5024,7 +5024,7 @@ bool Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType
         {
             std::cout << "Replace the ML tree by a newly found NNI neighbor tree (non-root), improving tree loglh by: " << lh_diff << std::endl;
             // std::cout << "Tree lh (before replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
-            replaceMLTreebyNNINonRoot(node_stack_aLRT, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength, new_parent_best_blength);
+            replaceMLTreebyNNINonRoot(node_stack_aLRT, lh_diff, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength, new_parent_best_blength);
             // std::cout << "Tree lh (after replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
             
             // return false to let us know that we found a new ML tree
@@ -5037,7 +5037,7 @@ bool Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType
     return true;
 }
 
-void Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength)
+void Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength)
 {
     // get index of related nodes
     const RealNumType threshold_prob = params->threshold_prob;
@@ -5063,18 +5063,18 @@ void Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, PhyloNode&
     
     // update 5 blengths
     // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before
-    child_2.setUpperLength(child_2_best_blength);
+    updateBlengthReplaceMLTree(node_stack_aLRT, lh_diff, child_2, child_2_index, child_2_best_blength);
     // recompute aLRT of sibling if we change its blength from zero to non-zero
     if (sibling.getUpperLength() <= 0 && sibling_best_blength > 0)
     {
         sibling.setOutdated(true);
         node_stack_aLRT.push(Index(sibling_index.getVectorIndex(), TOP));
     }
-    sibling.setUpperLength(sibling_best_blength);
+    updateBlengthReplaceMLTree(node_stack_aLRT, lh_diff, sibling, sibling_index, sibling_best_blength);
     // we don't need to add current_node to node_stack_aLRT since they will be added later
     current_node.setUpperLength(parent_best_blength);
     // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before
-    child_1.setUpperLength(child_1_best_blength);
+    updateBlengthReplaceMLTree(node_stack_aLRT, lh_diff, child_1, child_1_index, child_1_best_blength);
     
     // stack to update upper_lr_lh later
     std::stack<Index> node_stack_update_upper_lr;
@@ -5118,7 +5118,7 @@ void Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, PhyloNode&
     updateUpperLR(node_stack_update_upper_lr);
 }
 
-void Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength, const RealNumType new_parent_best_blength)
+void Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength, const RealNumType new_parent_best_blength)
 {
     // get index of related nodes
     const RealNumType threshold_prob = params->threshold_prob;
@@ -5146,19 +5146,19 @@ void Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, PhyloNo
     
     // update 5 blengths
     // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before
-    child_2.setUpperLength(child_2_best_blength);
+    updateBlengthReplaceMLTree(node_stack_aLRT, lh_diff, child_2, child_2_index, child_2_best_blength);
     // recompute aLRT of sibling if we change its blength from zero to non-zero
     if (sibling.getUpperLength() <= 0 && sibling_best_blength > 0)
     {
         sibling.setOutdated(true);
         node_stack_aLRT.push(Index(sibling_index.getVectorIndex(), TOP));
     }
-    sibling.setUpperLength(sibling_best_blength);
+    updateBlengthReplaceMLTree(node_stack_aLRT, lh_diff, sibling, sibling_index, sibling_best_blength);
     // we don't need to add current_node and parent to node_stack_aLRT since they will be added later
     current_node.setUpperLength(parent_best_blength);
     parent.setUpperLength(new_parent_best_blength);
     // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before
-    child_1.setUpperLength(child_1_best_blength);
+    updateBlengthReplaceMLTree(node_stack_aLRT, lh_diff, child_1, child_1_index, child_1_best_blength);
     
     // stack to update upper_lr_lh later
     std::stack<Index> node_stack_update_upper_lr;
@@ -5384,7 +5384,11 @@ RealNumType Tree::calculateSiteLhs(std::vector<RealNumType>& site_lh_contributio
                     outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
                 // otherwise, everything is good -> update the lower lh of the current node
                 else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, aln.num_states, &params.value()))
-                    outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
+                {
+                    // outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
+                    // non-updated lower likelihood may be due to a replacement of ML tree by an NNI neighbor
+                    node.setPartialLh(TOP, std::move(new_lower_lh));
+                }
                 
                 last_node_index = Index(node_index.getVectorIndex(), TOP);
                 node_index = node.getNeighborIndex(TOP);
@@ -5888,4 +5892,35 @@ void Tree::performDFSAtLeave()
             }
         }
     }
+}
+
+void Tree::updateBlengthReplaceMLTree(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& node, const Index node_index, const RealNumType best_blength)
+{
+    RealNumType old_blength = node.getUpperLength();
+    
+    // update blength
+    node.setUpperLength(best_blength);
+    
+    if (!node.isInternal() && old_blength <= 0 && best_blength > 0 && !node.getLessInfoSeqs().empty())
+        addLessInfoSeqReplacingMLTree(node_stack_aLRT, lh_diff, node, node_index, node.getNeighborIndex(TOP));
+}
+
+void Tree::addLessInfoSeqReplacingMLTree(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& node, const Index node_index, const Index parent_index)
+{
+    // add one less-info-seq of the current leaf into the tree
+    expandTreeByOneLessInfoSeq(node, node_index, parent_index);
+    
+    const Index new_internal_from_node_index = node.getNeighborIndex(TOP);
+    const NumSeqsType new_internal_vec = new_internal_from_node_index.getVectorIndex();
+    PhyloNode& new_internal = nodes[new_internal_vec];
+    const Index sibling_index = new_internal.getNeighborIndex(new_internal_from_node_index.getFlipMiniIndex());
+    PhyloNode& sibling = nodes[sibling_index.getVectorIndex()];
+    
+    // compute the likelihood contribution at the new_internal and update the total_lh
+    std::unique_ptr<SeqRegions> new_lower_lh = nullptr;
+    computeLhContribution(lh_diff, new_lower_lh, new_internal, node.getPartialLh(TOP), sibling.getPartialLh(TOP), node_index, node, sibling_index, sibling, aln.ref_seq.size());
+    
+    // add newly created internal node to the queue to compute the aLRT later
+    new_internal.setOutdated(true);
+    node_stack_aLRT.push(Index(new_internal_vec, TOP));
 }

@@ -346,12 +346,12 @@ private:
     /**
         Replace the current ML Tree by an NNI neighbor on a branch connecting to root
      */
-    void replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength);
+    void replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength);
     
     /**
         Replace the current ML Tree by an NNI neighbor on a branch connecting to a non-root node
      */
-    void replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength, const RealNumType new_parent_best_blength);
+    void replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, RealNumType& lh_at_root, const RealNumType child_1_best_blength, const RealNumType child_2_best_blength, const RealNumType sibling_best_blength, const RealNumType parent_best_blength, const RealNumType new_parent_best_blength);
     
     /**
         Traverse downward to update the upper_left/right_region until the changes is insignificant
@@ -422,6 +422,17 @@ private:
         Expand the tree by placing one less-info-seq
      */
     void expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, const Index parent_index);
+    
+    /**
+        Carefully update blength of a node when replacing the ML tree by an NNI neighbor
+        Expand the new tree by adding one less-info -seq of the current node (if neccessary) to make sure we compute aLRT for all non-zero internal branches
+     */
+    void updateBlengthReplaceMLTree(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& node, const Index node_index, const RealNumType best_blength);
+    
+    /**
+        Expand the new tree by adding one less-info -seq of the current node after replacing the ML tree by an NNI neighbor to make sure we compute aLRT for all non-zero internal branches
+     */
+    void addLessInfoSeqReplacingMLTree(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& node, const Index node_index, const Index parent_index);
     
 public:
     /*
