@@ -315,6 +315,13 @@ void CMaple::postInference()
     
     // output model params
     tree.showModelParams();
+    
+    // list output files
+    std::cout << "Analysis results written to:" << std::endl;
+    std::cout << "Maximum-likelihood tree:       " << output_file + ".treefile" << std::endl;
+    if (tree.params->compute_aLRT_SH)
+        std::cout << "Tree with aLRT-SH values:      " << output_file + "_aLRT_SH.treefile" << std::endl;
+    std::cout << "Screen log file:               " << output_file + ".log" << std::endl << std::endl;
 }
 
 void CMaple::calculateBranchSupports()
