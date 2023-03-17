@@ -5918,7 +5918,7 @@ void Tree::expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, c
     upper_left_right_regions->mergeUpperLower(best_child_regions, top_distance, *(node.getPartialLh(TOP)), 0, aln, model, params->threshold_prob);
     
     // add a new node representing the less-info-seq
-    connectNewSample2Branch(lower_regions, seq_name_index, node_index, node, top_distance, 0, min_blength, best_child_regions, upper_left_right_regions);
+    connectNewSample2Branch(lower_regions, seq_name_index, node_index, node, top_distance, 0, -1, best_child_regions, upper_left_right_regions);
 }
 
 template <void(Tree::*task)(PhyloNode&, const Index, const Index)>
