@@ -178,6 +178,10 @@ void CMaple::optimizeTree()
     if (tree.params->optimize_branch_length)
         optimizeBranchLengthsOfTree();
     
+    // NhanLT: update the model params
+    tree.model.initMutationMat(tree.params->model_name, tree.aln.num_states);
+    tree.updateModelParams();
+    
     // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
     tree.performDFS<&Tree::updateLowerLh>();
 }
