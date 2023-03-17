@@ -1,6 +1,6 @@
 ##################################################################
 # CMAPLE cmake build definition
-# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Bui Quang Minh 
+# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh 
 ##################################################################
 
 # Windows example usages:

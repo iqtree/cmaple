@@ -1,10 +1,3 @@
-//
-//  alignment.h
-//  alignment
-//
-//  Created by Nhan Ly-Trong on 24/01/2022.
-//
-
 #include "sequence.h"
 #include "utils/timeutil.h"
 #include "utils/gzstream.h"

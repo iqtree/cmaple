@@ -1,25 +1,26 @@
-/***************************************************************************
+/****************************************************************************
  *   Copyright (C) 2022 by
  *   Nhan Ly-Trong <trongnhan.uit@gmail.com>
  *   Chris Bielow <chris.bielow@fu-berlin.de>
+ *   Nicola De Maio <demaio@ebi.ac.uk>
  *   BUI Quang Minh <m.bui@anu.edu.au>
  *
- *                                                                         *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ *
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program; if not, write to the
+ *   Free Software Foundation, Inc.,
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
 
@@ -276,7 +277,12 @@ double random_double(int *rstream) {
 VerboseMode verbose_mode;
 
 void printCopyright(ostream &out) {
-     out << "CMAPLE";
+    out << "CMAPLE version ";
+    out << cmaple_VERSION_MAJOR << "." << cmaple_VERSION_MINOR << cmaple_VERSION_PATCH;
+    out << " for " << getOSName();
+    out << " built " << __DATE__ << std::endl;
+    
+    out << "Developed by Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh." << std::endl << std::endl;
 }
 
 /**

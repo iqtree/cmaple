@@ -1,10 +1,3 @@
-/*
- *  cmaple.h
- *
- *  Created on: Mar 13, 2021
- *      Author: Nhan Ly-Trong
- */
-
 #include "tree/tree.h"
 #include "utils/timeutil.h"
 #include "alignment/seqregions.h"

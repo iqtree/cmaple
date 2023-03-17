@@ -1,9 +1,3 @@
-/*
- *  cmaple.h
- *  Created on: Jan 25, 2022
- *      Author: Nhan Ly-Trong
- */
-
 #include "cmaple.h"
 using namespace std;
 
@@ -295,9 +289,6 @@ void CMaple::doInference()
 
 void CMaple::postInference()
 {
-    // output log-likelihood of the tree
-    std::cout << std::setprecision(20) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
-    
     // compute branch support if requested
     if (tree.params->compute_aLRT_SH)
         calculateBranchSupports();
@@ -326,6 +317,9 @@ void CMaple::postInference()
 
 void CMaple::calculateBranchSupports()
 {
+    // show current lh
+    std::cout << std::setprecision(20) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
+    
     // record the start time
     auto start = getRealTime();
     cout << "Start calculating branch supports" << endl;

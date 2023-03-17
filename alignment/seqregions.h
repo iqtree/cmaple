@@ -1,10 +1,3 @@
-//
-//  seqregions.h
-//  alignment
-//
-//  Created by Nhan Ly-Trong on 24/01/2022.
-//
-
 #pragma once
 
 #include "seqregion.h"

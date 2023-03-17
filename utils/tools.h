@@ -1,23 +1,26 @@
-/***************************************************************************
- *   Copyright (C) 2022 by                                            *
- *   BUI Quang Minh <m.bui@anu.edu.au>                                *
- *   Nhan Ly-Trong <trongnhan.uit@gmail.com>                                    *
- *                                                                         *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+/****************************************************************************
+ *   Copyright (C) 2022 by
+ *   Nhan Ly-Trong <trongnhan.uit@gmail.com>
+ *   Chris Bielow <chris.bielow@fu-berlin.de>
+ *   Nicola De Maio <demaio@ebi.ac.uk>
+ *   BUI Quang Minh <m.bui@anu.edu.au>
+ *
+ *
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program; if not, write to the
+ *   Free Software Foundation, Inc.,
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
 #include <cmaple_config.h>
@@ -41,6 +44,7 @@
 #include <thread>
 #define SPRNG
 #include "sprng/sprng.h"
+#include "operatingsystem.h"
 
 #ifndef TOOLS_H
 #define TOOLS_H
@@ -1005,10 +1009,15 @@ void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
 }
 
 /**
- * Print usage for iq-tree
+ * Print usage for CMaple
  * @param program arguments list
  * @param full_command TRUE to print all available commands, FALSE to print normal usage dialog
  */
-void usage_iqtree(char* argv[], bool full_command);
+void usage_cmaple(char* argv[], bool full_command);
+
+/**
+ * Print copyright
+ */
+void printCopyright(std::ostream &out);
 
 #endif
