@@ -566,6 +566,11 @@ public:
     */
     char* output_prefix;
     
+    /**
+    *  TRUE to allow replace the input tree by its NNI neighbor (with a higher lh) when computing aLRT-SH
+    */
+    bool allow_replace_input_tree;
+    
     /*
         TRUE to log debugging
      */

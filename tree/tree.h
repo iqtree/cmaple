@@ -216,7 +216,7 @@ private:
     /**
         Update the PartialLh (seqregions) at a node if the new one is different from the current one
      */
-    void updateNewPartialIfDifferent(PhyloNode& node, const MiniIndex next_node_mini, std::unique_ptr<SeqRegions>& upper_left_right_regions, std::stack<Index> &node_stack, const PositionType seq_length);
+    bool updateNewPartialIfDifferent(PhyloNode& node, const MiniIndex next_node_mini, std::unique_ptr<SeqRegions>& upper_left_right_regions, std::stack<Index> &node_stack, const PositionType seq_length);
     
     /**
         Handle cases when the new seqregions is null/empty: (1) update the branch length; or (2) return an error message
@@ -356,7 +356,12 @@ private:
     /**
         Traverse downward to update the upper_left/right_region until the changes is insignificant
      */
-    void updateUpperLR(std::stack<Index>& node_stack);
+    void updateUpperLR(std::stack<Index>& node_stack, std::stack<Index>& node_stack_aLRT);
+    
+    /**
+        Add grand-children of a node to node_stack_aLRT to recompute their aLRT after replacing the ML tree with an NNI neighbor
+     */
+    void recompute_aLRT_GrandChildren(PhyloNode& parent, std::stack<Index>& node_stack_aLRT);
     
     /**
         Calculate aLRT for each internal branches

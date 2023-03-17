@@ -786,6 +786,7 @@ void initDefaultValue(Params &params)
     params.num_threads = 1;
     params.input_treefile = NULL;
     params.output_prefix = NULL;
+    params.allow_replace_input_tree = false;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -890,6 +891,10 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "-redo") == 0 || strcmp(argv[cnt], "--redo") == 0) {
                 params.redo_inference = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--replace-input-tree") == 0) {
+                params.allow_replace_input_tree = true;
                 continue;
             }
             if (strcmp(argv[cnt], "--thresh-prob") == 0) {
