@@ -703,6 +703,8 @@ std::string convertInt64ToString(int64_t number);
 
 std::string convertDoubleToString(RealNumType number);
 
+std::string convertDoubleToString(RealNumType number, uint8_t precision);
+
 /**
  Case-insensitive comparison between two strings
  @return true if two strings are equal.

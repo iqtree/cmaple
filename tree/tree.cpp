@@ -79,7 +79,7 @@ const string Tree::exportTreeString(const bool binary, const NumSeqsType node_ve
     }
 
     string branch_support = show_branch_supports ? convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH()) : "";
-    string length = node.getUpperLength() < 0 ? "0" : convertDoubleToString(node.getUpperLength());
+    string length = node.getUpperLength() < 0 ? "0" : convertDoubleToString(node.getUpperLength(), 20);
     output += ")" + branch_support + ":" + length;
     
     return output;
@@ -4777,6 +4777,9 @@ void Tree::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contributions, st
 
 void Tree::calculateBranchSupports()
 {
+    // refresh all upper left/right lhs before calculating aLRT-SH
+    refreshAllNonLowerLhs();
+    
     // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one less-info-seq to make sure all we compute the aLRT of all internal branches
     if (!params->input_treefile)
         performDFSAtLeave<&Tree::expandTreeByOneLessInfoSeq>();
@@ -4893,7 +4896,7 @@ bool Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNumType& l
         // if users input the tree -> don't replace the ML tree
         if (!params->input_treefile || params->allow_replace_input_tree)
         {
-            std::cout << "Replace the ML tree by a newly found NNI neighbor tree (root), improving tree loglh by: " << lh_diff << std::endl;
+            std::cout << std::setprecision(10) << "Replace the ML tree by a newly found NNI neighbor tree (root), improving tree loglh by: " << lh_diff << std::endl;
             // std::cout << "Tree lh (before replacing): " << calculateTreeLh() << std::endl;
             replaceMLTreebyNNIRoot(node_stack_aLRT, lh_diff, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength);
             // std::cout << "Tree lh (after replacing): " << calculateTreeLh() << std::endl;

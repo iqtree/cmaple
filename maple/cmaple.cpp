@@ -145,7 +145,7 @@ void CMaple::buildInitialTree()
     
     // show the runtime for building an initial tree
     auto end = getRealTime();
-    cout << " - Time spent on building an initial tree: " << end - start << endl;
+    cout << " - Time spent on building an initial tree: " << std::setprecision(3) << end - start << endl;
     
     // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
     tree.refreshAllLhs();
@@ -227,7 +227,7 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
     auto end = getRealTime();
     cout << " - Time spent on";
     cout << (short_range_search ? " a short range search for" : "");
-    cout << " optimizing the tree topology: " << end - start << endl;
+    cout << " optimizing the tree topology: " << std::setprecision(3) << end - start << endl;
 }
 
 void CMaple::optimizeBranchLengthsOfTree()
@@ -257,7 +257,7 @@ void CMaple::optimizeBranchLengthsOfTree()
 
     // show the runtime for optimize the branch lengths
     auto end = getRealTime();
-    cout << " - Time spent on optimizing the branch lengths: " << end - start << endl;
+    cout << " - Time spent on optimizing the branch lengths: " << std::setprecision(3) << end - start << endl;
 }
 
 void CMaple::doInference()
@@ -277,8 +277,8 @@ void CMaple::doInference()
         /*cout << " - Model params after updating: " << endl;
         tree.showModelParams();*/
         
-        // refresh all lower, upper left/right likelihoods after updating model params
-        tree.refreshAllLhs();
+        // refresh all lower after updating model params
+        tree.performDFS<&Tree::updateLowerLh>();
     }
     // otherwise, infer a phylogenetic tree from the alignment
     else
@@ -298,7 +298,7 @@ void CMaple::postInference()
         calculateBranchSupports();
     
     // output log-likelihood of the tree
-    std::cout << std::setprecision(20) << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
+    std::cout << std::setprecision(10) << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
     
     // output treefile
     string output_file(tree.params->output_prefix);
@@ -322,7 +322,7 @@ void CMaple::postInference()
 void CMaple::calculateBranchSupports()
 {
     // show current lh
-    std::cout << std::setprecision(20) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
+    std::cout << std::setprecision(10) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
     
     // record the start time
     auto start = getRealTime();
@@ -333,7 +333,7 @@ void CMaple::calculateBranchSupports()
     
     // show the runtime for calculating branch supports
     auto end = getRealTime();
-    cout << " - Time spent on calculating branch supports: " << end - start << endl;
+    cout << " - Time spent on calculating branch supports: " << std::setprecision(3) << end - start << endl;
 }
 
 void CMaple::exportOutput(const string &filename, const bool show_branch_support)

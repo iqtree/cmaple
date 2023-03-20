@@ -250,7 +250,7 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
 {
     if (!isInternal())
     {
-        string length_str = getUpperLength() < 0 ? "0" : convertDoubleToString(getUpperLength());
+        string length_str = getUpperLength() < 0 ? "0" : convertDoubleToString(getUpperLength(), 20);
         // without minor sequences -> simply return node's name and its branch length
         std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
         const PositionType num_less_info_seqs = less_info_seqs.size();

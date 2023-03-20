@@ -388,6 +388,13 @@ string convertDoubleToString(RealNumType number) {
     return ss.str(); //return a string with the contents of the stream
 }
 
+std::string convertDoubleToString(RealNumType number, uint8_t precision)
+{
+    stringstream ss; //create a stringstream
+    ss << std::setprecision(precision) << number; //add number to the stream
+    return ss.str(); //return a string with the contents of the stream
+}
+
 bool iEquals(const string &a, const string &b)
 {
     unsigned int sz = a.size();
