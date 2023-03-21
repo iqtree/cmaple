@@ -223,7 +223,7 @@ private:
     /**
         Compute the total likelihood vector for a node.
     */
-    void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
     
     /**
         Get the index of the node likelihood

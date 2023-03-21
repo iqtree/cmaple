@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "tree/phylonode.h"
+#include "model/model_dna.h"
 
 /*
     Test constructors
@@ -335,7 +336,7 @@ TEST(PhyloNode, TestExportString)
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initTestData(Params& params, Alignment& aln, Model& model, const std::string model_name = "GTR")
+void initTestData(Params& params, Alignment& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     initDefaultValue(params);
@@ -344,12 +345,13 @@ void initTestData(Params& params, Alignment& aln, Model& model, const std::strin
     char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
     strcpy(diff_file_path_ptr, diff_file_path.c_str());
     aln.readDiff(diff_file_path_ptr, NULL);
+    model = std::make_unique<ModelDNA>();
     // extract related info (freqs, log_freqs) of the ref sequence
-    model.extractRefInfo(aln.ref_seq, aln.num_states);
+    model->extractRefInfo(aln.ref_seq, aln.num_states);
     // init the mutation matrix from a model name
-    model.initMutationMat(params.model_name, aln.num_states);
+    model->initMutationMat(params.model_name, aln.num_states);
     // compute cumulative rates of the ref sequence
-    model.computeCumulativeRate(aln);
+    model->computeCumulativeRate(aln);
 }
 
 /*
@@ -390,7 +392,7 @@ void genTestData(SeqRegions& seqregions1, SeqRegions& seqregions2)
 TEST(PhyloNode, TestComputeTotalLhAtNode)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model

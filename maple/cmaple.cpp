@@ -55,13 +55,13 @@ void CMaple::preInference()
     tree.aln.sortSeqsByDistances(tree.params->hamming_weight);
     
     // extract related info (freqs, log_freqs) of the ref sequence
-    tree.model.extractRefInfo(tree.aln.ref_seq, tree.aln.num_states);
+    tree.model->extractRefInfo(tree.aln.ref_seq, tree.aln.num_states);
     
     // init the mutation matrix from a model name
-    tree.model.initMutationMat(tree.params->model_name, tree.aln.num_states);
+    tree.model->initMutationMat(tree.params->model_name, tree.aln.num_states);
     
     // compute cumulative rates of the ref sequence
-    tree.model.computeCumulativeRate(tree.aln);
+    tree.model->computeCumulativeRate(tree.aln);
     
     // setup function pointers in tree
     tree.setup();
@@ -77,7 +77,7 @@ void CMaple::buildInitialTree()
     
     // dummy variables
     Alignment& aln = tree.aln;
-    Model& model = tree.model;
+    std::unique_ptr<Model>& model = tree.model;
     const StateType num_states = aln.num_states;
     const PositionType seq_length = aln.ref_seq.size();
     const PositionType num_seqs = aln.data.size();
@@ -103,7 +103,7 @@ void CMaple::buildInitialTree()
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
-            tree.model.updateMutationMatEmpirical(aln);
+            tree.model->updateMutationMatEmpirical(aln);
         
         // NHANLT: debug
         //if ((*sequence)->seq_name == "39")
@@ -179,7 +179,7 @@ void CMaple::optimizeTree()
         optimizeBranchLengthsOfTree();
     
     // NhanLT: update the model params
-    tree.model.initMutationMat(tree.params->model_name, tree.aln.num_states);
+    tree.model->initMutationMat(tree.params->model_name, tree.aln.num_states);
     tree.updateModelParams();
     
     // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths

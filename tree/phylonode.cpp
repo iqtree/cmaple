@@ -233,7 +233,7 @@ void PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
     return neighbor_indexes;
 }*/
 
-void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     // if node is root
     if (is_root)

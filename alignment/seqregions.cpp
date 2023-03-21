@@ -9,12 +9,12 @@
 #include <cassert>
 #include <utils/matrix.h>
 
-RealNumType updateLHwithModel(int num_states, const Model& model,
+RealNumType updateLHwithModel(int num_states, const std::unique_ptr<Model>& model,
   const SeqRegion::LHType& prior,
   SeqRegion::LHType& posterior, const RealNumType total_blength)
 {
     RealNumType sum_lh = 0;
-    RealNumType* mutation_mat_row = model.mutation_mat;
+    RealNumType* mutation_mat_row = model->mutation_mat;
     for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
     {
         RealNumType tot = 0;
@@ -27,7 +27,7 @@ RealNumType updateLHwithModel(int num_states, const Model& model,
         }
 
         tot += prior[i];
-        posterior[i] = tot * model.root_freqs[i];
+        posterior[i] = tot * model->root_freqs[i];
         sum_lh += posterior[i];
     }
     return sum_lh;
@@ -247,7 +247,7 @@ size_t SeqRegions::countSharedSegments(const SeqRegions& seq2_regions, const siz
     return ++count;
 }
 
-void merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const Model& model, 
+void merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const std::unique_ptr<Model>& model,
                const PositionType end_pos, const StateType num_states, SeqRegions& merged_target)
 {
   RealNumType total_blength = lower_plength;
@@ -289,7 +289,7 @@ void merge_N_RACGT(const SeqRegion& reg_racgt, const RealNumType lower_plength, 
   SeqRegions::addNonConsecutiveRRegion(merged_regions, reg_racgt.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
 }
 
-void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const Model& model, const StateType num_states, SeqRegions& merged_regions)
+void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const std::unique_ptr<Model>& model, const StateType num_states, SeqRegions& merged_regions)
 {
   /*
    NhanLT: total_blength may be wrong if upper_plength == -1 and reg_o.plength_observation2node > 0
@@ -314,7 +314,7 @@ void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const Po
   if (total_blength > 0)
   {
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
-    RealNumType sum_lh = updateLHwithMat(num_states, model.transposed_mut_mat, *(reg_o.likelihood), *new_lh, total_blength);
+    RealNumType sum_lh = updateLHwithMat(num_states, model->transposed_mut_mat, *(reg_o.likelihood), *new_lh, total_blength);
 
     // normalize the new partial likelihood
     normalize_arr(new_lh->data(), num_states, sum_lh);
@@ -387,7 +387,7 @@ bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_reg
     return false;
 }
 
-void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
@@ -395,7 +395,7 @@ void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, 
 
     // if total_blength_1 > 0 => compute new partial likelihood
     if (total_blength_1 > 0)
-      updateLHwithMat(num_states, model.transposed_mut_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
+      updateLHwithMat(num_states, model->transposed_mut_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
     // otherwise, clone the partial likelihood from seq1
     else
       *new_lh = *seq1_region.likelihood;
@@ -405,8 +405,8 @@ void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, 
     // seq1 = seq2 = O
     if (seq2_region.type == TYPE_O)
     {
-        RealNumType* mutation_mat_row = model.mutation_mat;
-        sum_new_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region.likelihood), *new_lh, total_blength_2);
+        RealNumType* mutation_mat_row = model->mutation_mat;
+        sum_new_lh = updateMultLHwithMat(num_states, model->mutation_mat, *(seq2_region.likelihood), *new_lh, total_blength_2);
     }
     // seq1 = "O" and seq2 = R or ACGT
     else
@@ -418,7 +418,7 @@ void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, 
         assert(num_states == 4);
         if (total_blength_2 > 0)
         {
-            RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+            RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
             sum_new_lh += updateVecWithState<4>(new_lh_value.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
         }
         else
@@ -434,18 +434,18 @@ void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, 
     SeqRegions::addSimplifiedO(end_pos, new_lh_value, aln, threshold_prob, merged_regions);
 }
 
-void merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+void merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     
-    RealNumType sum_new_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
+    RealNumType sum_new_lh = updateMultLHwithMat(num_states, model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
     
     // normalize the new partial likelihood
     normalize_arr(new_lh.data(), num_states, sum_new_lh);
     SeqRegions::addSimplifiedO(end_pos, new_lh, aln, threshold_prob, merged_regions);
 }
 
-void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     RealNumType sum_new_lh = 0;
@@ -460,7 +460,7 @@ void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_ble
     assert(num_states == 4);
     if (total_blength_2 > 0)
     {
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
         sum_new_lh = updateVecWithState<4>(new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
     }
     else
@@ -473,7 +473,7 @@ void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_ble
     merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
 }
 
-void merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+void merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
 {
     const StateType num_states = aln.num_states;
     StateType seq1_state = seq1_region.type;
@@ -490,19 +490,19 @@ void merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_regi
         if (upper_plength > 0)
             length_to_root += upper_plength;
         SeqRegion::LHType root_vec;
-        memcpy(root_vec.data(), model.root_freqs, sizeof(RealNumType)* num_states);
+        memcpy(root_vec.data(), model->root_freqs, sizeof(RealNumType)* num_states);
         
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
         assert(num_states == 4);
         updateVecWithState<4>(root_vec.data(), seq1_state, transposed_mut_mat_row, seq1_region.plength_observation2node);
         
-        updateLHwithMat(num_states, model.transposed_mut_mat, root_vec, *new_lh, length_to_root);
+        updateLHwithMat(num_states, model->transposed_mut_mat, root_vec, *new_lh, length_to_root);
     }
     else
     {
         if (total_blength_1 > 0)
         {
-            RealNumType* mutation_mat_row = model.mutation_mat + model.row_index[seq1_state];
+            RealNumType* mutation_mat_row = model->mutation_mat + model->row_index[seq1_state];
             assert(num_states == 4);
             setVecWithState<4>(new_lh_value.data(), seq1_state, mutation_mat_row, total_blength_1);
         }
@@ -537,7 +537,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
                                  const SeqRegions& lower_regions, 
                                  RealNumType lower_plength, const
                                  Alignment& aln, 
-                                 const Model& model,
+                                 const std::unique_ptr<Model>& model,
                                  const RealNumType threshold_prob) const
 {
     // init variables
@@ -704,9 +704,9 @@ void merge_N_RACGT_TwoLowers(const SeqRegion& seq2_region, const PositionType en
     SeqRegions::addNonConsecutiveRRegion(merged_regions, seq2_region.type, plength_observation2node, -1, end_pos, threshold_prob);
 }
 
-void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
+void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
 {
-    const RealNumType* const &cumulative_rate = model.cumulative_rate;
+    const RealNumType* const &cumulative_rate = model->cumulative_rate;
     
     // add a new region and try to merge consecutive R regions together
     SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type, -1, -1, end_pos, threshold_prob);
@@ -720,14 +720,14 @@ void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const Position
         if (seq1_region.type == TYPE_R)
             log_lh += (total_blength_1 + total_blength_2) * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
         else
-            log_lh += model.diagonal_mut_mat[seq1_region.type] * (total_blength_1 + total_blength_2);
+            log_lh += model->diagonal_mut_mat[seq1_region.type] * (total_blength_1 + total_blength_2);
     }
 }
 
-bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
-    RealNumType sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
+    RealNumType sum_lh = updateMultLHwithMat(num_states, model->mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
     
     if (sum_lh == 0)
     {
@@ -746,7 +746,7 @@ bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength
     return true;
 }
 
-bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     StateType seq2_state = seq2_region.type;
@@ -755,7 +755,7 @@ bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_ble
     
     if (total_blength_2 > 0)
     {
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
         assert(num_states == 4);
         sum_lh = updateVecWithState<4>(new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
         
@@ -786,7 +786,7 @@ bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_ble
     return true;
 }
 
-bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
@@ -794,7 +794,7 @@ bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq
     
     if (total_blength_1 > 0)
     {
-      sum_lh = updateLHwithMat(num_states, model.mutation_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
+      sum_lh = updateLHwithMat(num_states, model->mutation_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
     }
     // otherwise, clone the partial likelihood from seq1
     else
@@ -815,10 +815,10 @@ bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq
     return true;
 }
 
-bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
-    RealNumType sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
+    RealNumType sum_lh = updateMultLHwithMat(num_states, model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
                         
     if (sum_lh == 0)
     {
@@ -837,7 +837,7 @@ bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_ble
     return true;
 }
 
-bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     StateType seq2_state = seq2_region.type;
@@ -846,7 +846,7 @@ bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total
     
     if (total_blength_2 > 0)
     {
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
         assert(num_states == 4);
         sum_lh += updateVecWithState<4>(new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
         
@@ -870,7 +870,7 @@ bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total
     return true;
 }
 
-bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     StateType seq1_state = seq1_region.type;
@@ -884,7 +884,7 @@ bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion&
     assert(num_states == 4);
     if (total_blength_1 > 0)
     {
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
         setVecWithState<4>(new_lh->data(), seq1_state, transposed_mut_mat_row, total_blength_1);
     }
     else
@@ -898,7 +898,7 @@ bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion&
     return merge_RACGT_RACGT_TwoLowers(seq2_region, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, return_log_lh);
 }
   
-bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     
@@ -944,7 +944,7 @@ bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& se
     return true;
 }
 
-RealNumType SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool return_log_lh) const
+RealNumType SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool return_log_lh) const
 {
     // init variables
     RealNumType log_lh = 0;
@@ -1026,9 +1026,9 @@ RealNumType SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regio
     return log_lh;
 }
 
-void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType &log_lh, SeqRegions& merged_regions)
+void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, RealNumType &log_lh, SeqRegions& merged_regions)
 {
-    const RealNumType* const &cumulative_rate = model.cumulative_rate;
+    const RealNumType* const &cumulative_rate = model->cumulative_rate;
     
     // add a new region and try to merge consecutive R regions together
     SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type, -1, -1, end_pos, threshold_prob);
@@ -1049,17 +1049,17 @@ void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions, 
     }
     else
     {
-        log_lh += model.diagonal_mut_mat[seq1_region.type] * total_blength;
+        log_lh += model->diagonal_mut_mat[seq1_region.type] * total_blength;
         
         // compute site lh contributions
-        site_lh_contributions[pos] += model.diagonal_mut_mat[seq1_region.type] * total_blength;
+        site_lh_contributions[pos] += model->diagonal_mut_mat[seq1_region.type] * total_blength;
     }
 }
 
-bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     const StateType num_states = aln.num_states;
-    RealNumType sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
+    RealNumType sum_lh = updateMultLHwithMat(num_states, model->mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
     
     if (sum_lh == 0)
     {
@@ -1080,7 +1080,7 @@ bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions, const SeqRe
     return true;
 }
 
-bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     const StateType num_states = aln.num_states;
     StateType seq2_state = seq2_region.type;
@@ -1089,7 +1089,7 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions, const S
     
     if (total_blength_2 > 0)
     {
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
         assert(num_states == 4);
         sum_lh = updateVecWithState<4>(new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
         
@@ -1124,7 +1124,7 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions, const S
     return true;
 }
 
-bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     const StateType num_states = aln.num_states;
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
@@ -1132,7 +1132,7 @@ bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions, const 
     
     if (total_blength_1 > 0)
     {
-      sum_lh = updateLHwithMat(num_states, model.mutation_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
+      sum_lh = updateLHwithMat(num_states, model->mutation_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
     }
     // otherwise, clone the partial likelihood from seq1
     else
@@ -1153,10 +1153,10 @@ bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions, const 
     return true;
 }
 
-bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     const StateType num_states = aln.num_states;
-    RealNumType sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
+    RealNumType sum_lh = updateMultLHwithMat(num_states, model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
                         
     if (sum_lh == 0)
     {
@@ -1177,7 +1177,7 @@ bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions, const S
     return true;
 }
 
-bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     const StateType num_states = aln.num_states;
     StateType seq2_state = seq2_region.type;
@@ -1186,7 +1186,7 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions, con
     
     if (total_blength_2 > 0)
     {
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq2_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
         assert(num_states == 4);
         sum_lh += updateVecWithState<4>(new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
         
@@ -1214,7 +1214,7 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions, con
     return true;
 }
 
-bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     const StateType num_states = aln.num_states;
     StateType seq1_state = seq1_region.type;
@@ -1228,7 +1228,7 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions, co
     assert(num_states == 4);
     if (total_blength_1 > 0)
     {
-        RealNumType* transposed_mut_mat_row = model.transposed_mut_mat + model.row_index[seq1_state];
+        RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
         setVecWithState<4>(new_lh->data(), seq1_state, transposed_mut_mat_row, total_blength_1);
     }
     else
@@ -1242,7 +1242,7 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions, co
     return calSiteLhs_RACGT_RACGT(site_lh_contributions, seq2_region, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions);
 }
 
-bool calSiteLhs_notN_notN(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_notN_notN(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     const StateType num_states = aln.num_states;
     
@@ -1288,7 +1288,7 @@ bool calSiteLhs_notN_notN(std::vector<RealNumType>& site_lh_contributions, const
     return true;
 }
 
-RealNumType SeqRegions::calculateSiteLhContributions(std::vector<RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const Model& model, const RealNumType threshold_prob) const
+RealNumType SeqRegions::calculateSiteLhContributions(std::vector<RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob) const
 {
     // init variables
     RealNumType log_lh = 0;
@@ -1375,14 +1375,14 @@ RealNumType SeqRegions::calculateSiteLhContributions(std::vector<RealNumType>& s
     return log_lh;
 }
 
-RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, const Model& model)
+RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, const std::unique_ptr<Model>& model)
 {
     // dummy variables
     RealNumType log_lh = 0;
     RealNumType log_factor = 1;
     PositionType start_pos = 0;
     const SeqRegions& regions = *this;
-    const std::vector< std::vector<PositionType> > &cumulative_base = model.cumulative_base;
+    const std::vector< std::vector<PositionType> > &cumulative_base = model->cumulative_base;
     
     // browse regions one by one to compute the likelihood of each region
     for (const SeqRegion& region : regions)
@@ -1391,17 +1391,17 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
         if (region.type == TYPE_R)
         {
             for (StateType i = 0; i < num_states; ++i)
-                log_lh += model.root_log_freqs[i] * (cumulative_base[region.position + 1][i] - cumulative_base[start_pos][i]);
+                log_lh += model->root_log_freqs[i] * (cumulative_base[region.position + 1][i] - cumulative_base[start_pos][i]);
         }
         // type ACGT
         else if (region.type < num_states)
-            log_lh += model.root_log_freqs[region.type];
+            log_lh += model->root_log_freqs[region.type];
         // type O
         else if (region.type == TYPE_O)
         {
             RealNumType tot = 0;
             assert(num_states == 4);
-            tot += dotProduct<4>(&(*region.likelihood)[0], model.root_freqs);
+            tot += dotProduct<4>(&(*region.likelihood)[0], model->root_freqs);
             log_factor *= tot;
         }
         
@@ -1428,14 +1428,14 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
     return log_lh;
 }
 
-RealNumType SeqRegions::computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_contributions, const StateType num_states, const Model& model)
+RealNumType SeqRegions::computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_contributions, const StateType num_states, const std::unique_ptr<Model>& model)
 {
     // dummy variables
     RealNumType log_lh = 0;
     RealNumType log_factor = 1;
     PositionType start_pos = 0;
     const SeqRegions& regions = *this;
-    const std::vector< std::vector<PositionType> > &cumulative_base = model.cumulative_base;
+    const std::vector< std::vector<PositionType> > &cumulative_base = model->cumulative_base;
     
     // browse regions one by one to compute the likelihood of each region
     for (const SeqRegion& region : regions)
@@ -1444,19 +1444,19 @@ RealNumType SeqRegions::computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_co
         if (region.type == TYPE_R)
         {
             for (StateType i = 0; i < num_states; ++i)
-                log_lh += model.root_log_freqs[i] * (cumulative_base[region.position + 1][i] - cumulative_base[start_pos][i]);
+                log_lh += model->root_log_freqs[i] * (cumulative_base[region.position + 1][i] - cumulative_base[start_pos][i]);
             
             // calculate site lhs
             for (PositionType pos = start_pos; pos < region.position + 1; ++pos)
             {
                 for (StateType i = 0; i < num_states; ++i)
-                    site_lh_contributions[pos] += model.root_log_freqs[i] * (cumulative_base[pos + 1][i] - cumulative_base[pos][i]);
+                    site_lh_contributions[pos] += model->root_log_freqs[i] * (cumulative_base[pos + 1][i] - cumulative_base[pos][i]);
             }
         }
         // type ACGT
         else if (region.type < num_states)
         {
-            RealNumType lh_contribution = model.root_log_freqs[region.type];
+            RealNumType lh_contribution = model->root_log_freqs[region.type];
             log_lh += lh_contribution;
             
             // calculate site lhs
@@ -1467,7 +1467,7 @@ RealNumType SeqRegions::computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_co
         {
             RealNumType tot = 0;
             assert(num_states == 4);
-            tot += dotProduct<4>(&(*region.likelihood)[0], model.root_freqs);
+            tot += dotProduct<4>(&(*region.likelihood)[0], model->root_freqs);
             log_factor *= tot;
             
             // calculate site lhs
@@ -1497,7 +1497,7 @@ RealNumType SeqRegions::computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_co
     return log_lh;
 }
 
-void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const StateType num_states, const Model& model, RealNumType blength) const
+void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const StateType num_states, const std::unique_ptr<Model>& model, RealNumType blength) const
 {
     if (total_lh)
         total_lh->clear();

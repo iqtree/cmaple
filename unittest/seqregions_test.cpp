@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "alignment/seqregions.h"
+#include "model/model_dna.h"
 
 /*
  Test constructor
@@ -720,7 +721,7 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initAlnModelParams(Params& params, Alignment& aln, Model& model, const std::string model_name = "GTR")
+void initAlnModelParams(Params& params, Alignment& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     initDefaultValue(params);
@@ -729,21 +730,22 @@ void initAlnModelParams(Params& params, Alignment& aln, Model& model, const std:
     char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
     strcpy(diff_file_path_ptr, diff_file_path.c_str());
     aln.readDiff(diff_file_path_ptr, NULL);
+    model = std::make_unique<ModelDNA>();
     // extract related info (freqs, log_freqs) of the ref sequence
-    model.extractRefInfo(aln.ref_seq, aln.num_states);
+    model->extractRefInfo(aln.ref_seq, aln.num_states);
     // init the mutation matrix from a model name
-    model.initMutationMat(params.model_name, aln.num_states);
+    model->initMutationMat(params.model_name, aln.num_states);
     // compute cumulative rates of the ref sequence
-    model.computeCumulativeRate(aln);
+    model->computeCumulativeRate(aln);
 }
 
 /*
- Test computeAbsoluteLhAtRoot(const Alignment& aln, const Model& model)
+ Test computeAbsoluteLhAtRoot(const Alignment& aln, const std::unique_ptr<Model>& model)
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -787,12 +789,12 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
 }
 
 /*
- Test computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength = -1)
+ Test computeTotalLhAtRoot(StateType num_states, const std::unique_ptr<Model>& model, RealNumType blength = -1)
  */
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -857,13 +859,13 @@ TEST(SeqRegions, computeTotalLhAtRoot)
 }
 
 /*
- Test merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const Model& model,
+ Test merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const std::unique_ptr<Model>& model,
  const PositionType end_pos, const StateType num_states, SeqRegions& merged_target)
  */
 TEST(SeqRegions, merge_N_O)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -995,7 +997,7 @@ TEST(SeqRegions, merge_N_O)
 TEST(SeqRegions, merge_N_RACGT)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -1330,12 +1332,12 @@ TEST(SeqRegions, merge_N_RACGT)
 }
 
 /*
- Test merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const Model& model, const StateType num_states, SeqRegions& merged_regions)
+ Test merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const std::unique_ptr<Model>& model, const StateType num_states, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_O_N)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -1457,7 +1459,7 @@ TEST(SeqRegions, merge_O_N)
 TEST(SeqRegions, merge_RACGT_N)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -1797,7 +1799,7 @@ TEST(SeqRegions, merge_RACGT_N)
 TEST(SeqRegions, merge_Zero_Distance)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -1910,12 +1912,12 @@ TEST(SeqRegions, merge_Zero_Distance)
 }
 
 /*
- Test merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_O_ORACGT)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -2042,12 +2044,12 @@ TEST(SeqRegions, merge_O_ORACGT)
 }
 
 /*
- Test merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_RACGT_O)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -2136,12 +2138,12 @@ TEST(SeqRegions, merge_RACGT_O)
 }
 
 /*
- Test merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -2298,13 +2300,13 @@ TEST(SeqRegions, merge_RACGT_RACGT)
 }
 
 /*
- Test merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const Model& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
     // NOTE: if plength_observation2root > 0 then must be plength_observation2node != -1;
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -3927,12 +3929,12 @@ void genTestData4(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
 
 /*
  Test mergeUpperLower(SeqRegions* &merged_regions, RealNumType upper_plength, const SeqRegions& lower_regions, RealNumType lower_plength, const
- Alignment& aln, const Model& model, RealNumType threshold) const
+ Alignment& aln, const std::unique_ptr<Model>& model, RealNumType threshold) const
  */
 TEST(SeqRegions, mergeUpperLower)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -4012,7 +4014,7 @@ TEST(SeqRegions, mergeUpperLower)
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -4129,7 +4131,7 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -4465,12 +4467,12 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 }
 
 /*
- Test merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const Model& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
+ Test merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -4550,12 +4552,12 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 }
 
 /*
- Test merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -4689,12 +4691,12 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
 }
 
 /*
- Test  merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test  merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -4819,12 +4821,12 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 }
 
 /*
- Test merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -4997,12 +4999,12 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 }
 
 /*
- Test merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -5162,12 +5164,12 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 }
 
 /*
- Test merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -5355,12 +5357,12 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 
 
 /*
- Test merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -5526,12 +5528,12 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 }
 
 /*
- Test merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model
@@ -5804,12 +5806,12 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
 }
 
 /*
- Test mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold_prob, bool return_log_lh)
+ Test mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const std::unique_ptr<Model>& model, RealNumType threshold_prob, bool return_log_lh)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
     Alignment aln;
-    Model model;
+    std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model

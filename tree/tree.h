@@ -1,6 +1,6 @@
 #include "updatingnode.h"
 #include "alignment/alignment.h"
-#include "model/model.h"
+#include "model/model_dna.h"
 #include <optional>
 #ifdef _OPENMP
     #include <omp.h>
@@ -458,7 +458,7 @@ public:
     /**
         Evolutionary model
      */
-    Model model;
+    std::unique_ptr<Model> model;
     
     /*
         Vector of phylonodes
@@ -625,7 +625,7 @@ public:
      */
     inline void showModelParams()
     {
-        std::cout << model.exportString(aln) << std::endl;
+        std::cout << model->exportString(aln) << std::endl;
     }
     
     /**
