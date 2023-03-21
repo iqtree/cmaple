@@ -63,7 +63,7 @@ public:
     /**
         Extract reference-related info (freqs, log_freqs)
      */
-    void extractRefInfo(const std::vector<StateType> &ref_seq, const StateType num_states);
+    void extractRefInfo(const Alignment& aln);
     
     /**
         Init the mutation rate matrix from a model

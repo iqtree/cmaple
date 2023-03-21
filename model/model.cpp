@@ -76,8 +76,11 @@ Model::~Model()
     }
 }
 
-void Model::extractRefInfo(const vector<StateType> &ref_seq, const StateType num_states)
+void Model::extractRefInfo(const Alignment& aln)
 {
+    const vector<StateType>& ref_seq = aln.ref_seq;
+    const StateType num_states = aln.num_states;
+    
     ASSERT(ref_seq.size() > 0);
     
     // init variables
@@ -87,8 +90,15 @@ void Model::extractRefInfo(const vector<StateType> &ref_seq, const StateType num
     inverse_root_freqs = new RealNumType[num_states];
     
     // init root_freqs
-    assert(num_states == 4);
-    resetVec<4>(root_freqs);
+    switch (aln.seq_type) {
+        case SEQ_PROTEIN:
+            resetVec<20>(root_freqs);
+            break;
+            
+        default: // dna
+            resetVec<4>(root_freqs);
+            break;
+    }
     
     // browse all sites in the ref one by one to count bases
     for (PositionType i = 0; i < seq_length; ++i)

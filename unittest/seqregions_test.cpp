@@ -732,7 +732,7 @@ void initAlnModelParams(Params& params, Alignment& aln, std::unique_ptr<Model>& 
     aln.readDiff(diff_file_path_ptr, NULL);
     model = std::make_unique<ModelDNA>();
     // extract related info (freqs, log_freqs) of the ref sequence
-    model->extractRefInfo(aln.ref_seq, aln.num_states);
+    model->extractRefInfo(aln);
     // init the mutation matrix from a model name
     model->initMutationMat(params.model_name, aln.num_states);
     // compute cumulative rates of the ref sequence

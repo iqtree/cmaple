@@ -55,7 +55,7 @@ void CMaple::preInference()
     tree.aln.sortSeqsByDistances(tree.params->hamming_weight);
     
     // extract related info (freqs, log_freqs) of the ref sequence
-    tree.model->extractRefInfo(tree.aln.ref_seq, tree.aln.num_states);
+    tree.model->extractRefInfo(tree.aln);
     
     // init the mutation matrix from a model name
     tree.model->initMutationMat(tree.params->model_name, tree.aln.num_states);
