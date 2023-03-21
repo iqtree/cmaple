@@ -138,5 +138,12 @@ public:
         @param hamming_weight weight to calculate the hamming distance
     */
     PositionType computeSeqDistance(Sequence& sequence, RealNumType hamming_weight);
+    
+    /**
+        detect the data type of the input sequences
+        @param sequences vector of strings
+        @return the data type of the input sequences
+    */
+    SeqType detectSequenceType(StrVector& sequences);
 };
 #endif
