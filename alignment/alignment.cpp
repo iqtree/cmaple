@@ -447,8 +447,9 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
         outError("File not found ", diff_path);
     
     // read the reference sequence (if the user supplies it)
+    string ref_sequence{};
     if (ref_path)
-        readRef(ref_path);
+        ref_sequence = readRef(ref_path);
     
     // init dummy variables
     string seq_name = "";
@@ -491,10 +492,22 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             
             // choose the ref sequence if the user already supplies a reference sequence
             if (ref_path)
+            {
                 outWarning("Skipping the reference sequence in the Diff file since the reference sequence is already specified via '--ref' option.");
-            // otherwise, parse the reference sequence into vector of state
-            else
-                parseRefSeq(line);
+                line = ref_sequence;
+            }
+            
+            // transform ref_sequence to uppercase
+            transform(line.begin(), line.end(), line.begin(), ::toupper);
+            
+            // detect the seq_type from the ref_sequences
+            StrVector tmp_str_vec;
+            tmp_str_vec.push_back(line);
+            seq_type = detectSequenceType(tmp_str_vec);
+            updateNumStates();
+            
+            // parse the reference sequence into vector of state
+            parseRefSeq(line);
             
             // reset the seq_name
             seq_name = "";
@@ -1054,6 +1067,7 @@ void Alignment::extractDiffFile(Params& params)
     
     // detect the type of the input sequences
     seq_type = detectSequenceType(sequences);
+    updateNumStates();
     
     // generate reference sequence from the input sequences
     string ref_sequence;
@@ -1142,4 +1156,17 @@ SeqType Alignment::detectSequenceType(StrVector& sequences)
     if (((double)(num_alpha + num_digit + num_nuc)) / num_ungap > 0.9)
         return SEQ_MORPH;
     return SEQ_UNKNOWN;
+}
+
+void Alignment::updateNumStates()
+{
+    switch (seq_type) {
+        case SEQ_PROTEIN:
+            num_states = 20;
+            break;
+            
+        default: // dna
+            num_states = 4;
+            break;
+    }
 }

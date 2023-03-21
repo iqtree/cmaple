@@ -145,5 +145,10 @@ public:
         @return the data type of the input sequences
     */
     SeqType detectSequenceType(StrVector& sequences);
+    
+    /**
+        update num_states according to the seq_type
+    */
+    void updateNumStates();
 };
 #endif
