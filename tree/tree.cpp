@@ -4635,10 +4635,10 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
     const RealNumType LT3 = LT1 + nodelh.getLhDiff3();
     
     // debug
-    /*if (!child_1.isInternal() && (aln.data[child_1.getSeqNameIndex()].seq_name == "Lizard"))
+    /*if (!child_1.isInternal() && (aln.data[child_1.getSeqNameIndex()].seq_name == "11"))
         std::cout << "sfdfds " <<std::endl;
     
-    if (!child_2.isInternal() && (aln.data[child_2.getSeqNameIndex()].seq_name == "Lizard"))
+    if (!child_2.isInternal() && (aln.data[child_2.getSeqNameIndex()].seq_name == "11"))
         std::cout << "sfdfds " <<std::endl;*/
     
     // calculate site_lh differences
@@ -5797,6 +5797,9 @@ void Tree::readTree(const char* input_treefile)
 
 void Tree::collapseAllZeroLeave()
 {
+    // the default min_blength in CMaple is not small enough -> I set it at min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
+    const RealNumType new_min_blength = min_blength * 0.1;
+    
     // start from root
     Index node_index = Index(root_vector_index, TOP);
     Index last_node_index;
@@ -5845,8 +5848,8 @@ void Tree::collapseAllZeroLeave()
                     }
                     else
                     {
-                        outWarning("Detect two zero-length branches connecting to an internal node. Reset one of those branches at the minmimum branch length " + convertDoubleToString(min_blength) + " to avoid potential error");
-                        neighbor_1.setUpperLength(min_blength);
+                        outWarning("Detect two zero-length branches connecting to an internal node. Reset one of those branches at the minmimum branch length " + convertDoubleToString(new_min_blength) + " to avoid potential error");
+                        neighbor_1.setUpperLength(new_min_blength);
                     }
                 }
                 
@@ -5925,7 +5928,8 @@ void Tree::expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, c
     upper_left_right_regions->mergeUpperLower(best_child_regions, top_distance, *(node.getPartialLh(TOP)), 0, aln, model, params->threshold_prob);
     
     // add a new node representing the less-info-seq
-    connectNewSample2Branch(lower_regions, seq_name_index, node_index, node, top_distance, 0, -1, best_child_regions, upper_left_right_regions);
+    // the default min_blength in CMaple is not small enough -> I set it at min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
+    connectNewSample2Branch(lower_regions, seq_name_index, node_index, node, top_distance, 0, min_blength * 0.1, best_child_regions, upper_left_right_regions);
 }
 
 template <void(Tree::*task)(PhyloNode&, const Index, const Index)>

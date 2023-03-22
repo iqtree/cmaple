@@ -322,7 +322,7 @@ void CMaple::postInference()
 void CMaple::calculateBranchSupports()
 {
     // show current lh
-    std::cout << std::setprecision(10) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
+    // std::cout << std::setprecision(10) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
     
     // record the start time
     auto start = getRealTime();

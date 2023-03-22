@@ -794,7 +794,7 @@ void initDefaultValue(Params &params)
     params.short_range_topo_search = false;
     params.output_testing = NULL;
     params.compute_aLRT_SH = false;
-    params.aLRT_SH_replicates = 10000;
+    params.aLRT_SH_replicates = 1000;
     params.aLRT_SH_epsilon = 0.1;
     params.num_threads = 1;
     params.input_treefile = NULL;
