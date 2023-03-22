@@ -4781,6 +4781,10 @@ void Tree::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contributions, st
 
 void Tree::calculateBranchSupports()
 {
+    // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
+    if (node_lhs.size() == 0)
+        node_lhs.emplace_back(0);
+    
     // refresh all upper left/right lhs before calculating aLRT-SH
     refreshAllNonLowerLhs();
     
