@@ -319,14 +319,15 @@ const RealNumType NodeLh::getLhDiff3() const
     return neighbor_3_lh_diff_;
 }
 
-const RealNumType NodeLh::get_aLRT() const
+const RealNumType NodeLh::getHalf_aLRT() const
 {
     /*  aLRT = 2(LT1 - max(LT2x,LT2y)); where LT2x, LT2y are the log lh of the two NNI neighbors of T1
      <=> aLRT = 2(LT1 - max(diff_x + LT1, diff_y + LT1)); where diff_x = LT2x - LT1; and similarly to diff_y
      <=> aLRT = 2(LT1 - max(diff_x, diff_y) - LT1)
-     <=> aLRT = 2(-max(diff_x, diff_y)) = 2 * (-max_nni_neighbor_lh_diff) = -max_nni_neighbor_lh_diff - max_nni_neighbor_lh_diff
+     <=> aLRT = 2(-max(diff_x, diff_y)) = 2 * (-max_nni_neighbor_lh_diff)
+     <=> (half aLRT) = aLRT / 2 = -max_nni_neighbor_lh_diff
      */
-    return neighbor_2_lh_diff_ > neighbor_3_lh_diff_ ? - (neighbor_2_lh_diff_ + neighbor_2_lh_diff_) : - (neighbor_3_lh_diff_ + neighbor_3_lh_diff_);
+    return neighbor_2_lh_diff_ > neighbor_3_lh_diff_ ? -neighbor_2_lh_diff_ : -neighbor_3_lh_diff_;
 }
 
 const RealNumType NodeLh::getLhContribution() const

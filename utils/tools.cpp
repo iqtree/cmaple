@@ -795,7 +795,7 @@ void initDefaultValue(Params &params)
     params.output_testing = NULL;
     params.compute_aLRT_SH = false;
     params.aLRT_SH_replicates = 1000;
-    params.aLRT_SH_epsilon = 0.1;
+    params.aLRT_SH_epsilon = 0.05;
     params.num_threads = 1;
     params.input_treefile = NULL;
     params.output_prefix = NULL;

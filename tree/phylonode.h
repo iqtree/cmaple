@@ -270,9 +270,9 @@ struct NodeLh
     const RealNumType getLhDiff3() const;
     
     /**
-        Get aLRT
+        Get half of aLRT (~aLRT / 2)
      */
-    const RealNumType get_aLRT() const;
+    const RealNumType getHalf_aLRT() const;
     
     /**
         Get lh_contribution_

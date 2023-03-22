@@ -4722,8 +4722,8 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
         findTwoLargest(CS1, CS2, CS3, CS_first, CS_second);
         
         // increase sh_count if the condition (aLRT > 2(CS_first - CS_second) + epsilon) is satisfied
-        const RealNumType CS_diff = CS_first - CS_second;
-        if (nodelh.get_aLRT() > (CS_diff + CS_diff + params->aLRT_SH_epsilon))
+        // <=> half_aLRT > CS_first - CS_second + half_epsilon
+        if (nodelh.getHalf_aLRT() > (CS_first - CS_second + params->aLRT_SH_epsilon))
             ++sh_count;
     }
 #ifdef _OPENMP
