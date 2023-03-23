@@ -33,7 +33,7 @@ void Tree::setupFunctionPointers()
 void Tree::setupBlengthThresh()
 {
     default_blength = 1.0 / aln.ref_seq.size();
-    min_blength = params->min_blength_factor * default_blength;
+    min_blength = params->fixed_min_blength == -1 ? params->min_blength_factor * default_blength : params->fixed_min_blength;
     max_blength = params->max_blength_factor * default_blength;
     min_blength_mid = params->min_blength_mid_factor * default_blength;
     min_blength_sensitivity = min_blength * 1e-5;
@@ -5807,7 +5807,7 @@ void Tree::readTree(const char* input_treefile)
 void Tree::collapseAllZeroLeave()
 {
     // the default min_blength in CMaple is not small enough -> I set it at min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
-    const RealNumType new_min_blength = min_blength * 0.1;
+    const RealNumType new_min_blength = (params->fixed_min_blength == -1) ? min_blength * 0.1 : min_blength;
     
     // start from root
     Index node_index = Index(root_vector_index, TOP);
@@ -5938,7 +5938,8 @@ void Tree::expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, c
     
     // add a new node representing the less-info-seq
     // the default min_blength in CMaple is not small enough -> I set it at min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
-    connectNewSample2Branch(lower_regions, seq_name_index, node_index, node, top_distance, 0, min_blength * 0.1, best_child_regions, upper_left_right_regions);
+    const RealNumType new_min_blength = (params->fixed_min_blength == -1) ? min_blength * 0.1 : min_blength;
+    connectNewSample2Branch(lower_regions, seq_name_index, node_index, node, top_distance, 0, new_min_blength, best_child_regions, upper_left_right_regions);
 }
 
 template <void(Tree::*task)(PhyloNode&, const Index, const Index)>

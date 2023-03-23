@@ -800,6 +800,7 @@ void initDefaultValue(Params &params)
     params.input_treefile = NULL;
     params.output_prefix = NULL;
     params.allow_replace_input_tree = false;
+    params.fixed_min_blength = -1;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -891,6 +892,19 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 if (params.hamming_weight < 0)
                     outError("<WEIGHT> must not be negative!");
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--min-blength") == 0) {
+                
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use --min-blength <NUMBER>");
+                
+                params.fixed_min_blength = convert_real_number(argv[cnt]);
+                
+                if (params.fixed_min_blength <= 0)
+                    outError("<NUMBER> following --min-blength must be positive!");
 
                 continue;
             }

@@ -556,6 +556,11 @@ public:
     RealNumType aLRT_SH_epsilon;
     
     /**
+    * fixed min_blength
+    */
+    RealNumType fixed_min_blength;
+    
+    /**
     * number of threads
     */
     uint32_t num_threads;
