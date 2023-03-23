@@ -45,7 +45,7 @@ void Tree::setupBlengthThresh()
 void Tree::setup()
 {
     // init model
-    switch (aln.seq_type) {
+    switch (aln.getSeqType()) {
         case SEQ_PROTEIN:
         {
             model = std::make_unique<ModelAA>(ModelAA(params->model_name));
@@ -5601,7 +5601,7 @@ NumSeqsType Tree::parseFile(std::istream &infile, char& ch, RealNumType& branch_
         {
             const NumSeqsType sequence_index = it->second;
             tmp_root.setSeqNameIndex(sequence_index);
-            tmp_root.setPartialLh(TOP, aln.data[sequence_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.seq_type));
+            tmp_root.setPartialLh(TOP, aln.data[sequence_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType()));
         }        
     }
     /*if (!tmp_root.isInternal()) {
@@ -5930,7 +5930,7 @@ void Tree::expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, c
     std::cout << "Add less-info-seq " + aln.data[seq_name_index].seq_name + " into the tree" << std::endl;
     
     // dummy variables
-    std::unique_ptr<SeqRegions> lower_regions = aln.data[seq_name_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.seq_type);
+    std::unique_ptr<SeqRegions> lower_regions = aln.data[seq_name_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     const std::unique_ptr<SeqRegions>& upper_left_right_regions = getPartialLhAtNode(parent_index);
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     const RealNumType top_distance = node.getUpperLength();

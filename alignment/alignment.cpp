@@ -343,7 +343,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
                         length = 1;
                         
                         // starting a sequence of 'N'
-                        if (toupper(str_sequence[pos]) == 'N' && seq_type == SEQ_DNA)
+                        if (toupper(str_sequence[pos]) == 'N' && getSeqType() == SEQ_DNA)
                             state = 1;
                         // starting a sequence of '-'
                         else if (str_sequence[pos] == '-')
@@ -398,7 +398,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
                         {
                             length = 1;
                             // starting a sequence of 'N'
-                            if (toupper(str_sequence[pos]) == 'N' && seq_type == SEQ_DNA)
+                            if (toupper(str_sequence[pos]) == 'N' && getSeqType() == SEQ_DNA)
                                 state = 1;
                             // output a mutation
                             else
@@ -501,10 +501,12 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             transform(line.begin(), line.end(), line.begin(), ::toupper);
             
             // detect the seq_type from the ref_sequences
-            StrVector tmp_str_vec;
-            tmp_str_vec.push_back(line);
-            seq_type = detectSequenceType(tmp_str_vec);
-            updateNumStates();
+            if (getSeqType() == SEQ_UNKNOWN)
+            {
+                StrVector tmp_str_vec;
+                tmp_str_vec.push_back(line);
+                setSeqType(detectSequenceType(tmp_str_vec));
+            }
             
             // parse the reference sequence into vector of state
             parseRefSeq(line);
@@ -787,7 +789,7 @@ char Alignment::convertState2Char(StateType state) {
     if (state == TYPE_N || state == TYPE_DEL) return '-';
     if (state > TYPE_INVALID) return '?';
 
-    switch (seq_type) {
+    switch (getSeqType()) {
     case SEQ_BINARY:
         switch (state) {
         case 0:
@@ -861,7 +863,7 @@ StateType Alignment::convertChar2State(char state) {
 
     char *loc;
 
-    switch (seq_type) {
+    switch (getSeqType()) {
     case SEQ_BINARY:
         switch (state) {
         case '0':
@@ -1066,8 +1068,8 @@ void Alignment::extractDiffFile(Params& params)
         }
     
     // detect the type of the input sequences
-    seq_type = detectSequenceType(sequences);
-    updateNumStates();
+    if (getSeqType() == SEQ_UNKNOWN)
+        setSeqType(detectSequenceType(sequences));
     
     // generate reference sequence from the input sequences
     string ref_sequence;
@@ -1148,19 +1150,31 @@ SeqType Alignment::detectSequenceType(StrVector& sequences)
         cout << "Sequence Type detection took " << (getRealTime()-detectStart) << " seconds." << endl;
     }
     if (((double)num_nuc) / num_ungap > 0.9)
+    {
+        std::cout << "DNA data detected." << std::endl;
         return SEQ_DNA;
+    }
     if (((double)num_bin) / num_ungap > 0.9)
+    {
+        std::cout << "Binary data detected." << std::endl;
         return SEQ_BINARY;
+    }
     if (((double)num_alpha + num_nuc) / num_ungap > 0.9)
+    {
+        std::cout << "Protein data detected." << std::endl;
         return SEQ_PROTEIN;
+    }
     if (((double)(num_alpha + num_digit + num_nuc)) / num_ungap > 0.9)
+    {
+        std::cout << "Morphological data detected." << std::endl;
         return SEQ_MORPH;
+    }
     return SEQ_UNKNOWN;
 }
 
 void Alignment::updateNumStates()
 {
-    switch (seq_type) {
+    switch (getSeqType()) {
         case SEQ_PROTEIN:
             num_states = 20;
             break;

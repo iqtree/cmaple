@@ -189,6 +189,11 @@ void ModelDNA::initMutationMat()
     // for other models
     else
     {
+        // convert model name to uppercase
+        transform(model_name.begin(), model_name.end(), model_name.begin(), ::toupper);
+        if (model_name.compare("UNREST") != 0 && model_name.compare("GTR") != 0)
+            outError("Invalid or unsupported DNA model: " + model_name + ". Please check and try again!");
+            
         // init pseu_mutation_counts
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
         convert_real_numbers(pseu_mutation_count, model_rates);

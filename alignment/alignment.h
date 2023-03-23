@@ -9,6 +9,11 @@
 class Alignment {
 private:
     /**
+        Type of sequences
+     */
+    SeqType seq_type_;
+    
+    /**
         Read sequence from a string line
      */
     void processSeq(std::string &sequence, std::string &line, PositionType line_num);
@@ -28,14 +33,9 @@ public:
     std::vector<StateType> ref_seq;
     
     /**
-        Type of sequences
-     */
-    SeqType seq_type = SEQ_DNA;
-    
-    /**
         The number of states
      */
-    StateType num_states = 4;
+    StateType num_states;
     
     /**
     *  Alignment constructor
@@ -46,6 +46,19 @@ public:
     *  Alignment deconstructor
     */
     ~Alignment();
+    
+    /**
+    *  Get seq_type
+    */
+    inline SeqType getSeqType() const { return seq_type_; };
+    
+    /**
+    *  Set seq_type
+    */
+    inline void setSeqType(SeqType seq_type) {
+        seq_type_ = seq_type;
+        updateNumStates();
+    };
     
     /**
         Read alignment file in FASTA format

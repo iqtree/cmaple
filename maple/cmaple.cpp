@@ -89,7 +89,7 @@ void CMaple::buildInitialTree()
     tree.nodes.emplace_back(LeafNode(0));
     PhyloNode& root = tree.nodes[0];
     Sequence* sequence = &tree.aln.data.front();
-    root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.seq_type)));
+    root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.getSeqType())));
     root.getPartialLh(TOP)->computeTotalLhAtRoot(root.getTotalLh(), aln.num_states, model);
     root.setUpperLength(0);
     
@@ -100,7 +100,7 @@ void CMaple::buildInitialTree()
     for (NumSeqsType i = 1; i < num_seqs; ++i, ++sequence)
     {
         // get the lower likelihood vector of the current sequence
-        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
+        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.getSeqType());
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
@@ -180,7 +180,7 @@ void CMaple::optimizeTree()
         optimizeBranchLengthsOfTree();
     
     // NhanLT: update the model params
-    if (tree.aln.seq_type == SEQ_DNA)
+    if (tree.aln.getSeqType() == SEQ_DNA)
     {
         tree.model->initMutationMat();
         tree.updateModelParams();

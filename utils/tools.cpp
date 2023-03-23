@@ -801,6 +801,7 @@ void initDefaultValue(Params &params)
     params.output_prefix = NULL;
     params.allow_replace_input_tree = false;
     params.fixed_min_blength = -1;
+    params.seq_type = SEQ_UNKNOWN;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -854,6 +855,20 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 params.output_aln = argv[cnt];
 
+                continue;
+            }
+            if (strcmp(argv[cnt], "-st") == 0 || strcmp(argv[cnt], "--seqtype") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    throw "Use -st BIN or -st DNA or -st AA or -st CODON";
+                string arg = argv[cnt];
+                if (arg == "DNA")
+                    params.seq_type = SEQ_DNA;
+                else  if (arg == "AA")
+                    params.seq_type = SEQ_PROTEIN;
+                else
+                    throw "Sorry! Currently CMaple supports only DNA and Protein data.";
+                
                 continue;
             }
             if (strcmp(argv[cnt], "--tree") == 0 || strcmp(argv[cnt], "-t") == 0) {

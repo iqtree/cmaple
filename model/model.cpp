@@ -92,7 +92,7 @@ void Model::extractRefInfo(const Alignment& aln)
     inverse_root_freqs = new RealNumType[num_states];
     
     // init root_freqs
-    switch (aln.seq_type) {
+    switch (aln.getSeqType()) {
         case SEQ_PROTEIN:
             resetVec<20>(root_freqs);
             break;

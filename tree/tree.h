@@ -484,7 +484,9 @@ public:
     /**
         Constructor
     */
-    Tree(Params&& n_params):params(std::move(n_params)) {};
+    Tree(Params&& n_params):params(std::move(n_params)) {
+        aln.setSeqType(params->seq_type);
+    };
     
     /**
         Setup tree parameters/thresholds

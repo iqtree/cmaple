@@ -580,6 +580,11 @@ public:
     */
     bool allow_replace_input_tree;
     
+    /**
+    *  type of sequences
+    */
+    SeqType seq_type;
+    
     /*
         TRUE to log debugging
      */
