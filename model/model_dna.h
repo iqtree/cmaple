@@ -43,24 +43,12 @@ public:
 	/**
 		Constructor
 	*/
-    ModelDNA(const std::string n_model_name);
+    ModelDNA(const string n_model_name):Model(n_model_name), pseu_mutation_count(nullptr) {};
     
     /**
         Destructor
     */
     ~ModelDNA();
-    
-    /// Move CTor
-    ModelDNA(ModelDNA&& model) noexcept
-    {
-        model_name = std::move(model.model_name);
-        
-        pseu_mutation_count = model.pseu_mutation_count;
-        model.pseu_mutation_count = nullptr;
-        
-        model_block = model.model_block;
-        model.model_block = nullptr;
-    };
     
     /**
         Init the mutation rate matrix from a model

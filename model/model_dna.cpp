@@ -1,9 +1,5 @@
 #include "model_dna.h"
 using namespace std;
-ModelDNA::ModelDNA(const string n_model_name):Model(n_model_name)
-{
-    pseu_mutation_count = NULL;
-}
 
 ModelDNA::~ModelDNA()
 {

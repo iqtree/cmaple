@@ -854,11 +854,6 @@ model FLAVI=
 end;
 )";
 
-ModelAA::ModelAA(const std::string n_model_name):Model(n_model_name)
-{
-    model_block = readModelsDefinition(builtin_prot_models);
-}
-
 ModelAA::~ModelAA()
 {
     if (model_block)
@@ -899,6 +894,7 @@ void ModelAA::initMutationMat()
     // read model params from string/file
     bool reversible;
     ASSERT(num_states == 20);
+    model_block = readModelsDefinition(builtin_prot_models);
     ASSERT(model_block && "model_block uninitialized");
     NxsModel *nxs_model = model_block->findModel(name_upper);
     if (nxs_model) {

@@ -37,21 +37,12 @@ public:
     /**
         Constructor
     */
-    ModelAA(const std::string n_model_name);
+    ModelAA(const std::string n_model_name):Model(n_model_name) {};
     
     /**
         Destructor
     */
     ~ModelAA();
-    
-    /// Move CTor
-    ModelAA(ModelAA&& model) noexcept
-    {
-        model_name = std::move(model.model_name);
-        
-        model_block = model.model_block;
-        model.model_block = nullptr;
-    };
     
     /**
         Init the mutation rate matrix from a model
