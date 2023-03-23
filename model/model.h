@@ -5,6 +5,9 @@
 #include "utils/tools.h"
 #include "alignment/alignment.h"
 #include "utils/matrix.h"
+#include "nclextra/modelsblock.h"
+#include "ncl/ncl.h"
+#include "nclextra/myreader.h"
 #include <cassert>
 
 class SeqRegions;
@@ -23,6 +26,37 @@ private:
         Export Q matrix
      */
     std::string exportQMatrixStr(Alignment& aln);
+    
+protected:
+    // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
+    /** Model definitions*/
+    ModelsBlock* model_block;
+    
+    /**
+        Read model definitions from string/file
+     */
+    ModelsBlock* readModelsDefinition(const char* builtin_models);
+    
+    /**
+        Read model parameters
+        return TRUE if the model is reversible
+     */
+    bool readParametersString(string& model_str);
+    
+    /**
+        Read model's rates from string/file
+    */
+    virtual void readRates(istream &in, const bool is_reversible) {};
+    
+    /**
+        Read root state frequencies from string/file
+     */
+    void readStateFreqWithNumStates(istream &in, const StateType num_states);
+    
+    /**
+        Read root state frequencies from string/file
+     */
+    virtual void readStateFreq(istream &in) {};
     
 public:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
@@ -50,10 +84,15 @@ public:
     RealNumType *freq_j_transposed_ij; // freq[j] * transposed[i][j]
     StateType *row_index; // the starting index of row i: i * num_states
     
-	/**
+    /**
+        Constructor
+    */
+    Model() = default;
+    
+    /**
 		Constructor
 	*/
-    Model();
+    Model(const std::string n_model_name);
     
     /**
         Destructor
@@ -69,7 +108,7 @@ public:
         Init the mutation rate matrix from a model
         @param n_model_name: name of the model; num_states: the number of states
      */
-    virtual void initMutationMat(const std::string n_model_name, const StateType num_states) {};
+    virtual void initMutationMat() {};
     
     /**
         Compute cumulative rate of the ref genome

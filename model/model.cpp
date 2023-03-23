@@ -1,8 +1,9 @@
 #include "model.h"
+
 using namespace std;
-Model::Model()
+Model::Model(const std::string n_model_name)
 {
-    model_name = "";
+    model_name = std::move(n_model_name);
     mutation_mat = NULL;
     diagonal_mut_mat = NULL;
     transposed_mut_mat = NULL;
@@ -12,6 +13,7 @@ Model::Model()
     root_log_freqs = NULL;
     inverse_root_freqs = NULL;
     row_index = NULL;
+    model_block = NULL;
 }
 
 Model::~Model()
@@ -197,4 +199,89 @@ std::string Model::exportString(Alignment& aln)
     output += exportQMatrixStr(aln);
     
     return output;
+}
+
+ModelsBlock* Model::readModelsDefinition(const char* builtin_models) {
+
+    ModelsBlock *models_block = new ModelsBlock;
+
+    /*try
+    {
+        // loading internal model definitions
+        stringstream in(builtin_mixmodels_definition);
+        ASSERT(in && "stringstream is OK");
+        NxsReader nexus;
+        nexus.Add(models_block);
+        MyToken token(in);
+        nexus.Execute(token);
+    } catch (...) {
+        ASSERT(0 && "predefined mixture models not initialized");
+    }*/
+
+    try
+    {
+        // loading internal protei model definitions
+        stringstream in(builtin_models);
+        ASSERT(in && "stringstream is OK");
+        NxsReader nexus;
+        nexus.Add(models_block);
+        MyToken token(in);
+        nexus.Execute(token);
+    } catch (...) {
+        ASSERT(0 && "predefined protein models not initialized");
+    }
+
+    /*if (params.model_def_file) {
+        cout << "Reading model definition file " << params.model_def_file << " ... ";
+        MyReader nexus(params.model_def_file);
+        nexus.Add(models_block);
+        MyToken token(nexus.inf);
+        nexus.Execute(token);
+        int num_model = 0, num_freq = 0;
+        for (ModelsBlock::iterator it = models_block->begin(); it != models_block->end(); it++)
+            if (it->second.flag & NM_FREQ) num_freq++; else num_model++;
+        cout << num_model << " models and " << num_freq << " frequency vectors loaded" << endl;
+    }*/
+    return models_block;
+}
+
+bool Model::readParametersString(string& model_str) {
+
+    // if detect if reading full matrix or half matrix by the first entry
+    PositionType end_pos;
+    RealNumType d = convert_real_number(model_str.c_str(), end_pos);
+    const bool is_reversible = (d >= 0);
+    try {
+        stringstream in(model_str);
+        readRates(in, is_reversible);
+        readStateFreq(in);
+    }
+    catch (const char *str) {
+        outError(str);
+    }
+    return is_reversible;
+}
+
+void Model::readStateFreqWithNumStates(istream &in, const StateType num_states)
+{
+    StateType i;
+    for (i = 0; i < num_states; i++) {
+        string tmp_value;
+        in >> tmp_value;
+        if (tmp_value.length() == 0)
+            throw "State frequencies could not be read";
+        root_freqs[i] = convert_real_number(tmp_value.c_str());
+        if (root_freqs[i] < 0.0)
+            throw "Negative state frequencies found";
+    }
+    
+    RealNumType sum = 0.0;
+    for (i = 0; i < num_states; i++) sum += root_freqs[i];
+    if (fabs(sum-1.0) >= 1e-7)
+    {
+        outWarning("Normalizing state frequencies so that sum of them equals to 1");
+        sum = 1.0/sum;
+        for (i = 0; i < num_states; i++)
+            root_freqs[i] *= sum;
+    }
 }

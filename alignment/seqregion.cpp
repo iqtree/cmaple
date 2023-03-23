@@ -46,10 +46,25 @@ void SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
         case SEQ_DNA:
             convertAmbiguiousStateDNA(max_num_states);
             break;
+        case SEQ_PROTEIN:
+            convertAmbiguiousStateAA(max_num_states);
+            break;
             
         default:
-            outError("Sorry! Currently, we only support DNA data.");
+            outError("Sorry! Currently, we only support DNA and Protein data.");
             break;
+    }
+}
+
+void SeqRegion::convertAmbiguiousStateAA(int max_num_states)
+{
+    // do nothing if it is not an ambiguious state
+    if (type < max_num_states || type == TYPE_N || type == TYPE_R)
+        return;
+    
+    switch (type) {
+        default:
+            outError("Invalid character for a genome entry. Please check and try again!");
     }
 }
 

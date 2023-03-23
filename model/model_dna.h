@@ -26,25 +26,47 @@ private:
      */
     void updateMutationMat(const StateType num_states);
     
+protected:
+    
+    /**
+        Read root state frequencies from string/file
+     */
+    inline virtual void readStateFreq(istream& ist) {
+        readStateFreqWithNumStates(ist, 4);
+    };
+    
 public:
+    // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
     /** Pseudo mutation count */
     RealNumType* pseu_mutation_count;
     
 	/**
 		Constructor
 	*/
-    ModelDNA();
+    ModelDNA(const std::string n_model_name);
     
     /**
         Destructor
     */
     ~ModelDNA();
     
+    /// Move CTor
+    ModelDNA(ModelDNA&& model) noexcept
+    {
+        model_name = std::move(model.model_name);
+        
+        pseu_mutation_count = model.pseu_mutation_count;
+        model.pseu_mutation_count = nullptr;
+        
+        model_block = model.model_block;
+        model.model_block = nullptr;
+    };
+    
     /**
         Init the mutation rate matrix from a model
         @param n_model_name: name of the model; num_states: the number of states
      */
-    virtual void initMutationMat(const std::string n_model_name, const StateType num_states);
+    virtual void initMutationMat();
     
     /**
         Update the mutation matrix periodically from the empirical count of mutations

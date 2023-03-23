@@ -26,6 +26,11 @@ private:
     */
     void convertAmbiguiousStateDNA(int max_num_states);
     
+    /**
+    *  Convert Ambiguious state (of AA data) into typical states: amino-acid; N; O; R
+    */
+    void convertAmbiguiousStateAA(int max_num_states);
+    
 public:
     /**
         Length of the path between the current phylo node and the node where the likelihood is calculated

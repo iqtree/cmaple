@@ -1,6 +1,6 @@
 #include "model_dna.h"
 using namespace std;
-ModelDNA::ModelDNA():Model()
+ModelDNA::ModelDNA(const string n_model_name):Model(n_model_name)
 {
     pseu_mutation_count = NULL;
 }
@@ -160,10 +160,9 @@ void ModelDNA::initMutationMatJC(const StateType num_states)
     }
 }
 
-void ModelDNA::initMutationMat(const string n_model_name, const StateType num_states)
+void ModelDNA::initMutationMat()
 {
-    model_name = std::move(n_model_name);
-    
+    const StateType num_states = 4;
     // init row_index
     row_index = new StateType[num_states + 1];
     uint16_t start_index = 0;

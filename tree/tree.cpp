@@ -5,15 +5,6 @@
 
 using namespace std;
 
-Tree::Tree(Params&& n_params)
-{
-    params = std::move(n_params);
-    
-    // init model pointer
-    if (aln.seq_type == SEQ_DNA)
-        model = std::make_unique<ModelDNA>();
-}
-
 void Tree::setupFunctionPointers()
 {
     switch (aln.num_states) {
@@ -53,6 +44,20 @@ void Tree::setupBlengthThresh()
 
 void Tree::setup()
 {
+    // init model
+    switch (aln.seq_type) {
+        case SEQ_PROTEIN:
+        {
+            model = std::make_unique<ModelAA>(ModelAA(params->model_name));
+            break;
+        }
+        default: // DNA
+        {
+            model = std::make_unique<ModelDNA>(ModelDNA(params->model_name));
+            break;
+        }
+    }
+    
     setupFunctionPointers();
     setupBlengthThresh();
 }

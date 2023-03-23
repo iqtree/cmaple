@@ -152,7 +152,7 @@ struct Distribution {
 /**
     Type of site states
  */
-typedef uint8_t StateType;
+typedef uint16_t StateType;
 
 /**
     Type of site positions

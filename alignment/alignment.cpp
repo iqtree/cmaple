@@ -343,7 +343,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
                         length = 1;
                         
                         // starting a sequence of 'N'
-                        if (toupper(str_sequence[pos]) == 'N')
+                        if (toupper(str_sequence[pos]) == 'N' && seq_type == SEQ_DNA)
                             state = 1;
                         // starting a sequence of '-'
                         else if (str_sequence[pos] == '-')
@@ -398,7 +398,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
                         {
                             length = 1;
                             // starting a sequence of 'N'
-                            if (toupper(str_sequence[pos]) == 'N')
+                            if (toupper(str_sequence[pos]) == 'N' && seq_type == SEQ_DNA)
                                 state = 1;
                             // output a mutation
                             else

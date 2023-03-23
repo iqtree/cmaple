@@ -51,6 +51,10 @@ void CMaple::preInference()
     if (!tree.params->redo_inference && fileExists(output_file))
         outError("File " + output_file + " already exists. Use `-redo` option if you really want to redo the analysis and overwrite all output files.\n");
     
+    
+    // setup function pointers in tree
+    tree.setup();
+    
     // sort sequences by their distances to the reference sequence
     tree.aln.sortSeqsByDistances(tree.params->hamming_weight);
     
@@ -58,13 +62,10 @@ void CMaple::preInference()
     tree.model->extractRefInfo(tree.aln);
     
     // init the mutation matrix from a model name
-    tree.model->initMutationMat(tree.params->model_name, tree.aln.num_states);
+    tree.model->initMutationMat();
     
     // compute cumulative rates of the ref sequence
     tree.model->computeCumulativeRate(tree.aln);
-    
-    // setup function pointers in tree
-    tree.setup();
     
     // compute thresholds for approximations
     tree.params->threshold_prob2 = tree.params->threshold_prob * tree.params->threshold_prob;
@@ -179,8 +180,11 @@ void CMaple::optimizeTree()
         optimizeBranchLengthsOfTree();
     
     // NhanLT: update the model params
-    tree.model->initMutationMat(tree.params->model_name, tree.aln.num_states);
-    tree.updateModelParams();
+    if (tree.aln.seq_type == SEQ_DNA)
+    {
+        tree.model->initMutationMat();
+        tree.updateModelParams();
+    }
     
     // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
     tree.performDFS<&Tree::updateLowerLh>();
@@ -450,6 +454,9 @@ void runCMaple(Params &params)
     
     // prepare for the inference
     cmaple.preInference();
+    
+    // debug
+    cmaple.tree.showModelParams();
     
     // infer trees and model params
     cmaple.doInference();
