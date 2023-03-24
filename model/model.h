@@ -58,6 +58,11 @@ protected:
      */
     virtual void readStateFreq(istream &in) {};
     
+    /**
+        Normalize the Q matrix so that the expected number of subtitution is 1
+     */
+    void normalizeQMatrix(const StateType num_states);
+    
 public:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
     /** Name of the model */

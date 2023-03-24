@@ -285,3 +285,22 @@ void Model::readStateFreqWithNumStates(istream &in, const StateType num_states)
             root_freqs[i] *= sum;
     }
 }
+
+void Model::normalizeQMatrix(const StateType num_states)
+{
+    ASSERT(root_freqs && mutation_mat);
+    
+    RealNumType sum = 0.0;
+    RealNumType* mutation_mat_row = mutation_mat;
+    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+        sum -= mutation_mat_row[i] * root_freqs[i];
+    
+    if (sum == 0.0) throw "Empty Q matrix";
+    
+    double delta = 1.0 / sum;
+    
+    mutation_mat_row = mutation_mat;
+    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+        for (StateType j = 0; j < num_states; ++j)
+            mutation_mat_row[j] *= delta;
+}

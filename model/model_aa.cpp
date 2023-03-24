@@ -939,7 +939,10 @@ void ModelAA::initMutationMat()
         }
         // non-reversible models
         else
-            rescaleAllRates();
+        {
+            // rescaleAllRates();
+            normalizeQMatrix(num_states);
+        }
         
         // initialize transposed_mut_mat, diagonal_mut_mat, and freqi_freqj_qij
         RealNumType* mutation_mat_row = mutation_mat;
@@ -1017,7 +1020,7 @@ void ModelAA::readRates(istream &in, const bool is_reversible)
                     outError(model_name + ": Rate entries could not be read");
                 mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
                 
-                if (mutation_mat_ptr[0] < 0.0)
+                if (mutation_mat_ptr[0] < 0.0 && row != col)
                     throw "Negative rates found";
                 row_sum += mutation_mat_ptr[0];
             }
