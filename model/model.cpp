@@ -80,13 +80,9 @@ Model::~Model()
 
 void Model::extractRefInfo(const Alignment& aln)
 {
-    const vector<StateType>& ref_seq = aln.ref_seq;
     const StateType num_states = aln.num_states;
     
-    ASSERT(ref_seq.size() > 0);
-    
     // init variables
-    const PositionType seq_length = ref_seq.size();
     root_freqs = new RealNumType[num_states];
     root_log_freqs = new RealNumType[num_states];
     inverse_root_freqs = new RealNumType[num_states];
@@ -101,6 +97,18 @@ void Model::extractRefInfo(const Alignment& aln)
             resetVec<4>(root_freqs);
             break;
     }
+    
+    // extract root freqs from the ref_seq
+    extractRootFreqs(aln);
+}
+
+void Model::extractRootFreqs(const Alignment& aln)
+{
+    // init variables
+    const vector<StateType>& ref_seq = aln.ref_seq;
+    ASSERT(ref_seq.size() > 0);
+    const StateType num_states = aln.num_states;
+    const PositionType seq_length = ref_seq.size();
     
     // browse all sites in the ref one by one to count bases
     for (PositionType i = 0; i < seq_length; ++i)

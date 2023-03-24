@@ -63,6 +63,11 @@ protected:
      */
     void normalizeQMatrix(const StateType num_states);
     
+    /**
+        extract root freqs from the reference sequence
+     */
+    virtual void extractRootFreqs(const Alignment& aln);
+    
 public:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
     /** Name of the model */

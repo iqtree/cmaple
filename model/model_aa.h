@@ -32,6 +32,14 @@ private:
      */
     void rescaleAllRates();
     
+protected:
+    
+    /**
+        extract root freqs from the reference sequence
+        for AA models, we directly get root_freqs from predefined state_freqs
+     */
+    virtual void extractRootFreqs(const Alignment& aln) {};
+    
 public:
     
     /**
