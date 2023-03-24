@@ -9,19 +9,22 @@ void Tree::setupFunctionPointers()
 {
     switch (aln.num_states) {
         case 2:
-            updatePartialLhPointer = &Tree::updatePartialLhTemplate<4>;
+            updatePartialLhPointer = &Tree::updatePartialLhTemplate<2>;
             calculateSamplePlacementCostPointer = &Tree::calculateSamplePlacementCostTemplate<2>;
             calculateSubTreePlacementCostPointer = &Tree::calculateSubTreePlacementCostTemplate<2>;
+            estimateBlengthPtr = &Tree::estimateBranchLengthTemplate<2>;
             break;
         case 4:
             updatePartialLhPointer = &Tree::updatePartialLhTemplate<4>;
             calculateSamplePlacementCostPointer = &Tree::calculateSamplePlacementCostTemplate<4>;
             calculateSubTreePlacementCostPointer = &Tree::calculateSubTreePlacementCostTemplate<4>;
+            estimateBlengthPtr = &Tree::estimateBranchLengthTemplate<4>;
             break;
         case 20:
-            updatePartialLhPointer = &Tree::updatePartialLhTemplate<4>;
+            updatePartialLhPointer = &Tree::updatePartialLhTemplate<20>;
             calculateSamplePlacementCostPointer = &Tree::calculateSamplePlacementCostTemplate<20>;
             calculateSubTreePlacementCostPointer = &Tree::calculateSubTreePlacementCostTemplate<20>;
+            estimateBlengthPtr = &Tree::estimateBranchLengthTemplate<20>;
             break;
             
         default:
@@ -2870,6 +2873,7 @@ PositionType Tree::optimizeBranchLengths()
     return num_improvement;
 }
 
+template <const StateType num_states>
 void Tree::estimateBlength_R_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec)
 {
     const StateType seq1_state = aln.ref_seq[end_pos];
@@ -2883,8 +2887,7 @@ void Tree::estimateBlength_R_O(const SeqRegion& seq1_region, const SeqRegion& se
 
       RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
 
-      assert(aln.num_states == 4);
-      updateCoeffs<4>(model->root_freqs, transposed_mut_mat_row, &(*seq2_region.likelihood)[0], mutation_mat_row, seq1_region.plength_observation2node, coeff0, coeff1);
+      updateCoeffs<num_states>(model->root_freqs, transposed_mut_mat_row, &(*seq2_region.likelihood)[0], mutation_mat_row, seq1_region.plength_observation2node, coeff0, coeff1);
 
       coeff1 *= model->root_freqs[seq1_state];
     }
@@ -2895,8 +2898,7 @@ void Tree::estimateBlength_R_O(const SeqRegion& seq1_region, const SeqRegion& se
       // l = log(1 + q_xx * t + sum(q_xy * t)
       // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
       // coeff1 = numerator = q_xx + sum(q_xy)
-        assert(aln.num_states == 4);
-        coeff1 += dotProduct<4>(&(*seq2_region.likelihood)[0], mutation_mat_row);
+        coeff1 += dotProduct<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
     }
 
     // NHANLT NOTES:
@@ -2936,9 +2938,9 @@ void Tree::estimateBlength_R_ACGT(const SeqRegion& seq1_region, const StateType 
         coefficient_vec.push_back(total_blength > 0 ? total_blength : 0);
 }
 
+template <const StateType num_states>
 void Tree::estimateBlength_O_X(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec)
 {
-    const StateType num_states = aln.num_states;
     RealNumType coeff0 = 0;
     RealNumType coeff1 = 0;
     
@@ -2977,8 +2979,7 @@ void Tree::estimateBlength_O_X(const SeqRegion& seq1_region, const SeqRegion& se
         // coeff1 = numerator = q_yy + sum_x(q_xy))
         // coeff0 = denominator = 1 + q_xx * t + sum_y(q_xy * t)
         RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
-        assert(num_states == 4);
-        coeff1 += dotProduct<4>(&(*seq1_region.likelihood)[0], transposed_mut_mat_row);
+        coeff1 += dotProduct<num_states>(&(*seq1_region.likelihood)[0], transposed_mut_mat_row);
     }
     
     if (total_blength > 0)
@@ -2992,6 +2993,7 @@ void Tree::estimateBlength_O_X(const SeqRegion& seq1_region, const SeqRegion& se
         coefficient_vec.push_back(coeff0 / coeff1);
 }
 
+template <const StateType num_states>
 void Tree::estimateBlength_ACGT_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec)
 {
     StateType seq1_state = seq1_region.type;
@@ -3006,8 +3008,7 @@ void Tree::estimateBlength_ACGT_O(const SeqRegion& seq1_region, const SeqRegion&
 
         RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq1_state];
                             
-        assert(aln.num_states == 4);
-        updateCoeffs<4>(model->root_freqs, transposed_mut_mat_row, &(*seq2_region.likelihood)[0], mutation_mat_row, seq1_region.plength_observation2node, coeff0, coeff1);
+        updateCoeffs<num_states>(model->root_freqs, transposed_mut_mat_row, &(*seq2_region.likelihood)[0], mutation_mat_row, seq1_region.plength_observation2node, coeff0, coeff1);
         
         coeff1 *= model->root_freqs[seq1_state];
     }
@@ -3018,8 +3019,7 @@ void Tree::estimateBlength_ACGT_O(const SeqRegion& seq1_region, const SeqRegion&
         // l = log(1 + q_xx * t + sum(q_xy * t)
         // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
         // coeff1 = numerator = q_xx + sum(q_xy)
-        assert(aln.num_states == 4);
-        coeff1 += dotProduct<4>(&(*seq2_region.likelihood)[0], mutation_mat_row);
+        coeff1 += dotProduct<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
     }
     
     // NHANLT NOTES:
@@ -3117,12 +3117,18 @@ RealNumType Tree::estimateBlengthFromCoeffs(RealNumType &coefficient, const std:
     return tUp;
 }
 
+RealNumType Tree::estimateBranchLength(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions)
+{
+    return (this->*estimateBlengthPtr)(parent_regions, child_regions);
+}
+
 using DoubleState = uint16_t;
 static constexpr DoubleState RR = (DoubleState(TYPE_R) << 8) | TYPE_R;
 static constexpr DoubleState RO = (DoubleState(TYPE_R) << 8) | TYPE_O;
 static constexpr DoubleState OO = (DoubleState(TYPE_O) << 8) | TYPE_O;
 
-RealNumType Tree::estimateBranchLength(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions)
+template <const StateType num_states>
+RealNumType Tree::estimateBranchLengthTemplate(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions)
 {
     // init dummy variables
     RealNumType coefficient = 0;
@@ -3133,7 +3139,6 @@ RealNumType Tree::estimateBranchLength(const std::unique_ptr<SeqRegions>& parent
     size_t iseq1 = 0;
     size_t iseq2 = 0;
     const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
     const RealNumType* const &cumulative_rate = model->cumulative_rate;
     
     // avoid reallocations
@@ -3185,7 +3190,7 @@ RealNumType Tree::estimateBranchLength(const std::unique_ptr<SeqRegions>& parent
         // 2.2. e1.type = R and e2.type = O
         else if (s1s2 == RO)
         {
-            estimateBlength_R_O(*seq1_region, *seq2_region, total_blength, end_pos, coefficient, coefficient_vec);
+            estimateBlength_R_O<num_states>(*seq1_region, *seq2_region, total_blength, end_pos, coefficient, coefficient_vec);
         }
         // 2.3. e1.type = R and e2.type = A/C/G/T
         else if (seq1_region->type == TYPE_R)
@@ -3195,7 +3200,7 @@ RealNumType Tree::estimateBranchLength(const std::unique_ptr<SeqRegions>& parent
         // 3. e1.type = O
         else if (seq1_region->type == TYPE_O)
         {
-            estimateBlength_O_X(*seq1_region, *seq2_region, total_blength, end_pos, coefficient, coefficient_vec);
+            estimateBlength_O_X<num_states>(*seq1_region, *seq2_region, total_blength, end_pos, coefficient, coefficient_vec);
         }
         // 4. e1.type = A/C/G/T
         // 4.1. e1.type =  e2.type
@@ -3209,7 +3214,7 @@ RealNumType Tree::estimateBranchLength(const std::unique_ptr<SeqRegions>& parent
         // 4.2. e1.type = A/C/G/T and e2.type = O
         else if (seq2_region->type == TYPE_O)
         {
-            estimateBlength_ACGT_O(*seq1_region, *seq2_region, total_blength, coefficient, coefficient_vec);
+            estimateBlength_ACGT_O<num_states>(*seq1_region, *seq2_region, total_blength, coefficient, coefficient_vec);
         }
         // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
         else
@@ -3998,7 +4003,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(const std::unique_ptr<Seq
         // 3.1. e1.type = O and e2.type = O
         else if (s1s2 == OO)
         {
-            calculateSampleCost_O_O<4>(*seq1_region, *seq2_region, blength, total_factor, model);
+            calculateSampleCost_O_O<num_states>(*seq1_region, *seq2_region, blength, total_factor, model);
         }
         // 3.2. e1.type = O and e2.type = R or A/C/G/T
         else if (seq1_region->type == TYPE_O)
@@ -4015,7 +4020,7 @@ RealNumType Tree::calculateSamplePlacementCostTemplate(const std::unique_ptr<Seq
         // 4.2. e1.type = A/C/G/T and e2.type = O
         else if (seq2_region->type == TYPE_O)
         {
-            calculateSampleCost_ACGT_O<4>(*seq1_region, *seq2_region, blength, lh_cost, total_factor, model);
+            calculateSampleCost_ACGT_O<num_states>(*seq1_region, *seq2_region, blength, lh_cost, total_factor, model);
         }
         // 4.3. e1.type = A/C/G/T and e2.type = R or A/C/G/T
         else

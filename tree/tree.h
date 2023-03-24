@@ -29,6 +29,12 @@ private:
     UpdatePartialLhPointerType updatePartialLhPointer;
     
     /**
+        Pointer  to estimateBlength method
+     */
+    typedef RealNumType (Tree::*EstimateBlengthPointerType)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&);
+    EstimateBlengthPointerType estimateBlengthPtr;
+    
+    /**
         Template of updatePartialLh
      */
     template <const StateType num_states>
@@ -266,6 +272,7 @@ private:
     /**
         Calculate coefficients when merging R with O to estimate a branch length
      */
+    template <const StateType num_states>
     void estimateBlength_R_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec);
     
     /**
@@ -276,11 +283,13 @@ private:
     /**
         Calculate coefficients when merging O with X(i.e., O, R, ACGT) to estimate a branch length
      */
+    template <const StateType num_states>
     void estimateBlength_O_X(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec);
     
     /**
         Calculate coefficients when merging ACGT with O to estimate a branch length
      */
+    template <const StateType num_states>
     void estimateBlength_ACGT_O(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, RealNumType &coefficient, std::vector<RealNumType> &coefficient_vec);
     
     /**
@@ -558,6 +567,12 @@ public:
         @return num of improvements
      */
     PositionType optimizeBranchLengths();
+    
+    /**
+        Template of estimateBranchLength()
+     */
+    template <const StateType num_states>
+    RealNumType estimateBranchLengthTemplate(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions);
     
     /**
         Estimate the length of a branch using the derivative of the likelihood cost function wrt the branch length
