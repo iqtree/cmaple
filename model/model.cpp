@@ -80,12 +80,10 @@ Model::~Model()
 
 void Model::extractRefInfo(const Alignment& aln)
 {
-    const StateType num_states = aln.num_states;
-    
     // init variables
-    root_freqs = new RealNumType[num_states];
-    root_log_freqs = new RealNumType[num_states];
-    inverse_root_freqs = new RealNumType[num_states];
+    root_freqs = new RealNumType[num_states_];
+    root_log_freqs = new RealNumType[num_states_];
+    inverse_root_freqs = new RealNumType[num_states_];
     
     // init root_freqs
     switch (aln.getSeqType()) {
@@ -107,7 +105,6 @@ void Model::extractRootFreqs(const Alignment& aln)
     // init variables
     const vector<StateType>& ref_seq = aln.ref_seq;
     ASSERT(ref_seq.size() > 0);
-    const StateType num_states = aln.num_states;
     const PositionType seq_length = ref_seq.size();
     
     // browse all sites in the ref one by one to count bases
@@ -116,7 +113,7 @@ void Model::extractRootFreqs(const Alignment& aln)
     
     // update root_freqs and root_log_freqs
     RealNumType inverse_seq_length = 1.0 / seq_length;
-    for (StateType i = 0; i < num_states; ++i)
+    for (StateType i = 0; i < num_states_; ++i)
     {
         root_freqs[i] *= inverse_seq_length;
         inverse_root_freqs[i] = 1.0 / root_freqs[i];
@@ -136,7 +133,7 @@ void Model::computeCumulativeRate(const Alignment& aln)
     // init cumulative_base and cumulative_rate
     cumulative_base.resize(sequence_length + 1);
     cumulative_rate[0] = 0;
-    cumulative_base[0].resize(aln.num_states, 0);
+    cumulative_base[0].resize(num_states_, 0);
     
     // compute cumulative_base and cumulative_rate
     for (PositionType i = 0; i < sequence_length; ++i)
@@ -151,11 +148,10 @@ void Model::computeCumulativeRate(const Alignment& aln)
 
 std::string Model::exportRootFrequenciesStr(Alignment& aln)
 {
-    const StateType num_states = aln.num_states;
     string output{};
     string header{};
     
-    for (StateType i = 0; i < num_states; ++i)
+    for (StateType i = 0; i < num_states_; ++i)
     {
         header += aln.convertState2Char(i);
         header += "\t\t\t";
@@ -167,12 +163,11 @@ std::string Model::exportRootFrequenciesStr(Alignment& aln)
 
 std::string Model::exportQMatrixStr(Alignment& aln)
 {
-    const StateType num_states = aln.num_states;
     string output{};
     
     // generate header
     output += "\t";
-    for (StateType i = 0; i < num_states; ++i)
+    for (StateType i = 0; i < num_states_; ++i)
     {
         output += aln.convertState2Char(i);
         output += "\t\t\t";
@@ -180,12 +175,12 @@ std::string Model::exportQMatrixStr(Alignment& aln)
     output += "\n";
     
     RealNumType* mut_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states; ++i, mut_mat_row += num_states)
+    for (StateType i = 0; i < num_states_; ++i, mut_mat_row += num_states_)
     {
         output += aln.convertState2Char(i);
         output += "\t";
         
-        for (StateType j = 0; j < num_states; ++j)
+        for (StateType j = 0; j < num_states_; ++j)
             output += convertDoubleToString(mut_mat_row[j]) + "\t";
         
         output += "\n";
@@ -270,10 +265,10 @@ bool Model::readParametersString(string& model_str) {
     return is_reversible;
 }
 
-void Model::readStateFreqWithNumStates(istream &in, const StateType num_states)
+void Model::readStateFreq(istream &in)
 {
     StateType i;
-    for (i = 0; i < num_states; i++) {
+    for (i = 0; i < num_states_; i++) {
         string tmp_value;
         in >> tmp_value;
         if (tmp_value.length() == 0)
@@ -284,23 +279,23 @@ void Model::readStateFreqWithNumStates(istream &in, const StateType num_states)
     }
     
     RealNumType sum = 0.0;
-    for (i = 0; i < num_states; i++) sum += root_freqs[i];
+    for (i = 0; i < num_states_; i++) sum += root_freqs[i];
     if (fabs(sum-1.0) >= 1e-7)
     {
         outWarning("Normalizing state frequencies so that sum of them equals to 1");
         sum = 1.0/sum;
-        for (i = 0; i < num_states; i++)
+        for (i = 0; i < num_states_; i++)
             root_freqs[i] *= sum;
     }
 }
 
-void Model::normalizeQMatrix(const StateType num_states)
+void Model::normalizeQMatrix()
 {
     ASSERT(root_freqs && mutation_mat);
     
     RealNumType sum = 0.0;
     RealNumType* mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
         sum -= mutation_mat_row[i] * root_freqs[i];
     
     if (sum == 0.0) throw "Empty Q matrix";
@@ -308,7 +303,32 @@ void Model::normalizeQMatrix(const StateType num_states)
     double delta = 1.0 / sum;
     
     mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
-        for (StateType j = 0; j < num_states; ++j)
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
+        for (StateType j = 0; j < num_states_; ++j)
             mutation_mat_row[j] *= delta;
+}
+
+void Model::initPointers()
+{
+    // init row_index
+    row_index = new StateType[num_states_ + 1];
+    uint16_t start_index = 0;
+    for (StateType i = 0; i < num_states_ + 1; i++, start_index += num_states_)
+        row_index[i] = start_index;
+    
+    // init root_freqs, root_log_freqs, inverse_root_freqs if they have not yet been initialized
+    if (!root_freqs)
+    {
+        root_freqs = new RealNumType[num_states_];
+        root_log_freqs = new RealNumType[num_states_];
+        inverse_root_freqs = new RealNumType[num_states_];
+    }
+    
+    // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
+    uint16_t mat_size = row_index[num_states_];
+    mutation_mat = new RealNumType[mat_size];
+    transposed_mut_mat = new RealNumType[mat_size];
+    diagonal_mut_mat = new RealNumType[num_states_];
+    freqi_freqj_qij = new RealNumType[mat_size];
+    freq_j_transposed_ij = new RealNumType[mat_size];
 }

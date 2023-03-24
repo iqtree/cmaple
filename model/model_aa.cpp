@@ -862,29 +862,8 @@ ModelAA::~ModelAA()
 
 void ModelAA::initMutationMat()
 {
-    const StateType num_states = 20;
-    
-    // init row_index
-    row_index = new StateType[num_states + 1];
-    uint16_t start_index = 0;
-    for (StateType i = 0; i < num_states + 1; i++, start_index += num_states)
-        row_index[i] = start_index;
-    
-    // init root_freqs, root_log_freqs, inverse_root_freqs if they have not yet been initialized
-    if (!root_freqs)
-    {
-        root_freqs = new RealNumType[num_states];
-        root_log_freqs = new RealNumType[num_states];
-        inverse_root_freqs = new RealNumType[num_states];
-    }
-    
-    // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
-    uint16_t mat_size = row_index[num_states];
-    mutation_mat = new RealNumType[mat_size];
-    transposed_mut_mat = new RealNumType[mat_size];
-    diagonal_mut_mat = new RealNumType[num_states];
-    freqi_freqj_qij = new RealNumType[mat_size];
-    freq_j_transposed_ij = new RealNumType[mat_size];
+    // init variable pointers
+    initPointers();
     
     // convert model_name to upper_case
     string name_upper = model_name;
@@ -893,7 +872,7 @@ void ModelAA::initMutationMat()
     
     // read model params from string/file
     bool reversible;
-    ASSERT(num_states == 20);
+    ASSERT(num_states_ == 20);
     model_block = readModelsDefinition(builtin_prot_models);
     ASSERT(model_block && "model_block uninitialized");
     NxsModel *nxs_model = model_block->findModel(name_upper);
@@ -904,7 +883,7 @@ void ModelAA::initMutationMat()
         reversible = readParametersString(nxs_model->description);
         
         // compute root_log_freqs and inverse_root_freqs
-        for (StateType i = 0; i < num_states; ++i)
+        for (StateType i = 0; i < num_states_; ++i)
         {
             inverse_root_freqs[i] = 1.0 / root_freqs[i];
             root_log_freqs[i] = log(root_freqs[i]);
@@ -918,21 +897,21 @@ void ModelAA::initMutationMat()
             
             // refill the upper diagonal entries by the lower ones
             RealNumType* mutation_mat_ptr = mutation_mat;
-            StateType inverse_index = num_states;
-            for (StateType row = 0; row < num_states; ++row, mutation_mat_ptr += num_states, inverse_index += num_states)
+            StateType inverse_index = num_states_;
+            for (StateType row = 0; row < num_states_; ++row, mutation_mat_ptr += num_states_, inverse_index += num_states_)
             {
                 StateType tmp_index = inverse_index + row;
-                for (StateType column = row + 1; column < num_states; ++column, tmp_index += num_states)
+                for (StateType column = row + 1; column < num_states_; ++column, tmp_index += num_states_)
                     mutation_mat_ptr[column] = mutation_mat[tmp_index];
             }
             
             // compute the diagonal entries
             RealNumType* mutation_mat_row = mutation_mat;
-            for (StateType i = 0; i <  num_states; ++i, mutation_mat_row += num_states)
+            for (StateType i = 0; i <  num_states_; ++i, mutation_mat_row += num_states_)
             {
                 RealNumType sum = 0;
                 mutation_mat_row[i] = 0;
-                for (StateType j = 0; j <  num_states; ++j)
+                for (StateType j = 0; j <  num_states_; ++j)
                     sum += mutation_mat_row[j];
                 mutation_mat_row[i] = -sum;
             }
@@ -941,15 +920,15 @@ void ModelAA::initMutationMat()
         else
         {
             // rescaleAllRates();
-            normalizeQMatrix(num_states);
+            normalizeQMatrix();
         }
         
         // initialize transposed_mut_mat, diagonal_mut_mat, and freqi_freqj_qij
         RealNumType* mutation_mat_row = mutation_mat;
         RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
-        for (StateType i = 0; i <  num_states; ++i, mutation_mat_row += num_states, freqi_freqj_qij_row += num_states)
+        for (StateType i = 0; i <  num_states_; ++i, mutation_mat_row += num_states_, freqi_freqj_qij_row += num_states_)
         {
-            for (StateType j = 0; j <  num_states; ++j)
+            for (StateType j = 0; j <  num_states_; ++j)
             {
                 // update freqi_freqj_qij
                 if (i != j)
@@ -969,7 +948,7 @@ void ModelAA::initMutationMat()
         RealNumType* transposed_mut_mat_row = transposed_mut_mat;
         RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
         
-        for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states, freq_j_transposed_ij_row += num_states)
+        for (StateType i = 0; i < num_states_; ++i, transposed_mut_mat_row += num_states_, freq_j_transposed_ij_row += num_states_)
             setVecByProduct<20>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
     }
     else
@@ -978,15 +957,14 @@ void ModelAA::initMutationMat()
 
 void ModelAA::readRates(istream &in, const bool is_reversible)
 {
-    const StateType num_states = 20;
     StateType row = 1, col = 0;
-    StateType row_index = num_states;
+    StateType row_index = num_states_;
     if (is_reversible) {
         const StateType nrates = 190;
         // since states for protein is stored in lower-triangle, special treatment is needed
         for (StateType i = 0; i < nrates; i++, col++) {
             if (col == row) {
-                row++; col = 0; row_index += num_states;
+                row++; col = 0; row_index += num_states_;
             }
             // switch col and row
             // int id = col * (2 * num_states - col - 1) / 2 + (row - col - 1);
@@ -1010,9 +988,9 @@ void ModelAA::readRates(istream &in, const bool is_reversible)
     } else {
         // non-reversible model, read the whole rate matrix
         RealNumType* mutation_mat_ptr = mutation_mat;
-        for (row = 0; row < num_states; row++) {
+        for (row = 0; row < num_states_; row++) {
             RealNumType row_sum = 0.0;
-            for (col = 0; col < num_states; col++, ++mutation_mat_ptr)
+            for (col = 0; col < num_states_; col++, ++mutation_mat_ptr)
             {
                 string tmp_value;
                 in >> tmp_value;
@@ -1033,11 +1011,10 @@ void ModelAA::readRates(istream &in, const bool is_reversible)
 }
 
 void ModelAA::rescaleLowerDiagonalRates() {
-    const StateType num_states = 20;
     RealNumType max_rate = 0.0;
 
     RealNumType* mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
     {
         for (StateType j = 0; j < i; ++j)
             max_rate = max_rate > mutation_mat_row[j] ? max_rate : mutation_mat_row[j];
@@ -1049,7 +1026,7 @@ void ModelAA::rescaleLowerDiagonalRates() {
     /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
 
     mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
     {
         for (StateType j = 0; j < i; ++j)
             mutation_mat_row[j] *= scaler;
@@ -1058,13 +1035,12 @@ void ModelAA::rescaleLowerDiagonalRates() {
 
 void ModelAA::rescaleAllRates()
 {
-    const StateType num_states = 20;
     RealNumType max_rate = 0.0;
 
     RealNumType* mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
     {
-        for (StateType j = 0; j < num_states; ++j)
+        for (StateType j = 0; j < num_states_; ++j)
             max_rate = max_rate > mutation_mat_row[j] ? max_rate : mutation_mat_row[j];
     }
 
@@ -1073,9 +1049,9 @@ void ModelAA::rescaleAllRates()
 
     /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
     mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states)
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
     {
-        for (StateType j = 0; j < num_states; ++j)
+        for (StateType j = 0; j < num_states_; ++j)
             mutation_mat_row[j] *= scaler;
     }
 }

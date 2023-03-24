@@ -16,13 +16,6 @@ private:
     virtual void readRates(istream &in, const bool is_reversible);
     
     /**
-        Read root state frequencies from string/file
-     */
-    inline virtual void readStateFreq(istream& ist) {
-        readStateFreqWithNumStates(ist, 20);
-    };
-    
-    /**
         Rescale the lower diagonal rates
      */
     void rescaleLowerDiagonalRates();
@@ -31,8 +24,6 @@ private:
         Rescale all rates
      */
     void rescaleAllRates();
-    
-protected:
     
     /**
         extract root freqs from the reference sequence
@@ -45,7 +36,7 @@ public:
     /**
         Constructor
     */
-    ModelAA(const std::string n_model_name):Model(n_model_name) {};
+    ModelAA(const std::string n_model_name):Model(n_model_name) { num_states_ = 20; };
     
     /**
         Destructor
@@ -54,7 +45,6 @@ public:
     
     /**
         Init the mutation rate matrix from a model
-        @param n_model_name: name of the model; num_states: the number of states
      */
     virtual void initMutationMat();
 };

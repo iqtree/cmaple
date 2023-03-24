@@ -10,30 +10,18 @@ private:
     
     /**
         Init the mutation rate matrix from JC model
-        @param n_model_name: name of the model; num_states: the number of states
      */
-    void initMutationMatJC(const StateType num_states);
+    void initMutationMatJC();
     
     /**
         Update the mutation rate matrix regarding the pseu_mutation_count
-        @param num_states: the number of states
      */
-    void updateMutMatbyMutCount(const StateType num_states);
+    void updateMutMatbyMutCount();
     
     /**
         Update the mutation rate matrix
-        @param num_states: the number of states
      */
-    void updateMutationMat(const StateType num_states);
-    
-protected:
-    
-    /**
-        Read root state frequencies from string/file
-     */
-    inline virtual void readStateFreq(istream& ist) {
-        readStateFreqWithNumStates(ist, 4);
-    };
+    void updateMutationMat();
     
 public:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
@@ -43,7 +31,7 @@ public:
 	/**
 		Constructor
 	*/
-    ModelDNA(const string n_model_name):Model(n_model_name), pseu_mutation_count(nullptr) {};
+    ModelDNA(const string n_model_name):Model(n_model_name), pseu_mutation_count(nullptr) { num_states_ = 4; };
     
     /**
         Destructor
@@ -52,7 +40,6 @@ public:
     
     /**
         Init the mutation rate matrix from a model
-        @param n_model_name: name of the model; num_states: the number of states
      */
     virtual void initMutationMat();
     

@@ -10,7 +10,7 @@ ModelDNA::~ModelDNA()
     }
 }
 
-void ModelDNA::updateMutMatbyMutCount(const StateType num_states)
+void ModelDNA::updateMutMatbyMutCount()
 {
     RealNumType* pseu_mutation_count_row = pseu_mutation_count;
     RealNumType* mutation_mat_row = mutation_mat;
@@ -18,11 +18,11 @@ void ModelDNA::updateMutMatbyMutCount(const StateType num_states)
     // init UNREST model
     if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0)
     {
-        for (StateType i = 0; i <  num_states; ++i, pseu_mutation_count_row += num_states, mutation_mat_row += num_states)
+        for (StateType i = 0; i <  num_states_; ++i, pseu_mutation_count_row += num_states_, mutation_mat_row += num_states_)
         {
             RealNumType sum_rate = 0;
             
-            for (StateType j = 0; j <  num_states; ++j)
+            for (StateType j = 0; j <  num_states_; ++j)
             {
                 if (i != j)
                 {
@@ -40,11 +40,11 @@ void ModelDNA::updateMutMatbyMutCount(const StateType num_states)
     // init GTR model
     else if (model_name.compare("GTR") == 0 || model_name.compare("gtr") == 0)
     {
-        for (StateType i = 0; i <  num_states; ++i, pseu_mutation_count_row += num_states, mutation_mat_row += num_states)
+        for (StateType i = 0; i <  num_states_; ++i, pseu_mutation_count_row += num_states_, mutation_mat_row += num_states_)
         {
             RealNumType sum_rate = 0;
             
-            for (StateType j = 0; j <  num_states; ++j)
+            for (StateType j = 0; j <  num_states_; ++j)
                 if (i != j)
                 {
                     mutation_mat_row[j] = (pseu_mutation_count_row[j] + pseu_mutation_count[row_index[j] + i]) * inverse_root_freqs[i];
@@ -61,14 +61,14 @@ void ModelDNA::updateMutMatbyMutCount(const StateType num_states)
         outError("Unsupported model! Please check and try again!");
 }
 
-void ModelDNA::updateMutationMat(const StateType num_states)
+void ModelDNA::updateMutationMat()
 {
     // update Mutation matrix regarding the pseudo muation count
-    updateMutMatbyMutCount(num_states);
+    updateMutMatbyMutCount();
     
     // compute the total rate regarding the root freqs
     RealNumType total_rate = 0;
-    assert(num_states == 4);
+    assert(num_states_ == 4);
     total_rate -= dotProduct<4>(root_freqs, diagonal_mut_mat);
     
     // inverse total_rate
@@ -77,9 +77,9 @@ void ModelDNA::updateMutationMat(const StateType num_states)
     // normalize the mutation_mat
     RealNumType* mutation_mat_row = mutation_mat;
     RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
-    for (StateType i = 0; i <  num_states; ++i, mutation_mat_row += num_states, freqi_freqj_qij_row += num_states)
+    for (StateType i = 0; i <  num_states_; ++i, mutation_mat_row += num_states_, freqi_freqj_qij_row += num_states_)
     {
-        for (StateType j = 0; j <  num_states; ++j)
+        for (StateType j = 0; j <  num_states_; ++j)
         {
             mutation_mat_row[j] *= total_rate;
             
@@ -101,19 +101,17 @@ void ModelDNA::updateMutationMat(const StateType num_states)
     RealNumType* transposed_mut_mat_row = transposed_mut_mat;
     RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
     
-    assert(num_states == 4);
-    for (StateType i = 0; i < num_states; ++i, transposed_mut_mat_row += num_states, freq_j_transposed_ij_row += num_states)
+    assert(num_states_ == 4);
+    for (StateType i = 0; i < num_states_; ++i, transposed_mut_mat_row += num_states_, freq_j_transposed_ij_row += num_states_)
         setVecByProduct<4>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
 }
 
-void ModelDNA::initMutationMatJC(const StateType num_states)
+void ModelDNA::initMutationMatJC()
 {
-    ASSERT(num_states == 4);
-    
     // update root_freqs
     const RealNumType log_freq = log(0.25);
     
-    for (StateType i = 0; i < num_states; ++i)
+    for (StateType i = 0; i < num_states_; ++i)
     {
         root_freqs[i] = 0.25;
         inverse_root_freqs[i] = 4;
@@ -127,9 +125,9 @@ void ModelDNA::initMutationMatJC(const StateType num_states)
     RealNumType* mutation_mat_row = mutation_mat;
     RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
     RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
-    for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states, freqi_freqj_qij_row += num_states, freq_j_transposed_ij_row += num_states)
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_, freqi_freqj_qij_row += num_states_, freq_j_transposed_ij_row += num_states_)
     {
-        for (StateType j = 0; j < num_states; ++j)
+        for (StateType j = 0; j < num_states_; ++j)
         {
             if (i == j)
             {
@@ -158,34 +156,12 @@ void ModelDNA::initMutationMatJC(const StateType num_states)
 
 void ModelDNA::initMutationMat()
 {
-    const StateType num_states = 4;
-    // init row_index
-    row_index = new StateType[num_states + 1];
-    uint16_t start_index = 0;
-    for (StateType i = 0; i < num_states + 1; i++, start_index += num_states)
-        row_index[i] = start_index;
-    
-    // init root_freqs, root_log_freqs, inverse_root_freqs if they have not yet been initialized
-    if (!root_freqs)
-    {
-        root_freqs = new RealNumType[num_states];
-        root_log_freqs = new RealNumType[num_states];
-        inverse_root_freqs = new RealNumType[num_states];
-    }
-    
-    // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
-    uint16_t mat_size = row_index[num_states];
-    mutation_mat = new RealNumType[mat_size];
-    transposed_mut_mat = new RealNumType[mat_size];
-    diagonal_mut_mat = new RealNumType[num_states];
-    freqi_freqj_qij = new RealNumType[mat_size];
-    freq_j_transposed_ij = new RealNumType[mat_size];
+    // init variable pointers
+    initPointers();
     
     // for JC model
     if (model_name.compare("JC") == 0 || model_name.compare("jc") == 0)
-    {
-        initMutationMatJC(num_states);
-    }
+        initMutationMatJC();
     // for other models
     else
     {
@@ -198,7 +174,7 @@ void ModelDNA::initMutationMat()
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
         convert_real_numbers(pseu_mutation_count, model_rates);
         
-        updateMutationMat(num_states);
+        updateMutationMat();
     }
 }
 
@@ -207,19 +183,17 @@ void ModelDNA::updateMutationMatEmpirical(const Alignment& aln)
     // don't update JC model parameters
     if (model_name == "JC" || model_name == "jc") return;
     
-    const StateType num_states = aln.num_states;
-    
     // clone the current mutation matrix
-    RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states];
-    memcpy(tmp_diagonal_mut_mat, diagonal_mut_mat, num_states * sizeof(RealNumType));
+    RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
+    memcpy(tmp_diagonal_mut_mat, diagonal_mut_mat, num_states_ * sizeof(RealNumType));
     
     // update the mutation matrix regarding the pseu_mutation_count
-    updateMutationMat(num_states);
+    updateMutationMat();
     
     // update cumulative_rate if the mutation matrix changes more than a threshold
     RealNumType change_thresh = 1e-3;
     bool update = false;
-    for (StateType j = 0; j < num_states; ++j)
+    for (StateType j = 0; j < num_states_; ++j)
     {
         if (fabs(tmp_diagonal_mut_mat[j] - diagonal_mut_mat[j]) > change_thresh)
         {
@@ -242,7 +216,6 @@ void ModelDNA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions
     {
         // init variables
         PositionType pos = 0;
-        const StateType num_states = aln.num_states;
         const SeqRegions& seq1_regions = regions1;
         const SeqRegions& seq2_regions = regions2;
         size_t iseq1 = 0;
@@ -258,7 +231,7 @@ void ModelDNA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions
             const auto* const seq1_region = &seq1_regions[iseq1];
             const auto* const seq2_region = &seq2_regions[iseq2];
 
-            if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states || seq1_region->type == TYPE_R) && (seq2_region->type < num_states || seq2_region->type == TYPE_R))
+            if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) && (seq2_region->type < num_states_ || seq2_region->type == TYPE_R))
             {
                 if (seq1_region->type == TYPE_R)
                     pseu_mutation_count[row_index[aln.ref_seq[end_pos]] + seq2_region->type] += 1;

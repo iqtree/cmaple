@@ -27,6 +27,11 @@ private:
      */
     std::string exportQMatrixStr(Alignment& aln);
     
+    /**
+        Read root state frequencies from string/file
+     */
+    void readStateFreq(istream &in);
+    
 protected:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
     /** Model definitions*/
@@ -49,29 +54,27 @@ protected:
     virtual void readRates(istream &in, const bool is_reversible) {};
     
     /**
-        Read root state frequencies from string/file
-     */
-    void readStateFreqWithNumStates(istream &in, const StateType num_states);
-    
-    /**
-        Read root state frequencies from string/file
-     */
-    virtual void readStateFreq(istream &in) {};
-    
-    /**
         Normalize the Q matrix so that the expected number of subtitution is 1
      */
-    void normalizeQMatrix(const StateType num_states);
+    void normalizeQMatrix();
     
     /**
-        extract root freqs from the reference sequence
+        Extract root freqs from the reference sequence
      */
     virtual void extractRootFreqs(const Alignment& aln);
+    
+    /**
+        Init pointers
+     */
+    void initPointers();
     
 public:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
     /** Name of the model */
     std::string model_name;
+    
+    /** Number of states */
+    StateType num_states_;
     
     /** State frequencies*/
     RealNumType *root_freqs = nullptr;
