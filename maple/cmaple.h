@@ -9,23 +9,56 @@ class CMaple {
 private:
     
     /**
+        Pointer  to doInference method
+     */
+    typedef void (CMaple::*DoInferencePtrType)();
+    DoInferencePtrType doInferencePtr;
+    
+    /**
+        Pointer  to postInference method
+     */
+    typedef void (CMaple::*PostInferencePtrType)();
+    PostInferencePtrType postInferencePtr;
+    
+    /**
+        Template of doInference()
+     */
+    template <const StateType num_states>
+    void doInferenceTemplate();
+    
+    /**
+        Template of postInference()
+     */
+    template <const StateType num_states>
+    void postInferenceTemplate();
+    
+    /**
+        Setup function pointers
+     */
+    void setupFuncPtrs(const StateType num_states);
+    
+    /**
         Build an Initial Tree
      */
+    template <const StateType num_states>
     void buildInitialTree();
     
     /**
         Optimize the current tree
      */
+    template <const StateType num_states>
     void optimizeTree();
     
     /**
         Optimize the tree topology
      */
+    template <const StateType num_states>
     void optimizeTreeTopology(bool short_range_search = false);
     
     /**
         Optimize the branch lengths of the current tree
      */
+    template <const StateType num_states>
     void optimizeBranchLengthsOfTree();
     
     /**
@@ -36,6 +69,7 @@ private:
     /**
         calculate branch supports
      */
+    template <const StateType num_states>
     void calculateBranchSupports();
     
 public:

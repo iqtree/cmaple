@@ -104,6 +104,7 @@ public:
         @param model the model of evolution
         @param threshold the threshold for approximation
      */
+    template <const StateType num_states>
     void mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions, RealNumType upper_plength, const SeqRegions& lower_regions, RealNumType lower_plength, const
                          Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold) const;
     
@@ -118,6 +119,7 @@ public:
         @param threshold the threshold for approximation
         @param return_log_lh TRUE to return the log likelihood
      */
+    template <const StateType num_states>
     RealNumType mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool return_log_lh = false) const;
     
     /**
@@ -131,23 +133,27 @@ public:
         @param threshold the threshold for approximation
         @param return_log_lh TRUE to return the log likelihood
      */
+    template <const StateType num_states>
     RealNumType calculateSiteLhContributions(std::vector<RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob) const;
     
     /**
         Compute total lh/upper left_right for root node
         @param blength the branch length; (-1 by default).
      */
-    void computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const StateType num_states, const std::unique_ptr<Model>& model, RealNumType blength = -1) const;
+    template <const StateType num_states>
+    void computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const std::unique_ptr<Model>& model, RealNumType blength = -1) const;
     
     /**
         Compute the likelihood by merging the lower lh with root frequencies
      */
-    RealNumType computeAbsoluteLhAtRoot(const StateType num_states, const std::unique_ptr<Model>& model);
+    template <const StateType num_states>
+    RealNumType computeAbsoluteLhAtRoot(const std::unique_ptr<Model>& model);
     
     /**
         Compute the site likelihood at root by merging the lower lh with root frequencies
      */
-    RealNumType computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_contributions, const StateType num_states, const std::unique_ptr<Model>& model);
+    template <const StateType num_states>
+    RealNumType computeSiteLhAtRoot(std::vector<RealNumType>& site_lh_contributions, const std::unique_ptr<Model>& model);
     
     /**
         Convert an entry 'O' into a normal nucleotide if its probability dominated others
@@ -217,8 +223,9 @@ public:
 /**
     MergeUpperLower case N with O
  */
+template <const StateType num_states>
 void merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const std::unique_ptr<Model>& model,
-               const PositionType end_pos, const StateType num_states, SeqRegions& merged_target);
+               const PositionType end_pos, SeqRegions& merged_target);
 
 /**
     MergeUpperLower case N_RACGT
@@ -229,7 +236,8 @@ void merge_N_RACGT(const SeqRegion& reg_racgt, const RealNumType lower_plength, 
 /**
     MergeUpperLower case O_N
  */
-void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const std::unique_ptr<Model>& model, const StateType num_states, SeqRegions& merged_regions);
+template <const StateType num_states>
+void merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const std::unique_ptr<Model>& model, SeqRegions& merged_regions);
 
 /**
     MergeUpperLower case RACGT_N
@@ -245,21 +253,25 @@ bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_reg
 /**
     MergeUpperLower case O_ORACGT
  */
+template <const StateType num_states>
 void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions);
 
 /**
     MergeUpperLower case RACGT_O
  */
+template <const StateType num_states>
 void merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions);
 
 /**
     MergeUpperLower case RACGT_RACGT
  */
+template <const StateType num_states>
 void merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions);
 
 /**
     MergeUpperLower case RACGT_ORACGT
  */
+template <const StateType num_states>
 void merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions);
 
 /**
@@ -280,35 +292,42 @@ void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const Position
 /**
     MergeTwoLowers case O_O
  */
+template <const StateType num_states>
 bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
 /**
     MergeTwoLowers case O_RACGT
  */
+template <const StateType num_states>
 bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
 /**
     MergeTwoLowers case O_ORACGT
  */
+template <const StateType num_states>
 bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
 /**
     MergeTwoLowers case RACGT_O
  */
+template <const StateType num_states>
 bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
 /**
     MergeTwoLowers case RACGT_RACGT
  */
+template <const StateType num_states>
 bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
 /**
     MergeTwoLowers case RACGT_ORACGT
  */
+template <const StateType num_states>
 bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
 /**
     MergeTwoLowers case notN_notN
  */
+template <const StateType num_states>
 bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
