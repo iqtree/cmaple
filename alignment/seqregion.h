@@ -6,10 +6,9 @@
 #pragma once
 
 /** A region in a sequence */
-template<StateType num_states>
 class SeqRegion: public Mutation {
 public: 
-  using LHType = std::array<RealNumType, num_states>;
+  using LHType = std::array<RealNumType, 4>;
   using LHPtrType = std::unique_ptr<LHType>;
 private:
     /**
