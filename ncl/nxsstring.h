@@ -25,6 +25,7 @@
 #include <string>
 #include <vector> //for std::vector
 #include "nxsindent.h"
+#include <climits>
 
 class IndexSet;
 

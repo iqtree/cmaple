@@ -42,6 +42,7 @@
 #include <sys/stat.h>
 #include <cfloat>
 #include <thread>
+#include <iomanip>
 #define SPRNG
 #include "sprng/sprng.h"
 #include "operatingsystem.h"

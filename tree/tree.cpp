@@ -4675,10 +4675,10 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
     const RealNumType LT3 = LT1 + nodelh.getLhDiff3();
     
     // debug
-    /*if (!child_1.isInternal() && (aln.data[child_1.getSeqNameIndex()].seq_name == "11"))
+    /*if (!child_1.isInternal() && (aln.data[child_1.getSeqNameIndex()].seq_name == "52"))
         std::cout << "sfdfds " <<std::endl;
     
-    if (!child_2.isInternal() && (aln.data[child_2.getSeqNameIndex()].seq_name == "11"))
+    if (!child_2.isInternal() && (aln.data[child_2.getSeqNameIndex()].seq_name == "52"))
         std::cout << "sfdfds " <<std::endl;*/
     
     // calculate site_lh differences

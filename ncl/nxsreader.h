@@ -19,6 +19,7 @@
 
 #ifndef NCL_NXSREADER_H
 #define NCL_NXSREADER_H
+#include <climits>
 
 /*----------------------------------------------------------------------------------------------------------------------
 |	This is the class that orchestrates the reading of a NEXUS data file. An object of this class should be created, 
