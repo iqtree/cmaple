@@ -497,7 +497,7 @@ void runCMaple(Params &params)
     cmaple.preInference();
     
     // debug
-    cmaple.tree.showModelParams();
+    // cmaple.tree.showModelParams();
     
     // infer trees and model params
     cmaple.doInference();

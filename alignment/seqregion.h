@@ -7,8 +7,8 @@
 
 /** A region in a sequence */
 class SeqRegion: public Mutation {
-public: 
-  using LHType = std::array<RealNumType, 4>;
+public:
+  using LHType = std::array<RealNumType, NUM_STATES>;
   using LHPtrType = std::unique_ptr<LHType>;
 private:
     /**

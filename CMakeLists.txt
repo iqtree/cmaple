@@ -182,10 +182,12 @@ add_subdirectory(unittest)
 # the main executable
 ##################################################################
 add_executable(cmaple main/main.cpp)
+add_executable(cmaple-aa main/main.cpp)
 
 if(Backtrace_FOUND)
   include_directories(${Backtrace_INCLUDE_DIR})
   target_link_libraries(cmaple ${Backtrace_LIBRARY})
+  target_link_libraries(cmaple-aa ${Backtrace_LIBRARY})
 endif(Backtrace_FOUND)
 
 ##################################################################
@@ -193,24 +195,25 @@ endif(Backtrace_FOUND)
 ##################################################################
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
-	target_link_libraries(tree OpenMP::OpenMP_CXX)
-	target_link_libraries(cmaple maple tree alignment model ncl nclextra utils sprng)
-else()
-	# basic linking librararies
-	target_link_libraries(cmaple maple tree alignment model ncl nclextra utils sprng)
+	target_link_libraries(tree-dna OpenMP::OpenMP_CXX)
+     target_link_libraries(tree-aa OpenMP::OpenMP_CXX)
 endif()
 
+target_link_libraries(cmaple maple-dna tree-dna alignment-dna model-dna ncl nclextra utils sprng)
+target_link_libraries(cmaple-aa maple-aa tree-aa alignment-aa model-aa ncl nclextra utils sprng)
 
 ##############################################################
 # add the install targets
 ##############################################################
 install (TARGETS cmaple DESTINATION bin)
+install (TARGETS cmaple-aa DESTINATION bin)
 install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
 install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa.ref" DESTINATION .)
 install (FILES "${PROJECT_SOURCE_DIR}/example/output.diff" DESTINATION .)
 
 if (WIN32)
     install (FILES "${BINARY_DIR}/cmaple${EXE_SUFFIX}-click.exe" DESTINATION bin)
+    install (FILES "${BINARY_DIR}/cmaple-aa${EXE_SUFFIX}-click.exe" DESTINATION bin)
 endif()
 
 ##############################################################

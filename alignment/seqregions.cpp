@@ -441,7 +441,6 @@ void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, 
         if (seq2_state == TYPE_R)
             seq2_state = aln.ref_seq[end_pos];
         
-        assert(num_states == 4);
         if (total_blength_2 > 0)
         {
             RealNumType* transposed_mut_mat_row = model->transposed_mut_mat + model->row_index[seq2_state];
