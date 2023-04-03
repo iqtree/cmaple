@@ -276,7 +276,7 @@ void Tree::updatePartialLhFromChildren(const Index index, PhyloNode& node, std::
     if (!update_blength)
     {
         // update likelihoods at parent node
-        if (node.getPartialLh(TOP)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root_vector_index != node_vec_index) //(top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
+        if (node.getPartialLh(TOP)->areDiffFrom(*old_lower_regions, seq_length, num_states, &params.value()) && root_vector_index != node_vec_index) //(top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
             //node_stack.push(top_node->neighbor);
             node_stack.push(node.getNeighborIndex(TOP));
 
@@ -503,7 +503,7 @@ void Tree::seekSamplePlacement(const Index start_node_index, const NumSeqsType s
     
         // if the current node is a leaf AND the new sample/sequence is strictly less informative than the current node
         // -> add the new sequence into the list of minor sequences of the current node + stop seeking the placement
-        if ((!is_internal) && (current_node.getPartialLh(TOP)->compareWithSample(*sample_regions, aln.ref_seq.size(), aln.num_states) == 1))
+        if ((!is_internal) && (current_node.getPartialLh(TOP)->compareWithSample(*sample_regions, aln.ref_seq.size(), num_states) == 1))
         {
             current_node.addLessInfoSeqs(seq_name_index);
             selected_node_index = Index();
@@ -4210,7 +4210,7 @@ void Tree::computeLhContribution(RealNumType& total_lh, std::unique_ptr<SeqRegio
     if (!new_lower_lh)
         outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
     // otherwise, everything is good -> update the lower lh of the current node
-    else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, aln.num_states, &params.value()))
+    else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, &params.value()))
         outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
 }
 
@@ -5513,7 +5513,7 @@ RealNumType Tree::calculateSiteLhs(std::vector<RealNumType>& site_lh_contributio
                 if (!new_lower_lh)
                     outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
                 // otherwise, everything is good -> update the lower lh of the current node
-                else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, aln.num_states, &params.value()))
+                else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, &params.value()))
                 {
                     // outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
                     // non-updated lower likelihood may be due to a replacement of ML tree by an NNI neighbor
@@ -5973,7 +5973,7 @@ void Tree::expandTreeByOneLessInfoSeq(PhyloNode& node, const Index node_index, c
     std::cout << "Add less-info-seq " + aln.data[seq_name_index].seq_name + " into the tree" << std::endl;
     
     // dummy variables
-    std::unique_ptr<SeqRegions> lower_regions = aln.data[seq_name_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+    std::unique_ptr<SeqRegions> lower_regions = aln.data[seq_name_index].getLowerLhVector(aln.ref_seq.size(), num_states, aln.getSeqType());
     const std::unique_ptr<SeqRegions>& upper_left_right_regions = getPartialLhAtNode(parent_index);
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     const RealNumType top_distance = node.getUpperLength();

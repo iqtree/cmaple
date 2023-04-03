@@ -63,6 +63,9 @@ void SeqRegion::convertAmbiguiousStateAA(int max_num_states)
         return;
     
     switch (type) {
+        case TYPE_DEL: // convert '-' into type_N
+            type = TYPE_N;
+            break;
         default:
             outError("Invalid character for a genome entry. Please check and try again!");
     }
