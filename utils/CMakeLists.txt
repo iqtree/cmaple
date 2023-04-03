@@ -4,6 +4,7 @@ timeutil.h
 operatingsystem.cpp operatingsystem.h
 gzstream.h gzstream.cpp
 matrix.h
+logstream.h logstream.cpp
 )
 
 target_link_libraries(utils)

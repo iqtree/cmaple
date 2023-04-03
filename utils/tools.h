@@ -1,23 +1,26 @@
-/***************************************************************************
- *   Copyright (C) 2022 by                                            *
- *   BUI Quang Minh <m.bui@anu.edu.au>                                *
- *   Nhan Ly-Trong <trongnhan.uit@gmail.com>                                    *
- *                                                                         *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+/****************************************************************************
+ *   Copyright (C) 2022 by
+ *   Nhan Ly-Trong <trongnhan.uit@gmail.com>
+ *   Chris Bielow <chris.bielow@fu-berlin.de>
+ *   Nicola De Maio <demaio@ebi.ac.uk>
+ *   BUI Quang Minh <m.bui@anu.edu.au>
+ *
+ *
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program; if not, write to the
+ *   Free Software Foundation, Inc.,
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
 #include <cmaple_config.h>
@@ -38,6 +41,11 @@
 #include <random>
 #include <sys/stat.h>
 #include <cfloat>
+#include <thread>
+#include <iomanip>
+#define SPRNG
+#include "sprng/sprng.h"
+#include "operatingsystem.h"
 
 #ifndef TOOLS_H
 #define TOOLS_H
@@ -145,7 +153,7 @@ struct Distribution {
 /**
     Type of site states
  */
-typedef uint8_t StateType;
+typedef uint16_t StateType;
 
 /**
     Type of site positions
@@ -489,6 +497,11 @@ public:
     char* output_aln;
     
     /**
+    *  Path to an input tree
+    */
+    char* input_treefile;
+    
+    /**
     *       The number of attempts to improve the tree with SPR moves
     */
     int num_tree_improvement;
@@ -527,6 +540,51 @@ public:
     *  path to output testing codes
     */
     char* output_testing;
+    
+    /**
+    * TRUE to compute aLRT-SH
+    */
+    bool compute_aLRT_SH;
+    
+    /**
+    * Number of replicates to compute aLRT-SH
+    */
+    PositionType aLRT_SH_replicates;
+    
+    /**
+    * epsilon value when computing aLRT-SH
+    */
+    RealNumType aLRT_SH_epsilon;
+    
+    /**
+    * fixed min_blength
+    */
+    RealNumType fixed_min_blength;
+    
+    /**
+    * number of threads
+    */
+    uint32_t num_threads;
+    
+    /**
+    * Random seed
+    */
+    uint64_t ran_seed;
+    
+    /**
+    *  prefix output
+    */
+    char* output_prefix;
+    
+    /**
+    *  TRUE to allow replace the input tree by its NNI neighbor (with a higher lh) when computing aLRT-SH
+    */
+    bool allow_replace_input_tree;
+    
+    /**
+    *  type of sequences
+    */
+    SeqType seq_type;
     
     /*
         TRUE to log debugging
@@ -572,6 +630,24 @@ void outWarning(const std::string &warn);
 /** safe version of std::getline to deal with files from different platforms */ 
 std::istream& safeGetline(std::istream& is, std::string& t);
 
+/**
+        @return TRUE of ch is a control character (ascii <= 32)
+ */
+inline bool controlchar(char& ch) {
+    return ch <= 32;
+}
+
+inline bool is_newick_token(char& ch) {
+    return ch == ':' || ch == ';' || ch == ',' || ch == ')' || ch == '(' || ch == '[' || ch == ']';
+}
+
+/**
+    change unusual character in names into underscore (_)
+    @param[in/out] name string name
+    @return true if renamed, false otherwise
+ */
+bool renameString(std::string& name);
+
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
 /*
@@ -580,6 +656,50 @@ std::istream& safeGetline(std::istream& is, std::string& t);
 const char ERR_NO_TAXON[] = "Find no taxon with name ";
 const char ERR_NO_AREA[] = "Find no area with name ";
 const char ERR_NO_MEMORY[] = "Not enough memory!";
+const char ERR_NEG_BRANCH[] = "Negative branch length not allowed.";
+const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
+const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
+
+/*--------------------------------------------------------------*/
+/* random number generator */
+/*--------------------------------------------------------------*/
+
+extern int *randstream;
+
+/**
+ * initialize the random number generator
+ * @param seed seed for generator
+ * @param write_info true to write information, false otherwise (default)
+ */
+int init_random(int seed, bool write_info = false, int** rstream = NULL);
+
+/**
+ * finalize random number generator (e.g. free memory
+ */
+int finish_random(int *rstream = NULL);
+
+/**
+ * returns a random integer in the range [0; n - 1]
+ * @param n upper-bound of random number
+ */
+int random_int(int n, int *rstream = NULL);
+
+/**
+ *  return a random integer in the range [a,b]
+ */
+//int randint(int a, int b);
+
+/**
+ * returns a random integer in the range [0; RAND_MAX - 1]
+ * = random_int(RAND_MAX)
+ */
+//int random_int(int *rstream = NULL);
+
+/**
+ * returns a random floating-point nuber in the range [0; 1)
+ */
+double random_double(int *rstream = NULL);
+
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
 
@@ -593,6 +713,8 @@ std::string convertIntToString(int number);
 std::string convertInt64ToString(int64_t number);
 
 std::string convertDoubleToString(RealNumType number);
+
+std::string convertDoubleToString(RealNumType number, uint8_t precision);
 
 /**
  Case-insensitive comparison between two strings
@@ -854,6 +976,11 @@ bool overwriteFile(char *filename);
 void trimString(std::string &str);
 
 /**
+    get number of processor cores
+*/
+int countPhysicalCPUCores();
+
+/**
     Sort an array by quicksort
     @param arr array for comparison
     @param arr2 array for sorting
@@ -895,10 +1022,15 @@ void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
 }
 
 /**
- * Print usage for iq-tree
+ * Print usage for CMaple
  * @param program arguments list
  * @param full_command TRUE to print all available commands, FALSE to print normal usage dialog
  */
-void usage_iqtree(char* argv[], bool full_command);
+void usage_cmaple(char* argv[], bool full_command);
+
+/**
+ * Print copyright
+ */
+void printCopyright(std::ostream &out);
 
 #endif

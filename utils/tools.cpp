@@ -1,23 +1,26 @@
-/***************************************************************************
- *   Copyright (C) 2022 by                                            *
- *   BUI Quang Minh <m.bui@anu.edu.au>                                *
- *   Nhan Ly-Trong <trongnhan.uit@gmail.com>                                    *
- *                                                                         *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+/****************************************************************************
+ *   Copyright (C) 2022 by
+ *   Nhan Ly-Trong <trongnhan.uit@gmail.com>
+ *   Chris Bielow <chris.bielow@fu-berlin.de>
+ *   Nicola De Maio <demaio@ebi.ac.uk>
+ *   BUI Quang Minh <m.bui@anu.edu.au>
+ *
+ *
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program; if not, write to the
+ *   Free Software Foundation, Inc.,
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
 
@@ -29,10 +32,257 @@
 
 using namespace std;
 
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+
+#define RAN_STANDARD 1
+#define RAN_SPRNG    2
+#define RAN_RAND4    3
+
+#define RAN_TYPE 2
+
+#if RAN_TYPE == RAN_STANDARD
+
+int init_random(int seed) {
+    srand(seed);
+    cout << "(Using rand() - Standard Random Number Generator)" << endl;
+    // init random generator for AliSim
+    Params::getInstance().generator.seed(seed);
+    return seed;
+}
+
+int finish_random() {
+    return 0;
+}
+
+
+#elif RAN_TYPE == RAN_RAND4
+/******************************************************************************/
+/* random numbers generator  (Numerical recipes)                              */
+/******************************************************************************/
+
+/* variable */
+long _idum;
+
+/* definitions */
+#define IM1 2147483563
+#define IM2 2147483399
+#define AM (1.0/IM1)
+#define IMM1 (IM1-1)
+#define IA1 40014
+#define IA2 40692
+#define IQ1 53668
+#define IQ2 52774
+#define IR1 12211
+#define IR2 3791
+#define NTAB 32
+#define NDIV (1+IMM1/NTAB)
+#define EPS 1.2e-7
+#define RNMX (1.0-EPS)
+
+double randomunitintervall()
+/* Long period (> 2e18) random number generator. Returns a uniform random
+   deviate between 0.0 and 1.0 (exclusive of endpoint values).
+
+   Source:
+   Press et al., "Numerical recipes in C", Cambridge University Press, 1992
+   (chapter 7 "Random numbers", ran2 random number generator) */ {
+    int j;
+    long k;
+    static long _idum2 = 123456789;
+    static long iy = 0;
+    static long iv[NTAB];
+    double temp;
+
+    if (_idum <= 0) {
+        if (-(_idum) < 1)
+            _idum = 1;
+        else
+            _idum = -(_idum);
+        _idum2 = (_idum);
+        for (j = NTAB + 7; j >= 0; j--) {
+            k = (_idum) / IQ1;
+            _idum = IA1 * (_idum - k * IQ1) - k*IR1;
+            if (_idum < 0)
+                _idum += IM1;
+            if (j < NTAB)
+                iv[j] = _idum;
+        }
+        iy = iv[0];
+    }
+    k = (_idum) / IQ1;
+    _idum = IA1 * (_idum - k * IQ1) - k*IR1;
+    if (_idum < 0)
+        _idum += IM1;
+    k = _idum2 / IQ2;
+    _idum2 = IA2 * (_idum2 - k * IQ2) - k*IR2;
+    if (_idum2 < 0)
+        _idum2 += IM2;
+    j = iy / NDIV;
+    iy = iv[j] - _idum2;
+    iv[j] = _idum;
+    if (iy < 1)
+        iy += IMM1;
+    if ((temp = AM * iy) > RNMX)
+        return RNMX;
+    else
+        return temp;
+} /* randomunitintervall */
+
+#undef IM1
+#undef IM2
+#undef AM
+#undef IMM1
+#undef IA1
+#undef IA2
+#undef IQ1
+#undef IQ2
+#undef IR1
+#undef IR2
+#undef NTAB
+#undef NDIV
+#undef EPS
+#undef RNMX
+
+int init_random(int seed) /* RAND4 */ {
+    //    srand((unsigned) time(NULL));
+    //    if (seed < 0)
+    //     seed = rand();
+    _idum = -(long) seed;
+#ifndef PARALLEL
+    cout << "(Using RAND4 Random Number Generator)" << endl;
+#else /* PARALLEL */
+    {
+        int n;
+        if (PP_IamMaster) {
+            cout << "(Using RAND4 Random Number Generator with leapfrog method)" << endl;
+        }
+        for (n = 0; n < PP_Myid; n++)
+            (void) randomunitintervall();
+        if (verbose_mode >= VB_MED) {
+            cout << "(" << PP_Myid << ") !!! random seed set to " << seed << ", " << n << " drawn !!!" << endl;
+        }
+    }
+#endif
+    // init random generator for AliSim
+    Params::getInstance().generator.seed(seed);
+    return (seed);
+} /* initrandom */
+
+int finish_random() {
+    return 0;
+}
+/******************/
+
+#else /* SPRNG */
+
+/******************/
+
+int *randstream;
+
+int init_random(int seed, bool write_info, int** rstream) {
+    //    srand((unsigned) time(NULL));
+    if (seed < 0)
+        seed = make_sprng_seed();
+#ifndef PARALLEL
+    if (write_info)
+        cout << "(Using SPRNG - Scalable Parallel Random Number Generator)" << endl;
+    if (rstream) {
+        *rstream = init_sprng(0, 1, seed, SPRNG_DEFAULT); /*init stream*/
+    } else {
+        randstream = init_sprng(0, 1, seed, SPRNG_DEFAULT); /*init stream*/
+        if (verbose_mode >= VB_MED) {
+            print_sprng(randstream);
+        }
+    }
+#else /* PARALLEL */
+    if (PP_IamMaster && write_info) {
+        cout << "(Using SPRNG - Scalable Parallel Random Number Generator)" << endl;
+    }
+    /* MPI_Bcast(&seed, 1, MPI_UNSIGNED, PP_MyMaster, MPI_COMM_WORLD); */
+    if (rstream) {
+        *rstream = init_sprng(PP_Myid, PP_NumProcs, seed, SPRNG_DEFAULT); /*initialize stream*/
+    } else {
+        randstream = init_sprng(PP_Myid, PP_NumProcs, seed, SPRNG_DEFAULT); /*initialize stream*/
+        if (verbose_mode >= VB_MED) {
+            cout << "(" << PP_Myid << ") !!! random seed set to " << seed << " !!!" << endl;
+            print_sprng(randstream);
+        }
+    }
+#endif /* PARALLEL */
+    return (seed);
+} /* initrandom */
+
+int finish_random(int *rstream) {
+    if (rstream)
+        return free_sprng(rstream);
+    else
+        return free_sprng(randstream);
+}
+
+#endif /* USE_SPRNG */
+
+/******************/
+
+/* returns a random integer in the range [0; n - 1] */
+int random_int(int n, int *rstream) {
+    return (int) floor(random_double(rstream) * n);
+} /* randominteger */
+
+/* returns a random integer in the range [a; b] */
+int random_int(int a, int b) {
+    ASSERT(b > a);
+    //return a + (RAND_MAX * rand() + rand()) % (b + 1 - a);
+    return a + random_int(b - a);
+}
+
+double random_double(int *rstream) {
+#ifndef FIXEDINTRAND
+#ifndef PARALLEL
+#if RAN_TYPE == RAN_STANDARD
+    return ((double) rand()) / ((double) RAND_MAX + 1);
+#elif RAN_TYPE == RAN_SPRNG
+    if (rstream)
+        return sprng(rstream);
+    else
+        return sprng(randstream);
+#else /* NO_SPRNG */
+    return randomunitintervall();
+#endif /* NO_SPRNG */
+#else /* NOT PARALLEL */
+#if RAN_TYPE == RAN_SPRNG
+    if (rstream)
+        return sprng(rstream);
+    else
+        return sprng(randstream);
+#else /* NO_SPRNG */
+    int m;
+    for (m = 1; m < PP_NumProcs; m++)
+        (void) randomunitintervall();
+    PP_randn += (m - 1);
+    PP_rand++;
+    return randomunitintervall();
+#endif /* NO_SPRNG */
+#endif /* NOT PARALLEL */
+#else /* FIXEDINTRAND */
+    cerr << "!!! fixed \"random\" integers for testing purposes !!!" << endl;
+    return 0.0;
+#endif /* FIXEDINTRAND */
+
+}
+
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+
 VerboseMode verbose_mode;
 
 void printCopyright(ostream &out) {
-     out << "CMAPLE";
+    out << "CMAPLE version ";
+    out << cmaple_VERSION_MAJOR << "." << cmaple_VERSION_MINOR << cmaple_VERSION_PATCH;
+    out << " for " << getOSName();
+    out << " built " << __DATE__ << std::endl;
+    
+    out << "Developed by Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh." << std::endl << std::endl;
 }
 
 /**
@@ -135,6 +385,13 @@ string convertInt64ToString(int64_t number) {
 string convertDoubleToString(RealNumType number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
+    return ss.str(); //return a string with the contents of the stream
+}
+
+std::string convertDoubleToString(RealNumType number, uint8_t precision)
+{
+    stringstream ss; //create a stringstream
+    ss << std::setprecision(precision) << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
@@ -536,6 +793,22 @@ void initDefaultValue(Params &params)
     params.optimize_branch_length = true;
     params.short_range_topo_search = false;
     params.output_testing = NULL;
+    params.compute_aLRT_SH = false;
+    params.aLRT_SH_replicates = 1000;
+    params.aLRT_SH_epsilon = 0.05;
+    params.num_threads = 1;
+    params.input_treefile = NULL;
+    params.output_prefix = NULL;
+    params.allow_replace_input_tree = false;
+    params.fixed_min_blength = -1;
+    params.seq_type = SEQ_UNKNOWN;
+    
+    // initialize random seed based on current time
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    //params.ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
+    params.ran_seed = (tv.tv_usec);
 }
 
 void parseArg(int argc, char *argv[], Params &params) {
@@ -564,6 +837,16 @@ void parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
+            if (strcmp(argv[cnt], "--prefix") == 0) {
+                
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use --prefix <OUTPUT_PREFIX>");
+                
+                params.output_prefix = argv[cnt];
+
+                continue;
+            }
             if (strcmp(argv[cnt], "--output-aln") == 0) {
                 
                 ++cnt;
@@ -571,6 +854,30 @@ void parseArg(int argc, char *argv[], Params &params) {
                     outError("Use --output-aln <ALIGNMENT_PATH>");
                 
                 params.output_aln = argv[cnt];
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "-st") == 0 || strcmp(argv[cnt], "--seqtype") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    throw "Use -st BIN or -st DNA or -st AA or -st CODON";
+                string arg = argv[cnt];
+                if (arg == "DNA")
+                    params.seq_type = SEQ_DNA;
+                else  if (arg == "AA")
+                    params.seq_type = SEQ_PROTEIN;
+                else
+                    throw "Sorry! Currently CMaple supports only DNA and Protein data.";
+                
+                continue;
+            }
+            if (strcmp(argv[cnt], "--tree") == 0 || strcmp(argv[cnt], "-t") == 0) {
+                
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use -t <INPUT_TREEFILE>");
+                
+                params.input_treefile = argv[cnt];
 
                 continue;
             }
@@ -603,6 +910,19 @@ void parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
+            if (strcmp(argv[cnt], "--min-blength") == 0) {
+                
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use --min-blength <NUMBER>");
+                
+                params.fixed_min_blength = convert_real_number(argv[cnt]);
+                
+                if (params.fixed_min_blength <= 0)
+                    outError("<NUMBER> following --min-blength must be positive!");
+
+                continue;
+            }
             if (strcmp(argv[cnt], "--model") == 0 || strcmp(argv[cnt], "-m") == 0) {
                 ++cnt;
                 if (cnt >= argc)
@@ -613,6 +933,10 @@ void parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "-redo") == 0 || strcmp(argv[cnt], "--redo") == 0) {
                 params.redo_inference = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--replace-input-tree") == 0) {
+                params.allow_replace_input_tree = true;
                 continue;
             }
             if (strcmp(argv[cnt], "--thresh-prob") == 0) {
@@ -702,6 +1026,53 @@ void parseArg(int argc, char *argv[], Params &params) {
                 
                 params.output_testing = argv[cnt];
 
+                continue;
+            }
+            if (strcmp(argv[cnt], "--branch-support") == 0) {
+                
+                params.compute_aLRT_SH = true;
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--replicates") == 0) {
+                ++cnt;
+                if (cnt >= argc)
+                    outError("Use --replicates <NUM_REPLICATES>");
+                
+                params.aLRT_SH_replicates = convert_int(argv[cnt]);
+                
+                if (params.aLRT_SH_replicates <= 0)
+                    outError("<NUM_REPLICATES> must be positive!");
+                continue;
+            }
+            if (strcmp(argv[cnt], "--epsilon") == 0) {
+                ++cnt;
+                if (cnt >= argc)
+                    outError("Use --epsilon <FLOATING_NUM>");
+                
+                params.aLRT_SH_epsilon = convert_real_number(argv[cnt]);
+                
+                continue;
+            }
+            if (strcmp(argv[cnt], "-seed") == 0 || strcmp(argv[cnt], "--seed") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    throw "Use -seed <random_seed>";
+                params.ran_seed = abs(convert_int(argv[cnt]));
+                continue;
+            }
+            if (strcmp(argv[cnt], "-nt") == 0 || strcmp(argv[cnt], "-c") == 0 ||
+                strcmp(argv[cnt], "-T") == 0  || strcmp(argv[cnt], "--threads") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                throw "Use -nt <num_threads|AUTO>";
+                if (iEquals(argv[cnt], "AUTO"))
+                    params.num_threads = 0;
+                else {
+                    params.num_threads = convert_int(argv[cnt]);
+                    if (params.num_threads < 1)
+                        throw "At least 1 thread please";
+                }
                 continue;
             }
             
@@ -800,6 +1171,25 @@ bool overwriteFile(char *filename) {
 void trimString(string &str) {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
     str.erase(str.find_last_not_of(" \n\r\t")+1);
+}
+
+bool renameString(string& name) {
+    bool renamed = false;
+    for (string::iterator i = name.begin(); i != name.end(); i++) {
+        if (!isalnum(*i) && (*i) != '_' && (*i) != '-' && (*i) != '.' && (*i) != '|' && (*i) != '/') {
+            (*i) = '_';
+            renamed = true;
+        }
+    }
+    return renamed;
+}
+
+int countPhysicalCPUCores() {
+    #ifdef _OPENMP
+    return omp_get_num_procs();
+    #else
+    return std::thread::hardware_concurrency();
+    #endif
 }
 
 Params& Params::getInstance() {

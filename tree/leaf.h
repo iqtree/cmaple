@@ -24,7 +24,7 @@ struct LeafNode
     std::unique_ptr<SeqRegions> partial_lh_;
   
     /** constructor */
-    LeafNode() {};
+    // LeafNode() {};
     
     /** constructor */
     LeafNode(NumSeqsType new_seq_name_index):seq_name_index_(new_seq_name_index) {};

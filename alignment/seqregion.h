@@ -1,10 +1,3 @@
-//
-//  seqregion.h
-//  alignment
-//
-//  Created by Nhan Ly-Trong on 24/01/2022.
-//
-
 #include "mutation.h"
 
 #include <array>
@@ -14,8 +7,8 @@
 
 /** A region in a sequence */
 class SeqRegion: public Mutation {
-public: 
-  using LHType = std::array<RealNumType, 4>;
+public:
+  using LHType = std::array<RealNumType, NUM_STATES>;
   using LHPtrType = std::unique_ptr<LHType>;
 private:
     /**
@@ -32,6 +25,11 @@ private:
     *  Convert Ambiguious state (of DNA data) into typical states: A/C/G/T; N; O; R
     */
     void convertAmbiguiousStateDNA(int max_num_states);
+    
+    /**
+    *  Convert Ambiguious state (of AA data) into typical states: amino-acid; N; O; R
+    */
+    void convertAmbiguiousStateAA(int max_num_states);
     
 public:
     /**

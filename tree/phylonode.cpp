@@ -1,6 +1,13 @@
 #include "phylonode.h"
 using namespace std;
 
+// explicit instantiation of templates
+template void PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void PhyloNode::computeTotalLhAtNode<4>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void PhyloNode::computeTotalLhAtNode<20>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+
+
+
 std::ostream& operator<<(std::ostream& os, const Index& index)
 {
     os << index.getVectorIndex() << " " << index.getMiniIndex();
@@ -171,7 +178,7 @@ void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbo
     }
 }
 
-const std::vector<NumSeqsType>& PhyloNode::getLessInfoSeqs() const
+std::vector<NumSeqsType>& PhyloNode::getLessInfoSeqs()
 {
     ASSERT(!is_internal_);
     return data_.leaf_.less_info_seqs_;
@@ -233,32 +240,35 @@ void PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
     return neighbor_indexes;
 }*/
 
-void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+template <const StateType num_states>
+void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     // if node is root
     if (is_root)
-        getPartialLh(TOP)->computeTotalLhAtRoot(total_lh, aln.num_states, model, blength);
+        getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(total_lh, model, blength);
     // if not is normal nodes
     else
     {
         std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
-        neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())->mergeUpperLower(total_lh, getUpperLength(), *lower_regions, blength, aln, model, threshold_prob);
+        neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())->mergeUpperLower<num_states>(total_lh, getUpperLength(), *lower_regions, blength, aln, model, threshold_prob);
     }
 }
 
-const std::string PhyloNode::exportString(const bool binary, const Alignment& aln) const
+const std::string PhyloNode::exportString(const bool binary, const Alignment& aln, const bool show_branch_supports)
 {
     if (!isInternal())
     {
-        string length_str = getUpperLength() < 0 ? "0" : convertDoubleToString(getUpperLength());
+        string length_str = getUpperLength() < 0 ? "0" : convertDoubleToString(getUpperLength(), 20);
         // without minor sequences -> simply return node's name and its branch length
-        const std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
+        std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
         const PositionType num_less_info_seqs = less_info_seqs.size();
         if (num_less_info_seqs == 0)
             return aln.data[getSeqNameIndex()].seq_name + ":" + length_str;
         // with minor sequences -> return minor sequences' names with zero branch lengths
         else
         {
+            string branch_support = show_branch_supports ? "0" : "";
+            
             string output = "(" + aln.data[getSeqNameIndex()].seq_name + ":0";
             // export less informative sequences in binary tree format
             if (binary)
@@ -267,7 +277,7 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
                 for (PositionType i = 0; i < num_less_info_seqs - 1; i++)
                 {
                     output += ",(" + aln.data[less_info_seqs[i]].seq_name + ":0";
-                    closing_brackets += "):0";
+                    closing_brackets += ")" + branch_support + ":0";
                 }
                 output += "," + aln.data[less_info_seqs[num_less_info_seqs - 1]].seq_name + ":0" + closing_brackets;
             }
@@ -277,10 +287,73 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
                 for (auto minor_seq_name_index : less_info_seqs)
                     output += "," + aln.data[minor_seq_name_index].seq_name + ":0";
             }
-            output += "):" + length_str;
+            output += ")" + branch_support + ":" + length_str;
             return output;
         }
     }
     
     return "";
+}
+
+const NumSeqsType PhyloNode::getNodelhIndex() const
+{
+    ASSERT(isInternal());
+    return data_.internal_.node_lh_index_;
+}
+
+void PhyloNode::setNodeLhIndex(const NumSeqsType node_lh_index)
+{
+    ASSERT(isInternal());
+    data_.internal_.node_lh_index_ = node_lh_index;
+}
+
+void NodeLh::setLhDiff2(const RealNumType lh_diff)
+{
+    neighbor_2_lh_diff_ = lh_diff;
+}
+
+const RealNumType NodeLh::getLhDiff2() const
+{
+    return neighbor_2_lh_diff_;
+}
+
+void NodeLh::setLhDiff3(const RealNumType lh_diff)
+{
+    neighbor_3_lh_diff_ = lh_diff;
+}
+
+const RealNumType NodeLh::getLhDiff3() const
+{
+    return neighbor_3_lh_diff_;
+}
+
+const RealNumType NodeLh::getHalf_aLRT() const
+{
+    /*  aLRT = 2(LT1 - max(LT2x,LT2y)); where LT2x, LT2y are the log lh of the two NNI neighbors of T1
+     <=> aLRT = 2(LT1 - max(diff_x + LT1, diff_y + LT1)); where diff_x = LT2x - LT1; and similarly to diff_y
+     <=> aLRT = 2(LT1 - max(diff_x, diff_y) - LT1)
+     <=> aLRT = 2(-max(diff_x, diff_y)) = 2 * (-max_nni_neighbor_lh_diff)
+     <=> (half aLRT) = aLRT / 2 = -max_nni_neighbor_lh_diff
+     */
+    return neighbor_2_lh_diff_ > neighbor_3_lh_diff_ ? -neighbor_2_lh_diff_ : -neighbor_3_lh_diff_;
+}
+
+const RealNumType NodeLh::getLhContribution() const
+{
+    return lh_contribution_;
+}
+
+void NodeLh::setLhContribution(const RealNumType lh_contribution)
+{
+    lh_contribution_ = lh_contribution;
+}
+
+const RealNumType NodeLh::get_aLRT_SH() const
+{
+    return aLRT_SH_;
+}
+
+void NodeLh::set_aLRT_SH(const RealNumType aLRT_SH)
+{
+    aLRT_SH_ = aLRT_SH;
 }

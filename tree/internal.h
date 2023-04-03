@@ -11,5 +11,8 @@ struct InternalNode
     // We need to keep track of the index of the neighbor miniNode
     std::array<Index,3> neighbor_index3_;
     
+    // the index of the node likelihood
+    NumSeqsType node_lh_index_ = 0;
+    
 }; // 40 (includes 4 byte padding at the end)
 

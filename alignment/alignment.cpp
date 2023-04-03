@@ -343,7 +343,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
                         length = 1;
                         
                         // starting a sequence of 'N'
-                        if (toupper(str_sequence[pos]) == 'N')
+                        if (toupper(str_sequence[pos]) == 'N' && getSeqType() == SEQ_DNA)
                             state = 1;
                         // starting a sequence of '-'
                         else if (str_sequence[pos] == '-')
@@ -398,7 +398,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
                         {
                             length = 1;
                             // starting a sequence of 'N'
-                            if (toupper(str_sequence[pos]) == 'N')
+                            if (toupper(str_sequence[pos]) == 'N' && getSeqType() == SEQ_DNA)
                                 state = 1;
                             // output a mutation
                             else
@@ -447,8 +447,9 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
         outError("File not found ", diff_path);
     
     // read the reference sequence (if the user supplies it)
+    string ref_sequence{};
     if (ref_path)
-        readRef(ref_path);
+        ref_sequence = readRef(ref_path);
     
     // init dummy variables
     string seq_name = "";
@@ -491,10 +492,24 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
             
             // choose the ref sequence if the user already supplies a reference sequence
             if (ref_path)
+            {
                 outWarning("Skipping the reference sequence in the Diff file since the reference sequence is already specified via '--ref' option.");
-            // otherwise, parse the reference sequence into vector of state
-            else
-                parseRefSeq(line);
+                line = ref_sequence;
+            }
+            
+            // transform ref_sequence to uppercase
+            transform(line.begin(), line.end(), line.begin(), ::toupper);
+            
+            // detect the seq_type from the ref_sequences
+            if (getSeqType() == SEQ_UNKNOWN)
+            {
+                StrVector tmp_str_vec;
+                tmp_str_vec.push_back(line);
+                setSeqType(detectSequenceType(tmp_str_vec));
+            }
+            
+            // parse the reference sequence into vector of state
+            parseRefSeq(line);
             
             // reset the seq_name
             seq_name = "";
@@ -774,7 +789,7 @@ char Alignment::convertState2Char(StateType state) {
     if (state == TYPE_N || state == TYPE_DEL) return '-';
     if (state > TYPE_INVALID) return '?';
 
-    switch (seq_type) {
+    switch (getSeqType()) {
     case SEQ_BINARY:
         switch (state) {
         case 0:
@@ -848,7 +863,7 @@ StateType Alignment::convertChar2State(char state) {
 
     char *loc;
 
-    switch (seq_type) {
+    switch (getSeqType()) {
     case SEQ_BINARY:
         switch (state) {
         case '0':
@@ -1052,6 +1067,10 @@ void Alignment::extractDiffFile(Params& params)
                 outError("Sequence " + seq_names[i] + " has a different length compared to the first sequence.");
         }
     
+    // detect the type of the input sequences
+    if (getSeqType() == SEQ_UNKNOWN)
+        setSeqType(detectSequenceType(sequences));
+    
     // generate reference sequence from the input sequences
     string ref_sequence;
     // read the reference sequence from file (if the user supplies it)
@@ -1087,4 +1106,81 @@ void Alignment::extractDiffFile(Params& params)
     
     // close the output file
     out.close();
+}
+
+SeqType Alignment::detectSequenceType(StrVector& sequences)
+{
+    size_t num_nuc   = 0;
+    size_t num_ungap = 0;
+    size_t num_bin   = 0;
+    size_t num_alpha = 0;
+    size_t num_digit = 0;
+    double detectStart = getRealTime();
+    size_t sequenceCount = sequences.size();
+#ifdef _OPENMP
+#pragma omp parallel for reduction(+:num_nuc,num_ungap,num_bin,num_alpha,num_digit)
+#endif
+    for (size_t seqNum = 0; seqNum < sequenceCount; ++seqNum) {
+        auto start = sequences.at(seqNum).data();
+        auto stop  = start + sequences.at(seqNum).size();
+        for (auto i = start; i!=stop; ++i) {
+            if ((*i) == 'A' || (*i) == 'C' || (*i) == 'G' || (*i) == 'T' || (*i) == 'U') {
+                ++num_nuc;
+                ++num_ungap;
+                continue;
+            }
+            if ((*i)=='?' || (*i)=='-' || (*i) == '.' ) {
+                continue;
+            }
+            if (*i != 'N' && *i != 'X' &&  (*i) != '~') {
+                num_ungap++;
+                if (isdigit(*i)) {
+                    num_digit++;
+                    if ((*i) == '0' || (*i) == '1') {
+                        num_bin++;
+                    }
+                }
+            }
+            if (isalpha(*i)) {
+                num_alpha++;
+            }
+        }
+    }
+    if (verbose_mode >= VB_MED) {
+        cout << "Sequence Type detection took " << (getRealTime()-detectStart) << " seconds." << endl;
+    }
+    if (((double)num_nuc) / num_ungap > 0.9)
+    {
+        std::cout << "DNA data detected." << std::endl;
+        return SEQ_DNA;
+    }
+    if (((double)num_bin) / num_ungap > 0.9)
+    {
+        std::cout << "Binary data detected." << std::endl;
+        return SEQ_BINARY;
+    }
+    if (((double)num_alpha + num_nuc) / num_ungap > 0.9)
+    {
+        std::cout << "Protein data detected." << std::endl;
+        return SEQ_PROTEIN;
+    }
+    if (((double)(num_alpha + num_digit + num_nuc)) / num_ungap > 0.9)
+    {
+        std::cout << "Morphological data detected." << std::endl;
+        return SEQ_MORPH;
+    }
+    return SEQ_UNKNOWN;
+}
+
+void Alignment::updateNumStates()
+{
+    switch (getSeqType()) {
+        case SEQ_PROTEIN:
+            num_states = 20;
+            break;
+            
+        default: // dna
+            num_states = 4;
+            break;
+    }
 }

@@ -1,5 +1,12 @@
-add_library(maple
+# DNA data
+add_library(maple-dna
 cmaple.h cmaple.cpp
 )
-target_link_libraries(maple tree alignment)
+target_link_libraries(maple-dna tree-dna alignment-dna)
+
+# Protein data
+add_library(maple-aa
+cmaple.h cmaple.cpp
+)
+target_link_libraries(maple-aa tree-aa alignment-aa)
 

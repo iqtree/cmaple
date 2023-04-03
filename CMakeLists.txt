@@ -1,6 +1,6 @@
 ##################################################################
 # CMAPLE cmake build definition
-# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Bui Quang Minh 
+# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh 
 ##################################################################
 
 # Windows example usages:
@@ -106,7 +106,6 @@ endif()
 ##################################################################
 
 
-
 ##################################################################
 # Setup compiler flags
 ##################################################################
@@ -169,6 +168,9 @@ FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(utils)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+add_subdirectory(sprng)
+add_subdirectory(ncl)
+add_subdirectory(nclextra)
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
@@ -180,30 +182,38 @@ add_subdirectory(unittest)
 # the main executable
 ##################################################################
 add_executable(cmaple main/main.cpp)
+add_executable(cmaple-aa main/main.cpp)
 
 if(Backtrace_FOUND)
   include_directories(${Backtrace_INCLUDE_DIR})
   target_link_libraries(cmaple ${Backtrace_LIBRARY})
+  target_link_libraries(cmaple-aa ${Backtrace_LIBRARY})
 endif(Backtrace_FOUND)
 
 ##################################################################
 # setup linking flags
 ##################################################################
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+	target_link_libraries(tree-dna OpenMP::OpenMP_CXX)
+     target_link_libraries(tree-aa OpenMP::OpenMP_CXX)
+endif()
 
-# basic linking librararies
-target_link_libraries(cmaple utils model alignment tree maple)
-
+target_link_libraries(cmaple maple-dna tree-dna alignment-dna model-dna ncl nclextra utils sprng)
+target_link_libraries(cmaple-aa maple-aa tree-aa alignment-aa model-aa ncl nclextra utils sprng)
 
 ##############################################################
 # add the install targets
 ##############################################################
 install (TARGETS cmaple DESTINATION bin)
+install (TARGETS cmaple-aa DESTINATION bin)
 install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
 install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa.ref" DESTINATION .)
 install (FILES "${PROJECT_SOURCE_DIR}/example/output.diff" DESTINATION .)
 
 if (WIN32)
     install (FILES "${BINARY_DIR}/cmaple${EXE_SUFFIX}-click.exe" DESTINATION bin)
+    install (FILES "${BINARY_DIR}/cmaple-aa${EXE_SUFFIX}-click.exe" DESTINATION bin)
 endif()
 
 ##############################################################

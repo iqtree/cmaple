@@ -1,10 +1,3 @@
-//
-//  alignment.h
-//  alignment
-//
-//  Created by Nhan Ly-Trong on 24/01/2022.
-//
-
 #include "sequence.h"
 #include "utils/timeutil.h"
 #include "utils/gzstream.h"
@@ -15,6 +8,11 @@
 /** Class presents the input alignment */
 class Alignment {
 private:
+    /**
+        Type of sequences
+     */
+    SeqType seq_type_;
+    
     /**
         Read sequence from a string line
      */
@@ -35,14 +33,9 @@ public:
     std::vector<StateType> ref_seq;
     
     /**
-        Type of sequences
-     */
-    SeqType seq_type = SEQ_DNA;
-    
-    /**
         The number of states
      */
-    StateType num_states = 4;
+    StateType num_states;
     
     /**
     *  Alignment constructor
@@ -53,6 +46,19 @@ public:
     *  Alignment deconstructor
     */
     ~Alignment();
+    
+    /**
+    *  Get seq_type
+    */
+    inline SeqType getSeqType() const { return seq_type_; };
+    
+    /**
+    *  Set seq_type
+    */
+    inline void setSeqType(SeqType seq_type) {
+        seq_type_ = seq_type;
+        updateNumStates();
+    };
     
     /**
         Read alignment file in FASTA format
@@ -145,5 +151,17 @@ public:
         @param hamming_weight weight to calculate the hamming distance
     */
     PositionType computeSeqDistance(Sequence& sequence, RealNumType hamming_weight);
+    
+    /**
+        detect the data type of the input sequences
+        @param sequences vector of strings
+        @return the data type of the input sequences
+    */
+    SeqType detectSequenceType(StrVector& sequences);
+    
+    /**
+        update num_states according to the seq_type
+    */
+    void updateNumStates();
 };
 #endif

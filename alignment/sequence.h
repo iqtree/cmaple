@@ -1,10 +1,3 @@
-//
-//  sequence.h
-//  alignment
-//
-//  Created by Nhan Ly-Trong on 24/01/2022.
-//
-
 #include "seqregions.h"
 
 #ifndef SEQUENCE_H

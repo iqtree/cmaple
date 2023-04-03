@@ -70,7 +70,8 @@ private:
     MyVariant data_;
     
   public:
-    /** no default c'tor (inefficient) */
+
+    /** constructor */
     PhyloNode() = delete;
 
     /** constructor */
@@ -80,7 +81,8 @@ private:
     PhyloNode(InternalNode&& internal) noexcept: is_internal_{true}, data_(std::move(internal)) {};
     
     /** move constructor */
-    PhyloNode(PhyloNode&& node) noexcept : is_internal_{node.is_internal_}, data_(std::move(node.data_), node.is_internal_), other_lh_(std::move(node.other_lh_)), outdated_(node.outdated_), spr_applied_(node.spr_applied_), length_(node.length_) {};
+    PhyloNode(PhyloNode&& node) noexcept : is_internal_{node.is_internal_}, data_(std::move(node.data_), node.is_internal_),
+    other_lh_(std::move(node.other_lh_)), outdated_(node.outdated_), spr_applied_(node.spr_applied_), length_(node.length_) {};
     
     /** destructor */
     ~PhyloNode()
@@ -197,12 +199,12 @@ private:
     /**
         Set the index of the neighbor node
      */
-    void setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index_);
+    void setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index);
     
     /**
         Get the list of less-informative-sequences
      */
-    const std::vector<NumSeqsType>& getLessInfoSeqs() const;
+    std::vector<NumSeqsType>& getLessInfoSeqs();
     
     /**
         Add less-informative-sequence
@@ -217,12 +219,23 @@ private:
     /**
         Set the index of the sequence name
      */
-    void setSeqNameIndex(const NumSeqsType seq_name_index_);
+    void setSeqNameIndex(const NumSeqsType seq_name_index);
     
     /**
         Compute the total likelihood vector for a node.
     */
-    void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    template <const StateType num_states>
+    void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    
+    /**
+        Get the index of the node likelihood
+     */
+    const NumSeqsType getNodelhIndex() const;
+    
+    /**
+        Set the index of the node likelihood
+     */
+    void setNodeLhIndex(const NumSeqsType node_lh_index);
     
     /**
         Get a vector of the indexes of neighbors
@@ -232,7 +245,82 @@ private:
     /**
         Export string: name + branch length
      */
-    const std::string exportString(const bool binary, const Alignment& aln) const;
+    const std::string exportString(const bool binary, const Alignment& aln, const bool show_branch_supports);
+};
+
+/** An intermediate data structure to store data for calculating aLRT-SH  */
+struct NodeLh
+{
+    /**
+        Set neighbor_2_lh_diff_
+     */
+    void setLhDiff2(const RealNumType lh_diff);
+    
+    /**
+        Get neighbor_2_lh_diff_
+     */
+    const RealNumType getLhDiff2() const;
+    
+    /**
+        Set neighbor_3_lh_diff_
+     */
+    void setLhDiff3(const RealNumType lh_diff);
+    
+    /**
+        Get neighbor_3_lh_diff_
+     */
+    const RealNumType getLhDiff3() const;
+    
+    /**
+        Get half of aLRT (~aLRT / 2)
+     */
+    const RealNumType getHalf_aLRT() const;
+    
+    /**
+        Get lh_contribution_
+     */
+    const RealNumType getLhContribution() const;
+    
+    /**
+        Set lh_contribution_
+     */
+    void setLhContribution(const RealNumType lh_contribution);
+    
+    /**
+        Get aLRT_SH
+     */
+    const RealNumType get_aLRT_SH() const;
+    
+    /**
+        Set aLRT_SH
+     */
+    void set_aLRT_SH(const RealNumType aLRT_SH);
+    
+    /*
+        Constructor
+     */
+    NodeLh(RealNumType lh_contribution):lh_contribution_(lh_contribution) {};
+    
+private:
+    /*
+        The likelihood different between NNI neighbor 2 and the ML tree (T1)
+     */
+    RealNumType neighbor_2_lh_diff_;
+    
+    /*
+        The likelihood different between NNI neighbor 3 and the ML tree (T1)
+     */
+    RealNumType neighbor_3_lh_diff_;
+    
+    /*
+        The aLRT_SH value of the upper branch
+     */
+    RealNumType aLRT_SH_;
+    
+    /*
+        The likelihood contribution of this node to the total likelihood
+     */
+    RealNumType lh_contribution_;
 };
 
 // just for testing
