@@ -11,7 +11,7 @@ private:
     /**
         Type of sequences
      */
-    SeqType seq_type_;
+    SeqType seq_type_ = SEQ_UNKNOWN;
     
     /**
         Read sequence from a string line

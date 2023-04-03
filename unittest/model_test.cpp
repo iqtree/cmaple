@@ -6,8 +6,8 @@
  */
 TEST(Model, initMutationMat)
 {
-    std::unique_ptr<Model> model1 = std::make_unique<ModelDNA>();
-    model1->initMutationMat("JC", 4);
+    std::unique_ptr<Model> model1 = std::make_unique<ModelDNA>(ModelDNA("JC"));
+    model1->initMutationMat();
     EXPECT_EQ(model1->model_name, "JC");
     EXPECT_EQ(model1->root_freqs[1], 0.25);
     EXPECT_EQ(model1->root_freqs[3], 0.25);
@@ -25,11 +25,6 @@ TEST(Model, initMutationMat)
     EXPECT_EQ(model1->freqi_freqj_qij[10], -1);
     EXPECT_EQ(model1->freq_j_transposed_ij[0], -0.25);
     EXPECT_EQ(model1->freq_j_transposed_ij[15], -0.25);
-
-    
-    // Test num_states != 4
-    std::unique_ptr<Model> model2 = std::make_unique<ModelDNA>();
-    EXPECT_DEATH(model2->initMutationMat("JC",20), ".*");
 }
 
 // NOT YET DONE

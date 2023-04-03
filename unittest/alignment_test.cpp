@@ -14,6 +14,8 @@ TEST(Alignment, readSequences)
     char* file_path_ptr = new char[file_path.length() + 1];
     strcpy(file_path_ptr, file_path.c_str());
     aln.readSequences(file_path_ptr, sequences, seq_names);
+    // detect the type of the input sequences
+    aln.setSeqType(aln.detectSequenceType(sequences));
     EXPECT_EQ(sequences.size(), 10);
     EXPECT_EQ(sequences.size(), seq_names.size());
     EXPECT_EQ(sequences[1], "ATTAAAGGTTTATACCTVCA");
@@ -69,6 +71,7 @@ TEST(Alignment, readRef)
     std::string file_path("../../example/ref.fa");
     char* file_path_ptr = new char[file_path.length() + 1];
     strcpy(file_path_ptr, file_path.c_str());
+    aln.setSeqType(SEQ_DNA);
     aln.readRef(file_path_ptr);
     
     EXPECT_EQ(aln.ref_seq.size(), 20);
@@ -110,6 +113,8 @@ TEST(Alignment, extractMutations)
     char* file_path_ptr = new char[file_path.length() + 1];
     strcpy(file_path_ptr, file_path.c_str());
     aln.readSequences(file_path_ptr, sequences, seq_names);
+    // detect the type of the input sequences
+    aln.setSeqType(aln.detectSequenceType(sequences));
     
     // generate ref_sequence
     ref_sequence = aln.generateRef(sequences);
@@ -404,6 +409,7 @@ TEST(Alignment, extractDiffFile)
 TEST(Alignment, convertState2Char)
 {
     Alignment aln;
+    aln.setSeqType(SEQ_DNA);
     EXPECT_EQ(aln.convertState2Char(-1), '?');
     EXPECT_EQ(aln.convertState2Char(0.1), 'A');
     EXPECT_EQ(aln.convertState2Char(0.99), 'A');
@@ -429,6 +435,7 @@ TEST(Alignment, convertState2Char)
 TEST(Alignment, convertChar2State)
 {
     Alignment aln;
+    aln.setSeqType(SEQ_DNA);
     
     // ----- Test convertChar2State() with an invalid state
     EXPECT_DEATH(aln.convertChar2State('e'), ".*");
@@ -456,6 +463,7 @@ TEST(Alignment, convertChar2State)
 TEST(Alignment, computeSeqDistance)
 {
     Alignment aln;
+    aln.setSeqType(SEQ_DNA);
     
     // test empty sequence
     Sequence sequence1;
@@ -508,6 +516,7 @@ TEST(Alignment, computeSeqDistance)
 TEST(Alignment, sortSeqsByDistances)
 {
     Alignment aln;
+    aln.setSeqType(SEQ_DNA);
     
     // ----- test empty aln -----
     aln.sortSeqsByDistances(1000);

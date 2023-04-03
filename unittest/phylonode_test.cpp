@@ -345,11 +345,11 @@ void initTestData(Params& params, Alignment& aln, std::unique_ptr<Model>& model,
     char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
     strcpy(diff_file_path_ptr, diff_file_path.c_str());
     aln.readDiff(diff_file_path_ptr, NULL);
-    model = std::make_unique<ModelDNA>();
+    model = std::make_unique<ModelDNA>(ModelDNA(params.model_name));
     // extract related info (freqs, log_freqs) of the ref sequence
     model->extractRefInfo(aln);
     // init the mutation matrix from a model name
-    model->initMutationMat(params.model_name, aln.num_states);
+    model->initMutationMat();
     // compute cumulative rates of the ref sequence
     model->computeCumulativeRate(aln);
 }
@@ -406,7 +406,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     PhyloNode node1((InternalNode()));
     std::unique_ptr<SeqRegions> total_lh = nullptr;
     node1.setPartialLh(TOP, std::make_unique<SeqRegions>(std::move(seqregions1)));
-    node1.computeTotalLhAtNode(total_lh, neighbor, aln, model, params.threshold_prob, true); // deafault blength = -1
+    node1.computeTotalLhAtNode<4>(total_lh, neighbor, aln, model, params.threshold_prob, true); // deafault blength = -1
     EXPECT_EQ(total_lh->size(), 9);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
     EXPECT_EQ(total_lh->at(1).position, 654);
@@ -422,7 +422,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     neighbor.setPartialLh(parent_mini, std::make_unique<SeqRegions>(std::move(seqregions2)));
     node1.setNeighborIndex(TOP, Index(0, parent_mini));
     node1.setUpperLength(0.123);
-    node1.computeTotalLhAtNode(total_lh, neighbor, aln, model, params.threshold_prob, false, 141e-5);
+    node1.computeTotalLhAtNode<4>(total_lh, neighbor, aln, model, params.threshold_prob, false, 141e-5);
     EXPECT_EQ(total_lh->size(), 15);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
     EXPECT_EQ(total_lh->at(1).position, 381);
@@ -434,7 +434,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     
     // default blength
     node1.setUpperLength(0.012);
-    node1.computeTotalLhAtNode(total_lh, neighbor, aln, model, params.threshold_prob, false);
+    node1.computeTotalLhAtNode<4>(total_lh, neighbor, aln, model, params.threshold_prob, false);
     EXPECT_EQ(total_lh->size(), 13);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
     EXPECT_EQ(total_lh->at(1).position, 654);
