@@ -31,3 +31,5 @@ TEST(Model, initMutationMat)
     Model model2;
     EXPECT_DEATH(model2.initMutationMat("JC",20), ".*");
 }
+
+// NOT YET DONE

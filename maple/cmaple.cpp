@@ -78,64 +78,67 @@ void CMaple::buildInitialTree()
     Model& model = tree.model;
     const StateType num_states = aln.num_states;
     const PositionType seq_length = aln.ref_seq.size();
+    const PositionType num_seqs = aln.data.size();
     
     // place the root node
+    tree.nodes.reserve(num_seqs + num_seqs);
+    tree.root_vector_index = 0;
+    tree.nodes.emplace_back(LeafNode(0));
+    PhyloNode& root = tree.nodes[0];
     Sequence* sequence = &tree.aln.data.front();
-    tree.root = new Node(sequence->seq_name);
-    tree.root->partial_lh = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
-    tree.root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, true);
+    root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.seq_type)));
+    root.getPartialLh(TOP)->computeTotalLhAtRoot(root.getTotalLh(), aln.num_states, model);
+    root.setUpperLength(0);
     
     // move to the next sequence in the alignment
     ++sequence;
     
     // iteratively place other samples (sequences)
-    for (PositionType i = 1; i < (PositionType) aln.data.size(); ++i, ++sequence)
+    for (NumSeqsType i = 1; i < num_seqs; ++i, ++sequence)
     {
         // get the lower likelihood vector of the current sequence
-        SeqRegions* lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
+        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
             tree.model.updateMutationMatEmpirical(aln);
         
         // NHANLT: debug
-        /*if ((*sequence)->seq_name == "39")
-            cout << "debug" <<endl;*/
+        //if ((*sequence)->seq_name == "39")
+        //    cout << "debug" <<endl;
         
         // seek a position for new sample placement
-        Node* selected_node = NULL;
+        Index selected_node_index;
         RealNumType best_lh_diff = MIN_NEGATIVE;
         bool is_mid_branch = false;
         RealNumType best_up_lh_diff = MIN_NEGATIVE;
         RealNumType best_down_lh_diff = MIN_NEGATIVE;
-        Node* best_child = NULL;
-        tree.seekSamplePlacement(tree.root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child);
+        Index best_child_index;
+        tree.seekSamplePlacement(Index(tree.root_vector_index, TOP), i, lower_regions, selected_node_index, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child_index);
         
         // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
-        if (selected_node)
+        if (selected_node_index.getMiniIndex() != UNDEFINED)
         {
             // place new sample as a descendant of a mid-branch point
             if (is_mid_branch)
-                tree.placeNewSampleMidBranch(selected_node, lower_regions, sequence->seq_name, best_lh_diff);
+                tree.placeNewSampleMidBranch(selected_node_index, lower_regions, i, best_lh_diff);
             // otherwise, best lk so far is for appending directly to existing node
             else
-                tree.placeNewSampleAtNode(selected_node, lower_regions, sequence->seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child);
+                tree.placeNewSampleAtNode(selected_node_index, lower_regions, i, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child_index);
         }
-        else
-            delete lower_regions;
         
         // NHANLT: debug
         //cout << "Added node " << (*sequence)->seq_name << endl;
         //cout << (*sequence)->seq_name << endl;
         //cout << tree.exportTreeString() << ";" << endl;
         
-        /*if ((*sequence)->seq_name == "2219")
-        {
+        //if ((*sequence)->seq_name == "2219")
+        //{
             //cout << tree.exportTreeString() << ";" << endl;
-            string output_file(tree.params->diff_path);
-            exportOutput(output_file + "_init.treefile");
-            exit(0);
-        }*/
+            //string output_file(tree.params->diff_path);
+            //exportOutput(output_file + "_init.treefile");
+            //exit(0);
+        //}
     }
     
     // show the runtime for building an initial tree
@@ -148,6 +151,7 @@ void CMaple::buildInitialTree()
 
 void CMaple::optimizeTree()
 {
+    // tree.params->debug = true;
     string output_file(tree.params->diff_path);
     exportOutput(output_file + "_init.treefile");
     
@@ -162,9 +166,18 @@ void CMaple::optimizeTree()
     optimizeTreeTopology();
     exportOutput(output_file + "_topo.treefile");
     
+    // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
+    // tree.refreshAllLhs();
+    
+    // output log-likelihood of the tree
+    // std::cout << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateTreeLh() << std::endl;
+    
     // do further optimization on branch lengths (if needed)
     if (tree.params->optimize_branch_length)
         optimizeBranchLengthsOfTree();
+    
+    // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
+    tree.performDFS<&Tree::updateLowerLh>();
 }
 
 void CMaple::optimizeTreeTopology(bool short_range_search)
@@ -176,7 +189,7 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
     for (int i = 0; i < num_tree_improvement; ++i)
     {
         // first, set all nodes outdated
-        tree.setAllNodeOutdated();
+        tree.resetSPRFlags(true);
         
         // traverse the tree from root to try improvements on the entire tree
         RealNumType improvement = tree.improveEntireTree(short_range_search);
@@ -192,7 +205,7 @@ void CMaple::optimizeTreeTopology(bool short_range_search)
         for (int j = 0; j < 20; ++j)
         {
             // forget SPR_applied flag to allow new SPR moves
-            tree.forgetSPRApplied();
+            tree.resetSPRFlags(false);
             
             improvement = tree.improveEntireTree(short_range_search);
             cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
@@ -219,7 +232,7 @@ void CMaple::optimizeBranchLengthsOfTree()
     cout << "Start optimizing branch lengths" << endl;
     
     // first, set all nodes outdated
-    tree.setAllNodeOutdated();
+    tree.resetSPRFlags(true);
    
     // traverse the tree from root to optimize branch lengths
     PositionType num_improvement = tree.optimizeBranchLengths();
@@ -230,7 +243,7 @@ void CMaple::optimizeBranchLengthsOfTree()
         // stop trying if the improvement is so small
         if (num_improvement < tree.params->thresh_entire_tree_improvement)
         //if (num_improvement == 0)
-          //  break;
+            break;
         
         // traverse the tree from root to optimize branch lengths
         num_improvement = tree.optimizeBranchLengths();
@@ -252,6 +265,10 @@ void CMaple::doInference()
 
 void CMaple::postInference()
 {
+    // output log-likelihood of the tree
+    std::cout << "Tree log likelihood: " << tree.calculateTreeLh() << std::endl;
+    
+    // output treefile
     string output_file(tree.params->diff_path);
     output_file += ".treefile";
     exportOutput(output_file);
@@ -263,14 +280,106 @@ void CMaple::exportOutput(const string &filename)
     ofstream out = ofstream(filename);
     
     // write tree string into the tree file
-    out << tree.exportTreeString(tree.params->export_binary_tree) << ";" << endl;
+    out << tree.exportTreeString(tree.params->export_binary_tree, tree.root_vector_index) << ";" << endl;
     
     // close the output file
     out.close();
 }
 
+void test()
+{
+    std::vector<PhyloNode> nodes;
+    for (int i = 0; i < 100; i++)
+        nodes.emplace_back(InternalNode());
+    
+    std::cout << "Fdsfsd" <<std::endl;
+    // test phylonode is a leaf
+    /*MiniIndex mini_index{RIGHT};
+    Index tmp_index{0,mini_index};
+    LeafNode leaf;
+    leaf.less_info_seqs_.push_back(0);
+    leaf.seq_name_index_ = 100;
+    leaf.neighbor_index_ = Index(200, LEFT);
+    PhyloNode phylonode1(std::move(leaf));
+    std::cout << "Leaf node: " << std::endl;
+
+    std::cout << "- seq_name_index: " << phylonode1.getSeqNameIndex() << std::endl;
+    std::cout << "- neighbor_index: " << phylonode1.getNeighborIndex(mini_index) << std::endl;
+    std::cout << "- (size of) less_info_seqs: " << phylonode1.getLessInfoSeqs().size() << std::endl;
+    
+    
+    // change total_lh
+    std::cout << " Update total_lh " << std::endl;
+    std::unique_ptr<SeqRegions> new_total_lh = std::make_unique<SeqRegions>();
+    new_total_lh->reserve(10);
+    new_total_lh->emplace_back(0, 100);
+    phylonode1.setTotalLh(std::move(new_total_lh));
+    std::cout << "- (size of) total_lh (after updating): " << phylonode1.getTotalLh()->size() << std::endl;
+    
+    std::cout << " Update partial_lh " << std::endl;
+    std::unique_ptr<SeqRegions> new_partial_lh = std::make_unique<SeqRegions>();
+    new_partial_lh->emplace_back(0, 100);
+    phylonode1.setPartialLh(mini_index, std::move(new_partial_lh));
+    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(mini_index)->size() << std::endl;
+    
+    std::cout << " Update partial_lh 2nd time" << std::endl;
+    std::unique_ptr<SeqRegions> new_partial_lh2 = std::make_unique<SeqRegions>();
+    new_partial_lh2->emplace_back(1, 200);
+    new_partial_lh2->emplace_back(2, 300);
+    phylonode1.setPartialLh(mini_index, std::move(new_partial_lh2));
+    std::cout << "- (size of) partial_lh: " << phylonode1.getPartialLh(mini_index)->size() << std::endl;
+    
+    // test phylonode is an internal node
+    MiniIndex mini_index1{TOP};
+    MiniIndex mini_index2{LEFT};
+    MiniIndex mini_index3{RIGHT};
+    InternalNode internal;
+    internal.neighbor_index3_ = std::array{Index(400, LEFT),Index(500, TOP),Index(600, TOP)};
+    PhyloNode phylonode2(std::move(internal));
+    std::cout << "\n\nInternal node: " << std::endl;
+    std::cout << "- neighbor_index (top, left, right): ";
+    std::cout << phylonode2.getNeighborIndex(mini_index1) << " ";
+    std::cout << phylonode2.getNeighborIndex(mini_index2) << " ";
+    std::cout << phylonode2.getNeighborIndex(mini_index3) << std::endl;
+    
+    std::cout << " Update partial_lh at the left mininode" << std::endl;
+    std::unique_ptr<SeqRegions> new_partial_lh1 = std::make_unique<SeqRegions>();
+    new_partial_lh1->emplace_back(0, 100);
+    new_partial_lh1->emplace_back(1, 200);
+    phylonode2.setPartialLh(mini_index2, std::move(new_partial_lh1));
+    std::cout << "- (size of) partial_lh at the left mininode: " << phylonode2.getPartialLh(mini_index2)->size() << std::endl;
+    
+    // create a phylonode as an internal node
+    PhyloNode phylonode3;
+    // test delete a phylonode created by a default constructor
+    phylonode3.~PhyloNode();
+    
+    std::cout << "\n\n\nsize of a single MiniNode (old):  " << sizeof(Node) << '\n';
+    // however, the actual memory allocated by the call to `new` will be larger, since the allocator used predefined block sizes:
+    Node* p = new Node();
+    Node* p2 = new Node();
+    auto diff = (char*)p2 - (char*)p;
+    std::cout << "size of a single MiniNode (old, when allocated by new): " << diff << '\n';
+
+    std::cout << "size of a full PhyloNode (new): " << sizeof(PhyloNode) << '\n';
+    std::cout << " + size of a InternalNode (new): " << sizeof(InternalNode) << '\n';
+    std::cout << " + size of a LeafNode (new): " << sizeof(LeafNode) << '\n';
+    // std::cout << " + size of a std::variant (new): " << sizeof(std::variant<InternalNode, LeafNode>) << '\n';
+    
+    const int nr_seqs = 5e5;
+    const int old_nodes = nr_seqs * 3 + nr_seqs; // estimate: as many internal phylonodes (with 3 Node's each) as leaf nodes
+    const int pylonodes = nr_seqs * 2; // number of internal nodes equals leaf nodes
+    std::cout << "\n\nMemory usage:\n"
+    "  for " << nr_seqs/1000 << "k Seqs:\n"
+    //"    old nodes (" << old_nodes/1000 << "k) allocated with 'new'  : " << diff * old_nodes / 1024/ 1024 << " MB\n"
+    "    new phylonodes (" << pylonodes/1000 << "k) in std::vector : " << sizeof(PhyloNode) * pylonodes / 1024/ 1024 << " MB\n";*/
+}
+
 void runCMaple(Params &params)
 {
+    // NHANLT: test new funtions
+    // test();
+    
     auto start = getRealTime();
     CMaple cmaple(params);
     

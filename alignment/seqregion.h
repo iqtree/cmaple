@@ -10,8 +10,7 @@
 #include <array>
 #include <memory> // for unique_ptr
 
-#ifndef SEQREGION_H
-#define SEQREGION_H
+#pragma once
 
 /** A region in a sequence */
 class SeqRegion: public Mutation {
@@ -87,9 +86,9 @@ public:
     //SeqRegion(SeqRegion* region, StateType num_states, bool copy_likelihood = true);
 
     /// Move CTor
-    SeqRegion(SeqRegion&& region) = default;
+    SeqRegion(SeqRegion&& region) noexcept = default;
     /// Move Assignment
-    SeqRegion& operator=(SeqRegion&& region) = default;
+    SeqRegion& operator=(SeqRegion&& region) noexcept = default;
 
     static inline SeqRegion clone(const SeqRegion& from)
     {
@@ -115,4 +114,3 @@ public:
      */
     bool operator==(const SeqRegion& seqregion_1) const;
 };
-#endif

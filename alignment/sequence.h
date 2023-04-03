@@ -49,6 +49,6 @@ public:
     /**
         Extract the lower likelihood vector (converting a vector of Mutations into a vector of Regions)
     */
-    SeqRegions* getLowerLhVector(PositionType sequence_length, StateType num_states, SeqType seq_type);
+    std::unique_ptr<SeqRegions> getLowerLhVector(const PositionType sequence_length, const StateType num_states, const SeqType seq_type);
 };
 #endif

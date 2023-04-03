@@ -7,8 +7,7 @@
 
 #include "utils/tools.h"
 
-#ifndef MUTATION_H
-#define MUTATION_H
+#pragma once
 
 /** A mutation compared with a reference sequence */
 class Mutation {
@@ -44,4 +43,3 @@ public:
     */
     LengthType getLength() const;
 };
-#endif

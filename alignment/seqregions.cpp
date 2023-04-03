@@ -76,7 +76,7 @@ RealNumType updateMultLHwithMat(int num_states, const RealNumType* mat_row,
     return sum_lh;
 }
 
-SeqRegions::SeqRegions(SeqRegions* n_regions)
+SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions)
 {
   if (!n_regions)
   {
@@ -87,10 +87,6 @@ SeqRegions::SeqRegions(SeqRegions* n_regions)
     for (const auto& region : *n_regions)
       push_back(SeqRegion::clone(region));
 } 
-
-SeqRegions::~SeqRegions()
-{
-}
 
 int SeqRegions::compareWithSample(const SeqRegions& sequence2, PositionType seq_length, StateType num_states) const
 {
@@ -364,7 +360,7 @@ void merge_RACGT_N(const SeqRegion& reg_n, const RealNumType upper_plength, cons
   SeqRegions::addNonConsecutiveRRegion(merged_regions, reg_n.type, plength_observation2node, plength_observation2root, end_pos, threshold_prob);
 }
 
-bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const StateType num_states, SeqRegions* &merged_regions)
+bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const StateType num_states, std::unique_ptr<SeqRegions>& merged_regions)
 {
     // due to 0 distance, the entry will be of same type as entry2
     if ((seq2_region.type < num_states || seq2_region.type == TYPE_R) && total_blength_2 <= 0)
@@ -372,8 +368,7 @@ bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_reg
         if ((seq1_region.type < num_states || seq1_region.type == TYPE_R) && total_blength_1 <= 0)
         {
             //outError("Sorry! something went wrong. DEBUG: ((seq2_region->type < num_states || seq2_region->type == TYPE_R) && total_blength_2 == 0) && ((seq1_region->type < num_states || seq1_region->type == TYPE_R) && total_blength_1 == 0)");
-            delete merged_regions;
-            merged_regions = NULL;
+            merged_regions = nullptr;
             return true;
         }
         
@@ -537,13 +532,13 @@ static constexpr DoubleState RR = (DoubleState(TYPE_R) << 8) | TYPE_R;
 static constexpr DoubleState RO = (DoubleState(TYPE_R) << 8) | TYPE_O;
 static constexpr DoubleState OO = (DoubleState(TYPE_O) << 8) | TYPE_O;
 static constexpr DoubleState ON = (DoubleState(TYPE_O) << 8) | TYPE_N;
-void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions, 
+void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
                                  RealNumType upper_plength, 
                                  const SeqRegions& lower_regions, 
                                  RealNumType lower_plength, const
                                  Alignment& aln, 
                                  const Model& model,
-                                 RealNumType threshold_prob) const
+                                 const RealNumType threshold_prob) const
 {
     // init variables
     PositionType pos = 0;
@@ -558,7 +553,7 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
     if (merged_regions)
         merged_regions->clear();
     else
-        merged_regions = new SeqRegions();
+        merged_regions = std::make_unique<SeqRegions>();
     
     // avoid realloc of vector data (minimize memory footprint)
     merged_regions->reserve(countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
@@ -644,6 +639,13 @@ void SeqRegions::mergeUpperLower(SeqRegions* &merged_regions,
             {
                 merge_RACGT_ORACGT(*seq1_region, *seq2_region, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, *merged_regions);
             }
+            
+            // NHANLT: LOGS FOR DEBUGGING
+            /*if (Params::getInstance().debug && merged_regions->at(merged_regions->size()-1).type == TYPE_O)
+            {
+                SeqRegion::LHType lh =  *merged_regions->at(merged_regions->size()-1).likelihood;
+                std::cout << "mergeUpLow " << pos << " " <<  std::setprecision(20) << lh[0] << " " << lh[1] << " " << lh[2] << " " << lh[3] << " " << std::endl;
+            }*/
         }
 
         // update pos
@@ -722,15 +724,14 @@ void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const Position
     }
 }
 
-bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, SeqRegions* merged_regions, const bool return_log_lh)
+bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     RealNumType sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
     
     if (sum_lh == 0)
     {
-        delete merged_regions;
-        merged_regions = NULL;
+        merged_regions = nullptr;
         return false;
     }
         
@@ -745,7 +746,7 @@ bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength
     return true;
 }
 
-bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, SeqRegions* merged_regions, const bool return_log_lh)
+bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     StateType seq2_state = seq2_region.type;
@@ -770,8 +771,7 @@ bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_ble
     {
         if (new_lh[seq2_state] == 0)
         {
-            delete merged_regions;
-            merged_regions = NULL;
+            merged_regions = nullptr;
             return false;
         }
         
@@ -786,7 +786,7 @@ bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_ble
     return true;
 }
 
-bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
@@ -815,15 +815,14 @@ bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq
     return true;
 }
 
-bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     RealNumType sum_lh = updateMultLHwithMat(num_states, model.mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
                         
     if (sum_lh == 0)
     {
-        delete merged_regions;
-        merged_regions = NULL;
+        merged_regions = nullptr;
         return false;
     }
         
@@ -838,7 +837,7 @@ bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_ble
     return true;
 }
 
-bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     StateType seq2_state = seq2_region.type;
@@ -871,7 +870,7 @@ bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total
     return true;
 }
 
-bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     StateType seq1_state = seq1_region.type;
@@ -899,7 +898,7 @@ bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion&
     return merge_RACGT_RACGT_TwoLowers(seq2_region, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, return_log_lh);
 }
   
-bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const Model& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     const StateType num_states = aln.num_states;
     
@@ -927,8 +926,7 @@ bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& se
     // #0 distance between different nucleotides: merge is not possible
     else if (total_blength_1 == 0 && total_blength_2 == 0 && (seq1_region.type == TYPE_R || seq1_region.type < num_states) && (seq2_region.type == TYPE_R || seq2_region.type < num_states))
     {
-        delete merged_regions;
-        merged_regions = NULL;
+        merged_regions = nullptr;
         return false;
     }
     // seq1_entry = O
@@ -946,7 +944,7 @@ bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& se
     return true;
 }
 
-RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions& regions2, RealNumType plength2, const Alignment& aln, const Model& model, RealNumType threshold_prob, const bool return_log_lh) const
+RealNumType SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const Model& model, const RealNumType threshold_prob, const bool return_log_lh) const
 {
     // init variables
     RealNumType log_lh = 0;
@@ -962,7 +960,7 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
     if (merged_regions)
         merged_regions->clear();
     else
-        merged_regions = new SeqRegions();
+        merged_regions = std::make_unique<SeqRegions>();
 
     // avoid realloc of vector data (minimize memory footprint)
     merged_regions->reserve(countSharedSegments(seq2_regions, seq_length)); // avoid realloc of vector data
@@ -1011,6 +1009,14 @@ RealNumType SeqRegions::mergeTwoLowers(SeqRegions* &merged_regions, RealNumType 
         {
             if (!merge_notN_notN_TwoLowers(*seq1_region, *seq2_region, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, return_log_lh)) return MIN_NEGATIVE;
         }
+        
+        // NHANLT: LOGS FOR DEBUGGING
+        /*if (Params::getInstance().debug && merged_regions->at(merged_regions->size()-1).type == TYPE_O)
+        {
+            SeqRegion::LHType lh =  *merged_regions->at(merged_regions->size()-1).likelihood;
+            std::cout << "merge2Low " << pos << " " << std::setprecision(20) << lh[0] << " " << lh[1] << " " << lh[2] << " " << lh[3] << " " << std::endl;
+        }*/
+        
         // update pos
         pos = end_pos + 1;
     }
@@ -1061,10 +1067,14 @@ RealNumType SeqRegions::computeAbsoluteLhAtRoot(const StateType num_states, cons
     return log_lh;
 }
 
-SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& model, RealNumType blength) const
+void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const StateType num_states, const Model& model, RealNumType blength) const
 {
-    SeqRegions* total_lh = new SeqRegions();
-    total_lh->reserve(this->size()); // avoid realloc of vector data
+    if (total_lh)
+        total_lh->clear();
+    else
+        total_lh = std::make_unique<SeqRegions>();
+    
+    total_lh->reserve(size()); // avoid realloc of vector data
     for (const SeqRegion& elem : (*this))
     {
         const auto* const region = &elem;
@@ -1118,8 +1128,6 @@ SeqRegions* SeqRegions::computeTotalLhAtRoot(StateType num_states, const Model& 
             }
         }
     }
-    
-    return total_lh;
 }
 
 bool SeqRegions::operator==(const SeqRegions& seqregions_1) const
