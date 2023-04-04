@@ -917,11 +917,10 @@ void ModelAA::initMutationMat()
             }
         }
         // non-reversible models
-        else
-        {
-            // rescaleAllRates();
-            normalizeQMatrix();
-        }
+        // do nothing
+
+        // normalize the QMatrix so that the expected number of substitutions per site is 1
+        normalizeQMatrix();
         
         // initialize transposed_mut_mat, diagonal_mut_mat, and freqi_freqj_qij
         RealNumType* mutation_mat_row = mutation_mat;
