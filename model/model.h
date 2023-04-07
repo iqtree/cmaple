@@ -32,6 +32,11 @@ private:
      */
     void readStateFreq(istream &in);
     
+    /**
+        Update the mutation rate matrix regarding the pseu_mutation_count
+     */
+    void updateMutMatbyMutCount();
+    
 protected:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
     /** Model definitions*/
@@ -68,6 +73,18 @@ protected:
      */
     void initPointers();
     
+    /**
+        Update the mutation rate matrix
+     */
+    template <StateType num_states>
+    void updateMutationMat();
+    
+    /**
+        Update the mutation matrix periodically from the empirical count of mutations (template)
+     */
+    template <StateType num_states>
+    void updateMutationMatEmpiricalTemplate(const Alignment& aln);
+    
 public:
     // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
     /** Name of the model */
@@ -75,6 +92,9 @@ public:
     
     /** Number of states */
     StateType num_states_;
+    
+    /** Pseudo mutation count */
+    RealNumType* pseu_mutation_count = nullptr;
     
     /** State frequencies*/
     RealNumType *root_freqs = nullptr;
@@ -138,7 +158,7 @@ public:
         @param node_regions the genome list at the node where the appending happens;
         @param sample_regions the genome list for the new sample.
      */
-    virtual void updatePesudoCount(const Alignment& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions) {};
+    virtual void updatePesudoCount(const Alignment& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
     
     /**
         Export model parameters to string

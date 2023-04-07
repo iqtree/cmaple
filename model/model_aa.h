@@ -29,7 +29,7 @@ private:
         extract root freqs from the reference sequence
         for AA models, we directly get root_freqs from predefined state_freqs
      */
-    virtual void extractRootFreqs(const Alignment& aln) {};
+    virtual void extractRootFreqs(const Alignment& aln);
     
 public:
     
@@ -47,4 +47,16 @@ public:
         Init the mutation rate matrix from a model
      */
     virtual void initMutationMat();
+    
+    /**
+        Update the mutation matrix periodically from the empirical count of mutations
+     */
+    virtual void updateMutationMatEmpirical(const Alignment& aln);
+    
+    /**
+        Update pseudocounts from new sample to improve the estimate of the substitution rates
+        @param node_regions the genome list at the node where the appending happens;
+        @param sample_regions the genome list for the new sample.
+     */
+    virtual void updatePesudoCount(const Alignment& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
 };
