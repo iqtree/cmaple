@@ -352,7 +352,7 @@ void Model::updateMutMatbyMutCount()
     RealNumType* mutation_mat_row = mutation_mat;
     
     // init UNREST model
-    if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0)
+    if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0 || model_name.compare("NONREV") == 0 || model_name.compare("nonrev") == 0)
     {
         for (StateType i = 0; i <  num_states_; ++i, pseu_mutation_count_row += num_states_, mutation_mat_row += num_states_)
         {
