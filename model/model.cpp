@@ -1,6 +1,12 @@
 #include "model.h"
 
 using namespace std;
+// explicit instantiation of templates
+template void Model::updateMutationMat<4>();
+template void Model::updateMutationMat<20>();
+template void Model::updateMutationMatEmpiricalTemplate<4>(const Alignment&);
+template void Model::updateMutationMatEmpiricalTemplate<20>(const Alignment&);
+
 Model::Model(const std::string n_model_name)
 {
     model_name = std::move(n_model_name);
@@ -14,6 +20,7 @@ Model::Model(const std::string n_model_name)
     inverse_root_freqs = NULL;
     row_index = NULL;
     model_block = NULL;
+    pseu_mutation_count = NULL;
 }
 
 Model::~Model()
@@ -75,6 +82,12 @@ Model::~Model()
     if (cumulative_rate)
     {
         delete[] cumulative_rate;
+    }
+    
+    if (pseu_mutation_count)
+    {
+        delete[] pseu_mutation_count;
+        pseu_mutation_count = NULL;
     }
 }
 
@@ -331,4 +344,163 @@ void Model::initPointers()
     diagonal_mut_mat = new RealNumType[num_states_];
     freqi_freqj_qij = new RealNumType[mat_size];
     freq_j_transposed_ij = new RealNumType[mat_size];
+}
+
+void Model::updateMutMatbyMutCount()
+{
+    RealNumType* pseu_mutation_count_row = pseu_mutation_count;
+    RealNumType* mutation_mat_row = mutation_mat;
+    
+    // init UNREST model
+    if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0 || model_name.compare("NONREV") == 0 || model_name.compare("nonrev") == 0)
+    {
+        for (StateType i = 0; i <  num_states_; ++i, pseu_mutation_count_row += num_states_, mutation_mat_row += num_states_)
+        {
+            RealNumType sum_rate = 0;
+            
+            for (StateType j = 0; j <  num_states_; ++j)
+            {
+                if (i != j)
+                {
+                    RealNumType new_rate = pseu_mutation_count_row[j] * inverse_root_freqs[i];
+                    mutation_mat_row[j] = new_rate;
+                    sum_rate += new_rate;
+                }
+            }
+            
+            // update the diagonal entry
+            mutation_mat_row[i] = -sum_rate;
+            diagonal_mut_mat[i] = -sum_rate;
+        }
+    }
+    // init GTR model
+    else if (model_name.compare("GTR") == 0 || model_name.compare("gtr") == 0)
+    {
+        for (StateType i = 0; i <  num_states_; ++i, pseu_mutation_count_row += num_states_, mutation_mat_row += num_states_)
+        {
+            RealNumType sum_rate = 0;
+            
+            for (StateType j = 0; j <  num_states_; ++j)
+                if (i != j)
+                {
+                    mutation_mat_row[j] = (pseu_mutation_count_row[j] + pseu_mutation_count[row_index[j] + i]) * inverse_root_freqs[i];
+                    sum_rate += mutation_mat_row[j];
+                }
+            
+            // update the diagonal entry
+            mutation_mat_row[i] = -sum_rate;
+            diagonal_mut_mat[i] = -sum_rate;
+        }
+    }
+    // handle other model names
+    else
+        outError("Unsupported model! Please check and try again!");
+}
+
+template <StateType num_states>
+void Model::updateMutationMat()
+{
+    // update Mutation matrix regarding the pseudo muation count
+    updateMutMatbyMutCount();
+    
+    // compute the total rate regarding the root freqs
+    RealNumType total_rate = 0;
+    total_rate -= dotProduct<num_states>(root_freqs, diagonal_mut_mat);
+    
+    // inverse total_rate
+    total_rate = 1.0 / total_rate;
+    
+    // normalize the mutation_mat
+    RealNumType* mutation_mat_row = mutation_mat;
+    RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
+    for (StateType i = 0; i <  num_states_; ++i, mutation_mat_row += num_states_, freqi_freqj_qij_row += num_states_)
+    {
+        for (StateType j = 0; j <  num_states_; ++j)
+        {
+            mutation_mat_row[j] *= total_rate;
+            
+            // update freqi_freqj_qij
+            if (i != j)
+                freqi_freqj_qij_row[j] = root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
+            else
+                freqi_freqj_qij_row[j] = mutation_mat_row[j];
+            
+            // update the transposed mutation matrix
+            transposed_mut_mat[row_index[j] + i] = mutation_mat_row[j];
+        }
+        
+        // update diagonal
+        diagonal_mut_mat[i] = mutation_mat_row[i];
+    }
+    
+    // pre-compute matrix to speedup
+    RealNumType* transposed_mut_mat_row = transposed_mut_mat;
+    RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
+    
+    for (StateType i = 0; i < num_states_; ++i, transposed_mut_mat_row += num_states_, freq_j_transposed_ij_row += num_states_)
+        setVecByProduct<num_states>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
+}
+
+template <StateType num_states>
+void Model::updateMutationMatEmpiricalTemplate(const Alignment& aln)
+{
+    // clone the current mutation matrix
+    RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
+    memcpy(tmp_diagonal_mut_mat, diagonal_mut_mat, num_states_ * sizeof(RealNumType));
+    
+    // update the mutation matrix regarding the pseu_mutation_count
+    updateMutationMat<num_states>();
+    
+    // update cumulative_rate if the mutation matrix changes more than a threshold
+    RealNumType change_thresh = 1e-3;
+    bool update = false;
+    for (StateType j = 0; j < num_states_; ++j)
+    {
+        if (fabs(tmp_diagonal_mut_mat[j] - diagonal_mut_mat[j]) > change_thresh)
+        {
+            update = true;
+            break;
+        }
+    }
+    
+    // update the cumulative_rate
+    if (update)
+        computeCumulativeRate(aln);
+    
+    // delete tmp_diagonal_mutation_mat
+    delete[] tmp_diagonal_mut_mat;
+}
+
+void Model::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+{
+    // init variables
+    PositionType pos = 0;
+    const SeqRegions& seq1_regions = regions1;
+    const SeqRegions& seq2_regions = regions2;
+    size_t iseq1 = 0;
+    size_t iseq2 = 0;
+    const PositionType seq_length = aln.ref_seq.size();
+                
+    while (pos < seq_length)
+    {
+        PositionType end_pos;
+        
+        // get the next shared segment in the two sequences
+        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
+        const auto* const seq1_region = &seq1_regions[iseq1];
+        const auto* const seq2_region = &seq2_regions[iseq2];
+
+        if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) && (seq2_region->type < num_states_ || seq2_region->type == TYPE_R))
+        {
+            if (seq1_region->type == TYPE_R)
+                pseu_mutation_count[row_index[aln.ref_seq[end_pos]] + seq2_region->type] += 1;
+            else if (seq2_region->type == TYPE_R)
+                pseu_mutation_count[row_index[seq1_region->type] + aln.ref_seq[end_pos]] += 1;
+            else
+                pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
+        }
+
+        // update pos
+        pos = end_pos + 1;
+    }
 }

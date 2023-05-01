@@ -13,30 +13,11 @@ private:
      */
     void initMutationMatJC();
     
-    /**
-        Update the mutation rate matrix regarding the pseu_mutation_count
-     */
-    void updateMutMatbyMutCount();
-    
-    /**
-        Update the mutation rate matrix
-     */
-    void updateMutationMat();
-    
-public:
-    // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
-    /** Pseudo mutation count */
-    RealNumType* pseu_mutation_count;
-    
+public:    
 	/**
 		Constructor
 	*/
-    ModelDNA(const string n_model_name):Model(n_model_name), pseu_mutation_count(nullptr) { num_states_ = 4; };
-    
-    /**
-        Destructor
-    */
-    ~ModelDNA();
+    ModelDNA(const string n_model_name):Model(n_model_name) { num_states_ = 4; };
     
     /**
         Init the mutation rate matrix from a model

@@ -917,11 +917,10 @@ void ModelAA::initMutationMat()
             }
         }
         // non-reversible models
-        else
-        {
-            // rescaleAllRates();
-            normalizeQMatrix();
-        }
+        // do nothing
+
+        // normalize the QMatrix so that the expected number of substitutions per site is 1
+        normalizeQMatrix();
         
         // initialize transposed_mut_mat, diagonal_mut_mat, and freqi_freqj_qij
         RealNumType* mutation_mat_row = mutation_mat;
@@ -950,6 +949,17 @@ void ModelAA::initMutationMat()
         
         for (StateType i = 0; i < num_states_; ++i, transposed_mut_mat_row += num_states_, freq_j_transposed_ij_row += num_states_)
             setVecByProduct<20>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
+    }
+    // GTR20 or NONREV
+    else if (name_upper.compare("NONREV") == 0 || name_upper.compare("GTR") == 0)
+    {
+        // init pseu_mutation_counts
+        string model_rates = "1.0";
+        for (StateType i = 0; i < row_index[num_states_] - 1; ++i)
+            model_rates += " 1.0";
+        convert_real_numbers(pseu_mutation_count, model_rates);
+        
+        updateMutationMat<20>();
     }
     else
         outError("Model not found: ", model_name);
@@ -1054,4 +1064,27 @@ void ModelAA::rescaleAllRates()
         for (StateType j = 0; j < num_states_; ++j)
             mutation_mat_row[j] *= scaler;
     }
+}
+
+void ModelAA::updateMutationMatEmpirical(const Alignment& aln)
+{
+    // don't update parameters other model except GTR or NONREV
+    if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
+    
+    updateMutationMatEmpiricalTemplate<20>(aln);
+}
+
+void ModelAA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+{
+    // only handle GTR or NONREV
+    if (model_name == "GTR" || model_name == "gtr" || model_name == "NONREV" || model_name == "nonrev")
+        Model::updatePesudoCount(aln, regions1, regions2);
+}
+
+void ModelAA::extractRootFreqs(const Alignment& aln)
+{
+    // only extract root freqs for GTR or NONREV
+    if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
+    
+    Model::extractRootFreqs(aln);
 }
