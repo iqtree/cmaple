@@ -38,6 +38,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <csignal>
+
 using namespace std;
 
 /** ############## Redirect output to a log file ############## **/
@@ -117,7 +119,9 @@ int main(int argc, char *argv[]) {
         cout << endl;
         outError("You have specified more threads than CPU cores available");
     }
+    #ifndef WIN32  // not supported on Windows (only <=OpenMP2.0)
     omp_set_max_active_levels(1);
+    #endif
 #else
     if (Params::getInstance().num_threads != 1) {
         cout << endl << endl;
