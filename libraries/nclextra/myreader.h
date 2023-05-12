@@ -21,7 +21,7 @@
 #include <iostream>
 #include <fstream>
 //#include "node.h"
-#include "ncl/ncl.h"
+#include "libraries/ncl/ncl.h"
 
 /**
 	MyReader class to make more informative message

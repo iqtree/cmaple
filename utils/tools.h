@@ -44,7 +44,7 @@
 #include <thread>
 #include <iomanip>
 #define SPRNG
-#include "sprng/sprng.h"
+#include "libraries/sprng/sprng.h"
 #include "operatingsystem.h"
 
 #ifndef TOOLS_H
