@@ -23,7 +23,6 @@
 #if defined(_MSC_VER) && !defined(CLANG_UNDER_VS)
 #	pragma warning(disable:4786)
 #	pragma warning(disable:4291)
-#	define vsnprintf _vsnprintf
 #endif
 
 #if !defined(__DECCXX)
