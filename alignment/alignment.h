@@ -1,6 +1,6 @@
 #include "sequence.h"
-#include "utils/timeutil.h"
-#include "utils/gzstream.h"
+#include "../utils/timeutil.h"
+#include "../utils/gzstream.h"
 
 #ifndef ALIGNMENT_H
 #define ALIGNMENT_H

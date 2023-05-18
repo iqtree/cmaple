@@ -1,4 +1,4 @@
-add_library(utils
+add_library(cmaple_utils
 tools.cpp tools.h
 timeutil.h
 operatingsystem.cpp operatingsystem.h
@@ -7,10 +7,8 @@ matrix.h
 logstream.h logstream.cpp
 )
 
-target_link_libraries(utils)
-
 if(ZLIB_FOUND)
-  target_link_libraries(utils ${ZLIB_LIBRARIES})
+  target_link_libraries(cmaple_utils ${ZLIB_LIBRARIES})
 else(ZLIB_FOUND)
-  target_link_libraries(utils zlibstatic)
+  target_link_libraries(uticmaple_utilsls zlibstatic)
 endif(ZLIB_FOUND)

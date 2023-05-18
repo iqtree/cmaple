@@ -147,7 +147,9 @@ if(ZLIB_FOUND)
 else(ZLIB_FOUND)
   message ("Using own zlib-1.2.7")
   include_directories("${PROJECT_BINARY_DIR}/libraries/zlib-1.2.7" "${PROJECT_SOURCE_DIR}/libraries/zlib-1.2.7")
-  add_subdirectory(libraries/zlib-1.2.7)
+  if (NOT TARGET zlibstatic)
+    add_subdirectory(libraries/zlib-1.2.7)
+  endif()
 endif(ZLIB_FOUND)
 
 ##################################################################
@@ -165,12 +167,17 @@ FetchContent_MakeAvailable(googletest)
 ##################################################################
 # subdirectories containing necessary libraries for the build
 ##################################################################
-
-add_subdirectory(utils)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
-add_subdirectory(libraries/sprng)
-add_subdirectory(libraries/ncl)
-add_subdirectory(libraries/nclextra)
+if (NOT TARGET sprng)
+	add_subdirectory(libraries/sprng)
+endif() 
+if (NOT TARGET ncl)
+	add_subdirectory(libraries/ncl)
+endif() 
+if (NOT TARGET nclextra)
+	add_subdirectory(libraries/nclextra)
+endif() 
+add_subdirectory(utils)
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
@@ -195,12 +202,12 @@ endif(Backtrace_FOUND)
 ##################################################################
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
-	target_link_libraries(tree-dna OpenMP::OpenMP_CXX)
-     target_link_libraries(tree-aa OpenMP::OpenMP_CXX)
+    target_link_libraries(cmaple_tree-dna OpenMP::OpenMP_CXX)
+    target_link_libraries(cmaple_tree-aa OpenMP::OpenMP_CXX)
 endif()
 
-target_link_libraries(cmaple maple-dna tree-dna alignment-dna model-dna ncl nclextra utils sprng)
-target_link_libraries(cmaple-aa maple-aa tree-aa alignment-aa model-aa ncl nclextra utils sprng)
+target_link_libraries(cmaple maple-dna cmaple_tree-dna cmaple_alignment-dna cmaple_model-dna ncl nclextra cmaple_utils sprng)
+target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils sprng)
 
 ##############################################################
 # add the install targets

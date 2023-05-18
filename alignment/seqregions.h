@@ -2,7 +2,7 @@
 
 #include "seqregion.h"
 #include "alignment.h"
-#include "model/model.h"
+#include "../model/model.h"
 #include <algorithm>
 
 class Alignment;

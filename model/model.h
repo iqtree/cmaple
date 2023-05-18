@@ -2,12 +2,12 @@
 #pragma once
 
 #include <string>
-#include "utils/tools.h"
-#include "alignment/alignment.h"
-#include "utils/matrix.h"
-#include "libraries/nclextra/modelsblock.h"
-#include "libraries/ncl/ncl.h"
-#include "libraries/nclextra/myreader.h"
+#include "../utils/tools.h"
+#include "../alignment/alignment.h"
+#include "../utils/matrix.h"
+#include "../libraries/nclextra/modelsblock.h"
+#include "../libraries/ncl/ncl.h"
+#include "../libraries/nclextra/myreader.h"
 #include <cassert>
 
 class SeqRegions;

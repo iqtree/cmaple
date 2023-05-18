@@ -29,11 +29,11 @@
 
 #include <cmaple_config.h>
 
-#include "utils/timeutil.h"
-#include "utils/tools.h"
-#include "utils/operatingsystem.h" //for getOSName()
-#include <utils/logstream.h>
-#include "maple/cmaple.h"
+#include "../utils/timeutil.h"
+#include "../utils/tools.h"
+#include "../utils/operatingsystem.h" //for getOSName()
+#include "../utils/logstream.h"
+#include "../maple/cmaple.h"
 
 #include <stdlib.h>
 #include <stdio.h>

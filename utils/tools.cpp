@@ -1186,7 +1186,8 @@ bool renameString(string& name) {
 
 int countPhysicalCPUCores() {
     #ifdef _OPENMP
-    return omp_get_num_procs();
+    //return omp_get_num_procs();
+    return std::thread::hardware_concurrency();
     #else
     return std::thread::hardware_concurrency();
     #endif

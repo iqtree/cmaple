@@ -1,7 +1,7 @@
 #include "updatingnode.h"
-#include "alignment/alignment.h"
-#include "model/model_dna.h"
-#include "model/model_aa.h"
+#include "../alignment/alignment.h"
+#include "../model/model_dna.h"
+#include "../model/model_aa.h"
 #include <optional>
 #ifdef _OPENMP
     #include <omp.h>
