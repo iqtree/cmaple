@@ -75,7 +75,7 @@ private:
 public:
     
     /** The phylogenetic tree */
-    Tree tree;
+    cmaple::Tree tree;
     
     /**
     *  CMaple constructor

@@ -3,9 +3,9 @@ using namespace std;
 using namespace cmaple;
 
 // explicit instantiation of templates
-template void PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
-template void PhyloNode::computeTotalLhAtNode<4>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
-template void PhyloNode::computeTotalLhAtNode<20>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<4>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<20>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
 
 
 
@@ -15,67 +15,67 @@ std::ostream& operator<<(std::ostream& os, const Index& index)
     return os;
 }
 
-std::unique_ptr<PhyloNode::OtherLh>& PhyloNode::getOtherLh()
+std::unique_ptr<cmaple::PhyloNode::OtherLh>& cmaple::PhyloNode::getOtherLh()
 {
     return other_lh_;
 }
 
-std::unique_ptr<SeqRegions>& PhyloNode::getTotalLh()
+std::unique_ptr<SeqRegions>& cmaple::PhyloNode::getTotalLh()
 {
     return other_lh_->total_lh;
 }
 
-void PhyloNode::setTotalLh(std::unique_ptr<SeqRegions>&& total_lh)
+void cmaple::PhyloNode::setTotalLh(std::unique_ptr<SeqRegions>&& total_lh)
 {
     other_lh_->total_lh = std::move(total_lh);
 }
 
-std::unique_ptr<SeqRegions>& PhyloNode::getMidBranchLh()
+std::unique_ptr<SeqRegions>& cmaple::PhyloNode::getMidBranchLh()
 {
     return other_lh_->mid_branch_lh;
 }
 
-void PhyloNode::setMidBranchLh(std::unique_ptr<SeqRegions>&& mid_branch_lh)
+void cmaple::PhyloNode::setMidBranchLh(std::unique_ptr<SeqRegions>&& mid_branch_lh)
 {
     other_lh_->mid_branch_lh = std::move(mid_branch_lh);
 }
 
-bool PhyloNode::isInternal() const
+bool cmaple::PhyloNode::isInternal() const
 {
     return is_internal_;
 }
 
-bool PhyloNode::isOutdated() const
+bool cmaple::PhyloNode::isOutdated() const
 {
     return outdated_;
 }
 
-void PhyloNode::setOutdated(bool new_outdated)
+void cmaple::PhyloNode::setOutdated(bool new_outdated)
 {
     outdated_ = new_outdated;
 }
 
-const bool PhyloNode::isSPRApplied() const
+const bool cmaple::PhyloNode::isSPRApplied() const
 {
     return spr_applied_;
 }
 
-void PhyloNode::setSPRApplied(bool spr_applied)
+void cmaple::PhyloNode::setSPRApplied(bool spr_applied)
 {
     spr_applied_ = spr_applied;
 }
 
-RealNumType PhyloNode::getUpperLength() const
+RealNumType cmaple::PhyloNode::getUpperLength() const
 {
     return length_;
 }
 
-void PhyloNode::setUpperLength(const double new_length)
+void cmaple::PhyloNode::setUpperLength(const double new_length)
 {
     length_ = new_length;
 }
 
-RealNumType PhyloNode::getCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes) const
+RealNumType cmaple::PhyloNode::getCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes) const
 {
     // if it's a left/right mini node -> return the length of the lower left/right branch
     if (is_internal_ && mini_index != TOP)
@@ -88,7 +88,7 @@ RealNumType PhyloNode::getCorrespondingLength(const MiniIndex mini_index, std::v
     return length_;
 }
 
-void PhyloNode::setCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes, const RealNumType new_length)
+void cmaple::PhyloNode::setCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes, const RealNumType new_length)
 {
     // if it's a left/right mini node -> update the length of the lower left/right branch
     if (is_internal_ && mini_index != TOP)
@@ -101,7 +101,7 @@ void PhyloNode::setCorrespondingLength(const MiniIndex mini_index, std::vector<P
         length_ = new_length;
 }
 
-void PhyloNode::setNode(LeafNode&& leaf)
+void cmaple::PhyloNode::setNode(LeafNode&& leaf)
 {
     ASSERT(!is_internal_ && "Wrong data type! data should be a leaf node");
     
@@ -109,7 +109,7 @@ void PhyloNode::setNode(LeafNode&& leaf)
     data_.leaf_ = std::move(leaf);
 }
 
-void PhyloNode::setNode(InternalNode&& internal)
+void cmaple::PhyloNode::setNode(InternalNode&& internal)
 {
     ASSERT(is_internal_ && "Wrong data type! data should be an internal node");
     
@@ -117,12 +117,12 @@ void PhyloNode::setNode(InternalNode&& internal)
     data_.internal_ = std::move(internal);
 }
 
-PhyloNode::MyVariant& PhyloNode::getNode()
+cmaple::PhyloNode::MyVariant& cmaple::PhyloNode::getNode()
 {
     return data_;
 }
 
-std::unique_ptr<SeqRegions>& PhyloNode::getPartialLh(const MiniIndex mini_index)
+std::unique_ptr<SeqRegions>& cmaple::PhyloNode::getPartialLh(const MiniIndex mini_index)
 {
     // if it's an internal node
     if (is_internal_)
@@ -135,7 +135,7 @@ std::unique_ptr<SeqRegions>& PhyloNode::getPartialLh(const MiniIndex mini_index)
     return data_.leaf_.partial_lh_;
 }
 
-void PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>&& partial_lh)
+void cmaple::PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>&& partial_lh)
 {
     // if it's an internal node
     if (is_internal_)
@@ -151,7 +151,7 @@ void PhyloNode::setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegi
     }
 }
 
-Index PhyloNode::getNeighborIndex(const MiniIndex mini_index) const
+Index cmaple::PhyloNode::getNeighborIndex(const MiniIndex mini_index) const
 {
     // if it's an internal node
     if (is_internal_)
@@ -164,7 +164,7 @@ Index PhyloNode::getNeighborIndex(const MiniIndex mini_index) const
     return data_.leaf_.neighbor_index_;
 }
 
-void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index_)
+void cmaple::PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index_)
 {
     // if it's an internal node
     if (is_internal_)
@@ -179,31 +179,31 @@ void PhyloNode::setNeighborIndex(const MiniIndex mini_index, const Index neighbo
     }
 }
 
-std::vector<NumSeqsType>& PhyloNode::getLessInfoSeqs()
+std::vector<NumSeqsType>& cmaple::PhyloNode::getLessInfoSeqs()
 {
     ASSERT(!is_internal_);
     return data_.leaf_.less_info_seqs_;
 }
 
-void PhyloNode::addLessInfoSeqs(NumSeqsType seq_name_index)
+void cmaple::PhyloNode::addLessInfoSeqs(NumSeqsType seq_name_index)
 {
     ASSERT(!is_internal_);
     data_.leaf_.less_info_seqs_.push_back(seq_name_index);
 }
 
-NumSeqsType PhyloNode::getSeqNameIndex() const
+NumSeqsType cmaple::PhyloNode::getSeqNameIndex() const
 {
     ASSERT(!is_internal_);
     return data_.leaf_.seq_name_index_;
 }
 
-void PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
+void cmaple::PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
 {
     ASSERT(!is_internal_);
     data_.leaf_.seq_name_index_ = seq_name_index_;
 }
 
-/*std::vector<Index> PhyloNode::getNeighborIndexes(MiniIndex mini_index) const
+/*std::vector<Index> cmaple::PhyloNode::getNeighborIndexes(MiniIndex mini_index) const
 {
     std::vector<Index> neighbor_indexes;
     neighbor_indexes.reserve(2);
@@ -242,7 +242,7 @@ void PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
 }*/
 
 template <const StateType num_states>
-void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+void cmaple::PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     // if node is root
     if (is_root)
@@ -255,7 +255,7 @@ void PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, Phyl
     }
 }
 
-const std::string PhyloNode::exportString(const bool binary, const Alignment& aln, const bool show_branch_supports)
+const std::string cmaple::PhyloNode::exportString(const bool binary, const Alignment& aln, const bool show_branch_supports)
 {
     if (!isInternal())
     {
@@ -296,39 +296,39 @@ const std::string PhyloNode::exportString(const bool binary, const Alignment& al
     return "";
 }
 
-const NumSeqsType PhyloNode::getNodelhIndex() const
+const NumSeqsType cmaple::PhyloNode::getNodelhIndex() const
 {
     ASSERT(isInternal());
     return data_.internal_.node_lh_index_;
 }
 
-void PhyloNode::setNodeLhIndex(const NumSeqsType node_lh_index)
+void cmaple::PhyloNode::setNodeLhIndex(const NumSeqsType node_lh_index)
 {
     ASSERT(isInternal());
     data_.internal_.node_lh_index_ = node_lh_index;
 }
 
-void NodeLh::setLhDiff2(const RealNumType lh_diff)
+void cmaple::NodeLh::setLhDiff2(const RealNumType lh_diff)
 {
     neighbor_2_lh_diff_ = lh_diff;
 }
 
-const RealNumType NodeLh::getLhDiff2() const
+const RealNumType cmaple::NodeLh::getLhDiff2() const
 {
     return neighbor_2_lh_diff_;
 }
 
-void NodeLh::setLhDiff3(const RealNumType lh_diff)
+void cmaple::NodeLh::setLhDiff3(const RealNumType lh_diff)
 {
     neighbor_3_lh_diff_ = lh_diff;
 }
 
-const RealNumType NodeLh::getLhDiff3() const
+const RealNumType cmaple::NodeLh::getLhDiff3() const
 {
     return neighbor_3_lh_diff_;
 }
 
-const RealNumType NodeLh::getHalf_aLRT() const
+const RealNumType cmaple::NodeLh::getHalf_aLRT() const
 {
     /*  aLRT = 2(LT1 - max(LT2x,LT2y)); where LT2x, LT2y are the log lh of the two NNI neighbors of T1
      <=> aLRT = 2(LT1 - max(diff_x + LT1, diff_y + LT1)); where diff_x = LT2x - LT1; and similarly to diff_y
@@ -339,22 +339,22 @@ const RealNumType NodeLh::getHalf_aLRT() const
     return neighbor_2_lh_diff_ > neighbor_3_lh_diff_ ? -neighbor_2_lh_diff_ : -neighbor_3_lh_diff_;
 }
 
-const RealNumType NodeLh::getLhContribution() const
+const RealNumType cmaple::NodeLh::getLhContribution() const
 {
     return lh_contribution_;
 }
 
-void NodeLh::setLhContribution(const RealNumType lh_contribution)
+void cmaple::NodeLh::setLhContribution(const RealNumType lh_contribution)
 {
     lh_contribution_ = lh_contribution;
 }
 
-const RealNumType NodeLh::get_aLRT_SH() const
+const RealNumType cmaple::NodeLh::get_aLRT_SH() const
 {
     return aLRT_SH_;
 }
 
-void NodeLh::set_aLRT_SH(const RealNumType aLRT_SH)
+void cmaple::NodeLh::set_aLRT_SH(const RealNumType aLRT_SH)
 {
     aLRT_SH_ = aLRT_SH;
 }
