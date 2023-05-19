@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
-#include "alignment/alignment.h"
+#include "../alignment/alignment.h"
+using namespace cmaple;
 
 /*
  Test readSequences(), readFasta(), readPhylip(), and generateRef()

@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
-#include "alignment/seqregion.h"
+#include "../alignment/seqregion.h"
+
+using namespace cmaple;
 
 /*
  Test the default Mutation() constructor

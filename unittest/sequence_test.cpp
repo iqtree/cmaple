@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
-#include "alignment/sequence.h"
+#include "../alignment/sequence.h"
+
+using namespace cmaple;
 
 /*
  Test the default Sequence() and Sequence(std::string n_seq_name) constructors

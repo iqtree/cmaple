@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
-#include "model/model_dna.h"
+#include "../model/model_dna.h"
+
+using namespace cmaple;
 
 /*
  Test void initMutationMat(const std::string n_model_name, const StateType num_states)

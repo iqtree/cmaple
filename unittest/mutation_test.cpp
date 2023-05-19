@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
-#include "alignment/mutation.h"
+#include "../alignment/mutation.h"
+
+using namespace cmaple;
 
 /*
  Test the default Mutation() constructor

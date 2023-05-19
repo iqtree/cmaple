@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
-#include "tree/phylonode.h"
-#include "model/model_dna.h"
+#include "../tree/phylonode.h"
+#include "../model/model_dna.h"
+
+using namespace cmaple;
 
 /*
     Test constructors
