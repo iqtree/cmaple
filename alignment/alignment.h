@@ -11,17 +11,17 @@ private:
     /**
         Type of sequences
      */
-    SeqType seq_type_ = SEQ_UNKNOWN;
+    cmaple::SeqType seq_type_ = cmaple::SEQ_UNKNOWN;
     
     /**
         Read sequence from a string line
      */
-    void processSeq(std::string &sequence, std::string &line, PositionType line_num);
+    void processSeq(std::string &sequence, std::string &line, cmaple::PositionType line_num);
     
     /**
         Output a mutation into Diff file
      */
-    void outputMutation(std::ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length = -1);
+    void outputMutation(std::ofstream &out, Sequence* sequence, char state_char, cmaple::PositionType pos, cmaple::PositionType length = -1);
     
 public:
 
@@ -30,12 +30,12 @@ public:
     /**
         reference sequence
      */
-    std::vector<StateType> ref_seq;
+    std::vector<cmaple::StateType> ref_seq;
     
     /**
         The number of states
      */
-    StateType num_states;
+    cmaple::StateType num_states;
     
     /**
     *  Alignment constructor
@@ -50,12 +50,12 @@ public:
     /**
     *  Get seq_type
     */
-    inline SeqType getSeqType() const { return seq_type_; };
+    inline cmaple::SeqType getSeqType() const { return seq_type_; };
     
     /**
     *  Set seq_type
     */
-    inline void setSeqType(SeqType seq_type) {
+    inline void setSeqType(cmaple::SeqType seq_type) {
         seq_type_ = seq_type;
         updateNumStates();
     };
@@ -65,28 +65,28 @@ public:
         @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
         @return sequences, seq_names
      */
-    void readFasta(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs = true);
+    void readFasta(char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
     
     /**
         Read alignment file in PHYLIP format
         @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
         @return sequences, seq_names
      */
-    void readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs = true);
+    void readPhylip(char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
     
     /**
         Read alignment file
         @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
         @return sequences, seq_names
      */
-    void readSequences(char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs = true);
+    void readSequences(char* aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
     
     /**
         Generate a reference genome from input_sequences
         @param sequences the input sequences; only_extract_diff: TRUE to only extract Diff file without running inference
         @return a reference genome
      */
-    std::string generateRef(StrVector &sequences);
+    std::string generateRef(cmaple::StrVector &sequences);
     
     /**
         Read a reference genome from file
@@ -99,7 +99,7 @@ public:
         Extract Mutation from sequences regarding the reference sequence
         @param sequences, seq_names: the input sequences,  ref_sequence; ref_sequence, out: output stream to write the Diff file; only_extract_diff: TRUE to only extract Diff file without running inference
      */
-    void extractMutations(StrVector &sequences, StrVector &seq_names, std::string ref_sequence, std::ofstream &out, bool only_extract_diff);
+    void extractMutations(cmaple::StrVector &sequences, cmaple::StrVector &seq_names, std::string ref_sequence, std::ofstream &out, bool only_extract_diff);
     
     /**
         Read Diff file to load reference sequence and vector of Sequence (represented by vector of Mutations)
@@ -116,7 +116,7 @@ public:
     /**
         Extract Diff file from and alignment file
      */
-    void extractDiffFile(Params& params);
+    void extractDiffFile(cmaple::Params& params);
     
     /**
         Parse the reference sequence into vector of state
@@ -129,35 +129,35 @@ public:
         @param state ID input a state ID
         @return a raw state
     */
-    char convertState2Char(StateType state);
+    char convertState2Char(cmaple::StateType state);
     
     /**
         Convert a raw character state into ID, indexed from 0
         @param state input raw state
         @return state ID
     */
-    StateType convertChar2State(char state);
+    cmaple::StateType convertChar2State(char state);
     
     /**
         Sort sequences by their distances to the reference genome
         distance = num_differents * hamming_weight + num_ambiguities
         @param hamming_weight weight to calculate the hamming distance
     */
-    void sortSeqsByDistances(RealNumType hamming_weight);
+    void sortSeqsByDistances(cmaple::RealNumType hamming_weight);
     
     /**
         Compute the distance between a sequence and the ref sequence
         distance = num_differents * hamming_weight + num_ambiguities
         @param hamming_weight weight to calculate the hamming distance
     */
-    PositionType computeSeqDistance(Sequence& sequence, RealNumType hamming_weight);
+    cmaple::PositionType computeSeqDistance(Sequence& sequence, cmaple::RealNumType hamming_weight);
     
     /**
         detect the data type of the input sequences
         @param sequences vector of strings
         @return the data type of the input sequences
     */
-    SeqType detectSequenceType(StrVector& sequences);
+    cmaple::SeqType detectSequenceType(cmaple::StrVector& sequences);
     
     /**
         update num_states according to the seq_type

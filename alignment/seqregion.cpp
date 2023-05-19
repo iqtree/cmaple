@@ -7,7 +7,7 @@
 
 #include "seqregion.h"
 #include <iomanip>
-
+using namespace cmaple;
 
 SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHPtrType n_likelihood)
   : Mutation(n_type, n_position),

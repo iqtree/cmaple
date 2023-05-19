@@ -7,6 +7,8 @@
 
 #include "sequence.h"
 using namespace std;
+using namespace cmaple;
+
 Sequence::Sequence(string n_seq_name)
   : seq_name(std::move(n_seq_name))
 {

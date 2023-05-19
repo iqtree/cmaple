@@ -21,7 +21,7 @@
 #include <iostream>
 #include <fstream>
 //#include "node.h"
-#include "libraries/ncl/ncl.h"
+#include "../../libraries/ncl/ncl.h"
 
 /**
 	MyReader class to make more informative message
@@ -43,7 +43,7 @@ public:
 	{
 		inf.open(infname, ios::binary);
 		if (!inf.is_open())
-			outError(ERR_READ_INPUT);
+            cmaple::outError(cmaple::ERR_READ_INPUT);
 	}
 
 	/**
@@ -70,7 +70,7 @@ public:
 	*/
 	virtual bool EnteringBlock(NxsString blockName)
 	{
-		if (verbose_mode >= VB_MED)
+		if (cmaple::verbose_mode >= cmaple::VB_MED)
 			cout << "Reading \"" << blockName << "\" block..." << endl;
 
 		// Returning true means it is ok to delete any data associated with

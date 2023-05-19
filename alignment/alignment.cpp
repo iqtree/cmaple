@@ -8,6 +8,7 @@
 #include "alignment.h"
 
 using namespace std;
+using namespace cmaple;
 
 char symbols_protein[] = "ARNDCQEGHILKMFPSTWYVX"; // X for unknown AA
 char symbols_dna[]     = "ACGT";

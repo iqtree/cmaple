@@ -58,7 +58,7 @@ int outstreambuf::sync() { // used for output buffer only
 
 /**##################################################**/
 
-void LogStream::startLogFile(Params& params) {
+void LogStream::startLogFile(cmaple::Params& params) {
     // use diff_path as the output prefix if users didn't specify it
     if (!params.output_prefix)
     {

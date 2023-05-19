@@ -76,13 +76,13 @@ protected:
     /**
         Update the mutation rate matrix
      */
-    template <StateType num_states>
+    template <cmaple::StateType num_states>
     void updateMutationMat();
     
     /**
         Update the mutation matrix periodically from the empirical count of mutations (template)
      */
-    template <StateType num_states>
+    template <cmaple::StateType num_states>
     void updateMutationMatEmpiricalTemplate(const Alignment& aln);
     
 public:
@@ -91,31 +91,31 @@ public:
     std::string model_name;
     
     /** Number of states */
-    StateType num_states_;
+    cmaple::StateType num_states_;
     
     /** Pseudo mutation count */
-    RealNumType* pseu_mutation_count = nullptr;
+    cmaple::RealNumType* pseu_mutation_count = nullptr;
     
     /** State frequencies*/
-    RealNumType *root_freqs = nullptr;
+    cmaple::RealNumType *root_freqs = nullptr;
     
     /** Mutation matrix */
-    RealNumType *mutation_mat;
+    cmaple::RealNumType *mutation_mat;
     
     /** cumulative rates/bases*/
-    RealNumType *cumulative_rate = nullptr;
-    std::vector< std::vector<PositionType> > cumulative_base;
+    cmaple::RealNumType *cumulative_rate = nullptr;
+    std::vector< std::vector<cmaple::PositionType> > cumulative_base;
     
     /**
         Caches to reduce runtime
      */
-    RealNumType *root_log_freqs = nullptr; // log of state frequencies
-    RealNumType *diagonal_mut_mat; // diagonal of the mutation matrix
-    RealNumType *transposed_mut_mat; // the transposed matrix of the mutation matrix
-    RealNumType *inverse_root_freqs = nullptr; // the inversed values of state frequencies
-    RealNumType *freqi_freqj_qij; // freq(i) / freq(j) * Qij
-    RealNumType *freq_j_transposed_ij; // freq[j] * transposed[i][j]
-    StateType *row_index; // the starting index of row i: i * num_states
+    cmaple::RealNumType *root_log_freqs = nullptr; // log of state frequencies
+    cmaple::RealNumType *diagonal_mut_mat; // diagonal of the mutation matrix
+    cmaple::RealNumType *transposed_mut_mat; // the transposed matrix of the mutation matrix
+    cmaple::RealNumType *inverse_root_freqs = nullptr; // the inversed values of state frequencies
+    cmaple::RealNumType *freqi_freqj_qij; // freq(i) / freq(j) * Qij
+    cmaple::RealNumType *freq_j_transposed_ij; // freq[j] * transposed[i][j]
+    cmaple::StateType *row_index; // the starting index of row i: i * num_states
     
     /**
         Constructor

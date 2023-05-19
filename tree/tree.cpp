@@ -4,6 +4,7 @@
 #include <utils/matrix.h>
 
 using namespace std;
+using namespace cmaple;
 
 // explicit instantiation of templates
 template void Tree::refreshAllLhs<2>(bool);

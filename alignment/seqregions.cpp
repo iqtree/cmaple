@@ -9,6 +9,8 @@
 #include <cassert>
 #include <utils/matrix.h>
 
+using namespace cmaple;
+
 // explicit instantiation of templates
 template double SeqRegions::computeAbsoluteLhAtRoot<2>(const std::unique_ptr<Model>&);
 template double SeqRegions::computeAbsoluteLhAtRoot<4>(const std::unique_ptr<Model>&);

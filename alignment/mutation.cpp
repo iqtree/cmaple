@@ -6,6 +6,7 @@
 //
 
 #include "mutation.h"
+using namespace cmaple;
 
 Mutation::Mutation(StateType n_type, PositionType n_position)
     : type(n_type),

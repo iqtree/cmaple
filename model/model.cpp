@@ -1,6 +1,8 @@
 #include "model.h"
 
 using namespace std;
+using namespace cmaple;
+
 // explicit instantiation of templates
 template void Model::updateMutationMat<4>();
 template void Model::updateMutationMat<20>();

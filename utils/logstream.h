@@ -147,7 +147,7 @@ private:
     std::string log_file_;
     
 public:
-    void startLogFile(Params& params);
+    void startLogFile(cmaple::Params& params);
     void endLogFile();
     void funcExit(void);
     std::string getLogFilePath();

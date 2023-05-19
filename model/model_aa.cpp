@@ -1,5 +1,6 @@
 #include "model_aa.h"
 using namespace std;
+using namespace cmaple;
 
 /*
     following are definitions for various protein models encoded in a string.

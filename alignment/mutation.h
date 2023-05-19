@@ -4,17 +4,17 @@
 
 /** A mutation compared with a reference sequence */
 class Mutation {
-    LengthType length_ = 1;
+    cmaple::LengthType length_ = 1;
 public:
     /**
         Alternative allele, for DNA, it is A, C, G, T, N, O, -
      */
-    StateType type = TYPE_N;
+    cmaple::StateType type = cmaple::TYPE_N;
 
     /**
         (starting) position
      */
-    PositionType position = 0;
+    cmaple::PositionType position = 0;
 
     /**
     *  Mutation constructor
@@ -24,15 +24,15 @@ public:
     /**
     *  Mutation constructor
     */
-    Mutation(StateType n_type, PositionType n_position);
+    Mutation(cmaple::StateType n_type, cmaple::PositionType n_position);
 
     /**
     *  Mutation constructor
     */
-    Mutation(StateType n_type, PositionType n_position, LengthTypeLarge n_length);
+    Mutation(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::LengthTypeLarge n_length);
 
     /**
     *  Return the length of the mutation
     */
-    LengthType getLength() const;
+    cmaple::LengthType getLength() const;
 };

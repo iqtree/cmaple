@@ -1,5 +1,6 @@
 #include "cmaple.h"
 using namespace std;
+using namespace cmaple;
 
 void CMaple::loadInput()
 {

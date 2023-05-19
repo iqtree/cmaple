@@ -1,5 +1,6 @@
 #include "phylonode.h"
 using namespace std;
+using namespace cmaple;
 
 // explicit instantiation of templates
 template void PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);

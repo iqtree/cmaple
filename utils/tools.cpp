@@ -31,6 +31,7 @@
 //#include <filesystem>
 
 using namespace std;
+using namespace cmaple;
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
@@ -43,7 +44,7 @@ using namespace std;
 
 #if RAN_TYPE == RAN_STANDARD
 
-int init_random(int seed) {
+int cmaple::init_random(int seed) {
     srand(seed);
     cout << "(Using rand() - Standard Random Number Generator)" << endl;
     // init random generator for AliSim
@@ -51,7 +52,7 @@ int init_random(int seed) {
     return seed;
 }
 
-int finish_random() {
+int cmaple::finish_random() {
     return 0;
 }
 
@@ -80,7 +81,7 @@ long _idum;
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
 
-double randomunitintervall()
+double cmaple::randomunitintervall()
 /* Long period (> 2e18) random number generator. Returns a uniform random
    deviate between 0.0 and 1.0 (exclusive of endpoint values).
 
@@ -144,7 +145,7 @@ double randomunitintervall()
 #undef EPS
 #undef RNMX
 
-int init_random(int seed) /* RAND4 */ {
+int cmaple::init_random(int seed) /* RAND4 */ {
     //    srand((unsigned) time(NULL));
     //    if (seed < 0)
     //     seed = rand();
@@ -169,7 +170,7 @@ int init_random(int seed) /* RAND4 */ {
     return (seed);
 } /* initrandom */
 
-int finish_random() {
+int cmaple::finish_random() {
     return 0;
 }
 /******************/
@@ -178,9 +179,9 @@ int finish_random() {
 
 /******************/
 
-int *randstream;
+int *cmaple::randstream;
 
-int init_random(int seed, bool write_info, int** rstream) {
+int cmaple::init_random(int seed, bool write_info, int** rstream) {
     //    srand((unsigned) time(NULL));
     if (seed < 0)
         seed = make_sprng_seed();
@@ -190,9 +191,9 @@ int init_random(int seed, bool write_info, int** rstream) {
     if (rstream) {
         *rstream = init_sprng(0, 1, seed, SPRNG_DEFAULT); /*init stream*/
     } else {
-        randstream = init_sprng(0, 1, seed, SPRNG_DEFAULT); /*init stream*/
+        cmaple::randstream = init_sprng(0, 1, seed, SPRNG_DEFAULT); /*init stream*/
         if (verbose_mode >= VB_MED) {
-            print_sprng(randstream);
+            print_sprng(cmaple::randstream);
         }
     }
 #else /* PARALLEL */
@@ -203,21 +204,21 @@ int init_random(int seed, bool write_info, int** rstream) {
     if (rstream) {
         *rstream = init_sprng(PP_Myid, PP_NumProcs, seed, SPRNG_DEFAULT); /*initialize stream*/
     } else {
-        randstream = init_sprng(PP_Myid, PP_NumProcs, seed, SPRNG_DEFAULT); /*initialize stream*/
+        cmaple::randstream = init_sprng(PP_Myid, PP_NumProcs, seed, SPRNG_DEFAULT); /*initialize stream*/
         if (verbose_mode >= VB_MED) {
             cout << "(" << PP_Myid << ") !!! random seed set to " << seed << " !!!" << endl;
-            print_sprng(randstream);
+            print_sprng(cmaple::randstream);
         }
     }
 #endif /* PARALLEL */
     return (seed);
 } /* initrandom */
 
-int finish_random(int *rstream) {
+int cmaple::finish_random(int *rstream) {
     if (rstream)
         return free_sprng(rstream);
     else
-        return free_sprng(randstream);
+        return free_sprng(cmaple::randstream);
 }
 
 #endif /* USE_SPRNG */
@@ -225,18 +226,11 @@ int finish_random(int *rstream) {
 /******************/
 
 /* returns a random integer in the range [0; n - 1] */
-int random_int(int n, int *rstream) {
+int cmaple::random_int(int n, int *rstream) {
     return (int) floor(random_double(rstream) * n);
 } /* randominteger */
 
-/* returns a random integer in the range [a; b] */
-int random_int(int a, int b) {
-    ASSERT(b > a);
-    //return a + (RAND_MAX * rand() + rand()) % (b + 1 - a);
-    return a + random_int(b - a);
-}
-
-double random_double(int *rstream) {
+double cmaple::random_double(int *rstream) {
 #ifndef FIXEDINTRAND
 #ifndef PARALLEL
 #if RAN_TYPE == RAN_STANDARD
@@ -274,9 +268,9 @@ double random_double(int *rstream) {
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
 
-VerboseMode verbose_mode;
+VerboseMode cmaple::verbose_mode;
 
-void printCopyright(ostream &out) {
+void cmaple::printCopyright(ostream &out) {
     out << "CMAPLE version ";
     out << cmaple_VERSION_MAJOR << "." << cmaple_VERSION_MINOR << cmaple_VERSION_PATCH;
     out << " for " << getOSName();
@@ -289,7 +283,7 @@ void printCopyright(ostream &out) {
         Output an error to screen, then exit program
         @param error error message
  */
-void outError(const char *error, bool quit) {
+void cmaple::outError(const char *error, bool quit) {
 	if (error == ERR_NO_MEMORY) {
         //print_stacktrace(cerr);
 	}
@@ -302,17 +296,17 @@ void outError(const char *error, bool quit) {
         Output an error to screen, then exit program
         @param error error message
  */
-void outError(const string &error, bool quit) {
+void cmaple::outError(const string &error, bool quit) {
     outError(error.c_str(), quit);
 }
 
-void outError(const char *error, const char *msg, bool quit) {
+void cmaple::outError(const char *error, const char *msg, bool quit) {
     string str = error;
     str += msg;
     outError(str, quit);
 }
 
-void outError(const char *error, const string &msg, bool quit) {
+void cmaple::outError(const char *error, const string &msg, bool quit) {
     string str = error;
     str += msg;
     outError(str, quit);
@@ -322,15 +316,15 @@ void outError(const char *error, const string &msg, bool quit) {
         Output a warning message to screen
         @param error warning message
  */
-void outWarning(const char *warn) {
+void cmaple::outWarning(const char *warn) {
     cout << "WARNING: " << warn << endl;
 }
 
-void outWarning(const string &warn) {
+void cmaple::outWarning(const string &warn) {
     outWarning(warn.c_str());
 }
 
-std::istream& safeGetline(std::istream& is, std::string& t)
+std::istream& cmaple::safeGetline(std::istream& is, std::string& t)
 {
     t.clear();
 
@@ -364,38 +358,38 @@ std::istream& safeGetline(std::istream& is, std::string& t)
 }
 
 //From Tung
-string convertPosTypeToString(PositionType number) {
+string cmaple::convertPosTypeToString(PositionType number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-string convertIntToString(int number) {
+string cmaple::convertIntToString(int number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-string convertInt64ToString(int64_t number) {
+string cmaple::convertInt64ToString(int64_t number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-string convertDoubleToString(RealNumType number) {
+string cmaple::convertDoubleToString(RealNumType number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-std::string convertDoubleToString(RealNumType number, uint8_t precision)
+std::string cmaple::convertDoubleToString(RealNumType number, uint8_t precision)
 {
     stringstream ss; //create a stringstream
     ss << std::setprecision(precision) << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-bool iEquals(const string &a, const string &b)
+bool cmaple::iEquals(const string &a, const string &b)
 {
     unsigned int sz = a.size();
     if (b.size() != sz)
@@ -408,7 +402,7 @@ bool iEquals(const string &a, const string &b)
 
 //From Tung
 
-bool copyFile(const char SRC[], const char DEST[]) {
+bool cmaple::copyFile(const char SRC[], const char DEST[]) {
     std::ifstream src; // the source file
     std::ofstream dest; // the destination file
 
@@ -424,7 +418,7 @@ bool copyFile(const char SRC[], const char DEST[]) {
     return true; // file copied successfully
 }
 
-bool fileExists(const string &strFilename) {
+bool cmaple::fileExists(const string &strFilename) {
     struct stat stFileInfo;
     bool blnReturn;
     int intStat;
@@ -455,7 +449,7 @@ int isFile(const char *path) {
   return std::filesystem::is_regular_file(path);
 }*/
 
-int convert_int(const char *str, int &end_pos) {
+int cmaple::convert_int(const char *str, int &end_pos) {
 	char *endptr;
 	int i = strtol(str, &endptr, 10);
 
@@ -469,7 +463,7 @@ int convert_int(const char *str, int &end_pos) {
 	return i;
 }
 
-int convert_int(const char *str) {
+int cmaple::convert_int(const char *str) {
     char *endptr;
     int i = strtol(str, &endptr, 10);
 
@@ -483,7 +477,7 @@ int convert_int(const char *str) {
     return i;
 }
 
-PositionType convert_positiontype(const char *str) {
+PositionType cmaple::convert_positiontype(const char *str) {
     char *endptr;
     PositionType i = (PositionType) strtol(str, &endptr, 10);
 
@@ -497,7 +491,7 @@ PositionType convert_positiontype(const char *str) {
     return i;
 }
 
-void convert_int_vec(const char *str, IntVector &vec) {
+void cmaple::convert_int_vec(const char *str, IntVector &vec) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
     do {
@@ -516,7 +510,7 @@ void convert_int_vec(const char *str, IntVector &vec) {
 }
 
 
-int64_t convert_int64(const char *str) {
+int64_t cmaple::convert_int64(const char *str) {
     char *endptr;
     int64_t i = (int64_t)strtoll(str, &endptr, 10); // casted because 'long long' may be larger than int64_t
 
@@ -530,7 +524,7 @@ int64_t convert_int64(const char *str) {
     return i;
 }
 
-int64_t convert_int64(const char *str, int &end_pos) {
+int64_t cmaple::convert_int64(const char *str, int &end_pos) {
 	char *endptr;
 	int64_t i = (int64_t)strtoll(str, &endptr, 10); // casted because 'long long' may be larger than int64_t
 
@@ -545,7 +539,7 @@ int64_t convert_int64(const char *str, int &end_pos) {
 }
 
 
-RealNumType convert_real_number(const char *str) {
+RealNumType cmaple::convert_real_number(const char *str) {
     char *endptr;
     RealNumType d = strtod(str, &endptr);
     if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF || *endptr != 0) {
@@ -557,7 +551,7 @@ RealNumType convert_real_number(const char *str) {
     return d;
 }
 
-RealNumType convert_real_number(const char *str, int &end_pos) {
+RealNumType cmaple::convert_real_number(const char *str, int &end_pos) {
 	char *endptr;
 	RealNumType d = strtod(str, &endptr);
 	if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF) {
@@ -570,7 +564,7 @@ RealNumType convert_real_number(const char *str, int &end_pos) {
 	return d;
 }
 
-void convert_real_numbers(RealNumType* &arr, string input_str)
+void cmaple::convert_real_numbers(RealNumType* &arr, string input_str)
 {
     // count the number of input real_numbers
     int number_count = count(input_str.begin(), input_str.end(), ' ') + 1;
@@ -588,7 +582,7 @@ void convert_real_numbers(RealNumType* &arr, string input_str)
     }
 }
 
-void convert_real_number_vec(const char *str, RealNumberVector &vec, char separator) {
+void cmaple::convert_real_number_vec(const char *str, RealNumberVector &vec, char separator) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
     do {
@@ -606,7 +600,7 @@ void convert_real_number_vec(const char *str, RealNumberVector &vec, char separa
     } while (*endptr != 0);
 }
 
-string convert_time(const RealNumType sec) {
+string cmaple::convert_time(const RealNumType sec) {
     int sec_int = (int) floor(sec);
     int secs = sec_int % 60;
     int mins = (sec_int % 3600) / 60;
@@ -616,7 +610,7 @@ string convert_time(const RealNumType sec) {
     return ss.str();
 }
 
-void convert_range(const char *str, int &lower, int &upper, int &step_size) {
+void cmaple::convert_range(const char *str, int &lower, int &upper, int &step_size) {
     char *endptr;
 
     // parse the lower bound of the range
@@ -659,7 +653,7 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
     step_size = d;
 }
 
-void convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size) {
+void cmaple::convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size) {
     char *endptr;
 
     // parse the lower bound of the range
@@ -702,7 +696,7 @@ void convert_range(const char *str, RealNumType &lower, RealNumType &upper, Real
     step_size = d;
 }
 
-void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool set_zero)
+void cmaple::reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool set_zero)
 {
     // delete the current array
     if (delete_first && arr)
@@ -715,7 +709,7 @@ void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool 
             arr[i] = 0;
 }
 
-void convert_string_vec(const char *str, StrVector &vec, char separator) {
+void cmaple::convert_string_vec(const char *str, StrVector &vec, char separator) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
     string elem;
@@ -733,7 +727,7 @@ void convert_string_vec(const char *str, StrVector &vec, char separator) {
 
 }
 
-void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index)
+void cmaple::normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index)
 {
     ASSERT(num_states > 0);
     // calculate the total_freqs
@@ -749,16 +743,14 @@ void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int st
         freqs[i] *= total_freqs;
 }
 
-bool is_number(const std::string& s)
+bool cmaple::is_number(const std::string& s)
 {
     char* end = nullptr;
     double val = strtod(s.c_str(), &end);
     return end != s.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
-void quickStartGuide();
-
-void initDefaultValue(Params &params)
+void cmaple::initDefaultValue(Params &params)
 {
     params.aln_path = NULL;
     params.diff_path = NULL;
@@ -811,7 +803,7 @@ void initDefaultValue(Params &params)
     params.ran_seed = (tv.tv_usec);
 }
 
-void parseArg(int argc, char *argv[], Params &params) {
+void cmaple::parseArg(int argc, char *argv[], Params &params) {
     // init parameters
     initDefaultValue(params);
     
@@ -1108,13 +1100,13 @@ void parseArg(int argc, char *argv[], Params &params) {
     }
 }
 
-void quickStartGuide() {
-    printCopyright(cout);
+void cmaple::quickStartGuide() {
+    cmaple::printCopyright(cout);
     cout << "Quick Start Guide" << endl;
     exit(0);
 }
 
-InputType detectInputFile(const char *input_file) {
+InputType cmaple::detectInputFile(const char *input_file) {
 
     if (!fileExists(input_file))
         outError("File not found ", input_file);
@@ -1153,7 +1145,7 @@ InputType detectInputFile(const char *input_file) {
     return IN_OTHER;
 }
 
-bool overwriteFile(char *filename) {
+bool cmaple::overwriteFile(char *filename) {
     ifstream infile(filename);
     if (infile.is_open()) {
         cout << "Overwrite " << filename << " (y/n)? ";
@@ -1168,12 +1160,12 @@ bool overwriteFile(char *filename) {
     return true;
 }
 
-void trimString(string &str) {
+void cmaple::trimString(string &str) {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
     str.erase(str.find_last_not_of(" \n\r\t")+1);
 }
 
-bool renameString(string& name) {
+bool cmaple::renameString(string& name) {
     bool renamed = false;
     for (string::iterator i = name.begin(); i != name.end(); i++) {
         if (!isalnum(*i) && (*i) != '_' && (*i) != '-' && (*i) != '.' && (*i) != '|' && (*i) != '/') {
@@ -1184,7 +1176,7 @@ bool renameString(string& name) {
     return renamed;
 }
 
-int countPhysicalCPUCores() {
+int cmaple::countPhysicalCPUCores() {
     #ifdef _OPENMP
     //return omp_get_num_procs();
     return std::thread::hardware_concurrency();

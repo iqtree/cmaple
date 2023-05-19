@@ -1,5 +1,6 @@
 #include "updatingnode.h"
 using namespace std;
+using namespace cmaple;
 
 const std::unique_ptr<SeqRegions>& UpdatingNode::getIncomingRegions() const
 {

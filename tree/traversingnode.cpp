@@ -1,5 +1,6 @@
 #include "traversingnode.h"
 using namespace std;
+using namespace cmaple;
 
 const Index TraversingNode::getIndex() const
 {

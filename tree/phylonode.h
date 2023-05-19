@@ -149,22 +149,22 @@ private:
     /**
         Get length of the upper branch
      */
-    RealNumType getUpperLength() const;
+    cmaple::RealNumType getUpperLength() const;
     
     /**
         Set length of the upper branch
      */
-    void setUpperLength(const RealNumType new_length);
+    void setUpperLength(const cmaple::RealNumType new_length);
     
     /**
         Get length of the corresponding branch connecting this (mini-)node; it could be an upper/lower branch
      */
-    RealNumType getCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes) const;
+    cmaple::RealNumType getCorrespondingLength(const cmaple::MiniIndex mini_index, std::vector<PhyloNode>& nodes) const;
     
     /**
         Set length of the corresponding branch connecting this (mini-)node; it could be an upper/lower branch
      */
-    void setCorrespondingLength(const MiniIndex mini_index, std::vector<PhyloNode>& nodes, const RealNumType new_length);
+    void setCorrespondingLength(const cmaple::MiniIndex mini_index, std::vector<PhyloNode>& nodes, const cmaple::RealNumType new_length);
     
     /**
         Update LeafNode
@@ -184,63 +184,63 @@ private:
     /**
         Get partial_lh
      */
-    std::unique_ptr<SeqRegions>& getPartialLh(const MiniIndex mini_index);
+    std::unique_ptr<SeqRegions>& getPartialLh(const cmaple::MiniIndex mini_index);
     
     /**
         Set partial_lh
      */
-    void setPartialLh(const MiniIndex mini_index, std::unique_ptr<SeqRegions>&& partial_lh);
+    void setPartialLh(const cmaple::MiniIndex mini_index, std::unique_ptr<SeqRegions>&& partial_lh);
     
     /**
         Get the index of the neighbor node
      */
-    Index getNeighborIndex(const MiniIndex mini_index) const;
+    cmaple::Index getNeighborIndex(const cmaple::MiniIndex mini_index) const;
     
     /**
         Set the index of the neighbor node
      */
-    void setNeighborIndex(const MiniIndex mini_index, const Index neighbor_index);
+    void setNeighborIndex(const cmaple::MiniIndex mini_index, const cmaple::Index neighbor_index);
     
     /**
         Get the list of less-informative-sequences
      */
-    std::vector<NumSeqsType>& getLessInfoSeqs();
+    std::vector<cmaple::NumSeqsType>& getLessInfoSeqs();
     
     /**
         Add less-informative-sequence
      */
-    void addLessInfoSeqs(NumSeqsType seq_name_index);
+    void addLessInfoSeqs(cmaple::NumSeqsType seq_name_index);
     
     /**
         Get the index of the sequence name
      */
-    NumSeqsType getSeqNameIndex() const;
+    cmaple::NumSeqsType getSeqNameIndex() const;
     
     /**
         Set the index of the sequence name
      */
-    void setSeqNameIndex(const NumSeqsType seq_name_index);
+    void setSeqNameIndex(const cmaple::NumSeqsType seq_name_index);
     
     /**
         Compute the total likelihood vector for a node.
     */
-    template <const StateType num_states>
-    void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength = -1);
+    template <const cmaple::StateType  num_states>
+    void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const cmaple::RealNumType threshold_prob, const bool is_root, const cmaple::RealNumType blength = -1);
     
     /**
         Get the index of the node likelihood
      */
-    const NumSeqsType getNodelhIndex() const;
+    const cmaple::NumSeqsType getNodelhIndex() const;
     
     /**
         Set the index of the node likelihood
      */
-    void setNodeLhIndex(const NumSeqsType node_lh_index);
+    void setNodeLhIndex(const cmaple::NumSeqsType node_lh_index);
     
     /**
         Get a vector of the indexes of neighbors
     */
-    // std::vector<Index> getNeighborIndexes(MiniIndex mini_index) const;
+    // std::vector<Index> getNeighborIndexes(cmaple::MiniIndex mini_index) const;
     
     /**
         Export string: name + branch length
@@ -254,76 +254,76 @@ struct NodeLh
     /**
         Set neighbor_2_lh_diff_
      */
-    void setLhDiff2(const RealNumType lh_diff);
+    void setLhDiff2(const cmaple::RealNumType lh_diff);
     
     /**
         Get neighbor_2_lh_diff_
      */
-    const RealNumType getLhDiff2() const;
+    const cmaple::RealNumType getLhDiff2() const;
     
     /**
         Set neighbor_3_lh_diff_
      */
-    void setLhDiff3(const RealNumType lh_diff);
+    void setLhDiff3(const cmaple::RealNumType lh_diff);
     
     /**
         Get neighbor_3_lh_diff_
      */
-    const RealNumType getLhDiff3() const;
+    const cmaple::RealNumType getLhDiff3() const;
     
     /**
         Get half of aLRT (~aLRT / 2)
      */
-    const RealNumType getHalf_aLRT() const;
+    const cmaple::RealNumType getHalf_aLRT() const;
     
     /**
         Get lh_contribution_
      */
-    const RealNumType getLhContribution() const;
+    const cmaple::RealNumType getLhContribution() const;
     
     /**
         Set lh_contribution_
      */
-    void setLhContribution(const RealNumType lh_contribution);
+    void setLhContribution(const cmaple::RealNumType lh_contribution);
     
     /**
         Get aLRT_SH
      */
-    const RealNumType get_aLRT_SH() const;
+    const cmaple::RealNumType get_aLRT_SH() const;
     
     /**
         Set aLRT_SH
      */
-    void set_aLRT_SH(const RealNumType aLRT_SH);
+    void set_aLRT_SH(const cmaple::RealNumType aLRT_SH);
     
     /*
         Constructor
      */
-    NodeLh(RealNumType lh_contribution):lh_contribution_(lh_contribution) {};
+    NodeLh(cmaple::RealNumType lh_contribution):lh_contribution_(lh_contribution) {};
     
 private:
     /*
         The likelihood different between NNI neighbor 2 and the ML tree (T1)
      */
-    RealNumType neighbor_2_lh_diff_;
+    cmaple::RealNumType neighbor_2_lh_diff_;
     
     /*
         The likelihood different between NNI neighbor 3 and the ML tree (T1)
      */
-    RealNumType neighbor_3_lh_diff_;
+    cmaple::RealNumType neighbor_3_lh_diff_;
     
     /*
         The aLRT_SH value of the upper branch
      */
-    RealNumType aLRT_SH_;
+    cmaple::RealNumType aLRT_SH_;
     
     /*
         The likelihood contribution of this node to the total likelihood
      */
-    RealNumType lh_contribution_;
+    cmaple::RealNumType lh_contribution_;
 };
 
 // just for testing
 /** operator<< */
-std::ostream& operator<<(std::ostream& os, const Index& index);
+std::ostream& operator<<(std::ostream& os, const cmaple::Index& index);
 

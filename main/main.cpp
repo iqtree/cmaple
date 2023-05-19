@@ -41,6 +41,7 @@
 #include <csignal>
 
 using namespace std;
+using namespace cmaple;
 
 /** ############## Redirect output to a log file ############## **/
 LogStream logstream;

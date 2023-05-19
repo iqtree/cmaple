@@ -1,14 +1,13 @@
 #include "mutation.h"
 
+#pragma once
 #include <array>
 #include <memory> // for unique_ptr
-
-#pragma once
 
 /** A region in a sequence */
 class SeqRegion: public Mutation {
 public:
-  using LHType = std::array<RealNumType, NUM_STATES>;
+    using LHType = std::array<cmaple::RealNumType, NUM_STATES>;
   using LHPtrType = std::unique_ptr<LHType>;
 private:
     /**
@@ -19,7 +18,7 @@ private:
     /**
     *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R
     */
-    void convertAmbiguiousState(SeqType seq_type, int max_num_states);
+    void convertAmbiguiousState(cmaple::SeqType seq_type, int max_num_states);
     
     /**
     *  Convert Ambiguious state (of DNA data) into typical states: A/C/G/T; N; O; R
@@ -35,20 +34,20 @@ public:
     /**
         Length of the path between the current phylo node and the node where the likelihood is calculated
      */
-    RealNumType plength_observation2node = -1;
+    cmaple::RealNumType plength_observation2node = -1;
     
     /**
         Distance separates the observation at root from the observation at the current node
         To take into account that the observation might have occurred on the other side of the phylogeny with respect to the root;
         for example if the entry is (type = 1, pos = 234, plength_observation = 0.0001, plength_from_root = 0.0002) then this means that a "C" was observed at genome position 234, and the observation is separated from the root by a distance of 0.0001, while a distance of 0.0002 separates the root from the current node (or position along a branch) considered.
      */
-    RealNumType plength_observation2root = -1;
+    cmaple::RealNumType plength_observation2root = -1;
     
     /**
         The relative partial likelihood
      */
     LHPtrType likelihood;
-    RealNumType getLH(int pos) const
+    cmaple::RealNumType getLH(int pos) const
     {
       return (*likelihood)[pos];
     }
@@ -61,22 +60,22 @@ public:
     /**
     *  Region constructor
     */
-    SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation = -1, RealNumType n_plength_from_root = -1, LHPtrType n_likelihood = nullptr);
+    SeqRegion(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::RealNumType n_plength_observation = -1, cmaple::RealNumType n_plength_from_root = -1, LHPtrType n_likelihood = nullptr);
 
     /**
     *  Region constructor
     */
-    SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, const LHType& n_likelihood);
+    SeqRegion(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::RealNumType n_plength_observation, cmaple::RealNumType n_plength_from_root, const LHType& n_likelihood);
 
     /**
     *  Region constructor
     */
-    SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states);
+    SeqRegion(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::SeqType seq_type, int max_num_states);
     
     /**
     *  Region constructor
     */
-    SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states);
+    SeqRegion(Mutation* n_mutation, cmaple::SeqType seq_type, int max_num_states);
     
     /**
     *  Region constructor
@@ -105,7 +104,7 @@ public:
     /**
         For testing only, export codes to re-contruct this seqregions
      */
-    void writeConstructionCodes(const std::string regions_name, std::ofstream& out, const StateType num_states) const;
+    void writeConstructionCodes(const std::string regions_name, std::ofstream& out, const cmaple::StateType num_states) const;
     
     /**
         Compare two regions
