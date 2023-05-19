@@ -200,11 +200,6 @@ endif(Backtrace_FOUND)
 ##################################################################
 # setup linking flags
 ##################################################################
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(cmaple_tree-dna OpenMP::OpenMP_CXX)
-    target_link_libraries(cmaple_tree-aa OpenMP::OpenMP_CXX)
-endif()
 
 target_link_libraries(cmaple maple-dna cmaple_tree-dna cmaple_alignment-dna cmaple_model-dna ncl nclextra cmaple_utils sprng)
 target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils sprng)

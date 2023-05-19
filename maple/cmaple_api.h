@@ -6,4 +6,7 @@ namespace cmaple {
 
     /** Print the copyright of CMaple */
     void printCMapleCopyright(std::ostream &out);
+
+    /** Test executing CMaple*/
+    void testCMaple();
 }

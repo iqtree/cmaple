@@ -1178,8 +1178,7 @@ bool cmaple::renameString(string& name) {
 
 int cmaple::countPhysicalCPUCores() {
     #ifdef _OPENMP
-    //return omp_get_num_procs();
-    return std::thread::hardware_concurrency();
+    return omp_get_num_procs();
     #else
     return std::thread::hardware_concurrency();
     #endif

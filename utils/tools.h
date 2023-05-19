@@ -44,8 +44,11 @@
 #include <thread>
 #include <iomanip>
 #define SPRNG
-#include "libraries/sprng/sprng.h"
+#include "../libraries/sprng/sprng.h"
 #include "operatingsystem.h"
+#ifdef _OPENMP
+#include <omp.h> /* OpenMP */
+#endif
 
 #ifndef TOOLS_H
 #define TOOLS_H
