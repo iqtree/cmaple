@@ -139,7 +139,8 @@ std::unique_ptr<SeqRegions> Tree::computeUpperLeftRightRegions(const Index node_
 
 bool Tree::updateNewPartialIfDifferent(PhyloNode& node, const MiniIndex next_node_mini, std::unique_ptr<SeqRegions>& upper_left_right_regions, std::stack<Index> &node_stack, const PositionType seq_length)
 {
-    if (!node.getPartialLh(next_node_mini) || node.getPartialLh(next_node_mini)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value())) //(next_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
+    ASSERT(params.has_value());
+    if (!node.getPartialLh(next_node_mini) || node.getPartialLh(next_node_mini)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, *params)) //(next_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
     {
         /*replacePartialLH(next_node->partial_lh, upper_left_right_regions);
         node_stack.push(next_node->neighbor);*/
@@ -276,7 +277,8 @@ void Tree::updatePartialLhFromChildren(const Index index, PhyloNode& node, std::
     if (!update_blength)
     {
         // update likelihoods at parent node
-        if (node.getPartialLh(TOP)->areDiffFrom(*old_lower_regions, seq_length, num_states, &params.value()) && root_vector_index != node_vec_index) //(top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
+        ASSERT(params.has_value());
+        if (node.getPartialLh(TOP)->areDiffFrom(*old_lower_regions, seq_length, num_states, *params) && root_vector_index != node_vec_index) //(top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
             //node_stack.push(top_node->neighbor);
             node_stack.push(node.getNeighborIndex(TOP));
 
@@ -757,7 +759,8 @@ bool Tree::examineSubTreePlacementAtNode(Index& best_node_index, PhyloNode& curr
         }
         
         // stop updating if the difference between the new and old regions is insignificant
-        if  (!new_at_node_regions->areDiffFrom(*at_node.getTotalLh(), seq_length, num_states, &params.value()))
+        ASSERT(params.has_value());
+        if  (!new_at_node_regions->areDiffFrom(*at_node.getTotalLh(), seq_length, num_states, *params))
             updating_node->setUpdate(false);
     }
     // else
@@ -4207,10 +4210,11 @@ void Tree::computeLhContribution(RealNumType& total_lh, std::unique_ptr<SeqRegio
         node_lhs[node.getNodelhIndex()].setLhContribution(lh_contribution);
     
     // if new_lower_lh is NULL
+    ASSERT(params.has_value());
     if (!new_lower_lh)
         outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
     // otherwise, everything is good -> update the lower lh of the current node
-    else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, &params.value()))
+    else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, *params))
         outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
 }
 
@@ -4452,7 +4456,6 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
     std::unique_ptr<SeqRegions> new_parent_new_lower_lh = nullptr;
     std::unique_ptr<SeqRegions> tmp_lower_lh = nullptr;
     const PositionType seq_length = aln.ref_seq.size();
-    const Params* params_ptr = &params.value();
     std::vector<RealNumType> site_lh_diff_old(seq_length, 0);
     
     const std::unique_ptr<SeqRegions>& grand_parent_upper_lr = getPartialLhAtNode(parent.getNeighborIndex(TOP));
@@ -4552,7 +4555,7 @@ void Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, std::vec
         PhyloNode& node = nodes[node_vec];
         
         // if the new lower lh is different from the old one -> traverse upward further
-        if (node.getPartialLh(TOP)->areDiffFrom(*new_lower_lh, seq_length, num_states, params_ptr) || fabs(prev_lh_diff) > threshold_prob)
+        if (node.getPartialLh(TOP)->areDiffFrom(*new_lower_lh, seq_length, num_states, *params) || fabs(prev_lh_diff) > threshold_prob)
         {
             // update lh_diff
             PhyloNode& tmp_child_1 = nodes[node.getNeighborIndex(RIGHT).getVectorIndex()];
@@ -5056,7 +5059,6 @@ bool Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType
     RealNumType prev_lh_diff = parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].getLhContribution();
     // 7.3. other ancestors on the path from the new_parent to root (stop when the change is insignificant)
     const PositionType seq_length = aln.ref_seq.size();
-    const Params* params_ptr = &params.value();
     
     NumSeqsType node_vec = parent_index.getVectorIndex();
     std::unique_ptr<SeqRegions> new_lower_lh = std::move(new_parent_new_lower_lh);
@@ -5067,7 +5069,7 @@ bool Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType
         PhyloNode& node = nodes[node_vec];
         
         // if the new lower lh is different from the old one -> traverse upward further
-        if (node.getPartialLh(TOP)->areDiffFrom(*new_lower_lh, seq_length, num_states, params_ptr) || fabs(prev_lh_diff) > threshold_prob)
+        if (node.getPartialLh(TOP)->areDiffFrom(*new_lower_lh, seq_length, num_states, *params) || fabs(prev_lh_diff) > threshold_prob)
         {
             // update lh_diff
             // std::cout << "lh_contribution (before): " << node_lhs[node.getNodelhIndex()].getLhContribution() << std::endl;
@@ -5229,7 +5231,6 @@ void Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, RealNum
     const std::unique_ptr<SeqRegions>& child_2_lower_lh = child_2.getPartialLh(TOP);
     const std::unique_ptr<SeqRegions>& sibling_lower_lh = sibling.getPartialLh(TOP);
     const PositionType seq_length = aln.ref_seq.size();
-    const Params* params_ptr = &params.value();
     
     // move child_1 to parent
     child_1.setNeighborIndex(TOP, parent_index);
@@ -5304,7 +5305,7 @@ void Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, RealNum
         PhyloNode& node = nodes[node_vec];
         
         // if the new lower lh is different from the old one -> traverse upward further
-        if (node.getPartialLh(TOP)->areDiffFrom(*new_lower_lh, seq_length, num_states, params_ptr) || fabs(new_lh_contribution - node_lhs[node.getNodelhIndex()].getLhContribution()) > threshold_prob)
+        if (node.getPartialLh(TOP)->areDiffFrom(*new_lower_lh, seq_length, num_states, *params) || fabs(new_lh_contribution - node_lhs[node.getNodelhIndex()].getLhContribution()) > threshold_prob)
         {
             // update new_lower_lh
             node.setPartialLh(TOP, std::move(new_lower_lh));
@@ -5354,7 +5355,7 @@ void Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT, RealNum
                     grand_parent_upper_lr->mergeUpperLower<num_states>(new_upper_lr, tmp_parent.getUpperLength(), *node_lower_lh, node.getUpperLength(), aln, model, threshold_prob);
                 }
                 // update the upper_lr of its parent if it's been changed
-                if (!old_upper_lr || old_upper_lr->areDiffFrom(*new_upper_lr, seq_length, num_states, &params.value()))
+                if (!old_upper_lr || old_upper_lr->areDiffFrom(*new_upper_lr, seq_length, num_states, *params))
                 {
                     old_upper_lr = std::move(new_upper_lr);
                     
@@ -5513,7 +5514,7 @@ RealNumType Tree::calculateSiteLhs(std::vector<RealNumType>& site_lh_contributio
                 if (!new_lower_lh)
                     outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
                 // otherwise, everything is good -> update the lower lh of the current node
-                else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, &params.value()))
+                else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, *params))
                 {
                     // outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
                     // non-updated lower likelihood may be due to a replacement of ML tree by an NNI neighbor

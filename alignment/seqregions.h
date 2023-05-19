@@ -91,7 +91,7 @@ public:
     /**
         Check if the current regions and regions2 represent the same partial likelihoods or not -> be used to stop traversing the tree further for updating partial likelihoods
      */
-    bool areDiffFrom(const SeqRegions& regions2, PositionType seq_length, StateType num_states, const Params* params) const;
+    bool areDiffFrom(const SeqRegions& regions2, PositionType seq_length, StateType num_states, const Params& params) const;
     
     /**
         Merge two likelihood vectors, one from above and one from below

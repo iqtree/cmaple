@@ -9,7 +9,7 @@ void CMaple::loadInput()
         // record the starting time
         auto start = getRealTime();
         
-        tree.aln.extractDiffFile(tree.params.value());
+        tree.aln.extractDiffFile(*tree.params);
         
         // record the end time and show the runtime
         auto end = getRealTime();
