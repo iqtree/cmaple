@@ -2,7 +2,7 @@
 using namespace std;
 using namespace cmaple;
 
-void ModelDNA::initMutationMatJC()
+void cmaple::ModelDNA::initMutationMatJC()
 {
     // update root_freqs
     const RealNumType log_freq = log(0.25);
@@ -50,7 +50,7 @@ void ModelDNA::initMutationMatJC()
     }
 }
 
-void ModelDNA::initMutationMat()
+void cmaple::ModelDNA::initMutationMat()
 {
     // init variable pointers
     initPointers();
@@ -74,7 +74,7 @@ void ModelDNA::initMutationMat()
     }
 }
 
-void ModelDNA::updateMutationMatEmpirical(const Alignment& aln)
+void cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment& aln)
 {
     // don't update JC model parameters
     if (model_name == "JC" || model_name == "jc") return;
@@ -82,7 +82,7 @@ void ModelDNA::updateMutationMatEmpirical(const Alignment& aln)
     updateMutationMatEmpiricalTemplate<4>(aln);
 }
 
-void ModelDNA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelDNA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     if (model_name != "JC" && model_name != "jc")
         Model::updatePesudoCount(aln, regions1, regions2);

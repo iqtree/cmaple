@@ -9,7 +9,7 @@ using namespace cmaple;
     A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V
     Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
 */
-const char* builtin_prot_models = R"(
+const char* cmaple::builtin_prot_models = R"(
 #nexus;
 
 begin models;
@@ -861,13 +861,13 @@ model FLAVI=
 end;
 )";
 
-ModelAA::~ModelAA()
+cmaple::ModelAA::~ModelAA()
 {
     if (model_block)
         delete model_block;
 }
 
-void ModelAA::initMutationMat()
+void cmaple::ModelAA::initMutationMat()
 {
     // init variable pointers
     initPointers();
@@ -972,7 +972,7 @@ void ModelAA::initMutationMat()
         outError("Model not found: ", model_name);
 }
 
-void ModelAA::readRates(istream &in, const bool is_reversible)
+void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
 {
     StateType row = 1, col = 0;
     StateType row_index = num_states_;
@@ -1027,7 +1027,7 @@ void ModelAA::readRates(istream &in, const bool is_reversible)
     
 }
 
-void ModelAA::rescaleLowerDiagonalRates() {
+void cmaple::ModelAA::rescaleLowerDiagonalRates() {
     RealNumType max_rate = 0.0;
 
     RealNumType* mutation_mat_row = mutation_mat;
@@ -1050,7 +1050,7 @@ void ModelAA::rescaleLowerDiagonalRates() {
     }
 }
 
-void ModelAA::rescaleAllRates()
+void cmaple::ModelAA::rescaleAllRates()
 {
     RealNumType max_rate = 0.0;
 
@@ -1073,7 +1073,7 @@ void ModelAA::rescaleAllRates()
     }
 }
 
-void ModelAA::updateMutationMatEmpirical(const Alignment& aln)
+void cmaple::ModelAA::updateMutationMatEmpirical(const Alignment& aln)
 {
     // don't update parameters other model except GTR or NONREV
     if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
@@ -1081,14 +1081,14 @@ void ModelAA::updateMutationMatEmpirical(const Alignment& aln)
     updateMutationMatEmpiricalTemplate<20>(aln);
 }
 
-void ModelAA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelAA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // only handle GTR or NONREV
     if (model_name == "GTR" || model_name == "gtr" || model_name == "NONREV" || model_name == "nonrev")
         Model::updatePesudoCount(aln, regions1, regions2);
 }
 
-void ModelAA::extractRootFreqs(const Alignment& aln)
+void cmaple::ModelAA::extractRootFreqs(const Alignment& aln)
 {
     // only extract root freqs for GTR or NONREV
     if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;

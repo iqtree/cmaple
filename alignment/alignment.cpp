@@ -15,11 +15,11 @@ char symbols_dna[]     = "ACGT";
 char symbols_rna[]     = "ACGU";
 char symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-Alignment::Alignment() = default;
+cmaple::Alignment::Alignment() = default;
 
-Alignment::~Alignment() = default;
+cmaple::Alignment::~Alignment() = default;
 
-void Alignment::processSeq(string &sequence, string &line, PositionType line_num) {
+void cmaple::Alignment::processSeq(string &sequence, string &line, PositionType line_num) {
     for (string::iterator it = line.begin(); it != line.end(); ++it) {
         if ((*it) <= ' ') continue;
         if (isalnum(*it) || (*it) == '-' || (*it) == '?'|| (*it) == '.' || (*it) == '*' || (*it) == '~')
@@ -38,7 +38,7 @@ void Alignment::processSeq(string &sequence, string &line, PositionType line_num
     }
 }
 
-void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
+void cmaple::Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
     ostringstream err_str;
     igzstream in;
     PositionType line_num = 1;
@@ -124,7 +124,7 @@ void Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_n
     seq_names = new_seq_names;
 }
 
-void Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     ostringstream err_str;
     igzstream in;
@@ -188,7 +188,7 @@ void Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_
     in.close();
 }
 
-void Alignment::readSequences(char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::Alignment::readSequences(char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     // detect the input file format
     InputType intype = detectInputFile(aln_path);
@@ -212,7 +212,7 @@ void Alignment::readSequences(char* aln_path, StrVector &sequences, StrVector &s
     }
 }
 
-string Alignment::generateRef(StrVector &sequences)
+string cmaple::Alignment::generateRef(StrVector &sequences)
 {
     // validate the input sequences
     if (sequences.size() == 0 || sequences[0].length() == 0)
@@ -261,7 +261,7 @@ string Alignment::generateRef(StrVector &sequences)
     return ref_str;
 }
 
-string Alignment::readRef(char* ref_path)
+string cmaple::Alignment::readRef(char* ref_path)
 {
     ASSERT(ref_path);
     if (!fileExists(ref_path))
@@ -288,7 +288,7 @@ string Alignment::readRef(char* ref_path)
     return ref_str;
 }
 
-void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length)
+void cmaple::Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length)
 {
     // output the mutation into a Diff file
     out << state_char << "\t" << (pos + 1);
@@ -306,7 +306,7 @@ void Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_cha
     }
 }
 
-void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_diff)
+void cmaple::Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_diff)
 {
     ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out);
     data.clear();
@@ -419,7 +419,7 @@ void Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names,
     }
 }
 
-void Alignment::parseRefSeq(string& ref_sequence)
+void cmaple::Alignment::parseRefSeq(string& ref_sequence)
 {
     ref_seq.resize(ref_sequence.length());
     
@@ -440,7 +440,7 @@ void Alignment::parseRefSeq(string& ref_sequence)
     }
 }
 
-void Alignment::readDiff(char* diff_path, char* ref_path)
+void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
 {
     ASSERT(diff_path);
     
@@ -609,7 +609,7 @@ void Alignment::readDiff(char* diff_path, char* ref_path)
     in.close();
 }
 
-void Alignment::reconstructAln(char* diff_path, char* output_file)
+void cmaple::Alignment::reconstructAln(char* diff_path, char* output_file)
 {
     ASSERT(diff_path);
     
@@ -786,7 +786,7 @@ void Alignment::reconstructAln(char* diff_path, char* output_file)
     out.close();
 }
 
-char Alignment::convertState2Char(StateType state) {
+char cmaple::Alignment::convertState2Char(StateType state) {
     if (state == TYPE_N || state == TYPE_DEL) return '-';
     if (state > TYPE_INVALID) return '?';
 
@@ -856,7 +856,7 @@ char Alignment::convertState2Char(StateType state) {
     }
 }
 
-StateType Alignment::convertChar2State(char state) {
+StateType cmaple::Alignment::convertChar2State(char state) {
     if (state == '-')
         return TYPE_DEL;
     if (state == '?' || state == '.' || state == '~')
@@ -975,7 +975,7 @@ StateType Alignment::convertChar2State(char state) {
     }
 }
 
-PositionType Alignment::computeSeqDistance(Sequence& sequence, RealNumType hamming_weight)
+PositionType cmaple::Alignment::computeSeqDistance(Sequence& sequence, RealNumType hamming_weight)
 {
     // dummy variables
     PositionType num_ambiguities = 0;
@@ -1012,7 +1012,7 @@ PositionType Alignment::computeSeqDistance(Sequence& sequence, RealNumType hammi
     return num_diffs * hamming_weight + num_ambiguities;
 }
 
-void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
+void cmaple::Alignment::sortSeqsByDistances(RealNumType hamming_weight)
 {
    // init dummy variables
     PositionType num_seqs = data.size();
@@ -1049,7 +1049,7 @@ void Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     delete[] sequence_indexes;
 }
 
-void Alignment::extractDiffFile(Params& params)
+void cmaple::Alignment::extractDiffFile(Params& params)
 {   
     // read input sequences
     ASSERT(params.aln_path);
@@ -1109,7 +1109,7 @@ void Alignment::extractDiffFile(Params& params)
     out.close();
 }
 
-SeqType Alignment::detectSequenceType(StrVector& sequences)
+SeqType cmaple::Alignment::detectSequenceType(StrVector& sequences)
 {
     size_t num_nuc   = 0;
     size_t num_ungap = 0;
@@ -1173,7 +1173,7 @@ SeqType Alignment::detectSequenceType(StrVector& sequences)
     return SEQ_UNKNOWN;
 }
 
-void Alignment::updateNumStates()
+void cmaple::Alignment::updateNumStates()
 {
     switch (getSeqType()) {
         case SEQ_PROTEIN:

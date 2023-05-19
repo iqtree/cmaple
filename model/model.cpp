@@ -4,12 +4,12 @@ using namespace std;
 using namespace cmaple;
 
 // explicit instantiation of templates
-template void Model::updateMutationMat<4>();
-template void Model::updateMutationMat<20>();
-template void Model::updateMutationMatEmpiricalTemplate<4>(const Alignment&);
-template void Model::updateMutationMatEmpiricalTemplate<20>(const Alignment&);
+template void cmaple::Model::updateMutationMat<4>();
+template void cmaple::Model::updateMutationMat<20>();
+template void cmaple::Model::updateMutationMatEmpiricalTemplate<4>(const Alignment&);
+template void cmaple::Model::updateMutationMatEmpiricalTemplate<20>(const Alignment&);
 
-Model::Model(const std::string n_model_name)
+cmaple::Model::Model(const std::string n_model_name)
 {
     model_name = std::move(n_model_name);
     mutation_mat = NULL;
@@ -25,7 +25,7 @@ Model::Model(const std::string n_model_name)
     pseu_mutation_count = NULL;
 }
 
-Model::~Model()
+cmaple::Model::~Model()
 {
     if (mutation_mat)
     {
@@ -93,7 +93,7 @@ Model::~Model()
     }
 }
 
-void Model::extractRefInfo(const Alignment& aln)
+void cmaple::Model::extractRefInfo(const Alignment& aln)
 {
     // init variables
     root_freqs = new RealNumType[num_states_];
@@ -115,7 +115,7 @@ void Model::extractRefInfo(const Alignment& aln)
     extractRootFreqs(aln);
 }
 
-void Model::extractRootFreqs(const Alignment& aln)
+void cmaple::Model::extractRootFreqs(const Alignment& aln)
 {
     // init variables
     const vector<StateType>& ref_seq = aln.ref_seq;
@@ -136,7 +136,7 @@ void Model::extractRootFreqs(const Alignment& aln)
     }
 }
 
-void Model::computeCumulativeRate(const Alignment& aln)
+void cmaple::Model::computeCumulativeRate(const Alignment& aln)
 {
     const PositionType sequence_length = aln.ref_seq.size();
     ASSERT(sequence_length > 0);
@@ -161,7 +161,7 @@ void Model::computeCumulativeRate(const Alignment& aln)
     }
 }
 
-std::string Model::exportRootFrequenciesStr(Alignment& aln)
+std::string cmaple::Model::exportRootFrequenciesStr(Alignment& aln)
 {
     string output{};
     string header{};
@@ -176,7 +176,7 @@ std::string Model::exportRootFrequenciesStr(Alignment& aln)
     return header + "\n" + output + "\n";
 }
 
-std::string Model::exportQMatrixStr(Alignment& aln)
+std::string cmaple::Model::exportQMatrixStr(Alignment& aln)
 {
     string output{};
     
@@ -204,7 +204,7 @@ std::string Model::exportQMatrixStr(Alignment& aln)
     return output;
 }
 
-std::string Model::exportString(Alignment& aln)
+std::string cmaple::Model::exportString(Alignment& aln)
 {
     string output{};
     
@@ -219,7 +219,7 @@ std::string Model::exportString(Alignment& aln)
     return output;
 }
 
-ModelsBlock* Model::readModelsDefinition(const char* builtin_models) {
+ModelsBlock* cmaple::Model::readModelsDefinition(const char* builtin_models) {
 
     ModelsBlock *models_block = new ModelsBlock;
 
@@ -263,7 +263,7 @@ ModelsBlock* Model::readModelsDefinition(const char* builtin_models) {
     return models_block;
 }
 
-bool Model::readParametersString(string& model_str) {
+bool cmaple::Model::readParametersString(string& model_str) {
 
     // if detect if reading full matrix or half matrix by the first entry
     PositionType end_pos;
@@ -280,7 +280,7 @@ bool Model::readParametersString(string& model_str) {
     return is_reversible;
 }
 
-void Model::readStateFreq(istream &in)
+void cmaple::Model::readStateFreq(istream &in)
 {
     StateType i;
     for (i = 0; i < num_states_; i++) {
@@ -304,7 +304,7 @@ void Model::readStateFreq(istream &in)
     }
 }
 
-void Model::normalizeQMatrix()
+void cmaple::Model::normalizeQMatrix()
 {
     ASSERT(root_freqs && mutation_mat);
     
@@ -323,7 +323,7 @@ void Model::normalizeQMatrix()
             mutation_mat_row[j] *= delta;
 }
 
-void Model::initPointers()
+void cmaple::Model::initPointers()
 {
     // init row_index
     row_index = new StateType[num_states_ + 1];
@@ -348,7 +348,7 @@ void Model::initPointers()
     freq_j_transposed_ij = new RealNumType[mat_size];
 }
 
-void Model::updateMutMatbyMutCount()
+void cmaple::Model::updateMutMatbyMutCount()
 {
     RealNumType* pseu_mutation_count_row = pseu_mutation_count;
     RealNumType* mutation_mat_row = mutation_mat;
@@ -400,7 +400,7 @@ void Model::updateMutMatbyMutCount()
 }
 
 template <StateType num_states>
-void Model::updateMutationMat()
+void cmaple::Model::updateMutationMat()
 {
     // update Mutation matrix regarding the pseudo muation count
     updateMutMatbyMutCount();
@@ -444,7 +444,7 @@ void Model::updateMutationMat()
 }
 
 template <StateType num_states>
-void Model::updateMutationMatEmpiricalTemplate(const Alignment& aln)
+void cmaple::Model::updateMutationMatEmpiricalTemplate(const Alignment& aln)
 {
     // clone the current mutation matrix
     RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
@@ -473,7 +473,7 @@ void Model::updateMutationMatEmpiricalTemplate(const Alignment& aln)
     delete[] tmp_diagonal_mut_mat;
 }
 
-void Model::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::Model::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // init variables
     PositionType pos = 0;

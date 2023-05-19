@@ -9,7 +9,7 @@
 #include <iomanip>
 using namespace cmaple;
 
-SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHPtrType n_likelihood)
+cmaple::SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, LHPtrType n_likelihood)
   : Mutation(n_type, n_position),
     plength_observation2node(n_plength_observation),
     plength_observation2root(n_plength_from_root)
@@ -17,7 +17,7 @@ SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_pl
     if (n_likelihood) likelihood = std::move(n_likelihood);
 }
 
-SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, const LHType& n_likelihood)
+cmaple::SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, const LHType& n_likelihood)
 : Mutation(n_type, n_position),
   plength_observation2node(n_plength_observation),
   plength_observation2root(n_plength_from_root),
@@ -26,20 +26,20 @@ SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_pl
 }
 
 
-SeqRegion::SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states)
+cmaple::SeqRegion::SeqRegion(StateType n_type, PositionType n_position, SeqType seq_type, int max_num_states)
   : Mutation(n_type, n_position)
 {
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
-SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states)
+cmaple::SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num_states)
   : Mutation(n_mutation->type, n_mutation->position + n_mutation->getLength() - 1)
 {
     convertAmbiguiousState(seq_type, max_num_states);
 }
 
 
-void SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
+void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
 {
     ASSERT(type >= 0 && type < TYPE_INVALID);
     switch (seq_type) {
@@ -56,7 +56,7 @@ void SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
     }
 }
 
-void SeqRegion::convertAmbiguiousStateAA(int max_num_states)
+void cmaple::SeqRegion::convertAmbiguiousStateAA(int max_num_states)
 {
     // do nothing if it is not an ambiguious state
     if (type < max_num_states || type == TYPE_N || type == TYPE_R)
@@ -71,7 +71,7 @@ void SeqRegion::convertAmbiguiousStateAA(int max_num_states)
     }
 }
 
-void SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
+void cmaple::SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
 {
     // do nothing if it is not an ambiguious state
     if (type < max_num_states || type == TYPE_N || type == TYPE_R)
@@ -146,7 +146,7 @@ void SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
     }
 }
 
-void SeqRegion::computeLhAmbiguity(const LHType &entries)
+void cmaple::SeqRegion::computeLhAmbiguity(const LHType &entries)
 {
     // change type to 'O'
     type = TYPE_O;
@@ -154,13 +154,13 @@ void SeqRegion::computeLhAmbiguity(const LHType &entries)
     (*likelihood) = entries;
 }
 
-void SeqRegion::writeConstructionCodes(const std::string regions_name, std::ofstream& out, const StateType num_states) const
+void cmaple::SeqRegion::writeConstructionCodes(const std::string regions_name, std::ofstream& out, const StateType num_states) const
 {
     // export lilkehood
     std::string lh_str = "";
     if (likelihood)
     {
-        out << "auto " << regions_name << "_new_lh" << position << " = std::make_unique<SeqRegion::LHType>();" << std::endl;
+        out << "auto " << regions_name << "_new_lh" << position << " = std::make_unique<cmaple::SeqRegion::LHType>();" << std::endl;
         out << "auto& " << regions_name << "_new_lh_value" << position << " = *" << regions_name << "_new_lh" << position << ";" << std::endl;
         for (StateType i = 0; i < num_states; ++i)
             out << regions_name << "_new_lh_value" << position << "[" << convertIntToString(i) << "] = " << std::setprecision(50) << (*likelihood)[i] << ";" << std::endl;
@@ -171,7 +171,7 @@ void SeqRegion::writeConstructionCodes(const std::string regions_name, std::ofst
     out << regions_name << "->emplace_back(" << convertIntToString(type) << "," << position << "," << std::setprecision(50) << plength_observation2node << "," << std::setprecision(50) << plength_observation2root << lh_str << ");" << std::endl;
 }
 
-bool SeqRegion::operator==(const SeqRegion& seqregion_1) const
+bool cmaple::SeqRegion::operator==(const SeqRegion& seqregion_1) const
 {
     if (type != seqregion_1.type
         || position != seqregion_1.position
