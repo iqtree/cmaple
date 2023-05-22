@@ -10,10 +10,10 @@
 using namespace std;
 using namespace cmaple;
 
-char symbols_protein[] = "ARNDCQEGHILKMFPSTWYVX"; // X for unknown AA
-char symbols_dna[]     = "ACGT";
-char symbols_rna[]     = "ACGU";
-char symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+char cmaple::symbols_protein[] = "ARNDCQEGHILKMFPSTWYVX"; // X for unknown AA
+char cmaple::symbols_dna[]     = "ACGT";
+char cmaple::symbols_rna[]     = "ACGU";
+char cmaple::symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
 cmaple::Alignment::Alignment() = default;
 

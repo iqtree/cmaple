@@ -12,8 +12,11 @@ void cmaple::testCMaple()
 {
     Params& params = Params::getInstance();
     initDefaultValue(params);
-    std::cout << params.aLRT_SH_replicates << std::endl;
-    //runCMaple(params);
+    params.redo_inference = true;
+    string diff_file = "test_5K.diff";
+    params.diff_path = new char[diff_file.length() + 1];
+    strcpy(params.diff_path, diff_file.c_str());
+    runCMaple(params);
 }
 
 

@@ -7,6 +7,11 @@
 
 namespace cmaple
 {
+    extern char symbols_protein[];
+    extern char symbols_dna[];
+    extern char symbols_rna[];
+    extern char symbols_morph[];
+
     /** Class presents the input alignment */
     class Alignment {
     private:

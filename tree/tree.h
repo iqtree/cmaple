@@ -464,7 +464,8 @@ namespace cmaple
         /**
          Program parameters
          */
-        std::optional<cmaple::Params > params;
+        //std::optional<cmaple::Params> params;
+        cmaple::Params* params = nullptr;
         
         /**
          Alignment
@@ -499,7 +500,9 @@ namespace cmaple
         /**
          Constructor
          */
-        Tree(cmaple::Params && n_params):params(std::move(n_params)) {
+        // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
+        Tree(cmaple::Params & n_params) {
+            params = &n_params;
             aln.setSeqType(params->seq_type);
         };
         

@@ -138,7 +138,8 @@ std::unique_ptr<SeqRegions> cmaple::Tree::computeUpperLeftRightRegions(const Ind
 
 bool cmaple::Tree::updateNewPartialIfDifferent(PhyloNode& node, const MiniIndex next_node_mini, std::unique_ptr<SeqRegions>& upper_left_right_regions, std::stack<Index> &node_stack, const PositionType seq_length)
 {
-    ASSERT(params.has_value());
+    // ASSERT(params.has_value());
+    ASSERT(params);
     if (!node.getPartialLh(next_node_mini) || node.getPartialLh(next_node_mini)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, *params)) //(next_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*upper_left_right_regions, seq_length, aln.num_states, &params.value()))
     {
         /*replacePartialLH(next_node->partial_lh, upper_left_right_regions);
@@ -276,7 +277,8 @@ void cmaple::Tree::updatePartialLhFromChildren(const Index index, PhyloNode& nod
     if (!update_blength)
     {
         // update likelihoods at parent node
-        ASSERT(params.has_value());
+        // ASSERT(params.has_value());
+        ASSERT(params);
         if (node.getPartialLh(TOP)->areDiffFrom(*old_lower_regions, seq_length, num_states, *params) && root_vector_index != node_vec_index) //(top_node->getPartialLhAtNode(aln, model, params->threshold_prob)->areDiffFrom(*old_lower_regions, seq_length, aln.num_states, &params.value()) && root != top_node)
             //node_stack.push(top_node->neighbor);
             node_stack.push(node.getNeighborIndex(TOP));
@@ -758,7 +760,8 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(Index& best_node_index, PhyloNo
         }
         
         // stop updating if the difference between the new and old regions is insignificant
-        ASSERT(params.has_value());
+        // ASSERT(params.has_value());
+        ASSERT(params);
         if  (!new_at_node_regions->areDiffFrom(*at_node.getTotalLh(), seq_length, num_states, *params))
             updating_node->setUpdate(false);
     }
@@ -4209,7 +4212,8 @@ void cmaple::Tree::computeLhContribution(RealNumType& total_lh, std::unique_ptr<
         node_lhs[node.getNodelhIndex()].setLhContribution(lh_contribution);
     
     // if new_lower_lh is NULL
-    ASSERT(params.has_value());
+    // ASSERT(params.has_value());
+    ASSERT(params);
     if (!new_lower_lh)
         outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
     // otherwise, everything is good -> update the lower lh of the current node

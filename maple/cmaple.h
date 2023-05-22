@@ -86,7 +86,8 @@ public:
     *  CMaple constructor
      @param params user-specified parameters
     */
-    CMaple(cmaple::Params params):tree(std::move(params)){};
+    // CMaple(cmaple::Params params):tree(std::move(params)){};
+    CMaple(cmaple::Params params):tree(params){};
     
     /**
     *  CMaple destructor
