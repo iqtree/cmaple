@@ -2,8 +2,8 @@
 #include "../utils/timeutil.h"
 #include "../utils/gzstream.h"
 
-#ifndef ALIGNMENT_H
-#define ALIGNMENT_H
+#ifndef CMAPLE_ALIGNMENT_H
+#define CMAPLE_ALIGNMENT_H
 
 namespace cmaple
 {

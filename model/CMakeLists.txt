@@ -1,10 +1,10 @@
 # DNA data
-add_library(cmaple_model-dna
+add_library(cmaple_model
 model.h model.cpp
 model_dna.h model_dna.cpp
 model_aa.h model_aa.cpp
 )
-target_link_libraries(cmaple_model-dna cmaple_alignment-dna cmaple_utils)
+target_link_libraries(cmaple_model cmaple_alignment cmaple_utils)
 
 # Protein data
 add_library(cmaple_model-aa

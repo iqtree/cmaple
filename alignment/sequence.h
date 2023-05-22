@@ -1,7 +1,7 @@
 #include "seqregions.h"
 
-#ifndef SEQUENCE_H
-#define SEQUENCE_H
+#ifndef CMAPLE_SEQUENCE_H
+#define CMAPLE_SEQUENCE_H
 
 namespace cmaple
 {

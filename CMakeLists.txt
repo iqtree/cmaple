@@ -201,7 +201,7 @@ endif(Backtrace_FOUND)
 # setup linking flags
 ##################################################################
 
-target_link_libraries(cmaple maple-dna cmaple_tree-dna cmaple_alignment-dna cmaple_model-dna ncl nclextra cmaple_utils sprng)
+target_link_libraries(cmaple maple cmaple_tree cmaple_alignment cmaple_model ncl nclextra cmaple_utils sprng)
 target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils sprng)
 
 ##############################################################

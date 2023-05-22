@@ -1,5 +1,6 @@
 #pragma once
 #include <ostream>
+#include "cmaple.h"
 
 /** The namespace of CMaple library */
 namespace cmaple {

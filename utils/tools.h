@@ -50,8 +50,8 @@
 #include <omp.h> /* OpenMP */
 #endif
 
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef CMAPLE_TOOLS_H
+#define CMAPLE_TOOLS_H
 
 #ifdef NDEBUG
 #define ASSERT(EXPRESSION) ((void)0)

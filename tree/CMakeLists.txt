@@ -1,5 +1,5 @@
 # DNA data
-add_library(cmaple_tree-dna
+add_library(cmaple_tree
 tree.h tree.cpp
 updatingnode.h updatingnode.cpp
 traversingnode.h traversingnode.cpp
@@ -7,7 +7,7 @@ phylonode.h phylonode.cpp
 leaf.h
 internal.h
 )
-target_link_libraries(cmaple_tree-dna cmaple_model-dna cmaple_alignment-dna)
+target_link_libraries(cmaple_tree cmaple_model cmaple_alignment cmaple_utils)
 
 # Protein data
 add_library(cmaple_tree-aa
@@ -18,4 +18,4 @@ phylonode.h phylonode.cpp
 leaf.h
 internal.h
 )
-target_link_libraries(cmaple_tree-aa cmaple_model-aa cmaple_alignment-aa)
+target_link_libraries(cmaple_tree-aa cmaple_model-aa cmaple_alignment-aa cmaple_utils)

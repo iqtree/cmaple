@@ -9,7 +9,7 @@
 #define MODELSBLOCK_H_
 
 #include "libraries/ncl/ncl.h"
-#include "utils/tools.h"
+#include "../../utils/tools.h"
 
 const int NM_ATOMIC  = 1; // NxsModel is not mixture or +G etc. model
 const int NM_FREQ    = 2;   // NxsModel contains state frequency
