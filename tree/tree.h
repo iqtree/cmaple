@@ -567,16 +567,12 @@ namespace cmaple
         void refreshAllLhs(bool avoid_using_upper_lr_lhs = false);
         
         /**
-         Traverse the tree to reset the outdated/spr_applied flags (which is used to prevent traversing the same part of the tree multiple times) of all nodes
-         outdated = true;
-         spr_applied = false;
+         Reset the SPR flags
+         @param n_SPR_applied the new value of SPR_applied
+         @param update_outdated TRUE to update outdated
+         @param n_outdated the new value of outdated
          */
-        void resetSPRFlags(const bool reset_outdated);
-        
-        /**
-         Forget SPR_applied flag
-         */
-        void forgetSPRApplied();
+        void resetSPRFlags(const bool n_SPR_applied, const bool update_outdated, const bool n_outdated);
         
         /**
          Try to improve the entire tree with SPR moves

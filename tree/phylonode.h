@@ -78,10 +78,10 @@ namespace cmaple
         PhyloNode() = delete;
         
         /** constructor */
-        PhyloNode(LeafNode&& leaf): is_internal_{false}, data_(std::move(leaf)) {};
+        PhyloNode(LeafNode&& leaf): is_internal_{false}, outdated_{true}, spr_applied_{false}, data_(std::move(leaf)) {};
         
         /** constructor */
-        PhyloNode(InternalNode&& internal) noexcept: is_internal_{true}, data_(std::move(internal)) {};
+        PhyloNode(InternalNode&& internal) noexcept: is_internal_{true}, outdated_{true}, spr_applied_{false}, data_(std::move(internal)) {};
         
         /** move constructor */
         PhyloNode(PhyloNode&& node) noexcept : is_internal_{node.is_internal_}, data_(std::move(node.data_), node.is_internal_),

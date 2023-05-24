@@ -39,9 +39,10 @@ private:
     
     /**
         Build an Initial Tree
+        @return TRUE if there is any node added, thus, we need to optimize the tree later
      */
     template <const cmaple::StateType  num_states>
-    void buildInitialTree();
+    bool buildInitialTree();
     
     /**
         Optimize the current tree
@@ -71,6 +72,12 @@ private:
      */
     template <const cmaple::StateType  num_states>
     void calculateBranchSupports();
+    
+    /**
+        Load input tree
+     */
+    template <const cmaple::StateType  num_states>
+    void loadInputTree();
     
 public:
     

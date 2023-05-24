@@ -12,6 +12,11 @@ namespace cmaple
     class Sequence: public std::vector<Mutation> {
     public:
         /**
+         TRUE if this sequence is already added in the tree
+         */
+        bool is_added = false;
+        
+        /**
          Name of the sequence
          */
         std::string seq_name;

@@ -2733,35 +2733,6 @@ void cmaple::Tree::refreshAllNonLowerLhs()
     }
 }
 
-void cmaple::Tree::resetSPRFlags(const bool reset_outdated)
-{
-    // start from the root
-    stack<NumSeqsType> node_stack;
-    node_stack.push(root_vector_index);
-    
-    // traverse downward to set all descentdant outdated
-    while (!node_stack.empty())
-    {
-        // pick the top node from the stack
-        PhyloNode& node = nodes[node_stack.top()];
-        node_stack.pop();
-        
-        // set the current node outdated
-        if (reset_outdated)
-            node.setOutdated(true);
-        node.setSPRApplied(false);
-        
-        // traverse downward
-        /*for (Index neighbor_index:node.getNeighborIndexes(TOP))
-            node_stack.push(neighbor_index.getVectorIndex());*/
-        if (node.isInternal())
-        {
-            node_stack.push(node.getNeighborIndex(RIGHT).getVectorIndex());
-            node_stack.push(node.getNeighborIndex(LEFT).getVectorIndex());
-        }
-    }
-}
-
 template <const StateType num_states>
 RealNumType cmaple::Tree::improveEntireTree(bool short_range_search)
 {
@@ -4293,7 +4264,7 @@ template <const StateType num_states>
 void cmaple::Tree::calculate_aRLT()
 {
     // set all nodes outdated
-    resetSPRFlags(true);
+    resetSPRFlags(false, true, true);
     
     // reseve space for node_lhs
     node_lhs.reserve(nodes.size() * 0.5);
@@ -5646,6 +5617,9 @@ NumSeqsType cmaple::Tree::parseFile(std::istream &infile, char& ch, RealNumType&
             const NumSeqsType sequence_index = it->second;
             tmp_root.setSeqNameIndex(sequence_index);
             tmp_root.setPartialLh(TOP, aln.data[sequence_index].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType()));
+            
+            // mark the sequece as added (to the tree)
+            aln.data[sequence_index].is_added = true;
         }        
     }
     /*if (!tmp_root.isInternal()) {
@@ -6067,4 +6041,20 @@ void cmaple::Tree::addLessInfoSeqReplacingMLTree(std::stack<Index>& node_stack_a
     // add newly created internal node to the queue to compute the aLRT later
     new_internal.setOutdated(true);
     node_stack_aLRT.push(Index(new_internal_vec, TOP));
+}
+
+void cmaple::Tree::resetSPRFlags(const bool n_SPR_applied, const bool update_outdated, const bool n_outdated)
+{
+    // browse all nodes
+    for (auto i = 0; i < nodes.size(); ++i)
+    {
+        PhyloNode& node = nodes[i];
+        
+        // update SPR_applied
+        node.setSPRApplied(n_SPR_applied);
+        
+        // update outdated if necessary
+        if (update_outdated)
+            node.setOutdated(n_outdated);
+    }
 }
