@@ -52,7 +52,8 @@ void CMaple::loadInputTree()
     tree.performDFS<&Tree::updateLowerLh<num_states>>();
     
     // set outdated = true at all nodes to avoid considering SPR moves at those nodes
-    tree.resetSPRFlags(false, true, false);
+    if (!tree.params->redo_inference)
+        tree.resetSPRFlags(false, true, false);
 }
 
 void CMaple::preInference()
@@ -72,8 +73,8 @@ void CMaple::preInference()
     // check whether output file is already exists
     string output_file(tree.params->output_prefix);
     output_file += ".treefile";
-    if (!tree.params->redo_inference && fileExists(output_file))
-        outError("File " + output_file + " already exists. Use `-redo` option if you really want to redo the analysis and overwrite all output files.\n");
+    if (!tree.params->overwrite_output && fileExists(output_file))
+        outError("File " + output_file + " already exists. Use `--overwrite` option if you really want to redo the analysis and overwrite all output files.\n");
     
     
     // setup function pointers in tree
@@ -211,7 +212,7 @@ bool CMaple::buildInitialTree()
 }
 
 template <const StateType num_states>
-void CMaple::optimizeTree()
+void CMaple::optimizeTree(const bool new_sequences_added)
 {
     // tree.params->debug = true;
     string output_file(tree.params->output_prefix);
@@ -229,18 +230,25 @@ void CMaple::optimizeTree()
         tree.resetSPRFlags(false, true, true);
     }
     
+    // output log-likelihood of the tree
+    std::cout << std::setprecision(10) << "Tree log likelihood (before topo-opt): " << tree.calculateTreeLh<num_states>() << std::endl;
+    
     // run a normal search for tree topology improvement
-    optimizeTreeTopology<num_states>();
-    exportOutput(output_file + "_topo.treefile");
+    if (new_sequences_added || tree.params->redo_inference)
+    {
+        optimizeTreeTopology<num_states>();
+        exportOutput(output_file + "_topo.treefile");
+    }
     
     // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
     // tree.refreshAllLhs();
     
     // output log-likelihood of the tree
-    // std::cout << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateTreeLh() << std::endl;
+    std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateTreeLh<num_states>() << std::endl;
     
     // do further optimization on branch lengths (if needed)
-    if (tree.params->optimize_branch_length)
+    if (tree.params->optimize_branch_length &&
+        (new_sequences_added || tree.params->redo_blength))
         optimizeBranchLengthsOfTree<num_states>();
     
     // NhanLT: update the model params
@@ -252,6 +260,9 @@ void CMaple::optimizeTree()
     
     // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
     tree.performDFS<&Tree::updateLowerLh<num_states>>();
+    
+    // output log-likelihood of the tree
+    std::cout << std::setprecision(10) << "Tree log likelihood (after updating model): " << tree.calculateTreeLh<num_states>() << std::endl;
 }
 
 template <const StateType num_states>
@@ -347,8 +358,7 @@ void CMaple::doInferenceTemplate()
     const bool new_sequences_added = buildInitialTree<num_states>();
     
     // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-    if (new_sequences_added)
-        optimizeTree<num_states>();
+    optimizeTree<num_states>(new_sequences_added);
 }
 
 void CMaple::postInference()

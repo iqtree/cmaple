@@ -1092,8 +1092,8 @@ void cmaple::Alignment::extractDiffFile(Params& params)
     }
     // check whether the Diff file already exists
     string diff_file(params.diff_path);
-    if (!params.redo_inference && fileExists(diff_file))
-        outError("File " + diff_file + " already exists. Use `-redo` option if you want overwrite it.\n");
+    if (!params.overwrite_output && fileExists(diff_file))
+        outError("File " + diff_file + " already exists. Use `--overwrite` option if you want overwrite it.\n");
     
     // open the output file
     ofstream out = ofstream(params.diff_path);

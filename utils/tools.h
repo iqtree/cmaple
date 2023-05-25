@@ -410,9 +410,19 @@ namespace cmaple
         std::string model_name;
         
         /**
+            TRUE to override the output files
+         */
+        bool overwrite_output;
+        
+        /**
             TRUE to redo the inference and overwrite output files
          */
         bool redo_inference;
+        
+        /**
+            TRUE to re-estimate the branch lengths
+         */
+        bool redo_blength;
         
         /**
         *       Threshold to ignore possible states with very low probabilities

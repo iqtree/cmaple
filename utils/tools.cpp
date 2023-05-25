@@ -759,6 +759,8 @@ void cmaple::initDefaultValue(Params &params)
     params.hamming_weight = 1000;
     params.model_name = "GTR";
     params.redo_inference = false;
+    params.redo_blength = false;
+    params.overwrite_output = false;
     params.threshold_prob = 1e-8;
     params.mutation_update_period = 25;
     params.failure_limit_sample = 5;
@@ -925,6 +927,16 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "-redo") == 0 || strcmp(argv[cnt], "--redo") == 0) {
                 params.redo_inference = true;
+                params.redo_blength = true;
+                params.overwrite_output = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "-re-opt-bl") == 0 || strcmp(argv[cnt], "--re-optimize-blength") == 0) {
+                params.redo_blength = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--overwrite") == 0) {
+                params.overwrite_output = true;
                 continue;
             }
             if (strcmp(argv[cnt], "--replace-input-tree") == 0) {

@@ -48,7 +48,7 @@ private:
         Optimize the current tree
      */
     template <const cmaple::StateType  num_states>
-    void optimizeTree();
+    void optimizeTree(const bool new_sequences_added);
     
     /**
         Optimize the tree topology
