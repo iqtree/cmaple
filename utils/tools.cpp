@@ -752,7 +752,7 @@ bool cmaple::is_number(const std::string& s)
 
 void cmaple::initDefaultValue(Params &params)
 {
-    params.aln_path = NULL;
+    params.input_path = NULL;
     params.diff_path = NULL;
     params.ref_path = NULL;
     params.only_extract_diff = false;
@@ -811,23 +811,24 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
     
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
-            if (strcmp(argv[cnt], "--aln") == 0) {
+            if (strcmp(argv[cnt], "--input") == 0 || strcmp(argv[cnt], "-i") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --aln <ALIGNMENT_PATH>");
+                    outError("Use --input <INPUT_PATH>");
                 
-                params.aln_path = argv[cnt];
+                params.input_path = argv[cnt];
 
                 continue;
             }
+            // "--diff" should be removed, I temporarily keep it for compatibility purpose
             if (strcmp(argv[cnt], "--diff") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use --diff <DIFF_PATH>");
                 
-                params.diff_path = argv[cnt];
+                params.input_path = argv[cnt];
 
                 continue;
             }
@@ -1101,11 +1102,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
     }
     
     // validate options
-    if (!params.diff_path && !params.aln_path)
-        outError("Please supply either an alignment or a Diff file to start!");
+    if (!params.diff_path && !params.input_path)
+        outError("Please supply an input file via --input <INPUT_PATH>");
         
-    if (params.only_extract_diff && !params.aln_path)
-        outError("Please supply an input alignment via --aln <ALIGNMENT_PATH>");
+    if (params.only_extract_diff && !params.input_path)
+        outError("Please supply an input alignment via --input <ALIGNMENT_PATH>");
     
     if (argc <= 1) {
         quickStartGuide();
@@ -1116,6 +1117,46 @@ void cmaple::quickStartGuide() {
     cmaple::printCopyright(cout);
     cout << "Quick Start Guide" << endl;
     exit(0);
+}
+
+InputType detectMAPLEorFASTA(const char *input_file) {
+    ifstream in = ifstream(input_file);
+    PositionType num_taxa = 0;
+    string line;
+
+    // set the failbit and badbit
+    in.exceptions(ios::failbit | ios::badbit);
+    // remove the failbit
+    in.exceptions(ios::badbit);
+    
+    // extract reference sequence first
+    for (; !in.eof();)
+    {
+        safeGetline(in, line);
+        if (line == "") continue;
+        
+        // count lines that begin with >
+        if (line[0] == '>')
+            ++num_taxa;
+        // handle other lines that presents a sequence (in FASTA) or a mutation (in MAPLE)
+        else
+        {
+            // only check the line if we pass the first two lines that begins with >
+            if (num_taxa >= 2)
+            {
+                // a mutation should be in pattern: <character><space_or_tab><number>[<space_or_tab><number>]
+                std::regex pattern("^.+[ \t]\\d+$");
+                
+                if (std::regex_match(line, pattern))
+                    return cmaple::IN_MAPLE;
+                else
+                    return cmaple::IN_FASTA;
+                
+            }
+        }
+    }
+    
+    return cmaple::IN_MAPLE;
 }
 
 InputType cmaple::detectInputFile(const char *input_file) {
@@ -1140,7 +1181,7 @@ InputType cmaple::detectInputFile(const char *input_file) {
             case '#': return IN_NEXUS;
             case '(': return IN_NEWICK;
             case '[': return IN_NEWICK;
-            case '>': return IN_FASTA;
+            case '>': return detectMAPLEorFASTA(input_file);
             case 'C': if (ch2 == 'L') return IN_CLUSTAL;
                       else if (ch2 == 'O') return IN_COUNTS;
                       else return IN_OTHER;

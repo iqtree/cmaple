@@ -308,7 +308,7 @@ TEST(Alignment, extractDiffFile)
     std::string aln_file_path("../../example/input.phy");
     char* aln_file_path_ptr = new char[aln_file_path.length() + 1];
     strcpy(aln_file_path_ptr, aln_file_path.c_str());
-    params.aln_path = aln_file_path_ptr;
+    params.input_path = aln_file_path_ptr;
     std::string ref_file_path("../../example/ref.fa");
     char* ref_file_path_ptr = new char[ref_file_path.length() + 1];
     strcpy(ref_file_path_ptr, ref_file_path.c_str());
@@ -350,8 +350,8 @@ TEST(Alignment, extractDiffFile)
     // ----- test on input.phy with ref file from ref.fa -----
     
     // ----- Test extractDiffFile() with null params.aln_path
-    delete params.aln_path;
-    params.aln_path = NULL;
+    delete params.input_path;
+    params.input_path = NULL;
     EXPECT_DEATH(aln.extractDiffFile(params), ".*");
     
     /*// ----- test on input.fa without ref file, specifying diff file path -----

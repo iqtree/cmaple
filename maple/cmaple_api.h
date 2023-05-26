@@ -8,6 +8,6 @@ namespace cmaple {
     /** Print the copyright of CMaple */
     void printCMapleCopyright(std::ostream &out);
 
-    /** Test executing CMaple*/
-    void testCMaple();
+    /** execute CMaple from an input file (alignment of Maple file)*/
+    void executeCMaple(char* input_file);
 }

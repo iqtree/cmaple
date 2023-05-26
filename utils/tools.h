@@ -43,6 +43,7 @@
 #include <cfloat>
 #include <thread>
 #include <iomanip>
+#include <regex>
 #define SPRNG
 #include "../libraries/sprng/sprng.h"
 #include "operatingsystem.h"
@@ -244,7 +245,7 @@ namespace cmaple
         input type, tree or splits graph
      */
     enum InputType {
-        IN_NEWICK, IN_NEXUS, IN_FASTA, IN_PHYLIP, IN_COUNTS, IN_CLUSTAL, IN_MSF, IN_OTHER
+        IN_NEWICK, IN_NEXUS, IN_FASTA, IN_PHYLIP, IN_COUNTS, IN_CLUSTAL, IN_MSF, IN_MAPLE, IN_OTHER
     };
 
     /**
@@ -382,7 +383,7 @@ namespace cmaple
         /**
         *  Path to input sequences
         */
-        char* aln_path;
+        char* input_path;
         
         /**
         *  Path to a Diff file
