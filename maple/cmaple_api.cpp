@@ -13,6 +13,7 @@ void cmaple::executeCMaple(char* input_file)
 {
     Params& params = Params::getInstance();
     initDefaultValue(params);
+    params.overwrite_output = true;
     params.input_path = input_file;
     runCMaple(params);
 }
