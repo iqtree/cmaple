@@ -4299,6 +4299,10 @@ void cmaple::Tree::calculate_aRLT()
             const Index child_1_index = node.getNeighborIndex(RIGHT);
             const Index child_2_index = node.getNeighborIndex(LEFT);
             
+            // NHANLT: Debug aLRT
+            /*if (child_1_index.getVectorIndex() == 1249 || child_1_index.getVectorIndex() == 1929)
+                std::cout << "Update" << std::endl;*/
+            
             // add its children into node_stack for further traversal
             node_stack.push(child_1_index);
             node_stack.push(child_2_index);
@@ -4938,6 +4942,63 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
     return true;
 }
 
+// NHANLT: Debug aLRT
+/*void cmaple::Tree::log_current(std::stack<Index>& node_stack_aLRT)
+{
+    // NHANLT: Debug
+    {
+        // check if node 1249 exists in the stack
+        stack<Index> tmp_stack = node_stack_aLRT;
+        while (!tmp_stack.empty())
+        {
+            if (tmp_stack.top().getVectorIndex() == 437)
+            {
+                std::cout << "Found 437 " << (nodes[437].isOutdated() ? "Outdated" : "Updated") << std::endl;
+                
+            }
+            tmp_stack.pop();
+        }
+        std::stack<cmaple::Index> node_stack;
+        RealNumType lh_at_root = 0;
+        RealNumType tree_total_lh = 0;
+        PhyloNode& tmp_node = nodes[437];
+            // show the likelihood contribution at this branch/node
+            // std::cout << "Lh contribution of node (node_vec) " << node_vec << " : " << node_lhs[node.getNodelhIndex()].lh_contribution_ << std::endl;
+            
+            // caculate aLRT
+            PhyloNode& child_1 = nodes[1929];
+            PhyloNode& child_2 = nodes[1249];
+            const Index parent_index = tmp_node.getNeighborIndex(TOP);
+            PhyloNode& parent = nodes[parent_index.getVectorIndex()];
+            const Index sibling_index = parent.getNeighborIndex(parent_index.getFlipMiniIndex());
+            PhyloNode& sibling = nodes[sibling_index.getVectorIndex()];
+            
+            // compute the likelihood differences between each nni neighbor and the current tree
+            RealNumType neighbor_2_lh_diff = 0, neighbor_3_lh_diff = 0;
+            // if calculateNNILh return false => the current tree was replaced by a newly found ML tree
+            if (!calculateNNILh<4>(node_stack, neighbor_2_lh_diff, tmp_node, child_1, child_2, sibling, parent, parent_index, lh_at_root))
+            {
+                tree_total_lh += neighbor_2_lh_diff;
+                //continue;
+            }
+            // if calculateNNILh return false => the current tree was replaced by a newly found ML tree
+            if (!calculateNNILh<4>(node_stack, neighbor_3_lh_diff, tmp_node, child_2, child_1, sibling, parent, parent_index, lh_at_root))
+            {
+                tree_total_lh += neighbor_3_lh_diff;
+                //continue;
+            }
+            
+            // record neighbor_2_lh_diff, neighbor_2_lh_diff
+            NodeLh& node_lh = node_lhs[tmp_node.getNodelhIndex()];
+        if ( fabs(neighbor_2_lh_diff -  node_lh.getLhDiff2()) > 1e-3)
+        {
+            // node_lh.setLhDiff2(neighbor_2_lh_diff);
+            // node_lh.setLhDiff3(neighbor_3_lh_diff);
+            std::cout << neighbor_2_lh_diff << " " << node_lh.getLhDiff2() << std::endl;
+        }
+    }
+}*/
+
 template <const StateType num_states>
 bool cmaple::Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root)
 {
@@ -5090,10 +5151,16 @@ bool cmaple::Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, Rea
         // if users input the tree -> don't replace the ML tree
         if (!params->input_treefile || params->allow_replace_input_tree)
         {
+            // NHANLT: Debug aLRT
+            // log_current(node_stack_aLRT);
+            
             std::cout << "Replace the ML tree by a newly found NNI neighbor tree (non-root), improving tree loglh by: " << lh_diff << std::endl;
             // std::cout << "Tree lh (before replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
             replaceMLTreebyNNINonRoot<num_states>(node_stack_aLRT, lh_diff, current_node, child_1, child_2, sibling, parent, lh_at_root, child_1_best_blength, child_2_best_blength, sibling_best_blength, parent_best_blength, new_parent_best_blength);
             // std::cout << "Tree lh (after replacing): " <<  std::setprecision(20)<< calculateTreeLh() << std::endl;
+            
+            // NHANLT: Debug aLRT
+            // log_current(node_stack_aLRT);
             
             // return false to let us know that we found a new ML tree
             return false;
@@ -5135,7 +5202,8 @@ void cmaple::Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, Re
     updateBlengthReplaceMLTree<num_states>(node_stack_aLRT, lh_diff, sibling, sibling_index, sibling_best_blength);
     // we don't need to add current_node to node_stack_aLRT since they will be added later
     current_node.setUpperLength(parent_best_blength);
-    // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before
+    // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before, only need to set it outdated
+    child_1.setOutdated(true);
     updateBlengthReplaceMLTree<num_states>(node_stack_aLRT, lh_diff, child_1, child_1_index, child_1_best_blength);
     
     // stack to update upper_lr_lh later
@@ -5221,7 +5289,8 @@ void cmaple::Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT,
     // we don't need to add current_node and parent to node_stack_aLRT since they will be added later
     current_node.setUpperLength(parent_best_blength);
     parent.setUpperLength(new_parent_best_blength);
-    // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before
+    // we don't need to add child_1 to node_stack_aLRT because child_1 should be added before, only need to set it outdated
+    child_1.setOutdated(true);
     updateBlengthReplaceMLTree<num_states>(node_stack_aLRT, lh_diff, child_1, child_1_index, child_1_best_blength);
     
     // stack to update upper_lr_lh later
@@ -5387,22 +5456,38 @@ void cmaple::Tree::updateUpperLR(std::stack<Index>& node_stack, std::stack<Index
         PhyloNode& node = nodes[node_index.getVectorIndex()];
         if (node.isInternal())
         {
-            PhyloNode& left_child = nodes[node.getNeighborIndex(LEFT).getVectorIndex()];
-            PhyloNode& right_child = nodes[node.getNeighborIndex(RIGHT).getVectorIndex()];
+            const Index& left_child_index = node.getNeighborIndex(LEFT);
+            const Index& right_child_index = node.getNeighborIndex(RIGHT);
+            PhyloNode& left_child = nodes[left_child_index.getVectorIndex()];
+            PhyloNode& right_child = nodes[right_child_index.getVectorIndex()];
             
             const std::unique_ptr<SeqRegions>& parent_upper_lr = getPartialLhAtNode(node.getNeighborIndex(TOP));
             std::unique_ptr<SeqRegions> tmp_upper_lr = nullptr;
             parent_upper_lr->mergeUpperLower<num_states>(tmp_upper_lr, node.getUpperLength(), *(left_child.getPartialLh(TOP)), left_child.getUpperLength(), aln, model, threshold_prob);
             
-            // if upper_lr_lh of a node is changed -> we need to re-compute aLRT of its grand-children
+            // if upper_lr_lh of a node is changed -> we need to re-compute aLRT of that child and the grand-children
             if (updateNewPartialIfDifferent(node, RIGHT, tmp_upper_lr, node_stack, seq_length) && right_child.isInternal())
+            {
+                // re-compute aLRT of that child
+                right_child.setOutdated(true);
+                node_stack_aLRT.push(right_child_index);
+                
+                // re-compute aLRT of the grand-children
                 recompute_aLRT_GrandChildren(right_child, node_stack_aLRT);
+            }
             
             parent_upper_lr->mergeUpperLower<num_states>(tmp_upper_lr, node.getUpperLength(), *(right_child.getPartialLh(TOP)), right_child.getUpperLength(), aln, model, threshold_prob);
             
-            // if upper_lr_lh of a node is changed -> we need to re-compute aLRT of its grand-children
+            // if upper_lr_lh of a node is changed -> we need to re-compute aLRT of that child and the grand-children
             if (updateNewPartialIfDifferent(node, LEFT, tmp_upper_lr, node_stack, seq_length) && left_child.isInternal())
+            {
+                // re-compute aLRT of that child
+                left_child.setOutdated(true);
+                node_stack_aLRT.push(left_child_index);
+                
+                // re-compute aLRT of the grand-children
                 recompute_aLRT_GrandChildren(left_child, node_stack_aLRT);
+            }
         }
     }
 }

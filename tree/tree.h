@@ -455,6 +455,9 @@ namespace cmaple
         template <const cmaple::StateType  num_states>
         void addLessInfoSeqReplacingMLTree(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& node, const cmaple::Index  node_index, const cmaple::Index  parent_index);
         
+        // NHANLT: Debug aLRT
+        // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
+        
     public:
         /*
          Branch length thresholds
