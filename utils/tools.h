@@ -23,7 +23,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
-#include "../cmaple_config.h"
+#include <cmaple_config.h>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -974,9 +974,16 @@ namespace cmaple
     void initDefaultValue(Params &params);
 
     /**
+        Init default parameters with a random seed
+        @param params (OUT) program parameters
+        @param params (OUT) program parameters
+     */
+    void initDefaultValue(Params &params, uint64_t n_random_seed);
+
+    /**
         Show quick start guide
      */
-void quickStartGuide();
+    void quickStartGuide();
 
     /**
         Detect the format of input file

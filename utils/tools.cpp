@@ -805,6 +805,12 @@ void cmaple::initDefaultValue(Params &params)
     params.ran_seed = (tv.tv_usec);
 }
 
+void cmaple::initDefaultValue(Params &params, uint64_t n_random_seed)
+{
+    params.ran_seed = n_random_seed;
+    initDefaultValue(params);
+}
+
 void cmaple::parseArg(int argc, char *argv[], Params &params) {
     // init parameters
     initDefaultValue(params);
@@ -1156,7 +1162,7 @@ InputType detectMAPLEorFASTA(const char *input_file) {
         }
     }
     
-    return cmaple::IN_MAPLE;
+    return cmaple::IN_FASTA;
 }
 
 InputType cmaple::detectInputFile(const char *input_file) {
