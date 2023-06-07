@@ -23,7 +23,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
-#include <cmaple_config.h>
+#include "../cmaple_config.h"
 #include <vector>
 #include <string>
 #include <algorithm>
