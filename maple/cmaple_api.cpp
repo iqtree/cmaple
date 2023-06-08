@@ -161,6 +161,7 @@ void cmaple::computeBranchSupports(char* input, uint32_t num_threads, int64_t ra
     
     // set random seed (if provided)
     if (random_seed != -1) params.ran_seed = random_seed;
+    cmaple::init_random(params.ran_seed, true);
     
     // set number of threads
     params.num_threads = num_threads;
@@ -184,6 +185,7 @@ void cmaple::computeBranchSupports(char* tree, char* input, uint32_t num_threads
     
     // set random seed (if provided)
     if (random_seed != -1) params.ran_seed = random_seed;
+    cmaple::init_random(params.ran_seed, true);
     
     // set number of threads
     params.num_threads = num_threads;
@@ -210,6 +212,7 @@ void cmaple::computeBranchSupports(char* tree, char* input, std::string& model, 
     
     // set random seed (if provided)
     if (random_seed != -1) params.ran_seed = random_seed;
+    cmaple::init_random(params.ran_seed, true);
     
     // set number of threads
     params.num_threads = num_threads;
@@ -234,6 +237,7 @@ void cmaple::computeBranchSupports(char* tree, char* input, Params& params, uint
 {
     // set random seed (if provided)
     if (random_seed != -1) params.ran_seed = random_seed;
+    cmaple::init_random(params.ran_seed, true);
     
     // set number of threads
     params.num_threads = num_threads;
