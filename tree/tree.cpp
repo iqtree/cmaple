@@ -4300,7 +4300,7 @@ void cmaple::Tree::calculate_aRLT()
             const Index child_2_index = node.getNeighborIndex(LEFT);
             
             // NHANLT: Debug aLRT
-            /*if (child_1_index.getVectorIndex() == 1249 || child_1_index.getVectorIndex() == 1929)
+            /* if (child_1_index.getVectorIndex() == 3168 || child_1_index.getVectorIndex() == 3806)
                 std::cout << "Update" << std::endl;*/
             
             // add its children into node_stack for further traversal
@@ -4951,23 +4951,23 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
         stack<Index> tmp_stack = node_stack_aLRT;
         while (!tmp_stack.empty())
         {
-            if (tmp_stack.top().getVectorIndex() == 437)
+            if (tmp_stack.top().getVectorIndex() == 3805)
             {
-                std::cout << "Found 437 " << (nodes[437].isOutdated() ? "Outdated" : "Updated") << std::endl;
-                
+                std::cout << "Found 3805 " << (nodes[3805].isOutdated() ? "Outdated" : "Updated") << std::endl;
+                break;
             }
             tmp_stack.pop();
         }
         std::stack<cmaple::Index> node_stack;
         RealNumType lh_at_root = 0;
         RealNumType tree_total_lh = 0;
-        PhyloNode& tmp_node = nodes[437];
+        PhyloNode& tmp_node = nodes[3805];
             // show the likelihood contribution at this branch/node
             // std::cout << "Lh contribution of node (node_vec) " << node_vec << " : " << node_lhs[node.getNodelhIndex()].lh_contribution_ << std::endl;
             
             // caculate aLRT
-            PhyloNode& child_1 = nodes[1929];
-            PhyloNode& child_2 = nodes[1249];
+            PhyloNode& child_1 = nodes[3168];
+            PhyloNode& child_2 = nodes[3806];
             const Index parent_index = tmp_node.getNeighborIndex(TOP);
             PhyloNode& parent = nodes[parent_index.getVectorIndex()];
             const Index sibling_index = parent.getNeighborIndex(parent_index.getFlipMiniIndex());
@@ -4994,7 +4994,8 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
         {
             // node_lh.setLhDiff2(neighbor_2_lh_diff);
             // node_lh.setLhDiff3(neighbor_3_lh_diff);
-            std::cout << neighbor_2_lh_diff << " " << node_lh.getLhDiff2() << std::endl;
+            if (!nodes[3805].isOutdated())
+                std::cout << neighbor_2_lh_diff << " " << node_lh.getLhDiff2() << std::endl;
         }
     }
 }*/
@@ -5197,7 +5198,8 @@ void cmaple::Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, Re
     current_node.setNeighborIndex(current_node_mini, sibling_index);
     
     // update 5 blengths
-    // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before
+    // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before, only need to set it outdated
+    child_2.setOutdated(true);
     updateBlengthReplaceMLTree<num_states>(node_stack_aLRT, lh_diff, child_2, child_2_index, child_2_best_blength);
     updateBlengthReplaceMLTree<num_states>(node_stack_aLRT, lh_diff, sibling, sibling_index, sibling_best_blength);
     // we don't need to add current_node to node_stack_aLRT since they will be added later
@@ -5242,9 +5244,10 @@ void cmaple::Tree::replaceMLTreebyNNIRoot(std::stack<Index>& node_stack_aLRT, Re
     const MiniIndex current_node_sibling_mini = sibling.getNeighborIndex(TOP).getMiniIndex();
     parent_current_node_upper_lr->mergeUpperLower<num_states>(current_node.getPartialLh(current_node_sibling_mini), current_node.getUpperLength(), *child_2_lower_lh, child_2_best_blength, aln, model, threshold_prob);
     // because upper_lr of the current node is changed -> we need to recompute aLRT of its grand_children
-    // current node has two children: child_1 and sibling (after applying NNI)
-    // the aLRT of children of child_1 will be computed later
-    // we only need to recompute aLRT of the children od sibling
+    // current node has two children: child_2 and sibling (after applying NNI)
+    // recompute aLRT of the children of child_2
+    recompute_aLRT_GrandChildren(child_2, node_stack_aLRT);
+    // recompute aLRT of the children of sibling
     recompute_aLRT_GrandChildren(sibling, node_stack_aLRT);
     
     // update the lower_lh of the parent node
@@ -5283,7 +5286,8 @@ void cmaple::Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT,
     current_node.setNeighborIndex(current_node_mini, sibling_index);
     
     // update 5 blengths
-    // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before
+    // recompute aLRT of child_2 if we change its blength from zero to non-zero => don't need to do so because child_2 should be added before, only need to set it outdated
+    child_2.setOutdated(true);
     updateBlengthReplaceMLTree<num_states>(node_stack_aLRT, lh_diff, child_2, child_2_index, child_2_best_blength);
     updateBlengthReplaceMLTree<num_states>(node_stack_aLRT, lh_diff, sibling, sibling_index, sibling_best_blength);
     // we don't need to add current_node and parent to node_stack_aLRT since they will be added later
@@ -5332,9 +5336,10 @@ void cmaple::Tree::replaceMLTreebyNNINonRoot(std::stack<Index>& node_stack_aLRT,
     const MiniIndex current_node_sibling_mini = sibling.getNeighborIndex(TOP).getMiniIndex();
     parent_current_node_upper_lr->mergeUpperLower<num_states>(current_node.getPartialLh(current_node_sibling_mini), current_node.getUpperLength(), *child_2_lower_lh, child_2_best_blength, aln, model, threshold_prob);
     // because upper_lr of the current node is changed -> we need to recompute aLRT of its grand_children
-    // current node has two children: child_1 and sibling (after applying NNI)
-    // the aLRT of children of child_1 will be computed later
-    // we only need to recompute aLRT of the children od sibling
+    // current node has two children: child_2 and sibling (after applying NNI)
+    // recompute aLRT of the children of child_2
+    recompute_aLRT_GrandChildren(child_2, node_stack_aLRT);
+    // recompute aLRT of the children of sibling
     recompute_aLRT_GrandChildren(sibling, node_stack_aLRT);
     
     // update the lower_lh of the parent node
