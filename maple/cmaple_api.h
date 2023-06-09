@@ -9,6 +9,23 @@ namespace cmaple {
 void printCMapleCopyright(std::ostream &out);
 
 /**
+ Specify an input aligment
+ @param aln path to an input alignment file
+ */
+void setAln(char* aln);
+
+/**
+ Specify a substitution model
+ @param model name of a substitution/evolutionary model
+ */
+void setModel(std::string& model);
+
+/**
+ Run the inference
+ */
+void runInference();
+
+/**
  Infer a phylogenetic tree from an input (alignment/DIFF) file using all default settings
  @param input path to an input (alignment/DIFF) file
  */
