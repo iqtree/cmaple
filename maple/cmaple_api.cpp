@@ -17,7 +17,7 @@ void cmaple::inferTree(char* input)
     params.overwrite_output = true;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // run CMaple
     runCMaple(params);
@@ -31,7 +31,7 @@ void cmaple::inferTree(char* input, std::string& model)
     params.overwrite_output = true;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // specify the model
     params.model_name = model;
@@ -43,7 +43,7 @@ void cmaple::inferTree(char* input, std::string& model)
 void cmaple::inferTree(char* input, Params& params)
 {
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // run CMaple
     runCMaple(params);
@@ -56,7 +56,7 @@ void cmaple::extractDiff(char* input_aln)
     initDefaultValue(params);
     
     // specify the input file
-    params.input_path = input_aln;
+    params.aln_path = input_aln;
     
     // set a flag to only extract the DIFF file from an input alignment
     params.only_extract_diff = true;
@@ -72,7 +72,7 @@ void cmaple::extractDiff(char* input_aln, char* ref)
     initDefaultValue(params);
     
     // specify the input file
-    params.input_path = input_aln;
+    params.aln_path = input_aln;
     
     // specify the ref
     params.ref_path = ref;
@@ -91,7 +91,7 @@ void cmaple::reconstructAln(char* input_diff)
     initDefaultValue(params);
     
     // specify the input file
-    params.input_path = input_diff;
+    params.aln_path = input_diff;
     
     // Init the path to the output alignment
     std::string output_aln_str(input_diff);
@@ -111,7 +111,7 @@ void cmaple::extendTree(char* tree, char* input)
     params.overwrite_output = true;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // specify the input tree
     params.input_treefile = tree;
@@ -128,7 +128,7 @@ void cmaple::extendTree(char* tree, char* input, std::string& model)
     params.overwrite_output = true;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // specify the input tree
     params.input_treefile = tree;
@@ -143,7 +143,7 @@ void cmaple::extendTree(char* tree, char* input, std::string& model)
 void cmaple::extendTree(char* tree, char* input, Params& params)
 {
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // specify the input tree
     params.input_treefile = tree;
@@ -167,7 +167,7 @@ void cmaple::computeBranchSupports(char* input, uint32_t num_threads, int64_t ra
     params.num_threads = num_threads;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // turn on the flag to compute aLRT-SH
     params.compute_aLRT_SH = true;
@@ -191,7 +191,7 @@ void cmaple::computeBranchSupports(char* tree, char* input, uint32_t num_threads
     params.num_threads = num_threads;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // specify the input tree
     params.input_treefile = tree;
@@ -218,7 +218,7 @@ void cmaple::computeBranchSupports(char* tree, char* input, std::string& model, 
     params.num_threads = num_threads;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // specify the input tree
     params.input_treefile = tree;
@@ -243,7 +243,7 @@ void cmaple::computeBranchSupports(char* tree, char* input, Params& params, uint
     params.num_threads = num_threads;
     
     // specify the input file
-    params.input_path = input;
+    params.aln_path = input;
     
     // specify the input tree
     params.input_treefile = tree;

@@ -383,7 +383,7 @@ namespace cmaple
         /**
         *  Path to input sequences
         */
-        char* input_path;
+        char* aln_path;
         
         /**
         *  Path to a Diff file

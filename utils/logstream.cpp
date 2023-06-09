@@ -65,7 +65,7 @@ void LogStream::startLogFile(cmaple::Params& params) {
         // if users didn't input a diff file -> generate the path to diff file from the input alignment
         if (!params.diff_path)
         {
-            string aln_path_str(params.input_path);
+            string aln_path_str(params.aln_path);
             aln_path_str += ".diff";
             log_file_ = aln_path_str + ".log";
         }

@@ -752,7 +752,7 @@ bool cmaple::is_number(const std::string& s)
 
 void cmaple::initDefaultValue(Params &params)
 {
-    params.input_path = NULL;
+    params.aln_path = NULL;
     params.diff_path = NULL;
     params.ref_path = NULL;
     params.only_extract_diff = false;
@@ -817,42 +817,42 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
     
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
-            if (strcmp(argv[cnt], "--input") == 0 || strcmp(argv[cnt], "-i") == 0) {
+            if (strcmp(argv[cnt], "--alignment") == 0 || strcmp(argv[cnt], "-aln") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --input <INPUT_PATH>");
+                    outError("Use -aln <ALIGNMENT>");
                 
-                params.input_path = argv[cnt];
+                params.aln_path = argv[cnt];
 
                 continue;
             }
             // "--diff" should be removed, I temporarily keep it for compatibility purpose
-            if (strcmp(argv[cnt], "--diff") == 0) {
+            if (strcmp(argv[cnt], "--diff") == 0 || strcmp(argv[cnt], "-diff") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --diff <DIFF_PATH>");
+                    outError("Use -diff <DIFF_PATH>");
                 
-                params.input_path = argv[cnt];
+                params.aln_path = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--prefix") == 0) {
+            if (strcmp(argv[cnt], "--prefix") == 0 || strcmp(argv[cnt], "-prf") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --prefix <OUTPUT_PREFIX>");
+                    outError("Use -prf <OUTPUT_PREFIX>");
                 
                 params.output_prefix = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--output-aln") == 0) {
+            if (strcmp(argv[cnt], "--output-aln") == 0 || strcmp(argv[cnt], "-out-aln") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --output-aln <ALIGNMENT_PATH>");
+                    outError("Use -out-aln <ALIGNMENT_PATH>");
                 
                 params.output_aln = argv[cnt];
 
@@ -882,27 +882,27 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--ref") == 0) {
+            if (strcmp(argv[cnt], "--reference") == 0 || strcmp(argv[cnt], "-ref") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --ref <REF_PATH>");
+                    outError("Use -ref <REF_PATH>");
                 
                 params.ref_path = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--extract-diff") == 0) {
+            if (strcmp(argv[cnt], "--extract-diff") == 0 || strcmp(argv[cnt], "-ext-diff") == 0) {
                 
                 params.only_extract_diff = true;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--hamming-weight") == 0) {
+            if (strcmp(argv[cnt], "--hamming-weight") == 0 || strcmp(argv[cnt], "-hamming") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --hamming-weight <WEIGHT>");
+                    outError("Use -hamming <WEIGHT>");
                 
                 params.hamming_weight = convert_real_number(argv[cnt]);
                 
@@ -911,23 +911,23 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--min-blength") == 0) {
+            if (strcmp(argv[cnt], "--min-blength") == 0 || strcmp(argv[cnt], "-min-bl") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --min-blength <NUMBER>");
+                    outError("Use -min-bl <NUMBER>");
                 
                 params.fixed_min_blength = convert_real_number(argv[cnt]);
                 
                 if (params.fixed_min_blength <= 0)
-                    outError("<NUMBER> following --min-blength must be positive!");
+                    outError("<NUMBER> following -min-bl must be positive!");
 
                 continue;
             }
             if (strcmp(argv[cnt], "--model") == 0 || strcmp(argv[cnt], "-m") == 0) {
                 ++cnt;
                 if (cnt >= argc)
-                    outError("Use --model <model_name>");
+                    outError("Use -m <model_name>");
                 
                 params.model_name = argv[cnt];
                 continue;
@@ -942,19 +942,19 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 params.redo_blength = true;
                 continue;
             }
-            if (strcmp(argv[cnt], "--overwrite") == 0) {
+            if (strcmp(argv[cnt], "--overwrite") == 0 || strcmp(argv[cnt], "-overwrite") == 0) {
                 params.overwrite_output = true;
                 continue;
             }
-            if (strcmp(argv[cnt], "--replace-input-tree") == 0) {
+            if (strcmp(argv[cnt], "--replace-input-tree") == 0 || strcmp(argv[cnt], "-rep-tree") == 0) {
                 params.allow_replace_input_tree = true;
                 continue;
             }
-            if (strcmp(argv[cnt], "--thresh-prob") == 0) {
+            if (strcmp(argv[cnt], "--threshold-prob") == 0 || strcmp(argv[cnt], "-thresh-prob") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --thresh-prob <PROB_THRESH>");
+                    outError("Use -thresh-prob <PROB_THRESH>");
                 
                 params.threshold_prob = convert_real_number(argv[cnt]);
                 
@@ -963,11 +963,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--mutation-update") == 0) {
+            if (strcmp(argv[cnt], "--mutation-update") == 0 || strcmp(argv[cnt], "-mut-update") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --mutation-update <NUMBER>");
+                    outError("Use -mut-update <NUMBER>");
                 
                 params.mutation_update_period = convert_int(argv[cnt]);
                 
@@ -976,7 +976,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--failure-limit") == 0) {
+            if (strcmp(argv[cnt], "--failure-limit") == 0 || strcmp(argv[cnt], "-fail-limit") == 0) {
                 
                 ++cnt;
                 
@@ -987,7 +987,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--failure-limit-subtree") == 0) {
+            if (strcmp(argv[cnt], "--failure-limit-subtree") == 0 || strcmp(argv[cnt], "-fail-limit-stree") == 0) {
                 
                 ++cnt;
                 
@@ -998,54 +998,54 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--strict-stop-init") == 0) {
+            if (strcmp(argv[cnt], "--strict-stop-init") == 0 || strcmp(argv[cnt], "-strict-stop-init") == 0) {
                 
                 params.strict_stop_seeking_placement_sample = true;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--unstrict-stop-subtree") == 0) {
+            if (strcmp(argv[cnt], "--unstrict-stop-subtree") == 0 || strcmp(argv[cnt], "-unstrict-stop-stree") == 0) {
                 
                 params.strict_stop_seeking_placement_subtree = false;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--multifurcating-tree") == 0) {
+            if (strcmp(argv[cnt], "--multifurcating-tree") == 0 || strcmp(argv[cnt], "-mul-tree") == 0) {
                 
                 params.export_binary_tree = false;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--no-optimize-blength") == 0) {
+            if (strcmp(argv[cnt], "--no-optimize-blength") == 0 || strcmp(argv[cnt], "-no-opt-bl") == 0) {
                 
                 params.optimize_branch_length = false;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--short-topo-search") == 0) {
+            if (strcmp(argv[cnt], "--short-topology-search") == 0 || strcmp(argv[cnt], "-short-topo-search") == 0) {
                 
                 params.short_range_topo_search = true;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--output-testing") == 0) {
+            if (strcmp(argv[cnt], "--output-testing") == 0 || strcmp(argv[cnt], "-out-test") == 0) {
                 
                 ++cnt;
                 
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --output-testing <FILE_PATH>");
+                    outError("Use -out-test <FILE_PATH>");
                 
                 params.output_testing = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--branch-support") == 0) {
+            if (strcmp(argv[cnt], "--branch-support") == 0 || strcmp(argv[cnt], "-br-supp") == 0) {
                 
                 params.compute_aLRT_SH = true;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--replicates") == 0) {
+            if (strcmp(argv[cnt], "--replicates") == 0 || strcmp(argv[cnt], "-rep") == 0) {
                 ++cnt;
                 if (cnt >= argc)
                     outError("Use --replicates <NUM_REPLICATES>");
@@ -1056,7 +1056,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                     outError("<NUM_REPLICATES> must be positive!");
                 continue;
             }
-            if (strcmp(argv[cnt], "--epsilon") == 0) {
+            if (strcmp(argv[cnt], "--epsilon") == 0 || strcmp(argv[cnt], "-eps") == 0) {
                 ++cnt;
                 if (cnt >= argc)
                     outError("Use --epsilon <FLOATING_NUM>");
@@ -1108,11 +1108,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
     }
     
     // validate options
-    if (!params.diff_path && !params.input_path)
-        outError("Please supply an input file via --input <INPUT_PATH>");
+    if (!params.diff_path && !params.aln_path)
+        outError("Please supply an alignment file via -aln <ALIGNMENT>");
         
-    if (params.only_extract_diff && !params.input_path)
-        outError("Please supply an input alignment via --input <ALIGNMENT_PATH>");
+    if (params.only_extract_diff && !params.aln_path)
+        outError("Please supply an alignment via -aln <ALIGNMENT>");
     
     if (argc <= 1) {
         quickStartGuide();

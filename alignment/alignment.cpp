@@ -1052,16 +1052,16 @@ void cmaple::Alignment::sortSeqsByDistances(RealNumType hamming_weight)
 void cmaple::Alignment::extractDiffFile(Params& params)
 {   
     // read input sequences
-    ASSERT(params.input_path);
+    ASSERT(params.aln_path);
     StrVector sequences;
     StrVector seq_names;
-    readSequences(params.input_path, sequences, seq_names);
+    readSequences(params.aln_path, sequences, seq_names);
     
     // validate the input sequences
     if (sequences.size() == 0)
         outError("Empty input sequences. Please check and try again!");
     // make sure all sequences have the same length
-    if (detectInputFile(params.input_path) == IN_FASTA)
+    if (detectInputFile(params.aln_path) == IN_FASTA)
         for (PositionType i = 0; i < (PositionType) sequences.size(); ++i)
         {
             if (sequences[i].length() != sequences[0].length())
@@ -1084,7 +1084,7 @@ void cmaple::Alignment::extractDiffFile(Params& params)
     // init diff_path if it's null
     if (!params.diff_path)
     {
-        string diff_path_str(params.input_path);
+        string diff_path_str(params.aln_path);
         diff_path_str += ".diff";
         
         params.diff_path = new char[diff_path_str.length() + 1];

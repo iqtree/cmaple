@@ -4,8 +4,8 @@ using namespace cmaple;
 
 void CMaple::loadInput()
 {
-    ASSERT(tree.params->input_path);
-    const InputType input_type = detectInputFile(tree.params->input_path);
+    ASSERT(tree.params->aln_path);
+    const InputType input_type = detectInputFile(tree.params->aln_path);
     
     // extract sequences (in vectors of mutations) from an input alignment (in PHYLIP or FASTA format)
     if (input_type != IN_MAPLE)
@@ -24,11 +24,11 @@ void CMaple::loadInput()
     else
     {
         // update input file path
-        tree.params->diff_path = tree.params->input_path;
-        tree.params->input_path = NULL;
+        tree.params->diff_path = tree.params->aln_path;
+        tree.params->aln_path = NULL;
         
         if (tree.params->only_extract_diff)
-            outError("To export a Diff file, please supple an alignment via --input <ALIGNMENT>");
+            outError("To export a Diff file, please supply an alignment via -aln <ALIGNMENT>");
         
         // only want to reconstruc the aln file from the Diff file
         if (tree.params->output_aln)
