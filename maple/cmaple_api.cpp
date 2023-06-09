@@ -4,9 +4,52 @@
 
 using namespace cmaple;
 
+/**
+    Initialize library instance with default settings
+ */
+void __attribute__ ((constructor)) initLibrary(void)
+{
+    // init params ~ inference settings
+    Params& params = Params::getInstance();
+    initDefaultValue(params);
+    params.overwrite_output = true;
+}
+
+/**
+    clean up the library instance
+ */
+void __attribute__ ((destructor)) cleanUpLibrary(void)
+{
+    // do nothing
+}
+
 void cmaple::printCMapleCopyright(std::ostream &out)
 {
     printCopyright(out);
+}
+
+void cmaple::setAln(char* aln)
+{
+    Params& params = Params::getInstance();
+    
+    // specify the input file
+    params.aln_path = aln;
+}
+
+void cmaple::setModel(std::string& model)
+{
+    Params& params = Params::getInstance();
+    
+    // specify the model
+    params.model_name = model;
+}
+
+void cmaple::runInference()
+{
+    Params& params = Params::getInstance();
+    
+    // run CMaple
+    runCMaple(params);
 }
 
 void cmaple::inferTree(char* input)
