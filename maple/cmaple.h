@@ -42,13 +42,13 @@ private:
         @return TRUE if there is any node added, thus, we need to optimize the tree later
      */
     template <const cmaple::StateType  num_states>
-    bool buildInitialTree();
+    void buildInitialTree();
     
     /**
         Optimize the current tree
      */
     template <const cmaple::StateType  num_states>
-    void optimizeTree(const bool new_sequences_added);
+    void optimizeTree();
     
     /**
         Optimize the tree topology

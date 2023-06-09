@@ -58,8 +58,8 @@ void CMaple::loadInputTree()
     // refresh all lower after updating model params
     tree.performDFS<&Tree::updateLowerLh<num_states>>();
     
-    // set outdated = true at all nodes to avoid considering SPR moves at those nodes
-    if (!tree.params->redo_inference)
+    // set outdated = false at all nodes to avoid considering SPR moves at those nodes
+    if (tree.params->tree_search_type == PARTIAL_TREE_SEARCH)
         tree.resetSPRFlags(false, true, false);
 }
 
@@ -107,7 +107,7 @@ void CMaple::preInference()
 }
 
 template <const StateType num_states>
-bool CMaple::buildInitialTree()
+void CMaple::buildInitialTree()
 {
     // record the start time
     auto start = getRealTime();
@@ -195,7 +195,6 @@ bool CMaple::buildInitialTree()
     }
     
     // flag denotes whether there is any new nodes added
-    bool new_node_added = true;
     // show the number of new sequences added to the tree
     if (num_new_sequences > 0)
     {
@@ -205,21 +204,15 @@ bool CMaple::buildInitialTree()
         tree.refreshAllLhs<num_states>();
     }
     else
-    {
-        new_node_added = false;
         std::cout << "All sequences were presented in the input tree. No new sequence has been added!" << std::endl;
-    }
     
     // show the runtime for building an initial tree
     auto end = getRealTime();
     cout << " - Time spent on building an initial tree: " << std::setprecision(3) << end - start << endl;
-    
-    // return a flag denotes whether we should optimize the tree or not
-    return new_node_added;
 }
 
 template <const StateType num_states>
-void CMaple::optimizeTree(const bool new_sequences_added)
+void CMaple::optimizeTree()
 {
     // tree.params->debug = true;
     string output_file(tree.params->output_prefix);
@@ -227,7 +220,7 @@ void CMaple::optimizeTree(const bool new_sequences_added)
     
     // run a short range search for tree topology improvement (if neccessary)
     // NOTES: don't apply short range search when users input a tree because only a few new sequences were added -> we only apply a deep SPR search
-    if (tree.params->short_range_topo_search && !tree.params->input_treefile)
+    if (tree.params->short_range_topo_search && tree.params->tree_search_type != NO_TREE_SEARCH && !(tree.params->input_treefile && tree.params->tree_search_type == PARTIAL_TREE_SEARCH))
     {
         // apply short-range SPR search
         optimizeTreeTopology<num_states>(true);
@@ -241,7 +234,7 @@ void CMaple::optimizeTree(const bool new_sequences_added)
     std::cout << std::setprecision(10) << "Tree log likelihood (before topo-opt): " << tree.calculateTreeLh<num_states>() << std::endl;
     
     // run a normal search for tree topology improvement
-    if (new_sequences_added || tree.params->redo_inference)
+    if (tree.params->tree_search_type != NO_TREE_SEARCH)
     {
         optimizeTreeTopology<num_states>();
         exportOutput(output_file + "_topo.treefile");
@@ -254,8 +247,7 @@ void CMaple::optimizeTree(const bool new_sequences_added)
     std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateTreeLh<num_states>() << std::endl;
     
     // do further optimization on branch lengths (if needed)
-    if (tree.params->optimize_branch_length &&
-        (new_sequences_added || tree.params->redo_blength))
+    if (tree.params->optimize_blength)
         optimizeBranchLengthsOfTree<num_states>();
     
     // NhanLT: update the model params
@@ -362,10 +354,10 @@ void CMaple::doInferenceTemplate()
         loadInputTree<num_states>();
         
     // 1. Build an initial tree
-    const bool new_sequences_added = buildInitialTree<num_states>();
+    buildInitialTree<num_states>();
     
     // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-    optimizeTree<num_states>(new_sequences_added);
+    optimizeTree<num_states>();
 }
 
 void CMaple::postInference()

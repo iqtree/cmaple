@@ -263,6 +263,13 @@ namespace cmaple
     };
 
     /**
+        types of tree search
+     */
+    enum TreeSearchType {
+        NO_TREE_SEARCH, PARTIAL_TREE_SEARCH, FULL_TREE_SEARCH
+    };
+
+    /**
         verbose level on the screen
      */
     extern VerboseMode verbose_mode;
@@ -416,14 +423,9 @@ namespace cmaple
         bool overwrite_output;
         
         /**
-            TRUE to redo the inference and overwrite output files
-         */
-        bool redo_inference;
-        
-        /**
             TRUE to re-estimate the branch lengths
          */
-        bool redo_blength;
+        bool optimize_blength;
         
         /**
         *       Threshold to ignore possible states with very low probabilities
@@ -551,11 +553,6 @@ namespace cmaple
         bool export_binary_tree;
         
         /**
-        *  TRUE to optimize the branch lengths after optimizing the tree topology
-        */
-        bool optimize_branch_length;
-        
-        /**
         *  TRUE to run an additional short range search for tree topology improvement
         */
         bool short_range_topo_search;
@@ -609,6 +606,11 @@ namespace cmaple
         *  type of sequences
         */
         SeqType seq_type;
+        
+        /**
+        *  type of tree search
+        */
+        TreeSearchType tree_search_type;
         
         /*
             TRUE to log debugging

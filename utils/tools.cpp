@@ -758,8 +758,7 @@ void cmaple::initDefaultValue(Params &params)
     params.only_extract_diff = false;
     params.hamming_weight = 1000;
     params.model_name = "GTR";
-    params.redo_inference = false;
-    params.redo_blength = false;
+    params.optimize_blength = true;
     params.overwrite_output = false;
     params.threshold_prob = 1e-8;
     params.mutation_update_period = 25;
@@ -784,7 +783,6 @@ void cmaple::initDefaultValue(Params &params)
     params.thresh_placement_cost = -1e-5;
     params.thresh_placement_cost_short_search = -1;
     params.export_binary_tree = true;
-    params.optimize_branch_length = true;
     params.short_range_topo_search = false;
     params.output_testing = NULL;
     params.compute_aLRT_SH = false;
@@ -796,6 +794,7 @@ void cmaple::initDefaultValue(Params &params)
     params.allow_replace_input_tree = false;
     params.fixed_min_blength = -1;
     params.seq_type = SEQ_UNKNOWN;
+    params.tree_search_type = PARTIAL_TREE_SEARCH;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -932,14 +931,21 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 params.model_name = argv[cnt];
                 continue;
             }
-            if (strcmp(argv[cnt], "-redo") == 0 || strcmp(argv[cnt], "--redo") == 0) {
-                params.redo_inference = true;
-                params.redo_blength = true;
-                params.overwrite_output = true;
+            if (strcmp(argv[cnt], "--start-tree") == 0 || strcmp(argv[cnt], "-start-tree") == 0) {
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use -start-tree <TREEFILE>");
+                
+                params.input_treefile = argv[cnt];
+                params.tree_search_type = FULL_TREE_SEARCH;
                 continue;
             }
-            if (strcmp(argv[cnt], "-re-opt-bl") == 0 || strcmp(argv[cnt], "--re-optimize-blength") == 0) {
-                params.redo_blength = true;
+            if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {
+                params.optimize_blength = false;
+                continue;
+            }
+            if (strcmp(argv[cnt], "-no-tree-search") == 0 || strcmp(argv[cnt], "--no-tree-search") == 0) {
+                params.tree_search_type = NO_TREE_SEARCH;
                 continue;
             }
             if (strcmp(argv[cnt], "--overwrite") == 0 || strcmp(argv[cnt], "-overwrite") == 0) {
@@ -1013,12 +1019,6 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "--multifurcating-tree") == 0 || strcmp(argv[cnt], "-mul-tree") == 0) {
                 
                 params.export_binary_tree = false;
-
-                continue;
-            }
-            if (strcmp(argv[cnt], "--no-optimize-blength") == 0 || strcmp(argv[cnt], "-no-opt-bl") == 0) {
-                
-                params.optimize_branch_length = false;
 
                 continue;
             }
