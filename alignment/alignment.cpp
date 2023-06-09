@@ -494,7 +494,7 @@ void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
             // choose the ref sequence if the user already supplies a reference sequence
             if (ref_path)
             {
-                outWarning("Skipping the reference sequence in the Diff file since the reference sequence is already specified via '--ref' option.");
+                outWarning("Skipping the reference sequence in the Diff file since the reference sequence is already specified via '-ref' option.");
                 line = ref_sequence;
             }
             
