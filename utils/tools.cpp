@@ -931,21 +931,26 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 params.model_name = argv[cnt];
                 continue;
             }
-            if (strcmp(argv[cnt], "--start-tree") == 0 || strcmp(argv[cnt], "-start-tree") == 0) {
+            if (strcmp(argv[cnt], "--tree-search") == 0 || strcmp(argv[cnt], "-tree-search") == 0) {
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -start-tree <TREEFILE>");
+                    outError("Use -tree-search <NO|PARTIAL|COMPLETE>");
                 
-                params.input_treefile = argv[cnt];
-                params.tree_search_type = FULL_TREE_SEARCH;
+                std::string tree_search_type = argv[cnt];
+                // convert tree_search_type to uppercase
+                transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
+                if (tree_search_type == "NO")
+                    params.tree_search_type = NO_TREE_SEARCH;
+                else if (tree_search_type == "PARTIAL")
+                    params.tree_search_type = PARTIAL_TREE_SEARCH;
+                else if (tree_search_type == "COMPLETE")
+                    params.tree_search_type = COMPLETE_TREE_SEARCH;
+                else
+                    outError("Use -tree-search <NONE|PARTIAL|COMPLETE>");
                 continue;
             }
             if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {
                 params.optimize_blength = false;
-                continue;
-            }
-            if (strcmp(argv[cnt], "-no-tree-search") == 0 || strcmp(argv[cnt], "--no-tree-search") == 0) {
-                params.tree_search_type = NO_TREE_SEARCH;
                 continue;
             }
             if (strcmp(argv[cnt], "--overwrite") == 0 || strcmp(argv[cnt], "-overwrite") == 0) {

@@ -304,7 +304,7 @@ TEST(Alignment, extractDiffFile)
     
     // ----- test on input.phy with ref file from ref.fa -----
     Params params = Params::getInstance();
-    params.tree_search_type = FULL_TREE_SEARCH;
+    params.tree_search_type = COMPLETE_TREE_SEARCH;
     std::string aln_file_path("../../example/input.phy");
     char* aln_file_path_ptr = new char[aln_file_path.length() + 1];
     strcpy(aln_file_path_ptr, aln_file_path.c_str());

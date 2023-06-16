@@ -266,7 +266,7 @@ namespace cmaple
         types of tree search
      */
     enum TreeSearchType {
-        NO_TREE_SEARCH, PARTIAL_TREE_SEARCH, FULL_TREE_SEARCH
+        NO_TREE_SEARCH, PARTIAL_TREE_SEARCH, COMPLETE_TREE_SEARCH
     };
 
     /**
