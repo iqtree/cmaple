@@ -946,7 +946,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 else if (tree_search_type == "COMPLETE")
                     params.tree_search_type = COMPLETE_TREE_SEARCH;
                 else
-                    outError("Use -tree-search <NONE|PARTIAL|COMPLETE>");
+                    outError("Use -tree-search <NO|PARTIAL|COMPLETE>");
                 continue;
             }
             if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {

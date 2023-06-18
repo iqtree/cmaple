@@ -241,7 +241,7 @@ void CMaple::optimizeTree()
     }
     
     // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
-    // tree.refreshAllLhs();
+    tree.refreshAllLhs<num_states>();
     
     // output log-likelihood of the tree
     std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateTreeLh<num_states>() << std::endl;

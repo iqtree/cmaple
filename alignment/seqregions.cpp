@@ -943,7 +943,7 @@ bool cmaple::merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRe
         merge_identicalRACGT_TwoLowers(seq1_region, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, *merged_regions, return_log_lh);
     }
     // #0 distance between different nucleotides: merge is not possible
-    else if (total_blength_1 == 0 && total_blength_2 == 0 && (seq1_region.type == TYPE_R || seq1_region.type < num_states) && (seq2_region.type == TYPE_R || seq2_region.type < num_states))
+    else if (total_blength_1 <= 0 && total_blength_2 <= 0 && (seq1_region.type == TYPE_R || seq1_region.type < num_states) && (seq2_region.type == TYPE_R || seq2_region.type < num_states))
     {
         merged_regions = nullptr;
         return false;
