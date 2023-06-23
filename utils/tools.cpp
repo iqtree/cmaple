@@ -832,7 +832,7 @@ void parseArg(int argc, char *argv[], Params &params) {
                 else {
                     params.num_threads = convert_int(argv[cnt]);
                     if (params.num_threads < 1)
-                        throw "At least 1 thread please";
+                      outError("At least 1 thread please");
                 }
                 continue;
             }
