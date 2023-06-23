@@ -4668,7 +4668,6 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
     PhyloNode& sibling = nodes[sibling_index.getVectorIndex()];
     PositionType sh_count{0};
     const PositionType seq_length = aln.ref_seq.size();
-    std::vector<PositionType> selected_sites(seq_length);
     const NodeLh& nodelh = node_lhs[node.getNodelhIndex()];
     const RealNumType LT2 = LT1 + nodelh.getLhDiff2();
     const RealNumType LT3 = LT1 + nodelh.getLhDiff3();
@@ -4704,24 +4703,20 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
     ASSERT(fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
     
     // iterate a number of replicates
-    int thread_id = 0;
-    int num_threads = 1;
-#ifdef _OPENMP
-#pragma omp parallel shared(num_threads), private(thread_id), firstprivate(selected_sites), reduction(+:sh_count)
+    #pragma omp parallel reduction(+:sh_count)
     {
-        #pragma omp single
-        num_threads = omp_get_num_threads();
-        
-        // init random generators
-        thread_id = omp_get_thread_num();
-        std::default_random_engine gen(params->ran_seed + thread_id);
-        std::uniform_int_distribution<> rng_distrib(0, seq_length);
-#endif
-    for (PositionType i = 0; i < params->aLRT_SH_replicates; ++i)
-    {
-        if (i % num_threads != thread_id)
-            continue;
-        
+      std::vector<PositionType> selected_sites(seq_length);
+      int thread_id = 0;
+      #ifdef _OPENMP
+      thread_id = omp_get_thread_num();
+      #endif
+
+      // init random generators
+      std::default_random_engine gen(params->ran_seed + thread_id);
+      std::uniform_int_distribution<> rng_distrib(0, seq_length);
+      #pragma omp for
+      for (PositionType i = 0; i < params->aLRT_SH_replicates; ++i)
+      {
         // reset all LTX*
         RealNumType LT1_star{0}, LT2_star{0}, LT3_star{0};
         
@@ -4763,10 +4758,8 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
         // <=> half_aLRT > CS_first - CS_second + half_epsilon
         if (nodelh.getHalf_aLRT() > (CS_first - CS_second + params->aLRT_SH_epsilon))
             ++sh_count;
-    }
-#ifdef _OPENMP
-    }
-#endif
+      } // for aLRT_SH_replicates
+    } // omp parallel
     
     return sh_count;
 }
