@@ -99,7 +99,6 @@ int main(int argc, char *argv[]) {
     
     // Show info
     cout << "Seed:    " << Params::getInstance().ran_seed <<  " ";
-    init_random(params.ran_seed, true);
     
     // setup the number of threads for openmp
 #ifdef _OPENMP

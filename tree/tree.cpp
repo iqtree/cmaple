@@ -4704,19 +4704,18 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
     ASSERT(fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
     
     // iterate a number of replicates
-    int *rstream = NULL;
     int thread_id = 0;
     int num_threads = 1;
 #ifdef _OPENMP
-#pragma omp parallel shared(num_threads), private(rstream, thread_id), firstprivate(selected_sites), reduction(+:sh_count)
+#pragma omp parallel shared(num_threads), private(thread_id), firstprivate(selected_sites), reduction(+:sh_count)
     {
         #pragma omp single
         num_threads = omp_get_num_threads();
         
         // init random generators
         thread_id = omp_get_thread_num();
-        int ran_seed = params->ran_seed + thread_id;
-        init_random(ran_seed, false, &rstream);
+        std::default_random_engine gen(params->ran_seed + thread_id);
+        std::uniform_int_distribution<> rng_distrib(0, seq_length);
 #endif
     for (PositionType i = 0; i < params->aLRT_SH_replicates; ++i)
     {
@@ -4728,7 +4727,7 @@ PositionType Tree::count_aRLT_SH_branch(std::vector<RealNumType>& site_lh_contri
         
         // generate a vector of sampled sites
         for (PositionType j = 0; j < seq_length; ++j)
-            selected_sites[j] = random_int(seq_length, rstream);
+            selected_sites[j] = rng_distrib(gen);
         
         // compute LT1*, LT2*, LT3*
         // NOTES: LT2*, LT3* are now the lh differences between the actual LT2*, LT3* and LT1*
