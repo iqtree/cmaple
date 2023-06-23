@@ -168,7 +168,6 @@ FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(utils)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
-add_subdirectory(libraries/sprng)
 add_subdirectory(libraries/ncl)
 add_subdirectory(libraries/nclextra)
 add_subdirectory(model)
@@ -199,8 +198,8 @@ if(OpenMP_CXX_FOUND)
      target_link_libraries(tree-aa OpenMP::OpenMP_CXX)
 endif()
 
-target_link_libraries(cmaple maple-dna tree-dna alignment-dna model-dna ncl nclextra utils sprng)
-target_link_libraries(cmaple-aa maple-aa tree-aa alignment-aa model-aa ncl nclextra utils sprng)
+target_link_libraries(cmaple maple-dna tree-dna alignment-dna model-dna ncl nclextra utils)
+target_link_libraries(cmaple-aa maple-aa tree-aa alignment-aa model-aa ncl nclextra utils)
 
 ##############################################################
 # add the install targets
