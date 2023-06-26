@@ -168,9 +168,6 @@ FetchContent_MakeAvailable(googletest)
 # subdirectories containing necessary libraries for the build
 ##################################################################
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
-if (NOT TARGET sprng)
-	add_subdirectory(libraries/sprng)
-endif() 
 if (NOT TARGET ncl)
 	add_subdirectory(libraries/ncl)
 endif() 
@@ -201,8 +198,8 @@ endif(Backtrace_FOUND)
 # setup linking flags
 ##################################################################
 
-target_link_libraries(cmaple maple cmaple_tree cmaple_alignment cmaple_model ncl nclextra cmaple_utils sprng)
-target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils sprng)
+target_link_libraries(cmaple maple cmaple_tree cmaple_alignment cmaple_model ncl nclextra cmaple_utils)
+target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils)
 
 ##############################################################
 # add the install targets

@@ -23,36 +23,32 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
+#pragma once
+
 #include <cmaple_config.h>
-#include <vector>
-#include <string>
 #include <algorithm>
-#include <set>
-#include <map>
-#include <stack>
-#include <iostream>
-#include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <cmath>
-#include <stdint.h>
-#include <string.h>
-#include <sstream>
-#include <random>
-#include <sys/stat.h>
 #include <cfloat>
-#include <thread>
+#include <cmath>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <map>
+#include <random>
+#include <set>
+#include <sstream>
+#include <stack>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <sys/stat.h>
+#include <thread>
+#include <vector>
 #include <regex>
-#define SPRNG
-#include "../libraries/sprng/sprng.h"
 #include "operatingsystem.h"
 #ifdef _OPENMP
 #include <omp.h> /* OpenMP */
 #endif
-
-#ifndef CMAPLE_TOOLS_H
-#define CMAPLE_TOOLS_H
 
 #ifdef NDEBUG
 #define ASSERT(EXPRESSION) ((void)0)
@@ -1071,5 +1067,3 @@ namespace cmaple
      */
     void printCopyright(std::ostream &out);
 }
-
-#endif
