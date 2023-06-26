@@ -99,21 +99,19 @@ int main(int argc, char *argv[]) {
     
     // Show info
     cout << "Seed:    " << Params::getInstance().ran_seed <<  " ";
-    init_random(params.ran_seed, true);
     
     // setup the number of threads for openmp
 #ifdef _OPENMP
-    if (Params::getInstance().num_threads >= 1) {
-        omp_set_num_threads(Params::getInstance().num_threads);
-        Params::getInstance().num_threads = omp_get_max_threads();
-    }
-//    int max_threads = omp_get_max_threads();
     int max_procs = countPhysicalCPUCores();
     cout << "OpenMP: ";
-    if (Params::getInstance().num_threads > 0)
-        cout << Params::getInstance().num_threads  << " threads";
-    else
+    if (Params::getInstance().num_threads >= 1) {
+        omp_set_num_threads(Params::getInstance().num_threads);
+        cout << Params::getInstance().num_threads << " threads";
+    }
+    else // num_threads == 0
+    {   // not calling 'omp_set_num_threads' uses all cores automatically
         cout << "auto-detect threads";
+    }
     cout << " (" << max_procs << " CPU cores detected) \n";
     if (Params::getInstance().num_threads  > max_procs) {
         cout << endl;

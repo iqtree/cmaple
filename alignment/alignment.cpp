@@ -1117,9 +1117,8 @@ SeqType Alignment::detectSequenceType(StrVector& sequences)
     size_t num_digit = 0;
     double detectStart = getRealTime();
     size_t sequenceCount = sequences.size();
-#ifdef _OPENMP
+
 #pragma omp parallel for reduction(+:num_nuc,num_ungap,num_bin,num_alpha,num_digit)
-#endif
     for (size_t seqNum = 0; seqNum < sequenceCount; ++seqNum) {
         auto start = sequences.at(seqNum).data();
         auto stop  = start + sequences.at(seqNum).size();
@@ -1145,7 +1144,8 @@ SeqType Alignment::detectSequenceType(StrVector& sequences)
                 num_alpha++;
             }
         }
-    }
+    } // end OMP parallel for
+
     if (verbose_mode >= VB_MED) {
         cout << "Sequence Type detection took " << (getRealTime()-detectStart) << " seconds." << endl;
     }

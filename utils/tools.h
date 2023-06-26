@@ -23,32 +23,28 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ***************************************************************************/
 
-#include <cmaple_config.h>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <set>
-#include <map>
-#include <stack>
-#include <iostream>
-#include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <cmath>
-#include <stdint.h>
-#include <string.h>
-#include <sstream>
-#include <random>
-#include <sys/stat.h>
-#include <cfloat>
-#include <thread>
-#include <iomanip>
-#define SPRNG
-#include "libraries/sprng/sprng.h"
-#include "operatingsystem.h"
+#pragma once
 
-#ifndef TOOLS_H
-#define TOOLS_H
+#include <cmaple_config.h>
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <random>
+#include <set>
+#include <sstream>
+#include <stack>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <sys/stat.h>
+#include <thread>
+#include <vector>
+#include "operatingsystem.h"
 
 
 // redefine assertion
@@ -669,45 +665,6 @@ const char ERR_NEG_BRANCH[] = "Negative branch length not allowed.";
 const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
 const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
 
-/*--------------------------------------------------------------*/
-/* random number generator */
-/*--------------------------------------------------------------*/
-
-extern int *randstream;
-
-/**
- * initialize the random number generator
- * @param seed seed for generator
- * @param write_info true to write information, false otherwise (default)
- */
-int init_random(int seed, bool write_info = false, int** rstream = NULL);
-
-/**
- * finalize random number generator (e.g. free memory
- */
-int finish_random(int *rstream = NULL);
-
-/**
- * returns a random integer in the range [0; n - 1]
- * @param n upper-bound of random number
- */
-int random_int(int n, int *rstream = NULL);
-
-/**
- *  return a random integer in the range [a,b]
- */
-//int randint(int a, int b);
-
-/**
- * returns a random integer in the range [0; RAND_MAX - 1]
- * = random_int(RAND_MAX)
- */
-//int random_int(int *rstream = NULL);
-
-/**
- * returns a random floating-point nuber in the range [0; 1)
- */
-double random_double(int *rstream = NULL);
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
@@ -1041,5 +998,3 @@ void usage_cmaple(char* argv[], bool full_command);
  * Print copyright
  */
 void printCopyright(std::ostream &out);
-
-#endif
