@@ -2,6 +2,8 @@
 using namespace std;
 using namespace cmaple;
 
+CMaple::CMaple(cmaple::Params params):tree(params) {};
+
 void CMaple::loadInput()
 {
     ASSERT(tree.params->aln_path);
