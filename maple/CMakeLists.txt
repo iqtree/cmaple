@@ -1,7 +1,6 @@
 # DNA data
 add_library(maple
 cmaple.h cmaple.cpp
-cmaple_api.h cmaple_api.cpp
 )
 target_link_libraries(maple cmaple_tree cmaple_alignment cmaple_model cmaple_utils)
 
