@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     cout << endl;
     
     // Show info
-    cout << "Seed:    " << Params::getInstance().ran_seed <<  " ";
+    cout << "Seed:    " << Params::getInstance().ran_seed <<  " " << std::endl;
     
     // setup the number of threads for openmp
 #ifdef _OPENMP

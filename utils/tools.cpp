@@ -707,11 +707,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 std::string tree_search_type = argv[cnt];
                 // convert tree_search_type to uppercase
                 transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
-                if (tree_search_type == "NO" || tree_search_type == "FAST")
+                if (tree_search_type == "FAST") // || tree_search_type == "NO")
                     params.tree_search_type = NO_TREE_SEARCH;
-                else if (tree_search_type == "PARTIAL" || tree_search_type == "NORMAL")
+                else if (tree_search_type == "NORMAL") // || tree_search_type == "PARTIAL")
                     params.tree_search_type = PARTIAL_TREE_SEARCH;
-                else if (tree_search_type == "COMPLETE" || tree_search_type == "SLOW")
+                else if (tree_search_type == "SLOW") // tree_search_type == "COMPLETE")
                     params.tree_search_type = COMPLETE_TREE_SEARCH;
                 else
                     outError("Use -tree-search <NO|PARTIAL|COMPLETE>");
