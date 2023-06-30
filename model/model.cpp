@@ -208,6 +208,9 @@ std::string cmaple::Model::exportString(Alignment& aln)
 {
     string output{};
     
+    // model_name
+    output += "\nMODEL: " + model_name + "\n";
+    
     // root frequencies
     output += "\nROOT FREQUENCIES\n";
     output += exportRootFrequenciesStr(aln);
@@ -286,7 +289,7 @@ void cmaple::Model::readStateFreq(istream &in)
     for (i = 0; i < num_states_; i++) {
         string tmp_value;
         in >> tmp_value;
-        if (tmp_value.length() == 0)
+        if (!tmp_value.length())
             throw "State frequencies could not be read";
         root_freqs[i] = convert_real_number(tmp_value.c_str());
         if (root_freqs[i] < 0.0)

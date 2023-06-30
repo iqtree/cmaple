@@ -208,7 +208,7 @@ install (TARGETS cmaple DESTINATION bin)
 install (TARGETS cmaple-aa DESTINATION bin)
 #install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
 #install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa.ref" DESTINATION .)
-#install (FILES "${PROJECT_SOURCE_DIR}/example/output.diff" DESTINATION .)
+#install (FILES "${PROJECT_SOURCE_DIR}/example/output.maple" DESTINATION .)
 #install (FILES "${PROJECT_BINARY_DIR}/cmaple_config.h" DESTINATION "include")
 #install(DIRECTORY "${PROJECT_SOURCE_DIR}/" # source directory
 #        DESTINATION "include/cmaple" # target directory

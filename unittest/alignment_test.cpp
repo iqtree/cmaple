@@ -12,9 +12,7 @@ TEST(Alignment, readSequences)
     
     // Test readFasta()
     std::string file_path = "../../example/input.fa";
-    char* file_path_ptr = new char[file_path.length() + 1];
-    strcpy(file_path_ptr, file_path.c_str());
-    aln.readSequences(file_path_ptr, sequences, seq_names);
+    aln.readSequences(file_path.c_str(), sequences, seq_names);
     // detect the type of the input sequences
     aln.setSeqType(aln.detectSequenceType(sequences));
     EXPECT_EQ(sequences.size(), 10);
@@ -34,10 +32,7 @@ TEST(Alignment, readSequences)
     sequences.clear();
     seq_names.clear();
     file_path = "../../example/input.phy";
-    delete[] file_path_ptr;
-    file_path_ptr = new char[file_path.length() + 1];
-    strcpy(file_path_ptr, file_path.c_str());
-    aln.readSequences(file_path_ptr, sequences, seq_names);
+    aln.readSequences(file_path.c_str(), sequences, seq_names);
     EXPECT_EQ(sequences.size(), 10);
     EXPECT_EQ(sequences.size(), seq_names.size());
     EXPECT_EQ(sequences[1], "ATTAAAGGTTTATACCTVCA");
@@ -56,24 +51,19 @@ TEST(Alignment, readSequences)
     
     // Test input not found
     file_path = "../../example/notfound";
-    delete[] file_path_ptr;
-    file_path_ptr = new char[file_path.length() + 1];
-    strcpy(file_path_ptr, file_path.c_str());
-    EXPECT_EXIT(aln.readSequences(file_path_ptr, sequences, seq_names), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_EXIT(aln.readSequences(file_path.c_str(), sequences, seq_names), ::testing::ExitedWithCode(2), ".*");
 }
 
 /*
- Test readRef(char* ref_path)
+ Test readRef(const std::string& ref_path)
  also test parseRefSeq(std::string& ref_sequence)
  */
 TEST(Alignment, readRef)
 {
     Alignment aln;
     std::string file_path("../../example/ref.fa");
-    char* file_path_ptr = new char[file_path.length() + 1];
-    strcpy(file_path_ptr, file_path.c_str());
     aln.setSeqType(SEQ_DNA);
-    aln.readRef(file_path_ptr);
+    aln.readRef(file_path);
     
     EXPECT_EQ(aln.ref_seq.size(), 20);
     EXPECT_EQ(aln.ref_seq[0], 0);
@@ -86,10 +76,7 @@ TEST(Alignment, readRef)
     
     //  Test readRef() from not-found file
     file_path = "../../example/notfound";
-    delete[] file_path_ptr;
-    file_path_ptr = new char[file_path.length() + 1];
-    strcpy(file_path_ptr, file_path.c_str());
-    EXPECT_EXIT(aln.readRef(file_path_ptr), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_EXIT(aln.readRef(file_path), ::testing::ExitedWithCode(2), ".*");
 }
 
 /*
@@ -105,15 +92,11 @@ TEST(Alignment, extractMutations)
     std::string ref_sequence;
     
     // output file
-    std::string diff_file_path("../../example/output.diff");
-    char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
+    std::string diff_file_path("../../example/output.maple");
     
     // read sequences
     std::string file_path = "../../example/input.fa";
-    char* file_path_ptr = new char[file_path.length() + 1];
-    strcpy(file_path_ptr, file_path.c_str());
-    aln.readSequences(file_path_ptr, sequences, seq_names);
+    aln.readSequences(file_path.c_str(), sequences, seq_names);
     // detect the type of the input sequences
     aln.setSeqType(aln.detectSequenceType(sequences));
     
@@ -121,7 +104,7 @@ TEST(Alignment, extractMutations)
     ref_sequence = aln.generateRef(sequences);
 
     // open the output file
-    std::ofstream out = std::ofstream(diff_file_path_ptr);
+    std::ofstream out = std::ofstream(diff_file_path);
     
     // write reference sequence to the output file
     out << ">" << REF_NAME << std::endl;
@@ -138,12 +121,10 @@ TEST(Alignment, extractMutations)
     
     // ----- test on input.fa; read ref_sequence -----
     std::string ref_file_path = "../../example/ref.fa";
-    char* ref_file_path_ptr = new char[ref_file_path.length() + 1];
-    strcpy(ref_file_path_ptr, ref_file_path.c_str());
-    ref_sequence = aln.readRef(ref_file_path_ptr);
+    ref_sequence = aln.readRef(ref_file_path);
     
     // open the output file
-    out = std::ofstream(diff_file_path_ptr);
+    out = std::ofstream(diff_file_path);
     
     // write reference sequence to the output file
     out << ">" << REF_NAME << std::endl;
@@ -179,15 +160,13 @@ TEST(Alignment, extractMutations)
     
     // read sequences
     file_path = "../../example/input_full.phy";
-    file_path_ptr = new char[file_path.length() + 1];
-    strcpy(file_path_ptr, file_path.c_str());
-    aln.readSequences(file_path_ptr, sequences, seq_names);
+    aln.readSequences(file_path.c_str(), sequences, seq_names);
     
     // generate ref_sequence
     ref_sequence = aln.generateRef(sequences);
     
     // open the output file
-    out = std::ofstream(diff_file_path_ptr);
+    out = std::ofstream(file_path);
     
     // write reference sequence to the output file
     out << ">" << REF_NAME << std::endl;
@@ -209,17 +188,15 @@ TEST(Alignment, extractMutations)
 }
 
 /*
- Test readDiff(char* diff_path, char* ref_path)
+ Test readMapleFile(const std::string& diff_path, const std::string& ref_path)
  */
-TEST(Alignment, readDiff)
+TEST(Alignment, readMapleFile)
 {
     Alignment aln;
     
-    // ----- test on test_100.diff -----
-    std::string diff_file_path("../../example/test_100.diff");
-    char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    aln.readDiff(diff_file_path_ptr, NULL); // read ref_seq from the diff file
+    // ----- test on test_100.maple -----
+    std::string diff_file_path("../../example/test_100.maple");
+    aln.readMapleFile(diff_file_path, ""); // read ref_seq from the MAPLE file
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 100);
@@ -241,18 +218,13 @@ TEST(Alignment, readDiff)
     EXPECT_EQ(aln.ref_seq[8], 3);
     EXPECT_EQ(aln.ref_seq[467], 0);
     EXPECT_EQ(aln.ref_seq[1593], 1);
-    // ----- test on test_100.diff -----
+    // ----- test on test_100.maple -----
     
-    // ----- test on test_5K.diff, load ref_seq from test_100.diff -----
+    // ----- test on test_5K.maple, load ref_seq from test_100.maple -----
     aln.data.clear();
-    diff_file_path = "../../example/test_5K.diff";
-    delete[] diff_file_path_ptr;
-    diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    std::string ref_file_path("../../example/test_100.diff");
-    char* ref_file_path_ptr = new char[ref_file_path.length() + 1];
-    strcpy(ref_file_path_ptr, ref_file_path.c_str());
-    aln.readDiff(diff_file_path_ptr, ref_file_path_ptr);
+    diff_file_path = "../../example/test_5K.maple";
+    std::string ref_file_path("../../example/test_100.maple");
+    aln.readMapleFile(diff_file_path, ref_file_path);
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 5000);
@@ -274,25 +246,19 @@ TEST(Alignment, readDiff)
     EXPECT_EQ(aln.ref_seq[8], 3);
     EXPECT_EQ(aln.ref_seq[467], 0);
     EXPECT_EQ(aln.ref_seq[1593], 1);
-    // ----- test on test_5K.diff, load ref_seq from test_100.diff -----
+    // ----- test on test_5K.maple, load ref_seq from test_100.maple -----
     
-    // ----- Test readDiff() with null input
-    EXPECT_DEATH(aln.readDiff(NULL, NULL), ".*");
+    // ----- Test readMapleFile() with null input
+    EXPECT_DEATH(aln.readMapleFile("", ""), ".*");
     
-    //  Test readDiff() from not-found file
+    //  Test readMapleFile() from not-found file
     diff_file_path = "../../example/notfound";
-    delete[] diff_file_path_ptr;
-    diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    EXPECT_EXIT(aln.readDiff(diff_file_path_ptr, NULL), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_EXIT(aln.readMapleFile(diff_file_path, ""), ::testing::ExitedWithCode(2), ".*");
     
-    // ----- Test readDiff() with wrong format file
+    // ----- Test readMapleFile() with wrong format file
     aln.data.clear();
     diff_file_path = "../../example/input.fa";
-    delete[] diff_file_path_ptr;
-    diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    EXPECT_EXIT(aln.readDiff(diff_file_path_ptr, NULL), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_EXIT(aln.readMapleFile(diff_file_path, ""), ::testing::ExitedWithCode(2), ".*");
 }
 
 /*
@@ -305,27 +271,19 @@ TEST(Alignment, extractDiffFile)
     // ----- test on input.phy with ref file from ref.fa -----
     Params params = Params::getInstance();
     params.tree_search_type = COMPLETE_TREE_SEARCH;
-    std::string aln_file_path("../../example/input.phy");
-    char* aln_file_path_ptr = new char[aln_file_path.length() + 1];
-    strcpy(aln_file_path_ptr, aln_file_path.c_str());
-    params.aln_path = aln_file_path_ptr;
-    std::string ref_file_path("../../example/ref.fa");
-    char* ref_file_path_ptr = new char[ref_file_path.length() + 1];
-    strcpy(ref_file_path_ptr, ref_file_path.c_str());
-    params.ref_path = ref_file_path_ptr;
+    params.aln_path = "../../example/input.phy";
+    params.ref_path = "../../example/ref.fa";
     
-    // extract diff file
-    aln.extractDiffFile(params);
+    // extract MAPLE file
+    aln.extractMapleFile(params.aln_path, params.aln_path + ".maple", params);
     
     // reset data
     aln.data.clear();
     aln.ref_seq.clear();
     
-    // read diff file (for testing)
-    std::string diff_file_path(aln_file_path + ".diff");
-    char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    aln.readDiff(diff_file_path_ptr, NULL); // read ref_seq from the diff file
+    // read MAPLE file (for testing)
+    std::string diff_file_path = params.aln_path + ".maple";
+    aln.readMapleFile(diff_file_path, ""); // read ref_seq from the MAPLE file
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 10);
@@ -350,36 +308,28 @@ TEST(Alignment, extractDiffFile)
     // ----- test on input.phy with ref file from ref.fa -----
     
     // ----- Test extractDiffFile() with null params.aln_path
-    delete params.aln_path;
-    params.aln_path = NULL;
-    EXPECT_DEATH(aln.extractDiffFile(params), ".*");
+    params.aln_path = "";
+    EXPECT_DEATH(aln.extractMapleFile(params.aln_path, params.aln_path + ".maple", params), ".*");
     
-    /*// ----- test on input.fa without ref file, specifying diff file path -----
+    /*// ----- test on input.fa without ref file, specifying MAPLE file path -----
     aln.data.clear();
     aln.ref_seq.clear();
     aln_file_path = "../../example/input_full.fa";
-    delete[] aln_file_path_ptr;
-    aln_file_path_ptr = new char[aln_file_path.length() + 1];
-    strcpy(aln_file_path_ptr, aln_file_path.c_str());
-    params.aln_path = aln_file_path_ptr;
-    delete[] ref_file_path_ptr;
-    params.ref_path = NULL;
+    params.aln_path = aln_file_path;
+    params.ref_path = "";
     
-    diff_file_path = aln_file_path + ".output.diff";
-    delete[] diff_file_path_ptr;
-    diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    params.diff_path = diff_file_path_ptr;
+    diff_file_path = aln_file_path + ".output.maple";
+    params.maple_path = diff_file_path;
     
-    // extract diff file
+    // extract MAPLE file
     aln.extractDiffFile(params);
     
     // reset data
     aln.data.clear();
     aln.ref_seq.clear();
     
-    // read diff file (for testing)
-    aln.readDiff(diff_file_path_ptr, NULL); // read ref_seq from the diff file
+    // read MAPLE file (for testing)
+    aln.readMapleFile(diff_file_path, ""); // read ref_seq from the MAPLE file
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 1000);
@@ -401,7 +351,7 @@ TEST(Alignment, extractDiffFile)
     EXPECT_EQ(aln.ref_seq[8424], 0);
     EXPECT_EQ(aln.ref_seq[223], 3);
     EXPECT_EQ(aln.ref_seq[175], 1);
-    // ----- with/without diff file path -----*/
+    // ----- with/without MAPLE file path -----*/
 }
 
 /*
@@ -579,12 +529,10 @@ TEST(Alignment, sortSeqsByDistances)
     EXPECT_EQ(aln.data[4].seq_name, "sequence 4");
     EXPECT_EQ(aln.data[5].seq_name, "sequence 5");
     
-    // ----- test on data from diff file -----
+    // ----- test on data from MAPLE file -----
     aln.data.clear();
-    std::string diff_file_path("../../example/test_100.diff");
-    char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    aln.readDiff(diff_file_path_ptr, NULL); // read ref_seq from the diff file
+    std::string diff_file_path("../../example/test_100.maple");
+    aln.readMapleFile(diff_file_path, ""); // read ref_seq from the MAPLE file
     
     aln.sortSeqsByDistances(0);
     EXPECT_EQ(aln.data.size(), 100);

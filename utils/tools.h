@@ -241,7 +241,7 @@ namespace cmaple
         input type, tree or splits graph
      */
     enum InputType {
-        IN_NEWICK, IN_NEXUS, IN_FASTA, IN_PHYLIP, IN_COUNTS, IN_CLUSTAL, IN_MSF, IN_MAPLE, IN_OTHER
+        IN_NEWICK, IN_NEXUS, IN_FASTA, IN_PHYLIP, IN_COUNTS, IN_CLUSTAL, IN_MSF, IN_MAPLE, IN_OTHER, IN_UNKNOWN
     };
 
     /**
@@ -262,7 +262,7 @@ namespace cmaple
         types of tree search
      */
     enum TreeSearchType {
-        NO_TREE_SEARCH, PARTIAL_TREE_SEARCH, COMPLETE_TREE_SEARCH
+        NO_TREE_SEARCH, PARTIAL_TREE_SEARCH, COMPLETE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
     };
 
     /**
@@ -377,31 +377,47 @@ namespace cmaple
             having to pass the params variable around
      */
     class Params {
+    private:
+        
+        // Params () {}; // Disable constructor
+        
+        /**
+        Init default parameters
+         */
+        void initDefaultValue();
+        
     public:
         static Params& getInstance();
-    private:
-        Params () {}; // Disable constructor
-    public:
+        
+        /**
+        Constructor
+         */
+        Params();
         
         /**
         *  Path to input sequences
         */
-        char* aln_path;
+        std::string aln_path;
         
         /**
-        *  Path to a Diff file
+        *  Path to a MAPLE file
         */
-        char* diff_path;
+        std::string maple_path;
         
         /**
         *  Path to the reference sequence
         */
-        char* ref_path;
+        std::string ref_path;
         
         /**
-        *  TRUE to only extract Diff file (from alignment) without running inference
+        *  Alignment format
         */
-        bool only_extract_diff;
+        InputType aln_format;
+        
+        /**
+        *  TRUE to only extract MAPLE file (from alignment) without running inference
+        */
+        bool only_extract_maple;
         
         /**
         *  Weight to calculate the hamming distance
@@ -521,7 +537,7 @@ namespace cmaple
         /**
         *  Path to an input tree
         */
-        char* input_treefile;
+        std::string input_treefile;
         
         /**
         *       The number of attempts to improve the tree with SPR moves
@@ -591,7 +607,7 @@ namespace cmaple
         /**
         *  prefix output
         */
-        char* output_prefix;
+        std::string output_prefix;
         
         /**
         *  TRUE to allow replace the input tree by its NNI neighbor (with a higher lh) when computing aLRT-SH
@@ -682,11 +698,8 @@ namespace cmaple
     const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
     const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
 
-    /*--------------------------------------------------------------*/
-    /* random number generator */
-    /*--------------------------------------------------------------*/
-
-    extern int *randstream;
+    const int CODE_SUCCESS = 0;
+    const int CODE_ERROR_1 = 1;
 
     /**
      * initialize the random number generator
@@ -966,19 +979,6 @@ namespace cmaple
     void parseArg(int argc, char *argv[], Params &params);
 
     /**
-        Init default parameters
-        @param params (OUT) program parameters
-     */
-    void initDefaultValue(Params &params);
-
-    /**
-        Init default parameters with a random seed
-        @param params (OUT) program parameters
-        @param params (OUT) program parameters
-     */
-    void initDefaultValue(Params &params, uint64_t n_random_seed);
-
-    /**
         Show quick start guide
      */
     void quickStartGuide();
@@ -1066,4 +1066,9 @@ namespace cmaple
      * Print copyright
      */
     void printCopyright(std::ostream &out);
+
+    /**
+     * Parse type of tree search from a string
+     */
+    TreeSearchType parseTreeSearchType(const std::string& tree_search_type);
 }

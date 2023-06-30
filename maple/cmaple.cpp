@@ -2,10 +2,218 @@
 using namespace std;
 using namespace cmaple;
 
+CMaple::CMaple():tree(cmaple::Params()) {};
+
+CMaple::CMaple(cmaple::Params&& params):tree(std::move(params)) {};
+
+CMaple::CMaple(const std::string& aln_filename, const std::string& format, const std::string& seqtype):tree(cmaple::Params())
+{
+    setAlignment(aln_filename, format, seqtype);
+}
+
+int CMaple::setAlignment(const std::string& aln_filename, const std::string& format, const std::string& seqtype)
+{
+    // set aln_filename
+    if (aln_filename.length())
+        tree.params->aln_path = aln_filename;
+    else
+        return CODE_ERROR_1;
+    
+    // set aln format (if specified)
+    if (format.length())
+    {
+        tree.params->aln_format = tree.aln.getAlignmentFormat(format);
+        if (tree.params->aln_format == IN_UNKNOWN)
+        {
+            outError("Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP");
+            return CODE_ERROR_1;
+        }
+    }
+    
+    // set sequence type
+    if (seqtype.length())
+    {
+        tree.params->seq_type = tree.aln.getSeqType(seqtype);
+        if (tree.params->seq_type == SEQ_UNKNOWN)
+        {
+            outError("Unknown sequence type " + seqtype + ", please use DNA or AA");
+            return CODE_ERROR_1;
+        }
+    }
+    
+    // success
+    return CODE_SUCCESS;
+}
+
+int CMaple::setModel(const std::string& model_name)
+{
+    // set model (if specified)
+    if (model_name.length())
+    {
+        tree.params->model_name = model_name;
+        return CODE_SUCCESS;
+    }
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::setInputTree(const std::string& tree_filename)
+{
+    // set input tree file (if specified)
+    if (tree_filename.length())
+    {
+        tree.params->input_treefile = tree_filename;
+        return CODE_SUCCESS;
+    }
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::extractMaple(const std::string& aln_filename, const std::string& output_filename)
+{
+    if (aln_filename.length() && output_filename.length())
+    {
+        tree.aln.extractMapleFile(aln_filename, output_filename, *tree.params);
+        return CODE_SUCCESS;
+    }
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::extractFASTA(const std::string& aln_filename, const std::string& output_filename)
+{
+    if (aln_filename.length() && output_filename.length())
+    {
+        tree.aln.reconstructAln(aln_filename, output_filename);
+        return CODE_SUCCESS;
+    }
+    
+    return CODE_ERROR_1;
+}
+
+std::string CMaple::getTreeString(const std::string& tree_type, const bool show_branch_supports)
+{
+    return tree.exportTreeString(tree_type, show_branch_supports);
+}
+
+std::string CMaple::getModelString()
+{
+    return tree.exportModelString();
+}
+
+std::string CMaple::getVersion()
+{
+    return "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "." + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH;
+}
+
+std::string CMaple::getCitations()
+{
+    return "[Citations]";
+}
+
+int CMaple::setRef(const std::string& ref_filename)
+{
+    // set ref_filename(if specified)
+    if (ref_filename.length())
+    {
+        tree.params->ref_path = ref_filename;
+        return CODE_SUCCESS;
+    }
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::setTreeSearchType(const std::string& tree_search_type)
+{
+    // set tree_search_type (if specified)
+    if (tree_search_type.length())
+    {
+        tree.params->tree_search_type = parseTreeSearchType(tree_search_type);
+        if (tree.params->tree_search_type == UNKNOWN_TREE_SEARCH)
+        {
+            outError("Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|SLOW>");
+            return CODE_ERROR_1;
+        }
+        return CODE_SUCCESS;
+    }
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::setShortRangeTreeSearch(const bool enable)
+{
+    tree.params->short_range_topo_search = enable;
+    return CODE_SUCCESS;
+}
+
+int CMaple::setPrefix(const std::string& prefix)
+{
+    // set prefix (if specified)
+    if (prefix.length())
+    {
+        tree.params->output_prefix = prefix;
+        return CODE_SUCCESS;
+    }
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::enableOptimizingBlengths(const bool enable)
+{
+    tree.params->optimize_blength = enable;
+    return CODE_SUCCESS;
+}
+
+int CMaple::setMinBlength(const double min_blength)
+{
+    // set min_blength (if specified)
+    if (min_blength > 0)
+    {
+        tree.params->fixed_min_blength = min_blength;
+        return CODE_SUCCESS;
+    }
+    else
+        outError("min_blength must be positive!");
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::setThreshProb(const double thresh_prob)
+{
+    // set thresh_prob (if specified)
+    if (thresh_prob > 0)
+    {
+        tree.params->threshold_prob = thresh_prob;
+        return CODE_SUCCESS;
+    }
+    else
+        outError("thresh_prob must be positive!");
+    
+    return CODE_ERROR_1;
+}
+
+int CMaple::overwriteOutputs(const bool enable)
+{
+    tree.params->overwrite_output = enable;
+    return CODE_SUCCESS;
+}
+
+int CMaple::setRandomSeed(const int seed)
+{
+    tree.params->ran_seed = seed;
+    return CODE_SUCCESS;
+}
+
+cmaple::Params& CMaple::getSettings()
+{
+    return *tree.params;
+}
+
+
 void CMaple::loadInput()
 {
-    ASSERT(tree.params->aln_path);
-    const InputType input_type = detectInputFile(tree.params->aln_path);
+    ASSERT(tree.params->aln_path.length());
+    const InputType input_type = detectInputFile(tree.params->aln_path.c_str());
     
     // extract sequences (in vectors of mutations) from an input alignment (in PHYLIP or FASTA format)
     if (input_type != IN_MAPLE)
@@ -13,29 +221,34 @@ void CMaple::loadInput()
         // record the starting time
         auto start = getRealTime();
         
-        tree.aln.extractDiffFile(*tree.params);
+        // prepare output (Diff) file
+        // init diff_path if it's null
+        if (!tree.params->maple_path.length())
+            tree.params->maple_path = tree.params->aln_path + ".maple";
+        
+        tree.aln.extractMapleFile(tree.params->aln_path, tree.params->maple_path, *tree.params, tree.params->only_extract_maple);
         
         // record the end time and show the runtime
         auto end = getRealTime();
-        cout << "The input alignment is converted into DIFF format at " << tree.params->diff_path << endl;
+        cout << "The input alignment is converted into MAPLE format at " << tree.params->maple_path << endl;
         cout << " - Converting time: " << end-start << endl;
     }
-    // or read sequences (in vectors of mutations) from a DIFF file
+    // or read sequences (in vectors of mutations) from a MAPLE file
     else
     {
         // update input file path
-        tree.params->diff_path = tree.params->aln_path;
-        tree.params->aln_path = NULL;
+        tree.params->maple_path = tree.params->aln_path;
+        tree.params->aln_path = "";
         
-        if (tree.params->only_extract_diff)
-            outError("To export a Diff file, please supply an alignment via -aln <ALIGNMENT>");
+        if (tree.params->only_extract_maple)
+            outError("To export a MAPLE file, please supply an alignment via -aln <ALIGNMENT>");
         
-        // only want to reconstruc the aln file from the Diff file
+        // only want to reconstruc the aln file from the MAPLE file
         if (tree.params->output_aln)
-            tree.aln.reconstructAln(tree.params->diff_path, tree.params->output_aln);
-        // otherwise, read the Diff file
+            tree.aln.reconstructAln(tree.params->maple_path, tree.params->output_aln);
+        // otherwise, read the MAPLE file
         else
-            tree.aln.readDiff(tree.params->diff_path, tree.params->ref_path);
+            tree.aln.readMapleFile(tree.params->maple_path, tree.params->ref_path);
     }
 }
 
@@ -70,12 +283,8 @@ void CMaple::preInference()
     ASSERT(tree.aln.data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
     
     // use diff_path as the output prefix if users didn't specify it
-    if (!tree.params->output_prefix)
-    {
-        string diff_path_str(tree.params->diff_path);
-        tree.params->output_prefix = new char[diff_path_str.length() + 1];
-        strcpy(tree.params->output_prefix, diff_path_str.c_str());
-    }
+    if (!tree.params->output_prefix.length())
+        tree.params->output_prefix = tree.params->maple_path;
     
     // check whether output file is already exists
     string output_file(tree.params->output_prefix);
@@ -117,7 +326,7 @@ void CMaple::buildInitialTree()
     std::unique_ptr<Model>& model = tree.model;
     const PositionType seq_length = aln.ref_seq.size();
     const PositionType num_seqs = aln.data.size();
-    const bool with_input_tree = tree.params->input_treefile != NULL;
+    const bool with_input_tree = tree.params->input_treefile.length();
     PositionType num_new_sequences = num_seqs;
     Sequence* sequence = &tree.aln.data.front();
     tree.nodes.reserve(num_seqs + num_seqs);
@@ -183,11 +392,11 @@ void CMaple::buildInitialTree()
         // NHANLT: debug
         //cout << "Added node " << (*sequence)->seq_name << endl;
         //cout << (*sequence)->seq_name << endl;
-        //cout << tree.exportTreeString() << ";" << endl;
+        //cout << tree.exportTreeString() << endl;
         
         //if ((*sequence)->seq_name == "2219")
         //{
-            //cout << tree.exportTreeString() << ";" << endl;
+            //cout << tree.exportTreeString() << endl;
             //string output_file(tree.params->output_prefix);
             //exportOutput(output_file + "_init.treefile");
             //exit(0);
@@ -220,7 +429,7 @@ void CMaple::optimizeTree()
     
     // run a short range search for tree topology improvement (if neccessary)
     // NOTES: don't apply short range search when users input a tree because only a few new sequences were added -> we only apply a deep SPR search
-    if (tree.params->short_range_topo_search && tree.params->tree_search_type != NO_TREE_SEARCH && !(tree.params->input_treefile && tree.params->tree_search_type == PARTIAL_TREE_SEARCH))
+    if (tree.params->short_range_topo_search && tree.params->tree_search_type != NO_TREE_SEARCH && !(tree.params->input_treefile.length() && tree.params->tree_search_type == PARTIAL_TREE_SEARCH))
     {
         // apply short-range SPR search
         optimizeTreeTopology<num_states>(true);
@@ -350,7 +559,7 @@ template <const StateType num_states>
 void CMaple::doInferenceTemplate()
 {
     // 0. Load an input tree if users supply a treefile
-    if (tree.params->input_treefile)
+    if (tree.params->input_treefile.length())
         loadInputTree<num_states>();
         
     // 1. Build an initial tree
@@ -384,7 +593,7 @@ void CMaple::postInferenceTemplate()
         exportOutput(output_file + "_aLRT_SH.treefile", true);
     
     // output model params
-    tree.showModelParams();
+    std::cout << tree.exportModelString() << std::endl;
     
     // list output files
     std::cout << "Analysis results written to:" << std::endl;
@@ -418,7 +627,7 @@ void CMaple::exportOutput(const string &filename, const bool show_branch_support
     ofstream out = ofstream(filename);
     
     // write tree string into the tree file
-    out << tree.exportTreeString(tree.params->export_binary_tree, tree.root_vector_index, show_branch_support) << ";" << endl;
+    out << tree.exportTreeString(tree.params->export_binary_tree, show_branch_support) << endl;
     
     // close the output file
     out.close();
@@ -535,27 +744,98 @@ void CMaple::setupFuncPtrs(const StateType num_states)
     }
 }
 
+int CMaple::readAlignment(std::string aln_filename, std::string format, std::string seqtype)
+{
+    ASSERT(aln_filename.length());
+    
+    // Set the seqtype (if specified)
+    if (seqtype.length())
+    {
+        transform(seqtype.begin(), seqtype.end(), seqtype.begin(), ::toupper);
+        if (seqtype == "DNA")
+            tree.params->seq_type = SEQ_DNA;
+        else if (seqtype == "AA")
+                tree.params->seq_type = SEQ_PROTEIN;
+        else
+        {
+            outError("Unknown sequence type, please use DNA or AA");
+            return CODE_ERROR_1;
+        }
+    }
+    
+    // Set the format of the alignment (if specified)
+    InputType input_type = IN_OTHER;
+    if (format.length())
+    {
+        transform(format.begin(), format.end(), format.begin(), ::toupper);
+        if (format == "MAPLE")
+            input_type = IN_MAPLE;
+        else  if (format == "PHYLIP")
+            input_type = IN_PHYLIP;
+        else if (format == "FASTA")
+            input_type = IN_FASTA;
+        else
+        {
+            outError("Unsupported alignment format. Please use MAPLE, FASTA, or PHYLIP");
+            return CODE_ERROR_1;
+        }
+    }
+    else
+        input_type = detectInputFile(aln_filename.c_str());
+    
+    // read the input alignment
+    tree.params->aln_path = aln_filename;
+    // if alignment is in PHYLIP or FASTA format -> convert to MAPLE format
+    if (input_type != IN_MAPLE)
+    {
+        // record the starting time
+        auto start = getRealTime();
+        
+        // prepare output (Diff) file
+        // init diff_path if it's null
+        if (!tree.params->maple_path.length())
+            tree.params->maple_path = tree.params->aln_path + ".maple";
+        
+        tree.aln.extractMapleFile(tree.params->aln_path, tree.params->maple_path, *tree.params, tree.params->only_extract_maple);
+        
+        // record the end time and show the runtime
+        auto end = getRealTime();
+        cout << "The input alignment is converted into MAPLE format at " << tree.params->maple_path << endl;
+        cout << " - Converting time: " << end-start << endl;
+    }
+    // otherwise, alignment is in MAPLE format -> read it
+    else
+    {
+        // update input file path
+        tree.params->maple_path = tree.params->aln_path;
+        tree.params->aln_path = "";
+        
+        // read the MAPLE file
+        tree.aln.readMapleFile(tree.params->maple_path, tree.params->ref_path);
+    }
+    
+    // return success
+    return CODE_SUCCESS;
+}
+
 void runCMaple(Params &params)
 {
     // NHANLT: test new funtions
     // test();
     
     auto start = getRealTime();
-    CMaple cmaple(params);
+    CMaple cmaple(std::move(params));
     
     // load input data
     cmaple.loadInput();
     
-    // terminate if the user only wants to export a Diff file from an alignment
-    // or only want to reconstruct an aln from a Diff file
-    if (params.only_extract_diff || params.output_aln)
+    // terminate if the user only wants to export a MAPLE file from an alignment
+    // or only want to reconstruct an aln from a MAPLE file
+    if (params.only_extract_maple || params.output_aln)
         return;
     
     // prepare for the inference
     cmaple.preInference();
-    
-    // debug
-    // cmaple.tree.showModelParams();
     
     // infer trees and model params
     cmaple.doInference();

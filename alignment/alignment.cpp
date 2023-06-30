@@ -38,7 +38,7 @@ void cmaple::Alignment::processSeq(string &sequence, string &line, PositionType 
     }
 }
 
-void cmaple::Alignment::readFasta(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
+void cmaple::Alignment::readFasta(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
     ostringstream err_str;
     igzstream in;
     PositionType line_num = 1;
@@ -124,7 +124,7 @@ void cmaple::Alignment::readFasta(char *aln_path, StrVector &sequences, StrVecto
     seq_names = new_seq_names;
 }
 
-void cmaple::Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::Alignment::readPhylip(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     ostringstream err_str;
     igzstream in;
@@ -188,7 +188,7 @@ void cmaple::Alignment::readPhylip(char *aln_path, StrVector &sequences, StrVect
     in.close();
 }
 
-void cmaple::Alignment::readSequences(char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::Alignment::readSequences(const char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     // detect the input file format
     InputType intype = detectInputFile(aln_path);
@@ -215,7 +215,7 @@ void cmaple::Alignment::readSequences(char* aln_path, StrVector &sequences, StrV
 string cmaple::Alignment::generateRef(StrVector &sequences)
 {
     // validate the input sequences
-    if (sequences.size() == 0 || sequences[0].length() == 0)
+    if (!sequences.size() || !sequences[0].length())
         outError("Empty input sequences. Please check & try again!");
     
     cout << "Generating a reference sequence from the input alignment..." << endl;
@@ -261,11 +261,11 @@ string cmaple::Alignment::generateRef(StrVector &sequences)
     return ref_str;
 }
 
-string cmaple::Alignment::readRef(char* ref_path)
+string cmaple::Alignment::readRef(const std::string& ref_path)
 {
-    ASSERT(ref_path);
+    ASSERT(ref_path.length());
     if (!fileExists(ref_path))
-        outError("File not found ", ref_path);
+        outError("File not found " + ref_path);
     
     string ref_str = "";
     
@@ -273,10 +273,10 @@ string cmaple::Alignment::readRef(char* ref_path)
     cout << "Reading a reference sequence from file..." << endl;
     StrVector str_sequences;
     StrVector seq_names;
-    readSequences(ref_path, str_sequences, seq_names, false);
+    readSequences(ref_path.c_str(), str_sequences, seq_names, false);
     
     // validate the input sequence(s)
-    if (str_sequences.size() == 0 || str_sequences[0].length() == 0)
+    if (!str_sequences.size() || !str_sequences[0].length())
         outError("No sequence found for the reference!");
     
     // extract the ref_sequence
@@ -290,7 +290,7 @@ string cmaple::Alignment::readRef(char* ref_path)
 
 void cmaple::Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length)
 {
-    // output the mutation into a Diff file
+    // output the mutation into a MAPLE file
     out << state_char << "\t" << (pos + 1);
     if (length != -1)
         out << "\t" << length;
@@ -306,7 +306,7 @@ void cmaple::Alignment::outputMutation(ofstream &out, Sequence* sequence, char s
     }
 }
 
-void cmaple::Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_diff)
+void cmaple::Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_maple)
 {
     ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out);
     data.clear();
@@ -325,7 +325,7 @@ void cmaple::Alignment::extractMutations(StrVector &str_sequences, StrVector &se
         out << ">" << seq_names[i] << endl;
         
         // init new sequence instance for the inference process afterwards
-        if (!only_extract_diff)
+        if (!only_extract_maple)
         {
             data.emplace_back(seq_names[i]);
             sequence = &data.back();
@@ -440,22 +440,22 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence)
     }
 }
 
-void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
+void cmaple::Alignment::readMapleFile(const std::string& aln_filename, const std::string& ref_path)
 {
-    ASSERT(diff_path);
+    ASSERT(aln_filename.length());
     
-    if (!fileExists(diff_path))
-        outError("File not found ", diff_path);
+    if (!fileExists(aln_filename))
+        outError("File not found " + aln_filename);
     
     // read the reference sequence (if the user supplies it)
     string ref_sequence{};
-    if (ref_path)
+    if (ref_path.length())
         ref_sequence = readRef(ref_path);
     
     // init dummy variables
     string seq_name = "";
     vector<Mutation> mutations;
-    ifstream in = ifstream(diff_path);
+    ifstream in = ifstream(aln_filename);
     PositionType line_num = 1;
     string line;
 
@@ -464,7 +464,7 @@ void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
     // remove the failbit
     in.exceptions(ios::badbit);
 
-    cout << "Reading a Diff file" << endl;
+    cout << "Reading a MAPLE file" << endl;
     
     // extract reference sequence first
     for (; !in.eof(); ++line_num)
@@ -482,19 +482,19 @@ void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
             transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
             
             if (seq_name != REF_NAME && seq_name != "REFERENCE")
-                outError("Diff file must start by >REF. Please check and try again!");
+                outError("MAPLE file must start by >REF. Please check and try again!");
         }
         // read the reference sequence
         else
         {
             // make sure the first line was found
             if (seq_name != REF_NAME && seq_name != "REFERENCE")
-                outError("Diff file must start by >REF. Please check and try again!");
+                outError("MAPLE file must start by >REF. Please check and try again!");
             
             // choose the ref sequence if the user already supplies a reference sequence
-            if (ref_path)
+            if (ref_path.length())
             {
-                outWarning("Skipping the reference sequence in the Diff file since the reference sequence is already specified via '-ref' option.");
+                outWarning("Skipping the reference sequence in the MAPLE file since the reference sequence is already specified via '-ref' option.");
                 line = ref_sequence;
             }
             
@@ -530,7 +530,7 @@ void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
         if (line[0] == '>')
         {
             // record the sequence of the previous taxon
-            if (seq_name.length() > 0)
+            if (seq_name.length())
             {
                 data.emplace_back(seq_name, mutations);
                 
@@ -542,7 +542,7 @@ void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
             // Read new sequence name
             string::size_type pos = line.find_first_of("\n\r");
             seq_name = line.substr(1, pos-1);
-            if (seq_name.length() == 0)
+            if (!seq_name.length())
                 outError("Empty sequence name found at line " + convertIntToString(line_num) + ". Please check and try again!");
         }
         // Read a Mutation
@@ -594,7 +594,7 @@ void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
     }
     
     // Record the sequence of  the last taxon
-    if (seq_name.length() > 0)
+    if (seq_name.length())
         data.emplace_back(seq_name, mutations);
     
     // validate the input
@@ -609,18 +609,18 @@ void cmaple::Alignment::readDiff(char* diff_path, char* ref_path)
     in.close();
 }
 
-void cmaple::Alignment::reconstructAln(char* diff_path, char* output_file)
+void cmaple::Alignment::reconstructAln(const std::string& aln_filename, const std::string& output_file)
 {
-    ASSERT(diff_path);
+    ASSERT(aln_filename.length() && output_file.length());
     
-    if (!fileExists(diff_path))
-        outError("File not found ", diff_path);
+    if (!fileExists(aln_filename))
+        outError("File not found " + aln_filename);
     
     // init dummy variables
     string seq_name = "";
     PositionType current_pos = 1;
     PositionType seq_length = 0;
-    ifstream in = ifstream(diff_path);
+    ifstream in = ifstream(aln_filename);
     ofstream out = ofstream(output_file);
     PositionType line_num = 1;
     string line;
@@ -631,7 +631,7 @@ void cmaple::Alignment::reconstructAln(char* diff_path, char* output_file)
     // remove the failbit
     in.exceptions(ios::badbit);
 
-    cout << "Reading a Diff file" << endl;
+    cout << "Reading a MAPLE file" << endl;
     
     // extract reference sequence first
     for (; !in.eof(); ++line_num)
@@ -649,14 +649,14 @@ void cmaple::Alignment::reconstructAln(char* diff_path, char* output_file)
             transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
             
             if (seq_name != REF_NAME && seq_name != "REFERENCE")
-                outError("Diff file must start by >REF. Please check and try again!");
+                outError("MAPLE file must start by >REF. Please check and try again!");
         }
         // read the reference sequence
         else
         {
             // make sure the first line was found
             if (seq_name != REF_NAME && seq_name != "REFERENCE")
-                outError("Diff file must start by >REF. Please check and try again!");
+                outError("MAPLE file must start by >REF. Please check and try again!");
             
             // get ref_str
             ref_str = line;
@@ -682,7 +682,7 @@ void cmaple::Alignment::reconstructAln(char* diff_path, char* output_file)
         if (line[0] == '>')
         {
             // record the sequence of the previous taxon
-            if (seq_name.length() > 0)
+            if (seq_name.length())
             {
                 string tmp_str = "";
                 if (current_pos <= seq_length)
@@ -701,7 +701,7 @@ void cmaple::Alignment::reconstructAln(char* diff_path, char* output_file)
             // Read new sequence name
             string::size_type pos = line.find_first_of("\n\r");
             seq_name = line.substr(1, pos-1);
-            if (seq_name.length() == 0)
+            if (!seq_name.length())
                 outError("Empty sequence name found at line " + convertIntToString(line_num) + ". Please check and try again!");
             
             // write out the sequence name
@@ -1049,19 +1049,19 @@ void cmaple::Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     delete[] sequence_indexes;
 }
 
-void cmaple::Alignment::extractDiffFile(Params& params)
+void cmaple::Alignment::extractMapleFile(const std::string& aln_filename, const std::string& output_filename, const cmaple::Params& params, const bool only_extract_maple)
 {   
     // read input sequences
-    ASSERT(params.aln_path);
+    ASSERT(aln_filename.length());
     StrVector sequences;
     StrVector seq_names;
-    readSequences(params.aln_path, sequences, seq_names);
+    readSequences(aln_filename.c_str(), sequences, seq_names);
     
     // validate the input sequences
     if (sequences.size() == 0)
         outError("Empty input sequences. Please check and try again!");
     // make sure all sequences have the same length
-    if (detectInputFile(params.aln_path) == IN_FASTA)
+    if (params.aln_format == IN_FASTA || (params.aln_format == IN_UNKNOWN && detectInputFile(aln_filename.c_str()) == IN_FASTA))
         for (PositionType i = 0; i < (PositionType) sequences.size(); ++i)
         {
             if (sequences[i].length() != sequences[0].length())
@@ -1069,41 +1069,31 @@ void cmaple::Alignment::extractDiffFile(Params& params)
         }
     
     // detect the type of the input sequences
+    setSeqType(params.seq_type);
     if (getSeqType() == SEQ_UNKNOWN)
         setSeqType(detectSequenceType(sequences));
     
     // generate reference sequence from the input sequences
     string ref_sequence;
     // read the reference sequence from file (if the user supplies it)
-    if (params.ref_path)
+    if (params.ref_path.length())
         ref_sequence = readRef(params.ref_path);
     else
         ref_sequence = generateRef(sequences);
-    
-    // prepare output (Diff) file
-    // init diff_path if it's null
-    if (!params.diff_path)
-    {
-        string diff_path_str(params.aln_path);
-        diff_path_str += ".diff";
-        
-        params.diff_path = new char[diff_path_str.length() + 1];
-        strcpy(params.diff_path, diff_path_str.c_str());
-    }
-    // check whether the Diff file already exists
-    string diff_file(params.diff_path);
-    if (!params.overwrite_output && fileExists(diff_file))
-        outError("File " + diff_file + " already exists. Use `--overwrite` option if you want overwrite it.\n");
+
+    // check whether the output file already exists
+    if (!params.overwrite_output && fileExists(output_filename))
+        outError("File " + output_filename + " already exists. Use `--overwrite` option if you want overwrite it.\n");
     
     // open the output file
-    ofstream out = ofstream(params.diff_path);
+    ofstream out = ofstream(output_filename);
     
     // write reference sequence to the output file
     out << ">" << REF_NAME << endl;
     out << ref_sequence << endl;
     
     // extract and write mutations of each sequence to file
-    extractMutations(sequences, seq_names, ref_sequence, out, params.only_extract_diff);
+    extractMutations(sequences, seq_names, ref_sequence, out, only_extract_maple);
     
     // close the output file
     out.close();
@@ -1184,4 +1174,32 @@ void cmaple::Alignment::updateNumStates()
             num_states = 4;
             break;
     }
+}
+
+InputType cmaple::Alignment::getAlignmentFormat(const std::string& n_format)
+{
+    string format(n_format);
+    transform(format.begin(), format.end(), format.begin(), ::toupper);
+    if (format == "MAPLE")
+        return IN_MAPLE;
+    if (format == "PHYLIP")
+        return IN_PHYLIP;
+    if (format == "FASTA")
+        return IN_FASTA;
+    
+    // default
+    return IN_UNKNOWN;
+}
+
+SeqType cmaple::Alignment::getSeqType(const std::string& n_seqtype_str)
+{
+    string seqtype_str(n_seqtype_str);
+    transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);
+    if (seqtype_str == "DNA")
+        return SEQ_DNA;
+    if (seqtype_str == "AA")
+        return SEQ_PROTEIN;
+    
+    // default
+    return SEQ_UNKNOWN;
 }

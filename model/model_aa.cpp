@@ -995,7 +995,7 @@ void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
             
             string tmp_value;
             in >> tmp_value;
-            if (tmp_value.length() == 0)
+            if (!tmp_value.length())
                 outError(model_name + ": Rate entries could not be read");
             mutation_mat[id] = convert_real_number(tmp_value.c_str());
 
@@ -1011,7 +1011,7 @@ void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
             {
                 string tmp_value;
                 in >> tmp_value;
-                if (tmp_value.length() == 0)
+                if (!tmp_value.length())
                     outError(model_name + ": Rate entries could not be read");
                 mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
                 

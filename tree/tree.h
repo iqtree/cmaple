@@ -455,6 +455,11 @@ namespace cmaple
         template <const cmaple::StateType  num_states>
         void addLessInfoSeqReplacingMLTree(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& node, const cmaple::Index  node_index, const cmaple::Index  parent_index);
         
+        /**
+         Export Node in Newick format
+         */
+        const std::string exportNodeString(const bool binary, const cmaple::NumSeqsType  node_vec_index, const bool show_branch_supports);
+        
         // NHANLT: Debug aLRT
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
         
@@ -468,7 +473,7 @@ namespace cmaple
          Program parameters
          */
         //std::optional<cmaple::Params> params;
-        cmaple::Params* params = nullptr;
+        std::unique_ptr<cmaple::Params> params = nullptr;
         
         /**
          Alignment
@@ -504,8 +509,7 @@ namespace cmaple
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        Tree(cmaple::Params & n_params) {
-            params = &n_params;
+        Tree(cmaple::Params && n_params):params(std::make_unique<cmaple::Params>(std::move(n_params))) {
             aln.setSeqType(params->seq_type);
         };
         
@@ -517,7 +521,12 @@ namespace cmaple
         /**
          Export tree std::string in Newick format
          */
-        const std::string exportTreeString(const bool binary, const cmaple::NumSeqsType  node_vec_index, const bool show_branch_supports);
+        const std::string exportTreeString(const bool binary, const bool show_branch_supports);
+        
+        /**
+         Export tree std::string in Newick format
+         */
+        const std::string exportTreeString(const std::string& n_tree_type, const bool show_branch_supports);
         
         /**
          Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
@@ -657,7 +666,7 @@ namespace cmaple
         /**
          Read an input tree from a file
          */
-        void readTree(const char* input_treefile);
+        void readTree(const string& input_treefile);
         
         /**
          Update model parameters from an alignment and a tree
@@ -666,11 +675,11 @@ namespace cmaple
         void updateModelParams ();
         
         /**
-         Show model parameters
+         Export model parameters in string
          */
-        inline void showModelParams ()
+        inline std::string exportModelString ()
         {
-            std::cout << model->exportString(aln) << std::endl;
+            return model->exportString(aln);
         }
         
         /**

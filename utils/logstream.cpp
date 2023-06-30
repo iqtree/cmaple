@@ -60,20 +60,13 @@ int outstreambuf::sync() { // used for output buffer only
 
 void LogStream::startLogFile(cmaple::Params& params) {
     // use diff_path as the output prefix if users didn't specify it
-    if (!params.output_prefix)
+    if (!params.output_prefix.length())
     {
-        // if users didn't input a diff file -> generate the path to diff file from the input alignment
-        if (!params.diff_path)
-        {
-            string aln_path_str(params.aln_path);
-            aln_path_str += ".diff";
-            log_file_ = aln_path_str + ".log";
-        }
+        // if users didn't input a MAPLE file -> generate the path to MAPLE file from the input alignment
+        if (!params.maple_path.length())
+            log_file_ = params.aln_path + ".maple.log";
         else
-        {
-            string diff_path_str(params.diff_path);
-            log_file_ = diff_path_str + ".log";
-        }
+            log_file_ = params.maple_path + ".log";
     }
     // if users specify the output prefix
     else

@@ -518,70 +518,81 @@ bool cmaple::is_number(const std::string& s)
     return end != s.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
-void cmaple::initDefaultValue(Params &params)
+cmaple::Params::Params()
 {
-    params.aln_path = NULL;
-    params.diff_path = NULL;
-    params.ref_path = NULL;
-    params.only_extract_diff = false;
-    params.hamming_weight = 1000;
-    params.model_name = "GTR";
-    params.optimize_blength = true;
-    params.overwrite_output = false;
-    params.threshold_prob = 1e-8;
-    params.mutation_update_period = 25;
-    params.failure_limit_sample = 5;
-    params.failure_limit_subtree = 4;
-    params.failure_limit_subtree_short_search = 1;
-    params.strict_stop_seeking_placement_sample = false;
-    params.strict_stop_seeking_placement_subtree = false;
-    params.strict_stop_seeking_placement_subtree_short_search = true;
-    params.thresh_log_lh_sample = 200;
-    params.thresh_log_lh_subtree = 160;
-    params.thresh_log_lh_subtree_short_search = 40;
-    params.thresh_log_lh_failure = 0.01;
-    params.min_blength_factor = 0.2;
-    params.min_blength_mid_factor = 4.1;
-    params.max_blength_factor = 40;
-    params.thresh_diff_update = 1e-7;
-    params.thresh_diff_fold_update = 1.001;
-    params.output_aln = NULL;
-    params.num_tree_improvement = 1;
-    params.thresh_entire_tree_improvement = 1;
-    params.thresh_placement_cost = -1e-5;
-    params.thresh_placement_cost_short_search = -1;
-    params.export_binary_tree = true;
-    params.short_range_topo_search = false;
-    params.output_testing = NULL;
-    params.compute_aLRT_SH = false;
-    params.aLRT_SH_replicates = 1000;
-    params.aLRT_SH_epsilon = 0.05;
-    params.num_threads = 1;
-    params.input_treefile = NULL;
-    params.output_prefix = NULL;
-    params.allow_replace_input_tree = false;
-    params.fixed_min_blength = -1;
-    params.seq_type = SEQ_UNKNOWN;
-    params.tree_search_type = PARTIAL_TREE_SEARCH;
+    initDefaultValue();
+}
+
+void cmaple::Params::initDefaultValue()
+{
+    aln_path = "";
+    maple_path = "";
+    ref_path = "";
+    aln_format = IN_UNKNOWN;
+    only_extract_maple = false;
+    hamming_weight = 1000;
+    model_name = "GTR";
+    optimize_blength = true;
+    overwrite_output = false;
+    threshold_prob = 1e-8;
+    mutation_update_period = 25;
+    failure_limit_sample = 5;
+    failure_limit_subtree = 4;
+    failure_limit_subtree_short_search = 1;
+    strict_stop_seeking_placement_sample = false;
+    strict_stop_seeking_placement_subtree = false;
+    strict_stop_seeking_placement_subtree_short_search = true;
+    thresh_log_lh_sample = 200;
+    thresh_log_lh_subtree = 160;
+    thresh_log_lh_subtree_short_search = 40;
+    thresh_log_lh_failure = 0.01;
+    min_blength_factor = 0.2;
+    min_blength_mid_factor = 4.1;
+    max_blength_factor = 40;
+    thresh_diff_update = 1e-7;
+    thresh_diff_fold_update = 1.001;
+    output_aln = NULL;
+    num_tree_improvement = 1;
+    thresh_entire_tree_improvement = 1;
+    thresh_placement_cost = -1e-5;
+    thresh_placement_cost_short_search = -1;
+    export_binary_tree = true;
+    short_range_topo_search = false;
+    output_testing = NULL;
+    compute_aLRT_SH = false;
+    aLRT_SH_replicates = 1000;
+    aLRT_SH_epsilon = 0.05;
+    num_threads = 1;
+    input_treefile = "";
+    output_prefix = "";
+    allow_replace_input_tree = false;
+    fixed_min_blength = -1;
+    seq_type = SEQ_UNKNOWN;
+    tree_search_type = PARTIAL_TREE_SEARCH;
     
     // initialize random seed based on current time
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    //params.ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
-    params.ran_seed = (tv.tv_usec);
+    //ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
+    ran_seed = (tv.tv_usec);
 }
 
-void cmaple::initDefaultValue(Params &params, uint64_t n_random_seed)
+TreeSearchType cmaple::parseTreeSearchType(const string& n_tree_search_type)
 {
-    params.ran_seed = n_random_seed;
-    initDefaultValue(params);
+    // convert tree_search_type to uppercase
+    std::string tree_search_type(n_tree_search_type);
+    transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
+    if (tree_search_type == "FAST") // || tree_search_type == "NO")
+        return NO_TREE_SEARCH;
+    if (tree_search_type == "NORMAL") // || tree_search_type == "PARTIAL")
+        return PARTIAL_TREE_SEARCH;
+    if (tree_search_type == "SLOW") // tree_search_type == "COMPLETE")
+        return COMPLETE_TREE_SEARCH;
+    return UNKNOWN_TREE_SEARCH;
 }
 
 void cmaple::parseArg(int argc, char *argv[], Params &params) {
-    // init parameters
-    initDefaultValue(params);
-    
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
             if (strcmp(argv[cnt], "--alignment") == 0 || strcmp(argv[cnt], "-aln") == 0) {
@@ -661,7 +672,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--extract-diff") == 0 || strcmp(argv[cnt], "-ext-diff") == 0) {
                 
-                params.only_extract_diff = true;
+                params.only_extract_maple = true;
 
                 continue;
             }
@@ -704,17 +715,9 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use -tree-search <FAST|NORMAL|SLOW>");
                 
-                std::string tree_search_type = argv[cnt];
-                // convert tree_search_type to uppercase
-                transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
-                if (tree_search_type == "FAST") // || tree_search_type == "NO")
-                    params.tree_search_type = NO_TREE_SEARCH;
-                else if (tree_search_type == "NORMAL") // || tree_search_type == "PARTIAL")
-                    params.tree_search_type = PARTIAL_TREE_SEARCH;
-                else if (tree_search_type == "SLOW") // tree_search_type == "COMPLETE")
-                    params.tree_search_type = COMPLETE_TREE_SEARCH;
-                else
-                    outError("Use -tree-search <NO|PARTIAL|COMPLETE>");
+                params.tree_search_type = parseTreeSearchType(argv[cnt]);
+                if (params.tree_search_type == UNKNOWN_TREE_SEARCH)
+                    outError("Use -tree-search <FAST|NORMAL|SLOW>");
                 continue;
             }
             if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {
@@ -881,10 +884,10 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
     }
     
     // validate options
-    if (!params.diff_path && !params.aln_path)
+    if ((!params.maple_path.length()) && (!params.aln_path.length()))
         outError("Please supply an alignment file via -aln <ALIGNMENT>");
         
-    if (params.only_extract_diff && !params.aln_path)
+    if (params.only_extract_maple && (!params.aln_path.length()))
         outError("Please supply an alignment via -aln <ALIGNMENT>");
     
     if (argc <= 1) {

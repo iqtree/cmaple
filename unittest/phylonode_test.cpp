@@ -341,12 +341,9 @@ TEST(PhyloNode, TestExportString)
 void initTestData(Params& params, Alignment& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
-    initDefaultValue(params);
     params.model_name = model_name;
-    std::string diff_file_path("../../example/test_5K.diff");
-    char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    aln.readDiff(diff_file_path_ptr, NULL);
+    std::string diff_file_path("../../example/test_5K.maple");
+    aln.readMapleFile(diff_file_path, NULL);
     model = std::make_unique<ModelDNA>(ModelDNA(params.model_name));
     // extract related info (freqs, log_freqs) of the ref sequence
     model->extractRefInfo(aln);

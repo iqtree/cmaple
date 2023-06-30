@@ -75,7 +75,7 @@ void cmaple::Tree::setup()
     setupBlengthThresh();
 }
 
-const string cmaple::Tree::exportTreeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
+const string cmaple::Tree::exportNodeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
 {
     PhyloNode& node = nodes[node_vec_index];
     string output = "(";
@@ -93,11 +93,11 @@ const string cmaple::Tree::exportTreeString(const bool binary, const NumSeqsType
          add_comma = true;
          else
          output += ",";
-         output += exportTreeString(binary, neighbor_index.getVectorIndex());
+         output += exportNodeString(binary, neighbor_index.getVectorIndex());
          }*/
-        output += exportTreeString(binary, node.getNeighborIndex(RIGHT).getVectorIndex(), show_branch_supports);
+        output += exportNodeString(binary, node.getNeighborIndex(RIGHT).getVectorIndex(), show_branch_supports);
         output += ",";
-        output += exportTreeString(binary, node.getNeighborIndex(LEFT).getVectorIndex(), show_branch_supports);
+        output += exportNodeString(binary, node.getNeighborIndex(LEFT).getVectorIndex(), show_branch_supports);
     }
 
     string branch_support = show_branch_supports ? convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH()) : "";
@@ -105,6 +105,33 @@ const string cmaple::Tree::exportTreeString(const bool binary, const NumSeqsType
     output += ")" + branch_support + ":" + length;
     
     return output;
+}
+
+const std::string cmaple::Tree::exportTreeString(const std::string& n_tree_type, const bool show_branch_supports)
+{
+    // transform tree_type to upper case
+    std::string tree_type(n_tree_type);
+    transform(tree_type.begin(), tree_type.end(), tree_type.begin(), ::toupper);
+    
+    if (n_tree_type == "BIN")
+        return exportTreeString(true, show_branch_supports);
+    else if (n_tree_type == "MUL")
+        return exportTreeString(false, show_branch_supports);
+    else
+        outError("Unsupported type of tree " + tree_type + ". Please use BIN or MUL");
+}
+
+const std::string cmaple::Tree::exportTreeString(const bool binary, const bool show_branch_supports)
+{
+    // make sure tree is not empty
+    if (nodes.size() < 3)
+        return "";
+    
+    // make sure branch supports are available (if users want to output them)
+    if (node_lhs.size() < 3 && show_branch_supports)
+        outError("Branch supports have yet been available for outputting! Pls compute them first!");
+    
+    return exportNodeString(binary, root_vector_index, show_branch_supports) + ";" ;
 }
 
 template <const StateType num_states>
@@ -3380,7 +3407,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index, PhyloNode& node
             if (best_lh_diff > params->threshold_prob2)
                 outError("Strange, lh cost is positive");
             else if (best_lh_diff < -1e50)
-                outError("Likelihood cost is very heavy, this might mean that the reference used is not the same used to generate the input diff file");
+                outError("Likelihood cost is very heavy, this might mean that the reference used is not the same used to generate the input MAPLE file");
             
             if (best_lh_diff + thresh_placement_cost > best_lh)
             {
@@ -4803,7 +4830,7 @@ void cmaple::Tree::calculateBranchSupports()
     refreshAllNonLowerLhs<num_states>();
     
     // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one less-info-seq to make sure all we compute the aLRT of all internal branches
-    if (!params->input_treefile)
+    if (!params->input_treefile.length())
         performDFSAtLeave<&cmaple::Tree::expandTreeByOneLessInfoSeq<num_states>>();
     
     // 1. calculate aLRT for each internal branches, replacing the ML tree if a higher ML NNI neighbor was found
@@ -4917,7 +4944,7 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
     {
         // only replace the ML tree inferred by CMaple;
         // if users input the tree -> don't replace the ML tree
-        if (!params->input_treefile || params->allow_replace_input_tree)
+        if (!params->input_treefile.length() || params->allow_replace_input_tree)
         {
             std::cout << std::setprecision(10) << "Replace the ML tree by a newly found NNI neighbor tree (root), improving tree loglh by: " << lh_diff << std::endl;
             // std::cout << "Tree lh (before replacing): " << calculateTreeLh() << std::endl;
@@ -5142,7 +5169,7 @@ bool cmaple::Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, Rea
     {
         // only replace the ML tree inferred by CMaple;
         // if users input the tree -> don't replace the ML tree
-        if (!params->input_treefile || params->allow_replace_input_tree)
+        if (!params->input_treefile.length() || params->allow_replace_input_tree)
         {
             // NHANLT: Debug aLRT
             // log_current(node_stack_aLRT);
@@ -5745,7 +5772,7 @@ NumSeqsType cmaple::Tree::parseFile(std::istream &infile, char& ch, RealNumType&
     }
     // handle the case of multiple-length branches but lack of the average branch length
     // e.g A[0.1/0.2/0.3/0.4] instead of A[0.1/0.2/0.3/0.4]:0.25
-    /*else if (in_comment.length() > 0)
+    /*else if (in_comment.length())
     {
         // set default average branch length at 0
         string default_avg_length = "0";
@@ -5810,13 +5837,13 @@ const char cmaple::Tree::readNextChar(std::istream& in, PositionType& in_line, P
                 in_column = 1;
             }
         }
-        if (in_comment.length() > 0)
+        if (in_comment.length())
             std::cout << "Ignore [" + in_comment +"]" << std::endl;
     }
     return ch;
 }
 
-void cmaple::Tree::readTree(const char* input_treefile)
+void cmaple::Tree::readTree(const string& input_treefile)
 {    
     // create a map between leave and sequences in the alignment
     std::map<std::string, NumSeqsType> map_seqname_index;

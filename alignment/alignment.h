@@ -26,7 +26,7 @@ namespace cmaple
         void processSeq(std::string &sequence, std::string &line, cmaple::PositionType line_num);
         
         /**
-         Output a mutation into Diff file
+         Output a mutation into MAPLE file
          */
         void outputMutation(std::ofstream &out, Sequence* sequence, char state_char, cmaple::PositionType pos, cmaple::PositionType length = -1);
         
@@ -72,58 +72,58 @@ namespace cmaple
          @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
          */
-        void readFasta(char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
+        void readFasta(const char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
         /**
          Read alignment file in PHYLIP format
          @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
          */
-        void readPhylip(char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
+        void readPhylip(const char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
         /**
          Read alignment file
          @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
          */
-        void readSequences(char* aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
+        void readSequences(const char* aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
         /**
          Generate a reference genome from input_sequences
-         @param sequences the input sequences; only_extract_diff: TRUE to only extract Diff file without running inference
+         @param sequences the input sequences; only_extract_diff: TRUE to only extract MAPLE file without running inference
          @return a reference genome
          */
         std::string generateRef(cmaple::StrVector &sequences);
         
         /**
          Read a reference genome from file
-         @param ref_path; only_extract_diff: TRUE to only extract Diff file without running inference
+         @param ref_path an alignment contains the reference sequence at the beginning of the file
          @return a reference genome
          */
-        std::string readRef(char* ref_path);
+        std::string readRef(const std::string& ref_path);
         
         /**
          Extract Mutation from sequences regarding the reference sequence
-         @param sequences, seq_names: the input sequences,  ref_sequence; ref_sequence, out: output stream to write the Diff file; only_extract_diff: TRUE to only extract Diff file without running inference
+         @param sequences, seq_names: the input sequences,  ref_sequence; ref_sequence, out: output stream to write the MAPLE file; only_extract_diff: TRUE to only extract MAPLE file without running inference
          */
         void extractMutations(cmaple::StrVector &sequences, cmaple::StrVector &seq_names, std::string ref_sequence, std::ofstream &out, bool only_extract_diff);
         
         /**
-         Read Diff file to load reference sequence and vector of Sequence (represented by vector of Mutations)
-         @param diff_path path to the Diff file; ref_path path to the reference sequence
+         Read a MAPLE file to load reference sequence and vector of Sequence (represented by vector of Mutations)
+         @param aln_filename path to the MAPLE file; ref_path path to the reference sequence
          */
-        void readDiff(char* diff_path, char* ref_path);
+        void readMapleFile(const std::string& aln_filename, const std::string& ref_path = "");
         
         /**
-         Reconstruct an alignment file from a Diff file
-         @param diff_path path to the Diff file; output_file path to the output aln
+         Reconstruct an alignment file from a MAPLE file
+         @param aln_filename path to the MAPLE file; output_file path to the output aln
          */
-        void reconstructAln(char* diff_path, char* output_file);
+        void reconstructAln(const std::string& aln_filename, const std::string& output_file);
         
         /**
-         Extract Diff file from and alignment file
+         Extract MAPLE file from and alignment file
          */
-        void extractDiffFile(cmaple::Params& params);
+        void extractMapleFile(const std::string& aln_filename, const std::string& output_filename, const cmaple::Params& params, const bool only_extract_maple = true);
         
         /**
          Parse the reference sequence into vector of state
@@ -170,6 +170,16 @@ namespace cmaple
          update num_states according to the seq_type
          */
         void updateNumStates();
+        
+        /**
+         Get alignment format from a string
+         */
+        InputType getAlignmentFormat(const std::string& n_format);
+        
+        /**
+         Get alignment format from a string
+         */
+        SeqType getSeqType(const std::string& n_seqtype_str);
     };
 }
 #endif
