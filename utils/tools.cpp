@@ -1023,3 +1023,34 @@ Params& Params::getInstance() {
     static Params instance;
     return instance;
 }
+
+void cmaple::setNumThreads(const int num_threads)
+{
+    // setup the number of threads for openmp
+#ifdef _OPENMP
+    int max_procs = countPhysicalCPUCores();
+    cout << "OpenMP: ";
+    if (num_threads >= 1) {
+        omp_set_num_threads(num_threads);
+        cout << num_threads << " threads";
+    }
+    else // num_threads == 0
+    {   // not calling 'omp_set_num_threads' uses all cores automatically
+        cout << "auto-detect threads";
+    }
+    cout << " (" << max_procs << " CPU cores detected) \n";
+    if (num_threads  > max_procs) {
+        cout << endl;
+        outError("You have specified more threads than CPU cores available");
+    }
+    #ifndef WIN32  // not supported on Windows (only <=OpenMP2.0)
+    omp_set_max_active_levels(1);
+    #endif
+#else
+    if (num_threads != 1) {
+        cout << endl << endl;
+        outError("Number of threads must be 1 for sequential version.");
+    }
+#endif
+    std::cout << std::endl;
+}

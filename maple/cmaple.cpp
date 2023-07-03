@@ -85,6 +85,12 @@ int CMaple::runInference(const bool force_rerun, const std::string& tree_type)
     
     // update status
     status = INFERENCE_DONE;
+    
+    // Show the random seed number
+    cout << "Seed:    " << tree.params->ran_seed <<  " " << std::endl;
+    
+    // Show the number of threads
+    setNumThreads(tree.params->num_threads);
 
     // Run the inference
     auto start = getRealTime();
@@ -115,6 +121,23 @@ int CMaple::runInference(const bool force_rerun, const std::string& tree_type)
 
 int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads, const int num_replicates, const double epsilon)
 {
+    // validate inputs
+    if (num_threads < 0)
+    {
+        std::cout << "Number of threads cannot be negative!" << std::endl;
+        return CODE_ERROR_1;
+    }
+    if (num_replicates <= 0)
+    {
+        std::cout << "Number of replicates must be positive!" << std::endl;
+        return CODE_ERROR_1;
+    }
+    if (epsilon < 0)
+    {
+        std::cout << "Epsilon cannot be negative!" << std::endl;
+        return CODE_ERROR_1;
+    }
+    
     // If the branch supports have already been computed -> terminate with an error or recompute them (if users want to do so)
     if (status == BRANCH_SUPPORT_DONE)
     {
@@ -144,7 +167,17 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
         runInference();
     // Otherwise, only need to compute the branch supports (if the inference has already been run)
     else if (status == INFERENCE_DONE)
+    {
+        // Show the random seed number
+        cout << "Seed:    " << tree.params->ran_seed <<  " " << std::endl;
+        
+        // Show the number of threads
+        const int act_num_threads = num_threads == 1 ? tree.params->num_threads : num_threads; // if users specify num_threads when calling this function -> use that value. Otherwise, use the setting in params instance.
+        setNumThreads(act_num_threads);
+        
+        // Only compute the branch supports
         postInference();
+    }
         
     // restore compute_aLRT_SH
     tree.params->compute_aLRT_SH = compute_aLRT_SH;

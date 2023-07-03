@@ -1071,4 +1071,10 @@ namespace cmaple
      * Parse type of tree search from a string
      */
     TreeSearchType parseTreeSearchType(const std::string& tree_search_type);
+
+    /**
+     * Set number of threads
+     * @param num_threads the number of OpenMP threads
+     */
+    void setNumThreads(const int num_threads);
 }

@@ -75,10 +75,10 @@ void funcAbort(int signal_number)
 /** ############## Redirect output to a log file ############## **/
 
 int main(int argc, char *argv[]) {
-    parseArg(argc, argv, Params::getInstance());
+    cmaple::Params& params = Params::getInstance();
+    parseArg(argc, argv, params);
     
     // Config log file
-    Params& params = Params::getInstance();
     // atexit(logstream.funcExit);
     logstream.startLogFile(params);
     signal(SIGABRT, &funcAbort);
@@ -98,42 +98,17 @@ int main(int argc, char *argv[]) {
         cout << " " << argv[i];
     cout << endl;
     
-    // Show info
-    cout << "Seed:    " << Params::getInstance().ran_seed <<  " " << std::endl;
+    // Show the random seed number
+    /*cout << "Seed:    " << params.ran_seed <<  " " << std::endl;
     
-    // setup the number of threads for openmp
-#ifdef _OPENMP
-    int max_procs = countPhysicalCPUCores();
-    cout << "OpenMP: ";
-    if (Params::getInstance().num_threads >= 1) {
-        omp_set_num_threads(Params::getInstance().num_threads);
-        cout << Params::getInstance().num_threads << " threads";
-    }
-    else // num_threads == 0
-    {   // not calling 'omp_set_num_threads' uses all cores automatically
-        cout << "auto-detect threads";
-    }
-    cout << " (" << max_procs << " CPU cores detected) \n";
-    if (Params::getInstance().num_threads  > max_procs) {
-        cout << endl;
-        outError("You have specified more threads than CPU cores available");
-    }
-    #ifndef WIN32  // not supported on Windows (only <=OpenMP2.0)
-    omp_set_max_active_levels(1);
-    #endif
-#else
-    if (Params::getInstance().num_threads != 1) {
-        cout << endl << endl;
-        outError("Number of threads must be 1 for sequential version.");
-    }
-#endif
-    std::cout << std::endl;
+    // Show the number of threads
+    setNumThreads(params.num_threads);*/
     
     // Measure runtime
     time_t start_time;
     
     // call the main function
-    CMaple cmaple(std::move(Params::getInstance()));
+    CMaple cmaple(std::move(params));
     cmaple.runInference();
     
     time(&start_time);
