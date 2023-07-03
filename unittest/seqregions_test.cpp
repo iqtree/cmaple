@@ -353,8 +353,7 @@ TEST(SeqRegions, areDiffFrom)
     
     // init testing data
     const PositionType seq_length = 3500;
-    Params& params = Params::getInstance();
-    initDefaultValue(params);
+    Params params;
     seqregions1.emplace_back(TYPE_R, 382, -1, 0.321);
     seqregions1.emplace_back(TYPE_N, 654);
     seqregions1.emplace_back(0, 655, 0);
@@ -435,9 +434,8 @@ TEST(SeqRegions, simplifyO)
 {
     // init testing data
     SeqRegions seqregions1;
-    Params& params = Params::getInstance();
-    initDefaultValue(params);
-    RealNumType threshold_prob = params.threshold_prob;
+    std::unique_ptr<Params> params = std::make_unique<Params>();
+    RealNumType threshold_prob = params->threshold_prob;
     
     // tests
     auto new_lh = std::make_unique<SeqRegion::LHType>();
@@ -723,16 +721,15 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initAlnModelParams(Params& params, Alignment& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
+void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignment>& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
-    initDefaultValue(params);
-    params.model_name = model_name;
+    params->model_name = model_name;
     std::string diff_file_path("../../example/test_5K.diff");
     char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
     strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    aln.readDiff(diff_file_path_ptr, NULL);
-    model = std::make_unique<ModelDNA>(ModelDNA(params.model_name));
+    aln->readMapleFile(diff_file_path_ptr, "");
+    model = std::make_unique<ModelDNA>(ModelDNA(params->model_name));
     // extract related info (freqs, log_freqs) of the ref sequence
     model->extractRefInfo(aln);
     // init the mutation matrix from a model name
@@ -746,15 +743,15 @@ void initAlnModelParams(Params& params, Alignment& aln, std::unique_ptr<Model>& 
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Simple tests -----
     SeqRegions seqregions1;
@@ -795,15 +792,15 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
  */
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Simple tests -----
     SeqRegions seqregions1;
@@ -866,15 +863,15 @@ TEST(SeqRegions, computeTotalLhAtRoot)
  */
 TEST(SeqRegions, merge_N_O)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -998,22 +995,22 @@ TEST(SeqRegions, merge_N_O)
  */
 TEST(SeqRegions, merge_N_RACGT)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
     const PositionType end_pos = 6543;
     RealNumType lower_plength = -1;
     SeqRegion seqregion1(TYPE_R, 3442, -1, -1);
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1025,7 +1022,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 1; // C
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1037,7 +1034,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0.3231;
     seqregion1.type = TYPE_R;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1049,7 +1046,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 3;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1061,7 +1058,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 2;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1073,7 +1070,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 1e-3;
     seqregion1.type = TYPE_R;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1085,7 +1082,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 7);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1097,7 +1094,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 2;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 8);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1109,7 +1106,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0.1;
     seqregion1.type = 0;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 9);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1121,7 +1118,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 10);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1133,7 +1130,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = TYPE_R;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 11);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1145,7 +1142,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0.3231;
     seqregion1.type = 3;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 12);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1157,7 +1154,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 13);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1169,7 +1166,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 0;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 14);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1181,7 +1178,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 1e-3;
     seqregion1.type = 0;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 15);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1193,7 +1190,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 16);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1205,7 +1202,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 1;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 17);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1217,7 +1214,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0.1;
     seqregion1.type = TYPE_R;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 18);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1229,7 +1226,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 3;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 19);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-5);
@@ -1241,7 +1238,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = TYPE_R;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 20);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-5);
@@ -1253,7 +1250,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0.3231;
     seqregion1.type = 0;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 21);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.212);
@@ -1265,7 +1262,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 3;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 22);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.011);
@@ -1277,7 +1274,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 3;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 23);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-3);
@@ -1289,7 +1286,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 1e-3;
     seqregion1.type = 2;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 24);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.2312);
@@ -1301,7 +1298,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 0;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 25);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.04123 + 1e-10);
@@ -1313,7 +1310,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-3;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = TYPE_R;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 26);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.002243);
@@ -1325,7 +1322,7 @@ TEST(SeqRegions, merge_N_RACGT)
     seqregion1.plength_observation2node = 1e-1;
     seqregion1.plength_observation2root = 0.1;
     seqregion1.type = 1;
-    merge_N_RACGT(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_N_RACGT(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 27);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.1001211);
@@ -1338,15 +1335,15 @@ TEST(SeqRegions, merge_N_RACGT)
  */
 TEST(SeqRegions, merge_O_N)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -1460,22 +1457,22 @@ TEST(SeqRegions, merge_O_N)
  */
 TEST(SeqRegions, merge_RACGT_N)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
     const PositionType end_pos = 6543;
     RealNumType lower_plength = -1;
     SeqRegion seqregion1(TYPE_R, 3442, -1, -1);
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1487,7 +1484,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 1; // C
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1499,7 +1496,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0.3231;
     seqregion1.type = TYPE_R;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.3231);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1511,7 +1508,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 3;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1523,7 +1520,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 2;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1535,7 +1532,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 1e-3;
     seqregion1.type = TYPE_R;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 1e-3);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1547,7 +1544,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 7);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1559,7 +1556,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 2;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 8);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1571,7 +1568,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0.1;
     seqregion1.type = 0;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 9);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1583,7 +1580,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 10);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1595,7 +1592,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = TYPE_R;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 11);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1607,7 +1604,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0.3231;
     seqregion1.type = 3;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 12);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.3231);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1619,7 +1616,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 13);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1631,7 +1628,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 0;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 14);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1643,7 +1640,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 1e-3;
     seqregion1.type = 0;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 15);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 1e-3);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1655,7 +1652,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 1;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 16);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1667,7 +1664,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 1;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 17);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1679,7 +1676,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = 0.1;
     seqregion1.type = TYPE_R;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 18);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-10);
@@ -1691,7 +1688,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 3;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 19);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-5);
@@ -1703,7 +1700,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = TYPE_R;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 20);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 1e-5);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1715,7 +1712,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0.3231;
     seqregion1.type = 0;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 21);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.5351);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -1727,7 +1724,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 3;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 22);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.011);
@@ -1739,7 +1736,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = 3;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 23);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 1e-3);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1751,7 +1748,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 0;
     seqregion1.plength_observation2root = 1e-3;
     seqregion1.type = 2;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 24);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.2322);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1763,7 +1760,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-10;
     seqregion1.plength_observation2root = -1;
     seqregion1.type = 0;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 25);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.04123 + 1e-10);
@@ -1775,7 +1772,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-3;
     seqregion1.plength_observation2root = 0;
     seqregion1.type = TYPE_R;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 26);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.001243);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 1e-3);
@@ -1787,7 +1784,7 @@ TEST(SeqRegions, merge_RACGT_N)
     seqregion1.plength_observation2node = 1e-1;
     seqregion1.plength_observation2root = 0.1;
     seqregion1.type = 1;
-    merge_RACGT_N(seqregion1, lower_plength, end_pos, params.threshold_prob, merged_regions);
+    merge_RACGT_N(seqregion1, lower_plength, end_pos, params->threshold_prob, merged_regions);
     EXPECT_EQ(merged_regions.size(), 27);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.1001211);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.1);
@@ -1800,19 +1797,19 @@ TEST(SeqRegions, merge_RACGT_N)
  */
 TEST(SeqRegions, merge_Zero_Distance)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions_ptr = std::make_unique<SeqRegions>();
-    const RealNumType threshold_prob = params.threshold_prob;
+    const RealNumType threshold_prob = params->threshold_prob;
     const PositionType end_pos = 6543;
     RealNumType total_blength_1 = -1;
     RealNumType total_blength_2 = -1;
@@ -1918,15 +1915,15 @@ TEST(SeqRegions, merge_Zero_Distance)
  */
 TEST(SeqRegions, merge_O_ORACGT)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -1940,7 +1937,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     SeqRegion seqregion2(TYPE_O, 243, -1, 1e-3, std::move(new_lh));
     RealNumType total_blength_1 = -1;
     RealNumType total_blength_2 = -1;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const RealNumType threshold_prob = params->threshold_prob;
     const PositionType end_pos = 3213;
     merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
@@ -2050,15 +2047,15 @@ TEST(SeqRegions, merge_O_ORACGT)
  */
 TEST(SeqRegions, merge_RACGT_O)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -2068,7 +2065,7 @@ TEST(SeqRegions, merge_RACGT_O)
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
     RealNumType total_blength_1 = -1;
     const PositionType end_pos = 3213;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const RealNumType threshold_prob = params->threshold_prob;
     new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.99997490659690790870683940738672390580177307128906,2.5092097243268992381179730011275808010395849123597e-05,6.5292438309787796439726148030194621818544931102224e-10,6.5292438309787796439726148030194621818544931102224e-10};
     (*new_lh) = new_lh_value1;
@@ -2144,22 +2141,22 @@ TEST(SeqRegions, merge_RACGT_O)
  */
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
     SeqRegion seqregion1(TYPE_R, 4231);
     RealNumType total_blength_1 = -1;
     const PositionType end_pos = 3213;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const RealNumType threshold_prob = params->threshold_prob;
     auto new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
     (*new_lh) = new_lh_value1;
@@ -2307,19 +2304,19 @@ TEST(SeqRegions, merge_RACGT_RACGT)
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
     // NOTE: if plength_observation2root > 0 then must be plength_observation2node != -1;
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const RealNumType threshold_prob = params->threshold_prob;
     RealNumType upper_plength = -1;
     RealNumType total_blength_1 = -1;
     RealNumType total_blength_2 = -1;
@@ -3935,16 +3932,16 @@ void genTestData4(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
  */
 TEST(SeqRegions, mergeUpperLower)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model, "JC");
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     SeqRegions seqregions1, seqregions2, output_regions;
@@ -4015,15 +4012,15 @@ TEST(SeqRegions, mergeUpperLower)
  */
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -4132,16 +4129,16 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
  */
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -4473,16 +4470,16 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -4558,16 +4555,16 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
@@ -4697,16 +4694,16 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
  */
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
@@ -4827,16 +4824,16 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
@@ -5005,16 +5002,16 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
@@ -5170,16 +5167,16 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
@@ -5363,16 +5360,16 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
@@ -5534,16 +5531,16 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
@@ -5812,16 +5809,16 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<Model> model = nullptr;
-    Params& params = Params::getInstance();
     
     // Init params, aln, and model
     initAlnModelParams(params, aln, model, "JC");
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
-    const RealNumType threshold_prob = params.threshold_prob;
+    const PositionType seq_length = aln->ref_seq.size();
+    const StateType num_states = aln->num_states;
+    const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
     SeqRegions seqregions1, seqregions2, output_regions;
