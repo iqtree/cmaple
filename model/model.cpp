@@ -6,8 +6,8 @@ using namespace cmaple;
 // explicit instantiation of templates
 template void cmaple::Model::updateMutationMat<4>();
 template void cmaple::Model::updateMutationMat<20>();
-template void cmaple::Model::updateMutationMatEmpiricalTemplate<4>(const Alignment&);
-template void cmaple::Model::updateMutationMatEmpiricalTemplate<20>(const Alignment&);
+template void cmaple::Model::updateMutationMatEmpiricalTemplate<4>(const std::unique_ptr<Alignment>&);
+template void cmaple::Model::updateMutationMatEmpiricalTemplate<20>(const std::unique_ptr<Alignment>&);
 
 cmaple::Model::Model(const std::string n_model_name)
 {
@@ -93,7 +93,7 @@ cmaple::Model::~Model()
     }
 }
 
-void cmaple::Model::extractRefInfo(const Alignment& aln)
+void cmaple::Model::extractRefInfo(const std::unique_ptr<Alignment>& aln)
 {
     // init variables
     root_freqs = new RealNumType[num_states_];
@@ -101,7 +101,7 @@ void cmaple::Model::extractRefInfo(const Alignment& aln)
     inverse_root_freqs = new RealNumType[num_states_];
     
     // init root_freqs
-    switch (aln.getSeqType()) {
+    switch (aln->getSeqType()) {
         case SEQ_PROTEIN:
             resetVec<20>(root_freqs);
             break;
@@ -115,10 +115,10 @@ void cmaple::Model::extractRefInfo(const Alignment& aln)
     extractRootFreqs(aln);
 }
 
-void cmaple::Model::extractRootFreqs(const Alignment& aln)
+void cmaple::Model::extractRootFreqs(const std::unique_ptr<Alignment>& aln)
 {
     // init variables
-    const vector<StateType>& ref_seq = aln.ref_seq;
+    const vector<StateType>& ref_seq = aln->ref_seq;
     ASSERT(ref_seq.size() > 0);
     const PositionType seq_length = ref_seq.size();
     
@@ -136,9 +136,9 @@ void cmaple::Model::extractRootFreqs(const Alignment& aln)
     }
 }
 
-void cmaple::Model::computeCumulativeRate(const Alignment& aln)
+void cmaple::Model::computeCumulativeRate(const std::unique_ptr<Alignment>& aln)
 {
-    const PositionType sequence_length = aln.ref_seq.size();
+    const PositionType sequence_length = aln->ref_seq.size();
     ASSERT(sequence_length > 0);
     
     // init cumulative_rate
@@ -153,7 +153,7 @@ void cmaple::Model::computeCumulativeRate(const Alignment& aln)
     // compute cumulative_base and cumulative_rate
     for (PositionType i = 0; i < sequence_length; ++i)
     {
-        StateType state = aln.ref_seq[i];
+        StateType state = aln->ref_seq[i];
         cumulative_rate[i + 1] = cumulative_rate[i] + diagonal_mut_mat[state];
         
         cumulative_base[i + 1] =  cumulative_base[i];
@@ -161,14 +161,14 @@ void cmaple::Model::computeCumulativeRate(const Alignment& aln)
     }
 }
 
-std::string cmaple::Model::exportRootFrequenciesStr(Alignment& aln)
+std::string cmaple::Model::exportRootFrequenciesStr(std::unique_ptr<Alignment>& aln)
 {
     string output{};
     string header{};
     
     for (StateType i = 0; i < num_states_; ++i)
     {
-        header += aln.convertState2Char(i);
+        header += aln->convertState2Char(i);
         header += "\t\t\t";
         output += convertDoubleToString(root_freqs[i]) + "\t";
     }
@@ -176,7 +176,7 @@ std::string cmaple::Model::exportRootFrequenciesStr(Alignment& aln)
     return header + "\n" + output + "\n";
 }
 
-std::string cmaple::Model::exportQMatrixStr(Alignment& aln)
+std::string cmaple::Model::exportQMatrixStr(std::unique_ptr<Alignment>& aln)
 {
     string output{};
     
@@ -184,7 +184,7 @@ std::string cmaple::Model::exportQMatrixStr(Alignment& aln)
     output += "\t";
     for (StateType i = 0; i < num_states_; ++i)
     {
-        output += aln.convertState2Char(i);
+        output += aln->convertState2Char(i);
         output += "\t\t\t";
     }
     output += "\n";
@@ -192,7 +192,7 @@ std::string cmaple::Model::exportQMatrixStr(Alignment& aln)
     RealNumType* mut_mat_row = mutation_mat;
     for (StateType i = 0; i < num_states_; ++i, mut_mat_row += num_states_)
     {
-        output += aln.convertState2Char(i);
+        output += aln->convertState2Char(i);
         output += "\t";
         
         for (StateType j = 0; j < num_states_; ++j)
@@ -204,7 +204,7 @@ std::string cmaple::Model::exportQMatrixStr(Alignment& aln)
     return output;
 }
 
-std::string cmaple::Model::exportString(Alignment& aln)
+std::string cmaple::Model::exportString(std::unique_ptr<Alignment>& aln)
 {
     string output{};
     
@@ -447,7 +447,7 @@ void cmaple::Model::updateMutationMat()
 }
 
 template <StateType num_states>
-void cmaple::Model::updateMutationMatEmpiricalTemplate(const Alignment& aln)
+void cmaple::Model::updateMutationMatEmpiricalTemplate(const std::unique_ptr<Alignment>& aln)
 {
     // clone the current mutation matrix
     RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
@@ -476,7 +476,7 @@ void cmaple::Model::updateMutationMatEmpiricalTemplate(const Alignment& aln)
     delete[] tmp_diagonal_mut_mat;
 }
 
-void cmaple::Model::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::Model::updatePesudoCount(const std::unique_ptr<Alignment>& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // init variables
     PositionType pos = 0;
@@ -484,7 +484,7 @@ void cmaple::Model::updatePesudoCount(const Alignment& aln, const SeqRegions& re
     const SeqRegions& seq2_regions = regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    const PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln->ref_seq.size();
                 
     while (pos < seq_length)
     {
@@ -498,9 +498,9 @@ void cmaple::Model::updatePesudoCount(const Alignment& aln, const SeqRegions& re
         if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) && (seq2_region->type < num_states_ || seq2_region->type == TYPE_R))
         {
             if (seq1_region->type == TYPE_R)
-                pseu_mutation_count[row_index[aln.ref_seq[end_pos]] + seq2_region->type] += 1;
+                pseu_mutation_count[row_index[aln->ref_seq[end_pos]] + seq2_region->type] += 1;
             else if (seq2_region->type == TYPE_R)
-                pseu_mutation_count[row_index[seq1_region->type] + aln.ref_seq[end_pos]] += 1;
+                pseu_mutation_count[row_index[seq1_region->type] + aln->ref_seq[end_pos]] += 1;
             else
                 pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
         }

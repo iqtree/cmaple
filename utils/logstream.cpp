@@ -59,7 +59,7 @@ int outstreambuf::sync() { // used for output buffer only
 /**##################################################**/
 
 void LogStream::startLogFile(cmaple::Params& params) {
-    // use diff_path as the output prefix if users didn't specify it
+    // use maple_path as the output prefix if users didn't specify it
     if (!params.output_prefix.length())
     {
         // if users didn't input a MAPLE file -> generate the path to MAPLE file from the input alignment

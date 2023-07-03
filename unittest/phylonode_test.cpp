@@ -303,12 +303,12 @@ TEST(PhyloNode, TestGetSetPartialLh)
 TEST(PhyloNode, TestExportString)
 {
     const int NUM_SEQS = 10;
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
     // init NUM_SEQS
-    aln.data.reserve(NUM_SEQS);
+    aln->data.reserve(NUM_SEQS);
     for (int i =0 ; i < NUM_SEQS; ++i)
     {
-        aln.data.emplace_back("sequence " + convertIntToString(i));
+        aln->data.emplace_back("sequence " + convertIntToString(i));
     }
     
     // test on an internal node
@@ -338,12 +338,12 @@ TEST(PhyloNode, TestExportString)
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initTestData(Params& params, Alignment& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
+void initTestData(Params& params, std::unique_ptr<Alignment>& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     params.model_name = model_name;
     std::string diff_file_path("../../example/test_5K.maple");
-    aln.readMapleFile(diff_file_path, NULL);
+    aln->readMapleFile(diff_file_path, "");
     model = std::make_unique<ModelDNA>(ModelDNA(params.model_name));
     // extract related info (freqs, log_freqs) of the ref sequence
     model->extractRefInfo(aln);
@@ -390,7 +390,7 @@ void genTestData(SeqRegions& seqregions1, SeqRegions& seqregions2)
  */
 TEST(PhyloNode, TestComputeTotalLhAtNode)
 {
-    Alignment aln;
+    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
     std::unique_ptr<Model> model = nullptr;
     Params params = Params::getInstance();
     
@@ -416,7 +416,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     EXPECT_EQ(*total_lh->at(6).likelihood, lh_value);
     
     // test on a non-root node
-    aln.ref_seq.resize(3500);
+    aln->ref_seq.resize(3500);
     const MiniIndex parent_mini = RIGHT;
     neighbor.setPartialLh(parent_mini, std::make_unique<SeqRegions>(std::move(seqregions2)));
     node1.setNeighborIndex(TOP, Index(0, parent_mini));

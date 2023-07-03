@@ -478,7 +478,7 @@ namespace cmaple
         /**
          Alignment
          */
-        Alignment aln;
+        std::unique_ptr<Alignment> aln;
         
         /**
          Evolutionary model
@@ -509,9 +509,16 @@ namespace cmaple
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        Tree(cmaple::Params && n_params):params(std::make_unique<cmaple::Params>(std::move(n_params))) {
-            aln.setSeqType(params->seq_type);
+        Tree(cmaple::Params && n_params):params(std::make_unique<cmaple::Params>(std::move(n_params))){
+            aln = std::make_unique<Alignment>();
+            aln->setSeqType(params->seq_type);
         };
+        
+        /*! \brief Reset tree
+         *
+         * Delete all objects (e.g., aln, model, etc), except params to rerun the inference
+         */
+        void resetTree();
         
         /**
          Setup tree parameters/thresholds

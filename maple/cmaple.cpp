@@ -2,13 +2,22 @@
 using namespace std;
 using namespace cmaple;
 
-CMaple::CMaple():tree(cmaple::Params()) {};
+CMaple::CMaple():tree(cmaple::Params()),status(NEW_INSTANCE) {};
 
-CMaple::CMaple(cmaple::Params&& params):tree(std::move(params)) {};
+CMaple::CMaple(cmaple::Params&& params):tree(std::move(params)),status(NEW_INSTANCE) {};
 
-CMaple::CMaple(const std::string& aln_filename, const std::string& format, const std::string& seqtype):tree(cmaple::Params())
+CMaple::CMaple(const std::string& aln_filename, const std::string& format, const std::string& seqtype):tree(cmaple::Params()),status(NEW_INSTANCE)
 {
     setAlignment(aln_filename, format, seqtype);
+}
+
+void CMaple::resetStatus()
+{
+    // reset status
+    status = NEW_INSTANCE;
+    
+    // reset tree
+    tree.resetTree();
 }
 
 int CMaple::setAlignment(const std::string& aln_filename, const std::string& format, const std::string& seqtype)
@@ -22,7 +31,7 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
     // set aln format (if specified)
     if (format.length())
     {
-        tree.params->aln_format = tree.aln.getAlignmentFormat(format);
+        tree.params->aln_format = tree.aln->getAlignmentFormat(format);
         if (tree.params->aln_format == IN_UNKNOWN)
         {
             outError("Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP");
@@ -33,7 +42,7 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
     // set sequence type
     if (seqtype.length())
     {
-        tree.params->seq_type = tree.aln.getSeqType(seqtype);
+        tree.params->seq_type = tree.aln->getSeqType(seqtype);
         if (tree.params->seq_type == SEQ_UNKNOWN)
         {
             outError("Unknown sequence type " + seqtype + ", please use DNA or AA");
@@ -57,6 +66,92 @@ int CMaple::setModel(const std::string& model_name)
     return CODE_ERROR_1;
 }
 
+int CMaple::runInference(const bool force_rerun, const std::string& tree_type)
+{
+    // If this instance is not NEW -> already run inference/computing branch supports
+    if (status != NEW_INSTANCE)
+    {
+        if (force_rerun)
+        {
+            std::cout << "Rerun the inference" << std::endl;
+            resetStatus();
+        }
+        else
+        {
+            std::cout << "Inference has been done. Use runInference(TRUE, <tree_type>) if you want to rerun the inference!" << std::endl;
+            return CODE_ERROR_1;
+        }
+    }
+    
+    // update status
+    status = INFERENCE_DONE;
+
+    // Run the inference
+    auto start = getRealTime();
+    
+    // load input data
+    loadInput();
+    
+    // terminate if the user only wants to export a MAPLE file from an alignment
+    // or only want to reconstruct an aln from a MAPLE file
+    if (tree.params->only_extract_maple || tree.params->output_aln)
+        return CODE_SUCCESS;
+    
+    // prepare for the inference
+    preInference();
+    
+    // infer trees and model params
+    doInference();
+    
+    // complete remaining stuff after the inference
+    postInference();
+    
+    // show runtime
+    auto end = getRealTime();
+    cout << "Runtime: " << end - start << "s" << endl;
+    
+    return CODE_SUCCESS;
+}
+
+int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads, const int num_replicates, const double epsilon)
+{
+    // If the branch supports have already been computed -> terminate with an error or recompute them (if users want to do so)
+    if (status == BRANCH_SUPPORT_DONE)
+    {
+        // Terminate with an error
+        if (!force_rerun)
+        {
+            std::cout << "Branch supports have already been computed. Use computeBranchSupports(TRUE, <...>) if you want to recompute them!" << std::endl;
+            return CODE_ERROR_1;
+        }
+        // Recompute branch supports (if users want to do so) -> only need to reset the status (delete all objects (e.g., tree), except params)
+        else
+        {
+            std::cout << "Recompute branch supports" << std::endl;
+            resetStatus();
+        }
+    }
+    
+    // We now need to compute branch supports
+    // backup the current option of compute_aLRT_SH
+    const bool compute_aLRT_SH = tree.params->compute_aLRT_SH;
+    
+    // turn on the flag to compute branch supports
+    tree.params->compute_aLRT_SH = true;
+    
+    // Run the entier inference process (if the inference has yet run)
+    if (status == NEW_INSTANCE)
+        runInference();
+    // Otherwise, only need to compute the branch supports (if the inference has already been run)
+    else if (status == INFERENCE_DONE)
+        postInference();
+        
+    // restore compute_aLRT_SH
+    tree.params->compute_aLRT_SH = compute_aLRT_SH;
+    
+    return CODE_SUCCESS;
+}
+
 int CMaple::setInputTree(const std::string& tree_filename)
 {
     // set input tree file (if specified)
@@ -73,7 +168,7 @@ int CMaple::extractMaple(const std::string& aln_filename, const std::string& out
 {
     if (aln_filename.length() && output_filename.length())
     {
-        tree.aln.extractMapleFile(aln_filename, output_filename, *tree.params);
+        tree.aln->extractMapleFile(aln_filename, output_filename, *tree.params);
         return CODE_SUCCESS;
     }
     
@@ -84,7 +179,7 @@ int CMaple::extractFASTA(const std::string& aln_filename, const std::string& out
 {
     if (aln_filename.length() && output_filename.length())
     {
-        tree.aln.reconstructAln(aln_filename, output_filename);
+        tree.aln->reconstructAln(aln_filename, output_filename);
         return CODE_SUCCESS;
     }
     
@@ -212,43 +307,50 @@ cmaple::Params& CMaple::getSettings()
 
 void CMaple::loadInput()
 {
-    ASSERT(tree.params->aln_path.length());
-    const InputType input_type = detectInputFile(tree.params->aln_path.c_str());
+    cmaple::Params& params = *tree.params;
+    ASSERT(params.aln_path.length());
     
-    // extract sequences (in vectors of mutations) from an input alignment (in PHYLIP or FASTA format)
-    if (input_type != IN_MAPLE)
+    // Synchronize seq_type
+    tree.aln->setSeqType(params.seq_type);
+    
+    // detect alignment format (if not specified)
+    if (params.aln_format == IN_UNKNOWN)
+        params.aln_format = detectInputFile(params.aln_path.c_str());
+    
+    // if alignment is in PHYLIP or FASTA format -> convert to MAPLE format
+    if (params.aln_format != IN_MAPLE)
     {
         // record the starting time
         auto start = getRealTime();
         
-        // prepare output (Diff) file
-        // init diff_path if it's null
-        if (!tree.params->maple_path.length())
-            tree.params->maple_path = tree.params->aln_path + ".maple";
+        // prepare output (MAPLE) file
+        // init maple_path if it's blank
+        if (!params.maple_path.length())
+            params.maple_path = params.aln_path + ".maple";
         
-        tree.aln.extractMapleFile(tree.params->aln_path, tree.params->maple_path, *tree.params, tree.params->only_extract_maple);
+        tree.aln->extractMapleFile(params.aln_path, params.maple_path, params, params.only_extract_maple);
         
         // record the end time and show the runtime
         auto end = getRealTime();
-        cout << "The input alignment is converted into MAPLE format at " << tree.params->maple_path << endl;
+        cout << "The input alignment is converted into MAPLE format at " << params.maple_path << endl;
         cout << " - Converting time: " << end-start << endl;
     }
-    // or read sequences (in vectors of mutations) from a MAPLE file
+    // otherwise, alignment is in MAPLE format -> read it
     else
     {
         // update input file path
-        tree.params->maple_path = tree.params->aln_path;
-        tree.params->aln_path = "";
+        params.maple_path = params.aln_path;
+        params.aln_path = "";
         
-        if (tree.params->only_extract_maple)
-            outError("To export a MAPLE file, please supply an alignment via -aln <ALIGNMENT>");
+        if (params.only_extract_maple)
+            outError("To export a MAPLE file, please supply an alignment (in FASTA or PHYLIP format) via -aln <ALIGNMENT>");
         
-        // only want to reconstruc the aln file from the MAPLE file
-        if (tree.params->output_aln)
-            tree.aln.reconstructAln(tree.params->maple_path, tree.params->output_aln);
+        // only want to reconstruct the aln file from the MAPLE file
+        if (params.output_aln)
+            tree.aln->reconstructAln(params.maple_path, params.output_aln);
         // otherwise, read the MAPLE file
         else
-            tree.aln.readMapleFile(tree.params->maple_path, tree.params->ref_path);
+            tree.aln->readMapleFile(params.maple_path, params.ref_path);
     }
 }
 
@@ -279,10 +381,10 @@ void CMaple::loadInputTree()
 void CMaple::preInference()
 {
     // validate input
-    ASSERT(tree.aln.ref_seq.size() > 0 && "Reference sequence is not found!");
-    ASSERT(tree.aln.data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
+    ASSERT(tree.aln->ref_seq.size() > 0 && "Reference sequence is not found!");
+    ASSERT(tree.aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
     
-    // use diff_path as the output prefix if users didn't specify it
+    // use maple_path as the output prefix if users didn't specify it
     if (!tree.params->output_prefix.length())
         tree.params->output_prefix = tree.params->maple_path;
     
@@ -297,7 +399,7 @@ void CMaple::preInference()
     tree.setup();
     
     // sort sequences by their distances to the reference sequence
-    tree.aln.sortSeqsByDistances(tree.params->hamming_weight);
+    tree.aln->sortSeqsByDistances(tree.params->hamming_weight);
     
     // extract related info (freqs, log_freqs) of the ref sequence
     tree.model->extractRefInfo(tree.aln);
@@ -312,7 +414,7 @@ void CMaple::preInference()
     tree.params->threshold_prob2 = tree.params->threshold_prob * tree.params->threshold_prob;
     
     // setup function pointers for CMaple
-    setupFuncPtrs(tree.aln.num_states);
+    setupFuncPtrs(tree.aln->num_states);
 }
 
 template <const StateType num_states>
@@ -322,13 +424,13 @@ void CMaple::buildInitialTree()
     auto start = getRealTime();
     
     // dummy variables
-    Alignment& aln = tree.aln;
+    std::unique_ptr<Alignment>& aln = tree.aln;
     std::unique_ptr<Model>& model = tree.model;
-    const PositionType seq_length = aln.ref_seq.size();
-    const PositionType num_seqs = aln.data.size();
+    const PositionType seq_length = aln->ref_seq.size();
+    const PositionType num_seqs = aln->data.size();
     const bool with_input_tree = tree.params->input_treefile.length();
     PositionType num_new_sequences = num_seqs;
-    Sequence* sequence = &tree.aln.data.front();
+    Sequence* sequence = &tree.aln->data.front();
     tree.nodes.reserve(num_seqs + num_seqs);
     NumSeqsType i = 0;
     
@@ -339,7 +441,7 @@ void CMaple::buildInitialTree()
         tree.root_vector_index = 0;
         tree.nodes.emplace_back(LeafNode(0));
         PhyloNode& root = tree.nodes[0];
-        root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln.getSeqType())));
+        root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType())));
         root.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(root.getTotalLh(), model);
         root.setUpperLength(0);
         
@@ -359,7 +461,7 @@ void CMaple::buildInitialTree()
         }
         
         // get the lower likelihood vector of the current sequence
-        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.getSeqType());
+        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
         
         // update the mutation matrix from empirical number of mutations observed from the recent sequences
         if (i % tree.params->mutation_update_period == 0)
@@ -460,7 +562,7 @@ void CMaple::optimizeTree()
         optimizeBranchLengthsOfTree<num_states>();
     
     // NhanLT: update the model params
-    if (tree.aln.getSeqType() == SEQ_DNA)
+    if (tree.aln->getSeqType() == SEQ_DNA)
     {
         tree.model->initMutationMat();
         tree.updateModelParams<num_states>();
@@ -613,6 +715,9 @@ void CMaple::calculateBranchSupports()
     auto start = getRealTime();
     cout << "Start calculating branch supports" << endl;
     
+    // update CMaple status
+    status = BRANCH_SUPPORT_DONE;
+    
     // calculate branch supports
     tree.calculateBranchSupports<num_states>();
     
@@ -742,108 +847,4 @@ void CMaple::setupFuncPtrs(const StateType num_states)
             outError("Sorry! currently we only support DNA and Protein data!");
             break;
     }
-}
-
-int CMaple::readAlignment(std::string aln_filename, std::string format, std::string seqtype)
-{
-    ASSERT(aln_filename.length());
-    
-    // Set the seqtype (if specified)
-    if (seqtype.length())
-    {
-        transform(seqtype.begin(), seqtype.end(), seqtype.begin(), ::toupper);
-        if (seqtype == "DNA")
-            tree.params->seq_type = SEQ_DNA;
-        else if (seqtype == "AA")
-                tree.params->seq_type = SEQ_PROTEIN;
-        else
-        {
-            outError("Unknown sequence type, please use DNA or AA");
-            return CODE_ERROR_1;
-        }
-    }
-    
-    // Set the format of the alignment (if specified)
-    InputType input_type = IN_OTHER;
-    if (format.length())
-    {
-        transform(format.begin(), format.end(), format.begin(), ::toupper);
-        if (format == "MAPLE")
-            input_type = IN_MAPLE;
-        else  if (format == "PHYLIP")
-            input_type = IN_PHYLIP;
-        else if (format == "FASTA")
-            input_type = IN_FASTA;
-        else
-        {
-            outError("Unsupported alignment format. Please use MAPLE, FASTA, or PHYLIP");
-            return CODE_ERROR_1;
-        }
-    }
-    else
-        input_type = detectInputFile(aln_filename.c_str());
-    
-    // read the input alignment
-    tree.params->aln_path = aln_filename;
-    // if alignment is in PHYLIP or FASTA format -> convert to MAPLE format
-    if (input_type != IN_MAPLE)
-    {
-        // record the starting time
-        auto start = getRealTime();
-        
-        // prepare output (Diff) file
-        // init diff_path if it's null
-        if (!tree.params->maple_path.length())
-            tree.params->maple_path = tree.params->aln_path + ".maple";
-        
-        tree.aln.extractMapleFile(tree.params->aln_path, tree.params->maple_path, *tree.params, tree.params->only_extract_maple);
-        
-        // record the end time and show the runtime
-        auto end = getRealTime();
-        cout << "The input alignment is converted into MAPLE format at " << tree.params->maple_path << endl;
-        cout << " - Converting time: " << end-start << endl;
-    }
-    // otherwise, alignment is in MAPLE format -> read it
-    else
-    {
-        // update input file path
-        tree.params->maple_path = tree.params->aln_path;
-        tree.params->aln_path = "";
-        
-        // read the MAPLE file
-        tree.aln.readMapleFile(tree.params->maple_path, tree.params->ref_path);
-    }
-    
-    // return success
-    return CODE_SUCCESS;
-}
-
-void runCMaple(Params &params)
-{
-    // NHANLT: test new funtions
-    // test();
-    
-    auto start = getRealTime();
-    CMaple cmaple(std::move(params));
-    
-    // load input data
-    cmaple.loadInput();
-    
-    // terminate if the user only wants to export a MAPLE file from an alignment
-    // or only want to reconstruct an aln from a MAPLE file
-    if (params.only_extract_maple || params.output_aln)
-        return;
-    
-    // prepare for the inference
-    cmaple.preInference();
-    
-    // infer trees and model params
-    cmaple.doInference();
-    
-    // complete remaining stuff after the inference
-    cmaple.postInference();
-    
-    // show runtime
-    auto end = getRealTime();
-    cout << "Runtime: " << end - start << "s" << endl;
 }

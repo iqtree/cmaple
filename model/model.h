@@ -22,12 +22,12 @@ namespace cmaple
         /**
          Export state frequencies at root
          */
-        std::string exportRootFrequenciesStr(Alignment& aln);
+        std::string exportRootFrequenciesStr(std::unique_ptr<Alignment>& aln);
         
         /**
          Export Q matrix
          */
-        std::string exportQMatrixStr(Alignment& aln);
+        std::string exportQMatrixStr(std::unique_ptr<Alignment>& aln);
         
         /**
          Read root state frequencies from string/file
@@ -68,7 +68,7 @@ namespace cmaple
         /**
          Extract root freqs from the reference sequence
          */
-        virtual void extractRootFreqs(const Alignment& aln);
+        virtual void extractRootFreqs(const std::unique_ptr<Alignment>& aln);
         
         /**
          Init pointers
@@ -85,7 +85,7 @@ namespace cmaple
          Update the mutation matrix periodically from the empirical count of mutations (template)
          */
         template <cmaple::StateType num_states>
-        void updateMutationMatEmpiricalTemplate(const Alignment& aln);
+        void updateMutationMatEmpiricalTemplate(const std::unique_ptr<Alignment>& aln);
         
     public:
         // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
@@ -137,7 +137,7 @@ namespace cmaple
         /**
          Extract reference-related info (freqs, log_freqs)
          */
-        void extractRefInfo(const Alignment& aln);
+        void extractRefInfo(const std::unique_ptr<Alignment>& aln);
         
         /**
          Init the mutation rate matrix from a model
@@ -148,23 +148,23 @@ namespace cmaple
         /**
          Compute cumulative rate of the ref genome
          */
-        void computeCumulativeRate(const Alignment& aln);
+        void computeCumulativeRate(const std::unique_ptr<Alignment>& aln);
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations
          */
-        virtual void updateMutationMatEmpirical(const Alignment& aln) {};
+        virtual void updateMutationMatEmpirical(const std::unique_ptr<Alignment>& aln) {};
         
         /**
          Update pseudocounts from new sample to improve the estimate of the substitution rates
          @param node_regions the genome list at the node where the appending happens;
          @param sample_regions the genome list for the new sample.
          */
-        virtual void updatePesudoCount(const Alignment& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
+        virtual void updatePesudoCount(const std::unique_ptr<Alignment>& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
         
         /**
          Export model parameters to string
          */
-        std::string exportString(Alignment& aln);
+        std::string exportString(std::unique_ptr<Alignment>& aln);
     };
 }

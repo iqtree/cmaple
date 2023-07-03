@@ -133,7 +133,8 @@ int main(int argc, char *argv[]) {
     time_t start_time;
     
     // call the main function
-    runCMaple(Params::getInstance());
+    CMaple cmaple(std::move(Params::getInstance()));
+    cmaple.runInference();
     
     time(&start_time);
     cout << "Date and Time: " << ctime(&start_time);

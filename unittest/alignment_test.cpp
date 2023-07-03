@@ -223,7 +223,7 @@ TEST(Alignment, readMapleFile)
     // ----- test on test_5K.maple, load ref_seq from test_100.maple -----
     aln.data.clear();
     diff_file_path = "../../example/test_5K.maple";
-    std::string ref_file_path("../../example/test_100.maple");
+    std::string ref_file_path("../../example/ref_test_100.maple");
     aln.readMapleFile(diff_file_path, ref_file_path);
     
     // test the output data
@@ -270,6 +270,7 @@ TEST(Alignment, extractDiffFile)
     
     // ----- test on input.phy with ref file from ref.fa -----
     Params params = Params::getInstance();
+    params.overwrite_output = true;
     params.tree_search_type = COMPLETE_TREE_SEARCH;
     params.aln_path = "../../example/input.phy";
     params.ref_path = "../../example/ref.fa";

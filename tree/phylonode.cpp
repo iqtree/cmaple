@@ -3,9 +3,9 @@ using namespace std;
 using namespace cmaple;
 
 // explicit instantiation of templates
-template void cmaple::PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
-template void cmaple::PhyloNode::computeTotalLhAtNode<4>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
-template void cmaple::PhyloNode::computeTotalLhAtNode<20>(std::unique_ptr<SeqRegions>&, PhyloNode&, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<4>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<20>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType, const bool, const RealNumType);
 
 
 
@@ -242,7 +242,7 @@ void cmaple::PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
 }*/
 
 template <const StateType num_states>
-void cmaple::PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+void cmaple::PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     // if node is root
     if (is_root)
@@ -255,7 +255,7 @@ void cmaple::PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_
     }
 }
 
-const std::string cmaple::PhyloNode::exportString(const bool binary, const Alignment& aln, const bool show_branch_supports)
+const std::string cmaple::PhyloNode::exportString(const bool binary, const std::unique_ptr<Alignment>& aln, const bool show_branch_supports)
 {
     if (!isInternal())
     {
@@ -264,29 +264,29 @@ const std::string cmaple::PhyloNode::exportString(const bool binary, const Align
         std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
         const PositionType num_less_info_seqs = less_info_seqs.size();
         if (num_less_info_seqs == 0)
-            return aln.data[getSeqNameIndex()].seq_name + ":" + length_str;
+            return aln->data[getSeqNameIndex()].seq_name + ":" + length_str;
         // with minor sequences -> return minor sequences' names with zero branch lengths
         else
         {
             string branch_support = show_branch_supports ? "0" : "";
             
-            string output = "(" + aln.data[getSeqNameIndex()].seq_name + ":0";
+            string output = "(" + aln->data[getSeqNameIndex()].seq_name + ":0";
             // export less informative sequences in binary tree format
             if (binary)
             {
                 string closing_brackets = "";
                 for (PositionType i = 0; i < num_less_info_seqs - 1; i++)
                 {
-                    output += ",(" + aln.data[less_info_seqs[i]].seq_name + ":0";
+                    output += ",(" + aln->data[less_info_seqs[i]].seq_name + ":0";
                     closing_brackets += ")" + branch_support + ":0";
                 }
-                output += "," + aln.data[less_info_seqs[num_less_info_seqs - 1]].seq_name + ":0" + closing_brackets;
+                output += "," + aln->data[less_info_seqs[num_less_info_seqs - 1]].seq_name + ":0" + closing_brackets;
             }
             // export less informative sequences in mutifurcating tree format
             else
             {
                 for (auto minor_seq_name_index : less_info_seqs)
-                    output += "," + aln.data[minor_seq_name_index].seq_name + ":0";
+                    output += "," + aln->data[minor_seq_name_index].seq_name + ":0";
             }
             output += ")" + branch_support + ":" + length_str;
             return output;

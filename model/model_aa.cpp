@@ -1073,7 +1073,7 @@ void cmaple::ModelAA::rescaleAllRates()
     }
 }
 
-void cmaple::ModelAA::updateMutationMatEmpirical(const Alignment& aln)
+void cmaple::ModelAA::updateMutationMatEmpirical(const std::unique_ptr<Alignment>& aln)
 {
     // don't update parameters other model except GTR or NONREV
     if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
@@ -1081,14 +1081,14 @@ void cmaple::ModelAA::updateMutationMatEmpirical(const Alignment& aln)
     updateMutationMatEmpiricalTemplate<20>(aln);
 }
 
-void cmaple::ModelAA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelAA::updatePesudoCount(const std::unique_ptr<Alignment>& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // only handle GTR or NONREV
     if (model_name == "GTR" || model_name == "gtr" || model_name == "NONREV" || model_name == "nonrev")
         Model::updatePesudoCount(aln, regions1, regions2);
 }
 
-void cmaple::ModelAA::extractRootFreqs(const Alignment& aln)
+void cmaple::ModelAA::extractRootFreqs(const std::unique_ptr<Alignment>& aln)
 {
     // only extract root freqs for GTR or NONREV
     if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;

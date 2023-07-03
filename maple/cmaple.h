@@ -6,6 +6,14 @@
 
 /** Class CMaple specifies APIs */
 class CMaple {
+    
+    /**
+        Status of the CMaple instance
+     */
+    enum CMapleStatus {
+        NEW_INSTANCE, INFERENCE_DONE, BRANCH_SUPPORT_DONE
+    };
+    
 public:
     
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,20 +63,22 @@ public:
     /*! \brief Run the inference
      *
      * Run the inference to infer a phylogenetic tree
+     * @param[in] force_rerun TRUE to force rerunning the inference
      * @param[in] tree_type the type of the output tree (optional): "BIN" - bifurcating tree or "MUL" - multifurcating tree
      * @return a status code: 0 - success, non-zero - failed with errors
      */
-    int runInference(std::string tree_type = "BIN");
+    int runInference(const bool force_rerun = false, const std::string& tree_type = "BIN");
     
     /*! \brief Compute branch supports
      *
      * Compute branch supports (aLRT-SH)
+     * @param[in] force_rerun TRUE to force rerunning the inference
      * @param[in] num_threads number of threads (optional)
      * @param[in] num_replicates a positive number of replicates (optional)
      * @param[in] epsilon a positive epsilon (optional)
      * @return a status code: 0 - success, non-zero - failed with errors
      */
-    int computeBranchSupports(int num_threads = 1, int num_replicates = 1000, double epsilon = 0.05);
+    int computeBranchSupports(const bool force_rerun = false, const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.05);
     
     /*! \brief Specify an input tree file
      *
@@ -217,11 +227,14 @@ public:
     
     
     /////////////////////////////////////////////////////////////////////////////////////////////
-    /// OLD FUNCTIONS - PLS IGNORES THE FOLLOWING CONTENTS
+    /// PRIVATE FUNCTIONS
     //////////////////////////////////////////////////////////////////////////////////////////////
 private:
     /** The phylogenetic tree */
     cmaple::Tree tree;
+    
+    /** Status of this CMaple instance */
+    CMapleStatus status;
     
     /**
         Pointer  to doInference method
@@ -235,97 +248,75 @@ private:
     typedef void (CMaple::*PostInferencePtrType)();
     PostInferencePtrType postInferencePtr;
     
-    /**
-        Template of doInference()
+    /*! Template of doInference()
      */
     template <const cmaple::StateType  num_states>
     void doInferenceTemplate();
     
-    /**
-        Template of postInference()
+    /*! Template of postInference()
      */
     template <const cmaple::StateType  num_states>
     void postInferenceTemplate();
     
-    /**
-        Setup function pointers
+    /*! Setup function pointers
      */
     void setupFuncPtrs(const cmaple::StateType  num_states);
     
-    /**
-        Build an Initial Tree
-        @return TRUE if there is any node added, thus, we need to optimize the tree later
+    /*! Build an Initial Tree
      */
     template <const cmaple::StateType  num_states>
     void buildInitialTree();
     
-    /**
-        Optimize the current tree
+    /*! Optimize the current tree
      */
     template <const cmaple::StateType  num_states>
     void optimizeTree();
     
-    /**
-        Optimize the tree topology
+    /*! Optimize the tree topology
      */
     template <const cmaple::StateType  num_states>
     void optimizeTreeTopology(bool short_range_search = false);
     
-    /**
-        Optimize the branch lengths of the current tree
+    /*! Optimize the branch lengths of the current tree
      */
     template <const cmaple::StateType  num_states>
     void optimizeBranchLengthsOfTree();
-    
-    /**
-        export output files
+
+    /*! \brief Export output files
+     *
+     * @param[in] filename name of the output file(s)
+     * @param[in] show_branch_support TRUE to output the branch supports (aLRT-SH)
      */
     void exportOutput(const std::string &filename, const bool show_branch_support = false);
     
-    /**
-        calculate branch supports
+    /*! Calculate branch supports
      */
     template <const cmaple::StateType  num_states>
     void calculateBranchSupports();
     
-    /**
-        Load input tree
+    /*! Load an input tree
      */
     template <const cmaple::StateType  num_states>
     void loadInputTree();
     
-    /*! \brief Read an alignment
-     *
-     * Read an alignment in MAPLE, PHYLIP, or FASTA format
-     * @param[in] aln_filename Name of an alignment file
-     * @param[in] format Alignment format (optional): "", "MAPLE", "PHYLIP", "FASTA"
-     * @param[in] seqtype Data type of sequences (optional): "", "DNA", "AA"
-     * @return a status code: 0 - success, non-zero - failed with errors
-     */
-    int readAlignment(std::string aln_filename, std::string format = "", std::string seqtype = "");
-    
-public:
-    
-    /**
-        Load input data
+    /*! Load input data
      */
     void loadInput();
     
-    /**
-        Prepare for the inference
+    /*! Prepare for the inference
      */
     void preInference();
     
-    /**
-        Do the inference
+    /*! Do the inference
      */
     void doInference();
     
-    /**
-        Complete the inference
+    /*! Complete the inference
      */
     void postInference();
+    
+    /*! \brief Reset CMaple status
+     * Delete all related objects, except params
+     */
+    void resetStatus();
 };
-
-/** Method to run CMaple */
-void runCMaple(cmaple::Params &params);

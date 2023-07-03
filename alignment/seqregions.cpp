@@ -20,21 +20,21 @@ template double cmaple::SeqRegions::computeSiteLhAtRoot<2>(std::vector<RealNumTy
 template double cmaple::SeqRegions::computeSiteLhAtRoot<4>(std::vector<RealNumType>&, const std::unique_ptr<Model>&);
 template double cmaple::SeqRegions::computeSiteLhAtRoot<20>(std::vector<RealNumType>&, const std::unique_ptr<Model>&);
 
-template double cmaple::SeqRegions::mergeTwoLowers<2>(std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool) const;
-template double cmaple::SeqRegions::mergeTwoLowers<4>(std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool) const;
-template double cmaple::SeqRegions::mergeTwoLowers<20>(std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType, const bool) const;
+template double cmaple::SeqRegions::mergeTwoLowers<2>(std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType, const bool) const;
+template double cmaple::SeqRegions::mergeTwoLowers<4>(std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType, const bool) const;
+template double cmaple::SeqRegions::mergeTwoLowers<20>(std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType, const bool) const;
 
-template void cmaple::SeqRegions::mergeUpperLower<2>(std::unique_ptr<SeqRegions>&, RealNumType, const SeqRegions&, RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType) const;
-template void cmaple::SeqRegions::mergeUpperLower<4>(std::unique_ptr<SeqRegions>&, RealNumType, const SeqRegions&, RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType) const;
-template void cmaple::SeqRegions::mergeUpperLower<20>(std::unique_ptr<SeqRegions>&, RealNumType, const SeqRegions&, RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType) const;
+template void cmaple::SeqRegions::mergeUpperLower<2>(std::unique_ptr<SeqRegions>&, RealNumType, const SeqRegions&, RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType) const;
+template void cmaple::SeqRegions::mergeUpperLower<4>(std::unique_ptr<SeqRegions>&, RealNumType, const SeqRegions&, RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType) const;
+template void cmaple::SeqRegions::mergeUpperLower<20>(std::unique_ptr<SeqRegions>&, RealNumType, const SeqRegions&, RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType) const;
 
 template void cmaple::SeqRegions::computeTotalLhAtRoot<2>(std::unique_ptr<SeqRegions>&, const std::unique_ptr<Model>&, RealNumType) const;
 template void cmaple::SeqRegions::computeTotalLhAtRoot<4>(std::unique_ptr<SeqRegions>&, const std::unique_ptr<Model>&, RealNumType) const;
 template void cmaple::SeqRegions::computeTotalLhAtRoot<20>(std::unique_ptr<SeqRegions>&, const std::unique_ptr<Model>&, RealNumType) const;
 
-template double cmaple::SeqRegions::calculateSiteLhContributions<2>(std::vector<RealNumType>&, std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType) const;
-template double cmaple::SeqRegions::calculateSiteLhContributions<4>(std::vector<RealNumType>&, std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType) const;
-template double cmaple::SeqRegions::calculateSiteLhContributions<20>(std::vector<RealNumType>&, std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const Alignment&, const std::unique_ptr<Model>&, const RealNumType) const;
+template double cmaple::SeqRegions::calculateSiteLhContributions<2>(std::vector<RealNumType>&, std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType) const;
+template double cmaple::SeqRegions::calculateSiteLhContributions<4>(std::vector<RealNumType>&, std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType) const;
+template double cmaple::SeqRegions::calculateSiteLhContributions<20>(std::vector<RealNumType>&, std::unique_ptr<SeqRegions>&, const RealNumType, const SeqRegions&, const RealNumType, const std::unique_ptr<Alignment>&, const std::unique_ptr<Model>&, const RealNumType) const;
 
 
 template <const StateType num_states>
@@ -416,7 +416,7 @@ bool cmaple::merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& 
 }
 
 template <const StateType num_states>
-void cmaple::merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
+void cmaple::merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const std::unique_ptr<Alignment>& aln, SeqRegions& merged_regions)
 {
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
     auto& new_lh_value = *new_lh;
@@ -441,7 +441,7 @@ void cmaple::merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_
     {
         StateType seq2_state = seq2_region.type;
         if (seq2_state == TYPE_R)
-            seq2_state = aln.ref_seq[end_pos];
+            seq2_state = aln->ref_seq[end_pos];
         
         if (total_blength_2 > 0)
         {
@@ -462,7 +462,7 @@ void cmaple::merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_
 }
 
 template <const StateType num_states>
-void cmaple::merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
+void cmaple::merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const std::unique_ptr<Alignment>& aln, SeqRegions& merged_regions)
 {
     RealNumType sum_new_lh = updateMultLHwithMat<num_states>(model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
     
@@ -472,13 +472,13 @@ void cmaple::merge_RACGT_O(const SeqRegion& seq2_region, const RealNumType total
 }
 
 template <const StateType num_states>
-void cmaple::merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
+void cmaple::merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const std::unique_ptr<Model>& model, const std::unique_ptr<Alignment>& aln, SeqRegions& merged_regions)
 {
     RealNumType sum_new_lh = 0;
     StateType seq2_state = seq2_region.type;
     
     if (seq2_state == TYPE_R)
-        seq2_state = aln.ref_seq[end_pos];
+        seq2_state = aln->ref_seq[end_pos];
     
     // TODO: this seems a weird operation on `new_lh_value` (since it was just created anew and is all 00000)!
     // please check this makes sense!
@@ -499,11 +499,11 @@ void cmaple::merge_RACGT_RACGT(const SeqRegion& seq2_region, const RealNumType t
 }
 
 template <const StateType num_states>
-void cmaple::merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const Alignment& aln, SeqRegions& merged_regions)
+void cmaple::merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<Model>& model, const std::unique_ptr<Alignment>& aln, SeqRegions& merged_regions)
 {
     StateType seq1_state = seq1_region.type;
     if (seq1_state == TYPE_R)
-        seq1_state = aln.ref_seq[end_pos];
+        seq1_state = aln->ref_seq[end_pos];
     
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
     auto& new_lh_value = *new_lh;
@@ -560,7 +560,7 @@ void cmaple::SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_reg
                                  RealNumType upper_plength, 
                                  const SeqRegions& lower_regions, 
                                  RealNumType lower_plength, const
-                                 Alignment& aln, 
+                                 std::unique_ptr<Alignment>& aln,
                                  const std::unique_ptr<Model>& model,
                                  const RealNumType threshold_prob) const
 {
@@ -570,7 +570,7 @@ void cmaple::SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_reg
     const SeqRegions& seq2_regions = lower_regions;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    const PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln->ref_seq.size();
     
     // init merged_regions
     if (merged_regions)
@@ -748,7 +748,7 @@ void cmaple::merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const 
 }
 
 template <const StateType num_states>
-bool cmaple::merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool cmaple::merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     RealNumType sum_lh = updateMultLHwithMat<num_states>(model->mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
     
@@ -770,11 +770,11 @@ bool cmaple::merge_O_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total
 }
 
 template <const StateType num_states>
-bool cmaple::merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool cmaple::merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     StateType seq2_state = seq2_region.type;
     if (seq2_state == TYPE_R)
-        seq2_state = aln.ref_seq[end_pos];
+        seq2_state = aln->ref_seq[end_pos];
     
     if (total_blength_2 > 0)
     {
@@ -809,7 +809,7 @@ bool cmaple::merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType t
 }
 
 template <const StateType num_states>
-bool cmaple::merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool cmaple::merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
     RealNumType sum_lh = 0;
@@ -838,7 +838,7 @@ bool cmaple::merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqReg
 }
 
 template <const StateType num_states>
-bool cmaple::merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool cmaple::merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     RealNumType sum_lh = updateMultLHwithMat<num_states>(model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
                         
@@ -860,11 +860,11 @@ bool cmaple::merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, RealNumType t
 }
 
 template <const StateType num_states>
-bool cmaple::merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool cmaple::merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     StateType seq2_state = seq2_region.type;
     if (seq2_state == TYPE_R)
-        seq2_state = aln.ref_seq[end_pos];
+        seq2_state = aln->ref_seq[end_pos];
     
     if (total_blength_2 > 0)
     {
@@ -892,11 +892,11 @@ bool cmaple::merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, RealNumTy
 }
 
 template <const StateType num_states>
-bool cmaple::merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool cmaple::merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     StateType seq1_state = seq1_region.type;
     if (seq1_state == TYPE_R)
-        seq1_state = aln.ref_seq[end_pos];
+        seq1_state = aln->ref_seq[end_pos];
     
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
     //auto& new_lh_value = *new_lh;
@@ -919,7 +919,7 @@ bool cmaple::merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const Se
 }
 
 template <const StateType num_states>
-bool cmaple::merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
+bool cmaple::merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh)
 {
     RealNumType total_blength_1 = plength1;
     if (seq1_region.plength_observation2node >= 0)
@@ -964,7 +964,7 @@ bool cmaple::merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRe
 }
 
 template <const StateType num_states>
-RealNumType cmaple::SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool return_log_lh) const
+RealNumType cmaple::SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, const bool return_log_lh) const
 {
     // init variables
     RealNumType log_lh = 0;
@@ -973,7 +973,7 @@ RealNumType cmaple::SeqRegions::mergeTwoLowers(std::unique_ptr<SeqRegions>& merg
     const SeqRegions& seq2_regions = regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    const PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln->ref_seq.size();
     
     // init merged_regions
     if (merged_regions)
@@ -1076,7 +1076,7 @@ void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions, 
 }
 
 template <const StateType num_states>
-bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     RealNumType sum_lh = updateMultLHwithMat<num_states>(model->mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
     
@@ -1100,11 +1100,11 @@ bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions, const SeqRe
 }
 
 template <const StateType num_states>
-bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     StateType seq2_state = seq2_region.type;
     if (seq2_state == TYPE_R)
-        seq2_state = aln.ref_seq[end_pos];
+        seq2_state = aln->ref_seq[end_pos];
     
     if (total_blength_2 > 0)
     {
@@ -1143,7 +1143,7 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions, const S
 }
 
 template <const StateType num_states>
-bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
     RealNumType sum_lh = 0;
@@ -1172,7 +1172,7 @@ bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions, const 
 }
 
 template <const StateType num_states>
-bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     RealNumType sum_lh = updateMultLHwithMat<num_states>(model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
                         
@@ -1196,11 +1196,11 @@ bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions, const S
 }
 
 template <const StateType num_states>
-bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     StateType seq2_state = seq2_region.type;
     if (seq2_state == TYPE_R)
-        seq2_state = aln.ref_seq[end_pos];
+        seq2_state = aln->ref_seq[end_pos];
     
     if (total_blength_2 > 0)
     {
@@ -1232,11 +1232,11 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions, con
 }
 
 template <const StateType num_states>
-bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     StateType seq1_state = seq1_region.type;
     if (seq1_state == TYPE_R)
-        seq1_state = aln.ref_seq[end_pos];
+        seq1_state = aln->ref_seq[end_pos];
     
     auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
     //auto& new_lh_value = *new_lh;
@@ -1259,7 +1259,7 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions, co
 }
 
 template <const StateType num_states>
-bool calSiteLhs_notN_notN(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
+bool calSiteLhs_notN_notN(std::vector<RealNumType>& site_lh_contributions, const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob, RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions)
 {
     RealNumType total_blength_1 = plength1;
     if (seq1_region.plength_observation2node >= 0)
@@ -1304,7 +1304,7 @@ bool calSiteLhs_notN_notN(std::vector<RealNumType>& site_lh_contributions, const
 }
 
 template <const StateType num_states>
-RealNumType cmaple::SeqRegions::calculateSiteLhContributions(std::vector<RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const Alignment& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob) const
+RealNumType cmaple::SeqRegions::calculateSiteLhContributions(std::vector<RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const RealNumType plength1, const SeqRegions& regions2, const RealNumType plength2, const std::unique_ptr<Alignment>& aln, const std::unique_ptr<Model>& model, const RealNumType threshold_prob) const
 {
     // init variables
     RealNumType log_lh = 0;
@@ -1313,7 +1313,7 @@ RealNumType cmaple::SeqRegions::calculateSiteLhContributions(std::vector<RealNum
     const SeqRegions& seq2_regions = regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    const PositionType seq_length = aln.ref_seq.size();
+    const PositionType seq_length = aln->ref_seq.size();
     ASSERT(site_lh_contributions.size() == seq_length);
     
     // init merged_regions
