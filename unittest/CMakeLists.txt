@@ -5,6 +5,7 @@ file(COPY "${PROJECT_SOURCE_DIR}/example" DESTINATION "${PROJECT_BINARY_DIR}")
 add_executable(
   cmaple_maintest          ## todo: should be called 'SeqRegions_test'
   #tree_test.h tree_test.cpp
+  cmaple_test.cpp
   phylonode_test.cpp
   seqregions_test.cpp
   model_test.cpp
@@ -17,6 +18,7 @@ target_link_libraries(
   cmaple_maintest
   GTest::gtest_main    ## contains the main() function. No need to write one yourself
   cmaple_utils
+  ncl nclextra
   cmaple_model
   cmaple_alignment
   cmaple_tree

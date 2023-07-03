@@ -159,6 +159,10 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
         }
     }
     
+    // if users specify num_threads when calling this function -> use that value. Otherwise, use the setting in params instance.
+    if (num_threads != 1)
+        tree.params->num_threads = num_threads;
+    
     // We now need to compute branch supports
     // backup the current option of compute_aLRT_SH
     const bool compute_aLRT_SH = tree.params->compute_aLRT_SH;
@@ -176,8 +180,7 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
         cout << "Seed:    " << tree.params->ran_seed <<  " " << std::endl;
         
         // Show the number of threads
-        const int act_num_threads = num_threads == 1 ? tree.params->num_threads : num_threads; // if users specify num_threads when calling this function -> use that value. Otherwise, use the setting in params instance.
-        setNumThreads(act_num_threads);
+        setNumThreads(tree.params->num_threads);
         
         // Only compute the branch supports
         postInference();
@@ -230,6 +233,9 @@ std::string CMaple::getTreeString(const std::string& tree_type, const bool show_
 
 std::string CMaple::getModelString()
 {
+    // Handle cases when model is not yet initialized
+    if (!tree.model) return "";
+    
     return tree.exportModelString();
 }
 

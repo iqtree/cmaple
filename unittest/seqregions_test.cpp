@@ -725,7 +725,7 @@ void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignme
 {
     // Init params, aln, and model
     params->model_name = model_name;
-    std::string diff_file_path("../../example/test_5K.diff");
+    std::string diff_file_path("../../example/test_5K.maple");
     char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
     strcpy(diff_file_path_ptr, diff_file_path.c_str());
     aln->readMapleFile(diff_file_path_ptr, "");

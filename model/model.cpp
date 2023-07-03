@@ -163,6 +163,9 @@ void cmaple::Model::computeCumulativeRate(const std::unique_ptr<Alignment>& aln)
 
 std::string cmaple::Model::exportRootFrequenciesStr(std::unique_ptr<Alignment>& aln)
 {
+    // Handle cases when root_freqs is null
+    if (!root_freqs) return "\n \n";
+    
     string output{};
     string header{};
     
@@ -178,6 +181,9 @@ std::string cmaple::Model::exportRootFrequenciesStr(std::unique_ptr<Alignment>& 
 
 std::string cmaple::Model::exportQMatrixStr(std::unique_ptr<Alignment>& aln)
 {
+    // Handle cases when mutation_mat is null
+    if (!mutation_mat) return "\n";
+    
     string output{};
     
     // generate header

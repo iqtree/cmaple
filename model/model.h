@@ -102,7 +102,7 @@ namespace cmaple
         cmaple::RealNumType *root_freqs = nullptr;
         
         /** Mutation matrix */
-        cmaple::RealNumType *mutation_mat;
+        cmaple::RealNumType *mutation_mat = nullptr;
         
         /** cumulative rates/bases*/
         cmaple::RealNumType *cumulative_rate = nullptr;
