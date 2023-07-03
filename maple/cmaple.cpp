@@ -83,6 +83,10 @@ int CMaple::runInference(const bool force_rerun, const std::string& tree_type)
         }
     }
     
+    // validate inputs
+    if ((!tree.params->maple_path.length()) && (!tree.params->aln_path.length()))
+        outError("Please specify an alignment file via setAlignment(...)");
+    
     // update status
     status = INFERENCE_DONE;
     

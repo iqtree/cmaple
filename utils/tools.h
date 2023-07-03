@@ -1077,4 +1077,13 @@ namespace cmaple
      * @param num_threads the number of OpenMP threads
      */
     void setNumThreads(const int num_threads);
+
+    /**
+     * make unique pointer, an implementation to make it compatible to c++11
+     */
+    template<typename T, typename... Args>
+    std::unique_ptr<T> make_unique(Args&&... args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
 }

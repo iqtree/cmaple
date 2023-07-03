@@ -509,8 +509,8 @@ namespace cmaple
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        Tree(cmaple::Params && n_params):params(std::make_unique<cmaple::Params>(std::move(n_params))){
-            aln = std::make_unique<Alignment>();
+        Tree(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))){
+            aln = cmaple::make_unique<Alignment>();
             aln->setSeqType(params->seq_type);
         };
         

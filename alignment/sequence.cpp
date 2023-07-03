@@ -22,7 +22,7 @@ cmaple::Sequence::Sequence(string n_seq_name, vector<Mutation> n_mutations):
 
 std::unique_ptr<SeqRegions> cmaple::Sequence::getLowerLhVector(const PositionType sequence_length, const StateType num_states, const SeqType seq_type)
 {
-    std::unique_ptr<SeqRegions> regions = make_unique<SeqRegions>(SeqRegions());
+    std::unique_ptr<SeqRegions> regions = std::make_unique<SeqRegions>(SeqRegions());
     regions->reserve(size() * 2); // avoid realloc of vector data (we could also count explicitly - see below), but that seems a bit slower (yet potentially more memory efficient)
 
     // count number of items we will need
