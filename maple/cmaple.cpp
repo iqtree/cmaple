@@ -26,7 +26,10 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
     if (aln_filename.length())
         tree.params->aln_path = aln_filename;
     else
+    {
+        std::cout << "Please specify an alignment!" << std::endl;
         return CODE_ERROR_1;
+    }
     
     // set aln format (if specified)
     if (format.length())
@@ -34,7 +37,7 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
         tree.params->aln_format = tree.aln->getAlignmentFormat(format);
         if (tree.params->aln_format == IN_UNKNOWN)
         {
-            outError("Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP");
+            std::cout << "Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP" << std::endl;
             return CODE_ERROR_1;
         }
     }
@@ -45,7 +48,7 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
         tree.params->seq_type = tree.aln->getSeqType(seqtype);
         if (tree.params->seq_type == SEQ_UNKNOWN)
         {
-            outError("Unknown sequence type " + seqtype + ", please use DNA or AA");
+            std::cout << "Unknown sequence type " + seqtype + ", please use DNA or AA" << std::endl;
             return CODE_ERROR_1;
         }
     }
@@ -219,7 +222,7 @@ int CMaple::extractFASTA(const std::string& aln_filename, const std::string& out
 {
     if (aln_filename.length() && output_filename.length())
     {
-        tree.aln->reconstructAln(aln_filename, output_filename);
+        tree.aln->reconstructAln(aln_filename, output_filename, *tree.params);
         return CODE_SUCCESS;
     }
     
@@ -228,6 +231,13 @@ int CMaple::extractFASTA(const std::string& aln_filename, const std::string& out
 
 std::string CMaple::getTreeString(const std::string& tree_type, const bool show_branch_supports)
 {
+    // make sure branch supports are available (if users want to output them)
+    if ((status == NEW_INSTANCE || status == INFERENCE_DONE) && show_branch_supports)
+    {
+        std::cout << "Branch supports have yet been available for outputting! Pls compute them first!" << std:: endl;
+        return "";
+    }
+    
     return tree.exportTreeString(tree_type, show_branch_supports);
 }
 
@@ -269,7 +279,7 @@ int CMaple::setTreeSearchType(const std::string& tree_search_type)
         tree.params->tree_search_type = parseTreeSearchType(tree_search_type);
         if (tree.params->tree_search_type == UNKNOWN_TREE_SEARCH)
         {
-            outError("Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|SLOW>");
+            std::cout << "Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|SLOW>" << std::endl;
             return CODE_ERROR_1;
         }
         return CODE_SUCCESS;
@@ -304,30 +314,28 @@ int CMaple::enableOptimizingBlengths(const bool enable)
 
 int CMaple::setMinBlength(const double min_blength)
 {
-    // set min_blength (if specified)
-    if (min_blength > 0)
+    // Handle invalid input
+    if (min_blength <= 0)
     {
-        tree.params->fixed_min_blength = min_blength;
-        return CODE_SUCCESS;
+        std::cout << "min_blength must be positive!" << std::endl;
+        return CODE_ERROR_1;
     }
-    else
-        outError("min_blength must be positive!");
     
-    return CODE_ERROR_1;
+    tree.params->fixed_min_blength = min_blength;
+    return CODE_SUCCESS;
 }
 
 int CMaple::setThreshProb(const double thresh_prob)
 {
-    // set thresh_prob (if specified)
-    if (thresh_prob > 0)
+    // Handle invalid input
+    if (thresh_prob <= 0)
     {
-        tree.params->threshold_prob = thresh_prob;
-        return CODE_SUCCESS;
+        std::cout << "thresh_prob must be positive!" << std::endl;
+        return CODE_ERROR_1;
     }
-    else
-        outError("thresh_prob must be positive!");
-    
-    return CODE_ERROR_1;
+        
+    tree.params->threshold_prob = thresh_prob;
+    return CODE_SUCCESS;
 }
 
 int CMaple::overwriteOutputs(const bool enable)
@@ -390,7 +398,7 @@ void CMaple::loadInput()
         
         // only want to reconstruct the aln file from the MAPLE file
         if (params.output_aln)
-            tree.aln->reconstructAln(params.maple_path, params.output_aln);
+            tree.aln->reconstructAln(params.maple_path, params.output_aln, params);
         // otherwise, read the MAPLE file
         else
             tree.aln->readMapleFile(params.maple_path, params.ref_path);

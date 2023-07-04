@@ -127,10 +127,6 @@ const std::string cmaple::Tree::exportTreeString(const bool binary, const bool s
     if (nodes.size() < 3)
         return "";
     
-    // make sure branch supports are available (if users want to output them)
-    if (node_lhs.size() < 3 && show_branch_supports)
-        outError("Branch supports have yet been available for outputting! Pls compute them first!");
-    
     return exportNodeString(binary, root_vector_index, show_branch_supports) + ";" ;
 }
 

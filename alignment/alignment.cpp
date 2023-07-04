@@ -609,12 +609,16 @@ void cmaple::Alignment::readMapleFile(const std::string& aln_filename, const std
     in.close();
 }
 
-void cmaple::Alignment::reconstructAln(const std::string& aln_filename, const std::string& output_file)
+void cmaple::Alignment::reconstructAln(const std::string& aln_filename, const std::string& output_file, const cmaple::Params& params)
 {
     ASSERT(aln_filename.length() && output_file.length());
     
     if (!fileExists(aln_filename))
         outError("File not found " + aln_filename);
+    
+    // check whether the output file already exists
+    if (!params.overwrite_output && fileExists(output_file))
+        outError("File " + output_file + " already exists. Use `--overwrite` option if you want overwrite it.\n");
     
     // init dummy variables
     string seq_name = "";

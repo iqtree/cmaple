@@ -5374,14 +5374,14 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
-    SeqRegion seqregion1(TYPE_R, 43223);
+    SeqRegion seqregion1(TYPE_R, 3223);
     auto new_lh1 = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
     (*new_lh1) = new_lh_value1;
-    SeqRegion seqregion2(TYPE_O, 43223, -1, -1, std::move(new_lh1));
+    SeqRegion seqregion2(TYPE_O, 3223, -1, -1, std::move(new_lh1));
     RealNumType total_blength_1 = 1326e-5;
     RealNumType total_blength_2 = -1;
-    const PositionType end_pos = 43223;
+    const PositionType end_pos = 3223;
     EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);

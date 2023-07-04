@@ -118,7 +118,7 @@ namespace cmaple
          Reconstruct an alignment file from a MAPLE file
          @param aln_filename path to the MAPLE file; output_file path to the output aln
          */
-        void reconstructAln(const std::string& aln_filename, const std::string& output_file);
+        void reconstructAln(const std::string& aln_filename, const std::string& output_file, const cmaple::Params& params);
         
         /**
          Extract MAPLE file from and alignment file
