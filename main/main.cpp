@@ -108,8 +108,10 @@ int main(int argc, char *argv[]) {
     time_t start_time;
     
     // call the main function
-    CMaple cmaple(std::move(params));
-    cmaple.runInference();
+    CMaple cmaple;
+    cmaple::Params& cmaple_params = cmaple.getSettings();
+    cmaple_params = params;
+    cmaple.inferTree();
     
     time(&start_time);
     cout << "Date and Time: " << ctime(&start_time);

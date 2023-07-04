@@ -701,6 +701,11 @@ namespace cmaple
     const int CODE_SUCCESS = 0;
     const int CODE_ERROR_1 = 1;
 
+    /** Keys to extract model parameters from a dictionary */
+    const std::string MODEL_NAME = "model_name";
+    const std::string MODEL_FREQS = "model_freqs";
+    const std::string MODEL_RATES = "model_rates";
+
     /**
      * initialize the random number generator
      * @param seed seed for generator

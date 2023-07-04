@@ -2,10 +2,6 @@
 using namespace std;
 using namespace cmaple;
 
-CMaple::CMaple():tree(cmaple::Params()),status(NEW_INSTANCE) {};
-
-CMaple::CMaple(cmaple::Params&& params):tree(std::move(params)),status(NEW_INSTANCE) {};
-
 CMaple::CMaple(const std::string& aln_filename, const std::string& format, const std::string& seqtype):tree(cmaple::Params()),status(NEW_INSTANCE)
 {
     setAlignment(aln_filename, format, seqtype);
@@ -25,11 +21,6 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
     // set aln_filename
     if (aln_filename.length())
         tree.params->aln_path = aln_filename;
-    else
-    {
-        std::cout << "Please specify an alignment!" << std::endl;
-        return CODE_ERROR_1;
-    }
     
     // set aln format (if specified)
     if (format.length())
@@ -69,7 +60,7 @@ int CMaple::setModel(const std::string& model_name)
     return CODE_ERROR_1;
 }
 
-int CMaple::runInference(const bool force_rerun, const std::string& tree_type)
+int CMaple::inferTree(const bool force_rerun, const std::string& tree_type)
 {
     // If this instance is not NEW -> already run inference/computing branch supports
     if (status != NEW_INSTANCE)
@@ -175,7 +166,7 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
     
     // Run the entier inference process (if the inference has yet run)
     if (status == NEW_INSTANCE)
-        runInference();
+        inferTree();
     // Otherwise, only need to compute the branch supports (if the inference has already been run)
     else if (status == INFERENCE_DONE)
     {
@@ -195,7 +186,7 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
     return CODE_SUCCESS;
 }
 
-int CMaple::setInputTree(const std::string& tree_filename)
+int CMaple::setTree(const std::string& tree_filename)
 {
     // set input tree file (if specified)
     if (tree_filename.length())
@@ -241,12 +232,16 @@ std::string CMaple::getTreeString(const std::string& tree_type, const bool show_
     return tree.exportTreeString(tree_type, show_branch_supports);
 }
 
-std::string CMaple::getModelString()
+std::map<std::string, std::string> CMaple::getModelParams()
 {
     // Handle cases when model is not yet initialized
-    if (!tree.model) return "";
+    if (!tree.model)
+    {
+        std::map<std::string, std::string> empty_map;
+        return empty_map;
+    }
     
-    return tree.exportModelString();
+    return tree.exportModelParams();
 }
 
 std::string CMaple::getVersion()
@@ -259,19 +254,7 @@ std::string CMaple::getCitations()
     return "[Citations]";
 }
 
-int CMaple::setRef(const std::string& ref_filename)
-{
-    // set ref_filename(if specified)
-    if (ref_filename.length())
-    {
-        tree.params->ref_path = ref_filename;
-        return CODE_SUCCESS;
-    }
-    
-    return CODE_ERROR_1;
-}
-
-int CMaple::setTreeSearchType(const std::string& tree_search_type)
+int CMaple::setTreeSearchType(const std::string& tree_search_type, const bool shallow_tree_search)
 {
     // set tree_search_type (if specified)
     if (tree_search_type.length())
@@ -282,15 +265,11 @@ int CMaple::setTreeSearchType(const std::string& tree_search_type)
             std::cout << "Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|SLOW>" << std::endl;
             return CODE_ERROR_1;
         }
-        return CODE_SUCCESS;
     }
     
-    return CODE_ERROR_1;
-}
-
-int CMaple::setShortRangeTreeSearch(const bool enable)
-{
-    tree.params->short_range_topo_search = enable;
+    // set shallow_tree_search
+    tree.params->short_range_topo_search = shallow_tree_search;
+    
     return CODE_SUCCESS;
 }
 
@@ -304,12 +283,6 @@ int CMaple::setPrefix(const std::string& prefix)
     }
     
     return CODE_ERROR_1;
-}
-
-int CMaple::enableOptimizingBlengths(const bool enable)
-{
-    tree.params->optimize_blength = enable;
-    return CODE_SUCCESS;
 }
 
 int CMaple::setMinBlength(const double min_blength)
@@ -746,7 +719,12 @@ void CMaple::postInferenceTemplate()
         exportOutput(output_file + "_aLRT_SH.treefile", true);
     
     // output model params
-    std::cout << tree.exportModelString() << std::endl;
+    std::map<std::string, std::string> model_params = getModelParams();
+    std::cout << "\nMODEL: " + model_params[cmaple::MODEL_NAME] + "\n";
+    std::cout << "\nROOT FREQUENCIES\n";
+    std::cout << model_params[cmaple::MODEL_FREQS];
+    std::cout << "\nMUTATION MATRIX\n";
+    std::cout << model_params[cmaple::MODEL_RATES];
     
     // list output files
     std::cout << "Analysis results written to:" << std::endl;

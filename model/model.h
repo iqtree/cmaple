@@ -163,8 +163,8 @@ namespace cmaple
         virtual void updatePesudoCount(const std::unique_ptr<Alignment>& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
         
         /**
-         Export model parameters to string
+         Export model parameters to a dictionary
          */
-        std::string exportString(std::unique_ptr<Alignment>& aln);
+        std::map<std::string, std::string> exportModelParams(std::unique_ptr<Alignment>& aln);
     };
 }

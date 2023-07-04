@@ -684,9 +684,9 @@ namespace cmaple
         /**
          Export model parameters in string
          */
-        inline std::string exportModelString ()
+        inline std::map<std::string, std::string> exportModelParams ()
         {
-            return model->exportString(aln);
+            return model->exportModelParams(aln);
         }
         
         /**

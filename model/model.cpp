@@ -210,22 +210,20 @@ std::string cmaple::Model::exportQMatrixStr(std::unique_ptr<Alignment>& aln)
     return output;
 }
 
-std::string cmaple::Model::exportString(std::unique_ptr<Alignment>& aln)
+std::map<std::string, std::string> cmaple::Model::exportModelParams(std::unique_ptr<Alignment>& aln)
 {
-    string output{};
+    std::map<std::string, std::string> model_params;
     
     // model_name
-    output += "\nMODEL: " + model_name + "\n";
+    model_params.insert({MODEL_NAME, model_name});
     
     // root frequencies
-    output += "\nROOT FREQUENCIES\n";
-    output += exportRootFrequenciesStr(aln);
+    model_params.insert({MODEL_FREQS, exportRootFrequenciesStr(aln)});
     
     // Q matrix
-    output += "\nMUTATION MATRIX\n";
-    output += exportQMatrixStr(aln);
+    model_params.insert({MODEL_RATES, exportQMatrixStr(aln)});
     
-    return output;
+    return model_params;
 }
 
 ModelsBlock* cmaple::Model::readModelsDefinition(const char* builtin_models) {
