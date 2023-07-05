@@ -1,5 +1,5 @@
 #include "updatingnode.h"
-#include "../alignment/alignment.h"
+#include "../alignment/alignmentbase.h"
 #include "../model/model_dna.h"
 #include "../model/model_aa.h"
 #include <optional>
@@ -478,7 +478,7 @@ namespace cmaple
         /**
          Alignment
          */
-        std::unique_ptr<Alignment> aln;
+        std::unique_ptr<AlignmentBase> aln;
         
         /**
          Evolutionary model
@@ -510,7 +510,7 @@ namespace cmaple
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
         Tree(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))){
-            aln = cmaple::make_unique<Alignment>();
+            aln = cmaple::make_unique<AlignmentBase>();
             aln->setSeqType(params->seq_type);
         };
         

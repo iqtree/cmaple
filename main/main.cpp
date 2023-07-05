@@ -77,11 +77,11 @@ void funcAbort(int signal_number)
 
 int main(int argc, char *argv[]) {
     // NHANLT TEST
-    Model model("JC");
+    /*Model model("JC");
     std::map<std::string,std::string> model_params = model.getParams();
     std::cout << model_params[MODEL_NAME] << std::endl;
     std::cout << model_params[MODEL_FREQS] << std::endl;
-    std::cout << model_params[MODEL_RATES] << std::endl;
+    std::cout << model_params[MODEL_RATES] << std::endl;*/
     
     cmaple::Params& params = Params::getInstance();
     parseArg(argc, argv, params);

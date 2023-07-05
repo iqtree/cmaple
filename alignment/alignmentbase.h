@@ -12,8 +12,8 @@ namespace cmaple
     extern char symbols_rna[];
     extern char symbols_morph[];
 
-    /** Class presents the input alignment */
-    class Alignment {
+    /** Base class presents the input alignment */
+    class AlignmentBase {
     private:
         /**
          Type of sequences
@@ -47,12 +47,12 @@ namespace cmaple
         /**
          *  Alignment constructor
          */
-        Alignment();
+        AlignmentBase();
         
         /**
          *  Alignment deconstructor
          */
-        ~Alignment();
+        ~AlignmentBase();
         
         /**
          *  Get seq_type

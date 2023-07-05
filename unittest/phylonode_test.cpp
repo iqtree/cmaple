@@ -303,7 +303,7 @@ TEST(PhyloNode, TestGetSetPartialLh)
 TEST(PhyloNode, TestExportString)
 {
     const int NUM_SEQS = 10;
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     // init NUM_SEQS
     aln->data.reserve(NUM_SEQS);
     for (int i =0 ; i < NUM_SEQS; ++i)
@@ -338,7 +338,7 @@ TEST(PhyloNode, TestExportString)
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initTestData(Params& params, std::unique_ptr<Alignment>& aln, std::unique_ptr<ModelBase>& model, const std::string model_name = "GTR")
+void initTestData(Params& params, std::unique_ptr<AlignmentBase>& aln, std::unique_ptr<ModelBase>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     params.model_name = model_name;
@@ -390,7 +390,7 @@ void genTestData(SeqRegions& seqregions1, SeqRegions& seqregions2)
  */
 TEST(PhyloNode, TestComputeTotalLhAtNode)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<ModelBase> model = nullptr;
     Params params = Params::getInstance();
     

@@ -428,6 +428,9 @@ void CMaple::preInference()
     // extract related info (freqs, log_freqs) of the ref sequence
     tree.model->extractRefInfo(tree.aln);
     
+    // update the mutation matrix
+    tree.model->updateMutationMatEmpirical(tree.aln);
+    
     // compute cumulative rates of the ref sequence
     tree.model->computeCumulativeRate(tree.aln);
     
@@ -445,7 +448,7 @@ void CMaple::buildInitialTree()
     auto start = getRealTime();
     
     // dummy variables
-    std::unique_ptr<Alignment>& aln = tree.aln;
+    std::unique_ptr<AlignmentBase>& aln = tree.aln;
     std::unique_ptr<ModelBase>& model = tree.model;
     const PositionType seq_length = aln->ref_seq.size();
     const PositionType num_seqs = aln->data.size();

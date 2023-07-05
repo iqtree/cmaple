@@ -5,7 +5,7 @@
 
 namespace cmaple
 {
-    class Alignment;
+    class AlignmentBase;
     class SeqRegions;
 
     /** Class present a sequence */

@@ -5,7 +5,7 @@
 //  Created by NhanLT on 31/3/2022.
 //
 
-#include "alignment.h"
+#include "alignmentbase.h"
 
 using namespace std;
 using namespace cmaple;
@@ -15,11 +15,11 @@ char cmaple::symbols_dna[]     = "ACGT";
 char cmaple::symbols_rna[]     = "ACGU";
 char cmaple::symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-cmaple::Alignment::Alignment() = default;
+cmaple::AlignmentBase::AlignmentBase() = default;
 
-cmaple::Alignment::~Alignment() = default;
+cmaple::AlignmentBase::~AlignmentBase() = default;
 
-void cmaple::Alignment::processSeq(string &sequence, string &line, PositionType line_num) {
+void cmaple::AlignmentBase::processSeq(string &sequence, string &line, PositionType line_num) {
     for (string::iterator it = line.begin(); it != line.end(); ++it) {
         if ((*it) <= ' ') continue;
         if (isalnum(*it) || (*it) == '-' || (*it) == '?'|| (*it) == '.' || (*it) == '*' || (*it) == '~')
@@ -38,7 +38,7 @@ void cmaple::Alignment::processSeq(string &sequence, string &line, PositionType 
     }
 }
 
-void cmaple::Alignment::readFasta(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
+void cmaple::AlignmentBase::readFasta(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
     ostringstream err_str;
     igzstream in;
     PositionType line_num = 1;
@@ -124,7 +124,7 @@ void cmaple::Alignment::readFasta(const char *aln_path, StrVector &sequences, St
     seq_names = new_seq_names;
 }
 
-void cmaple::Alignment::readPhylip(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::AlignmentBase::readPhylip(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     ostringstream err_str;
     igzstream in;
@@ -188,7 +188,7 @@ void cmaple::Alignment::readPhylip(const char *aln_path, StrVector &sequences, S
     in.close();
 }
 
-void cmaple::Alignment::readSequences(const char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::AlignmentBase::readSequences(const char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     // detect the input file format
     InputType intype = detectInputFile(aln_path);
@@ -212,7 +212,7 @@ void cmaple::Alignment::readSequences(const char* aln_path, StrVector &sequences
     }
 }
 
-string cmaple::Alignment::generateRef(StrVector &sequences)
+string cmaple::AlignmentBase::generateRef(StrVector &sequences)
 {
     // validate the input sequences
     if (!sequences.size() || !sequences[0].length())
@@ -261,7 +261,7 @@ string cmaple::Alignment::generateRef(StrVector &sequences)
     return ref_str;
 }
 
-string cmaple::Alignment::readRef(const std::string& ref_path)
+string cmaple::AlignmentBase::readRef(const std::string& ref_path)
 {
     ASSERT(ref_path.length());
     if (!fileExists(ref_path))
@@ -288,7 +288,7 @@ string cmaple::Alignment::readRef(const std::string& ref_path)
     return ref_str;
 }
 
-void cmaple::Alignment::outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length)
+void cmaple::AlignmentBase::outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length)
 {
     // output the mutation into a MAPLE file
     out << state_char << "\t" << (pos + 1);
@@ -306,7 +306,7 @@ void cmaple::Alignment::outputMutation(ofstream &out, Sequence* sequence, char s
     }
 }
 
-void cmaple::Alignment::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_maple)
+void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_maple)
 {
     ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out);
     data.clear();
@@ -419,7 +419,7 @@ void cmaple::Alignment::extractMutations(StrVector &str_sequences, StrVector &se
     }
 }
 
-void cmaple::Alignment::parseRefSeq(string& ref_sequence)
+void cmaple::AlignmentBase::parseRefSeq(string& ref_sequence)
 {
     ref_seq.resize(ref_sequence.length());
     
@@ -440,7 +440,7 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence)
     }
 }
 
-void cmaple::Alignment::readMapleFile(const std::string& aln_filename, const std::string& ref_path)
+void cmaple::AlignmentBase::readMapleFile(const std::string& aln_filename, const std::string& ref_path)
 {
     ASSERT(aln_filename.length());
     
@@ -609,7 +609,7 @@ void cmaple::Alignment::readMapleFile(const std::string& aln_filename, const std
     in.close();
 }
 
-void cmaple::Alignment::reconstructAln(const std::string& aln_filename, const std::string& output_file, const cmaple::Params& params)
+void cmaple::AlignmentBase::reconstructAln(const std::string& aln_filename, const std::string& output_file, const cmaple::Params& params)
 {
     ASSERT(aln_filename.length() && output_file.length());
     
@@ -790,7 +790,7 @@ void cmaple::Alignment::reconstructAln(const std::string& aln_filename, const st
     out.close();
 }
 
-char cmaple::Alignment::convertState2Char(StateType state) {
+char cmaple::AlignmentBase::convertState2Char(StateType state) {
     if (state == TYPE_N || state == TYPE_DEL) return '-';
     if (state > TYPE_INVALID) return '?';
 
@@ -860,7 +860,7 @@ char cmaple::Alignment::convertState2Char(StateType state) {
     }
 }
 
-StateType cmaple::Alignment::convertChar2State(char state) {
+StateType cmaple::AlignmentBase::convertChar2State(char state) {
     if (state == '-')
         return TYPE_DEL;
     if (state == '?' || state == '.' || state == '~')
@@ -979,7 +979,7 @@ StateType cmaple::Alignment::convertChar2State(char state) {
     }
 }
 
-PositionType cmaple::Alignment::computeSeqDistance(Sequence& sequence, RealNumType hamming_weight)
+PositionType cmaple::AlignmentBase::computeSeqDistance(Sequence& sequence, RealNumType hamming_weight)
 {
     // dummy variables
     PositionType num_ambiguities = 0;
@@ -1016,7 +1016,7 @@ PositionType cmaple::Alignment::computeSeqDistance(Sequence& sequence, RealNumTy
     return num_diffs * hamming_weight + num_ambiguities;
 }
 
-void cmaple::Alignment::sortSeqsByDistances(RealNumType hamming_weight)
+void cmaple::AlignmentBase::sortSeqsByDistances(RealNumType hamming_weight)
 {
    // init dummy variables
     PositionType num_seqs = data.size();
@@ -1053,7 +1053,7 @@ void cmaple::Alignment::sortSeqsByDistances(RealNumType hamming_weight)
     delete[] sequence_indexes;
 }
 
-void cmaple::Alignment::extractMapleFile(const std::string& aln_filename, const std::string& output_filename, const cmaple::Params& params, const bool only_extract_maple)
+void cmaple::AlignmentBase::extractMapleFile(const std::string& aln_filename, const std::string& output_filename, const cmaple::Params& params, const bool only_extract_maple)
 {   
     // read input sequences
     ASSERT(aln_filename.length());
@@ -1103,7 +1103,7 @@ void cmaple::Alignment::extractMapleFile(const std::string& aln_filename, const 
     out.close();
 }
 
-SeqType cmaple::Alignment::detectSequenceType(StrVector& sequences)
+SeqType cmaple::AlignmentBase::detectSequenceType(StrVector& sequences)
 {
     size_t num_nuc   = 0;
     size_t num_ungap = 0;
@@ -1167,7 +1167,7 @@ SeqType cmaple::Alignment::detectSequenceType(StrVector& sequences)
     return SEQ_UNKNOWN;
 }
 
-void cmaple::Alignment::updateNumStates()
+void cmaple::AlignmentBase::updateNumStates()
 {
     switch (getSeqType()) {
         case SEQ_PROTEIN:
@@ -1180,7 +1180,7 @@ void cmaple::Alignment::updateNumStates()
     }
 }
 
-InputType cmaple::Alignment::getAlignmentFormat(const std::string& n_format)
+InputType cmaple::AlignmentBase::getAlignmentFormat(const std::string& n_format)
 {
     string format(n_format);
     transform(format.begin(), format.end(), format.begin(), ::toupper);
@@ -1195,7 +1195,7 @@ InputType cmaple::Alignment::getAlignmentFormat(const std::string& n_format)
     return IN_UNKNOWN;
 }
 
-SeqType cmaple::Alignment::getSeqType(const std::string& n_seqtype_str)
+SeqType cmaple::AlignmentBase::getSeqType(const std::string& n_seqtype_str)
 {
     string seqtype_str(n_seqtype_str);
     transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);

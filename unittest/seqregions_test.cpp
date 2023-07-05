@@ -721,7 +721,7 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignment>& aln, std::unique_ptr<ModelBase>& model, const std::string model_name = "GTR")
+void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<AlignmentBase>& aln, std::unique_ptr<ModelBase>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     params->model_name = model_name;
@@ -743,7 +743,7 @@ void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignme
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<ModelBase> model = nullptr;
     std::unique_ptr<Params> params = std::make_unique<Params>();
     
@@ -792,7 +792,7 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
  */
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<ModelBase> model = nullptr;
     std::unique_ptr<Params> params = std::make_unique<Params>();
     
@@ -863,7 +863,7 @@ TEST(SeqRegions, computeTotalLhAtRoot)
  */
 TEST(SeqRegions, merge_N_O)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -995,7 +995,7 @@ TEST(SeqRegions, merge_N_O)
  */
 TEST(SeqRegions, merge_N_RACGT)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -1335,7 +1335,7 @@ TEST(SeqRegions, merge_N_RACGT)
  */
 TEST(SeqRegions, merge_O_N)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -1457,7 +1457,7 @@ TEST(SeqRegions, merge_O_N)
  */
 TEST(SeqRegions, merge_RACGT_N)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -1797,7 +1797,7 @@ TEST(SeqRegions, merge_RACGT_N)
  */
 TEST(SeqRegions, merge_Zero_Distance)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -1915,7 +1915,7 @@ TEST(SeqRegions, merge_Zero_Distance)
  */
 TEST(SeqRegions, merge_O_ORACGT)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -2047,7 +2047,7 @@ TEST(SeqRegions, merge_O_ORACGT)
  */
 TEST(SeqRegions, merge_RACGT_O)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -2141,7 +2141,7 @@ TEST(SeqRegions, merge_RACGT_O)
  */
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -2304,7 +2304,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
     // NOTE: if plength_observation2root > 0 then must be plength_observation2node != -1;
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -3932,7 +3932,7 @@ void genTestData4(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
  */
 TEST(SeqRegions, mergeUpperLower)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -4012,7 +4012,7 @@ TEST(SeqRegions, mergeUpperLower)
  */
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -4129,7 +4129,7 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
  */
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -4470,7 +4470,7 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -4555,7 +4555,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -4694,7 +4694,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
  */
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -4824,7 +4824,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -5002,7 +5002,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -5167,7 +5167,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -5360,7 +5360,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -5531,7 +5531,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     
@@ -5809,7 +5809,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::unique_ptr<AlignmentBase> aln = std::make_unique<AlignmentBase>();
     std::unique_ptr<Params> params = std::make_unique<Params>();
     std::unique_ptr<ModelBase> model = nullptr;
     

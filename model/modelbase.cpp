@@ -6,8 +6,8 @@ using namespace cmaple;
 // explicit instantiation of templates
 template void cmaple::ModelBase::updateMutationMat<4>();
 template void cmaple::ModelBase::updateMutationMat<20>();
-template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const std::unique_ptr<Alignment>&);
-template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const std::unique_ptr<Alignment>&);
+template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const std::unique_ptr<AlignmentBase>&);
+template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const std::unique_ptr<AlignmentBase>&);
 
 // init const strings
 const std::vector<std::string> cmaple::ModelBase::dna_models = {"JC", "GTR", "UNREST"};
@@ -110,7 +110,7 @@ void cmaple::ModelBase::init()
     initMutationMat();
 }
 
-void cmaple::ModelBase::extractRefInfo(const std::unique_ptr<Alignment>& aln)
+void cmaple::ModelBase::extractRefInfo(const std::unique_ptr<AlignmentBase>& aln)
 {
     // init variables
     if (!root_freqs) root_freqs = new RealNumType[num_states_];
@@ -132,7 +132,7 @@ void cmaple::ModelBase::extractRefInfo(const std::unique_ptr<Alignment>& aln)
     extractRootFreqs(aln);
 }
 
-void cmaple::ModelBase::extractRootFreqs(const std::unique_ptr<Alignment>& aln)
+void cmaple::ModelBase::extractRootFreqs(const std::unique_ptr<AlignmentBase>& aln)
 {
     // init variables
     const vector<StateType>& ref_seq = aln->ref_seq;
@@ -153,7 +153,7 @@ void cmaple::ModelBase::extractRootFreqs(const std::unique_ptr<Alignment>& aln)
     }
 }
 
-void cmaple::ModelBase::computeCumulativeRate(const std::unique_ptr<Alignment>& aln)
+void cmaple::ModelBase::computeCumulativeRate(const std::unique_ptr<AlignmentBase>& aln)
 {
     const PositionType sequence_length = aln->ref_seq.size();
     ASSERT(sequence_length > 0);
@@ -187,7 +187,7 @@ std::string cmaple::ModelBase::exportRootFrequenciesStr()
     string header{};
     
     // Init a dummy alignment to get states (in readable character)
-    Alignment aln;
+    AlignmentBase aln;
     aln.setSeqType(getSeqType());
     
     for (StateType i = 0; i < num_states_; ++i)
@@ -208,7 +208,7 @@ std::string cmaple::ModelBase::exportQMatrixStr()
     string output{};
     
     // Init a dummy alignment to get states (in readable character)
-    Alignment aln;
+    AlignmentBase aln;
     aln.setSeqType(getSeqType());
     
     // generate header
@@ -473,7 +473,7 @@ void cmaple::ModelBase::updateMutationMat()
 }
 
 template <StateType num_states>
-void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const std::unique_ptr<Alignment>& aln)
+void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const std::unique_ptr<AlignmentBase>& aln)
 {
     // clone the current mutation matrix
     RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
@@ -502,7 +502,7 @@ void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const std::unique_ptr
     delete[] tmp_diagonal_mut_mat;
 }
 
-void cmaple::ModelBase::updatePesudoCount(const std::unique_ptr<Alignment>& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelBase::updatePesudoCount(const std::unique_ptr<AlignmentBase>& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // init variables
     PositionType pos = 0;

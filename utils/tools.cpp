@@ -599,7 +599,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -aln <ALIGNMENT>");
+                    outError("Use -aln <AlignmentBase>");
                 
                 params.aln_path = argv[cnt];
 
@@ -885,10 +885,10 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
     
     // validate options
     if ((!params.maple_path.length()) && (!params.aln_path.length()))
-        outError("Please supply an alignment file via -aln <ALIGNMENT>");
+        outError("Please supply an alignment file via -aln <AlignmentBase>");
         
     if (params.only_extract_maple && (!params.aln_path.length()))
-        outError("Please supply an alignment via -aln <ALIGNMENT>");
+        outError("Please supply an alignment via -aln <AlignmentBase>");
     
     if (argc <= 1) {
         quickStartGuide();
