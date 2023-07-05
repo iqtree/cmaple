@@ -3,9 +3,9 @@ using namespace std;
 using namespace cmaple;
 
 // explicit instantiation of templates
-template void cmaple::PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<AlignmentBase>&, const std::unique_ptr<ModelBase>&, const RealNumType, const bool, const RealNumType);
-template void cmaple::PhyloNode::computeTotalLhAtNode<4>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<AlignmentBase>&, const std::unique_ptr<ModelBase>&, const RealNumType, const bool, const RealNumType);
-template void cmaple::PhyloNode::computeTotalLhAtNode<20>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<AlignmentBase>&, const std::unique_ptr<ModelBase>&, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<2>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<AlignmentBase>&, const ModelBase*, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<4>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<AlignmentBase>&, const ModelBase*, const RealNumType, const bool, const RealNumType);
+template void cmaple::PhyloNode::computeTotalLhAtNode<20>(std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<AlignmentBase>&, const ModelBase*, const RealNumType, const bool, const RealNumType);
 
 
 
@@ -242,7 +242,7 @@ void cmaple::PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_)
 }*/
 
 template <const StateType num_states>
-void cmaple::PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const std::unique_ptr<AlignmentBase>& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
+void cmaple::PhyloNode::computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const std::unique_ptr<AlignmentBase>& aln, const ModelBase* model, const RealNumType threshold_prob, const bool is_root, const RealNumType blength)
 {
     // if node is root
     if (is_root)

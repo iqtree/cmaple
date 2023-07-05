@@ -483,7 +483,7 @@ namespace cmaple
         /**
          Evolutionary model
          */
-        std::unique_ptr<ModelBase> model;
+        ModelBase* model = nullptr;
         
         /*
          Vector of phylonodes

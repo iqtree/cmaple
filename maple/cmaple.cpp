@@ -449,7 +449,7 @@ void CMaple::buildInitialTree()
     
     // dummy variables
     std::unique_ptr<AlignmentBase>& aln = tree.aln;
-    std::unique_ptr<ModelBase>& model = tree.model;
+    ModelBase* model = tree.model;
     const PositionType seq_length = aln->ref_seq.size();
     const PositionType num_seqs = aln->data.size();
     const bool with_input_tree = tree.params->input_treefile.length();

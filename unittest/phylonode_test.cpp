@@ -338,7 +338,7 @@ TEST(PhyloNode, TestExportString)
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initTestData(Params& params, std::unique_ptr<AlignmentBase>& aln, std::unique_ptr<ModelBase>& model, const std::string model_name = "GTR")
+void initTestData(Params& params, std::unique_ptr<AlignmentBase>& aln, ModelBase* model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     params.model_name = model_name;

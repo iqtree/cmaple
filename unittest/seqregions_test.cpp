@@ -721,7 +721,7 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<AlignmentBase>& aln, std::unique_ptr<ModelBase>& model, const std::string model_name = "GTR")
+void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<AlignmentBase>& aln, ModelBase* model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     params->model_name = model_name;
@@ -739,7 +739,7 @@ void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignme
 }
 
 /*
- Test computeAbsoluteLhAtRoot(const Alignment& aln, const std::unique_ptr<ModelBase>& model)
+ Test computeAbsoluteLhAtRoot(const Alignment& aln, const ModelBase* model)
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
@@ -788,7 +788,7 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
 }
 
 /*
- Test computeTotalLhAtRoot(StateType num_states, const std::unique_ptr<ModelBase>& model, RealNumType blength = -1)
+ Test computeTotalLhAtRoot(StateType num_states, const ModelBase* model, RealNumType blength = -1)
  */
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
@@ -858,7 +858,7 @@ TEST(SeqRegions, computeTotalLhAtRoot)
 }
 
 /*
- Test merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const std::unique_ptr<ModelBase>& model,
+ Test merge_N_O(const RealNumType lower_plength, const SeqRegion& reg_o, const ModelBase* model,
  const PositionType end_pos, const StateType num_states, SeqRegions& merged_target)
  */
 TEST(SeqRegions, merge_N_O)
@@ -1331,7 +1331,7 @@ TEST(SeqRegions, merge_N_RACGT)
 }
 
 /*
- Test merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const std::unique_ptr<ModelBase>& model, const StateType num_states, SeqRegions& merged_regions)
+ Test merge_O_N(const SeqRegion& reg_o, const RealNumType upper_plength, const PositionType end_pos, const ModelBase* model, const StateType num_states, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_O_N)
 {
@@ -1911,7 +1911,7 @@ TEST(SeqRegions, merge_Zero_Distance)
 }
 
 /*
- Test merge_O_ORACGT<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<ModelBase>& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_O_ORACGT<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const PositionType end_pos, const RealNumType threshold_prob, const ModelBase* model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_O_ORACGT)
 {
@@ -2043,7 +2043,7 @@ TEST(SeqRegions, merge_O_ORACGT)
 }
 
 /*
- Test merge_RACGT_O<4>(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const std::unique_ptr<ModelBase>& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_RACGT_O<4>(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const RealNumType threshold_prob, const ModelBase* model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_RACGT_O)
 {
@@ -2137,7 +2137,7 @@ TEST(SeqRegions, merge_RACGT_O)
 }
 
 /*
- Test merge_RACGT_RACGT<4>(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const std::unique_ptr<ModelBase>& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_RACGT_RACGT<4>(const SeqRegion& seq2_region, const RealNumType total_blength_2, const PositionType end_pos, SeqRegion::LHType& new_lh, const ModelBase* model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
@@ -2299,7 +2299,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
 }
 
 /*
- Test merge_RACGT_ORACGT<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const std::unique_ptr<ModelBase>& model, const Alignment& aln, SeqRegions& merged_regions)
+ Test merge_RACGT_ORACGT<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength_1, const RealNumType total_blength_2, const RealNumType upper_plength, const PositionType end_pos, const RealNumType threshold_prob, const ModelBase* model, const Alignment& aln, SeqRegions& merged_regions)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
@@ -3928,7 +3928,7 @@ void genTestData4(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
 
 /*
  Test mergeUpperLower<4>(SeqRegions* &merged_regions, RealNumType upper_plength, const SeqRegions& lower_regions, RealNumType lower_plength, const
- Alignment& aln, const std::unique_ptr<ModelBase>& model, RealNumType threshold) const
+ Alignment& aln, const ModelBase* model, RealNumType threshold) const
  */
 TEST(SeqRegions, mergeUpperLower)
 {
@@ -4466,7 +4466,7 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 }
 
 /*
- Test merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const std::unique_ptr<ModelBase>& model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
+ Test merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const PositionType end_pos, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType pos, const RealNumType threshold_prob, const ModelBase* model, RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
@@ -4551,7 +4551,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 }
 
 /*
- Test merge_O_O_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_O_O_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const ModelBase* model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
@@ -4690,7 +4690,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
 }
 
 /*
- Test  merge_O_RACGT_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test  merge_O_RACGT_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const ModelBase* model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
@@ -4820,7 +4820,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 }
 
 /*
- Test merge_O_ORACGT_TwoLowers<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_O_ORACGT_TwoLowers<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const ModelBase* model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
@@ -4998,7 +4998,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 }
 
 /*
- Test merge_RACGT_O_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_RACGT_O_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const ModelBase* model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
@@ -5163,7 +5163,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 }
 
 /*
- Test merge_RACGT_RACGT_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_RACGT_RACGT_TwoLowers<4>(const SeqRegion& seq2_region, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const ModelBase* model, const RealNumType threshold_prob, SeqRegion::LHType& new_lh, RealNumType& sum_lh, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
@@ -5356,7 +5356,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 
 
 /*
- Test merge_RACGT_ORACGT_TwoLowers<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_RACGT_ORACGT_TwoLowers<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, RealNumType total_blength_1, RealNumType total_blength_2, const PositionType end_pos, const Alignment& aln, const ModelBase* model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
@@ -5527,7 +5527,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 }
 
 /*
- Test merge_notN_notN_TwoLowers<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const std::unique_ptr<ModelBase>& model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
+ Test merge_notN_notN_TwoLowers<4>(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType plength1, const RealNumType plength2, const PositionType end_pos, const PositionType pos, const Alignment& aln, const ModelBase* model, const RealNumType threshold_prob, RealNumType &log_lh, SeqRegions* merged_regions, const bool return_log_lh)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
@@ -5805,7 +5805,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
 }
 
 /*
- Test mergeTwoLowers<4>(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const std::unique_ptr<ModelBase>& model, RealNumType threshold_prob, bool return_log_lh)
+ Test mergeTwoLowers<4>(SeqRegions* &merged_regions, RealNumType plength1, const SeqRegions* const regions2, RealNumType plength2, const Alignment& aln, const ModelBase* model, RealNumType threshold_prob, bool return_log_lh)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
