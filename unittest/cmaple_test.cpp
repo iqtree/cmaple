@@ -38,7 +38,9 @@ TEST(CMapleTest, DefaultParamsConstructor) {
     // Test case 1
     cmaple::Params default_params;
     cmaple::Params params1;
-    CMaple cmaple1(std::move(params1));
+    CMaple cmaple1;
+    cmaple::Params& params = cmaple1.getSettings();
+    params = std::move(params1);
     cmaple::Params& params1_ref = cmaple1.getSettings();
     EXPECT_EQ(params1_ref.aln_path, default_params.aln_path);
     EXPECT_EQ(params1_ref.maple_path, default_params.aln_path);

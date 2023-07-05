@@ -1,14 +1,14 @@
 
 #pragma once
 
-#include "model.h"
+#include "modelbase.h"
 
 namespace cmaple
 {
     extern const char* builtin_prot_models;
 
     /** Class of AA evolutionary models */
-    class ModelAA: public Model
+    class ModelAA: public ModelBase
     {
     private:
         
@@ -38,7 +38,7 @@ namespace cmaple
         /**
          Constructor
          */
-        ModelAA(const std::string n_model_name):Model(n_model_name) { num_states_ = 20; };
+        ModelAA(const std::string n_model_name);
         
         /**
          Destructor

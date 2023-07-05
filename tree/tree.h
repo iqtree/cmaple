@@ -483,7 +483,7 @@ namespace cmaple
         /**
          Evolutionary model
          */
-        std::unique_ptr<Model> model;
+        std::unique_ptr<ModelBase> model;
         
         /*
          Vector of phylonodes
@@ -686,7 +686,7 @@ namespace cmaple
          */
         inline std::map<std::string, std::string> exportModelParams ()
         {
-            return model->exportModelParams(aln);
+            return model->exportModelParams();
         }
         
         /**

@@ -34,6 +34,7 @@
 #include "../utils/operatingsystem.h" //for getOSName()
 #include "../utils/logstream.h"
 #include "../maple/cmaple.h"
+#include "../model/model.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -75,6 +76,13 @@ void funcAbort(int signal_number)
 /** ############## Redirect output to a log file ############## **/
 
 int main(int argc, char *argv[]) {
+    // NHANLT TEST
+    Model model("JC");
+    std::map<std::string,std::string> model_params = model.getParams();
+    std::cout << model_params[MODEL_NAME] << std::endl;
+    std::cout << model_params[MODEL_FREQS] << std::endl;
+    std::cout << model_params[MODEL_RATES] << std::endl;
+    
     cmaple::Params& params = Params::getInstance();
     parseArg(argc, argv, params);
     

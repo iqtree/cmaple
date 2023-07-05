@@ -338,7 +338,7 @@ TEST(PhyloNode, TestExportString)
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initTestData(Params& params, std::unique_ptr<Alignment>& aln, std::unique_ptr<Model>& model, const std::string model_name = "GTR")
+void initTestData(Params& params, std::unique_ptr<Alignment>& aln, std::unique_ptr<ModelBase>& model, const std::string model_name = "GTR")
 {
     // Init params, aln, and model
     params.model_name = model_name;
@@ -391,7 +391,7 @@ void genTestData(SeqRegions& seqregions1, SeqRegions& seqregions2)
 TEST(PhyloNode, TestComputeTotalLhAtNode)
 {
     std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Model> model = nullptr;
+    std::unique_ptr<ModelBase> model = nullptr;
     Params params = Params::getInstance();
     
     // Init params, aln, and model

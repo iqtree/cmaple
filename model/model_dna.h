@@ -1,12 +1,12 @@
 
 #pragma once
 
-#include "model.h"
+#include "modelbase.h"
 
 namespace cmaple
 {
     /** Class of DNA evolutionary models */
-    class ModelDNA: public Model
+    class ModelDNA: public ModelBase
     {
     private:
         
@@ -19,7 +19,7 @@ namespace cmaple
         /**
          Constructor
          */
-        ModelDNA(const string n_model_name):Model(n_model_name) { num_states_ = 4; };
+        ModelDNA(const string n_model_name);
         
         /**
          Init the mutation rate matrix from a model

@@ -8,7 +8,7 @@ using namespace cmaple;
  */
 TEST(Model, initMutationMat)
 {
-    std::unique_ptr<Model> model1 = std::make_unique<ModelDNA>(ModelDNA("JC"));
+    std::unique_ptr<ModelBase> model1 = std::make_unique<ModelDNA>(ModelDNA("JC"));
     model1->initMutationMat();
     EXPECT_EQ(model1->model_name, "JC");
     EXPECT_EQ(model1->root_freqs[1], 0.25);

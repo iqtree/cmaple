@@ -2,6 +2,12 @@
 using namespace std;
 using namespace cmaple;
 
+cmaple::ModelDNA::ModelDNA(const string n_model_name):ModelBase(n_model_name)
+{
+    num_states_ = 4;
+    init();
+}
+
 void cmaple::ModelDNA::initMutationMatJC()
 {
     // update root_freqs
@@ -85,5 +91,5 @@ void cmaple::ModelDNA::updateMutationMatEmpirical(const std::unique_ptr<Alignmen
 void cmaple::ModelDNA::updatePesudoCount(const std::unique_ptr<Alignment>& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     if (model_name != "JC" && model_name != "jc")
-        Model::updatePesudoCount(aln, regions1, regions2);
+        ModelBase::updatePesudoCount(aln, regions1, regions2);
 }

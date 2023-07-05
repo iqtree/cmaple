@@ -861,6 +861,12 @@ model FLAVI=
 end;
 )";
 
+cmaple::ModelAA::ModelAA(const std::string n_model_name):ModelBase(n_model_name)
+{
+    num_states_ = 20;
+    init();
+}
+
 cmaple::ModelAA::~ModelAA()
 {
     if (model_block)
@@ -958,7 +964,7 @@ void cmaple::ModelAA::initMutationMat()
             setVecByProduct<20>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
     }
     // GTR20 or NONREV
-    else if (name_upper.compare("NONREV") == 0 || name_upper.compare("GTR") == 0)
+    else if (name_upper.compare("NONREV") == 0 || name_upper.compare("GTR20") == 0)
     {
         // init pseu_mutation_counts
         string model_rates = "1.0";
@@ -1075,23 +1081,23 @@ void cmaple::ModelAA::rescaleAllRates()
 
 void cmaple::ModelAA::updateMutationMatEmpirical(const std::unique_ptr<Alignment>& aln)
 {
-    // don't update parameters other model except GTR or NONREV
-    if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
+    // don't update parameters other model except GTR20 or NONREV
+    if (model_name != "GTR20" && model_name != "gtr20" && model_name != "NONREV" && model_name != "nonrev") return;
     
     updateMutationMatEmpiricalTemplate<20>(aln);
 }
 
 void cmaple::ModelAA::updatePesudoCount(const std::unique_ptr<Alignment>& aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
-    // only handle GTR or NONREV
-    if (model_name == "GTR" || model_name == "gtr" || model_name == "NONREV" || model_name == "nonrev")
-        Model::updatePesudoCount(aln, regions1, regions2);
+    // only handle GTR20 or NONREV
+    if (model_name == "GTR20" || model_name == "gtr20" || model_name == "NONREV" || model_name == "nonrev")
+        ModelBase::updatePesudoCount(aln, regions1, regions2);
 }
 
 void cmaple::ModelAA::extractRootFreqs(const std::unique_ptr<Alignment>& aln)
 {
-    // only extract root freqs for GTR or NONREV
-    if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
+    // only extract root freqs for GTR20 or NONREV
+    if (model_name != "GTR20" && model_name != "gtr20" && model_name != "NONREV" && model_name != "nonrev") return;
     
-    Model::extractRootFreqs(aln);
+    ModelBase::extractRootFreqs(aln);
 }

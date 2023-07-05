@@ -425,7 +425,7 @@ namespace cmaple
         RealNumType hamming_weight;
         
         /**
-            Name of the substitution model (e.g., HKY, GTR, TN+I+G, JC+G, etc.)
+            Name of the substitution model (e.g., HKY, GTR, JC, etc.)
          */
         std::string model_name;
         
