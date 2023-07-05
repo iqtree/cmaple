@@ -80,7 +80,7 @@ void cmaple::ModelDNA::initMutationMat()
     }
 }
 
-void cmaple::ModelDNA::updateMutationMatEmpirical(const std::unique_ptr<AlignmentBase>& aln)
+void cmaple::ModelDNA::updateMutationMatEmpirical(const AlignmentBase* aln)
 {
     // don't update JC model parameters
     if (model_name == "JC" || model_name == "jc") return;
@@ -88,7 +88,7 @@ void cmaple::ModelDNA::updateMutationMatEmpirical(const std::unique_ptr<Alignmen
     updateMutationMatEmpiricalTemplate<4>(aln);
 }
 
-void cmaple::ModelDNA::updatePesudoCount(const std::unique_ptr<AlignmentBase>& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelDNA::updatePesudoCount(const AlignmentBase* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     if (model_name != "JC" && model_name != "jc")
         ModelBase::updatePesudoCount(aln, regions1, regions2);

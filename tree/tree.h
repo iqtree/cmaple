@@ -478,7 +478,7 @@ namespace cmaple
         /**
          Alignment
          */
-        std::unique_ptr<AlignmentBase> aln;
+        AlignmentBase* aln;
         
         /**
          Evolutionary model
@@ -509,8 +509,7 @@ namespace cmaple
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        Tree(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))){
-            aln = cmaple::make_unique<AlignmentBase>();
+        Tree(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()){
             aln->setSeqType(params->seq_type);
         };
         

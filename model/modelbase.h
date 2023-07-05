@@ -92,7 +92,7 @@ namespace cmaple
         /**
          Extract root freqs from the reference sequence
          */
-        virtual void extractRootFreqs(const std::unique_ptr<AlignmentBase>& aln);
+        virtual void extractRootFreqs(const AlignmentBase* aln);
         
         /**
          Init pointers
@@ -109,7 +109,7 @@ namespace cmaple
          Update the mutation matrix periodically from the empirical count of mutations (template)
          */
         template <cmaple::StateType num_states>
-        void updateMutationMatEmpiricalTemplate(const std::unique_ptr<AlignmentBase>& aln);
+        void updateMutationMatEmpiricalTemplate(const AlignmentBase* aln);
         
     public:
         // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
@@ -161,7 +161,7 @@ namespace cmaple
         /**
          Extract reference-related info (freqs, log_freqs)
          */
-        void extractRefInfo(const std::unique_ptr<AlignmentBase>& aln);
+        void extractRefInfo(const AlignmentBase* aln);
         
         /**
          Init the mutation rate matrix from a model
@@ -172,19 +172,19 @@ namespace cmaple
         /**
          Compute cumulative rate of the ref genome
          */
-        void computeCumulativeRate(const std::unique_ptr<AlignmentBase>& aln);
+        void computeCumulativeRate(const AlignmentBase* aln);
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations
          */
-        virtual void updateMutationMatEmpirical(const std::unique_ptr<AlignmentBase>& aln) {};
+        virtual void updateMutationMatEmpirical(const AlignmentBase* aln) {};
         
         /**
          Update pseudocounts from new sample to improve the estimate of the substitution rates
          @param node_regions the genome list at the node where the appending happens;
          @param sample_regions the genome list for the new sample.
          */
-        virtual void updatePesudoCount(const std::unique_ptr<AlignmentBase>& aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
+        virtual void updatePesudoCount(const AlignmentBase* aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
         
         /**
          Export model parameters to a dictionary

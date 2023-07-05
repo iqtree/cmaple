@@ -448,7 +448,7 @@ void CMaple::buildInitialTree()
     auto start = getRealTime();
     
     // dummy variables
-    std::unique_ptr<AlignmentBase>& aln = tree.aln;
+    AlignmentBase* aln = tree.aln;
     ModelBase* model = tree.model;
     const PositionType seq_length = aln->ref_seq.size();
     const PositionType num_seqs = aln->data.size();

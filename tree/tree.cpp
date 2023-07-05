@@ -3538,7 +3538,7 @@ void calculateSubtreeCost_O_O(const SeqRegion& seq1_region, const SeqRegion& seq
 }
 
 template <const StateType num_states>
-void calculateSubtreeCost_O_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType& total_factor, const std::unique_ptr<AlignmentBase>& aln, const ModelBase* model)
+void calculateSubtreeCost_O_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType& total_factor, const AlignmentBase* aln, const ModelBase* model)
 {
     StateType seq2_state = seq2_region.type;
     if (seq2_state == TYPE_R)
@@ -3598,7 +3598,7 @@ void calculateSubtreeCost_ACGT_O(const SeqRegion& seq1_region, const SeqRegion& 
     }
 }
 
-bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType& total_factor, const std::unique_ptr<AlignmentBase>& aln, const ModelBase* model)
+bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType total_blength, const PositionType end_pos, RealNumType& total_factor, const AlignmentBase* aln, const ModelBase* model)
 {
     StateType seq1_state = seq1_region.type;
     StateType seq2_state = seq2_region.type;
@@ -3867,7 +3867,7 @@ void calculateSampleCost_O_O(const SeqRegion& seq1_region, const SeqRegion& seq2
 }
 
 template <const StateType num_states>
-void calculateSampleCost_O_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, const PositionType end_pos, RealNumType& total_factor, const std::unique_ptr<AlignmentBase>& aln, const ModelBase* model)
+void calculateSampleCost_O_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, const PositionType end_pos, RealNumType& total_factor, const AlignmentBase* aln, const ModelBase* model)
 {
     RealNumType blength13 = blength;
     if (seq1_region.plength_observation2node >= 0)
@@ -3939,7 +3939,7 @@ void calculateSampleCost_ACGT_O(const SeqRegion& seq1_region, const SeqRegion& s
     }
 }
 
-void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, const PositionType end_pos, RealNumType& total_factor, const std::unique_ptr<AlignmentBase>& aln, const ModelBase* model)
+void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const RealNumType blength, const PositionType end_pos, RealNumType& total_factor, const AlignmentBase* aln, const ModelBase* model)
 {
     StateType seq1_state = seq1_region.type;
     StateType seq2_state = seq2_region.type;
@@ -6178,7 +6178,8 @@ void cmaple::Tree::resetTree()
     // Keep the params
     
     // Re-initialize alignment
-    aln = std::make_unique<AlignmentBase>();
+    delete aln;
+    aln = new AlignmentBase();
     aln->setSeqType(params->seq_type);
     
     // Delete model -> will be initialized later
