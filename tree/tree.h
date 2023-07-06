@@ -27,12 +27,11 @@ namespace cmaple
         /*! \brief Infer a tree from an alignment using a substitution model
          *
          * Infer a phylogenetic tree from an alignment using a substitution model.
-         * If users already inputted a tree:
-         * - If it is an incomplete tree (which doesn't contain all taxa in the alignment), this function will:
+         * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all taxa in the alignment), this function will:
          * + do placement (add missing taxa from the alignment to the tree)
          * + apply a NORMAL tree search (which do SPR moves on newly-added nodes)
          * + optimize all branch lengths
-         * - If it is a complete tree, this function optimize all branch lengths (by default)
+         * - If users already supplied a complete tree, this function optimize all branch lengths (by default)
          */
         void infer();
         
