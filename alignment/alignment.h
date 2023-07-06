@@ -26,6 +26,9 @@ namespace cmaple
         
         // TODO: write the alignment in FASTA, PHYLIP, or MAPLE format
         
+        // declare Tree as a friend class
+        friend class Tree;
+        
     private:
         /**
          A base instance of alignment

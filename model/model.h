@@ -33,6 +33,9 @@ namespace cmaple
         std::map<std::string, std::string> getParams();
         
         // TODO: allow users to specify model parameters
+        
+        // declare Tree as a friend class
+        friend class Tree;
     
     private:
         /**

@@ -15,9 +15,67 @@ namespace cmaple
     class TreeBase {
     private:
         /**
+            Pointer  to LoadTree method
+         */
+        typedef void (TreeBase::*LoadTreePtrType)(const std::string&);
+        LoadTreePtrType loadTreePtr;
+        
+        /**
+            Pointer  to doInference method
+         */
+        typedef void (TreeBase::*DoInferencePtrType)();
+        DoInferencePtrType doInferencePtr;
+        
+        /**
+            Pointer  to calculateLh method
+         */
+        typedef RealNumType (TreeBase::*CalculateLhPtrType)();
+        CalculateLhPtrType calculateLhPtr;
+        
+        /*! Template of loadTree()
+         @param[in] tree_filename Name of a tree file
+         */
+        template <const cmaple::StateType  num_states>
+        void loadTreeTemplate(const std::string& tree_filename);
+        
+        /*! Template of doInference()
+         */
+        template <const cmaple::StateType  num_states>
+        void doInferenceTemplate();
+        
+        /*! Template of calculateLh()
+         */
+        template <const cmaple::StateType  num_states>
+        RealNumType calculateLhTemplate();
+        
+        /*! Setup function pointers
+         */
+        void setupFuncPtrs();
+        
+        /**
          Setup function pointers
          */
         void setupBlengthThresh();
+        
+        /*! Build an Initial Tree
+         */
+        template <const cmaple::StateType  num_states>
+        void buildInitialTree();
+        
+        /*! Optimize the current tree
+         */
+        template <const cmaple::StateType  num_states>
+        void optimizeTree();
+        
+        /*! Optimize the tree topology
+         */
+        template <const cmaple::StateType  num_states>
+        void optimizeTreeTopology(bool short_range_search = false);
+        
+        /*! Optimize the branch lengths of the current tree
+         */
+        template <const cmaple::StateType  num_states>
+        void optimizeBranchLengthsOfTree();
         
         /**
          Traverse the intial tree from root to re-calculate all non-lower likelihoods regarding the latest/final estimated model parameters
@@ -503,8 +561,9 @@ namespace cmaple
         /**
          Constructor
          */
-        TreeBase() = default;
+        TreeBase():params(cmaple::make_unique<cmaple::Params>()), aln(nullptr), model(nullptr){};
         
+        // TODO: remove or disable
         /**
          Constructor
          */
@@ -513,16 +572,29 @@ namespace cmaple
             aln->setSeqType(params->seq_type);
         };
         
+        /**
+         Attach alignment and model
+         */
+        void attachAlnModel(AlignmentBase* aln, ModelBase* model);
+        
+        /*! Load an input tree
+         @param[in] tree_filename Name of a tree file
+         */
+        void loadTree(const std::string& tree_filename);
+        
+        /*! Do the inference
+         */
+        void doInference();
+        
+        /*! Calculate the likelihood of the tree
+         */
+        RealNumType calculateLh();
+        
         /*! \brief Reset tree
          *
          * Delete all objects (e.g., aln, model, etc), except params to rerun the inference
          */
         void resetTree();
-        
-        /**
-         Setup tree parameters/thresholds
-         */
-        void setup();
         
         /**
          Export tree std::string in Newick format
@@ -650,12 +722,6 @@ namespace cmaple
          */
         template <const cmaple::StateType  num_states>
         void computeLhContribution(cmaple::RealNumType & total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const cmaple::Index  neighbor_1_index, PhyloNode& neighbor_1, const cmaple::Index  neighbor_2_index, PhyloNode& neighbor_2, const cmaple::PositionType & seq_length);
-        
-        /**
-         Calculate the likelihood of the tree
-         */
-        template <const cmaple::StateType  num_states>
-        cmaple::RealNumType  calculateTreeLh();
         
         /**
          Employ Depth First Search to do a task at internal nodes

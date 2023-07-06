@@ -7,42 +7,51 @@ using namespace std;
 using namespace cmaple;
 
 // explicit instantiation of templates
-template void cmaple::TreeBase::refreshAllLhs<2>(bool);
 template void cmaple::TreeBase::refreshAllLhs<4>(bool);
 template void cmaple::TreeBase::refreshAllLhs<20>(bool);
 
-template double cmaple::TreeBase::calculateTreeLh<2>();
-template double cmaple::TreeBase::calculateTreeLh<4>();
-template double cmaple::TreeBase::calculateTreeLh<20>();
-
-template double cmaple::TreeBase::improveEntireTree<2>(bool);
 template double cmaple::TreeBase::improveEntireTree<4>(bool);
 template double cmaple::TreeBase::improveEntireTree<20>(bool);
 
-template void cmaple::TreeBase::updateModelParams<2>();
 template void cmaple::TreeBase::updateModelParams<4>();
 template void cmaple::TreeBase::updateModelParams<20>();
 
-template void cmaple::TreeBase::seekSamplePlacement<2>(const Index, const NumSeqsType, const std::unique_ptr<SeqRegions>&, Index&, RealNumType&, bool&, RealNumType&, RealNumType&, Index&);
 template void cmaple::TreeBase::seekSamplePlacement<4>(const Index, const NumSeqsType, const std::unique_ptr<SeqRegions>&, Index&, RealNumType&, bool&, RealNumType&, RealNumType&, Index&);
 template void cmaple::TreeBase::seekSamplePlacement<20>(const Index, const NumSeqsType, const std::unique_ptr<SeqRegions>&, Index&, RealNumType&, bool&, RealNumType&, RealNumType&, Index&);
 
-template void cmaple::TreeBase::placeNewSampleAtNode<2>(const Index, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType, const RealNumType, const RealNumType, const Index);
 template void cmaple::TreeBase::placeNewSampleAtNode<4>(const Index, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType, const RealNumType, const RealNumType, const Index);
 template void cmaple::TreeBase::placeNewSampleAtNode<20>(const Index, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType, const RealNumType, const RealNumType, const Index);
 
-
-template int cmaple::TreeBase::optimizeBranchLengths<2>();
 template int cmaple::TreeBase::optimizeBranchLengths<4>();
 template int cmaple::TreeBase::optimizeBranchLengths<20>();
 
-template void cmaple::TreeBase::calculateBranchSupports<2>();
 template void cmaple::TreeBase::calculateBranchSupports<4>();
 template void cmaple::TreeBase::calculateBranchSupports<20>();
 
-template void cmaple::TreeBase::placeNewSampleMidBranch<2>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 template void cmaple::TreeBase::placeNewSampleMidBranch<4>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 template void cmaple::TreeBase::placeNewSampleMidBranch<20>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
+
+void cmaple::TreeBase::setupFuncPtrs()
+{
+    ASSERT(aln);
+    
+    switch (aln->num_states) {
+        case 4:
+            loadTreePtr = &TreeBase::loadTreeTemplate<4>;
+            doInferencePtr = &TreeBase::doInferenceTemplate<4>;
+            calculateLhPtr = &TreeBase::calculateLhTemplate<4>;
+            break;
+        case 20:
+            loadTreePtr = &TreeBase::loadTreeTemplate<20>;
+            doInferencePtr = &TreeBase::doInferenceTemplate<20>;
+            calculateLhPtr = &TreeBase::calculateLhTemplate<20>;
+            break;
+            
+        default:
+            outError("Sorry! currently we only support DNA and Protein data!");
+            break;
+    }
+}
 
 void cmaple::TreeBase::setupBlengthThresh()
 {
@@ -54,26 +63,350 @@ void cmaple::TreeBase::setupBlengthThresh()
     half_min_blength_mid = min_blength_mid * 0.5;
     half_max_blength = max_blength * 0.5;
     double_min_blength = min_blength + min_blength;
+    
+    // compute thresholds for approximations
+    params->threshold_prob2 = params->threshold_prob * params->threshold_prob;
 }
 
-void cmaple::TreeBase::setup()
+void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
 {
-    // init model
-    // TODO: remove
-    switch (aln->getSeqType()) {
-        case SEQ_PROTEIN:
-        {
-            model = new ModelAA(params->model_name);
-            break;
-        }
-        default: // DNA
-        {
-            model = new ModelDNA(params->model_name);
-            break;
-        }
+    // Validate inputs
+    ASSERT(n_aln && n_model);
+    
+    // Attach aln
+    aln = n_aln;
+    
+    // Attach model
+    model = n_model;
+    
+    // init params & thresholds
+    setupBlengthThresh();
+    
+    // sort sequences by their distances to the reference sequence
+    aln->sortSeqsByDistances(params->hamming_weight);
+    
+    // extract related info (freqs, log_freqs) of the ref sequence
+    model->extractRefInfo(aln);
+    
+    // update the mutation matrix
+    model->updateMutationMatEmpirical(aln);
+    
+    // compute cumulative rates of the ref sequence
+    model->computeCumulativeRate(aln);
+    
+    // setup function pointers
+    setupFuncPtrs();
+}
+
+void cmaple::TreeBase::loadTree(const std::string& tree_filename)
+{
+    (this->*loadTreePtr)(tree_filename);
+}
+
+template <const StateType num_states>
+void cmaple::TreeBase::loadTreeTemplate(const std::string& tree_filename)
+{
+    ASSERT(tree_filename.length() && "Please specify a tree file");
+    
+    // read tree from the input treefile
+    readTree(tree_filename);
+    
+    // calculate all lower, upper left/right likelihoods
+    refreshAllLhs<num_states>(true);
+    
+    // update model params
+    /*cout << " - Model params before updating: " << endl;
+     tree.showModelParams();*/
+    updateModelParams<num_states>();
+    /*cout << " - Model params after updating: " << endl;
+     tree.showModelParams();*/
+    
+    // refresh all lower after updating model params
+    performDFS<&TreeBase::updateLowerLh<num_states>>();
+    
+    // set outdated = false at all nodes to avoid considering SPR moves at those nodes
+    if (params->tree_search_type == PARTIAL_TREE_SEARCH)
+        resetSPRFlags(false, true, false);
+}
+
+void cmaple::TreeBase::doInference()
+{
+    (this->*doInferencePtr)();
+}
+
+template <const StateType num_states>
+void cmaple::TreeBase::doInferenceTemplate()
+{
+    // validate input
+    ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
+    ASSERT(aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
+        
+    // 1. Build an initial tree
+    buildInitialTree<num_states>();
+    
+    // 2. Optimize the tree with SPR if there is any new nodes added to the tree
+    optimizeTree<num_states>();
+}
+
+template <const StateType num_states>
+void cmaple::TreeBase::buildInitialTree()
+{
+    // record the start time
+    auto start = getRealTime();
+    
+    // dummy variables
+    const PositionType seq_length = aln->ref_seq.size();
+    const PositionType num_seqs = aln->data.size();
+    const bool with_input_tree = nodes.size() > 0;
+    PositionType num_new_sequences = num_seqs;
+    Sequence* sequence = &aln->data.front();
+    nodes.reserve(num_seqs + num_seqs);
+    NumSeqsType i = 0;
+    
+    // if users don't input a tree -> create the root from the first sequence
+    if (!with_input_tree)
+    {
+        // place the root node
+        root_vector_index = 0;
+        nodes.emplace_back(LeafNode(0));
+        PhyloNode& root = nodes[0];
+        root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType())));
+        root.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(root.getTotalLh(), model);
+        root.setUpperLength(0);
+        
+        // move to the next sequence in the alignment
+        ++sequence;
+        ++i;
     }
     
-    setupBlengthThresh();
+    // iteratively place other samples (sequences)
+    for (; i < num_seqs; ++i, ++sequence)
+    {
+        // don't add sequence that was already added in the input tree
+        if (with_input_tree && sequence->is_added)
+        {
+            --num_new_sequences;
+            continue;
+        }
+        
+        // get the lower likelihood vector of the current sequence
+        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
+        
+        // update the mutation matrix from empirical number of mutations observed from the recent sequences
+        if (i % params->mutation_update_period == 0)
+            model->updateMutationMatEmpirical(aln);
+        
+        // NHANLT: debug
+        //if ((*sequence)->seq_name == "39")
+        //    cout << "debug" <<endl;
+        
+        // seek a position for new sample placement
+        Index selected_node_index;
+        RealNumType best_lh_diff = MIN_NEGATIVE;
+        bool is_mid_branch = false;
+        RealNumType best_up_lh_diff = MIN_NEGATIVE;
+        RealNumType best_down_lh_diff = MIN_NEGATIVE;
+        Index best_child_index;
+        seekSamplePlacement<num_states>(Index(root_vector_index, TOP), i, lower_regions, selected_node_index, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child_index);
+        
+        // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
+        if (selected_node_index.getMiniIndex() != UNDEFINED)
+        {
+            // place new sample as a descendant of a mid-branch point
+            if (is_mid_branch)
+                placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions, i, best_lh_diff);
+            // otherwise, best lk so far is for appending directly to existing node
+            else
+                placeNewSampleAtNode<num_states>(selected_node_index, lower_regions, i, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child_index);
+        }
+        
+        // NHANLT: debug
+        //cout << "Added node " << (*sequence)->seq_name << endl;
+        //cout << (*sequence)->seq_name << endl;
+        //cout << tree.exportTreeString() << endl;
+        
+        //if ((*sequence)->seq_name == "2219")
+        //{
+            //cout << tree.exportTreeString() << endl;
+            //string output_file(tree.params->output_prefix);
+            //exportOutput(output_file + "_init.treefile");
+            //exit(0);
+        //}
+    }
+    
+    // flag denotes whether there is any new nodes added
+    // show the number of new sequences added to the tree
+    if (num_new_sequences > 0)
+    {
+        std::cout << num_new_sequences << " sequences have been added to the tree." << std::endl;
+        
+        // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
+        refreshAllLhs<num_states>();
+    }
+    else
+        std::cout << "All sequences were presented in the input tree. No new sequence has been added!" << std::endl;
+    
+    // show the runtime for building an initial tree
+    auto end = getRealTime();
+    cout << " - Time spent on building an initial tree: " << std::setprecision(3) << end - start << endl;
+}
+
+template <const StateType num_states>
+void cmaple::TreeBase::optimizeTree()
+{
+    // tree.params->debug = true;
+    // string output_file(params->output_prefix);
+    // exportOutput(output_file + "_init.treefile");
+    
+    // run a short range search for tree topology improvement (if neccessary)
+    // NOTES: don't apply short range search when users input a tree because only a few new sequences were added -> we only apply a deep SPR search
+    if (params->short_range_topo_search && params->tree_search_type != NO_TREE_SEARCH && !(params->input_treefile.length() && params->tree_search_type == PARTIAL_TREE_SEARCH))
+    {
+        // apply short-range SPR search
+        optimizeTreeTopology<num_states>(true);
+        // exportOutput(output_file + "_short_search.treefile");
+        
+        // reset the SPR flags so that we can start a deeper SPR search later
+        resetSPRFlags(false, true, true);
+    }
+    
+    // output log-likelihood of the tree
+    std::cout << std::setprecision(10) << "Tree log likelihood (before topo-opt): " << calculateLh() << std::endl;
+    
+    // run a normal search for tree topology improvement
+    if (params->tree_search_type != NO_TREE_SEARCH)
+    {
+        optimizeTreeTopology<num_states>();
+        // exportOutput(output_file + "_topo.treefile");
+    }
+    
+    // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
+    refreshAllLhs<num_states>();
+    
+    // output log-likelihood of the tree
+    std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << calculateLh() << std::endl;
+    
+    // do further optimization on branch lengths (if needed)
+    if (params->optimize_blength)
+        optimizeBranchLengthsOfTree<num_states>();
+    
+    // NhanLT: update the model params
+    if (aln->getSeqType() == SEQ_DNA)
+    {
+        model->initMutationMat();
+        updateModelParams<num_states>();
+    }
+    
+    // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
+    performDFS<&TreeBase::updateLowerLh<num_states>>();
+    
+    // output log-likelihood of the tree
+    std::cout << std::setprecision(10) << "Tree log likelihood (after updating model): " << calculateLh() << std::endl;
+}
+
+template <const StateType num_states>
+void cmaple::TreeBase::optimizeTreeTopology(bool short_range_search)
+{
+    // record the start time
+    auto start = getRealTime();
+    int num_tree_improvement = short_range_search ? 1 : params->num_tree_improvement;
+    
+    for (int i = 0; i < num_tree_improvement; ++i)
+    {
+        // first, set all nodes outdated
+        // no need to do so anymore as new nodes were already marked as outdated
+        // resetSPRFlags(false, true, true);
+        
+        // traverse the tree from root to try improvements on the entire tree
+        RealNumType improvement = improveEntireTree<num_states>(short_range_search);
+        
+        // stop trying if the improvement is so small
+        if (improvement < params->thresh_entire_tree_improvement)
+        {
+            cout << "Small improvement, stopping topological search." << endl;
+            break;
+        }
+        
+        // run improvements only on the nodes that have been affected by some changes in the last round, and so on
+        for (int j = 0; j < 20; ++j)
+        {
+            // forget SPR_applied flag to allow new SPR moves
+            resetSPRFlags(false, false, true);
+            
+            improvement = improveEntireTree<num_states>(short_range_search);
+            cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
+            
+            // stop trying if the improvement is so small
+            if (improvement < params->thresh_entire_tree_improvement)
+                break;
+        }
+            
+    }
+    
+    // show the runtime for optimize the tree
+    auto end = getRealTime();
+    cout << " - Time spent on";
+    cout << (short_range_search ? " a short range search for" : "");
+    cout << " optimizing the tree topology: " << std::setprecision(3) << end - start << endl;
+}
+
+template <const StateType num_states>
+void cmaple::TreeBase::optimizeBranchLengthsOfTree()
+{
+    // record the start time
+    auto start = getRealTime();
+    
+    cout << "Start optimizing branch lengths" << endl;
+    
+    // first, set all nodes outdated
+    resetSPRFlags(false, true, true);
+   
+    // traverse the tree from root to optimize branch lengths
+    PositionType num_improvement = optimizeBranchLengths<num_states>();
+   
+    // run improvements only on the nodes that have been affected by some changes in the last round, and so on
+    for (int j = 0; j < 20; ++j)
+    {
+        // stop trying if the improvement is so small
+        if (num_improvement < params->thresh_entire_tree_improvement)
+        //if (num_improvement == 0)
+            break;
+        
+        // traverse the tree from root to optimize branch lengths
+        num_improvement = optimizeBranchLengths<num_states>();
+    }
+
+    // show the runtime for optimize the branch lengths
+    auto end = getRealTime();
+    cout << " - Time spent on optimizing the branch lengths: " << std::setprecision(3) << end - start << endl;
+}
+
+RealNumType cmaple::TreeBase::calculateLh()
+{
+    return (this->*calculateLhPtr)();
+}
+
+template <const StateType num_states>
+RealNumType cmaple::TreeBase::calculateLhTemplate()
+{
+    // Make sure the tree is not empty
+    if (!nodes.size())
+    {
+        std::cout << "Tree is empty. Please call infer() to infer a tree from the alignment before computing the likelihood!" << std::endl;
+        return 0;
+    }
+    
+    // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
+    refreshAllLhs<num_states>();
+    
+    // initialize the total_lh by the likelihood from root
+    RealNumType total_lh = nodes[root_vector_index].getPartialLh(TOP)->computeAbsoluteLhAtRoot<num_states>(model);
+    
+    // perform a DFS to add likelihood contributions from each internal nodes
+    total_lh += performDFS<&cmaple::TreeBase::computeLhContribution<num_states>>();
+   
+    // return total_lh
+    return total_lh;
 }
 
 const string cmaple::TreeBase::exportNodeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
@@ -4113,19 +4446,6 @@ std::unique_ptr<SeqRegions>& cmaple::TreeBase::getPartialLhAtNode(const Index in
 {
     // may need assert(index.getVectorIndex() < nodes.size());
     return nodes[index.getVectorIndex()].getPartialLh(index.getMiniIndex());
-}
-
-template <const StateType num_states>
-RealNumType cmaple::TreeBase::calculateTreeLh()
-{
-    // initialize the total_lh by the likelihood from root
-    RealNumType total_lh = nodes[root_vector_index].getPartialLh(TOP)->computeAbsoluteLhAtRoot<num_states>(model);
-    
-    // perform a DFS to add likelihood contributions from each internal nodes
-    total_lh += performDFS<&cmaple::TreeBase::computeLhContribution<num_states>>();
-   
-    // return total_lh
-    return total_lh;
 }
 
 template <const StateType num_states>

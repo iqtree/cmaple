@@ -94,7 +94,7 @@ int CMaple::inferTree(const bool force_rerun, const std::string& tree_type)
     auto start = getRealTime();
     
     // load input data
-    loadInput();
+    /*loadInput();
     
     // terminate if the user only wants to export a MAPLE file from an alignment
     // or only want to reconstruct an aln from a MAPLE file
@@ -102,7 +102,10 @@ int CMaple::inferTree(const bool force_rerun, const std::string& tree_type)
         return CODE_SUCCESS;
     
     // prepare for the inference
-    preInference();
+    preInference();*/
+    Model model(tree.params->model_name);
+    Alignment aln(tree.params->aln_path);
+    Tree new_tree(aln, model, "");
     
     // infer trees and model params
     doInference();
@@ -396,8 +399,8 @@ void CMaple::loadInputTree()
 void CMaple::preInference()
 {
     // validate input
-    ASSERT(tree.aln->ref_seq.size() > 0 && "Reference sequence is not found!");
-    ASSERT(tree.aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
+    /*ASSERT(tree.aln->ref_seq.size() > 0 && "Reference sequence is not found!");
+    ASSERT(tree.aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");*/
     
     // use maple_path as the output prefix if users didn't specify it
     if (!tree.params->output_prefix.length())
@@ -411,7 +414,7 @@ void CMaple::preInference()
     
     
     // setup function pointers in tree
-    tree.setup();
+    /*tree.init();
     
     // sort sequences by their distances to the reference sequence
     tree.aln->sortSeqsByDistances(tree.params->hamming_weight);
@@ -426,7 +429,7 @@ void CMaple::preInference()
     tree.model->computeCumulativeRate(tree.aln);
     
     // compute thresholds for approximations
-    tree.params->threshold_prob2 = tree.params->threshold_prob * tree.params->threshold_prob;
+    tree.params->threshold_prob2 = tree.params->threshold_prob * tree.params->threshold_prob;*/
     
     // setup function pointers for CMaple
     setupFuncPtrs(tree.aln->num_states);
@@ -557,7 +560,7 @@ void CMaple::optimizeTree()
     }
     
     // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood (before topo-opt): " << tree.calculateTreeLh<num_states>() << std::endl;
+    std::cout << std::setprecision(10) << "Tree log likelihood (before topo-opt): " << tree.calculateLh() << std::endl;
     
     // run a normal search for tree topology improvement
     if (tree.params->tree_search_type != NO_TREE_SEARCH)
@@ -570,7 +573,7 @@ void CMaple::optimizeTree()
     tree.refreshAllLhs<num_states>();
     
     // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateTreeLh<num_states>() << std::endl;
+    std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateLh() << std::endl;
     
     // do further optimization on branch lengths (if needed)
     if (tree.params->optimize_blength)
@@ -587,7 +590,7 @@ void CMaple::optimizeTree()
     tree.performDFS<&TreeBase::updateLowerLh<num_states>>();
     
     // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood (after updating model): " << tree.calculateTreeLh<num_states>() << std::endl;
+    std::cout << std::setprecision(10) << "Tree log likelihood (after updating model): " << tree.calculateLh() << std::endl;
 }
 
 template <const StateType num_states>
@@ -675,6 +678,10 @@ void CMaple::doInference()
 template <const StateType num_states>
 void CMaple::doInferenceTemplate()
 {
+    // validate input
+    ASSERT(tree.aln->ref_seq.size() > 0 && "Reference sequence is not found!");
+    ASSERT(tree.aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
+    
     // 0. Load an input tree if users supply a treefile
     if (tree.params->input_treefile.length())
         loadInputTree<num_states>();
@@ -699,7 +706,7 @@ void CMaple::postInferenceTemplate()
         calculateBranchSupports<num_states>();
     
     // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood: " << tree.calculateTreeLh<num_states>() << std::endl;
+    std::cout << std::setprecision(10) << "Tree log likelihood: " << tree.calculateLh() << std::endl;
     
     // output treefile
     string output_file(tree.params->output_prefix);

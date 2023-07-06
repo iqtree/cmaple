@@ -5,10 +5,13 @@ using namespace cmaple;
 
 cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const bool overwrite, const std::string& format, const std::string& seqtype):aln_base(nullptr)
 {
-    ASSERT(params.aln_path.length() && "Please specify an alignnment file");
+    ASSERT(aln_filename.length() && "Please specify an alignnment file");
     
     // Init alignment base
     aln_base = new AlignmentBase();
+    
+    // set the aln_filename
+    aln_base->aln_filename = aln_filename;
     
     // if users specify the format -> parse it
     if (format.length())

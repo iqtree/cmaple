@@ -34,7 +34,7 @@
 #include "../utils/operatingsystem.h" //for getOSName()
 #include "../utils/logstream.h"
 #include "../maple/cmaple.h"
-#include "../model/model.h"
+#include "../tree/tree.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -116,10 +116,17 @@ int main(int argc, char *argv[]) {
     time_t start_time;
     
     // call the main function
-    CMaple cmaple;
+    /*CMaple cmaple;
     cmaple::Params& cmaple_params = cmaple.getSettings();
     cmaple_params = params;
-    cmaple.inferTree();
+    cmaple.inferTree();*/
+    Model model(params.model_name);
+    Alignment aln(params.aln_path);
+    Tree tree(aln, model, "test_1K.diff.treefile");
+    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
+    tree.infer();
+    std::cout << tree.exportString() << std::endl;
+    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
     
     time(&start_time);
     cout << "Date and Time: " << ctime(&start_time);

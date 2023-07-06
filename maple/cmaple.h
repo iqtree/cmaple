@@ -1,6 +1,7 @@
 #include "../tree/treebase.h"
 #include "../utils/timeutil.h"
 #include "../alignment/seqregions.h"
+#include "../tree/tree.h"
 
 #pragma once
 
