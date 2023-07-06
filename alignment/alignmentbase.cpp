@@ -1101,7 +1101,7 @@ SeqType cmaple::AlignmentBase::detectSequenceType(StrVector& sequences)
     double detectStart = getRealTime();
     size_t sequenceCount = sequences.size();
 
-#pragma omp parallel for reduction(+:num_nuc,num_ungap,num_bin,num_alpha,num_digit)
+// #pragma omp parallel for reduction(+:num_nuc,num_ungap,num_bin,num_alpha,num_digit)
     for (size_t seqNum = 0; seqNum < sequenceCount; ++seqNum) {
         auto start = sequences.at(seqNum).data();
         auto stop  = start + sequences.at(seqNum).size();

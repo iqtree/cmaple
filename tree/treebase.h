@@ -32,6 +32,12 @@ namespace cmaple
         typedef RealNumType (TreeBase::*CalculateLhPtrType)();
         CalculateLhPtrType calculateLhPtr;
         
+        /**
+            Pointer  to calculateBranchSupport method
+         */
+        typedef void (TreeBase::*CalculateBranchSupportPtrType)(const int, const int, const double);
+        CalculateBranchSupportPtrType calculateBranchSupportPtr;
+        
         /*! Template of loadTree()
          @param[in] tree_filename Name of a tree file
          */
@@ -47,6 +53,11 @@ namespace cmaple
          */
         template <const cmaple::StateType  num_states>
         RealNumType calculateLhTemplate();
+        
+        /*! Template of calculateBranchSupport()
+         */
+        template <const cmaple::StateType  num_states>
+        void calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon);
         
         /*! Setup function pointers
          */
@@ -731,9 +742,11 @@ namespace cmaple
         
         /**
          Calculate branch supports
+         * @param[in] num_threads number of threads (optional)
+         * @param[in] num_replicates a positive number of replicates (optional)
+         * @param[in] epsilon a positive epsilon (optional), // NHANLT- TODO: explain epsilon
          */
-        template <const cmaple::StateType  num_states>
-        void calculateBranchSupports();
+        void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.05);
         
         /**
          Read an input tree from a file

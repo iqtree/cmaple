@@ -746,7 +746,7 @@ void CMaple::calculateBranchSupports()
     status = BRANCH_SUPPORT_DONE;
     
     // calculate branch supports
-    tree.calculateBranchSupports<num_states>();
+    tree.calculateBranchSupport();
     
     // show the runtime for calculating branch supports
     auto end = getRealTime();

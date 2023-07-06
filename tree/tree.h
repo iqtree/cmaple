@@ -43,6 +43,16 @@ namespace cmaple
          */
         RealNumType computeLh();
         
+        /*! \brief Compute branch supports of the current tree
+         *
+         * Compute branch supports (aLRT-SH) of the current tree
+         * @param[in] num_threads number of threads (optional)
+         * @param[in] num_replicates a positive number of replicates (optional)
+         * @param[in] epsilon a positive epsilon (optional), // NHANLT- TODO: explain epsilon
+         * @return a status code: 0 - success, non-zero - failed with errors
+         */
+        int computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.05);
+        
         /*! \brief Export the tree string in NEWICK format.
          *
          * Export the phylogenetic tree in a NEWICK string.

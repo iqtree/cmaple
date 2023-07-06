@@ -41,6 +41,33 @@ RealNumType cmaple::Tree::computeLh()
     return tree_base->calculateLh();
 }
 
+int cmaple::Tree::computeBranchSupports(const int num_threads, const int num_replicates, const double epsilon)
+{
+    ASSERT(tree_base);
+    
+    // validate inputs
+    if (num_threads < 0)
+    {
+        std::cout << "Number of threads cannot be negative!" << std::endl;
+        return CODE_ERROR_1;
+    }
+    if (num_replicates <= 0)
+    {
+        std::cout << "Number of replicates must be positive!" << std::endl;
+        return CODE_ERROR_1;
+    }
+    if (epsilon < 0)
+    {
+        std::cout << "Epsilon cannot be negative!" << std::endl;
+        return CODE_ERROR_1;
+    }
+    
+    // Only compute the branch supports
+    tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon);
+    
+    return CODE_SUCCESS;
+}
+
 std::string cmaple::Tree::exportString(const std::string& tree_type, const bool show_branch_supports)
 {
     // TODO:

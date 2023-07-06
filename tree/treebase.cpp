@@ -25,9 +25,6 @@ template void cmaple::TreeBase::placeNewSampleAtNode<20>(const Index, std::uniqu
 template int cmaple::TreeBase::optimizeBranchLengths<4>();
 template int cmaple::TreeBase::optimizeBranchLengths<20>();
 
-template void cmaple::TreeBase::calculateBranchSupports<4>();
-template void cmaple::TreeBase::calculateBranchSupports<20>();
-
 template void cmaple::TreeBase::placeNewSampleMidBranch<4>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 template void cmaple::TreeBase::placeNewSampleMidBranch<20>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 
@@ -40,11 +37,13 @@ void cmaple::TreeBase::setupFuncPtrs()
             loadTreePtr = &TreeBase::loadTreeTemplate<4>;
             doInferencePtr = &TreeBase::doInferenceTemplate<4>;
             calculateLhPtr = &TreeBase::calculateLhTemplate<4>;
+            calculateBranchSupportPtr = &TreeBase::calculateBranchSupportTemplate<4>;
             break;
         case 20:
             loadTreePtr = &TreeBase::loadTreeTemplate<20>;
             doInferencePtr = &TreeBase::doInferenceTemplate<20>;
             calculateLhPtr = &TreeBase::calculateLhTemplate<20>;
+            calculateBranchSupportPtr = &TreeBase::calculateBranchSupportTemplate<20>;
             break;
             
         default:
@@ -407,6 +406,63 @@ RealNumType cmaple::TreeBase::calculateLhTemplate()
    
     // return total_lh
     return total_lh;
+}
+
+void cmaple::TreeBase::calculateBranchSupport(const int num_threads, const int num_replicates, const double epsilon)
+{
+    return (this->*calculateBranchSupportPtr)(num_threads, num_replicates, epsilon);
+}
+
+template <const StateType num_states>
+void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon)
+{
+    // Make sure the tree is not empty
+    if (!nodes.size())
+    {
+        std::cout << "Tree is empty. Please call infer() to infer a tree from the alignment first!" << std::endl;
+        return;
+    }
+    
+    // set num_threads
+    ASSERT(num_threads >= 0 && "Number of threads must be non-negative!");
+    setNumThreads(num_threads);
+    
+    // set num_replicates
+    ASSERT(num_replicates > 0 && "Number of replicates must be positive!");
+    params->aLRT_SH_replicates = num_replicates;
+    
+    // set epsilon
+    ASSERT(epsilon >= 0 && "Epsilon must be non-negative!");
+    params->aLRT_SH_epsilon = epsilon;
+    
+    // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
+    if (node_lhs.size() == 0)
+        node_lhs.emplace_back(0);
+    
+    // refresh all upper left/right lhs before calculating aLRT-SH
+    refreshAllNonLowerLhs<num_states>();
+    
+    // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one less-info-seq to make sure all we compute the aLRT of all internal branches
+    if (!params->input_treefile.length())
+        performDFSAtLeave<&cmaple::TreeBase::expandTreeByOneLessInfoSeq<num_states>>();
+    
+    // 1. calculate aLRT for each internal branches, replacing the ML tree if a higher ML NNI neighbor was found
+    calculate_aRLT<num_states>();
+    
+    // 2. calculate the site lh contributions
+    std::vector<RealNumType> site_lh_contributions, site_lh_at_root;
+    RealNumType total_lh = calculateSiteLhs<num_states>(site_lh_contributions, site_lh_at_root);
+    
+    // validate the result
+    /*RealNumType tmp_total_lh = 0;
+    for (RealNumType site_lh : site_lh_contributions)
+        tmp_total_lh += site_lh;
+    for (RealNumType site_lh : site_lh_at_root)
+        tmp_total_lh += site_lh;
+    ASSERT(fabs(tmp_total_lh - total_lh) < 1e-6);*/
+    
+    // calculate aLRT-SH for all internal branches
+    calculate_aRLT_SH<num_states>(site_lh_contributions, site_lh_at_root, total_lh);
 }
 
 const string cmaple::TreeBase::exportNodeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
@@ -5038,7 +5094,7 @@ PositionType cmaple::TreeBase::count_aRLT_SH_branch(std::vector<RealNumType>& si
 
       // init random generators
       std::default_random_engine gen(params->ran_seed + thread_id);
-      std::uniform_int_distribution<> rng_distrib(0, seq_length);
+      std::uniform_int_distribution<> rng_distrib(0, seq_length - 1);
       #pragma omp for
       for (PositionType i = 0; i < params->aLRT_SH_replicates; ++i)
       {
@@ -5134,39 +5190,6 @@ void cmaple::TreeBase::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contr
             }
         }
     }
-}
-
-template <const StateType num_states>
-void cmaple::TreeBase::calculateBranchSupports()
-{
-    // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
-    if (node_lhs.size() == 0)
-        node_lhs.emplace_back(0);
-    
-    // refresh all upper left/right lhs before calculating aLRT-SH
-    refreshAllNonLowerLhs<num_states>();
-    
-    // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one less-info-seq to make sure all we compute the aLRT of all internal branches
-    if (!params->input_treefile.length())
-        performDFSAtLeave<&cmaple::TreeBase::expandTreeByOneLessInfoSeq<num_states>>();
-    
-    // 1. calculate aLRT for each internal branches, replacing the ML tree if a higher ML NNI neighbor was found
-    calculate_aRLT<num_states>();
-    
-    // 2. calculate the site lh contributions
-    std::vector<RealNumType> site_lh_contributions, site_lh_at_root;
-    RealNumType total_lh = calculateSiteLhs<num_states>(site_lh_contributions, site_lh_at_root);
-    
-    // validate the result
-    /*RealNumType tmp_total_lh = 0;
-    for (RealNumType site_lh : site_lh_contributions)
-        tmp_total_lh += site_lh;
-    for (RealNumType site_lh : site_lh_at_root)
-        tmp_total_lh += site_lh;
-    ASSERT(fabs(tmp_total_lh - total_lh) < 1e-6);*/
-    
-    // calculate aLRT-SH for all internal branches
-    calculate_aRLT_SH<num_states>(site_lh_contributions, site_lh_at_root, total_lh);
 }
 
 template <const StateType num_states>
