@@ -12,7 +12,7 @@
 namespace cmaple
 {
     /** The tree structure */
-    class Tree {
+    class TreeBase {
     private:
         /**
          Setup function pointers
@@ -89,7 +89,7 @@ namespace cmaple
         /**
          Check whether we can obtain a higher likelihood with a shorter length for an existing branch
          */
-        template <const cmaple::StateType  num_states, cmaple::RealNumType (Tree::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
+        template <const cmaple::StateType  num_states, cmaple::RealNumType (TreeBase::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
         bool tryShorterBranch(const cmaple::RealNumType  current_blength, std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& sample, const std::unique_ptr<SeqRegions>& upper_left_right_regions, const std::unique_ptr<SeqRegions>& lower_regions, cmaple::RealNumType  &best_split_lh, cmaple::RealNumType  &best_branch_length_split, const cmaple::RealNumType  new_branch_length, const bool try_first_branch);
         
         /**
@@ -119,19 +119,19 @@ namespace cmaple
         /**
          Check whether we can obtain a higher likelihood with a shorter length for the new branch
          */
-        template <cmaple::RealNumType (Tree::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
+        template <cmaple::RealNumType (TreeBase::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
         bool tryShorterNewBranch(const std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& sample, cmaple::RealNumType  &best_blength, cmaple::RealNumType  &new_branch_lh, const cmaple::RealNumType  short_blength_thresh);
         
         /**
          Check whether we can obtain a higher likelihood with a longer length for the new branch
          */
-        template <cmaple::RealNumType (Tree::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
+        template <cmaple::RealNumType (TreeBase::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
         void tryLongerNewBranch(const std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& sample, cmaple::RealNumType  &best_blength, cmaple::RealNumType  &new_branch_lh, const cmaple::RealNumType  long_blength_thresh);
         
         /**
          Estimate the length for a new branch
          */
-        template <cmaple::RealNumType (Tree::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
+        template <cmaple::RealNumType (TreeBase::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
         void estimateLengthNewBranch(const cmaple::RealNumType  best_split_lh, const std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& sample, cmaple::RealNumType  &best_blength, const cmaple::RealNumType  long_blength_thresh, const cmaple::RealNumType  short_blength_thresh, const bool optional_check);
         
         /**
@@ -161,7 +161,7 @@ namespace cmaple
         /**
          Connect a subtree to a branch
          */
-        template<const cmaple::StateType  num_states, void (Tree::*updateRegionsSubTree)(PhyloNode&, PhyloNode&, PhyloNode&, std::unique_ptr<SeqRegions>&&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, cmaple::RealNumType &)>
+        template<const cmaple::StateType  num_states, void (TreeBase::*updateRegionsSubTree)(PhyloNode&, PhyloNode&, PhyloNode&, std::unique_ptr<SeqRegions>&&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, cmaple::RealNumType &)>
         void connectSubTree2Branch(const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& lower_regions, const cmaple::Index  subtree_index, PhyloNode& subtree, const cmaple::Index  sibling_node_index, PhyloNode& sibling_node, const cmaple::RealNumType  top_distance, const cmaple::RealNumType  down_distance, cmaple::RealNumType  &best_blength, std::unique_ptr<SeqRegions>&& best_child_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions);
         
         /**
@@ -503,13 +503,13 @@ namespace cmaple
         /**
          Constructor
          */
-        Tree() = default;
+        TreeBase() = default;
         
         /**
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        Tree(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()){
+        TreeBase(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()){
             aln->setSeqType(params->seq_type);
         };
         
@@ -660,7 +660,7 @@ namespace cmaple
         /**
          Employ Depth First Search to do a task at internal nodes
          */
-        template <void(Tree::*task)(cmaple::RealNumType &, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::Index , PhyloNode&, const cmaple::Index , PhyloNode&, const cmaple::PositionType &)>
+        template <void(TreeBase::*task)(cmaple::RealNumType &, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::Index , PhyloNode&, const cmaple::Index , PhyloNode&, const cmaple::PositionType &)>
         cmaple::RealNumType  performDFS();
         
         /**
@@ -691,7 +691,7 @@ namespace cmaple
         /**
          Employ Depth First Search to do a task at leaves
          */
-        template <void(Tree::*task)(PhyloNode&, const cmaple::Index , const cmaple::Index )>
+        template <void(TreeBase::*task)(PhyloNode&, const cmaple::Index , const cmaple::Index )>
         void performDFSAtLeave();
     };
 }

@@ -386,7 +386,7 @@ void CMaple::loadInputTree()
      tree.showModelParams();*/
     
     // refresh all lower after updating model params
-    tree.performDFS<&Tree::updateLowerLh<num_states>>();
+    tree.performDFS<&TreeBase::updateLowerLh<num_states>>();
     
     // set outdated = false at all nodes to avoid considering SPR moves at those nodes
     if (tree.params->tree_search_type == PARTIAL_TREE_SEARCH)
@@ -584,7 +584,7 @@ void CMaple::optimizeTree()
     }
     
     // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
-    tree.performDFS<&Tree::updateLowerLh<num_states>>();
+    tree.performDFS<&TreeBase::updateLowerLh<num_states>>();
     
     // output log-likelihood of the tree
     std::cout << std::setprecision(10) << "Tree log likelihood (after updating model): " << tree.calculateTreeLh<num_states>() << std::endl;

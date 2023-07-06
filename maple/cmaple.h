@@ -1,4 +1,4 @@
-#include "../tree/tree.h"
+#include "../tree/treebase.h"
 #include "../utils/timeutil.h"
 #include "../alignment/seqregions.h"
 
@@ -239,7 +239,7 @@ public:
     //////////////////////////////////////////////////////////////////////////////////////////////
 private:
     /** The phylogenetic tree */
-    cmaple::Tree tree;
+    cmaple::TreeBase tree;
     
     /** Status of this CMaple instance */
     CMapleStatus status;

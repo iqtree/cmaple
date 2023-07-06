@@ -1,6 +1,6 @@
 # DNA data
 add_library(cmaple_tree
-tree.h tree.cpp
+treebase.h treebase.cpp
 updatingnode.h updatingnode.cpp
 traversingnode.h traversingnode.cpp
 phylonode.h phylonode.cpp
@@ -11,7 +11,7 @@ target_link_libraries(cmaple_tree cmaple_model cmaple_alignment cmaple_utils)
 
 # Protein data
 add_library(cmaple_tree-aa
-tree.h tree.cpp
+treebase.h treebase.cpp
 updatingnode.h updatingnode.cpp
 traversingnode.h traversingnode.cpp
 phylonode.h phylonode.cpp
