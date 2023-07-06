@@ -174,7 +174,7 @@ public:
      * @param[in] output_filename Name of the output MAPLE file
      * @return a status code: 0 - success, non-zero - failed with errors
      */
-    int extractMaple(const std::string& aln_filename, const std::string& output_filename);
+    //int extractMaple(const std::string& aln_filename, const std::string& output_filename);
     
     /*! \brief Extract a FASTA alignment from a MAPLE file
      *

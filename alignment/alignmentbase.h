@@ -45,6 +45,16 @@ namespace cmaple
         cmaple::StateType num_states;
         
         /**
+         Alignment file name
+         */
+        std::string aln_filename = "";
+        
+        /**
+         Alignment format
+         */
+        InputType aln_format = IN_UNKNOWN;
+        
+        /**
          *  Alignment constructor
          */
         AlignmentBase();
@@ -110,9 +120,8 @@ namespace cmaple
         
         /**
          Read a MAPLE file to load reference sequence and vector of Sequence (represented by vector of Mutations)
-         @param aln_filename path to the MAPLE file; ref_path path to the reference sequence
          */
-        void readMapleFile(const std::string& aln_filename, const std::string& ref_path = "");
+        void readMapleFile();
         
         /**
          Reconstruct an alignment file from a MAPLE file
@@ -122,8 +131,11 @@ namespace cmaple
         
         /**
          Extract MAPLE file from and alignment file
+         @param[in] output_filename Name of the output file
+         @param[in] ref_seq The reference sequence
+         @param[in] overwrite TRUE to overwrite the existing output file
          */
-        void extractMapleFile(const std::string& aln_filename, const std::string& output_filename, const cmaple::Params& params, const bool only_extract_maple = true);
+        void extractMapleFile(const std::string& output_filename, const std::string& ref_seq = "", const bool overwrite = false);
         
         /**
          Parse the reference sequence into vector of state

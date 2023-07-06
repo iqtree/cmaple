@@ -198,17 +198,6 @@ int CMaple::setTree(const std::string& tree_filename)
     return CODE_ERROR_1;
 }
 
-int CMaple::extractMaple(const std::string& aln_filename, const std::string& output_filename)
-{
-    if (aln_filename.length() && output_filename.length())
-    {
-        tree.aln->extractMapleFile(aln_filename, output_filename, *tree.params);
-        return CODE_SUCCESS;
-    }
-    
-    return CODE_ERROR_1;
-}
-
 int CMaple::extractFASTA(const std::string& aln_filename, const std::string& output_filename)
 {
     if (aln_filename.length() && output_filename.length())
@@ -336,6 +325,7 @@ void CMaple::loadInput()
     
     // Synchronize seq_type
     tree.aln->setSeqType(params.seq_type);
+    tree.aln->aln_filename = params.aln_path;
     
     // detect alignment format (if not specified)
     if (params.aln_format == IN_UNKNOWN)
@@ -352,7 +342,8 @@ void CMaple::loadInput()
         if (!params.maple_path.length())
             params.maple_path = params.aln_path + ".maple";
         
-        tree.aln->extractMapleFile(params.aln_path, params.maple_path, params, params.only_extract_maple);
+        // TODO: ref_seq
+        tree.aln->extractMapleFile(params.maple_path, "", params.overwrite_output);
         
         // record the end time and show the runtime
         auto end = getRealTime();
@@ -374,7 +365,7 @@ void CMaple::loadInput()
             tree.aln->reconstructAln(params.maple_path, params.output_aln, params);
         // otherwise, read the MAPLE file
         else
-            tree.aln->readMapleFile(params.maple_path, params.ref_path);
+            tree.aln->readMapleFile();
     }
 }
 

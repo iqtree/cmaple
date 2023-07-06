@@ -440,17 +440,12 @@ void cmaple::AlignmentBase::parseRefSeq(string& ref_sequence)
     }
 }
 
-void cmaple::AlignmentBase::readMapleFile(const std::string& aln_filename, const std::string& ref_path)
+void cmaple::AlignmentBase::readMapleFile()
 {
     ASSERT(aln_filename.length());
     
     if (!fileExists(aln_filename))
         outError("File not found " + aln_filename);
-    
-    // read the reference sequence (if the user supplies it)
-    string ref_sequence{};
-    if (ref_path.length())
-        ref_sequence = readRef(ref_path);
     
     // init dummy variables
     string seq_name = "";
@@ -490,13 +485,6 @@ void cmaple::AlignmentBase::readMapleFile(const std::string& aln_filename, const
             // make sure the first line was found
             if (seq_name != REF_NAME && seq_name != "REFERENCE")
                 outError("MAPLE file must start by >REF. Please check and try again!");
-            
-            // choose the ref sequence if the user already supplies a reference sequence
-            if (ref_path.length())
-            {
-                outWarning("Skipping the reference sequence in the MAPLE file since the reference sequence is already specified via '-ref' option.");
-                line = ref_sequence;
-            }
             
             // transform ref_sequence to uppercase
             transform(line.begin(), line.end(), line.begin(), ::toupper);
@@ -1053,10 +1041,11 @@ void cmaple::AlignmentBase::sortSeqsByDistances(RealNumType hamming_weight)
     delete[] sequence_indexes;
 }
 
-void cmaple::AlignmentBase::extractMapleFile(const std::string& aln_filename, const std::string& output_filename, const cmaple::Params& params, const bool only_extract_maple)
+void cmaple::AlignmentBase::extractMapleFile(const std::string& output_filename, const std::string& ref_seq, const bool overwrite)
 {   
     // read input sequences
-    ASSERT(aln_filename.length());
+    ASSERT(aln_filename.length() && "Please specify an alignment file");
+    ASSERT(aln_format != IN_UNKNOWN && "Unknown alignment format");
     StrVector sequences;
     StrVector seq_names;
     readSequences(aln_filename.c_str(), sequences, seq_names);
@@ -1065,7 +1054,7 @@ void cmaple::AlignmentBase::extractMapleFile(const std::string& aln_filename, co
     if (sequences.size() == 0)
         outError("Empty input sequences. Please check and try again!");
     // make sure all sequences have the same length
-    if (params.aln_format == IN_FASTA || (params.aln_format == IN_UNKNOWN && detectInputFile(aln_filename.c_str()) == IN_FASTA))
+    if (aln_format == IN_FASTA)
         for (PositionType i = 0; i < (PositionType) sequences.size(); ++i)
         {
             if (sequences[i].length() != sequences[0].length())
@@ -1073,21 +1062,20 @@ void cmaple::AlignmentBase::extractMapleFile(const std::string& aln_filename, co
         }
     
     // detect the type of the input sequences
-    setSeqType(params.seq_type);
     if (getSeqType() == SEQ_UNKNOWN)
         setSeqType(detectSequenceType(sequences));
     
     // generate reference sequence from the input sequences
     string ref_sequence;
     // read the reference sequence from file (if the user supplies it)
-    if (params.ref_path.length())
-        ref_sequence = readRef(params.ref_path);
+    if (ref_seq.length())
+        ref_sequence = ref_seq;
     else
         ref_sequence = generateRef(sequences);
 
     // check whether the output file already exists
-    if (!params.overwrite_output && fileExists(output_filename))
-        outError("File " + output_filename + " already exists. Use `--overwrite` option if you want overwrite it.\n");
+    if (!overwrite && fileExists(output_filename))
+        outError("File " + output_filename + " already exists.");
     
     // open the output file
     ofstream out = ofstream(output_filename);
@@ -1097,7 +1085,7 @@ void cmaple::AlignmentBase::extractMapleFile(const std::string& aln_filename, co
     out << ref_sequence << endl;
     
     // extract and write mutations of each sequence to file
-    extractMutations(sequences, seq_names, ref_sequence, out, only_extract_maple);
+    extractMutations(sequences, seq_names, ref_sequence, out, false);
     
     // close the output file
     out.close();
