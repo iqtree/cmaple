@@ -49,23 +49,23 @@ int cmaple::Tree::computeBranchSupports(const int num_threads, const int num_rep
     if (num_threads < 0)
     {
         std::cout << "Number of threads cannot be negative!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
     if (num_replicates <= 0)
     {
         std::cout << "Number of replicates must be positive!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
     if (epsilon < 0)
     {
         std::cout << "Epsilon cannot be negative!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
     
     // Only compute the branch supports
     tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon);
     
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 std::string cmaple::Tree::exportString(const std::string& tree_type, const bool show_branch_supports)

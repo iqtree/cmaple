@@ -698,8 +698,8 @@ namespace cmaple
     const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
     const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
 
-    const int CODE_SUCCESS = 0;
-    const int CODE_ERROR_1 = 1;
+    const int SUCCESS = 0;
+    const int ERROR_1 = 1;
 
     /** Keys to extract model parameters from a dictionary */
     const std::string MODEL_NAME = "model_name";

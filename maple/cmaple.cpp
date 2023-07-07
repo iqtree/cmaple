@@ -29,7 +29,7 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
         if (tree.params->aln_format == IN_UNKNOWN)
         {
             std::cout << "Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP" << std::endl;
-            return CODE_ERROR_1;
+            return ERROR_1;
         }
     }
     
@@ -40,12 +40,12 @@ int CMaple::setAlignment(const std::string& aln_filename, const std::string& for
         if (tree.params->seq_type == SEQ_UNKNOWN)
         {
             std::cout << "Unknown sequence type " + seqtype + ", please use DNA or AA" << std::endl;
-            return CODE_ERROR_1;
+            return ERROR_1;
         }
     }
     
     // success
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 int CMaple::setModel(const std::string& model_name)
@@ -54,10 +54,10 @@ int CMaple::setModel(const std::string& model_name)
     if (model_name.length())
     {
         tree.params->model_name = model_name;
-        return CODE_SUCCESS;
+        return SUCCESS;
     }
     
-    return CODE_ERROR_1;
+    return ERROR_1;
 }
 
 int CMaple::inferTree(const bool force_rerun, const std::string& tree_type)
@@ -73,7 +73,7 @@ int CMaple::inferTree(const bool force_rerun, const std::string& tree_type)
         else
         {
             std::cout << "Inference has been done. Use runInference(TRUE, <tree_type>) if you want to rerun the inference!" << std::endl;
-            return CODE_ERROR_1;
+            return ERROR_1;
         }
     }
     
@@ -117,7 +117,7 @@ int CMaple::inferTree(const bool force_rerun, const std::string& tree_type)
     auto end = getRealTime();
     cout << "Runtime: " << end - start << "s" << endl;
     
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads, const int num_replicates, const double epsilon)
@@ -126,17 +126,17 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
     if (num_threads < 0)
     {
         std::cout << "Number of threads cannot be negative!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
     if (num_replicates <= 0)
     {
         std::cout << "Number of replicates must be positive!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
     if (epsilon < 0)
     {
         std::cout << "Epsilon cannot be negative!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
     
     // If the branch supports have already been computed -> terminate with an error or recompute them (if users want to do so)
@@ -146,7 +146,7 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
         if (!force_rerun)
         {
             std::cout << "Branch supports have already been computed. Use computeBranchSupports(TRUE, <...>) if you want to recompute them!" << std::endl;
-            return CODE_ERROR_1;
+            return ERROR_1;
         }
         // Recompute branch supports (if users want to do so) -> only need to reset the status (delete all objects (e.g., tree), except params)
         else
@@ -186,7 +186,7 @@ int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads,
     // restore compute_aLRT_SH
     tree.params->compute_aLRT_SH = compute_aLRT_SH;
     
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 int CMaple::setTree(const std::string& tree_filename)
@@ -195,10 +195,10 @@ int CMaple::setTree(const std::string& tree_filename)
     if (tree_filename.length())
     {
         tree.params->input_treefile = tree_filename;
-        return CODE_SUCCESS;
+        return SUCCESS;
     }
     
-    return CODE_ERROR_1;
+    return ERROR_1;
 }
 
 int CMaple::extractFASTA(const std::string& aln_filename, const std::string& output_filename)
@@ -206,10 +206,10 @@ int CMaple::extractFASTA(const std::string& aln_filename, const std::string& out
     if (aln_filename.length() && output_filename.length())
     {
         tree.aln->reconstructAln(aln_filename, output_filename, *tree.params);
-        return CODE_SUCCESS;
+        return SUCCESS;
     }
     
-    return CODE_ERROR_1;
+    return ERROR_1;
 }
 
 std::string CMaple::getTreeString(const std::string& tree_type, const bool show_branch_supports)
@@ -255,14 +255,14 @@ int CMaple::setTreeSearchType(const std::string& tree_search_type, const bool sh
         if (tree.params->tree_search_type == UNKNOWN_TREE_SEARCH)
         {
             std::cout << "Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|SLOW>" << std::endl;
-            return CODE_ERROR_1;
+            return ERROR_1;
         }
     }
     
     // set shallow_tree_search
     tree.params->short_range_topo_search = shallow_tree_search;
     
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 int CMaple::setPrefix(const std::string& prefix)
@@ -271,10 +271,10 @@ int CMaple::setPrefix(const std::string& prefix)
     if (prefix.length())
     {
         tree.params->output_prefix = prefix;
-        return CODE_SUCCESS;
+        return SUCCESS;
     }
     
-    return CODE_ERROR_1;
+    return ERROR_1;
 }
 
 int CMaple::setMinBlength(const double min_blength)
@@ -283,11 +283,11 @@ int CMaple::setMinBlength(const double min_blength)
     if (min_blength <= 0)
     {
         std::cout << "min_blength must be positive!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
     
     tree.params->fixed_min_blength = min_blength;
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 int CMaple::setThreshProb(const double thresh_prob)
@@ -296,23 +296,23 @@ int CMaple::setThreshProb(const double thresh_prob)
     if (thresh_prob <= 0)
     {
         std::cout << "thresh_prob must be positive!" << std::endl;
-        return CODE_ERROR_1;
+        return ERROR_1;
     }
         
     tree.params->threshold_prob = thresh_prob;
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 int CMaple::overwriteOutputs(const bool enable)
 {
     tree.params->overwrite_output = enable;
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 int CMaple::setRandomSeed(const int seed)
 {
     tree.params->ran_seed = seed;
-    return CODE_SUCCESS;
+    return SUCCESS;
 }
 
 cmaple::Params& CMaple::getSettings()
