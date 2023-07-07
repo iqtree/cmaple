@@ -201,17 +201,6 @@ int CMaple::setTree(const std::string& tree_filename)
     return ERROR_1;
 }
 
-int CMaple::extractFASTA(const std::string& aln_filename, const std::string& output_filename)
-{
-    if (aln_filename.length() && output_filename.length())
-    {
-        tree.aln->reconstructAln(aln_filename, output_filename, *tree.params);
-        return SUCCESS;
-    }
-    
-    return ERROR_1;
-}
-
 std::string CMaple::getTreeString(const std::string& tree_type, const bool show_branch_supports)
 {
     // make sure branch supports are available (if users want to output them)

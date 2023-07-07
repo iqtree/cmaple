@@ -158,15 +158,6 @@ public:
      */
     //int extractMaple(const std::string& aln_filename, const std::string& output_filename);
     
-    /*! \brief Extract a FASTA alignment from a MAPLE file
-     *
-     * Convert an alignment in MAPLE into FASTA format.
-     * @param[in] aln_filename Name of an alignment file in MAPLE format
-     * @param[in] output_filename Name of the output FASTA file
-     * @return a status code: 0 - success, non-zero - failed with errors
-     */
-    int extractFASTA(const std::string& aln_filename, const std::string& output_filename);
-    
     /*! \brief Export the tree string in NEWICK format.
      *
      * Export the phylogenetic tree in a NEWICK string.

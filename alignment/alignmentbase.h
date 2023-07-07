@@ -42,6 +42,22 @@ namespace cmaple
          */
         void writeFASTA(std::ostream& aln_stream);
         
+        /**
+         Write alignment in PHYLIP format
+         @param[in] aln_stream A stream of the output alignment file
+         */
+        void writePHYLIP(std::ostream& aln_stream);
+        
+        /**
+         Get reference sequence in string
+         */
+        std::string getRefSeq();
+        
+        /**
+         Get a sequence in string
+         */
+        std::string getSeqString(const std::string& ref_seq_str, Sequence* sequence);
+        
     public:
         
         std::vector<Sequence> data; // note: this is inefficient, but only used briefly
@@ -143,12 +159,6 @@ namespace cmaple
          @param[in] ref_seq The reference sequence
          */
         void readFastaOrPhylip(std::istream& aln_stream, const std::string& ref_seq = "");
-        
-        /**
-         Reconstruct an alignment file from a MAPLE file
-         @param aln_filename path to the MAPLE file; output_file path to the output aln
-         */
-        void reconstructAln(const std::string& aln_filename, const std::string& output_file, const cmaple::Params& params);
         
         /**
          Write alignment to a stream

@@ -142,10 +142,17 @@ int main(int argc, char *argv[]) {
     aln.write("output.maple", "MAPLE", true);
     // write aln to a file in FASTA format
     aln.write("output.fa", "FASTA", true);
+    aln.write("output.phy", "PHYLIP", true);
     Alignment aln2("output.fa", ref_seq);
     aln2.write("output1.maple", "MAPLE", true);
     Alignment aln3("output.fa");
     aln3.write("output2.maple", "MAPLE", true);
+    
+    Alignment aln4("output.phy", ref_seq);
+    aln4.write("output_phy1.maple", "MAPLE", true);
+    Alignment aln5("output.phy");
+    aln5.write("output_phy2.maple", "MAPLE", true);
+    // aln5.write("output_phy3.maple", "INVALID", true);
     // aln.write("output.maple");
     // without tree file
     Tree tree1(aln, model);
