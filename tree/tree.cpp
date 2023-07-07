@@ -70,13 +70,5 @@ int cmaple::Tree::computeBranchSupports(const int num_threads, const int num_rep
 
 std::string cmaple::Tree::exportString(const std::string& tree_type, const bool show_branch_supports)
 {
-    // TODO:
-    // make sure branch supports are available (if users want to output them)
-    if (TRUE && show_branch_supports)
-    {
-        std::cout << "Branch supports have yet been available for outputting! Pls compute them first!" << std:: endl;
-        return "";
-    }
-    
     return tree_base->exportTreeString(tree_type, show_branch_supports);
 }

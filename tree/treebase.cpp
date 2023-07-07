@@ -189,6 +189,9 @@ void cmaple::TreeBase::buildInitialTree()
             --num_new_sequences;
             continue;
         }
+        // otherwise, mark the current sequence as added
+        else
+            sequence->is_added = true;
         
         // get the lower likelihood vector of the current sequence
         std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
@@ -437,10 +440,6 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
     ASSERT(epsilon >= 0 && "Epsilon must be non-negative!");
     params->aLRT_SH_half_epsilon = epsilon * 0.5;
     
-    // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
-    if (node_lhs.size() == 0)
-        node_lhs.emplace_back(0);
-    
     // refresh all upper left/right lhs before calculating aLRT-SH
     refreshAllNonLowerLhs<num_states>();
     
@@ -465,6 +464,9 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
     
     // calculate aLRT-SH for all internal branches
     calculate_aRLT_SH<num_states>(site_lh_contributions, site_lh_at_root, total_lh);
+    
+    // refresh all non-lower likelihoods
+    refreshAllNonLowerLhs<num_states>();
 }
 
 const string cmaple::TreeBase::exportNodeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
@@ -492,7 +494,15 @@ const string cmaple::TreeBase::exportNodeString(const bool binary, const NumSeqs
         output += exportNodeString(binary, node.getNeighborIndex(LEFT).getVectorIndex(), show_branch_supports);
     }
 
-    string branch_support = show_branch_supports ? convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH()) : "";
+    string branch_support = "";
+    if (show_branch_supports)
+    {
+        // Make sure Branch supports have been computed
+        if (!node.getNodelhIndex())
+            outError("Branch supports is not available. Please compute them first!");
+        
+        branch_support = convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
+    }
     string length = node.getUpperLength() < 0 ? "0" : convertDoubleToString(node.getUpperLength(), 20);
     output += ")" + branch_support + ":" + length;
     
@@ -5154,6 +5164,10 @@ void cmaple::TreeBase::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contr
     
     // traverse tree to calculate aLRT-SH for each internal branch
     PhyloNode& root = nodes[root_vector_index];
+    
+    // aLRT-SH at root branch is zero
+    node_lhs[root.getNodelhIndex()].set_aLRT_SH(0);
+    
     std::stack<Index> node_stack;
     if (root.isInternal())
     {
@@ -6535,6 +6549,8 @@ void cmaple::TreeBase::resetTree()
     
     // Reset the vector of node_lhs
     node_lhs.clear();
+    // don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
+    node_lhs.emplace_back(0);
     
     // Reset root_vector_index
     root_vector_index = 0;
