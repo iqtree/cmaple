@@ -71,6 +71,8 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
 {
     // Validate inputs
     ASSERT(n_aln && n_model);
+    // Sequence type (~num_states) of model must match that of alignment
+    ASSERT(n_aln->num_states == n_model->num_states_ && "Sequence type (~num_states) of model must match that of alignment");
     
     // Attach aln
     aln = n_aln;

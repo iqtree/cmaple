@@ -122,8 +122,8 @@ int main(int argc, char *argv[]) {
     cmaple.inferTree();*/
     Model model(params.model_name);
     Alignment aln(params.aln_path);
-    //Tree tree(aln, model, "test_1K.diff.treefile");
-    Tree tree(aln, model, "");
+    Tree tree(aln, model, "test_1K.diff.treefile");
+    // Tree tree(aln, model, "");
     std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
     tree.computeBranchSupports(8, 100);
     tree.infer();
