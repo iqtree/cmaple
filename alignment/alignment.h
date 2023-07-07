@@ -33,6 +33,20 @@ namespace cmaple
         ~Alignment();
         
         // TODO: write the alignment in FASTA, PHYLIP, or MAPLE format
+        /**
+         Write alignment to a stream
+         @param[in] ostream A stream of the output alignment file
+         @param[in] format Alignment format (optional): "", "MAPLE", "PHYLIP", "FASTA"
+         */
+        void write(std::ostream& aln_stream, const std::string& format = "MAPLE");
+        
+        /**
+         Write alignment to a file
+         @param[in] ostream A stream of the output alignment file
+         @param[in] format Alignment format (optional): "", "MAPLE", "PHYLIP", "FASTA"
+         @param[in] overwrite TRUE to overwrite the existing output file
+         */
+        void write(const std::string& aln_filename, const std::string& format = "MAPLE", const bool overwrite = false);
         
         // declare Tree as a friend class
         friend class Tree;

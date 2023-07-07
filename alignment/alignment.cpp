@@ -81,3 +81,38 @@ cmaple::Alignment::~Alignment()
         aln_base = nullptr;
     }
 }
+
+void cmaple::Alignment::write(std::ostream& aln_stream, const std::string& format)
+{
+    ASSERT(aln_base);
+    
+    // Parse the format
+    const InputType aln_format = aln_base->getAlignmentFormat(format);
+        
+    // Validate the format
+    if (aln_base->aln_format == IN_UNKNOWN)
+        outError("Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP");
+    
+    // Write the alignment
+    aln_base->write(aln_stream, aln_format);
+}
+
+void cmaple::Alignment::write(const std::string& aln_filename, const std::string& format, const bool overwrite)
+{
+    // Validate the input
+    if (!aln_filename.length())
+        outError("Please specify a filename to output the alignment");
+    
+    // Check whether the output file already exists
+    if (!overwrite && fileExists(aln_filename))
+        outError("File " + aln_filename + " already exists. Please set overwrite = true to overwrite it.");
+    
+    // Open a stream to write the output
+    std::ofstream aln_stream = ofstream(aln_filename);
+    
+    // Write alignment to the stream
+    write(aln_stream, format);
+    
+    // Close the stream
+    aln_stream.close();
+}

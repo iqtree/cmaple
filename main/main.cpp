@@ -136,10 +136,14 @@ int main(int argc, char *argv[]) {
         outError(ERR_READ_INPUT, aln_filename);
     }
     Alignment aln(aln_stream);
+    aln_stream.close();
+    // Write alignment to file in MAPLE format
+    aln.write("output.maple", "MAPLE", true);
+    // aln.write("output.maple");
     // without tree file
     Tree tree1(aln, model);
     // with a tree file
-    const std::string tree_filename = "test_100.maple.treefile";
+    const std::string tree_filename = params.input_treefile;
     Tree tree2(aln, model, tree_filename);
     // with a tree stream
     std::ifstream tree_stream;

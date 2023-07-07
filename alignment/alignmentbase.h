@@ -30,6 +30,12 @@ namespace cmaple
          */
         void addMutation(Sequence* sequence, char state_char, cmaple::PositionType pos, cmaple::PositionType length = -1);
         
+        /**
+         Write alignment in MAPLE format
+         @param[in] aln_stream A stream of the output alignment file
+         */
+        void writeMAPLE(std::ostream& aln_stream);
+        
     public:
         
         std::vector<Sequence> data; // note: this is inefficient, but only used briefly
@@ -139,12 +145,11 @@ namespace cmaple
         void reconstructAln(const std::string& aln_filename, const std::string& output_file, const cmaple::Params& params);
         
         /**
-         Extract MAPLE file from and alignment file
-         @param[in] output_filename Name of the output file
-         @param[in] ref_seq The reference sequence
-         @param[in] overwrite TRUE to overwrite the existing output file
+         Write alignment to a stream
+         @param[in] ostream A stream of the output alignment file
+         @param[in] format the format of the output alignment file: IN_FASTA, IN_PHYLIP, IN_MAPLE
          */
-        void extractMapleFile(const std::string& output_filename, const std::string& ref_seq = "", const bool overwrite = false);
+        void write(std::ostream& aln_stream, const InputType& format);
         
         /**
          Parse the reference sequence into vector of state

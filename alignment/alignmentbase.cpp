@@ -1015,55 +1015,47 @@ void cmaple::AlignmentBase::sortSeqsByDistances(RealNumType hamming_weight)
     delete[] sequence_indexes;
 }
 
-void cmaple::AlignmentBase::extractMapleFile(const std::string& output_filename, const std::string& ref_seq, const bool overwrite)
+void cmaple::AlignmentBase::writeMAPLE(std::ostream& out)
 {
-    // DISABLE due to new implementation
-    /*// read input sequences
-    ASSERT(aln_filename.length() && "Please specify an alignment file");
-    ASSERT(aln_format != IN_UNKNOWN && "Unknown alignment format");
-    StrVector sequences;
-    StrVector seq_names;
-    readSequences(aln_filename.c_str(), sequences, seq_names);
-    
-    // validate the input sequences
-    if (sequences.size() == 0)
-        outError("Empty input sequences. Please check and try again!");
-    // make sure all sequences have the same length
-    if (aln_format == IN_FASTA)
-        for (PositionType i = 0; i < (PositionType) sequences.size(); ++i)
-        {
-            if (sequences[i].length() != sequences[0].length())
-                outError("Sequence " + seq_names[i] + " has a different length compared to the first sequence.");
-        }
-    
-    // detect the type of the input sequences
-    if (getSeqType() == SEQ_UNKNOWN)
-        setSeqType(detectSequenceType(sequences));
-    
-    // generate reference sequence from the input sequences
-    string ref_sequence;
-    // read the reference sequence from file (if the user supplies it)
-    if (ref_seq.length())
-        ref_sequence = ref_seq;
-    else
-        ref_sequence = generateRef(sequences);
-
-    // check whether the output file already exists
-    if (!overwrite && fileExists(output_filename))
-        outError("File " + output_filename + " already exists.");
-    
-    // open the output file
-    ofstream out = ofstream(output_filename);
-    
     // write reference sequence to the output file
     out << ">" << REF_NAME << endl;
+    const PositionType seq_length = ref_seq.size();
+    std::string ref_sequence(seq_length, ' ');
+    for (auto i = 0; i < seq_length; ++i)
+        ref_sequence[i] = convertState2Char(ref_seq[i]);
     out << ref_sequence << endl;
     
-    // extract and write mutations of each sequence to file
-    extractMutations(sequences, seq_names, ref_sequence, out, false);
-    
-    // close the output file
-    out.close();*/
+    // Write sequences one by one
+    const NumSeqsType num_seqs = data.size();
+    Sequence* sequence = &data.front();
+    for (auto i = 0; i < num_seqs; ++i, ++sequence)
+    {
+        // write the sequence name
+        out << ">" << sequence->seq_name << endl;
+        
+        // write mutations
+        Mutation* mutation = &sequence->front();
+        for (auto j = 0; j < sequence->size(); ++j, ++mutation)
+        {
+            const StateType type = mutation->type;
+            out << convertState2Char(type) << "\t" << (mutation->position + 1);
+            if (type == TYPE_N || type == TYPE_DEL)
+                out << "\t" << mutation->getLength();
+            out << endl;
+        }
+    }
+}
+
+void cmaple::AlignmentBase::write(std::ostream& aln_stream, const InputType& format)
+{
+    switch (format) {
+        case IN_MAPLE:
+            writeMAPLE(aln_stream);
+            break;
+        default:
+            outError("Unsupported format for outputting the alignment!");
+            break;
+    }
 }
 
 void cmaple::AlignmentBase::readFastaOrPhylip(std::istream& aln_stream, const std::string& ref_seq)
