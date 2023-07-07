@@ -10,7 +10,7 @@ namespace cmaple
     public:
         /*! \brief Tree constructor
          *
-         * Tree constructor from a strictly bifurcating tree with may or may not contain all taxa from a file in NEWICK format
+         * Tree constructor from a (bifurcating or multifurcating) tree, which may or may not contain all taxa from a file in NEWICK format
          * @param[in] aln an alignment
          * @param[in] model a substitution model
          * @param[in] tree_filename Name of a tree file (optinal)

@@ -70,7 +70,7 @@ public:
     
     /*! \brief Specify an input tree file in NEWICK format
      *
-     * Specify a strictly bifurcating tree with may or may not contain all taxa from a file in NEWICK format
+     * Specify a (bifurcating or multifurcating) tree, which may or may not contain all taxa from a file in NEWICK format
      * @param[in] tree_filename Name of a tree file
      * @return a status code: 0 - success, non-zero - failed with errors
      */
