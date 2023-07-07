@@ -376,7 +376,15 @@ template <const StateType num_states>
 void CMaple::loadInputTree()
 {
     // read tree from the input treefile
-    tree.readTree(tree.params->input_treefile);
+    std::ifstream tree_stream;
+    try {
+        tree_stream.exceptions(ios::failbit | ios::badbit);
+        tree_stream.open(tree.params->input_treefile);
+        tree.loadTree(tree_stream);
+        tree_stream.close();
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, tree.params->input_treefile);
+    }
     
     // calculate all lower, upper left/right likelihoods
     tree.refreshAllLhs<num_states>(true);

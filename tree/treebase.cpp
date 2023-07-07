@@ -99,18 +99,16 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     setupFuncPtrs();
 }
 
-void cmaple::TreeBase::loadTree(const std::string& tree_filename)
+void cmaple::TreeBase::loadTree(std::istream& tree_stream)
 {
-    (this->*loadTreePtr)(tree_filename);
+    (this->*loadTreePtr)(tree_stream);
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::loadTreeTemplate(const std::string& tree_filename)
+void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream)
 {
-    ASSERT(tree_filename.length() && "Please specify a tree file");
-    
     // read tree from the input treefile
-    readTree(tree_filename);
+    readTree(tree_stream);
     
     // calculate all lower, upper left/right likelihoods
     refreshAllLhs<num_states>(true);
@@ -6199,7 +6197,7 @@ const char cmaple::TreeBase::readNextChar(std::istream& in, PositionType& in_lin
     return ch;
 }
 
-void cmaple::TreeBase::readTree(const string& input_treefile)
+void cmaple::TreeBase::readTree(std::istream& in)
 {    
     // create a map between leave and sequences in the alignment
     std::map<std::string, NumSeqsType> map_seqname_index;
@@ -6207,88 +6205,78 @@ void cmaple::TreeBase::readTree(const string& input_treefile)
     for (NumSeqsType i = 0; i < sequences.size(); ++i)
         map_seqname_index.emplace(sequences[i].seq_name, i);
     
-    std::cout << "Reading a tree file at " << input_treefile << std::endl;
+    std::cout << "Reading a tree" << std::endl;
     
-    // open the treefile
-    ifstream in;
+    // Read tree from the stream
+    PositionType in_line = 1;
+    PositionType in_column = 1;
+    //std::string in_comment{};
+    
     try {
-        in.exceptions(ios::failbit | ios::badbit);
-        in.open(input_treefile);
-        
-        PositionType in_line = 1;
-        PositionType in_column = 1;
-        //std::string in_comment{};
-        
-        try {
-            char ch;
-            ch = readNextChar(in, in_line, in_column);
-            if (ch != '(') {
-                cout << in.rdbuf() << endl;
-                throw "Tree file does not start with an opening-bracket '('";
-            }
+        char ch;
+        ch = readNextChar(in, in_line, in_column);
+        if (ch != '(') {
+            cout << in.rdbuf() << endl;
+            throw "Tree file does not start with an opening-bracket '('";
+        }
 
-            RealNumType branch_len;
-            const NumSeqsType tmp_node_vec = parseFile(in, ch, branch_len, in_line, in_column, map_seqname_index);
-            
-            // set root
-            if (nodes[tmp_node_vec].isInternal())
-                root_vector_index = tmp_node_vec;
-            else
-            {
-                for (NumSeqsType i = 0; i < nodes.size(); ++i)
-                    if (nodes[i].isInternal())
-                    {
-                        root_vector_index = i;
-                        break;
-                    }
-            }
-            // 2018-01-05: assuming rooted tree if root node has two children
-            /*if (is_rooted || (branch_len != 0.0) || node->degree() == 2) {
-                if (branch_len == -1.0) branch_len = 0.0;
-                if (branch_len < 0.0)
-                    throw ERR_NEG_BRANCH;
-                root = newNode(leafNum, ROOT_NAME);
-                root->addNeighbor(node, branch_len);
-                node->addNeighbor(root, branch_len);
-                leafNum++;
-                rooted = true;
-                
-                // parse key/value from comment
-                string KEYWORD="&";
-                bool in_comment_contains_key_value = in_comment.length() > KEYWORD.length()
-                                                      && !in_comment.substr(0, KEYWORD.length()).compare(KEYWORD);
-                if (in_comment_contains_key_value)
-                    parseKeyValueFromComment(in_comment, root, node);
-                
-                
-            } else { // assign root to one of the neighbor of node, if any
-                FOR_NEIGHBOR_IT(node, NULL, it)
-                if ((*it)->node->isLeaf()) {
-                    root = (*it)->node;
+        RealNumType branch_len;
+        const NumSeqsType tmp_node_vec = parseFile(in, ch, branch_len, in_line, in_column, map_seqname_index);
+        
+        // set root
+        if (nodes[tmp_node_vec].isInternal())
+            root_vector_index = tmp_node_vec;
+        else
+        {
+            for (NumSeqsType i = 0; i < nodes.size(); ++i)
+                if (nodes[i].isInternal())
+                {
+                    root_vector_index = i;
                     break;
                 }
-            }
-            // make sure that root is a leaf
-            ASSERT(root->isLeaf());*/
-
-            if (in.eof() || ch != ';')
-                throw "Tree file must be ended with a semi-colon ';'";
-        } catch (bad_alloc) {
-            outError(ERR_NO_MEMORY);
-        } catch (const char *str) {
-            outError(str, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
-        } catch (string str) {
-            outError(str.c_str(), " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
-        } catch (ios::failure) {
-            outError(ERR_READ_INPUT, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
-        } catch (...) {
-            // anything else
-            outError(ERR_READ_ANY, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
         }
-        
-        in.close();
+        // 2018-01-05: assuming rooted tree if root node has two children
+        /*if (is_rooted || (branch_len != 0.0) || node->degree() == 2) {
+            if (branch_len == -1.0) branch_len = 0.0;
+            if (branch_len < 0.0)
+                throw ERR_NEG_BRANCH;
+            root = newNode(leafNum, ROOT_NAME);
+            root->addNeighbor(node, branch_len);
+            node->addNeighbor(root, branch_len);
+            leafNum++;
+            rooted = true;
+            
+            // parse key/value from comment
+            string KEYWORD="&";
+            bool in_comment_contains_key_value = in_comment.length() > KEYWORD.length()
+                                                  && !in_comment.substr(0, KEYWORD.length()).compare(KEYWORD);
+            if (in_comment_contains_key_value)
+                parseKeyValueFromComment(in_comment, root, node);
+            
+            
+        } else { // assign root to one of the neighbor of node, if any
+            FOR_NEIGHBOR_IT(node, NULL, it)
+            if ((*it)->node->isLeaf()) {
+                root = (*it)->node;
+                break;
+            }
+        }
+        // make sure that root is a leaf
+        ASSERT(root->isLeaf());*/
+
+        if (in.eof() || ch != ';')
+            throw "Tree file must be ended with a semi-colon ';'";
+    } catch (bad_alloc) {
+        outError(ERR_NO_MEMORY);
+    } catch (const char *str) {
+        outError(str, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+    } catch (string str) {
+        outError(str.c_str(), " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
     } catch (ios::failure) {
-        outError(ERR_READ_INPUT, input_treefile);
+        outError(ERR_READ_INPUT, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+    } catch (...) {
+        // anything else
+        outError(ERR_READ_ANY, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
     }
     
     std::cout << "Collapsing zero-branch-length leaves into its sibling's vector of less-info-seqs..." << std::endl;

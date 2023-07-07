@@ -17,7 +17,7 @@ namespace cmaple
         /**
             Pointer  to LoadTree method
          */
-        typedef void (TreeBase::*LoadTreePtrType)(const std::string&);
+        typedef void (TreeBase::*LoadTreePtrType)(std::istream&);
         LoadTreePtrType loadTreePtr;
         
         /**
@@ -39,10 +39,10 @@ namespace cmaple
         CalculateBranchSupportPtrType calculateBranchSupportPtr;
         
         /*! Template of loadTree()
-         @param[in] tree_filename Name of a tree file
+         @param[in] tree_stream A stream of the input tree
          */
         template <const cmaple::StateType  num_states>
-        void loadTreeTemplate(const std::string& tree_filename);
+        void loadTreeTemplate(std::istream& tree_stream);
         
         /*! Template of doInference()
          */
@@ -593,9 +593,9 @@ namespace cmaple
         void attachAlnModel(AlignmentBase* aln, ModelBase* model);
         
         /*! Load an input tree
-         @param[in] tree_filename Name of a tree file
+         @param[in] tree_stream A stream of the input tree
          */
-        void loadTree(const std::string& tree_filename);
+        void loadTree(std::istream& tree_stream);
         
         /*! Do the inference
          */
@@ -753,9 +753,9 @@ namespace cmaple
         void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1);
         
         /**
-         Read an input tree from a file
+         Read an input tree from a stream
          */
-        void readTree(const string& input_treefile);
+        void readTree(std::istream& tree_stream);
         
         /**
          Update model parameters from an alignment and a tree

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filename, const bool final_blength_optimization):tree_base(nullptr)
+void cmaple::Tree::initTree(Alignment& aln, Model& model, const bool final_blength_optimization)
 {
     // Init the tree base
     tree_base = new TreeBase();
@@ -14,10 +14,36 @@ cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filenam
     
     // Attach alignment and model
     tree_base->attachAlnModel(aln.aln_base, model.model_base);
+}
+
+cmaple::Tree::Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool final_blength_optimization):tree_base(nullptr)
+{
+    // Initialize a tree
+    initTree(aln, model, final_blength_optimization);
     
-    // load the input tree (if users specify it)
+    // load the input tree from a stream
+    tree_base->loadTree(tree_stream);
+}
+
+cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filename, const bool final_blength_optimization):tree_base(nullptr)
+{
+    // Initialize a tree
+    initTree(aln, model, final_blength_optimization);
+    
+    // load the input tree from a tree file (if users specify it)
     if (tree_filename.length())
-        tree_base->loadTree(tree_filename);
+    {
+        // open the treefile
+        std::ifstream tree_stream;
+        try {
+            tree_stream.exceptions(ios::failbit | ios::badbit);
+            tree_stream.open(tree_filename);
+            tree_base->loadTree(tree_stream);
+            tree_stream.close();
+        } catch (ios::failure) {
+            outError(ERR_READ_INPUT, tree_filename);
+        }
+    }
 }
 
 cmaple::Tree::~Tree()

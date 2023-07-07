@@ -122,7 +122,22 @@ int main(int argc, char *argv[]) {
     cmaple.inferTree();*/
     Model model(params.model_name);
     Alignment aln(params.aln_path);
-    Tree tree(aln, model, "test_100.maple.treefile");
+    // without tree file
+    Tree tree1(aln, model);
+    // with a tree file
+    const std::string tree_filename = "test_100.maple.treefile";
+    Tree tree2(aln, model, tree_filename);
+    // with a tree stream
+    std::ifstream tree_stream;
+    try {
+        tree_stream.exceptions(ios::failbit | ios::badbit);
+        tree_stream.open(tree_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, tree_filename);
+    }
+    Tree tree(aln, model, tree_stream);
+    tree_stream.close();
+
     // std::cout << tree.exportString("BIN", true) << std::endl;
     //Tree tree(aln, model, "");
     std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;

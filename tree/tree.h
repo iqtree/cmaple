@@ -13,6 +13,16 @@ namespace cmaple
          * Tree constructor from a (bifurcating or multifurcating) tree, which may or may not contain all taxa from a file in NEWICK format
          * @param[in] aln an alignment
          * @param[in] model a substitution model
+         * @param[in] tree_stream A stream of the input tree
+         * @param[in] final_blength_optimization TRUE to optimize all the branch lengths at the end of the inference
+         */
+        Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool final_blength_optimization = true);
+        
+        /*! \brief Tree constructor
+         *
+         * Tree constructor from a (bifurcating or multifurcating) tree, which may or may not contain all taxa from a file in NEWICK format
+         * @param[in] aln an alignment
+         * @param[in] model a substitution model
          * @param[in] tree_filename Name of a tree file (optinal)
          * @param[in] final_blength_optimization TRUE to optimize all the branch lengths at the end of the inference
          */
@@ -66,5 +76,14 @@ namespace cmaple
          A tree base instance
          */
         TreeBase* tree_base;
+        
+        /*! \brief Initialize a tree base instance
+         *
+         * Initialize tree base instance
+         * @param[in] aln an alignment
+         * @param[in] model a substitution model
+         * @param[in] final_blength_optimization TRUE to optimize all the branch lengths at the end of the inference
+         */
+        void initTree(Alignment& aln, Model& model, const bool final_blength_optimization);
     };
 }
