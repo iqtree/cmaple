@@ -990,7 +990,7 @@ namespace cmaple
 
     /**
         Detect the format of input file
-        @param input_file file name
+        @param aln_stream A stream of the alignment file
         @return
             IN_NEWICK if file in newick format,
             IN_NEXUS if in nexus format,
@@ -999,7 +999,7 @@ namespace cmaple
             IN_COUNTSFILE if in counts format (PoMo),
             IN_OTHER if file format unknown.
      */
-    InputType detectInputFile(const char *input_file);
+    InputType detectInputFile(std::istream& aln_stream);
 
     /**
         If file exists, ask user to overwrite it or not
@@ -1091,4 +1091,10 @@ namespace cmaple
     {
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
+
+    /**
+     * Reset a stream (to the beginning)
+     * @param instream the input stream
+     */
+    void resetStream(std::istream& instream);
 }

@@ -3,15 +3,10 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const bool overwrite, const std::string& format, const std::string& seqtype):aln_base(nullptr)
+void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_seq, const std::string& format, const std::string& seqtype)
 {
-    ASSERT(aln_filename.length() && "Please specify an alignnment file");
-    
     // Init alignment base
     aln_base = new AlignmentBase();
-    
-    // set the aln_filename
-    aln_base->aln_filename = aln_filename;
     
     // if users specify the format -> parse it
     if (format.length())
@@ -25,7 +20,7 @@ cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string&
     // Otherwise, detect the format from the alignment
     else
     {
-        aln_base->aln_format = detectInputFile(aln_filename.c_str());
+        aln_base->aln_format = detectInputFile(aln_stream);
         
         // validate the format
         if (aln_base->aln_format == IN_UNKNOWN)
@@ -43,25 +38,39 @@ cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string&
             outError("Unknown sequence type " + seqtype + ", please use DNA or AA");
     }
     
-    // if alignment is in PHYLIP or FASTA format -> convert to MAPLE format
+    // Read the input alignment
+    // in FASTA or PHYLIP format
     if (aln_base->aln_format != IN_MAPLE)
-    {
-        // record the starting time
-        auto start = getRealTime();
-        
-        // prepare output (MAPLE) file
-        std::string maple_path = aln_filename + ".maple";
-        
-        aln_base->extractMapleFile(maple_path, ref_seq, overwrite);
-        
-        // record the end time and show the runtime
-        auto end = getRealTime();
-        cout << "The input alignment is converted into MAPLE format at " << maple_path << endl;
-        cout << " - Converting time: " << end-start << endl;
-    }
-    // otherwise, alignment is in MAPLE format -> read it
+        aln_base->readFastaOrPhylip(aln_stream, ref_seq);
+    // in MAPLE format
     else
-        aln_base->readMapleFile();
+        aln_base->readMaple(aln_stream);
+}
+
+cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const std::string& format, const std::string& seqtype):aln_base(nullptr)
+{
+    // Initialize an alignment instance from the input stream
+    init(aln_stream, ref_seq, format, seqtype);
+}
+
+cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const std::string& format, const std::string& seqtype):aln_base(nullptr)
+{
+    ASSERT(aln_filename.length() && "Please specify an alignnment file");
+    
+    // Create a stream from the input alignment
+    ifstream aln_stream;
+    try {
+        aln_stream.exceptions(ios::failbit | ios::badbit);
+        aln_stream.open(aln_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, aln_filename);
+    }
+    
+    // Initialize an alignment instance from the input stream
+    init(aln_stream, ref_seq, format, seqtype);
+    
+    // close aln_stream
+    aln_stream.close();
 }
 
 cmaple::Alignment::~Alignment()

@@ -901,8 +901,7 @@ void cmaple::quickStartGuide() {
     exit(0);
 }
 
-InputType detectMAPLEorFASTA(const char *input_file) {
-    ifstream in = ifstream(input_file);
+InputType detectMAPLEorFASTA(std::istream& in) {
     PositionType num_taxa = 0;
     string line;
 
@@ -930,53 +929,53 @@ InputType detectMAPLEorFASTA(const char *input_file) {
                 std::regex pattern("^.+[ \t]\\d+$");
                 
                 if (std::regex_match(line, pattern))
+                {
+                    // reset aln_stream
+                    resetStream(in);
                     return cmaple::IN_MAPLE;
+                }
                 else
+                {
+                    // reset aln_stream
+                    resetStream(in);
+                    
                     return cmaple::IN_FASTA;
+                }
                 
             }
         }
     }
     
+    // reset aln_stream
+    resetStream(in);
+    
     return cmaple::IN_FASTA;
 }
 
-InputType cmaple::detectInputFile(const char *input_file) {
-
-    if (!fileExists(input_file))
-        outError("File not found ", input_file);
-
-    try {
-        ifstream in;
-        in.exceptions(ios::failbit | ios::badbit);
-        in.open(input_file);
-
-        unsigned char ch = ' ';
-        unsigned char ch2 = ' ';
-        int count = 0;
-        do {
-            in >> ch;
-        } while (ch <= 32 && !in.eof() && count++ < 20);
-        in >> ch2;
-        in.close();
-        switch (ch) {
-            case '#': return IN_NEXUS;
-            case '(': return IN_NEWICK;
-            case '[': return IN_NEWICK;
-            case '>': return detectMAPLEorFASTA(input_file);
-            case 'C': if (ch2 == 'L') return IN_CLUSTAL;
-                      else if (ch2 == 'O') return IN_COUNTS;
-                      else return IN_OTHER;
-            case '!': if (ch2 == '!') return IN_MSF; else return IN_OTHER;
-            default:
-                if (isdigit(ch)) return IN_PHYLIP;
-                return IN_OTHER;
-        }
-    } catch (ios::failure const&) {
-        outError("Cannot read file ", input_file);
-    } catch (...) {
-        outError("Cannot read file ", input_file);
+InputType cmaple::detectInputFile(std::istream& in) {
+    unsigned char ch = ' ';
+    unsigned char ch2 = ' ';
+    int count = 0;
+    do {
+        in >> ch;
+    } while (ch <= 32 && !in.eof() && count++ < 20);
+    in >> ch2;
+    // reset aln_stream
+    resetStream(in);
+    switch (ch) {
+        case '#': return IN_NEXUS;
+        case '(': return IN_NEWICK;
+        case '[': return IN_NEWICK;
+        case '>': return detectMAPLEorFASTA(in);
+        case 'C': if (ch2 == 'L') return IN_CLUSTAL;
+                  else if (ch2 == 'O') return IN_COUNTS;
+                  else return IN_OTHER;
+        case '!': if (ch2 == '!') return IN_MSF; else return IN_OTHER;
+        default:
+            if (isdigit(ch)) return IN_PHYLIP;
+            return IN_OTHER;
     }
+
     return IN_OTHER;
 }
 
@@ -1053,4 +1052,10 @@ void cmaple::setNumThreads(const int num_threads)
     }
 #endif
     std::cout << std::endl;
+}
+
+void cmaple::resetStream(std::istream& instream)
+{
+    instream.clear();
+    instream.seekg(0, ios::beg);
 }

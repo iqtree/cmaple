@@ -121,7 +121,21 @@ int main(int argc, char *argv[]) {
     cmaple_params = params;
     cmaple.inferTree();*/
     Model model(params.model_name);
-    Alignment aln(params.aln_path);
+    // with an alignment file
+    Alignment aln1(params.aln_path);
+    // with an alignment file
+    // Alignment aln2(""); // tested PASS
+    // Alignment aln3("notfound"); // tested PASS
+    // with a stream
+    const std::string aln_filename = params.aln_path;
+    std::ifstream aln_stream;
+    try {
+        aln_stream.exceptions(ios::failbit | ios::badbit);
+        aln_stream.open(aln_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, aln_filename);
+    }
+    Alignment aln(aln_stream);
     // without tree file
     Tree tree1(aln, model);
     // with a tree file

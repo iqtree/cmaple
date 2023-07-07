@@ -38,21 +38,17 @@ void cmaple::AlignmentBase::processSeq(string &sequence, string &line, PositionT
     }
 }
 
-void cmaple::AlignmentBase::readFasta(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
+void cmaple::AlignmentBase::readFasta(std::istream& in, StrVector &sequences, StrVector &seq_names, bool check_min_seqs){
     ostringstream err_str;
-    igzstream in;
     PositionType line_num = 1;
     string line;
 
     // set the failbit and badbit
     in.exceptions(ios::failbit | ios::badbit);
-    in.open(aln_path);
     // remove the failbit
     in.exceptions(ios::badbit);
 
-    {
-        cout << "Reading FASTA file" <<endl;
-        
+    {        
         for (; !in.eof(); ++line_num) {
             safeGetline(in, line);
             if (line == "") {
@@ -76,10 +72,10 @@ void cmaple::AlignmentBase::readFasta(const char *aln_path, StrVector &sequences
         }
     }
 
-    in.clear();
     // set the failbit again
     in.exceptions(ios::failbit | ios::badbit);
-    in.close();
+    // reset the stream
+    resetStream(in);
     
     if (sequences.size() < MIN_NUM_TAXA && check_min_seqs)
         throw "There must be at least " + convertIntToString(MIN_NUM_TAXA) + " sequences";
@@ -124,15 +120,13 @@ void cmaple::AlignmentBase::readFasta(const char *aln_path, StrVector &sequences
     seq_names = new_seq_names;
 }
 
-void cmaple::AlignmentBase::readPhylip(const char *aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::AlignmentBase::readPhylip(std::istream& in, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     ostringstream err_str;
-    igzstream in;
     PositionType line_num = 1;
     
     // set the failbit and badbit
     in.exceptions(ios::failbit | ios::badbit);
-    in.open(aln_path);
     PositionType seq_id = 0;
     PositionType nseq = 0;
     PositionType nsite = 0;
@@ -182,32 +176,34 @@ void cmaple::AlignmentBase::readPhylip(const char *aln_path, StrVector &sequence
         }
     }
     
-    in.clear();
     // set the failbit again
     in.exceptions(ios::failbit | ios::badbit);
-    in.close();
+    
+    // reset the stream
+    resetStream(in);
 }
 
-void cmaple::AlignmentBase::readSequences(const char* aln_path, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::AlignmentBase::readSequences(std::istream& aln_stream, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
 {
     // detect the input file format
-    InputType intype = detectInputFile(aln_path);
+    if (aln_format == IN_UNKNOWN)
+        aln_format = detectInputFile(aln_stream);
     
     // read the input file
-    cout << "Reading alignment file " << aln_path << " ... ";
-    switch (intype) {
+    cout << "Reading alignment from a stream...";
+    switch (aln_format) {
         case IN_FASTA:
             cout << "Fasta format detected" << endl;
-            readFasta(aln_path, sequences, seq_names, check_min_seqs);
+            readFasta(aln_stream, sequences, seq_names, check_min_seqs);
             break;
             
         case IN_PHYLIP:
             cout << "Phylip format detected" << endl;
-            readPhylip(aln_path, sequences, seq_names, check_min_seqs);
+            readPhylip(aln_stream, sequences, seq_names, check_min_seqs);
             break;
             
         default:
-            outError("Please input an alignment file in FASTA or PHYLIP format!");
+            outError("Please input an alignment in FASTA or PHYLIP format!");
             break;
     }
 }
@@ -261,7 +257,8 @@ string cmaple::AlignmentBase::generateRef(StrVector &sequences)
     return ref_str;
 }
 
-string cmaple::AlignmentBase::readRef(const std::string& ref_path)
+// DISABLE due to new implementation
+/*string cmaple::AlignmentBase::readRef(const std::string& ref_path)
 {
     ASSERT(ref_path.length());
     if (!fileExists(ref_path))
@@ -286,29 +283,20 @@ string cmaple::AlignmentBase::readRef(const std::string& ref_path)
     parseRefSeq(ref_str);
     
     return ref_str;
-}
+}*/
 
-void cmaple::AlignmentBase::outputMutation(ofstream &out, Sequence* sequence, char state_char, PositionType pos, PositionType length)
+void cmaple::AlignmentBase::addMutation(Sequence* sequence, char state_char, PositionType pos, PositionType length)
 {
-    // output the mutation into a MAPLE file
-    out << state_char << "\t" << (pos + 1);
-    if (length != -1)
-        out << "\t" << length;
-    out << endl;
-    
     // add the mutation into sequence
-    if (sequence)
-    {
-        if (length == -1)
-            sequence->emplace_back(convertChar2State(state_char), pos);
-        else
-            sequence->emplace_back(convertChar2State(state_char), pos, length);
-    }
+    if (length == -1)
+        sequence->emplace_back(convertChar2State(state_char), pos);
+    else
+        sequence->emplace_back(convertChar2State(state_char), pos, length);
 }
 
-void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector &seq_names, string ref_sequence, ofstream &out, bool only_extract_maple)
+void cmaple::AlignmentBase::extractMutations(const StrVector &str_sequences, const StrVector &seq_names, const string& ref_sequence)
 {
-    ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out);
+    ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0);
     data.clear();
     Sequence* sequence = NULL;
     PositionType seq_length = ref_sequence.length();
@@ -321,15 +309,9 @@ void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector
         if (seq_length != (PositionType) str_sequence.length())
             outError("The sequence length of " + seq_names[i] + " (" + convertIntToString(str_sequence.length()) + ") is different from that of the reference sequence (" + convertIntToString(ref_sequence.length()) + ")!");
         
-        // write taxon name
-        out << ">" << seq_names[i] << endl;
-        
         // init new sequence instance for the inference process afterwards
-        if (!only_extract_maple)
-        {
-            data.emplace_back(seq_names[i]);
-            sequence = &data.back();
-        }
+        data.emplace_back(seq_names[i]);
+        sequence = &data.back();
         
         // init dummy variables
         int state = 0;
@@ -351,7 +333,7 @@ void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector
                             state = 2;
                         // output a mutation
                         else
-                            outputMutation(out, sequence, str_sequence[pos], pos);
+                            addMutation(sequence, str_sequence[pos], pos);
                     }
                     break;
                 case 1: // previous character is 'N'
@@ -361,7 +343,7 @@ void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector
                     else
                     {
                         // output the previous sequence of 'N'
-                        outputMutation(out, sequence, str_sequence[pos-1], pos - length, length);
+                        addMutation(sequence, str_sequence[pos-1], pos - length, length);
                         
                         // reset state
                         state = 0;
@@ -376,7 +358,7 @@ void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector
                             // output a mutation
                             else
                             {
-                                outputMutation(out, sequence, str_sequence[pos], pos);
+                                addMutation(sequence, str_sequence[pos], pos);
                                 state = 0;
                             }
                         }
@@ -389,7 +371,7 @@ void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector
                     else
                     {
                         // output the previous sequence of '-'
-                        outputMutation(out, sequence, str_sequence[pos-1], pos - length, length);
+                        addMutation(sequence, str_sequence[pos-1], pos - length, length);
                         
                         // reset state
                         state = 0;
@@ -404,7 +386,7 @@ void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector
                             // output a mutation
                             else
                             {
-                                outputMutation(out, sequence, str_sequence[pos], pos);
+                                addMutation(sequence, str_sequence[pos], pos);
                                 state = 0;
                             }
                         }
@@ -415,7 +397,7 @@ void cmaple::AlignmentBase::extractMutations(StrVector &str_sequences, StrVector
         
         //  output the last sequence of 'N' or '-' (if any)
         if (state != 0)
-            outputMutation(out, sequence, str_sequence[str_sequence.length() - 1], str_sequence.length() - length, length);
+            addMutation(sequence, str_sequence[str_sequence.length() - 1], str_sequence.length() - length, length);
     }
 }
 
@@ -440,17 +422,11 @@ void cmaple::AlignmentBase::parseRefSeq(string& ref_sequence)
     }
 }
 
-void cmaple::AlignmentBase::readMapleFile()
+void cmaple::AlignmentBase::readMaple(std::istream& in)
 {
-    ASSERT(aln_filename.length());
-    
-    if (!fileExists(aln_filename))
-        outError("File not found " + aln_filename);
-    
     // init dummy variables
     string seq_name = "";
     vector<Mutation> mutations;
-    ifstream in = ifstream(aln_filename);
     PositionType line_num = 1;
     string line;
 
@@ -459,7 +435,7 @@ void cmaple::AlignmentBase::readMapleFile()
     // remove the failbit
     in.exceptions(ios::badbit);
 
-    cout << "Reading a MAPLE file" << endl;
+    cout << "Reading an alignment in MAPLE format from a stream" << endl;
     
     // extract reference sequence first
     for (; !in.eof(); ++line_num)
@@ -591,10 +567,8 @@ void cmaple::AlignmentBase::readMapleFile()
     if (data.size() < MIN_NUM_TAXA)
         outError("The number of taxa must be at least " + convertIntToString(MIN_NUM_TAXA));
 
-    in.clear();
-    // set the failbit again
-    in.exceptions(ios::failbit | ios::badbit);
-    in.close();
+    // reset stream
+    resetStream(in);
 }
 
 void cmaple::AlignmentBase::reconstructAln(const std::string& aln_filename, const std::string& output_file, const cmaple::Params& params)
@@ -1042,8 +1016,9 @@ void cmaple::AlignmentBase::sortSeqsByDistances(RealNumType hamming_weight)
 }
 
 void cmaple::AlignmentBase::extractMapleFile(const std::string& output_filename, const std::string& ref_seq, const bool overwrite)
-{   
-    // read input sequences
+{
+    // DISABLE due to new implementation
+    /*// read input sequences
     ASSERT(aln_filename.length() && "Please specify an alignment file");
     ASSERT(aln_format != IN_UNKNOWN && "Unknown alignment format");
     StrVector sequences;
@@ -1088,7 +1063,42 @@ void cmaple::AlignmentBase::extractMapleFile(const std::string& output_filename,
     extractMutations(sequences, seq_names, ref_sequence, out, false);
     
     // close the output file
-    out.close();
+    out.close();*/
+}
+
+void cmaple::AlignmentBase::readFastaOrPhylip(std::istream& aln_stream, const std::string& ref_seq)
+{
+    // read input sequences
+    ASSERT(aln_format != IN_UNKNOWN && "Unknown alignment format");
+    StrVector sequences;
+    StrVector seq_names;
+    readSequences(aln_stream, sequences, seq_names);
+    
+    // validate the input sequences
+    if (sequences.size() == 0)
+        outError("Empty input sequences. Please check and try again!");
+    // make sure all sequences have the same length
+    if (aln_format == IN_FASTA)
+        for (PositionType i = 0; i < (PositionType) sequences.size(); ++i)
+        {
+            if (sequences[i].length() != sequences[0].length())
+                outError("Sequence " + seq_names[i] + " has a different length compared to the first sequence.");
+        }
+    
+    // detect the type of the input sequences
+    if (getSeqType() == SEQ_UNKNOWN)
+        setSeqType(detectSequenceType(sequences));
+    
+    // generate reference sequence from the input sequences
+    string ref_sequence;
+    // read the reference sequence from file (if the user supplies it)
+    if (ref_seq.length())
+        ref_sequence = ref_seq;
+    else
+        ref_sequence = generateRef(sequences);
+    
+    // extract and write mutations of each sequence to file
+    extractMutations(sequences, seq_names, ref_sequence);
 }
 
 SeqType cmaple::AlignmentBase::detectSequenceType(StrVector& sequences)

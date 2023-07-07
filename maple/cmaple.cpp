@@ -323,6 +323,8 @@ cmaple::Params& CMaple::getSettings()
 
 void CMaple::loadInput()
 {
+    // DISABLE due to new implementation
+    /*
     cmaple::Params& params = *tree.params;
     ASSERT(params.aln_path.length());
     
@@ -367,9 +369,10 @@ void CMaple::loadInput()
         if (params.output_aln)
             tree.aln->reconstructAln(params.maple_path, params.output_aln, params);
         // otherwise, read the MAPLE file
+        // DISABLE due to new implementation
         else
             tree.aln->readMapleFile();
-    }
+    }*/
 }
 
 template <const StateType num_states>

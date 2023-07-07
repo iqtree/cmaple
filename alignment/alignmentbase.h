@@ -26,9 +26,9 @@ namespace cmaple
         void processSeq(std::string &sequence, std::string &line, cmaple::PositionType line_num);
         
         /**
-         Output a mutation into MAPLE file
+         Add a mutation to a sequence
          */
-        void outputMutation(std::ofstream &out, Sequence* sequence, char state_char, cmaple::PositionType pos, cmaple::PositionType length = -1);
+        void addMutation(Sequence* sequence, char state_char, cmaple::PositionType pos, cmaple::PositionType length = -1);
         
     public:
         
@@ -43,11 +43,6 @@ namespace cmaple
          The number of states
          */
         cmaple::StateType num_states;
-        
-        /**
-         Alignment file name
-         */
-        std::string aln_filename = "";
         
         /**
          Alignment format
@@ -79,24 +74,27 @@ namespace cmaple
         
         /**
          Read alignment file in FASTA format
-         @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
+         @param aln_stream A stream of the alignment;
+         @param check_min_seqs check the minimum number of input sequences
          @return sequences, seq_names
          */
-        void readFasta(const char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
+        void readFasta(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
         /**
          Read alignment file in PHYLIP format
-         @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
+         @param aln_stream A stream of the alignment;
+         @param check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
          */
-        void readPhylip(const char *aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
+        void readPhylip(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
         /**
          Read alignment file
-         @param aln_path path to the alignment; check_min_seqs: check the minimum number of input sequences
+         @param aln_stream A stream of the alignment;
+         @param check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
          */
-        void readSequences(const char* aln_path, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
+        void readSequences(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
         /**
          Generate a reference genome from input_sequences
@@ -105,23 +103,34 @@ namespace cmaple
          */
         std::string generateRef(cmaple::StrVector &sequences);
         
+        // DISABLE due to new implementation
         /**
          Read a reference genome from file
          @param ref_path an alignment contains the reference sequence at the beginning of the file
          @return a reference genome
          */
-        std::string readRef(const std::string& ref_path);
+        // std::string readRef(const std::string& ref_path);
         
         /**
          Extract Mutation from sequences regarding the reference sequence
-         @param sequences, seq_names: the input sequences,  ref_sequence; ref_sequence, out: output stream to write the MAPLE file; only_extract_diff: TRUE to only extract MAPLE file without running inference
+         @param sequences a vector of sequences
+         @param seq_names a vector of sequence names
+         @param ref_sequence the reference sequence
          */
-        void extractMutations(cmaple::StrVector &sequences, cmaple::StrVector &seq_names, std::string ref_sequence, std::ofstream &out, bool only_extract_diff);
+        void extractMutations(const cmaple::StrVector &sequences, const cmaple::StrVector &seq_names, const std::string& ref_sequence);
         
         /**
-         Read a MAPLE file to load reference sequence and vector of Sequence (represented by vector of Mutations)
+         Read an alignment in MAPLE format from a stream
+         @param aln_stream A stream of an alignment file
          */
-        void readMapleFile();
+        void readMaple(std::istream& aln_stream);
+        
+        /**
+         Read an alignment in FASTA or PHYLIP format from a stream
+         @param aln_stream A stream of an alignment file
+         @param[in] ref_seq The reference sequence
+         */
+        void readFastaOrPhylip(std::istream& aln_stream, const std::string& ref_seq = "");
         
         /**
          Reconstruct an alignment file from a MAPLE file
