@@ -36,6 +36,12 @@ namespace cmaple
          */
         void writeMAPLE(std::ostream& aln_stream);
         
+        /**
+         Write alignment in FASTA format
+         @param[in] aln_stream A stream of the output alignment file
+         */
+        void writeFASTA(std::ostream& aln_stream);
+        
     public:
         
         std::vector<Sequence> data; // note: this is inefficient, but only used briefly

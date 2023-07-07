@@ -250,9 +250,6 @@ string cmaple::AlignmentBase::generateRef(StrVector &sequences)
         }
     }
     
-    // parse ref_sequence into vector of states
-    parseRefSeq(ref_str);
-    
     // return the reference genome
     return ref_str;
 }
@@ -1046,11 +1043,48 @@ void cmaple::AlignmentBase::writeMAPLE(std::ostream& out)
     }
 }
 
+void cmaple::AlignmentBase::writeFASTA(std::ostream& out)
+{
+    // Get reference sequence
+    const PositionType seq_length = ref_seq.size();
+    std::string ref_sequence(seq_length, ' ');
+    for (auto i = 0; i < seq_length; ++i)
+        ref_sequence[i] = convertState2Char(ref_seq[i]);
+    
+    // Write sequences one by one
+    const NumSeqsType num_seqs = data.size();
+    Sequence* sequence = &data.front();
+    for (auto i = 0; i < num_seqs; ++i, ++sequence)
+    {
+        // write the sequence name
+        out << ">" << sequence->seq_name << endl;
+        
+        // clone the sequence
+        std::string sequence_str = ref_sequence;
+        // apply mutations in sequence_str
+        Mutation* mutation = &sequence->front();
+        for (auto j = 0; j < sequence->size(); ++j, ++mutation)
+        {
+            char state = convertState2Char(mutation->type);
+            
+            // replace characters in sequence_str
+            for (auto pos = mutation->position; pos < mutation->position + mutation->getLength(); ++pos)
+                sequence_str[pos] = state;
+        }
+        
+        // write the sequence
+        out << sequence_str << std::endl;
+    }
+}
+
 void cmaple::AlignmentBase::write(std::ostream& aln_stream, const InputType& format)
 {
     switch (format) {
         case IN_MAPLE:
             writeMAPLE(aln_stream);
+            break;
+        case IN_FASTA:
+            writeFASTA(aln_stream);
             break;
         default:
             outError("Unsupported format for outputting the alignment!");
@@ -1088,6 +1122,9 @@ void cmaple::AlignmentBase::readFastaOrPhylip(std::istream& aln_stream, const st
         ref_sequence = ref_seq;
     else
         ref_sequence = generateRef(sequences);
+    
+    // parse ref_sequence into vector of states
+    parseRefSeq(ref_sequence);
     
     // extract and write mutations of each sequence to file
     extractMutations(sequences, seq_names, ref_sequence);
