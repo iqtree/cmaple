@@ -744,9 +744,9 @@ namespace cmaple
          Calculate branch supports
          * @param[in] num_threads number of threads (optional)
          * @param[in] num_replicates a positive number of replicates (optional)
-         * @param[in] epsilon a positive epsilon (optional), // NHANLT- TODO: explain epsilon
+         * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
          */
-        void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.05);
+        void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1);
         
         /**
          Read an input tree from a file

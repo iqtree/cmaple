@@ -561,7 +561,7 @@ void cmaple::Params::initDefaultValue()
     output_testing = NULL;
     compute_aLRT_SH = false;
     aLRT_SH_replicates = 1000;
-    aLRT_SH_epsilon = 0.05;
+    aLRT_SH_half_epsilon = 0.05;
     num_threads = 1;
     input_treefile = "";
     output_prefix = "";
@@ -837,7 +837,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc)
                     outError("Use --epsilon <FLOATING_NUM>");
                 
-                params.aLRT_SH_epsilon = convert_real_number(argv[cnt]);
+                params.aLRT_SH_half_epsilon = convert_real_number(argv[cnt]) * 0.5;
                 
                 continue;
             }

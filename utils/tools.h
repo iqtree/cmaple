@@ -585,9 +585,9 @@ namespace cmaple
         PositionType aLRT_SH_replicates;
         
         /**
-        * epsilon value when computing aLRT-SH
+        * (Half) epsilon value when computing aLRT-SH
         */
-        RealNumType aLRT_SH_epsilon;
+        RealNumType aLRT_SH_half_epsilon;
         
         /**
         * fixed min_blength

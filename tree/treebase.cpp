@@ -435,7 +435,7 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
     
     // set epsilon
     ASSERT(epsilon >= 0 && "Epsilon must be non-negative!");
-    params->aLRT_SH_epsilon = epsilon;
+    params->aLRT_SH_half_epsilon = epsilon * 0.5;
     
     // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
     if (node_lhs.size() == 0)
@@ -5139,7 +5139,7 @@ PositionType cmaple::TreeBase::count_aRLT_SH_branch(std::vector<RealNumType>& si
         
         // increase sh_count if the condition (aLRT > 2(CS_first - CS_second) + epsilon) is satisfied
         // <=> half_aLRT > CS_first - CS_second + half_epsilon
-        if (nodelh.getHalf_aLRT() > (CS_first - CS_second + params->aLRT_SH_epsilon))
+        if (nodelh.getHalf_aLRT() > (CS_first - CS_second + params->aLRT_SH_half_epsilon))
             ++sh_count;
       } // for aLRT_SH_replicates
     } // omp parallel
