@@ -55,10 +55,22 @@ cmaple::Tree::~Tree()
     }
 }
 
-void cmaple::Tree::infer()
+std::string cmaple::Tree::infer()
 {
     ASSERT(tree_base);
+    
+    // Redirect the original src_cout to the target_cout
+    streambuf* src_cout = cout.rdbuf();
+    ostringstream target_cout;
+    cout.rdbuf(target_cout.rdbuf());
+    
     tree_base->doInference();
+    
+    // Restore the source cout
+    cout.rdbuf(src_cout);
+
+    // Will output our Hello World! from above.
+    return target_cout.str();
 }
 
 RealNumType cmaple::Tree::computeLh()
@@ -67,31 +79,31 @@ RealNumType cmaple::Tree::computeLh()
     return tree_base->calculateLh();
 }
 
-int cmaple::Tree::computeBranchSupports(const int num_threads, const int num_replicates, const double epsilon)
+std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int num_replicates, const double epsilon)
 {
     ASSERT(tree_base);
     
+    // Redirect the original src_cout to the target_cout
+    streambuf* src_cout = cout.rdbuf();
+    ostringstream target_cout;
+    cout.rdbuf(target_cout.rdbuf());
+    
     // validate inputs
     if (num_threads < 0)
-    {
-        std::cout << "Number of threads cannot be negative!" << std::endl;
-        return ERROR_1;
-    }
+        outError("Number of threads cannot be negative!");
     if (num_replicates <= 0)
-    {
-        std::cout << "Number of replicates must be positive!" << std::endl;
-        return ERROR_1;
-    }
+        outError("Number of replicates must be positive!");
     if (epsilon < 0)
-    {
-        std::cout << "Epsilon cannot be negative!" << std::endl;
-        return ERROR_1;
-    }
+        outError("Epsilon cannot be negative!");
     
     // Only compute the branch supports
     tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon);
     
-    return SUCCESS;
+     // Restore the source cout
+     cout.rdbuf(src_cout);
+
+     // Will output our Hello World! from above.
+     return target_cout.str();
 }
 
 std::string cmaple::Tree::exportString(const std::string& tree_type, const bool show_branch_supports)

@@ -42,8 +42,10 @@ namespace cmaple
          * + apply a NORMAL tree search (which do SPR moves on newly-added nodes)
          * + optimize all branch lengths
          * - If users already supplied a complete tree, this function optimize all branch lengths (by default)
+         *
+         * @Return a string contains all messages redirected from std::cout
          */
-        void infer();
+        std::string infer();
         
         /*! \brief Compute the likelihood of the current tree
          *
@@ -58,9 +60,9 @@ namespace cmaple
          * @param[in] num_threads number of threads (optional)
          * @param[in] num_replicates a positive number of replicates (optional)
          * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
-         * @return a status code: 0 - success, non-zero - failed with errors
+         * @Return a string contains all messages redirected from std::cout
          */
-        int computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1);
+        std::string computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1);
         
         /*! \brief Export the tree string in NEWICK format.
          *
