@@ -405,9 +405,14 @@ namespace cmaple
         std::string maple_path;
         
         /**
-        *  Path to the reference sequence
+        *  Name of an alignment that contains the reference sequence
         */
         std::string ref_path;
+        
+        /**
+        *  Name of the reference sequence
+        */
+        std::string ref_seqname;
         
         /**
         *  Alignment format

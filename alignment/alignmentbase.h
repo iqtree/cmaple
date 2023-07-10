@@ -119,10 +119,11 @@ namespace cmaple
         /**
          Read alignment file
          @param aln_stream A stream of the alignment;
+         @param[in,out] aln_format the format of the alignment
          @param check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
          */
-        void readSequences(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
+        void readSequences(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, InputType aln_format = IN_UNKNOWN, bool check_min_seqs = true);
         
         /**
          Generate a reference genome from input_sequences
@@ -131,13 +132,13 @@ namespace cmaple
          */
         std::string generateRef(cmaple::StrVector &sequences);
         
-        // DISABLE due to new implementation
         /**
-         Read a reference genome from file
-         @param ref_path an alignment contains the reference sequence at the beginning of the file
+         Read a reference genome from an alignment file in FASTA or PHYLIP format
+         @param ref_filename Name of an alignment file
+         @param seq_name Name of the reference sequence
          @return a reference genome
          */
-        // std::string readRef(const std::string& ref_path);
+         std::string readRefSeq(const std::string& ref_filename, const std::string& seq_name);
         
         /**
          Extract Mutation from sequences regarding the reference sequence

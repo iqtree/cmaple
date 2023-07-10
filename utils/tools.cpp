@@ -664,10 +664,27 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -ref <REF_PATH>");
+                    outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
                 
-                params.ref_path = argv[cnt];
-
+                // parse inputs
+                std::string inputs = argv[cnt];
+                std::string delimiter = ",";
+                size_t pos = inputs.find(delimiter);
+                if (pos != std::string::npos)
+                {
+                    params.ref_path = inputs.substr(0, pos);
+                    // validate ref_path
+                    if (!params.ref_path.length())
+                        outError("<REF_FILENAME> is empty!");
+                    inputs.erase(0, pos + delimiter.length());
+                    params.ref_seqname = inputs;
+                    // validate ref_seqname
+                    if (!params.ref_seqname.length())
+                        outError("<REF_SEQNAME> is empty!");
+                }
+                else
+                    outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
+            
                 continue;
             }
             if (strcmp(argv[cnt], "--extract-diff") == 0 || strcmp(argv[cnt], "-ext-diff") == 0) {

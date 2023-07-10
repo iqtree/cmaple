@@ -183,22 +183,20 @@ void cmaple::AlignmentBase::readPhylip(std::istream& in, StrVector &sequences, S
     resetStream(in);
 }
 
-void cmaple::AlignmentBase::readSequences(std::istream& aln_stream, StrVector &sequences, StrVector &seq_names, bool check_min_seqs)
+void cmaple::AlignmentBase::readSequences(std::istream& aln_stream, StrVector &sequences, StrVector &seq_names, InputType n_aln_format, bool check_min_seqs)
 {
     // detect the input file format
-    if (aln_format == IN_UNKNOWN)
-        aln_format = detectInputFile(aln_stream);
+    if (n_aln_format == IN_UNKNOWN)
+        n_aln_format = detectInputFile(aln_stream);
     
     // read the input file
-    cout << "Reading alignment from a stream...";
-    switch (aln_format) {
+    std::cout << "Reading alignment from a stream..." << std::endl;
+    switch (n_aln_format) {
         case IN_FASTA:
-            cout << "Fasta format detected" << endl;
             readFasta(aln_stream, sequences, seq_names, check_min_seqs);
             break;
             
         case IN_PHYLIP:
-            cout << "Phylip format detected" << endl;
             readPhylip(aln_stream, sequences, seq_names, check_min_seqs);
             break;
             
@@ -254,33 +252,59 @@ string cmaple::AlignmentBase::generateRef(StrVector &sequences)
     return ref_str;
 }
 
-// DISABLE due to new implementation
-/*string cmaple::AlignmentBase::readRef(const std::string& ref_path)
+string cmaple::AlignmentBase::readRefSeq(const std::string& ref_filename, const std::string& ref_name)
 {
-    ASSERT(ref_path.length());
-    if (!fileExists(ref_path))
-        outError("File not found " + ref_path);
+    if (!fileExists(ref_filename))
+        outError("File not found " + ref_filename);
+    if (!ref_name.length())
+        outError("Please specify the name of the reference sequence!");
     
-    string ref_str = "";
+    // convert ref_name to uppercase
+    std::string ref_name_upcase(ref_name);
+    transform(ref_name_upcase.begin(), ref_name_upcase.end(), ref_name_upcase.begin(), ::toupper);
     
     // read sequences from file
-    cout << "Reading a reference sequence from file..." << endl;
+    cout << "Reading a reference sequence from an alignment file..." << endl;
     StrVector str_sequences;
     StrVector seq_names;
-    readSequences(ref_path.c_str(), str_sequences, seq_names, false);
+    // Create a stream from the input alignment
+    ifstream ref_stream;
+    try {
+        ref_stream.exceptions(ios::failbit | ios::badbit);
+        ref_stream.open(ref_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, ref_filename);
+    }
+    
+    // Read sequences from the alignment
+    readSequences(ref_stream, str_sequences, seq_names, IN_UNKNOWN, false);
+    
+    // close ref_stream
+    ref_stream.close();
     
     // validate the input sequence(s)
     if (!str_sequences.size() || !str_sequences[0].length())
         outError("No sequence found for the reference!");
     
     // extract the ref_sequence
-    ref_str = str_sequences[0];
+    string ref_str = "";
+    for (auto i = 0; i < seq_names.size(); ++i)
+    {
+        std::string seq_name = seq_names[i];
+        transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
+        if (seq_name == ref_name_upcase)
+        {
+            ref_str = str_sequences[i];
+            break;
+        }
+    }
     
-    // parse ref_str into vector of states (if necessary)
-    parseRefSeq(ref_str);
+    // Validate the output
+    if (!ref_str.length())
+        outError("The reference sequence named " + ref_name + " is not found or empty");
     
     return ref_str;
-}*/
+}
 
 void cmaple::AlignmentBase::addMutation(Sequence* sequence, char state_char, PositionType pos, PositionType length)
 {
@@ -961,7 +985,7 @@ void cmaple::AlignmentBase::readFastaOrPhylip(std::istream& aln_stream, const st
     ASSERT(aln_format != IN_UNKNOWN && "Unknown alignment format");
     StrVector sequences;
     StrVector seq_names;
-    readSequences(aln_stream, sequences, seq_names);
+    readSequences(aln_stream, sequences, seq_names, aln_format);
     
     // validate the input sequences
     if (sequences.size() == 0)
