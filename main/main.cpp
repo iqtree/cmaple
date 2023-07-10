@@ -173,9 +173,9 @@ int main(int argc, char *argv[]) {
     }
     Tree tree(aln, model, tree_stream);
     tree_stream.close();
-    tree.infer();
+    std::cout << tree.infer() << std::endl;
     
-    std::cout << tree.infer();
+    std::cout << tree.infer() << std::endl;
 
     // std::cout << tree.exportString("BIN", true) << std::endl;
     //Tree tree(aln, model, "");

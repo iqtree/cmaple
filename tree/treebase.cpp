@@ -108,7 +108,7 @@ template <const StateType num_states>
 void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream)
 {
     // read tree from the input treefile
-    readTree(tree_stream);
+    bool missing_blength = readTree(tree_stream);
     
     // calculate all lower, upper left/right likelihoods
     refreshAllLhs<num_states>(true);
@@ -122,6 +122,18 @@ void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream)
     
     // refresh all lower after updating model params
     performDFS<&TreeBase::updateLowerLh<num_states>>();
+    
+    // If the tree contains any missing blengths -> re-estimate the blengths
+    if (missing_blength)
+    {
+        std::cout << "The input tree contains missing branch lengths. Re-estimate all branch lengths" << std::endl;
+        
+        // optimize blengths
+        optimizeBranchLengths<num_states>();
+        
+        // refresh all likelihoods
+        refreshAllLhs<num_states>();
+    }
     
     // set outdated = false at all nodes to avoid considering SPR moves at those nodes
     if (params->tree_search_type == PARTIAL_TREE_SEARCH)
@@ -5981,12 +5993,12 @@ RealNumType cmaple::TreeBase::calculateSiteLhs(std::vector<RealNumType>& site_lh
     return total_lh;
 }
 
-NumSeqsType cmaple::TreeBase::parseFile(std::istream &infile, char& ch, RealNumType& branch_len, PositionType& in_line, PositionType& in_column, const std::map<std::string, NumSeqsType>& map_seqname_index)
+NumSeqsType cmaple::TreeBase::parseFile(std::istream &infile, char& ch, RealNumType& branch_len, PositionType& in_line, PositionType& in_column, const std::map<std::string, NumSeqsType>& map_seqname_index, bool& missing_blengths)
 {
     int maxlen = 1000;
     string seqname;
     int seqlen;
-    RealNumType brlen = 0;
+    RealNumType brlen = -1;
 
     // create new node
     NumSeqsType tmp_root_vec;
@@ -6011,7 +6023,7 @@ NumSeqsType cmaple::TreeBase::parseFile(std::istream &infile, char& ch, RealNumT
         ch = readNextChar(infile, in_line, in_column);
         while (ch != ')' && !infile.eof())
         {
-            const NumSeqsType tmp_node_vec = parseFile(infile, ch, brlen, in_line, in_column, map_seqname_index);
+            const NumSeqsType tmp_node_vec = parseFile(infile, ch, brlen, in_line, in_column, map_seqname_index, missing_blengths);
             
             if (child_mini == UNDEFINED)
             {
@@ -6034,6 +6046,12 @@ NumSeqsType cmaple::TreeBase::parseFile(std::istream &infile, char& ch, RealNumT
             PhyloNode& node = nodes[tmp_node_vec];
             nodes[tmp_root_vec].setNeighborIndex(child_mini, Index(tmp_node_vec, TOP));
             node.setNeighborIndex(TOP, Index(tmp_root_vec, child_mini));
+            // If the branch length is not specify -> set it to min_blength and mark the tree with missing blengths so that we can re-estimate the blengths later
+            if (brlen == -1)
+            {
+                brlen = min_blength;
+                missing_blengths = true;
+            }
             node.setUpperLength(brlen);
             
             // change to the second child
@@ -6203,8 +6221,11 @@ const char cmaple::TreeBase::readNextChar(std::istream& in, PositionType& in_lin
     return ch;
 }
 
-void cmaple::TreeBase::readTree(std::istream& in)
-{    
+bool cmaple::TreeBase::readTree(std::istream& in)
+{
+    // Flag to check whether the tree contains missing branch length
+    bool missing_blengths = false;
+    
     // create a map between leave and sequences in the alignment
     std::map<std::string, NumSeqsType> map_seqname_index;
     const std::vector<Sequence>& sequences = aln->data;
@@ -6227,7 +6248,7 @@ void cmaple::TreeBase::readTree(std::istream& in)
         }
 
         RealNumType branch_len;
-        const NumSeqsType tmp_node_vec = parseFile(in, ch, branch_len, in_line, in_column, map_seqname_index);
+        const NumSeqsType tmp_node_vec = parseFile(in, ch, branch_len, in_line, in_column, map_seqname_index, missing_blengths);
         
         // set root
         if (nodes[tmp_node_vec].isInternal())
@@ -6287,6 +6308,8 @@ void cmaple::TreeBase::readTree(std::istream& in)
     
     std::cout << "Collapsing zero-branch-length leaves into its sibling's vector of less-info-seqs..." << std::endl;
     collapseAllZeroLeave();
+    
+    return missing_blengths;
 }
 
 void cmaple::TreeBase::collapseAllZeroLeave()

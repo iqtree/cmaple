@@ -488,7 +488,7 @@ namespace cmaple
         /**
          Read string from tree file to create new nodes
          */
-        cmaple::NumSeqsType  parseFile(std::istream &infile, char& ch, cmaple::RealNumType & branch_len, cmaple::PositionType & in_line, cmaple::PositionType & in_column, const std::map<std::string, cmaple::NumSeqsType >& map_seqname_index);
+        cmaple::NumSeqsType  parseFile(std::istream &infile, char& ch, cmaple::RealNumType & branch_len, cmaple::PositionType & in_line, cmaple::PositionType & in_column, const std::map<std::string, cmaple::NumSeqsType >& map_seqname_index, bool& missing_blengths);
         
         /**
          Collapse leaves with zero-branch-lengths into a vector of less-info-seqs of a leaf
@@ -529,6 +529,12 @@ namespace cmaple
          Export Node in Newick format
          */
         const std::string exportNodeString(const bool binary, const cmaple::NumSeqsType  node_vec_index, const bool show_branch_supports);
+        
+        /**
+         Read an input tree from a stream
+         @Return TRUE if the tree contains any branch without a length
+         */
+        bool readTree(std::istream& tree_stream);
         
         // NHANLT: Debug aLRT
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
@@ -753,11 +759,6 @@ namespace cmaple
          * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
          */
         void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
-        
-        /**
-         Read an input tree from a stream
-         */
-        void readTree(std::istream& tree_stream);
         
         /**
          Update model parameters from an alignment and a tree
