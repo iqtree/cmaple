@@ -103,16 +103,26 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     setupFuncPtrs();
 }
 
-void cmaple::TreeBase::loadTree(std::istream& tree_stream)
+void cmaple::TreeBase::loadTree(std::istream& tree_stream, const bool fixed_blengths)
 {
-    (this->*loadTreePtr)(tree_stream);
+    (this->*loadTreePtr)(tree_stream, fixed_blengths);
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream)
+void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool fixed_blengths)
 {
     // read tree from the input treefile
     bool missing_blength = readTree(tree_stream);
+    
+    // make sure users can only keep the blengths fixed if they input a complete tree with branch lengths
+    if (fixed_blengths && (!isComplete() || missing_blength))
+    {
+        std::cout << "Disable the option to keep the branch lengths fixed because the input tree is incomplete (i.e., not containing all taxa from the alignment) or contains missing branch length(s)." << std::endl;
+        params->optimize_blength = true;
+    }
+    // TODO: preserve this option
+    else
+        params->optimize_blength = !fixed_blengths;
     
     // calculate all lower, upper left/right likelihoods
     refreshAllLhs<num_states>(true);
@@ -6582,8 +6592,25 @@ void cmaple::TreeBase::resetTree()
     // Reset the vector of node_lhs
     node_lhs.clear();
     // don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
+    node_lhs.reserve(1);
     node_lhs.emplace_back(0);
     
     // Reset root_vector_index
     root_vector_index = 0;
+}
+
+bool cmaple::TreeBase::isComplete()
+{
+    // make sure aln is not null
+    if (aln)
+    {
+        // browse sequences in the alignment one by one
+        for (auto i = 0; i < aln->data.size(); ++i)
+            // if any of sequence has yet added -> this tree is incomplete
+            if (!aln->data[i].is_added)
+                return false;
+    }
+    
+    // Return complete (by default)
+    return true;
 }

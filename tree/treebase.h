@@ -17,7 +17,7 @@ namespace cmaple
         /**
             Pointer  to LoadTree method
          */
-        typedef void (TreeBase::*LoadTreePtrType)(std::istream&);
+        typedef void (TreeBase::*LoadTreePtrType)(std::istream&, const bool);
         LoadTreePtrType loadTreePtr;
         
         /**
@@ -40,9 +40,10 @@ namespace cmaple
         
         /*! Template of loadTree()
          @param[in] tree_stream A stream of the input tree
+         @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          */
         template <const cmaple::StateType  num_states>
-        void loadTreeTemplate(std::istream& tree_stream);
+        void loadTreeTemplate(std::istream& tree_stream, const bool fixed_blengths);
         
         /*! Template of doInference()
          */
@@ -536,6 +537,12 @@ namespace cmaple
          */
         bool readTree(std::istream& tree_stream);
         
+        /**
+         Check if the current tree is complete (i.e., containing all sequences from the alignment)
+         @Return TRUE if the tree is complete
+         */
+        bool isComplete();
+        
         // NHANLT: Debug aLRT
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
         
@@ -601,8 +608,9 @@ namespace cmaple
         
         /*! Load an input tree
          @param[in] tree_stream A stream of the input tree
+         @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          */
-        void loadTree(std::istream& tree_stream);
+        void loadTree(std::istream& tree_stream, const bool fixed_blengths = false);
         
         /*! Do the inference
          */

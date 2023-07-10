@@ -372,7 +372,7 @@ void CMaple::loadInputTree()
     try {
         tree_stream.exceptions(ios::failbit | ios::badbit);
         tree_stream.open(tree.params->input_treefile);
-        tree.loadTree(tree_stream);
+        tree.loadTree(tree_stream, !tree.params->optimize_blength);
         tree_stream.close();
     } catch (ios::failure) {
         outError(ERR_READ_INPUT, tree.params->input_treefile);

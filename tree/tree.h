@@ -14,9 +14,9 @@ namespace cmaple
          * @param[in] aln an alignment
          * @param[in] model a substitution model
          * @param[in] tree_stream A stream of the input tree
-         * @param[in] final_blength_optimization TRUE to optimize all the branch lengths at the end of the inference
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          */
-        Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool final_blength_optimization = true);
+        Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool fixed_blengths = false);
         
         /*! \brief Tree constructor
          *
@@ -24,9 +24,9 @@ namespace cmaple
          * @param[in] aln an alignment
          * @param[in] model a substitution model
          * @param[in] tree_filename Name of a tree file (optinal)
-         * @param[in] final_blength_optimization TRUE to optimize all the branch lengths at the end of the inference
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          */
-        Tree(Alignment& aln, Model& model, const std::string& tree_filename = "", const bool final_blength_optimization = true);
+        Tree(Alignment& aln, Model& model, const std::string& tree_filename = "", const bool fixed_blengths = false);
         
         /*! \brief Tree destructor
          *
@@ -85,8 +85,7 @@ namespace cmaple
          * Initialize tree base instance
          * @param[in] aln an alignment
          * @param[in] model a substitution model
-         * @param[in] final_blength_optimization TRUE to optimize all the branch lengths at the end of the inference
          */
-        void initTree(Alignment& aln, Model& model, const bool final_blength_optimization);
+        void initTree(Alignment& aln, Model& model);
     };
 }

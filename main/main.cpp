@@ -162,7 +162,15 @@ int main(int argc, char *argv[]) {
     Tree tree1(aln, model);
     // with a tree file
     const std::string tree_filename = params.input_treefile;
-    Tree tree2(aln, model, tree_filename);
+    Tree tree2(aln, model, tree_filename, true);
+    // Test keeping blengths fixed when inputting an empty tree
+    Tree tree3(aln, model, "", true);
+    // Test keeping blengths fixed when inputting a tree topology without branch lengths
+    Tree tree4(aln, model, "topo.treefile", true);
+    // Test keeing blengths fixed (successfully)
+    //Tree tree5(aln, model, "test_200_5.diff.treefile", true);
+    //std::cout << tree5.infer() << std::endl;
+    
     // with a tree stream
     std::ifstream tree_stream;
     try {
@@ -181,7 +189,7 @@ int main(int argc, char *argv[]) {
     //Tree tree(aln, model, "");
     std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
     std::cout << tree.computeBranchSupports(8, 100, 0.1, false) << std::endl;
-    std::cout << tree.computeBranchSupports(8, 100, 0.1, true) << std::endl;
+    //std::cout << tree.computeBranchSupports(8, 100, 0.1, true) << std::endl;
     std::cout << tree.exportString("BIN", true) << std::endl;
     tree.infer();
     std::cout << tree.exportString() << std::endl;

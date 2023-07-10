@@ -3,32 +3,28 @@
 using namespace std;
 using namespace cmaple;
 
-void cmaple::Tree::initTree(Alignment& aln, Model& model, const bool final_blength_optimization)
+void cmaple::Tree::initTree(Alignment& aln, Model& model)
 {
     // Init the tree base
     tree_base = new TreeBase();
-    
-    // TODO: preserve this option
-    // set skip_final_blength_optimization
-    tree_base->params->optimize_blength = final_blength_optimization;
     
     // Attach alignment and model
     tree_base->attachAlnModel(aln.aln_base, model.model_base);
 }
 
-cmaple::Tree::Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool final_blength_optimization):tree_base(nullptr)
+cmaple::Tree::Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool fixed_blengths):tree_base(nullptr)
 {
     // Initialize a tree
-    initTree(aln, model, final_blength_optimization);
+    initTree(aln, model);
     
     // load the input tree from a stream
-    tree_base->loadTree(tree_stream);
+    tree_base->loadTree(tree_stream, fixed_blengths);
 }
 
-cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filename, const bool final_blength_optimization):tree_base(nullptr)
+cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filename, const bool fixed_blengths):tree_base(nullptr)
 {
     // Initialize a tree
-    initTree(aln, model, final_blength_optimization);
+    initTree(aln, model);
     
     // load the input tree from a tree file (if users specify it)
     if (tree_filename.length())
@@ -38,11 +34,17 @@ cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filenam
         try {
             tree_stream.exceptions(ios::failbit | ios::badbit);
             tree_stream.open(tree_filename);
-            tree_base->loadTree(tree_stream);
+            tree_base->loadTree(tree_stream, fixed_blengths);
             tree_stream.close();
         } catch (ios::failure) {
             outError(ERR_READ_INPUT, tree_filename);
         }
+    }
+    else
+    {
+        // Unable to keep blengths fixed if users don't input a tree
+        if (fixed_blengths)
+            std::cout << "Disable the option to keep the branch lengths fixed because users didn't supply an input tree." << std::endl;
     }
 }
 
@@ -102,7 +104,7 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
      // Restore the source cout
      cout.rdbuf(src_cout);
 
-     // Will output our Hello World! from above.
+     // return the redirected messages
      return target_cout.str();
 }
 
