@@ -411,13 +411,13 @@ RealNumType cmaple::TreeBase::calculateLhTemplate()
     return total_lh;
 }
 
-void cmaple::TreeBase::calculateBranchSupport(const int num_threads, const int num_replicates, const double epsilon)
+void cmaple::TreeBase::calculateBranchSupport(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
 {
-    return (this->*calculateBranchSupportPtr)(num_threads, num_replicates, epsilon);
+    return (this->*calculateBranchSupportPtr)(num_threads, num_replicates, epsilon, allow_replacing_ML_tree);
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon)
+void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
 {
     // Make sure the tree is not empty
     if (!nodes.size())
@@ -446,7 +446,7 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
         performDFSAtLeave<&cmaple::TreeBase::expandTreeByOneLessInfoSeq<num_states>>();
     
     // 1. calculate aLRT for each internal branches, replacing the ML tree if a higher ML NNI neighbor was found
-    calculate_aRLT<num_states>();
+    calculate_aRLT<num_states>(allow_replacing_ML_tree);
     
     // 2. calculate the site lh contributions
     std::vector<RealNumType> site_lh_contributions, site_lh_at_root;
@@ -4671,7 +4671,7 @@ RealNumType cmaple::TreeBase::performDFS()
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::calculate_aRLT()
+void cmaple::TreeBase::calculate_aRLT(const bool allow_replacing_ML_tree)
 {
     // set all nodes outdated
     resetSPRFlags(false, true, true);
@@ -4734,13 +4734,13 @@ void cmaple::TreeBase::calculate_aRLT()
                 // compute the likelihood differences between each nni neighbor and the current tree
                 RealNumType neighbor_2_lh_diff = 0, neighbor_3_lh_diff = 0;
                 // if calculateNNILh return false => the current tree was replaced by a newly found ML tree
-                if (!calculateNNILh<num_states>(node_stack, neighbor_2_lh_diff, node, child_1, child_2, sibling, parent, parent_index, lh_at_root))
+                if (!calculateNNILh<num_states>(node_stack, neighbor_2_lh_diff, node, child_1, child_2, sibling, parent, parent_index, lh_at_root, allow_replacing_ML_tree))
                 {
                     tree_total_lh += neighbor_2_lh_diff;
                     continue;
                 }
                 // if calculateNNILh return false => the current tree was replaced by a newly found ML tree
-                if (!calculateNNILh<num_states>(node_stack, neighbor_3_lh_diff, node, child_2, child_1, sibling, parent, parent_index, lh_at_root))
+                if (!calculateNNILh<num_states>(node_stack, neighbor_3_lh_diff, node, child_2, child_1, sibling, parent, parent_index, lh_at_root, allow_replacing_ML_tree))
                 {
                     tree_total_lh += neighbor_3_lh_diff;
                     continue;
@@ -5207,7 +5207,7 @@ void cmaple::TreeBase::calculate_aRLT_SH(std::vector<RealNumType>& site_lh_contr
 }
 
 template <const StateType num_states>
-bool cmaple::TreeBase::calculateNNILh(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root)
+bool cmaple::TreeBase::calculateNNILh(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root, const bool allow_replacing_ML_tree)
 {
     // 1. recompute the lowerlh at the parent node after swaping child_1 and sibling
     std::unique_ptr<SeqRegions> parent_new_lower_lh = nullptr;
@@ -5226,20 +5226,20 @@ bool cmaple::TreeBase::calculateNNILh(std::stack<Index>& node_stack_aLRT, RealNu
     // for more information, pls see https://tinyurl.com/5n8m5c8y
     if (root_vector_index == parent_index.getVectorIndex())
     {
-        return calculateNNILhRoot<num_states>(node_stack_aLRT, lh_diff, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index, lh_at_root);
+        return calculateNNILhRoot<num_states>(node_stack_aLRT, lh_diff, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index, lh_at_root, allow_replacing_ML_tree);
     }
     // otherwise, the (old) parent node is non-root
     // for more information, pls see https://tinyurl.com/ymr49jy8
     else
     {
-        return calculateNNILhNonRoot<num_states>(node_stack_aLRT, lh_diff, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index, lh_at_root);
+        return calculateNNILhNonRoot<num_states>(node_stack_aLRT, lh_diff, parent_new_lower_lh, child_2_new_blength, current_node, child_1, child_2, sibling, parent, parent_index, lh_at_root, allow_replacing_ML_tree);
     }
     
     return true;
 }
 
 template <const StateType num_states>
-bool cmaple::TreeBase::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root)
+bool cmaple::TreeBase::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root, const bool allow_replacing_ML_tree)
 {
     const RealNumType threshold_prob = params->threshold_prob;
     const RealNumType child_1_blength = child_1.getUpperLength(); // ~new_branch_length
@@ -5296,9 +5296,8 @@ bool cmaple::TreeBase::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, Re
     // if we found an NNI neighbor with higher lh => replace the ML tree
     if (lh_diff > 0)
     {
-        // only replace the ML tree inferred by CMaple;
-        // if users input the tree -> don't replace the ML tree
-        if (!params->input_treefile.length() || params->allow_replace_input_tree)
+        // Check if we could replace the ML tree
+        if (allow_replacing_ML_tree)
         {
             std::cout << std::setprecision(10) << "Replace the ML tree by a newly found NNI neighbor tree (root), improving tree loglh by: " << lh_diff << std::endl;
             // std::cout << "Tree lh (before replacing): " << calculateTreeLh() << std::endl;
@@ -5374,7 +5373,7 @@ bool cmaple::TreeBase::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, Re
 }*/
 
 template <const StateType num_states>
-bool cmaple::TreeBase::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root)
+bool cmaple::TreeBase::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, RealNumType& lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const RealNumType& child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const Index parent_index, RealNumType& lh_at_root, const bool allow_replacing_ML_tree)
 {
     // dummy variables
     const RealNumType threshold_prob = params->threshold_prob;
@@ -5521,9 +5520,8 @@ bool cmaple::TreeBase::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT,
     // if we found an NNI neighbor with higher lh => replace the ML tree
     if (lh_diff > 0)
     {
-        // only replace the ML tree inferred by CMaple;
-        // if users input the tree -> don't replace the ML tree
-        if (!params->input_treefile.length() || params->allow_replace_input_tree)
+        // Check if we can replace the ML tree
+        if (allow_replacing_ML_tree)
         {
             // NHANLT: Debug aLRT
             // log_current(node_stack_aLRT);

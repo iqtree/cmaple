@@ -154,6 +154,8 @@ int main(int argc, char *argv[]) {
     aln4.write("output_phy1.maple", "MAPLE", true);
     Alignment aln5("output.phy");
     aln5.write("output_phy2.maple", "MAPLE", true);
+    Alignment aln6("output2.maple");
+    aln4.write("output3.fa", "FASTA", true);
     // aln5.write("output_phy3.maple", "INVALID", true);
     // aln.write("output.maple");
     // without tree file
@@ -178,7 +180,8 @@ int main(int argc, char *argv[]) {
     // std::cout << tree.exportString("BIN", true) << std::endl;
     //Tree tree(aln, model, "");
     std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
-    tree.computeBranchSupports(8, 100);
+    std::cout << tree.computeBranchSupports(8, 100, 0.1, false) << std::endl;
+    std::cout << tree.computeBranchSupports(8, 100, 0.1, true) << std::endl;
     std::cout << tree.exportString("BIN", true) << std::endl;
     tree.infer();
     std::cout << tree.exportString() << std::endl;

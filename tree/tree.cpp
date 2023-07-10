@@ -79,7 +79,7 @@ RealNumType cmaple::Tree::computeLh()
     return tree_base->calculateLh();
 }
 
-std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int num_replicates, const double epsilon)
+std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
 {
     ASSERT(tree_base);
     
@@ -97,7 +97,7 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
         outError("Epsilon cannot be negative!");
     
     // Only compute the branch supports
-    tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon);
+    tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon, allow_replacing_ML_tree);
     
      // Restore the source cout
      cout.rdbuf(src_cout);

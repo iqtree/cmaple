@@ -60,9 +60,10 @@ namespace cmaple
          * @param[in] num_threads number of threads (optional)
          * @param[in] num_replicates a positive number of replicates (optional)
          * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
+         * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
          * @Return a string contains all messages redirected from std::cout
          */
-        std::string computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1);
+        std::string computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
         
         /*! \brief Export the tree string in NEWICK format.
          *

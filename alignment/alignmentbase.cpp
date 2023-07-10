@@ -215,7 +215,8 @@ string cmaple::AlignmentBase::generateRef(StrVector &sequences)
     cout << "Generating a reference sequence from the input alignment..." << endl;
     
     // init dummy variables
-    char NULL_CHAR = '\0';
+    const char NULL_CHAR = '\0';
+    const char GAP = '-';
     string ref_str (sequences[0].length(), NULL_CHAR);
     
     // determine a character for each site one by one
@@ -231,8 +232,8 @@ string cmaple::AlignmentBase::generateRef(StrVector &sequences)
             PositionType count = num_appear[sequences[j][i]] + 1;
             num_appear[sequences[j][i]] = count;
             
-            // stop counting if a character appear in more than 1/2 sequences at the current site
-            if (count >= threshold)
+            // stop counting if a non-gap character appear in more than 1/2 sequences at the current site
+            if (count >= threshold && sequences[j][i] != GAP)
             {
                 ref_str[i] = sequences[j][i];
                 break;
@@ -243,9 +244,14 @@ string cmaple::AlignmentBase::generateRef(StrVector &sequences)
         if (ref_str[i] == NULL_CHAR)
         {
             for (const std::pair<const char, PositionType>& character : num_appear)
-                if (ref_str[i] == NULL_CHAR || character.second > num_appear[ref_str[i]])
+                if (character.first != GAP &&
+                    (ref_str[i] == NULL_CHAR || character.second > num_appear[ref_str[i]]))
                     ref_str[i] = character.first;
         }
+        
+        // if not found -> all characters in this site are gaps -> choose the default state
+        if (ref_str[i] == NULL_CHAR)
+            ref_str[i] = convertState2Char(0);
     }
     
     // return the reference genome

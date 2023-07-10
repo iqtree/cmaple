@@ -35,7 +35,7 @@ namespace cmaple
         /**
             Pointer  to calculateBranchSupport method
          */
-        typedef void (TreeBase::*CalculateBranchSupportPtrType)(const int, const int, const double);
+        typedef void (TreeBase::*CalculateBranchSupportPtrType)(const int, const int, const double, const bool);
         CalculateBranchSupportPtrType calculateBranchSupportPtr;
         
         /*! Template of loadTree()
@@ -57,7 +57,7 @@ namespace cmaple
         /*! Template of calculateBranchSupport()
          */
         template <const cmaple::StateType  num_states>
-        void calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon);
+        void calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree);
         
         /*! Setup function pointers
          */
@@ -400,19 +400,19 @@ namespace cmaple
          Calculate the likelihood of an NNI neighbor
          */
         template <const cmaple::StateType  num_states>
-        bool calculateNNILh(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root);
+        bool calculateNNILh(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root, const bool allow_replacing_ML_tree);
         
         /**
          Calculate the likelihood of an NNI neighbor on the branch connecting to root
          */
         template <const cmaple::StateType  num_states>
-        bool calculateNNILhRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root);
+        bool calculateNNILhRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root, const bool allow_replacing_ML_tree);
         
         /**
          Calculate the likelihood of an NNI neighbor on the branch connecting to a non-root node
          */
         template <const cmaple::StateType  num_states>
-        bool calculateNNILhNonRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root);
+        bool calculateNNILhNonRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root, const bool allow_replacing_ML_tree);
         
         /**
          Replace the current ML Tree by an NNI neighbor on a branch connecting to root
@@ -439,9 +439,10 @@ namespace cmaple
         
         /**
          Calculate aLRT for each internal branches
+         @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports
          */
         template <const cmaple::StateType  num_states>
-        void calculate_aRLT();
+        void calculate_aRLT(const bool allow_replacing_ML_tree);
         
         /**
          Perform a DFS to calculate the Site-lh-contribution
@@ -749,8 +750,9 @@ namespace cmaple
          * @param[in] num_threads number of threads (optional)
          * @param[in] num_replicates a positive number of replicates (optional)
          * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
+         * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
          */
-        void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1);
+        void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
         
         /**
          Read an input tree from a stream
