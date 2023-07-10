@@ -4043,6 +4043,10 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegi
 template <const StateType num_states>
 RealNumType cmaple::TreeBase::calculateSubTreePlacementCost(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions, const RealNumType blength)
 {
+    // NHANLT BUG FIXED -> not sure it's the best way to due with cases where parent_regions is null
+    if (!parent_regions)
+        return MIN_NEGATIVE;
+    
     // 55% of runtime
     // init dummy variables
     RealNumType lh_cost = 0;
@@ -4366,6 +4370,10 @@ void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region, const SeqRegio
 template <const StateType num_states>
 RealNumType cmaple::TreeBase::calculateSamplePlacementCost(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions, const RealNumType input_blength)
 {
+    // NHANLT BUG FIXED -> not sure it's the best way to due with cases where parent_regions is null
+    if (!parent_regions)
+        return MIN_NEGATIVE;
+    
     // 10% of total runtime
     // init dummy variables
     RealNumType lh_cost = 0;
