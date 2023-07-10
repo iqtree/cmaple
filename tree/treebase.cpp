@@ -80,6 +80,10 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     // Attach model
     model = n_model;
     
+    // reserve spaces for nodes
+    const NumSeqsType num_seqs = aln->data.size();
+    nodes.reserve(num_seqs + num_seqs);
+    
     // init params & thresholds
     setupBlengthThresh();
     
@@ -171,7 +175,9 @@ void cmaple::TreeBase::buildInitialTree()
     const bool with_input_tree = nodes.size() > 0;
     PositionType num_new_sequences = num_seqs;
     Sequence* sequence = &aln->data.front();
-    nodes.reserve(num_seqs + num_seqs);
+    // make sure we allocate enough space to store all nodes
+    if (nodes.capacity() < num_seqs + num_seqs)
+        nodes.reserve(num_seqs + num_seqs);
     NumSeqsType i = 0;
     
     // if users don't input a tree -> create the root from the first sequence
@@ -5328,7 +5334,7 @@ bool cmaple::TreeBase::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, Re
             return false;
         }
         else
-            outWarning("Found an NNI neighbor tree with a higher likelihood (by " + convertDoubleToString(lh_diff) + ") than the input tree");
+            outWarning("Found an NNI neighbor tree with a higher likelihood (by " + convertDoubleToString(lh_diff) + ") than the current ML tree");
     }
     
     return true;
@@ -5558,7 +5564,7 @@ bool cmaple::TreeBase::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT,
             return false;
         }
         else
-            outWarning("Found an NNI neighbor tree with a higher likelihood (by " + convertDoubleToString(lh_diff) + ") than the input tree");
+            outWarning("Found an NNI neighbor tree with a higher likelihood (by " + convertDoubleToString(lh_diff) + ") than the current ML tree");
     }
     
     return true;
@@ -6314,6 +6320,9 @@ bool cmaple::TreeBase::readTree(std::istream& in)
 
 void cmaple::TreeBase::collapseAllZeroLeave()
 {
+    // count the number of collapsed nodes -> to make sure we have reseved enough space to store all nodes when we expand (i.e., adding less-informative sequences back to) the tree
+    NumSeqsType num_collapsed_nodes = 0;
+    
     // the default min_blength in CMaple is not small enough -> I set it at min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
     const RealNumType new_min_blength = (params->fixed_min_blength == -1) ? min_blength * 0.1 : min_blength;
     
@@ -6361,7 +6370,10 @@ void cmaple::TreeBase::collapseAllZeroLeave()
                     if (!neighbor_1.isInternal() && !neighbor_2.isInternal())
                     {
                         if (root_vector_index == node_index.getVectorIndex() || node.getUpperLength() <= 0)
+                        {
                             collapseOneZeroLeaf(node, node_index, neighbor_1, neighbor_1_index, neighbor_2);
+                            ++num_collapsed_nodes;
+                        }
                     }
                     else
                     {
@@ -6375,6 +6387,9 @@ void cmaple::TreeBase::collapseAllZeroLeave()
             }
         }
     }
+    
+    // update the capacity of nodes
+    nodes.reserve(nodes.capacity() + num_collapsed_nodes + num_collapsed_nodes);
 }
 
 void cmaple::TreeBase::collapseOneZeroLeaf(PhyloNode& node, Index& node_index, PhyloNode& neighbor_1, const Index neighbor_1_index, PhyloNode& neighbor_2)
