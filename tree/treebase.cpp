@@ -6592,31 +6592,6 @@ void cmaple::TreeBase::resetSPRFlags(const bool n_SPR_applied, const bool update
     }
 }
 
-void cmaple::TreeBase::resetTree()
-{
-    // Keep the params
-    
-    // Re-initialize alignment
-    delete aln;
-    aln = new AlignmentBase();
-    aln->setSeqType(params->seq_type);
-    
-    // Delete model -> will be initialized later
-    model = nullptr;
-    
-    // Reset the vector of nodes
-    nodes.clear();
-    
-    // Reset the vector of node_lhs
-    node_lhs.clear();
-    // don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
-    node_lhs.reserve(1);
-    node_lhs.emplace_back(0);
-    
-    // Reset root_vector_index
-    root_vector_index = 0;
-}
-
 bool cmaple::TreeBase::isComplete()
 {
     // make sure aln is not null

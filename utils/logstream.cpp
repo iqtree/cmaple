@@ -59,21 +59,9 @@ int outstreambuf::sync() { // used for output buffer only
 /**##################################################**/
 
 void LogStream::startLogFile(cmaple::Params& params) {
-    // use maple_path as the output prefix if users didn't specify it
-    if (!params.output_prefix.length())
-    {
-        // if users didn't input a MAPLE file -> generate the path to MAPLE file from the input alignment
-        if (!params.maple_path.length())
-            log_file_ = params.aln_path + ".maple.log";
-        else
-            log_file_ = params.maple_path + ".log";
-    }
-    // if users specify the output prefix
-    else
-    {
-        string output_prefix_str(params.output_prefix);
-        log_file_ = output_prefix_str + ".log";
-    }
+    // Initialize the name of the log file -> use aln_ as the output prefix if users didn't specify it
+    const std::string prefix = (params.output_prefix.length() ? params.output_prefix :  params.aln_path);
+    log_file_ = prefix + ".log";
     
     _out_buf.open(log_file_.c_str());
     _err_buf.init(_out_buf.get_fout_buf());

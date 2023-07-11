@@ -528,7 +528,7 @@ void cmaple::Params::initDefaultValue()
     aln_path = "";
     maple_path = "";
     ref_path = "";
-    aln_format = IN_UNKNOWN;
+    aln_format_str = "";
     only_extract_maple = false;
     hamming_weight = 1000;
     model_name = "GTR";
@@ -551,13 +551,14 @@ void cmaple::Params::initDefaultValue()
     max_blength_factor = 40;
     thresh_diff_update = 1e-7;
     thresh_diff_fold_update = 1.001;
-    output_aln = NULL;
+    output_aln = "";
+    output_aln_format = "";
     num_tree_improvement = 1;
     thresh_entire_tree_improvement = 1;
     thresh_placement_cost = -1e-5;
     thresh_placement_cost_short_search = -1;
-    export_binary_tree = true;
-    short_range_topo_search = false;
+    tree_format = "BIN";
+    shallow_tree_search = false;
     output_testing = NULL;
     compute_aLRT_SH = false;
     aLRT_SH_replicates = 1000;
@@ -567,8 +568,8 @@ void cmaple::Params::initDefaultValue()
     output_prefix = "";
     allow_replace_input_tree = false;
     fixed_min_blength = -1;
-    seq_type = SEQ_UNKNOWN;
-    tree_search_type = PARTIAL_TREE_SEARCH;
+    seq_type_str = "";
+    tree_search_type_str = "NORMAL";
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -630,7 +631,27 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -out-aln <ALIGNMENT_PATH>");
+                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>");
+                
+                // parse inputs
+                std::string inputs = argv[cnt];
+                std::string delimiter = ",";
+                size_t pos = inputs.find(delimiter);
+                if (pos != std::string::npos)
+                {
+                    params.output_aln = inputs.substr(0, pos);
+                    // validate output_aln
+                    if (!params.output_aln.length())
+                        outError("<ALN_FILENAME> is empty!");
+                    inputs.erase(0, pos + delimiter.length());
+                    transform(inputs.begin(), inputs.end(), inputs.begin(), ::toupper);
+                    params.output_aln_format = inputs;
+                    // validate output_aln_format
+                    if (params.output_aln_format != "MAPLE" && params.output_aln_format != "PHYLIP" && params.output_aln_format != "FASTA")
+                        throw "<ALN_FORMAT> must be MAPLE, PHYLIP, or FASTA";
+                }
+                else
+                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>");
                 
                 params.output_aln = argv[cnt];
 
@@ -640,13 +661,23 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 cnt++;
                 if (cnt >= argc)
                     throw "Use -st BIN or -st DNA or -st AA or -st CODON";
-                string arg = argv[cnt];
-                if (arg == "DNA")
-                    params.seq_type = SEQ_DNA;
-                else  if (arg == "AA")
-                    params.seq_type = SEQ_PROTEIN;
-                else
-                    throw "Sorry! Currently CMaple supports only DNA and Protein data.";
+                std::string seq_type = argv[cnt];
+                transform(seq_type.begin(), seq_type.end(), seq_type.begin(), ::toupper);
+                params.seq_type_str = seq_type;
+                if (seq_type != "DNA" && seq_type != "AA")
+                    throw "Use -st BIN or -st DNA or -st AA or -st CODON";
+                
+                continue;
+            }
+            if (strcmp(argv[cnt], "-format") == 0 || strcmp(argv[cnt], "--aln-format") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    throw "Use -format MAPLE, PHYLIP, or FASTA";
+                std::string format = argv[cnt];
+                transform(format.begin(), format.end(), format.begin(), ::toupper);
+                params.aln_format_str = format;
+                if (format != "MAPLE" && format != "PHYLIP" && format != "FASTA")
+                    throw "Use -format MAPLE, PHYLIP, or FASTA";
                 
                 continue;
             }
@@ -732,8 +763,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
                 
-                params.tree_search_type = parseTreeSearchType(argv[cnt]);
-                if (params.tree_search_type == UNKNOWN_TREE_SEARCH)
+                std::string tree_search_type = argv[cnt];
+                transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
+                params.tree_search_type_str = tree_search_type;
+                // validate tree_search_type
+                if (tree_search_type != "FAST" && tree_search_type != "NORMAL" && tree_search_type != "MORE_ACCURATE")
                     outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
                 continue;
             }
@@ -809,15 +843,15 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--multifurcating-tree") == 0 || strcmp(argv[cnt], "-mul-tree") == 0) {
+            if (strcmp(argv[cnt], "--output-multifurcating-tree") == 0 || strcmp(argv[cnt], "-out-mul-tree") == 0) {
                 
-                params.export_binary_tree = false;
+                params.tree_format = "MUL";
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--short-topology-search") == 0 || strcmp(argv[cnt], "-short-topo-search") == 0) {
+            if (strcmp(argv[cnt], "--shallow-tree-search") == 0 || strcmp(argv[cnt], "-shallow-search") == 0) {
                 
-                params.short_range_topo_search = true;
+                params.shallow_tree_search = true;
 
                 continue;
             }

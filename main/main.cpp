@@ -76,13 +76,6 @@ void funcAbort(int signal_number)
 /** ############## Redirect output to a log file ############## **/
 
 int main(int argc, char *argv[]) {
-    // NHANLT TEST
-    /*Model model("JC");
-    std::map<std::string,std::string> model_params = model.getParams();
-    std::cout << model_params[MODEL_NAME] << std::endl;
-    std::cout << model_params[MODEL_FREQS] << std::endl;
-    std::cout << model_params[MODEL_RATES] << std::endl;*/
-    
     cmaple::Params& params = Params::getInstance();
     parseArg(argc, argv, params);
     
@@ -107,95 +100,14 @@ int main(int argc, char *argv[]) {
     cout << endl;
     
     // Show the random seed number
-    /*cout << "Seed:    " << params.ran_seed <<  " " << std::endl;
-    
-    // Show the number of threads
-    setNumThreads(params.num_threads);*/
+    cout << "Seed:    " << params.ran_seed <<  " " << std::endl;
     
     // Measure runtime
     time_t start_time;
     
     // call the main function
-    /*CMaple cmaple;
-    cmaple::Params& cmaple_params = cmaple.getSettings();
-    cmaple_params = params;
-    cmaple.inferTree();*/
-    Model model(params.model_name);
-    // with an alignment file
-    Alignment aln1(params.aln_path);
-    // with an alignment file
-    // Alignment aln2(""); // tested PASS
-    // Alignment aln3("notfound"); // tested PASS
-    // with a stream
-    const std::string aln_filename = params.aln_path;
-    std::ifstream aln_stream;
-    try {
-        aln_stream.exceptions(ios::failbit | ios::badbit);
-        aln_stream.open(aln_filename);
-    } catch (ios::failure) {
-        outError(ERR_READ_INPUT, aln_filename);
-    }
-    Alignment aln(aln_stream);
-    aln_stream.close();
-    // Write alignment to file in MAPLE format
-    aln.write("output.maple", "MAPLE", true);
-    // write aln to a file in FASTA format
-    aln.write("output.fa", "FASTA", true);
-    aln.write("output.phy", "PHYLIP", true);
-    // Read ref_seq from an alignment file (not yet exposed to APIs)
-    ASSERT(params.ref_path.length() && params.ref_seqname.length());
-    AlignmentBase aln_base;
-    std::string ref_seq = aln_base.readRefSeq(params.ref_path, params.ref_seqname);
-    Alignment aln2("output.fa", ref_seq);
-    aln2.write("output1.maple", "MAPLE", true);
-    Alignment aln3("output.fa");
-    aln3.write("output2.maple", "MAPLE", true);
-    Alignment aln4("output.phy", ref_seq);
-    aln4.write("output_phy1.maple", "MAPLE", true);
-    Alignment aln5("output.phy");
-    aln5.write("output_phy2.maple", "MAPLE", true);
-    Alignment aln6("output2.maple");
-    aln4.write("output3.fa", "FASTA", true);
-    // aln5.write("output_phy3.maple", "INVALID", true);
-    // aln.write("output.maple");
-    // without tree file
-    Tree tree1(aln, model);
-    // with a tree file
-    const std::string tree_filename = params.input_treefile;
-    Tree tree2(aln, model, tree_filename, true);
-    // Test keeping blengths fixed when inputting an empty tree
-    Tree tree3(aln, model, "", true);
-    // Test keeping blengths fixed when inputting a tree topology without branch lengths
-    //Tree tree4(aln, model, "topo.treefile", true);
-    // Test keeing blengths fixed (successfully)
-    Tree tree5(aln, model, "test_200_5.diff.treefile", true);
-    std::cout << tree5.infer("Normal", true) << std::endl;
-    
-    // with a tree stream
-    std::ifstream tree_stream;
-    try {
-        tree_stream.exceptions(ios::failbit | ios::badbit);
-        tree_stream.open(tree_filename);
-    } catch (ios::failure) {
-        outError(ERR_READ_INPUT, tree_filename);
-    }
-    Tree tree(aln, model, tree_stream);
-    tree_stream.close();
-    std::cout << tree.infer("FAST", true) << std::endl;
-    
-    std::cout << tree.infer("MORE_accurate") << std::endl;
-
-    // std::cout << tree.exportString("BIN", true) << std::endl;
-    //Tree tree(aln, model, "");
-    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
-    std::cout << tree.computeBranchSupports(8, 100, 0.1, false) << std::endl;
-    //std::cout << tree.computeBranchSupports(8, 100, 0.1, true) << std::endl;
-    std::cout << tree.exportString("BIN", true) << std::endl;
-    tree.infer();
-    std::cout << tree.exportString() << std::endl;
-    tree.computeBranchSupports(8, 100);
-    std::cout << tree.exportString("BIN", true) << std::endl;
-    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
+    cmaple::runCMaple(params);
+    // cmaple::testing(params);
     
     time(&start_time);
     cout << "Date and Time: " << ctime(&start_time);

@@ -82,6 +82,13 @@ namespace cmaple
          */
         std::string exportString(const std::string& tree_type = "BIN", const bool show_branch_supports = false);
         
+        /*! \brief Get an instance of Params, which stores all parameter settings
+         *
+         * Get an instance of Params, which stores all parameter settings. Users can use that Params instance to change other (minor) settings of CMaple (which is not yet supported via the above APIs).
+         * @return an instance of cmaple::Params
+         */
+        cmaple::Params& getParams();
+        
     private:
         /**
          A tree base instance

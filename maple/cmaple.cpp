@@ -2,787 +2,179 @@
 using namespace std;
 using namespace cmaple;
 
-CMaple::CMaple(const std::string& aln_filename, const std::string& format, const std::string& seqtype):tree(cmaple::Params()),status(NEW_INSTANCE)
+void cmaple::runCMaple(cmaple::Params &params)
 {
-    setAlignment(aln_filename, format, seqtype);
-}
-
-void CMaple::resetStatus()
-{
-    // reset status
-    status = NEW_INSTANCE;
-    
-    // reset tree
-    tree.resetTree();
-}
-
-int CMaple::setAlignment(const std::string& aln_filename, const std::string& format, const std::string& seqtype)
-{
-    // set aln_filename
-    if (aln_filename.length())
-        tree.params->aln_path = aln_filename;
-    
-    // set aln format (if specified)
-    if (format.length())
-    {
-        tree.params->aln_format = tree.aln->getAlignmentFormat(format);
-        if (tree.params->aln_format == IN_UNKNOWN)
-        {
-            std::cout << "Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP" << std::endl;
-            return ERROR_1;
-        }
-    }
-    
-    // set sequence type
-    if (seqtype.length())
-    {
-        tree.params->seq_type = tree.aln->getSeqType(seqtype);
-        if (tree.params->seq_type == SEQ_UNKNOWN)
-        {
-            std::cout << "Unknown sequence type " + seqtype + ", please use DNA or AA" << std::endl;
-            return ERROR_1;
-        }
-    }
-    
-    // success
-    return SUCCESS;
-}
-
-int CMaple::setModel(const std::string& model_name)
-{
-    // set model (if specified)
-    if (model_name.length())
-    {
-        tree.params->model_name = model_name;
-        return SUCCESS;
-    }
-    
-    return ERROR_1;
-}
-
-int CMaple::inferTree(const bool force_rerun, const std::string& tree_type)
-{
-    // If this instance is not NEW -> already run inference/computing branch supports
-    if (status != NEW_INSTANCE)
-    {
-        if (force_rerun)
-        {
-            std::cout << "Rerun the inference" << std::endl;
-            resetStatus();
-        }
-        else
-        {
-            std::cout << "Inference has been done. Use runInference(TRUE, <tree_type>) if you want to rerun the inference!" << std::endl;
-            return ERROR_1;
-        }
-    }
-    
-    // validate inputs
-    if ((!tree.params->maple_path.length()) && (!tree.params->aln_path.length()))
-        outError("Please specify an alignment file via setAlignment(...)");
-    
-    // update status
-    status = INFERENCE_DONE;
-    
-    // Show the random seed number
-    cout << "Seed:    " << tree.params->ran_seed <<  " " << std::endl;
-    
-    // Show the number of threads
-    setNumThreads(tree.params->num_threads);
-
-    // Run the inference
+    // record the start time
     auto start = getRealTime();
     
-    // load input data
-    /*loadInput();
-    
-    // terminate if the user only wants to export a MAPLE file from an alignment
-    // or only want to reconstruct an aln from a MAPLE file
-    if (tree.params->only_extract_maple || tree.params->output_aln)
-        return CODE_SUCCESS;
-    
-    // prepare for the inference
-    preInference();*/
-    Model model(tree.params->model_name);
-    Alignment aln(tree.params->aln_path);
-    Tree new_tree(aln, model, "");
-    
-    // infer trees and model params
-    doInference();
-    
-    // complete remaining stuff after the inference
-    postInference();
-    
-    // show runtime
-    auto end = getRealTime();
-    cout << "Runtime: " << end - start << "s" << endl;
-    
-    return SUCCESS;
-}
-
-int CMaple::computeBranchSupports(const bool force_rerun, const int num_threads, const int num_replicates, const double epsilon)
-{
-    // validate inputs
-    if (num_threads < 0)
-    {
-        std::cout << "Number of threads cannot be negative!" << std::endl;
-        return ERROR_1;
-    }
-    if (num_replicates <= 0)
-    {
-        std::cout << "Number of replicates must be positive!" << std::endl;
-        return ERROR_1;
-    }
-    if (epsilon < 0)
-    {
-        std::cout << "Epsilon cannot be negative!" << std::endl;
-        return ERROR_1;
-    }
-    
-    // If the branch supports have already been computed -> terminate with an error or recompute them (if users want to do so)
-    if (status == BRANCH_SUPPORT_DONE)
-    {
-        // Terminate with an error
-        if (!force_rerun)
-        {
-            std::cout << "Branch supports have already been computed. Use computeBranchSupports(TRUE, <...>) if you want to recompute them!" << std::endl;
-            return ERROR_1;
-        }
-        // Recompute branch supports (if users want to do so) -> only need to reset the status (delete all objects (e.g., tree), except params)
-        else
-        {
-            std::cout << "Recompute branch supports" << std::endl;
-            resetStatus();
-        }
-    }
-    
-    // if users specify num_threads when calling this function -> use that value. Otherwise, use the setting in params instance.
-    if (num_threads != 1)
-        tree.params->num_threads = num_threads;
-    
-    // We now need to compute branch supports
-    // backup the current option of compute_aLRT_SH
-    const bool compute_aLRT_SH = tree.params->compute_aLRT_SH;
-    
-    // turn on the flag to compute branch supports
-    tree.params->compute_aLRT_SH = true;
-    
-    // Run the entier inference process (if the inference has yet run)
-    if (status == NEW_INSTANCE)
-        inferTree();
-    // Otherwise, only need to compute the branch supports (if the inference has already been run)
-    else if (status == INFERENCE_DONE)
-    {
-        // Show the random seed number
-        cout << "Seed:    " << tree.params->ran_seed <<  " " << std::endl;
-        
-        // Show the number of threads
-        setNumThreads(tree.params->num_threads);
-        
-        // Only compute the branch supports
-        postInference();
-    }
-        
-    // restore compute_aLRT_SH
-    tree.params->compute_aLRT_SH = compute_aLRT_SH;
-    
-    return SUCCESS;
-}
-
-int CMaple::setTree(const std::string& tree_filename)
-{
-    // set input tree file (if specified)
-    if (tree_filename.length())
-    {
-        tree.params->input_treefile = tree_filename;
-        return SUCCESS;
-    }
-    
-    return ERROR_1;
-}
-
-std::string CMaple::getTreeString(const std::string& tree_type, const bool show_branch_supports)
-{
-    // make sure branch supports are available (if users want to output them)
-    if ((status == NEW_INSTANCE || status == INFERENCE_DONE) && show_branch_supports)
-    {
-        std::cout << "Branch supports have yet been available for outputting! Pls compute them first!" << std:: endl;
-        return "";
-    }
-    
-    return tree.exportTreeString(tree_type, show_branch_supports);
-}
-
-std::map<std::string, std::string> CMaple::getModelParams()
-{
-    // Handle cases when model is not yet initialized
-    if (!tree.model)
-    {
-        std::map<std::string, std::string> empty_map;
-        return empty_map;
-    }
-    
-    return tree.exportModelParams();
-}
-
-std::string CMaple::getVersion()
-{
-    return "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "." + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH;
-}
-
-std::string CMaple::getCitations()
-{
-    return "[Citations]";
-}
-
-int CMaple::setTreeSearchType(const std::string& tree_search_type, const bool shallow_tree_search)
-{
-    // set tree_search_type (if specified)
-    if (tree_search_type.length())
-    {
-        tree.params->tree_search_type = parseTreeSearchType(tree_search_type);
-        if (tree.params->tree_search_type == UNKNOWN_TREE_SEARCH)
-        {
-            std::cout << "Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|MORE_ACCURATE>" << std::endl;
-            return ERROR_1;
-        }
-    }
-    
-    // set shallow_tree_search
-    tree.params->short_range_topo_search = shallow_tree_search;
-    
-    return SUCCESS;
-}
-
-int CMaple::setPrefix(const std::string& prefix)
-{
-    // set prefix (if specified)
-    if (prefix.length())
-    {
-        tree.params->output_prefix = prefix;
-        return SUCCESS;
-    }
-    
-    return ERROR_1;
-}
-
-int CMaple::setMinBlength(const double min_blength)
-{
-    // Handle invalid input
-    if (min_blength <= 0)
-    {
-        std::cout << "min_blength must be positive!" << std::endl;
-        return ERROR_1;
-    }
-    
-    tree.params->fixed_min_blength = min_blength;
-    return SUCCESS;
-}
-
-int CMaple::setThreshProb(const double thresh_prob)
-{
-    // Handle invalid input
-    if (thresh_prob <= 0)
-    {
-        std::cout << "thresh_prob must be positive!" << std::endl;
-        return ERROR_1;
-    }
-        
-    tree.params->threshold_prob = thresh_prob;
-    return SUCCESS;
-}
-
-int CMaple::overwriteOutputs(const bool enable)
-{
-    tree.params->overwrite_output = enable;
-    return SUCCESS;
-}
-
-int CMaple::setRandomSeed(const int seed)
-{
-    tree.params->ran_seed = seed;
-    return SUCCESS;
-}
-
-cmaple::Params& CMaple::getSettings()
-{
-    return *tree.params;
-}
-
-
-void CMaple::loadInput()
-{
-    // DISABLE due to new implementation
-    /*
-    cmaple::Params& params = *tree.params;
-    ASSERT(params.aln_path.length());
-    
-    // Synchronize seq_type
-    tree.aln->setSeqType(params.seq_type);
-    tree.aln->aln_filename = params.aln_path;
-    
-    // detect alignment format (if not specified)
-    if (params.aln_format == IN_UNKNOWN)
-        params.aln_format = detectInputFile(params.aln_path.c_str());
-    
-    // if alignment is in PHYLIP or FASTA format -> convert to MAPLE format
-    if (params.aln_format != IN_MAPLE)
-    {
-        // record the starting time
-        auto start = getRealTime();
-        
-        // prepare output (MAPLE) file
-        // init maple_path if it's blank
-        if (!params.maple_path.length())
-            params.maple_path = params.aln_path + ".maple";
-        
-        // TODO: ref_seq
-        tree.aln->extractMapleFile(params.maple_path, "", params.overwrite_output);
-        
-        // record the end time and show the runtime
-        auto end = getRealTime();
-        cout << "The input alignment is converted into MAPLE format at " << params.maple_path << endl;
-        cout << " - Converting time: " << end-start << endl;
-    }
-    // otherwise, alignment is in MAPLE format -> read it
-    else
-    {
-        // update input file path
-        params.maple_path = params.aln_path;
-        params.aln_path = "";
-        
-        if (params.only_extract_maple)
-            outError("To export a MAPLE file, please supply an alignment (in FASTA or PHYLIP format) via -aln <ALIGNMENT>");
-        
-        // only want to reconstruct the aln file from the MAPLE file
-        if (params.output_aln)
-            tree.aln->reconstructAln(params.maple_path, params.output_aln, params);
-        // otherwise, read the MAPLE file
-        // DISABLE due to new implementation
-        else
-            tree.aln->readMapleFile();
-    }*/
-}
-
-template <const StateType num_states>
-void CMaple::loadInputTree()
-{
-    // read tree from the input treefile
-    std::ifstream tree_stream;
-    try {
-        tree_stream.exceptions(ios::failbit | ios::badbit);
-        tree_stream.open(tree.params->input_treefile);
-        tree.loadTree(tree_stream, tree.params->fixed_blengths);
-        tree_stream.close();
-    } catch (ios::failure) {
-        outError(ERR_READ_INPUT, tree.params->input_treefile);
-    }
-    
-    // calculate all lower, upper left/right likelihoods
-    tree.refreshAllLhs<num_states>(true);
-    
-    // update model params
-    /*cout << " - Model params before updating: " << endl;
-     tree.showModelParams();*/
-    tree.updateModelParams<num_states>();
-    /*cout << " - Model params after updating: " << endl;
-     tree.showModelParams();*/
-    
-    // refresh all lower after updating model params
-    tree.performDFS<&TreeBase::updateLowerLh<num_states>>();
-    
-    // set outdated = false at all nodes to avoid considering SPR moves at those nodes
-    if (tree.params->tree_search_type == PARTIAL_TREE_SEARCH)
-        tree.resetSPRFlags(false, true, false);
-}
-
-void CMaple::preInference()
-{
-    // validate input
-    /*ASSERT(tree.aln->ref_seq.size() > 0 && "Reference sequence is not found!");
-    ASSERT(tree.aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");*/
-    
-    // use maple_path as the output prefix if users didn't specify it
-    if (!tree.params->output_prefix.length())
-        tree.params->output_prefix = tree.params->maple_path;
-    
+    // Initialize output filename -> use aln_ as the output prefix if users didn't specify it
+    const std::string prefix = (params.output_prefix.length() ? params.output_prefix :  params.aln_path);
+    const std::string output_treefile = prefix + ".treefile";
     // check whether output file is already exists
-    string output_file(tree.params->output_prefix);
-    output_file += ".treefile";
-    if (!tree.params->overwrite_output && fileExists(output_file))
-        outError("File " + output_file + " already exists. Use `--overwrite` option if you really want to redo the analysis and overwrite all output files.\n");
+    if (!params.overwrite_output && fileExists(output_treefile))
+        outError("File " + output_treefile + " already exists. Use `--overwrite` option if you really want to overwrite it.\n");
     
+    // Initialize a Model
+    Model model(params.model_name);
     
-    // setup function pointers in tree
-    /*tree.init();
-    
-    // sort sequences by their distances to the reference sequence
-    tree.aln->sortSeqsByDistances(tree.params->hamming_weight);
-    
-    // extract related info (freqs, log_freqs) of the ref sequence
-    tree.model->extractRefInfo(tree.aln);
-    
-    // update the mutation matrix
-    tree.model->updateMutationMatEmpirical(tree.aln);
-    
-    // compute cumulative rates of the ref sequence
-    tree.model->computeCumulativeRate(tree.aln);
-    
-    // compute thresholds for approximations
-    tree.params->threshold_prob2 = tree.params->threshold_prob * tree.params->threshold_prob;*/
-    
-    // setup function pointers for CMaple
-    setupFuncPtrs(tree.aln->num_states);
-}
-
-template <const StateType num_states>
-void CMaple::buildInitialTree()
-{
-    // record the start time
-    auto start = getRealTime();
-    
-    // dummy variables
-    AlignmentBase* aln = tree.aln;
-    ModelBase* model = tree.model;
-    const PositionType seq_length = aln->ref_seq.size();
-    const PositionType num_seqs = aln->data.size();
-    const bool with_input_tree = tree.params->input_treefile.length();
-    PositionType num_new_sequences = num_seqs;
-    Sequence* sequence = &tree.aln->data.front();
-    tree.nodes.reserve(num_seqs + num_seqs);
-    NumSeqsType i = 0;
-    
-    // if users don't input a tree -> create the root from the first sequence
-    if (!with_input_tree)
+    // Initializa an Alignment
+    // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
+    const std::string ref_seq = "";
+    if (params.ref_path.length() && params.ref_seqname.length())
     {
-        // place the root node
-        tree.root_vector_index = 0;
-        tree.nodes.emplace_back(LeafNode(0));
-        PhyloNode& root = tree.nodes[0];
-        root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType())));
-        root.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(root.getTotalLh(), model);
-        root.setUpperLength(0);
-        
-        // move to the next sequence in the alignment
-        ++sequence;
-        ++i;
+        AlignmentBase aln_tmp;
+        aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
+    }
+    Alignment aln(params.aln_path, ref_seq, params.aln_format_str, params.seq_type_str);
+    
+    // If users only want to convert the alignment to another format -> convert it and terminate
+    if (params.output_aln.length() && params.output_aln_format.length())
+    {
+        std::cout << "Write the alignment to " + params.output_aln + " in " + params.output_aln_format + " format." << std::endl;
+        aln.write(params.output_aln, params.output_aln_format, params.overwrite_output);
+        return;
     }
     
-    // iteratively place other samples (sequences)
-    for (; i < num_seqs; ++i, ++sequence)
+    // Initialize a Tree
+    Tree tree(aln, model, params.input_treefile, params.fixed_blengths);
+    // clone all settings
+    cmaple::Params& tree_params = tree.getParams();
+    tree_params = params;
+    
+    // Infer a phylogenetic tree
+    std::cout << tree.infer(params.tree_search_type_str, params.shallow_tree_search) << std::endl;
+    
+    // Compute branch supports (if users want to do so)
+    if (params.compute_aLRT_SH)
     {
-        // don't add sequence that was already added in the input tree
-        if (with_input_tree && sequence->is_added)
-        {
-            --num_new_sequences;
-            continue;
-        }
+        // if users don't input a tree file, always allow CMaple to replace the ML tree by a higher-likelihood tree (if found)
+        bool allow_replacing_ML_tree = true;
+        // if users input a tree -> depend on the setting in params (false ~ don't allow replacing (by default)
+        if (params.input_treefile.length())
+            allow_replacing_ML_tree = params.allow_replace_input_tree;
+        std::cout << tree.computeBranchSupports(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon, allow_replacing_ML_tree) << std::endl;
         
-        // get the lower likelihood vector of the current sequence
-        std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
-        
-        // update the mutation matrix from empirical number of mutations observed from the recent sequences
-        if (i % tree.params->mutation_update_period == 0)
-            tree.model->updateMutationMatEmpirical(aln);
-        
-        // NHANLT: debug
-        //if ((*sequence)->seq_name == "39")
-        //    cout << "debug" <<endl;
-        
-        // seek a position for new sample placement
-        Index selected_node_index;
-        RealNumType best_lh_diff = MIN_NEGATIVE;
-        bool is_mid_branch = false;
-        RealNumType best_up_lh_diff = MIN_NEGATIVE;
-        RealNumType best_down_lh_diff = MIN_NEGATIVE;
-        Index best_child_index;
-        tree.seekSamplePlacement<num_states>(Index(tree.root_vector_index, TOP), i, lower_regions, selected_node_index, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child_index);
-        
-        // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
-        if (selected_node_index.getMiniIndex() != UNDEFINED)
-        {
-            // place new sample as a descendant of a mid-branch point
-            if (is_mid_branch)
-                tree.placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions, i, best_lh_diff);
-            // otherwise, best lk so far is for appending directly to existing node
-            else
-                tree.placeNewSampleAtNode<num_states>(selected_node_index, lower_regions, i, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child_index);
-        }
-        
-        // NHANLT: debug
-        //cout << "Added node " << (*sequence)->seq_name << endl;
-        //cout << (*sequence)->seq_name << endl;
-        //cout << tree.exportTreeString() << endl;
-        
-        //if ((*sequence)->seq_name == "2219")
-        //{
-            //cout << tree.exportTreeString() << endl;
-            //string output_file(tree.params->output_prefix);
-            //exportOutput(output_file + "_init.treefile");
-            //exit(0);
-        //}
+        // write the tree file with branch supports
+        ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
+        out_tree_branch_supports << tree.exportString(params.tree_format, true);
+        out_tree_branch_supports.close();
     }
     
-    // flag denotes whether there is any new nodes added
-    // show the number of new sequences added to the tree
-    if (num_new_sequences > 0)
-    {
-        std::cout << num_new_sequences << " sequences have been added to the tree." << std::endl;
+    // Write the normal tree file
+    ofstream out = ofstream(output_treefile);
+    out << tree.exportString(params.tree_format);
+    out.close();
         
-        // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
-        tree.refreshAllLhs<num_states>();
-    }
-    else
-        std::cout << "All sequences were presented in the input tree. No new sequence has been added!" << std::endl;
-    
-    // show the runtime for building an initial tree
-    auto end = getRealTime();
-    cout << " - Time spent on building an initial tree: " << std::setprecision(3) << end - start << endl;
-}
-
-template <const StateType num_states>
-void CMaple::optimizeTree()
-{
-    // tree.params->debug = true;
-    string output_file(tree.params->output_prefix);
-    exportOutput(output_file + "_init.treefile");
-    
-    // run a short range search for tree topology improvement (if neccessary)
-    // NOTES: don't apply short range search when users input a tree because only a few new sequences were added -> we only apply a deep SPR search
-    if (tree.params->short_range_topo_search && tree.params->tree_search_type != NO_TREE_SEARCH && !(tree.params->input_treefile.length() && tree.params->tree_search_type == PARTIAL_TREE_SEARCH))
-    {
-        // apply short-range SPR search
-        optimizeTreeTopology<num_states>(true);
-        exportOutput(output_file + "_short_search.treefile");
-        
-        // reset the SPR flags so that we can start a deeper SPR search later
-        tree.resetSPRFlags(false, true, true);
-    }
-    
-    // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood (before topo-opt): " << tree.calculateLh() << std::endl;
-    
-    // run a normal search for tree topology improvement
-    if (tree.params->tree_search_type != NO_TREE_SEARCH)
-    {
-        optimizeTreeTopology<num_states>();
-        exportOutput(output_file + "_topo.treefile");
-    }
-    
-    // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
-    tree.refreshAllLhs<num_states>();
-    
-    // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateLh() << std::endl;
-    
-    // do further optimization on branch lengths (if needed)
-    if (!tree.fixed_blengths)
-        optimizeBranchLengthsOfTree<num_states>();
-    
-    // NhanLT: update the model params
-    if (tree.aln->getSeqType() == SEQ_DNA)
-    {
-        tree.model->initMutationMat();
-        tree.updateModelParams<num_states>();
-    }
-    
-    // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
-    tree.performDFS<&TreeBase::updateLowerLh<num_states>>();
-    
-    // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood (after updating model): " << tree.calculateLh() << std::endl;
-}
-
-template <const StateType num_states>
-void CMaple::optimizeTreeTopology(bool short_range_search)
-{
-    // record the start time
-    auto start = getRealTime();
-    int num_tree_improvement = short_range_search ? 1 : tree.params->num_tree_improvement;
-    
-    for (int i = 0; i < num_tree_improvement; ++i)
-    {
-        // first, set all nodes outdated
-        // no need to do so anymore as new nodes were already marked as outdated
-        // tree.resetSPRFlags(false, true, true);
-        
-        // traverse the tree from root to try improvements on the entire tree
-        RealNumType improvement = tree.improveEntireTree<num_states>(short_range_search);
-        
-        // stop trying if the improvement is so small
-        if (improvement < tree.params->thresh_entire_tree_improvement)
-        {
-            cout << "Small improvement, stopping topological search." << endl;
-            break;
-        }
-        
-        // run improvements only on the nodes that have been affected by some changes in the last round, and so on
-        for (int j = 0; j < 20; ++j)
-        {
-            // forget SPR_applied flag to allow new SPR moves
-            tree.resetSPRFlags(false, false, true);
-            
-            improvement = tree.improveEntireTree<num_states>(short_range_search);
-            cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
-            
-            // stop trying if the improvement is so small
-            if (improvement < tree.params->thresh_entire_tree_improvement)
-                break;
-        }
-            
-    }
-    
-    // show the runtime for optimize the tree
-    auto end = getRealTime();
-    cout << " - Time spent on";
-    cout << (short_range_search ? " a short range search for" : "");
-    cout << " optimizing the tree topology: " << std::setprecision(3) << end - start << endl;
-}
-
-template <const StateType num_states>
-void CMaple::optimizeBranchLengthsOfTree()
-{
-    // record the start time
-    auto start = getRealTime();
-    
-    cout << "Start optimizing branch lengths" << endl;
-    
-    // first, set all nodes outdated
-    tree.resetSPRFlags(false, true, true);
-   
-    // traverse the tree from root to optimize branch lengths
-    PositionType num_improvement = tree.optimizeBranchLengths<num_states>();
-   
-    // run improvements only on the nodes that have been affected by some changes in the last round, and so on
-    for (int j = 0; j < 20; ++j)
-    {
-        // stop trying if the improvement is so small
-        if (num_improvement < tree.params->thresh_entire_tree_improvement)
-        //if (num_improvement == 0)
-            break;
-        
-        // traverse the tree from root to optimize branch lengths
-        num_improvement = tree.optimizeBranchLengths<num_states>();
-    }
-
-    // show the runtime for optimize the branch lengths
-    auto end = getRealTime();
-    cout << " - Time spent on optimizing the branch lengths: " << std::setprecision(3) << end - start << endl;
-}
-
-void CMaple::doInference()
-{
-    (this->*doInferencePtr)();
-}
-
-template <const StateType num_states>
-void CMaple::doInferenceTemplate()
-{
-    // validate input
-    ASSERT(tree.aln->ref_seq.size() > 0 && "Reference sequence is not found!");
-    ASSERT(tree.aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
-    
-    // 0. Load an input tree if users supply a treefile
-    if (tree.params->input_treefile.length())
-        loadInputTree<num_states>();
-        
-    // 1. Build an initial tree
-    buildInitialTree<num_states>();
-    
-    // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-    optimizeTree<num_states>();
-}
-
-void CMaple::postInference()
-{
-    (this->*postInferencePtr)();
-}
-
-template <const StateType num_states>
-void CMaple::postInferenceTemplate()
-{
-    // compute branch support if requested
-    if (tree.params->compute_aLRT_SH)
-        calculateBranchSupports<num_states>();
-    
-    // output log-likelihood of the tree
-    std::cout << std::setprecision(10) << "Tree log likelihood: " << tree.calculateLh() << std::endl;
-    
-    // output treefile
-    string output_file(tree.params->output_prefix);
-    exportOutput(output_file + ".treefile");
-    
-    // output treefile
-    if (tree.params->compute_aLRT_SH)
-        exportOutput(output_file + "_aLRT_SH.treefile", true);
-    
-    // output model params
-    std::map<std::string, std::string> model_params = getModelParams();
+    // Show model parameters
+    std::map<std::string, std::string> model_params = model.getParams();
     std::cout << "\nMODEL: " + model_params[cmaple::MODEL_NAME] + "\n";
     std::cout << "\nROOT FREQUENCIES\n";
     std::cout << model_params[cmaple::MODEL_FREQS];
     std::cout << "\nMUTATION MATRIX\n";
-    std::cout << model_params[cmaple::MODEL_RATES];
-    
-    // list output files
+    std::cout << model_params[cmaple::MODEL_RATES] << std::endl;
+        
+    // Show information about output files
     std::cout << "Analysis results written to:" << std::endl;
-    std::cout << "Maximum-likelihood tree:       " << output_file + ".treefile" << std::endl;
-    if (tree.params->compute_aLRT_SH)
-        std::cout << "Tree with aLRT-SH values:      " << output_file + "_aLRT_SH.treefile" << std::endl;
-    std::cout << "Screen log file:               " << output_file + ".log" << std::endl << std::endl;
-}
-
-template <const StateType num_states>
-void CMaple::calculateBranchSupports()
-{
-    // show current lh
-    // std::cout << std::setprecision(10) << "Tree log likelihood (before calculating branch supports): " << tree.calculateTreeLh() << std::endl;
+    std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
+    if (params.compute_aLRT_SH)
+        std::cout << "Tree with aLRT-SH values:      " << prefix + ".aLRT_SH.treefile" << std::endl;
+    std::cout << "Screen log file:               " << prefix + ".log" << std::endl << std::endl;
     
-    // record the start time
-    auto start = getRealTime();
-    cout << "Start calculating branch supports" << endl;
-    
-    // update CMaple status
-    status = BRANCH_SUPPORT_DONE;
-    
-    // calculate branch supports
-    tree.calculateBranchSupport();
-    
-    // show the runtime for calculating branch supports
+    // show runtime
     auto end = getRealTime();
-    cout << " - Time spent on calculating branch supports: " << std::setprecision(3) << end - start << endl;
+    cout << "Runtime: " << end - start << "s" << endl;
 }
 
-void CMaple::exportOutput(const string &filename, const bool show_branch_support)
+std::string cmaple::getVersion()
 {
-    // open the tree file
-    ofstream out = ofstream(filename);
-    
-    // write tree string into the tree file
-    out << tree.exportTreeString(tree.params->export_binary_tree, show_branch_support) << endl;
-    
-    // close the output file
-    out.close();
+    return "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "." + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH;
 }
 
-void CMaple::setupFuncPtrs(const StateType num_states)
+std::string cmaple::getCitations()
 {
-    switch (num_states) {
-        case 2:
-            doInferencePtr = &CMaple::doInferenceTemplate<2>;
-            postInferencePtr = &CMaple::postInferenceTemplate<2>;
-            break;
-        case 4:
-            doInferencePtr = &CMaple::doInferenceTemplate<4>;
-            postInferencePtr = &CMaple::postInferenceTemplate<4>;
-            break;
-        case 20:
-            doInferencePtr = &CMaple::doInferenceTemplate<20>;
-            postInferencePtr = &CMaple::postInferenceTemplate<20>;
-            break;
-            
-        default:
-            outError("Sorry! currently we only support DNA and Protein data!");
-            break;
+    return "[Citations]";
+}
+
+void cmaple::testing(cmaple::Params& params)
+{
+    /*CMaple cmaple;
+    cmaple::Params& cmaple_params = cmaple.getSettings();
+    cmaple_params = params;
+    cmaple.inferTree();*/
+    Model model(params.model_name);
+    // with an alignment file
+    Alignment aln1(params.aln_path);
+    // with an alignment file
+    // Alignment aln2(""); // tested PASS
+    // Alignment aln3("notfound"); // tested PASS
+    // with a stream
+    const std::string aln_filename = params.aln_path;
+    std::ifstream aln_stream;
+    try {
+        aln_stream.exceptions(ios::failbit | ios::badbit);
+        aln_stream.open(aln_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, aln_filename);
     }
+    Alignment aln(aln_stream);
+    aln_stream.close();
+    // Write alignment to file in MAPLE format
+    aln.write("output.maple", "MAPLE", true);
+    // write aln to a file in FASTA format
+    aln.write("output.fa", "FASTA", true);
+    aln.write("output.phy", "PHYLIP", true);
+    // Read ref_seq from an alignment file (not yet exposed to APIs)
+    ASSERT(params.ref_path.length() && params.ref_seqname.length());
+    AlignmentBase aln_base;
+    std::string ref_seq = aln_base.readRefSeq(params.ref_path, params.ref_seqname);
+    Alignment aln2("output.fa", ref_seq);
+    aln2.write("output1.maple", "MAPLE", true);
+    Alignment aln3("output.fa");
+    aln3.write("output2.maple", "MAPLE", true);
+    Alignment aln4("output.phy", ref_seq);
+    aln4.write("output_phy1.maple", "MAPLE", true);
+    Alignment aln5("output.phy");
+    aln5.write("output_phy2.maple", "MAPLE", true);
+    Alignment aln6("output2.maple");
+    aln4.write("output3.fa", "FASTA", true);
+    // aln5.write("output_phy3.maple", "INVALID", true);
+    // aln.write("output.maple");
+    // without tree file
+    Tree tree1(aln, model);
+    // with a tree file
+    const std::string tree_filename = params.input_treefile;
+    Tree tree2(aln, model, tree_filename, true);
+    // Test keeping blengths fixed when inputting an empty tree
+    Tree tree3(aln, model, "", true);
+    // Test keeping blengths fixed when inputting a tree topology without branch lengths
+    //Tree tree4(aln, model, "topo.treefile", true);
+    // Test keeing blengths fixed (successfully)
+    Tree tree5(aln, model, "test_200_5.diff.treefile", true);
+    std::cout << tree5.infer("Normal", true) << std::endl;
+    
+    // with a tree stream
+    std::ifstream tree_stream;
+    try {
+        tree_stream.exceptions(ios::failbit | ios::badbit);
+        tree_stream.open(tree_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, tree_filename);
+    }
+    Tree tree(aln, model, tree_stream);
+    tree_stream.close();
+    std::cout << tree.infer("FAST", true) << std::endl;
+    
+    std::cout << tree.infer("MORE_accurate") << std::endl;
+
+    // std::cout << tree.exportString("BIN", true) << std::endl;
+    //Tree tree(aln, model, "");
+    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
+    std::cout << tree.computeBranchSupports(8, 100, 0.1, false) << std::endl;
+    //std::cout << tree.computeBranchSupports(8, 100, 0.1, true) << std::endl;
+    std::cout << tree.exportString("BIN", true) << std::endl;
+    tree.infer();
+    std::cout << tree.exportString() << std::endl;
+    tree.computeBranchSupports(8, 100);
+    std::cout << tree.exportString("BIN", true) << std::endl;
+    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
 }

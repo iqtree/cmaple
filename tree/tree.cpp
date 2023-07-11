@@ -84,11 +84,15 @@ RealNumType cmaple::Tree::computeLh()
 std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
 {
     ASSERT(tree_base);
-    
+        
     // Redirect the original src_cout to the target_cout
     streambuf* src_cout = cout.rdbuf();
     ostringstream target_cout;
     cout.rdbuf(target_cout.rdbuf());
+    
+    // record the start time
+    auto start = getRealTime();
+    cout << "Start calculating branch supports" << endl;
     
     // validate inputs
     if (num_threads < 0)
@@ -101,6 +105,10 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
     // Only compute the branch supports
     tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon, allow_replacing_ML_tree);
     
+    // show the runtime for calculating branch supports
+   auto end = getRealTime();
+   cout << " - Time spent on calculating branch supports: " << std::setprecision(3) << end - start << endl;
+    
      // Restore the source cout
      cout.rdbuf(src_cout);
 
@@ -110,5 +118,12 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
 
 std::string cmaple::Tree::exportString(const std::string& tree_type, const bool show_branch_supports)
 {
+    ASSERT(tree_base);
     return tree_base->exportTreeString(tree_type, show_branch_supports);
+}
+
+cmaple::Params& cmaple::Tree::getParams()
+{
+    ASSERT(tree_base && tree_base->params);
+    return *tree_base->params;
 }

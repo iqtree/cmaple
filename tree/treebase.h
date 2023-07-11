@@ -602,9 +602,9 @@ namespace cmaple
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        TreeBase(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()), fixed_blengths(false){
+        /*TreeBase(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()), fixed_blengths(false){
             aln->setSeqType(params->seq_type);
-        };
+        };*/
         
         /**
          Attach alignment and model
@@ -629,12 +629,6 @@ namespace cmaple
         /*! Calculate the likelihood of the tree
          */
         RealNumType calculateLh();
-        
-        /*! \brief Reset tree
-         *
-         * Delete all objects (e.g., aln, model, etc), except params to rerun the inference
-         */
-        void resetTree();
         
         /**
          Export tree std::string in Newick format

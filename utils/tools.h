@@ -417,7 +417,7 @@ namespace cmaple
         /**
         *  Alignment format
         */
-        InputType aln_format;
+        std::string aln_format_str;
         
         /**
         *  TRUE to only extract MAPLE file (from alignment) without running inference
@@ -535,9 +535,14 @@ namespace cmaple
         RealNumType thresh_diff_fold_update;
         
         /**
-        *  Path to output aln
+        *  Name of the output alignment
         */
-        char* output_aln;
+        std::string output_aln;
+        
+        /**
+        *  Format of the output alignment
+        */
+        std::string output_aln_format;
         
         /**
         *  Path to an input tree
@@ -565,14 +570,14 @@ namespace cmaple
         RealNumType thresh_placement_cost_short_search;
         
         /**
-        *  export output tree in binary tree format
+        *  format of the output tree
         */
-        bool export_binary_tree;
+        std::string tree_format;
         
         /**
         *  TRUE to run an additional short range search for tree topology improvement
         */
-        bool short_range_topo_search;
+        bool shallow_tree_search;
         
         /**
         *  path to output testing codes
@@ -622,12 +627,12 @@ namespace cmaple
         /**
         *  type of sequences
         */
-        SeqType seq_type;
+        std::string seq_type_str;
         
         /**
         *  type of tree search
         */
-        TreeSearchType tree_search_type;
+        std::string tree_search_type_str;
         
         /*
             TRUE to log debugging
