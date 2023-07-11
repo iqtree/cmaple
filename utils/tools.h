@@ -400,11 +400,6 @@ namespace cmaple
         std::string aln_path;
         
         /**
-        *  Path to a MAPLE file
-        */
-        std::string maple_path;
-        
-        /**
         *  Name of an alignment that contains the reference sequence
         */
         std::string ref_path;
@@ -418,11 +413,6 @@ namespace cmaple
         *  Alignment format
         */
         std::string aln_format_str;
-        
-        /**
-        *  TRUE to only extract MAPLE file (from alignment) without running inference
-        */
-        bool only_extract_maple;
         
         /**
         *  Weight to calculate the hamming distance

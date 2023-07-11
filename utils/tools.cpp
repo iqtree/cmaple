@@ -526,10 +526,9 @@ cmaple::Params::Params()
 void cmaple::Params::initDefaultValue()
 {
     aln_path = "";
-    maple_path = "";
-    ref_path = "";
     aln_format_str = "";
-    only_extract_maple = false;
+    ref_path = "";
+    ref_seqname = "";
     hamming_weight = 1000;
     model_name = "GTR";
     fixed_blengths = false;
@@ -600,7 +599,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -aln <AlignmentBase>");
+                    outError("Use -aln <ALN_FILENAME>");
                 
                 params.aln_path = argv[cnt];
 
@@ -611,7 +610,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -diff <DIFF_PATH>");
+                    outError("Use -diff <ALN_FILENAME>");
                 
                 params.aln_path = argv[cnt];
 
@@ -716,12 +715,6 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 else
                     outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
             
-                continue;
-            }
-            if (strcmp(argv[cnt], "--extract-diff") == 0 || strcmp(argv[cnt], "-ext-diff") == 0) {
-                
-                params.only_extract_maple = true;
-
                 continue;
             }
             if (strcmp(argv[cnt], "--hamming-weight") == 0 || strcmp(argv[cnt], "-hamming") == 0) {
@@ -935,11 +928,8 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
     }
     
     // validate options
-    if ((!params.maple_path.length()) && (!params.aln_path.length()))
-        outError("Please supply an alignment file via -aln <AlignmentBase>");
-        
-    if (params.only_extract_maple && (!params.aln_path.length()))
-        outError("Please supply an alignment via -aln <AlignmentBase>");
+    if (!params.aln_path.length())
+        outError("Please supply an alignment file via -aln <ALN_FILENAME>");
     
     if (argc <= 1) {
         quickStartGuide();

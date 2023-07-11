@@ -52,7 +52,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         // if users input a tree -> depend on the setting in params (false ~ don't allow replacing (by default)
         if (params.input_treefile.length())
             allow_replacing_ML_tree = params.allow_replace_input_tree;
-        std::cout << tree.computeBranchSupports(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon, allow_replacing_ML_tree) << std::endl;
+        std::cout << tree.computeBranchSupports(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree) << std::endl;
         
         // write the tree file with branch supports
         ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
