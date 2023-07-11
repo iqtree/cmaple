@@ -372,7 +372,7 @@ void CMaple::loadInputTree()
     try {
         tree_stream.exceptions(ios::failbit | ios::badbit);
         tree_stream.open(tree.params->input_treefile);
-        tree.loadTree(tree_stream, !tree.params->optimize_blength);
+        tree.loadTree(tree_stream, tree.params->fixed_blengths);
         tree_stream.close();
     } catch (ios::failure) {
         outError(ERR_READ_INPUT, tree.params->input_treefile);
@@ -576,7 +576,7 @@ void CMaple::optimizeTree()
     std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateLh() << std::endl;
     
     // do further optimization on branch lengths (if needed)
-    if (tree.params->optimize_blength)
+    if (!tree.params->fixed_blengths)
         optimizeBranchLengthsOfTree<num_states>();
     
     // NhanLT: update the model params

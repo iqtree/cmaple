@@ -532,7 +532,7 @@ void cmaple::Params::initDefaultValue()
     only_extract_maple = false;
     hamming_weight = 1000;
     model_name = "GTR";
-    optimize_blength = true;
+    fixed_blengths = false;
     overwrite_output = false;
     threshold_prob = 1e-8;
     mutation_update_period = 25;
@@ -738,7 +738,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 continue;
             }
             if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {
-                params.optimize_blength = false;
+                params.fixed_blengths = true;
                 continue;
             }
             if (strcmp(argv[cnt], "--overwrite") == 0 || strcmp(argv[cnt], "-overwrite") == 0) {

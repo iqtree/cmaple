@@ -440,9 +440,9 @@ namespace cmaple
         bool overwrite_output;
         
         /**
-            TRUE to re-estimate the branch lengths
+            TRUE to fixed the branch lengths in the input tree
          */
-        bool optimize_blength;
+        bool fixed_blengths;
         
         /**
         *       Threshold to ignore possible states with very low probabilities
