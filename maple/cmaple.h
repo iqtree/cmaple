@@ -81,7 +81,7 @@ public:
      * Set the tree search type:
      * - "FAST": no tree search (placement only).
      * - "NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.
-     * - "SLOW": consider all nodes when seeking SPR moves.
+     * - "MORE_ACCURATE": consider all nodes when seeking SPR moves.
      *
      * @param[in] tree_search_type a type of tree search
      * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search

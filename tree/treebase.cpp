@@ -149,31 +149,39 @@ void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool n_
     }
     
     // set outdated = false at all nodes to avoid considering SPR moves at those nodes
-    if (params->tree_search_type == PARTIAL_TREE_SEARCH)
-        resetSPRFlags(false, true, false);
+    resetSPRFlags(false, true, false);
 }
 
-void cmaple::TreeBase::doInference()
+void cmaple::TreeBase::doInference(const std::string& tree_search_type, const bool shallow_tree_search)
 {
-    (this->*doInferencePtr)();
+    (this->*doInferencePtr)(tree_search_type, shallow_tree_search);
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::doInferenceTemplate()
+void cmaple::TreeBase::doInferenceTemplate(const std::string& tree_search_type_str, const bool shallow_tree_search)
 {
     // validate input
     ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
     ASSERT(aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
+    
+    // parse parameters
+    // set tree_search_type (if specified)
+    TreeSearchType tree_search_type = parseTreeSearchType(tree_search_type_str);
+    if (tree_search_type == UNKNOWN_TREE_SEARCH)
+        outError("Unknown tree search type " + tree_search_type_str + ". Please use <FAST|NORMAL|MORE_ACCURATE>");
+    
+    //  Check whether we infer a phologeny from an input tree
+    const bool from_input_tree = nodes.size() > 0;
         
     // 1. Build an initial tree
-    buildInitialTree<num_states>();
+    buildInitialTree<num_states>(from_input_tree);
     
     // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-    optimizeTree<num_states>();
+    optimizeTree<num_states>(from_input_tree, tree_search_type, shallow_tree_search);
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::buildInitialTree()
+void cmaple::TreeBase::buildInitialTree(const bool from_input_tree)
 {
     // record the start time
     auto start = getRealTime();
@@ -181,7 +189,6 @@ void cmaple::TreeBase::buildInitialTree()
     // dummy variables
     const PositionType seq_length = aln->ref_seq.size();
     const PositionType num_seqs = aln->data.size();
-    const bool with_input_tree = nodes.size() > 0;
     PositionType num_new_sequences = num_seqs;
     Sequence* sequence = &aln->data.front();
     // make sure we allocate enough space to store all nodes
@@ -190,7 +197,7 @@ void cmaple::TreeBase::buildInitialTree()
     NumSeqsType i = 0;
     
     // if users don't input a tree -> create the root from the first sequence
-    if (!with_input_tree)
+    if (!from_input_tree)
     {
         // place the root node
         root_vector_index = 0;
@@ -209,7 +216,7 @@ void cmaple::TreeBase::buildInitialTree()
     for (; i < num_seqs; ++i, ++sequence)
     {
         // don't add sequence that was already added in the input tree
-        if (with_input_tree && sequence->is_added)
+        if (from_input_tree && sequence->is_added)
         {
             --num_new_sequences;
             continue;
@@ -281,29 +288,41 @@ void cmaple::TreeBase::buildInitialTree()
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::optimizeTree()
+void cmaple::TreeBase::optimizeTree(const bool from_input_tree, const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
+    // show information
+    if (tree_search_type == NO_TREE_SEARCH)
+        std::cout << "No tree search is invoked." << std::endl;
     // tree.params->debug = true;
     // string output_file(params->output_prefix);
     // exportOutput(output_file + "_init.treefile");
     
-    // run a short range search for tree topology improvement (if neccessary)
-    // NOTES: don't apply short range search when users input a tree because only a few new sequences were added -> we only apply a deep SPR search
-    if (params->short_range_topo_search && params->tree_search_type != NO_TREE_SEARCH && !(params->input_treefile.length() && params->tree_search_type == PARTIAL_TREE_SEARCH))
+    // run a shallow (short range) search for tree topology improvement (if neccessary)
+    // Don't apply shallow tree search if users chose no tree search
+    if (shallow_tree_search && tree_search_type != NO_TREE_SEARCH)
     {
-        // apply short-range SPR search
-        optimizeTreeTopology<num_states>(true);
-        // exportOutput(output_file + "_short_search.treefile");
-        
-        // reset the SPR flags so that we can start a deeper SPR search later
-        resetSPRFlags(false, true, true);
+        // don't apply shallow tree search if users inputted a tree and wanted to run a partial tree search later (because outdated flags may become incorrect due to shallow tree search)
+        if (from_input_tree && tree_search_type == PARTIAL_TREE_SEARCH)
+        {
+            std::cout << "Disable shallow tree search because it's not supported if users input a tree and want to apply a normal tree search." << std::endl;
+        }
+        // otherwise, apply a shallow tree search
+        else
+        {
+            // apply short-range SPR search
+            optimizeTreeTopology<num_states>(true);
+            // exportOutput(output_file + "_short_search.treefile");
+            
+            // reset the SPR flags so that we can start a deeper SPR search later
+            resetSPRFlags(false, true, true);
+        }
     }
     
     // output log-likelihood of the tree
     std::cout << std::setprecision(10) << "Tree log likelihood (before topo-opt): " << calculateLh() << std::endl;
     
     // run a normal search for tree topology improvement
-    if (params->tree_search_type != NO_TREE_SEARCH)
+    if (tree_search_type != NO_TREE_SEARCH)
     {
         optimizeTreeTopology<num_states>();
         // exportOutput(output_file + "_topo.treefile");

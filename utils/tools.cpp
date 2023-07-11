@@ -587,7 +587,7 @@ TreeSearchType cmaple::parseTreeSearchType(const string& n_tree_search_type)
         return NO_TREE_SEARCH;
     if (tree_search_type == "NORMAL") // || tree_search_type == "PARTIAL")
         return PARTIAL_TREE_SEARCH;
-    if (tree_search_type == "SLOW") // tree_search_type == "COMPLETE")
+    if (tree_search_type == "MORE_ACCURATE") // tree_search_type == "COMPLETE")
         return COMPLETE_TREE_SEARCH;
     return UNKNOWN_TREE_SEARCH;
 }
@@ -730,11 +730,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "--tree-search") == 0 || strcmp(argv[cnt], "-tree-search") == 0) {
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -tree-search <FAST|NORMAL|SLOW>");
+                    outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
                 
                 params.tree_search_type = parseTreeSearchType(argv[cnt]);
                 if (params.tree_search_type == UNKNOWN_TREE_SEARCH)
-                    outError("Use -tree-search <FAST|NORMAL|SLOW>");
+                    outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
                 continue;
             }
             if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {

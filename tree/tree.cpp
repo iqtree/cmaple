@@ -57,7 +57,7 @@ cmaple::Tree::~Tree()
     }
 }
 
-std::string cmaple::Tree::infer()
+std::string cmaple::Tree::infer(const std::string& tree_search_type, const bool shallow_tree_search)
 {
     ASSERT(tree_base);
     
@@ -66,7 +66,7 @@ std::string cmaple::Tree::infer()
     ostringstream target_cout;
     cout.rdbuf(target_cout.rdbuf());
     
-    tree_base->doInference();
+    tree_base->doInference(tree_search_type, shallow_tree_search);
     
     // Restore the source cout
     cout.rdbuf(src_cout);

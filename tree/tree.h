@@ -37,15 +37,23 @@ namespace cmaple
         /*! \brief Infer a tree from an alignment using a substitution model
          *
          * Infer a phylogenetic tree from an alignment using a substitution model.
-         * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all taxa in the alignment), this function will:
-         * + do placement (add missing taxa from the alignment to the tree)
-         * + apply a NORMAL tree search (which do SPR moves on newly-added nodes)
-         * + optimize all branch lengths
-         * - If users already supplied a complete tree, this function optimize all branch lengths (by default)
+         * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:
+         * + does placement (i.e., adding missing taxa from the alignment to the tree)
+         * + applies a NORMAL tree search (which does SPR moves only on newly-added nodes)
+         * + optimizes all branch lengths
+         * - If users already supplied a complete tree, this function:
+         * + by default, does no tree search but optimizes all branch lengths.
+         * + If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);
+         * - If users want to use the input tree as a starting tree (then does SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE
          *
+         * @param[in] tree_search_type one of the following tree search:
+         * - "FAST": no tree search (placement only).
+         * - "NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.
+         * - "MORE_ACCURATE": consider all nodes when seeking SPR moves.
+         * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          * @Return a string contains all messages redirected from std::cout
          */
-        std::string infer();
+        std::string infer(const std::string& tree_search_type = "NORMAL", const bool shallow_tree_search = false);
         
         /*! \brief Compute the likelihood of the current tree
          *

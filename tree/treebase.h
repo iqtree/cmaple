@@ -23,7 +23,7 @@ namespace cmaple
         /**
             Pointer  to doInference method
          */
-        typedef void (TreeBase::*DoInferencePtrType)();
+        typedef void (TreeBase::*DoInferencePtrType)(const std::string&, const bool);
         DoInferencePtrType doInferencePtr;
         
         /**
@@ -48,7 +48,7 @@ namespace cmaple
         /*! Template of doInference()
          */
         template <const cmaple::StateType  num_states>
-        void doInferenceTemplate();
+        void doInferenceTemplate(const std::string& tree_search_type, const bool shallow_tree_search);
         
         /*! Template of calculateLh()
          */
@@ -72,12 +72,12 @@ namespace cmaple
         /*! Build an Initial Tree
          */
         template <const cmaple::StateType  num_states>
-        void buildInitialTree();
+        void buildInitialTree(const bool from_input_tree);
         
         /*! Optimize the current tree
          */
         template <const cmaple::StateType  num_states>
-        void optimizeTree();
+        void optimizeTree(const bool from_input_tree, const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
         /*! Optimize the tree topology
          */
@@ -618,8 +618,13 @@ namespace cmaple
         void loadTree(std::istream& tree_stream, const bool fixed_blengths = false);
         
         /*! Do the inference
+         * @param[in] tree_search_type one of the following tree search:
+         * - "FAST": no tree search (placement only).
+         * - "NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.
+         * - "MORE_ACCURATE": consider all nodes when seeking SPR moves.
+         * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          */
-        void doInference();
+        void doInference(const std::string& tree_search_type, const bool shallow_tree_search);
         
         /*! Calculate the likelihood of the tree
          */

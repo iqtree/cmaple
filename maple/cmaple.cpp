@@ -243,7 +243,7 @@ int CMaple::setTreeSearchType(const std::string& tree_search_type, const bool sh
         tree.params->tree_search_type = parseTreeSearchType(tree_search_type);
         if (tree.params->tree_search_type == UNKNOWN_TREE_SEARCH)
         {
-            std::cout << "Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|SLOW>" << std::endl;
+            std::cout << "Unknown tree search type " + tree_search_type + ". Please use <FAST|NORMAL|MORE_ACCURATE>" << std::endl;
             return ERROR_1;
         }
     }
