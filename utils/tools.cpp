@@ -665,7 +665,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                     params.output_aln_format = inputs;
                     // validate output_aln_format
                     if (params.output_aln_format != "MAPLE" && params.output_aln_format != "PHYLIP" && params.output_aln_format != "FASTA")
-                        throw "<ALN_FORMAT> must be MAPLE, PHYLIP, or FASTA";
+                        outError("<ALN_FORMAT> must be MAPLE, PHYLIP, or FASTA");
                 }
                 else
                     outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>");
@@ -677,12 +677,12 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "-st") == 0 || strcmp(argv[cnt], "--seqtype") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    throw "Use -st BIN or -st DNA or -st AA or -st CODON";
+                    outError("Use -st BIN or -st DNA or -st AA or -st CODON");
                 std::string seq_type = argv[cnt];
                 transform(seq_type.begin(), seq_type.end(), seq_type.begin(), ::toupper);
                 params.seq_type_str = seq_type;
                 if (seq_type != "DNA" && seq_type != "AA")
-                    throw "Use -st BIN or -st DNA or -st AA or -st CODON";
+                    outError("Use -st BIN or -st DNA or -st AA or -st CODON");
                 
                 continue;
             }
@@ -710,12 +710,12 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "-format") == 0 || strcmp(argv[cnt], "--aln-format") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    throw "Use -format MAPLE, PHYLIP, or FASTA";
+                    outError("Use -format MAPLE, PHYLIP, or FASTA");
                 std::string format = argv[cnt];
                 transform(format.begin(), format.end(), format.begin(), ::toupper);
                 params.aln_format_str = format;
                 if (format != "MAPLE" && format != "PHYLIP" && format != "FASTA")
-                    throw "Use -format MAPLE, PHYLIP, or FASTA";
+                    outError("Use -format MAPLE, PHYLIP, or FASTA");
                 
                 continue;
             }
@@ -927,7 +927,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "-seed") == 0 || strcmp(argv[cnt], "--seed") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    throw "Use -seed <random_seed>";
+                    outError("Use -seed <random_seed>");
                 params.ran_seed = abs(convert_int(argv[cnt]));
                 continue;
             }
@@ -935,7 +935,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 strcmp(argv[cnt], "-T") == 0  || strcmp(argv[cnt], "--threads") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                throw "Use -nt <num_threads|AUTO>";
+                    outError("Use -nt <num_threads|AUTO>");
                 if (iEquals(argv[cnt], "AUTO"))
                     params.num_threads = 0;
                 else {
