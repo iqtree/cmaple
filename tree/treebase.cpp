@@ -109,20 +109,19 @@ void cmaple::TreeBase::loadTree(std::istream& tree_stream, const bool fixed_blen
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool fixed_blengths)
+void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool n_fixed_blengths)
 {
     // read tree from the input treefile
     bool missing_blength = readTree(tree_stream);
     
     // make sure users can only keep the blengths fixed if they input a complete tree with branch lengths
-    if (fixed_blengths && (!isComplete() || missing_blength))
+    if (n_fixed_blengths && (!isComplete() || missing_blength))
     {
         std::cout << "Disable the option to keep the branch lengths fixed because the input tree is incomplete (i.e., not containing all taxa from the alignment) or contains missing branch length(s)." << std::endl;
-        params->fixed_blengths = false;
+        fixed_blengths = false;
     }
-    // TODO: preserve this option
     else
-        params->fixed_blengths = fixed_blengths;
+        fixed_blengths = n_fixed_blengths;
     
     // calculate all lower, upper left/right likelihoods
     refreshAllLhs<num_states>(true);
@@ -317,7 +316,7 @@ void cmaple::TreeBase::optimizeTree()
     std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << calculateLh() << std::endl;
     
     // do further optimization on branch lengths (if needed)
-    if (!params->fixed_blengths)
+    if (!fixed_blengths)
         optimizeBranchLengthsOfTree<num_states>();
     
     // NhanLT: update the model params

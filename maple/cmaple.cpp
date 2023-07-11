@@ -576,7 +576,7 @@ void CMaple::optimizeTree()
     std::cout << std::setprecision(10) << "Tree log likelihood (before optimizing branch lengths): " << tree.calculateLh() << std::endl;
     
     // do further optimization on branch lengths (if needed)
-    if (!tree.params->fixed_blengths)
+    if (!tree.fixed_blengths)
         optimizeBranchLengthsOfTree<num_states>();
     
     // NhanLT: update the model params

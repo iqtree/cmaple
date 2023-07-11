@@ -166,10 +166,10 @@ int main(int argc, char *argv[]) {
     // Test keeping blengths fixed when inputting an empty tree
     Tree tree3(aln, model, "", true);
     // Test keeping blengths fixed when inputting a tree topology without branch lengths
-    Tree tree4(aln, model, "topo.treefile", true);
+    //Tree tree4(aln, model, "topo.treefile", true);
     // Test keeing blengths fixed (successfully)
-    //Tree tree5(aln, model, "test_200_5.diff.treefile", true);
-    //std::cout << tree5.infer() << std::endl;
+    Tree tree5(aln, model, "test_200_5.diff.treefile", true);
+    std::cout << tree5.infer() << std::endl;
     
     // with a tree stream
     std::ifstream tree_stream;

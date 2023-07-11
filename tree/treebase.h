@@ -548,6 +548,11 @@ namespace cmaple
         
     public:
         /*
+         TRUE to keep the branch lengths fixed
+         */
+        bool fixed_blengths = false;
+        
+        /*
          Branch length thresholds
          */
         cmaple::RealNumType  default_blength, min_blength, max_blength, min_blength_mid, min_blength_sensitivity, half_max_blength, half_min_blength_mid, double_min_blength;
@@ -586,7 +591,7 @@ namespace cmaple
         /**
          Constructor
          */
-        TreeBase():params(cmaple::make_unique<cmaple::Params>()), aln(nullptr), model(nullptr){
+        TreeBase():params(cmaple::make_unique<cmaple::Params>()), aln(nullptr), model(nullptr), fixed_blengths(false) {
             // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
             if (node_lhs.size() == 0)
                 node_lhs.emplace_back(0);
@@ -597,7 +602,7 @@ namespace cmaple
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        TreeBase(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()){
+        TreeBase(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()), fixed_blengths(false){
             aln->setSeqType(params->seq_type);
         };
         
