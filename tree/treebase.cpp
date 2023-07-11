@@ -6114,10 +6114,10 @@ NumSeqsType cmaple::TreeBase::parseFile(std::istream &infile, char& ch, RealNumT
             PhyloNode& node = nodes[tmp_node_vec];
             nodes[tmp_root_vec].setNeighborIndex(child_mini, Index(tmp_node_vec, TOP));
             node.setNeighborIndex(TOP, Index(tmp_root_vec, child_mini));
-            // If the branch length is not specify -> set it to min_blength and mark the tree with missing blengths so that we can re-estimate the blengths later
+            // If the branch length is not specify -> set it to default_blength and mark the tree with missing blengths so that we can re-estimate the blengths later
             if (brlen == -1)
             {
-                brlen = min_blength;
+                brlen = default_blength;
                 missing_blengths = true;
             }
             node.setUpperLength(brlen);
