@@ -346,7 +346,7 @@ void cmaple::ModelBase::normalizeQMatrix()
     for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
         sum -= mutation_mat_row[i] * root_freqs[i];
     
-    if (sum == 0.0) throw "Empty Q matrix";
+    if (sum == 0.0) outError("Empty Q matrix");
     
     double delta = 1.0 / sum;
     

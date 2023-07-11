@@ -29,12 +29,12 @@ void cmaple::AlignmentBase::processSeq(string &sequence, string &line, PositionT
             while (*it != ')' && *it != '}' && it != line.end())
                 ++it;
             if (it == line.end())
-                throw "Line " + convertIntToString(line_num) + ": No matching close-bracket ) or } found";
+                outError("Line " + convertIntToString(line_num) + ": No matching close-bracket ) or } found");
             sequence.append(1, '?');
             if (cmaple::verbose_mode > cmaple::VB_QUIET)
                 cout << "NOTE: Line " << line_num << ": " << line.substr(start_it-line.begin(), (it-start_it)+1) << " is treated as unknown character" << endl;
         } else {
-            throw "Line " + convertIntToString(line_num) + ": Unrecognized character "  + *it;
+            outError("Line " + convertIntToString(line_num) + ": Unrecognized character "  + *it);
         }
     }
 }
@@ -65,9 +65,8 @@ void cmaple::AlignmentBase::readFasta(std::istream& in, StrVector &sequences, St
             }
             
             // read sequence contents
-            if (sequences.empty()) {
-                throw "First line must begin with '>' to define sequence name";
-            }
+            if (sequences.empty())
+                outError("First line must begin with '>' to define sequence name");
             
             processSeq(sequences.back(), line, line_num);
         }
@@ -79,7 +78,7 @@ void cmaple::AlignmentBase::readFasta(std::istream& in, StrVector &sequences, St
     resetStream(in);
     
     if (sequences.size() < MIN_NUM_TAXA && check_min_seqs)
-        throw "There must be at least " + convertIntToString(MIN_NUM_TAXA) + " sequences";
+        outError("There must be at least " + convertIntToString(MIN_NUM_TAXA) + " sequences");
 
     // now try to cut down sequence name if possible
     PositionType i, step = 0;
@@ -144,12 +143,12 @@ void cmaple::AlignmentBase::readPhylip(std::istream& in, StrVector &sequences, S
         if (nseq == 0) { // read number of sequences and sites
             istringstream line_in(line);
             if (!(line_in >> nseq >> nsite))
-                throw "Invalid PHYLIP format. First line must contain number of sequences and sites";
+                outError("Invalid PHYLIP format. First line must contain number of sequences and sites");
            
             if (nseq < MIN_NUM_TAXA && check_min_seqs)
-                throw "There must be at least " + convertIntToString(MIN_NUM_TAXA) + " sequences";
+                outError("There must be at least " + convertIntToString(MIN_NUM_TAXA) + " sequences");
             if (nsite < 1)
-                throw "No alignment columns";
+                outError("No alignment columns");
 
             seq_names.resize(nseq, "");
             sequences.resize(nseq, "");
@@ -167,7 +166,7 @@ void cmaple::AlignmentBase::readPhylip(std::istream& in, StrVector &sequences, S
             
             if (sequences[seq_id].length() != sequences[0].length()) {
                 err_str << "Line " << line_num << ": Sequence " << seq_names[seq_id] << " has wrong sequence length " << sequences[seq_id].length() << endl;
-                throw err_str.str();
+                outError(err_str.str());
             }
             if ((PositionType) sequences[seq_id].length() > old_len)
                 ++seq_id;
