@@ -31,7 +31,8 @@ void cmaple::AlignmentBase::processSeq(string &sequence, string &line, PositionT
             if (it == line.end())
                 throw "Line " + convertIntToString(line_num) + ": No matching close-bracket ) or } found";
             sequence.append(1, '?');
-            cout << "NOTE: Line " << line_num << ": " << line.substr(start_it-line.begin(), (it-start_it)+1) << " is treated as unknown character" << endl;
+            if (cmaple::verbose_mode > cmaple::VB_QUIET)
+                cout << "NOTE: Line " << line_num << ": " << line.substr(start_it-line.begin(), (it-start_it)+1) << " is treated as unknown character" << endl;
         } else {
             throw "Line " + convertIntToString(line_num) + ": Unrecognized character "  + *it;
         }
@@ -112,7 +113,7 @@ void cmaple::AlignmentBase::readFasta(std::istream& in, StrVector &sequences, St
     
     if (step > 0) {
         for (i = 0; i < (PositionType) seq_names.size(); ++i)
-            if (seq_names[i] != new_seq_names[i]) {
+            if (seq_names[i] != new_seq_names[i] && cmaple::verbose_mode > cmaple::VB_QUIET) {
                 cout << "NOTE: Change sequence name '" << seq_names[i] << "' -> " << new_seq_names[i] << endl;
             }
     }
@@ -190,7 +191,8 @@ void cmaple::AlignmentBase::readSequences(std::istream& aln_stream, StrVector &s
         n_aln_format = detectInputFile(aln_stream);
     
     // read the input file
-    std::cout << "Reading alignment from a stream..." << std::endl;
+    if (cmaple::verbose_mode >= cmaple::VB_MAX)
+        std::cout << "Reading alignment from a stream..." << std::endl;
     switch (n_aln_format) {
         case IN_FASTA:
             readFasta(aln_stream, sequences, seq_names, check_min_seqs);
@@ -212,7 +214,8 @@ string cmaple::AlignmentBase::generateRef(StrVector &sequences)
     if (!sequences.size() || !sequences[0].length())
         outError("Empty input sequences. Please check & try again!");
     
-    cout << "Generating a reference sequence from the input alignment..." << endl;
+    if (cmaple::verbose_mode >= cmaple::VB_MAX)
+        cout << "Generating a reference sequence from the input alignment..." << endl;
     
     // init dummy variables
     const char NULL_CHAR = '\0';
@@ -270,7 +273,8 @@ string cmaple::AlignmentBase::readRefSeq(const std::string& ref_filename, const 
     transform(ref_name_upcase.begin(), ref_name_upcase.end(), ref_name_upcase.begin(), ::toupper);
     
     // read sequences from file
-    cout << "Reading a reference sequence from an alignment file..." << endl;
+    if (cmaple::verbose_mode >= cmaple::VB_MAX)
+        cout << "Reading a reference sequence from an alignment file..." << endl;
     StrVector str_sequences;
     StrVector seq_names;
     // Create a stream from the input alignment
@@ -443,7 +447,8 @@ void cmaple::AlignmentBase::parseRefSeq(string& ref_sequence)
         if (ref_seq[i] >= num_states)
         {
             ref_sequence[i] = convertState2Char(0);
-            outWarning("Invalid reference state found at site " + convertPosTypeToString(i) + " was replaced by a default state " + ref_sequence[i]);
+            if (cmaple::verbose_mode > cmaple::VB_QUIET)
+                outWarning("Invalid reference state found at site " + convertPosTypeToString(i) + " was replaced by a default state " + ref_sequence[i]);
             ref_seq[i] = 0;
         }
     }
@@ -462,7 +467,8 @@ void cmaple::AlignmentBase::readMaple(std::istream& in)
     // remove the failbit
     in.exceptions(ios::badbit);
 
-    cout << "Reading an alignment in MAPLE format from a stream" << endl;
+    if (cmaple::verbose_mode >= cmaple::VB_MAX)
+        cout << "Reading an alignment in MAPLE format from a stream" << endl;
     
     // extract reference sequence first
     for (; !in.eof(); ++line_num)
@@ -572,7 +578,7 @@ void cmaple::AlignmentBase::readMaple(std::istream& in)
                     if (length + pos - 1 > (PositionType) ref_seq.size())
                         outError("<Length> + <Position> must be less than the reference sequence length (" + convertPosTypeToString(ref_seq.size()) + ")!");
                 }
-                else
+                else if (cmaple::verbose_mode >= cmaple::VB_MED)
                     outWarning("Ignoring <Length> of " + tmp + ". <Length> is only appliable for 'N' or '-'.");
             }
             
@@ -1061,27 +1067,31 @@ SeqType cmaple::AlignmentBase::detectSequenceType(StrVector& sequences)
         }
     } // end OMP parallel for
 
-    if (verbose_mode >= VB_MED) {
+    if (verbose_mode >= VB_DEBUG) {
         cout << "Sequence Type detection took " << (getRealTime()-detectStart) << " seconds." << endl;
     }
     if (((double)num_nuc) / num_ungap > 0.9)
     {
-        std::cout << "DNA data detected." << std::endl;
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            std::cout << "DNA data detected." << std::endl;
         return SEQ_DNA;
     }
     if (((double)num_bin) / num_ungap > 0.9)
     {
-        std::cout << "Binary data detected." << std::endl;
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            std::cout << "Binary data detected." << std::endl;
         return SEQ_BINARY;
     }
     if (((double)num_alpha + num_nuc) / num_ungap > 0.9)
     {
-        std::cout << "Protein data detected." << std::endl;
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            std::cout << "Protein data detected." << std::endl;
         return SEQ_PROTEIN;
     }
     if (((double)(num_alpha + num_digit + num_nuc)) / num_ungap > 0.9)
     {
-        std::cout << "Morphological data detected." << std::endl;
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            std::cout << "Morphological data detected." << std::endl;
         return SEQ_MORPH;
     }
     return SEQ_UNKNOWN;

@@ -36,7 +36,7 @@ using namespace cmaple;
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
 
-VerboseMode cmaple::verbose_mode;
+VerboseMode cmaple::verbose_mode = VB_MED;
 
 void cmaple::printCopyright(ostream &out) {
     out << "CMAPLE version ";
@@ -592,6 +592,24 @@ TreeSearchType cmaple::parseTreeSearchType(const string& n_tree_search_type)
     return UNKNOWN_TREE_SEARCH;
 }
 
+std::string cmaple::getTreeSearchStr(const TreeSearchType tree_search_type)
+{
+    switch (tree_search_type) {
+        case cmaple::NO_TREE_SEARCH:
+            return "FAST";
+            break;
+        case cmaple::PARTIAL_TREE_SEARCH:
+            return "NORMAL";
+            break;
+        case cmaple::COMPLETE_TREE_SEARCH:
+            return "MORE_ACCURATE";
+            break;
+        default:
+            break;
+    }
+    return "";
+}
+
 void cmaple::parseArg(int argc, char *argv[], Params &params) {
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
@@ -666,6 +684,27 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (seq_type != "DNA" && seq_type != "AA")
                     throw "Use -st BIN or -st DNA or -st AA or -st CODON";
                 
+                continue;
+            }
+            if (strcmp(argv[cnt], "-verbose") == 0 || strcmp(argv[cnt], "--verbose-mode") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
+                // parse verbose
+                std::string verbose = argv[cnt];
+                transform(verbose.begin(), verbose.end(), verbose.begin(), ::toupper);
+                if (verbose == "QUIET")
+                    verbose_mode = VB_QUIET;
+                else if (verbose == "MIN")
+                    verbose_mode = VB_MIN;
+                else if (verbose == "MED")
+                    verbose_mode = VB_MED;
+                else if (verbose == "MAX")
+                    verbose_mode = VB_MAX;
+                else if (verbose == "DEBUG")
+                    verbose_mode = VB_DEBUG;
+                else
+                    outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
                 continue;
             }
             if (strcmp(argv[cnt], "-format") == 0 || strcmp(argv[cnt], "--aln-format") == 0) {
@@ -1020,21 +1059,6 @@ InputType cmaple::detectInputFile(std::istream& in) {
     return IN_OTHER;
 }
 
-bool cmaple::overwriteFile(char *filename) {
-    ifstream infile(filename);
-    if (infile.is_open()) {
-        cout << "Overwrite " << filename << " (y/n)? ";
-        char ch;
-        cin >> ch;
-        if (ch != 'Y' && ch != 'y') {
-            infile.close();
-            return false;
-        }
-    }
-    infile.close();
-    return true;
-}
-
 void cmaple::trimString(string &str) {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
     str.erase(str.find_last_not_of(" \n\r\t")+1);
@@ -1066,33 +1090,33 @@ Params& Params::getInstance() {
 
 void cmaple::setNumThreads(const int num_threads)
 {
+    std::string msg = "";
     // setup the number of threads for openmp
 #ifdef _OPENMP
     int max_procs = countPhysicalCPUCores();
-    cout << "OpenMP: ";
+    msg += "OpenMP: ";
     if (num_threads >= 1) {
         omp_set_num_threads(num_threads);
-        cout << num_threads << " threads";
+        msg += convertIntToString(num_threads) + " threads";
     }
     else // num_threads == 0
     {   // not calling 'omp_set_num_threads' uses all cores automatically
-        cout << "auto-detect threads";
+        msg += "auto-detect threads";
     }
-    cout << " (" << max_procs << " CPU cores detected) \n";
+    msg += " (" + convertIntToString(max_procs) + " CPU cores detected)";
     if (num_threads  > max_procs) {
-        cout << endl;
-        outError("You have specified more threads than CPU cores available");
+        outError("\nYou have specified more threads than CPU cores available!");
     }
     #ifndef WIN32  // not supported on Windows (only <=OpenMP2.0)
     omp_set_max_active_levels(1);
     #endif
 #else
     if (num_threads != 1) {
-        cout << endl << endl;
-        outError("Number of threads must be 1 for sequential version.");
+        outError("\n\nNumber of threads must be 1 for sequential version.");
     }
 #endif
-    std::cout << std::endl;
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        std::cout << msg << std::endl;
 }
 
 void cmaple::resetStream(std::istream& instream)

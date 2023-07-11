@@ -73,7 +73,7 @@ public:
 	*/
 	virtual bool EnteringBlock(NxsString blockName)
 	{
-		if (cmaple::verbose_mode >= cmaple::VB_MED)
+		if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
 			cout << "Reading \"" << blockName << "\" block..." << endl;
 
 		// Returning true means it is ok to delete any data associated with
@@ -88,7 +88,8 @@ public:
 	*/
 	virtual void SkippingBlock(NxsString blockName)
 	{
-		cout << "Skipping unknown block (" << blockName << ")..." << endl;
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            cout << "Skipping unknown block (" << blockName << ")..." << endl;
 	}
 
 	//virtual void SkippingDisabledBlock(NxsString blockName) {}

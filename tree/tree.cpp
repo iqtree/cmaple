@@ -40,12 +40,9 @@ cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filenam
             outError(ERR_READ_INPUT, tree_filename);
         }
     }
-    else
-    {
-        // Unable to keep blengths fixed if users don't input a tree
-        if (fixed_blengths)
-            std::cout << "Disable the option to keep the branch lengths fixed because users didn't supply an input tree." << std::endl;
-    }
+    // Unable to keep blengths fixed if users don't input a tree
+    else if (fixed_blengths && cmaple::verbose_mode > cmaple::VB_QUIET)
+        outWarning("Disable the option to keep the branch lengths fixed because users didn't supply an input tree.");
 }
 
 cmaple::Tree::~Tree()
@@ -92,7 +89,8 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
     
     // record the start time
     auto start = getRealTime();
-    cout << "Start calculating branch supports" << endl;
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        cout << "Calculating branch supports" << endl;
     
     // validate inputs
     if (num_threads < 0)
@@ -106,8 +104,9 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
     tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon, allow_replacing_ML_tree);
     
     // show the runtime for calculating branch supports
-   auto end = getRealTime();
-   cout << " - Time spent on calculating branch supports: " << std::setprecision(3) << end - start << endl;
+    auto end = getRealTime();
+    if (cmaple::verbose_mode >= cmaple::VB_MAX)
+        cout << " - Time spent on calculating branch supports: " << std::setprecision(3) << end - start << endl;
     
      // Restore the source cout
      cout.rdbuf(src_cout);

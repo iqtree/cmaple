@@ -5,6 +5,9 @@ using namespace cmaple;
 
 void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_seq, const std::string& format, const std::string& seqtype)
 {
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        std::cout << "Reading an alignment" << std::endl;
+    
     // Init alignment base
     aln_base = new AlignmentBase();
     

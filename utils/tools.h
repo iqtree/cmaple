@@ -1002,13 +1002,6 @@ namespace cmaple
     InputType detectInputFile(std::istream& aln_stream);
 
     /**
-        If file exists, ask user to overwrite it or not
-        @param filename file name
-        @return TRUE if agree to overwrite an existing file, or simply file does not exist
-     */
-    bool overwriteFile(char *filename);
-
-    /**
         Remove white space at the beginning and end of the string
         @param str (IN/OUT) string to be trimmed
     */
@@ -1076,6 +1069,11 @@ namespace cmaple
      * Parse type of tree search from a string
      */
     TreeSearchType parseTreeSearchType(const std::string& tree_search_type);
+
+    /**
+     * Get tree search type in string
+     */
+    std::string getTreeSearchStr(const TreeSearchType tree_search_type);
 
     /**
      * Set number of threads

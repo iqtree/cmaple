@@ -1369,7 +1369,8 @@ RealNumType cmaple::SeqRegions::calculateSiteLhContributions(std::vector<RealNum
         {
             if (!calSiteLhs_notN_notN<num_states>(site_lh_contributions, *seq1_region, *seq2_region, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions))
             {
-                outWarning("calculateSiteLhContributions() returns MIN_NEGATIVE!");
+                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                    outWarning("calculateSiteLhContributions() returns MIN_NEGATIVE!");
                 return MIN_NEGATIVE;
             }
         }

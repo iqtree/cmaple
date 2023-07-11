@@ -30,7 +30,8 @@ void cmaple::runCMaple(cmaple::Params &params)
     // If users only want to convert the alignment to another format -> convert it and terminate
     if (params.output_aln.length() && params.output_aln_format.length())
     {
-        std::cout << "Write the alignment to " + params.output_aln + " in " + params.output_aln_format + " format." << std::endl;
+        if (cmaple::verbose_mode > cmaple::VB_QUIET)
+            std::cout << "Write the alignment to " + params.output_aln + " in " + params.output_aln_format + " format." << std::endl;
         aln.write(params.output_aln, params.output_aln_format, params.overwrite_output);
         return;
     }
@@ -42,7 +43,9 @@ void cmaple::runCMaple(cmaple::Params &params)
     tree_params = params;
     
     // Infer a phylogenetic tree
-    std::cout << tree.infer(params.tree_search_type_str, params.shallow_tree_search) << std::endl;
+    std::string redirected_msgs = tree.infer(params.tree_search_type_str, params.shallow_tree_search);
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        std::cout << redirected_msgs << std::endl;
     
     // Compute branch supports (if users want to do so)
     if (params.compute_aLRT_SH)
@@ -52,7 +55,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         // if users input a tree -> depend on the setting in params (false ~ don't allow replacing (by default)
         if (params.input_treefile.length())
             allow_replacing_ML_tree = params.allow_replace_input_tree;
-        std::cout << tree.computeBranchSupports(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree) << std::endl;
+        
+        redirected_msgs = tree.computeBranchSupports(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree);
+        if (cmaple::verbose_mode >= cmaple::VB_MED)
+            std::cout << redirected_msgs << std::endl;
         
         // write the tree file with branch supports
         ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
@@ -60,18 +66,25 @@ void cmaple::runCMaple(cmaple::Params &params)
         out_tree_branch_supports.close();
     }
     
+    // output log-likelihood of the tree
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        std::cout << std::setprecision(10) << "Tree log likelihood: " << tree.computeLh() << std::endl;
+    
     // Write the normal tree file
     ofstream out = ofstream(output_treefile);
     out << tree.exportString(params.tree_format);
     out.close();
         
     // Show model parameters
-    std::map<std::string, std::string> model_params = model.getParams();
-    std::cout << "\nMODEL: " + model_params[cmaple::MODEL_NAME] + "\n";
-    std::cout << "\nROOT FREQUENCIES\n";
-    std::cout << model_params[cmaple::MODEL_FREQS];
-    std::cout << "\nMUTATION MATRIX\n";
-    std::cout << model_params[cmaple::MODEL_RATES] << std::endl;
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        std::map<std::string, std::string> model_params = model.getParams();
+        std::cout << "\nMODEL: " + model_params[cmaple::MODEL_NAME] + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params[cmaple::MODEL_FREQS];
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params[cmaple::MODEL_RATES] << std::endl;
+    }
         
     // Show information about output files
     std::cout << "Analysis results written to:" << std::endl;
@@ -82,7 +95,8 @@ void cmaple::runCMaple(cmaple::Params &params)
     
     // show runtime
     auto end = getRealTime();
-    cout << "Runtime: " << end - start << "s" << endl;
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        cout << "Runtime: " << end - start << "s" << endl;
 }
 
 std::string cmaple::getVersion()

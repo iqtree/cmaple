@@ -91,16 +91,19 @@ int main(int argc, char *argv[]) {
 #endif
     
     // print copyright
-    printCopyright(cout);
-    
-    // show general information
-    cout << "Command:";
-    for (int i = 0; i < argc; i++)
-        cout << " " << argv[i];
-    cout << endl;
-    
-    // Show the random seed number
-    cout << "Seed:    " << params.ran_seed <<  " " << std::endl;
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        printCopyright(cout);
+        
+        // show general information
+        cout << "Command:";
+        for (int i = 0; i < argc; i++)
+            cout << " " << argv[i];
+        cout << endl;
+        
+        // Show the random seed number
+        cout << "Seed:    " << params.ran_seed <<  " " << std::endl << std::endl;
+    }
     
     // Measure runtime
     time_t start_time;
@@ -110,7 +113,8 @@ int main(int argc, char *argv[]) {
     // cmaple::testing(params);
     
     time(&start_time);
-    cout << "Date and Time: " << ctime(&start_time);
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        cout << "Date and Time: " << ctime(&start_time);
     
     return EXIT_SUCCESS;
 }
