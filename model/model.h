@@ -13,8 +13,9 @@ namespace cmaple
          *
          * Model constructor with a model name
          * @param[in] model_name Name of a substitution model
+         * @param[in] seqtype Data type of sequences (optional): "", "DNA", "AA"
          */
-        Model(const std::string& model_name = "GTR");
+        Model(const std::string& model_name = "GTR", const std::string& seqtype = "");
         
         /*! \brief Model destructor
          *

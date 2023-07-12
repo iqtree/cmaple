@@ -669,8 +669,6 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 }
                 else
                     outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>");
-                
-                params.output_aln = argv[cnt];
 
                 continue;
             }
@@ -1123,4 +1121,17 @@ void cmaple::resetStream(std::istream& instream)
 {
     instream.clear();
     instream.seekg(0, ios::beg);
+}
+
+SeqType cmaple::parseSeqType(const std::string& n_seqtype_str)
+{
+    string seqtype_str(n_seqtype_str);
+    transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);
+    if (seqtype_str == "DNA")
+        return SEQ_DNA;
+    if (seqtype_str == "AA")
+        return SEQ_PROTEIN;
+    
+    // default
+    return SEQ_UNKNOWN;
 }

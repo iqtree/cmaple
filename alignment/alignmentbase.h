@@ -218,11 +218,6 @@ namespace cmaple
          Get alignment format from a string
          */
         InputType getAlignmentFormat(const std::string& n_format);
-        
-        /**
-         Get alignment format from a string
-         */
-        SeqType getSeqType(const std::string& n_seqtype_str);
     };
 }
 #endif

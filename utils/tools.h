@@ -1095,4 +1095,10 @@ namespace cmaple
      * @param instream the input stream
      */
     void resetStream(std::istream& instream);
+
+    /**
+    * Parse sequence type from a string
+    * @param n_seqtype_str a sequence type in string
+    */
+    SeqType parseSeqType(const std::string& n_seqtype_str);
 }

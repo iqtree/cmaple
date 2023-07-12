@@ -15,7 +15,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         outError("File " + output_treefile + " already exists. Use `--overwrite` option if you really want to overwrite it.\n");
     
     // Initialize a Model
-    Model model(params.model_name);
+    Model model(params.model_name, params.seq_type_str);
     
     // Initializa an Alignment
     // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later

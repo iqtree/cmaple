@@ -1123,16 +1123,3 @@ InputType cmaple::AlignmentBase::getAlignmentFormat(const std::string& n_format)
     // default
     return IN_UNKNOWN;
 }
-
-SeqType cmaple::AlignmentBase::getSeqType(const std::string& n_seqtype_str)
-{
-    string seqtype_str(n_seqtype_str);
-    transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);
-    if (seqtype_str == "DNA")
-        return SEQ_DNA;
-    if (seqtype_str == "AA")
-        return SEQ_PROTEIN;
-    
-    // default
-    return SEQ_UNKNOWN;
-}

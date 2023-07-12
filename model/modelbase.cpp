@@ -117,17 +117,6 @@ void cmaple::ModelBase::extractRefInfo(const AlignmentBase* aln)
     if (!root_log_freqs) root_log_freqs = new RealNumType[num_states_];
     if (!inverse_root_freqs) inverse_root_freqs = new RealNumType[num_states_];
     
-    // init root_freqs
-    switch (aln->getSeqType()) {
-        case SEQ_PROTEIN:
-            resetVec<20>(root_freqs);
-            break;
-            
-        default: // dna
-            resetVec<4>(root_freqs);
-            break;
-    }
-    
     // extract root freqs from the ref_seq
     extractRootFreqs(aln);
 }
@@ -138,6 +127,17 @@ void cmaple::ModelBase::extractRootFreqs(const AlignmentBase* aln)
     const vector<StateType>& ref_seq = aln->ref_seq;
     ASSERT(ref_seq.size() > 0);
     const PositionType seq_length = ref_seq.size();
+    
+    // init root_freqs
+    switch (aln->getSeqType()) {
+        case SEQ_PROTEIN:
+            resetVec<20>(root_freqs);
+            break;
+            
+        default: // dna
+            resetVec<4>(root_freqs);
+            break;
+    }
     
     // browse all sites in the ref one by one to count bases
     for (PositionType i = 0; i < seq_length; ++i)

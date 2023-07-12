@@ -34,7 +34,7 @@ void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_se
     if (seqtype.length())
     {
         // parse the sequence type
-        aln_base->setSeqType(aln_base->getSeqType(seqtype));
+        aln_base->setSeqType(parseSeqType(seqtype));
         
         // validate the sequence type
         if (aln_base->getSeqType() == SEQ_UNKNOWN)
