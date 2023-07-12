@@ -184,6 +184,10 @@ void cmaple::TreeBase::doInferenceTemplate(const std::string& tree_search_type_s
 template <const StateType num_states>
 void cmaple::TreeBase::buildInitialTree(const bool from_input_tree)
 {
+    // show information
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        std::cout << "Performing placement" << std::endl;
+    
     // record the start time
     auto start = getRealTime();
     
