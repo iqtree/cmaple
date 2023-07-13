@@ -75,23 +75,6 @@ endif()
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories(after system "/usr/local/include")
 
-set (__ARM_NEON "FALSE")
-set (NEON 0)
-if (APPLE)
-	execute_process(
-      COMMAND uname -m
-      RESULT_VARIABLE result
-      OUTPUT_VARIABLE OSX_NATIVE_ARCHITECTURE
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
-		message("APPLE SILICON (M1) DETECTED!")
-		set (__ARM_NEON "TRUE")
-		set (NEON 1)
-	endif()
-endif()
-
-
 ##################################################################
 # Setup compiler, currently supported GCC, CLANG, MSVC, and ICC
 ##################################################################
@@ -100,6 +83,20 @@ endif()
 ##################################################################
 # Setup compiler flags
 ##################################################################
+
+## enable 'SSE/AVX' on x86-64, 'neon' on arm to achive faster computations (mainly the Matrix::dotProduct())
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+    add_compile_options(-msse -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -mavx) # needed for simde instructions
+  elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+    add_compile_options(-neon)  
+  endif() 
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+    add_compile_options(/arch:AVX2) ## not really needed, but may be beneficial in other places when in Release mode (i.e. with optimizations turned on)
+  endif()
+endif()
+
 
 ##################################################################
 # check existence of a few basic functions
@@ -161,6 +158,8 @@ add_subdirectory(utils)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 add_subdirectory(libraries/ncl)
 add_subdirectory(libraries/nclextra)
+add_subdirectory(libraries/SIMDe)
+include_directories(${SIMDE_INCLUDE_DIRECTORY})
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)

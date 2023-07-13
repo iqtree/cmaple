@@ -24,14 +24,19 @@
  ***************************************************************************/
 
 #pragma once
+ //
+// Some math & matrix functions  (some using SSE/AVX/NEON for significantly better speed)
+//
+
+// allows to use instrinc names for x64 (which SIMDe will translate to Neon for ARM automatically)
+#define SIMDE_ENABLE_NATIVE_ALIASES 
+#include <simde/x86/sse2.h>
+#include <simde/x86/sse4.1.h>
+#include <simde/x86/avx.h>
 
 #include <utils/tools.h>
 
- //
-// Some math & matrix functions
-
 #include <assert.h>
-#include <immintrin.h>
 #include <vector>
 
 // Multiply 4 floats by another 4 floats.
