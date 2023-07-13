@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['tree_0',['Tree',['../classcmaple_1_1_tree.html',1,'cmaple::Tree'],['../classcmaple_1_1_tree.html#ab69aa0fd289ee38f5ec36d7eb6bfa45b',1,'cmaple::Tree::Tree(Alignment &amp;aln, Model &amp;model, std::istream &amp;tree_stream, const bool fixed_blengths=false)'],['../classcmaple_1_1_tree.html#ab4cf4c0d2d31e11170e0691b1c6749ed',1,'cmaple::Tree::Tree(Alignment &amp;aln, Model &amp;model, const std::string &amp;tree_filename=&quot;&quot;, const bool fixed_blengths=false)']]]
+  ['max_5fblength_5ffactor_0',['max_blength_factor',['../classcmaple_1_1_params.html#ab1dd36bba7aaeb3fe8416bb49db0f56b',1,'cmaple::Params']]],
+  ['min_5fblength_5ffactor_1',['min_blength_factor',['../classcmaple_1_1_params.html#a7cdbc01ec9d3bb923a4b7038ba5d34ac',1,'cmaple::Params']]],
+  ['model_2',['Model',['../classcmaple_1_1_model.html',1,'cmaple::Model'],['../classcmaple_1_1_model.html#a1a893bd878402e2b005901ecbf4af552',1,'cmaple::Model::Model()']]],
+  ['mutation_5fupdate_5fperiod_3',['mutation_update_period',['../classcmaple_1_1_params.html#a026887ca6fbb3677729330f972d6a0a9',1,'cmaple::Params']]]
 ];

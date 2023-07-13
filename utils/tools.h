@@ -372,9 +372,7 @@ namespace cmaple
     /*--------------------------------------------------------------*/
 
     /**
-            program parameters, everything is specified here
-            Use singleton pattern to avoid using global variable or
-            having to pass the params variable around
+            Program parameters, everything is specified here
      */
     class Params {
     private:
@@ -387,11 +385,10 @@ namespace cmaple
         void initDefaultValue();
         
     public:
+        /// @private
         static Params& getInstance();
         
-        /**
-        Constructor
-         */
+        /// @private
         Params();
         
         /**
@@ -435,7 +432,7 @@ namespace cmaple
         bool fixed_blengths;
         
         /**
-        *       Threshold to ignore possible states with very low probabilities
+        * A relative probability threshold, which is used to ignore possible states with very low probabilities. Default: 1e-8
          */
         RealNumType threshold_prob;
         
@@ -460,7 +457,7 @@ namespace cmaple
         int failure_limit_subtree_short_search;
         
         /**
-        *       The period to update the mutation matrix
+        * The period (in term of the number of sample placements) to update the substitution rate matrix. Default: 25
          */
         PositionType mutation_update_period;
         
@@ -500,12 +497,16 @@ namespace cmaple
         RealNumType thresh_log_lh_failure;
         
         /**
-        *  The minium branch length to try for placement
+        *  A factor to compute the minimum branch length (if fixed_min_blength is specified, this factor is ignored). Default: 0.2
+        * <br><Minimum branch length> = <min_blength_factor> * <default branch length>
+        * <br> where <default branch length> is one mutation per site.
         */
         RealNumType min_blength_factor;
         
         /**
-        *  The maximum branch length to try for placement
+        * A factor to compute the maximum branch length. Default: 40
+        * <br> <Maximum branch length> = <max_blength_factor> * <default branch length>
+        * <br> where <default branch length> is one mutation per site.
         */
         RealNumType max_blength_factor;
         
@@ -540,17 +541,17 @@ namespace cmaple
         std::string input_treefile;
         
         /**
-        *       The number of attempts to improve the tree with SPR moves
+        *      The number of times we traverse the tree looking for topological improvements (applying SPR moves). Default: 1
         */
         int num_tree_improvement;
         
         /**
-        *  Threshold for improvement on the entire tree
+        *  Threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default: 1
         */
         RealNumType thresh_entire_tree_improvement;
         
         /**
-        *  Don't try to re-place nodes that have the placement cost exceeds this threshold
+        *  Do not try to apply SPR moves on nodes that have the placement cost (i.e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default: -1e-5
         */
         RealNumType thresh_placement_cost;
         
@@ -590,7 +591,7 @@ namespace cmaple
         RealNumType aLRT_SH_half_epsilon;
         
         /**
-        * fixed min_blength
+        * A minimum value of the branch lengths. Default: -1 (UNSPECIFIED), the minimum branch length is computed from 'min_blength_factor'
         */
         RealNumType fixed_min_blength;
         
@@ -600,7 +601,7 @@ namespace cmaple
         uint32_t num_threads;
         
         /**
-        * Random seed
+        * A seed number for random generators. Default: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number.
         */
         uint64_t ran_seed;
         

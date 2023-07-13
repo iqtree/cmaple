@@ -115,7 +115,7 @@ void cmaple::testing(cmaple::Params& params)
     cmaple::Params& cmaple_params = cmaple.getSettings();
     cmaple_params = params;
     cmaple.inferTree();*/
-    Model model(params.model_name);
+    /*Model model(params.model_name);
     // with an alignment file
     Alignment aln1(params.aln_path);
     // with an alignment file
@@ -190,5 +190,26 @@ void cmaple::testing(cmaple::Params& params)
     std::cout << tree.exportString() << std::endl;
     tree.computeBranchSupports(8, 100);
     std::cout << tree.exportString("BIN", true) << std::endl;
-    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
+    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;*/
+
+    // Create an alignment from a file
+    cmaple::Alignment aln(params.aln_path);
+
+    // Create a model
+    cmaple::Model model("GTR");
+
+    // Create a tree, attach the alignment and model to the tree
+    cmaple::Tree tree(aln, model);
+
+    // Infer a phylogenetic tree from the alignment and the model
+    cout << tree.infer() << endl;
+
+    // Compute the branch supports for the inferred tree
+    cout << tree.computeBranchSupports() << endl;
+
+    // Compute the likelihood of the tree
+    cout << "- Tree log likelihood: " << tree.computeLh() << endl;
+
+    // Export the tree (with branch supports) in NEWICK format
+    cout << "- Tree: " << tree.exportString("BIN", true) << endl;
 }

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['model_0',['Model',['../classcmaple_1_1_model.html',1,'cmaple::Model'],['../classcmaple_1_1_model.html#a1a893bd878402e2b005901ecbf4af552',1,'cmaple::Model::Model()']]]
+  ['infer_0',['infer',['../classcmaple_1_1_tree.html#a45181505ceec62709cd2d7071602b575',1,'cmaple::Tree']]]
 ];

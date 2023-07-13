@@ -109,8 +109,8 @@ int main(int argc, char *argv[]) {
     time_t start_time;
     
     // call the main function
-    cmaple::runCMaple(params);
-    // cmaple::testing(params);
+    // cmaple::runCMaple(params);
+    cmaple::testing(params);
     
     time(&start_time);
     if (cmaple::verbose_mode > cmaple::VB_QUIET)

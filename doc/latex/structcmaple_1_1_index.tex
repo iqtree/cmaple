@@ -1,0 +1,87 @@
+\doxysection{cmaple\+::Index Struct Reference}
+\hypertarget{structcmaple_1_1_index}{}\label{structcmaple_1_1_index}\index{cmaple::Index@{cmaple::Index}}
+
+
+{\ttfamily \#include $<$tools.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structcmaple_1_1_index_a985b4090cc8d7f4260517256ae10f82e}{Index}} ()
+\item 
+\mbox{\hyperlink{structcmaple_1_1_index_a6ec4498b093582ce6aafdd6a371eebe5}{Index}} (Num\+Seqs\+Type vec\+\_\+index, Mini\+Index mini\+\_\+index)
+\item 
+const Mini\+Index \mbox{\hyperlink{structcmaple_1_1_index_ab4e78a9982250ef8b97d6ab02fda24ca}{get\+Mini\+Index}} () const
+\item 
+const Mini\+Index \mbox{\hyperlink{structcmaple_1_1_index_aed49e7868d0d22758c651b6b1ace0dfe}{get\+Flip\+Mini\+Index}} () const
+\item 
+void \mbox{\hyperlink{structcmaple_1_1_index_a2190f67c8f704544770a516298c63e0e}{set\+Mini\+Index}} (Mini\+Index mini\+\_\+index)
+\item 
+const Num\+Seqs\+Type \mbox{\hyperlink{structcmaple_1_1_index_aae82388e6908ca2b448b143408ed70f2}{get\+Vector\+Index}} () const
+\item 
+void \mbox{\hyperlink{structcmaple_1_1_index_a328dc5c7f07fc9dc96a3c938aa17a08e}{set\+Vector\+Index}} (Num\+Seqs\+Type vec\+\_\+index)
+\item 
+bool \mbox{\hyperlink{structcmaple_1_1_index_a82f564dad34dd932153ee4d33ec8acfc}{operator==}} (\mbox{\hyperlink{structcmaple_1_1_index}{Index}} \&rhs) const
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Holds a space efficient index into a vector$<$\+Phylo\+Node$>$ and subindex for the Mini\+Node inside the Phylonode 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{structcmaple_1_1_index_a985b4090cc8d7f4260517256ae10f82e}\label{structcmaple_1_1_index_a985b4090cc8d7f4260517256ae10f82e} 
+\index{cmaple::Index@{cmaple::Index}!Index@{Index}}
+\index{Index@{Index}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{Index()}{Index()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily cmaple\+::\+Index\+::\+Index (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+constructor it\textquotesingle{}s required by the constructor of Leaf\+Node \Hypertarget{structcmaple_1_1_index_a6ec4498b093582ce6aafdd6a371eebe5}\label{structcmaple_1_1_index_a6ec4498b093582ce6aafdd6a371eebe5} 
+\index{cmaple::Index@{cmaple::Index}!Index@{Index}}
+\index{Index@{Index}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{Index()}{Index()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily cmaple\+::\+Index\+::\+Index (\begin{DoxyParamCaption}\item[{Num\+Seqs\+Type}]{vec\+\_\+index,  }\item[{Mini\+Index}]{mini\+\_\+index }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+constructor 
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{structcmaple_1_1_index_aed49e7868d0d22758c651b6b1ace0dfe}\label{structcmaple_1_1_index_aed49e7868d0d22758c651b6b1ace0dfe} 
+\index{cmaple::Index@{cmaple::Index}!getFlipMiniIndex@{getFlipMiniIndex}}
+\index{getFlipMiniIndex@{getFlipMiniIndex}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{getFlipMiniIndex()}{getFlipMiniIndex()}}
+{\footnotesize\ttfamily const Mini\+Index cmaple\+::\+Index\+::get\+Flip\+Mini\+Index (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+return the mini-\/index of the other next node (i.\+e., get\+Flip\+Mini\+Index(\+LEFT) = RIGHT; get\+Flip\+Mini\+Index(\+RIGHT) = LEFT) \Hypertarget{structcmaple_1_1_index_ab4e78a9982250ef8b97d6ab02fda24ca}\label{structcmaple_1_1_index_ab4e78a9982250ef8b97d6ab02fda24ca} 
+\index{cmaple::Index@{cmaple::Index}!getMiniIndex@{getMiniIndex}}
+\index{getMiniIndex@{getMiniIndex}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{getMiniIndex()}{getMiniIndex()}}
+{\footnotesize\ttfamily const Mini\+Index cmaple\+::\+Index\+::get\+Mini\+Index (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+return the mini-\/index \Hypertarget{structcmaple_1_1_index_aae82388e6908ca2b448b143408ed70f2}\label{structcmaple_1_1_index_aae82388e6908ca2b448b143408ed70f2} 
+\index{cmaple::Index@{cmaple::Index}!getVectorIndex@{getVectorIndex}}
+\index{getVectorIndex@{getVectorIndex}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{getVectorIndex()}{getVectorIndex()}}
+{\footnotesize\ttfamily const Num\+Seqs\+Type cmaple\+::\+Index\+::get\+Vector\+Index (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+return the index of a phylonode \Hypertarget{structcmaple_1_1_index_a82f564dad34dd932153ee4d33ec8acfc}\label{structcmaple_1_1_index_a82f564dad34dd932153ee4d33ec8acfc} 
+\index{cmaple::Index@{cmaple::Index}!operator==@{operator==}}
+\index{operator==@{operator==}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{operator==()}{operator==()}}
+{\footnotesize\ttfamily bool cmaple\+::\+Index\+::operator== (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structcmaple_1_1_index}{Index}} \&}]{rhs }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Check two indexes are equally \Hypertarget{structcmaple_1_1_index_a2190f67c8f704544770a516298c63e0e}\label{structcmaple_1_1_index_a2190f67c8f704544770a516298c63e0e} 
+\index{cmaple::Index@{cmaple::Index}!setMiniIndex@{setMiniIndex}}
+\index{setMiniIndex@{setMiniIndex}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{setMiniIndex()}{setMiniIndex()}}
+{\footnotesize\ttfamily void cmaple\+::\+Index\+::set\+Mini\+Index (\begin{DoxyParamCaption}\item[{Mini\+Index}]{mini\+\_\+index }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+set the mini-\/index \Hypertarget{structcmaple_1_1_index_a328dc5c7f07fc9dc96a3c938aa17a08e}\label{structcmaple_1_1_index_a328dc5c7f07fc9dc96a3c938aa17a08e} 
+\index{cmaple::Index@{cmaple::Index}!setVectorIndex@{setVectorIndex}}
+\index{setVectorIndex@{setVectorIndex}!cmaple::Index@{cmaple::Index}}
+\doxysubsubsection{\texorpdfstring{setVectorIndex()}{setVectorIndex()}}
+{\footnotesize\ttfamily void cmaple\+::\+Index\+::set\+Vector\+Index (\begin{DoxyParamCaption}\item[{Num\+Seqs\+Type}]{vec\+\_\+index }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+set the index of a phylonode 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+utils/tools.\+h\end{DoxyCompactItemize}
