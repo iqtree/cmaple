@@ -33,7 +33,150 @@
 // To be converted to SSE/AVX eventually
 //
 
+#include <immintrin.h>
+#include <vector>
+#include <assert.h>
 
+// CPUs support RAM access like this: "ymmword ptr [rax+64]"
+// Using templates with offset int argument to make easier for compiler to emit good code.
+
+// Multiply 4 floats by another 4 floats.
+template<int offsetRegs>
+inline __m128 mul4(const float* p1, const float* p2)
+{
+  constexpr int lanes = offsetRegs * 4;
+  const __m128 a = _mm_loadu_ps(p1 + lanes);
+  const __m128 b = _mm_loadu_ps(p2 + lanes);
+  return _mm_mul_ps(a, b);
+}
+
+// Multiply 4 doubles by another 4 doubles.
+template<int offsetRegs>
+inline __m256d mul4(const double* p1, const double* p2)
+{
+  constexpr int lanes = offsetRegs * 4;
+  const __m256d a = _mm256_loadu_pd(p1 + lanes);
+  const __m256d b = _mm256_loadu_pd(p2 + lanes);
+  return _mm256_mul_pd(a, b);
+}
+
+// Returns acc + ( p1 * p2 ), for 4-wide float lanes.
+/*template<int offsetRegs>
+inline __m128 fma4(__m256 acc, const float* p1, const float* p2)
+{
+  constexpr int lanes = offsetRegs * 8;
+  const __m128 a = _mm128_loadu_ps(p1 + lanes);
+  const __m128 b = _mm128_loadu_ps(p2 + lanes);
+  return _mm128_fmadd_ps(a, b, acc);
+}
+
+// Returns acc + ( p1 * p2 ), for 4-wide double lanes.
+template<int offsetRegs>
+inline __m256 fma4(__m256 acc, const double* p1, const double* p2)
+{
+  constexpr int lanes = offsetRegs * 4;
+  const __m256 a = _mm256_loadu_pd(p1 + lanes);
+  const __m256 b = _mm256_loadu_pd(p2 + lanes);
+  return _mm256_fmadd_pd(a, b, acc);
+}*/
+
+// Compute dot product of float vectors
+template <int length>
+inline float dotProduct(const float* p1, const float* p2)
+{
+  float result{ 0 };
+  for (int j = 0; j < length; ++j)
+  {
+    result += p1[j] * p2[j];
+  }
+  return result;
+}
+
+// sum up 4 floats (SSE)
+inline float horiz_sum(__m128 v) {
+  // Add 4 values into 2
+  const __m128 r2 = _mm_add_ps(v, _mm_movehl_ps(v, v));
+  // Add 2 lower values into the final result
+  const __m128 r1 = _mm_add_ss(r2, _mm_movehdup_ps(r2));
+  // Return the lowest lane of the result vector.
+  // The intrinsic below compiles into noop, modern compilers return floats in the lowest lane of xmm0 register.
+  return _mm_cvtss_f32(r1);
+}
+
+template <>
+inline float dotProduct<20>(const float* p1, const float* p2)
+{
+  const int count = 20;
+  const float* const p1End = p1 + count;
+
+  // Process all 20 values. Nothing to add yet, just multiplying.
+  auto dot0 = mul4<0>(p1, p2);
+  auto dot1 = mul4<1>(p1, p2);
+  auto dot2 = mul4<2>(p1, p2);
+  auto dot3 = mul4<3>(p1, p2);
+  auto dot4 = mul4<4>(p1, p2);
+  
+
+  // 20 to 4
+  const auto dot01 = _mm_add_ps(dot0, dot1);
+
+  const auto dot23 = _mm_add_ps(dot2, dot3);
+  const auto dot401 = _mm_add_ps(dot4, dot01);
+
+  const auto dot23401 = _mm_add_ps(dot23, dot401);
+
+  return horiz_sum(dot23401);  
+}
+
+
+// sum up 4 doubles (AVX)
+inline double horiz_sum(__m256d v) {
+  __m128d vlow = _mm256_castpd256_pd128(v);
+  __m128d vhigh = _mm256_extractf128_pd(v, 1); // high 128
+  vlow = _mm_add_pd(vlow, vhigh);     // reduce down to 128
+
+  __m128d high64 = _mm_unpackhi_pd(vlow, vlow);
+  return  _mm_cvtsd_f64(_mm_add_sd(vlow, high64));  // reduce to scalar
+}
+
+// Compute dot product of float vectors
+template <int length>
+inline double dotProduct(const double* p1, const double* p2)
+{
+  double result{ 0 };
+  for (int j = 0; j < length; ++j)
+  {
+    result += p1[j] * p2[j];
+  }
+  return result;
+}
+
+template <>
+inline double dotProduct<20>(const double* p1, const double* p2)
+{
+  const int count = 20;
+  const double* const p1End = p1 + count;
+
+  // Process all 20 values. Nothing to add yet, just multiplying.
+  auto dot0 = mul4<0>(p1, p2);
+  auto dot1 = mul4<1>(p1, p2);
+  auto dot2 = mul4<2>(p1, p2);
+  auto dot3 = mul4<3>(p1, p2);
+  auto dot4 = mul4<4>(p1, p2);
+
+
+  // 20 to 4
+  const auto dot01 = _mm256_add_pd(dot0, dot1);
+
+  const auto dot23 = _mm256_add_pd(dot2, dot3);
+  const auto dot401 = _mm256_add_pd(dot4, dot01);
+
+  const auto dot23401 = _mm256_add_pd(dot23, dot401);
+
+  return horiz_sum(dot23401);
+}
+
+/*
 template <StateType length>
 RealNumType dotProduct(const RealNumType* const vec1, const RealNumType* const vec2)
 {
@@ -43,7 +186,7 @@ RealNumType dotProduct(const RealNumType* const vec1, const RealNumType* const v
     result += vec1[j] * vec2[j];
   }
   return result;
-}
+}*/
 
 template <StateType length>
 RealNumType sumMutationByLh(const RealNumType* const vec1, const RealNumType* const vec2)
