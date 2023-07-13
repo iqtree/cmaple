@@ -10,8 +10,11 @@ namespace cmaple
     {
     public:
         /*! \brief Constructor from a model name
-         * @param[in] model_name Name of a substitution model
-         * @param[in] seqtype Data type of sequences (optional): "", "DNA", "AA"
+         * @param[in] model_name Name of a substitution model. List of supported models:
+         * <br>**DNA models**: "JC", "GTR", "UNREST";
+         * <br>**Protein models**: "GTR20", "NONREV", "LG", "WAG", "JTT", "Q.PFAM", "Q.BIRD", "Q.MAMMAL", "Q.INSECT", "Q.PLANT", "Q.YEAST", "JTTDCMUT", "DCMUT", "VT", "PMB", "BLOSUM62", "DAYHOFF", "MTREV", "MTART", "MTZOA", "MTMET" , "MTVER" , "MTINV", "MTMAM", "FLAVI", "HIVB", "HIVW", "FLU", "RTREV", "CPREV", "NQ.PFAM", "NQ.BIRD", "NQ.MAMMAL", "NQ.INSECT", "NQ.PLANT", "NQ.YEAST";
+         * <br> <em> See [**Substitution models**](http://www.iqtree.org/doc/Substitution-Models) for references of those models.</em>
+         * @param[in] seqtype Data type of sequences (optional): "" (auto detect), "DNA" (nucleotide data), "AA" (amino acid data)
          */
         Model(const std::string& model_name = "GTR", const std::string& seqtype = "");
         

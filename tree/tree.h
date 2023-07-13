@@ -39,9 +39,9 @@ namespace cmaple
          *  + If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE
          *
          * @param[in] tree_search_type One of the following tree search:
-         * - "FAST": no tree search (placement only).
-         * - "NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.
-         * - "MORE_ACCURATE": consider all nodes when seeking SPR moves.
+         * <br><em>"FAST"</em>: no tree search (placement only).
+         * <br><em>"NORMAL"</em>: only consider pruning branches at newly-added nodes when seeking SPR moves.
+         * <br><em>"MORE_ACCURATE"</em>: consider all nodes when seeking SPR moves.
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportString() later
          */
@@ -52,10 +52,10 @@ namespace cmaple
          */
         RealNumType computeLh();
         
-        /*! \brief Compute branch supports (aLRT-SH) of the current tree, which may or may not contain all taxa in the alignment
+        /*! \brief Compute branch supports ([aLRT-SH](https://academic.oup.com/sysbio/article/59/3/307/1702850)) of the current tree, which may or may not contain all taxa in the alignment
          * @param[in] num_threads The number of threads (optional)
          * @param[in] num_replicates A positive number of replicates (optional)
-         * @param[in] epsilon A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010)
+         * @param[in] epsilon A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see [Guindon et al., 2010](https://academic.oup.com/sysbio/article/59/3/307/1702850))
          * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
          * @return A string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the branch supports values, one could call exportString("BIN", true) later
          */

@@ -102,7 +102,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a987c92b41faa1303b5b0c8393c0704db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment.  <br /></td></tr>
 <tr class="separator:a987c92b41faa1303b5b0c8393c0704db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3d6efc278b68360108dac91b44c5055"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#ac3d6efc278b68360108dac91b44c5055">computeBranchSupports</a> (const int num_threads=1, const int num_replicates=1000, const double epsilon=0.1, const bool allow_replacing_ML_tree=true)</td></tr>
-<tr class="memdesc:ac3d6efc278b68360108dac91b44c5055"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute branch supports (aLRT-SH) of the current tree, which may or may not contain all taxa in the alignment.  <br /></td></tr>
+<tr class="memdesc:ac3d6efc278b68360108dac91b44c5055"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute branch supports (<a href="https://academic.oup.com/sysbio/article/59/3/307/1702850">aLRT-SH</a>) of the current tree, which may or may not contain all taxa in the alignment.  <br /></td></tr>
 <tr class="separator:ac3d6efc278b68360108dac91b44c5055"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8ac98e0838c7ebd070aa08766049021"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#ab8ac98e0838c7ebd070aa08766049021">exportString</a> (const std::string &amp;tree_type=&quot;BIN&quot;, const bool show_branch_supports=false)</td></tr>
 <tr class="memdesc:ab8ac98e0838c7ebd070aa08766049021"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the phylogenetic tree to a string in NEWICK format.  <br /></td></tr>
@@ -260,12 +260,10 @@ Public Member Functions</h2></td></tr>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>One of the following tree search:<ul>
-<li>"FAST": no tree search (placement only).</li>
-<li>"NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.</li>
-<li>"MORE_ACCURATE": consider all nodes when seeking SPR moves. </li>
-</ul>
-</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>One of the following tree search: <br  />
+<em>"FAST"</em>: no tree search (placement only). <br  />
+<em>"NORMAL"</em>: only consider pruning branches at newly-added nodes when seeking SPR moves. <br  />
+<em>"MORE_ACCURATE"</em>: consider all nodes when seeking SPR moves. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE ton enable a shallow tree search before a deeper tree search </td></tr>
   </table>
   </dd>
@@ -332,12 +330,12 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Compute branch supports (aLRT-SH) of the current tree, which may or may not contain all taxa in the alignment. </p>
+<p>Compute branch supports (<a href="https://academic.oup.com/sysbio/article/59/3/307/1702850">aLRT-SH</a>) of the current tree, which may or may not contain all taxa in the alignment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">num_threads</td><td>The number of threads (optional) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_replicates</td><td>A positive number of replicates (optional) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">epsilon</td><td>A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">epsilon</td><td>A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see <a href="https://academic.oup.com/sysbio/article/59/3/307/1702850">Guindon et al., 2010</a>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">allow_replacing_ML_tree</td><td>TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional) </td></tr>
   </table>
   </dd>

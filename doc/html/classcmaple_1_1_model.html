@@ -128,8 +128,11 @@ Public Member Functions</h2></td></tr>
 <p>Constructor from a model name. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">model_name</td><td>Name of a substitution model </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): "", "DNA", "AA" </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">model_name</td><td>Name of a substitution model. List of supported models: <br  />
+<b>DNA models</b>: "JC", "GTR", "UNREST"; <br  />
+<b>Protein models</b>: "GTR20", "NONREV", "LG", "WAG", "JTT", "Q.PFAM", "Q.BIRD", "Q.MAMMAL", "Q.INSECT", "Q.PLANT", "Q.YEAST", "JTTDCMUT", "DCMUT", "VT", "PMB", "BLOSUM62", "DAYHOFF", "MTREV", "MTART", "MTZOA", "MTMET" , "MTVER" , "MTINV", "MTMAM", "FLAVI", "HIVB", "HIVW", "FLU", "RTREV", "CPREV", "NQ.PFAM", "NQ.BIRD", "NQ.MAMMAL", "NQ.INSECT", "NQ.PLANT", "NQ.YEAST"; <br  />
+ <em> See <a href="http://www.iqtree.org/doc/Substitution-Models"><b>Substitution models</b></a> for references of those models.</em> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): "" (auto detect), "DNA" (nucleotide data), "AA" (amino acid data) </td></tr>
   </table>
   </dd>
 </dl>

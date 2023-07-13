@@ -8,16 +8,16 @@
 \begin{DoxyCompactItemize}
 \item 
 \mbox{\hyperlink{classcmaple_1_1_alignment_a6701d29a81fb5dd4149c5c5237b095de}{Alignment}} (std\+::istream \&aln\+\_\+stream, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const std\+::string \&format=\"{}\"{}, const std\+::string \&seqtype=\"{}\"{})
-\begin{DoxyCompactList}\small\item\em Constructor from a stream of an alignment in FASTA, PHYLIP, or MAPLE format. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Constructor from a stream of an alignment in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
 \mbox{\hyperlink{classcmaple_1_1_alignment_a857b7e7f683234ec9c0afb54da04e8c0}{Alignment}} (const std\+::string \&aln\+\_\+filename, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const std\+::string \&format=\"{}\"{}, const std\+::string \&seqtype=\"{}\"{})
-\begin{DoxyCompactList}\small\item\em Constructor from an alignment file in FASTA, PHYLIP, or MAPLE format. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Constructor from an alignment file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
 \Hypertarget{classcmaple_1_1_alignment_a36d8b2bbaf72d21162d6e273bb3674e1}\label{classcmaple_1_1_alignment_a36d8b2bbaf72d21162d6e273bb3674e1} 
 {\bfseries \texorpdfstring{$\sim$}{\string~}\+Alignment} ()
 \begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b}{write}} (std\+::ostream \&aln\+\_\+stream, const std\+::string \&format=\"{}MAPLE\"{})
-\begin{DoxyCompactList}\small\item\em Write the alignment to a stream. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Write the alignment to a stream in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2}{write}} (const std\+::string \&aln\+\_\+filename, const std\+::string \&format=\"{}MAPLE\"{}, const bool overwrite=false)
-\begin{DoxyCompactList}\small\item\em Write the alignment to a file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Write the alignment to a file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -32,7 +32,7 @@ Class represents the input alignment
 
 
 
-Constructor from a stream of an alignment in FASTA, PHYLIP, or MAPLE format. 
+Constructor from a stream of an alignment in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. 
 
 
 \begin{DoxyParams}[1]{Parameters}
@@ -40,9 +40,9 @@ Constructor from a stream of an alignment in FASTA, PHYLIP, or MAPLE format.
 \hline
 \mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A feference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: \"{}\"{}, \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: \"{}\"{} (auto detect), \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
 \hline
-\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{}, \"{}\+DNA\"{}, \"{}\+AA\"{} \\
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{} (auto detect), \"{}\+DNA\"{} (nucleotide data), \"{}\+AA\"{} (amino acid data) \\
 \hline
 \end{DoxyParams}
 \Hypertarget{classcmaple_1_1_alignment_a857b7e7f683234ec9c0afb54da04e8c0}\label{classcmaple_1_1_alignment_a857b7e7f683234ec9c0afb54da04e8c0} 
@@ -53,7 +53,7 @@ Constructor from a stream of an alignment in FASTA, PHYLIP, or MAPLE format.
 
 
 
-Constructor from an alignment file in FASTA, PHYLIP, or MAPLE format. 
+Constructor from an alignment file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. 
 
 
 \begin{DoxyParams}[1]{Parameters}
@@ -61,9 +61,9 @@ Constructor from an alignment file in FASTA, PHYLIP, or MAPLE format.
 \hline
 \mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: \"{}\"{}, \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: \"{}\"{} (auto detect), \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
 \hline
-\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{}, \"{}\+DNA\"{}, \"{}\+AA\"{} \\
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{} (auto detect), \"{}\+DNA\"{} (nucleotide data), \"{}\+AA\"{} (amino acid data) \\
 \hline
 \end{DoxyParams}
 
@@ -77,13 +77,13 @@ Constructor from an alignment file in FASTA, PHYLIP, or MAPLE format.
 
 
 
-Write the alignment to a stream. 
+Write the alignment to a stream in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. 
 
 
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em aln\+\_\+stream} & A stream of the output alignment file \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\"{}, \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
 \hline
 \end{DoxyParams}
 \Hypertarget{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2}\label{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2} 
@@ -94,13 +94,13 @@ Write the alignment to a stream.
 
 
 
-Write the alignment to a file. 
+Write the alignment to a file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. 
 
 
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em aln\+\_\+filename} & Name of the output alignment file \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\"{}, \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
 \hline
 \mbox{\texttt{ in}}  & {\em overwrite} & TRUE to overwrite the existing output file \\
 \hline
