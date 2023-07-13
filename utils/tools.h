@@ -325,7 +325,7 @@ struct Index
     /**
         Check two indexes are equally
      */
-    bool operator==(Index &rhs) const
+    bool operator==(const Index &rhs) const
     {
         return (vector_index_ == rhs.getVectorIndex() && mini_index_ == rhs.getMiniIndex());
     }
