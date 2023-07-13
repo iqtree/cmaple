@@ -5,31 +5,25 @@
 
 namespace cmaple
 {
-    /** Class of evolutionary models */
+    /** Class represents a substitutionmodel */
     class Model
     {
     public:
-        /*! \brief Model constructor
-         *
-         * Model constructor with a model name
+        /*! \brief Constructor from a model name
          * @param[in] model_name Name of a substitution model
          * @param[in] seqtype Data type of sequences (optional): "", "DNA", "AA"
          */
         Model(const std::string& model_name = "GTR", const std::string& seqtype = "");
         
-        /*! \brief Model destructor
-         *
-         * Model destructor
+        /*! \brief Destructor
          */
         ~Model();
         
-        /*! \brief Export the substitution model and its parameters in a dictionary
-         *
-         * Export the substitution model and its parameters in a dictionary
-         * @return a dictionary (std::map<std::string, std::string>) with the keys and values as in the following.
-         * key: "model_name", value: the name of the model in string
-         * key: "model_freqs", value: the state frequencies in string
-         * key: "model_rates", value: the mutation matrix in string
+        /*! \brief Export the substitution model and its parameters to a dictionary
+         * @return A dictionary (std::map<std::string, std::string>) with the keys and values as in the following.
+         * <br><em>"model_name"</em>: the name of the model in string
+         * <br><em>"model_freqs"</em>: the state frequencies in string
+         * <br><em>"model_rates"</em>: the mutation matrix in string
          */
         std::map<std::string, std::string> getParams();
         

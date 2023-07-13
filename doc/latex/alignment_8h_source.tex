@@ -1,0 +1,33 @@
+\doxysection{alignment.\+h}
+\hypertarget{alignment_8h_source}{}\label{alignment_8h_source}\index{alignment/alignment.h@{alignment/alignment.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}alignmentbase.h"{}}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{keyword}{namespace\ }cmaple}
+\DoxyCodeLine{00005\ \{}
+\DoxyCodeLine{00007\ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}\ \{}
+\DoxyCodeLine{00008\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a6701d29a81fb5dd4149c5c5237b095de}{Alignment}}(std::istream\&\ aln\_stream,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ std::string\&\ format\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ std::string\&\ seqtype\ =\ \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a857b7e7f683234ec9c0afb54da04e8c0}{Alignment}}(\textcolor{keyword}{const}\ std::string\&\ aln\_filename,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ std::string\&\ format\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ std::string\&\ seqtype\ =\ \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a36d8b2bbaf72d21162d6e273bb3674e1}{\string~Alignment}}();}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b}{write}}(std::ostream\&\ aln\_stream,\ \textcolor{keyword}{const}\ std::string\&\ format\ =\ \textcolor{stringliteral}{"{}MAPLE"{}});}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2}{write}}(\textcolor{keyword}{const}\ std::string\&\ aln\_filename,\ \textcolor{keyword}{const}\ std::string\&\ format\ =\ \textcolor{stringliteral}{"{}MAPLE"{}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ overwrite\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ declare\ Tree\ as\ a\ friend\ class}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcmaple_1_1_tree}{Tree}};}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ AlignmentBase*\ aln\_base;}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ init(std::istream\&\ aln\_stream,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq,\ \textcolor{keyword}{const}\ std::string\&\ format,\ \textcolor{keyword}{const}\ std::string\&\ seqtype);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00059\ \ \ \ \ \};}
+\DoxyCodeLine{00060\ \}}
+
+\end{DoxyCode}

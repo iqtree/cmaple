@@ -1,0 +1,69 @@
+\doxysection{cmaple\+::Model Class Reference}
+\hypertarget{classcmaple_1_1_model}{}\label{classcmaple_1_1_model}\index{cmaple::Model@{cmaple::Model}}
+
+
+{\ttfamily \#include $<$model.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classcmaple_1_1_model_a1a893bd878402e2b005901ecbf4af552}{Model}} (const std\+::string \&model\+\_\+name=\"{}GTR\"{}, const std\+::string \&seqtype=\"{}\"{})
+\begin{DoxyCompactList}\small\item\em Constructor from a model name. \end{DoxyCompactList}\item 
+\Hypertarget{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4}\label{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4} 
+{\bfseries \texorpdfstring{$\sim$}{\string~}\+Model} ()
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+std\+::map$<$ std\+::string, std\+::string $>$ \mbox{\hyperlink{classcmaple_1_1_model_a337affc2b3c84f0548a4bd0d447429db}{get\+Params}} ()
+\begin{DoxyCompactList}\small\item\em Export the substitution model and its parameters to a dictionary. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classcmaple_1_1_model_a4b682814d14447120dd184fd300deade}\label{classcmaple_1_1_model_a4b682814d14447120dd184fd300deade} 
+class {\bfseries Tree}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class represents a substitutionmodel 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classcmaple_1_1_model_a1a893bd878402e2b005901ecbf4af552}\label{classcmaple_1_1_model_a1a893bd878402e2b005901ecbf4af552} 
+\index{cmaple::Model@{cmaple::Model}!Model@{Model}}
+\index{Model@{Model}!cmaple::Model@{cmaple::Model}}
+\doxysubsubsection{\texorpdfstring{Model()}{Model()}}
+{\footnotesize\ttfamily cmaple\+::\+Model\+::\+Model (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{model\+\_\+name = {\ttfamily \"{}GTR\"{}},  }\item[{const std\+::string \&}]{seqtype = {\ttfamily \"{}\"{}} }\end{DoxyParamCaption})}
+
+
+
+Constructor from a model name. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em model\+\_\+name} & Name of a substitution model \\
+\hline
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{}, \"{}\+DNA\"{}, \"{}\+AA\"{} \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classcmaple_1_1_model_a337affc2b3c84f0548a4bd0d447429db}\label{classcmaple_1_1_model_a337affc2b3c84f0548a4bd0d447429db} 
+\index{cmaple::Model@{cmaple::Model}!getParams@{getParams}}
+\index{getParams@{getParams}!cmaple::Model@{cmaple::Model}}
+\doxysubsubsection{\texorpdfstring{getParams()}{getParams()}}
+{\footnotesize\ttfamily std\+::map$<$ std\+::string, std\+::string $>$ cmaple\+::\+Model\+::get\+Params (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Export the substitution model and its parameters to a dictionary. 
+
+\begin{DoxyReturn}{Returns}
+A dictionary (std\+::map$<$std\+::string, std\+::string$>$) with the keys and values as in the following. ~\newline
+{\itshape \"{}model\+\_\+name\"{}}\+: the name of the model in string ~\newline
+{\itshape \"{}model\+\_\+freqs\"{}}\+: the state frequencies in string ~\newline
+{\itshape \"{}model\+\_\+rates\"{}}\+: the mutation matrix in string 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+model/model.\+h\end{DoxyCompactItemize}
