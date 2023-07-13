@@ -25,10 +25,14 @@
 
 #pragma once
 
-#include <cmaple_config.h>
 #include <algorithm>
 #include <cfloat>
+#include <cmaple_config.h>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -37,9 +41,6 @@
 #include <set>
 #include <sstream>
 #include <stack>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
 #include <string>
 #include <sys/stat.h>
 #include <thread>

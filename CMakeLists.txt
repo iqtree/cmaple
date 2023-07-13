@@ -14,7 +14,7 @@
 # Linux example usages:
 #----------------------
 # cmake <source_dir>                           
-# cmake -DCMAPLE_FLAGS="m32" <source_dir>  (32-bit version)
+# cmake  -DCMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -march=native" <source_dir>   ## some custom compile flags
 #
 # To compile with CLANG on Linux:CMAPLE_
 # export CC=/usr/bin/clang
@@ -33,13 +33,6 @@
 #
 # To generate Xcode project without OpenMP:
 # cmake -G Xcode <source_dir>
-#
-# Compile 32-bit version: cmake -DCMAPLE_FLAGS=m32 ....
-# Compile static version: cmake -DCMAPLE_FLAGS=static ....
-#
-
-#NOTE: Static linking with clang windows: make a symlink libgcc_eh.a to libgcc.a (administrator required)
-# C:\TDM-GCC-64\lib\gcc\x86_64-w64-mingw32\5.1.0>mklink libgcc_eh.a libgcc.a
 #
 #
 
@@ -66,8 +59,6 @@ set (cmaple_VERSION_MINOR 0)
 set (cmaple_VERSION_PATCH ".0")
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
-
-message("CMAPLE flags : ${CMAPLE_FLAGS}")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
