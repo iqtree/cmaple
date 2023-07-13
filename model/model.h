@@ -5,7 +5,7 @@
 
 namespace cmaple
 {
-    /** Class represents a substitutionmodel */
+    /** Class represents a substitution model */
     class Model
     {
     public:

@@ -457,11 +457,6 @@ namespace cmaple
         int failure_limit_subtree_short_search;
         
         /**
-        * The period (in term of the number of sample placements) to update the substitution rate matrix. Default: 25
-         */
-        PositionType mutation_update_period;
-        
-        /**
         *       TRUE to apply strict stop rules when seeking placement for a new sample
          */
         bool strict_stop_seeking_placement_sample;
@@ -497,6 +492,11 @@ namespace cmaple
         RealNumType thresh_log_lh_failure;
         
         /**
+        * A minimum value of the branch lengths. Default: -1 (UNSPECIFIED), the minimum branch length is computed from 'min_blength_factor'
+        */
+        RealNumType fixed_min_blength;
+        
+        /**
         *  A factor to compute the minimum branch length (if fixed_min_blength is specified, this factor is ignored). Default: 0.2
         * <br><Minimum branch length> = <min_blength_factor> * <default branch length>
         * <br> where <default branch length> is one mutation per site.
@@ -526,6 +526,11 @@ namespace cmaple
         RealNumType thresh_diff_fold_update;
         
         /**
+        * The period (in term of the number of sample placements) to update the substitution rate matrix. Default: 25
+         */
+        PositionType mutation_update_period;
+        
+        /**
         *  Name of the output alignment
         */
         std::string output_aln;
@@ -546,14 +551,14 @@ namespace cmaple
         int num_tree_improvement;
         
         /**
-        *  Threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default: 1
-        */
-        RealNumType thresh_entire_tree_improvement;
-        
-        /**
         *  Do not try to apply SPR moves on nodes that have the placement cost (i.e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default: -1e-5
         */
         RealNumType thresh_placement_cost;
+        
+        /**
+        *  Threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default: 1
+        */
+        RealNumType thresh_entire_tree_improvement;
         
         /**
         *  Don't try to re-place nodes (during short range topology search) that have the placement cost exceeds this threshold
@@ -589,11 +594,6 @@ namespace cmaple
         * (Half) epsilon value when computing aLRT-SH
         */
         RealNumType aLRT_SH_half_epsilon;
-        
-        /**
-        * A minimum value of the branch lengths. Default: -1 (UNSPECIFIED), the minimum branch length is computed from 'min_blength_factor'
-        */
-        RealNumType fixed_min_blength;
         
         /**
         * number of threads

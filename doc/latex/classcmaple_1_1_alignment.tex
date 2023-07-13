@@ -69,10 +69,27 @@ Constructor from an alignment file in FASTA, PHYLIP, or MAPLE format.
 
 
 \doxysubsection{Member Function Documentation}
-\Hypertarget{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2}\label{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2} 
+\Hypertarget{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b}\label{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b} 
 \index{cmaple::Alignment@{cmaple::Alignment}!write@{write}}
 \index{write@{write}!cmaple::Alignment@{cmaple::Alignment}}
 \doxysubsubsection{\texorpdfstring{write()}{write()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::write (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{aln\+\_\+stream,  }\item[{const std\+::string \&}]{format = {\ttfamily \"{}MAPLE\"{}} }\end{DoxyParamCaption})}
+
+
+
+Write the alignment to a stream. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em aln\+\_\+stream} & A stream of the output alignment file \\
+\hline
+\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\"{}, \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2}\label{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2} 
+\index{cmaple::Alignment@{cmaple::Alignment}!write@{write}}
+\index{write@{write}!cmaple::Alignment@{cmaple::Alignment}}
+\doxysubsubsection{\texorpdfstring{write()}{write()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
 {\footnotesize\ttfamily void cmaple\+::\+Alignment\+::write (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{aln\+\_\+filename,  }\item[{const std\+::string \&}]{format = {\ttfamily \"{}MAPLE\"{}},  }\item[{const bool}]{overwrite = {\ttfamily false} }\end{DoxyParamCaption})}
 
 
@@ -86,23 +103,6 @@ Write the alignment to a file.
 \mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\"{}, \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
 \hline
 \mbox{\texttt{ in}}  & {\em overwrite} & TRUE to overwrite the existing output file \\
-\hline
-\end{DoxyParams}
-\Hypertarget{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b}\label{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b} 
-\index{cmaple::Alignment@{cmaple::Alignment}!write@{write}}
-\index{write@{write}!cmaple::Alignment@{cmaple::Alignment}}
-\doxysubsubsection{\texorpdfstring{write()}{write()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
-{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::write (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{aln\+\_\+stream,  }\item[{const std\+::string \&}]{format = {\ttfamily \"{}MAPLE\"{}} }\end{DoxyParamCaption})}
-
-
-
-Write the alignment to a stream. 
-
-
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em aln\+\_\+stream} & A stream of the output alignment file \\
-\hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\"{}, \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
 \hline
 \end{DoxyParams}
 

@@ -217,6 +217,83 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a45181505ceec62709cd2d7071602b575" name="a45181505ceec62709cd2d7071602b575"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45181505ceec62709cd2d7071602b575">&#9670;&#160;</a></span>infer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string cmaple::Tree::infer </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>tree_search_type</em> = <code>&quot;NORMAL&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>shallow_tree_search</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Infer a phylogenetic tree. </p>
+<ul>
+<li>If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:<ul>
+<li>performs placement (i.e., adding missing taxa from the alignment to the tree)</li>
+<li>applies a NORMAL tree search (which does SPR moves only on newly-added nodes)</li>
+<li>optimizes all branch lengths</li>
+</ul>
+</li>
+<li>If users already supplied a complete tree, this function:<ul>
+<li>by default, does neither placment nor tree search, but it optimizes all branch lengths.</li>
+<li>If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
+<li>If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE</li>
+</ul>
+</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>One of the following tree search:<ul>
+<li>"FAST": no tree search (placement only).</li>
+<li>"NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.</li>
+<li>"MORE_ACCURATE": consider all nodes when seeking SPR moves. </li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE ton enable a shallow tree search before a deeper tree search </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call <a class="el" href="classcmaple_1_1_tree.html#ab8ac98e0838c7ebd070aa08766049021" title="Export the phylogenetic tree to a string in NEWICK format.">exportString()</a> later </dd></dl>
+
+</div>
+</div>
+<a id="a987c92b41faa1303b5b0c8393c0704db" name="a987c92b41faa1303b5b0c8393c0704db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a987c92b41faa1303b5b0c8393c0704db">&#9670;&#160;</a></span>computeLh()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">RealNumType cmaple::Tree::computeLh </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment. </p>
+<dl class="section return"><dt>Returns</dt><dd>The log likelihood of the current tree </dd></dl>
+
+</div>
+</div>
 <a id="ac3d6efc278b68360108dac91b44c5055" name="ac3d6efc278b68360108dac91b44c5055"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac3d6efc278b68360108dac91b44c5055">&#9670;&#160;</a></span>computeBranchSupports()</h2>
 
@@ -266,26 +343,6 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the branch supports values, one could call exportString("BIN", true) later </dd></dl>
-
-</div>
-</div>
-<a id="a987c92b41faa1303b5b0c8393c0704db" name="a987c92b41faa1303b5b0c8393c0704db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a987c92b41faa1303b5b0c8393c0704db">&#9670;&#160;</a></span>computeLh()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">RealNumType cmaple::Tree::computeLh </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment. </p>
-<dl class="section return"><dt>Returns</dt><dd>The log likelihood of the current tree </dd></dl>
 
 </div>
 </div>
@@ -344,63 +401,6 @@ Public Member Functions</h2></td></tr>
 
 <p>Get an instance of <a class="el" href="classcmaple_1_1_params.html">cmaple::Params</a>, which stores all parameter settings. Users can use that params instance to change <a href="classcmaple_1_1_params.html"><b>other minor settings</b></a> of CMaple (which are not yet supported via the APIs) </p>
 <dl class="section return"><dt>Returns</dt><dd>An instance of <a class="el" href="classcmaple_1_1_params.html">cmaple::Params</a> </dd></dl>
-
-</div>
-</div>
-<a id="a45181505ceec62709cd2d7071602b575" name="a45181505ceec62709cd2d7071602b575"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45181505ceec62709cd2d7071602b575">&#9670;&#160;</a></span>infer()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string cmaple::Tree::infer </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>tree_search_type</em> = <code>&quot;NORMAL&quot;</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>shallow_tree_search</em> = <code>false</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Infer a phylogenetic tree. </p>
-<ul>
-<li>If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:<ul>
-<li>performs placement (i.e., adding missing taxa from the alignment to the tree)</li>
-<li>applies a NORMAL tree search (which does SPR moves only on newly-added nodes)</li>
-<li>optimizes all branch lengths</li>
-</ul>
-</li>
-<li>If users already supplied a complete tree, this function:<ul>
-<li>by default, does neither placment nor tree search, but it optimizes all branch lengths.</li>
-<li>If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
-<li>If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE</li>
-</ul>
-</li>
-</ul>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>One of the following tree search:<ul>
-<li>"FAST": no tree search (placement only).</li>
-<li>"NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.</li>
-<li>"MORE_ACCURATE": consider all nodes when seeking SPR moves. </li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE ton enable a shallow tree search before a deeper tree search </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call <a class="el" href="classcmaple_1_1_tree.html#ab8ac98e0838c7ebd070aa08766049021" title="Export the phylogenetic tree to a string in NEWICK format.">exportString()</a> later </dd></dl>
 
 </div>
 </div>

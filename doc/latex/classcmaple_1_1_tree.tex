@@ -75,76 +75,6 @@ Constructor from an optional (bifurcating or multifurcating) tree (with/without 
 
 
 \doxysubsection{Member Function Documentation}
-\Hypertarget{classcmaple_1_1_tree_ac3d6efc278b68360108dac91b44c5055}\label{classcmaple_1_1_tree_ac3d6efc278b68360108dac91b44c5055} 
-\index{cmaple::Tree@{cmaple::Tree}!computeBranchSupports@{computeBranchSupports}}
-\index{computeBranchSupports@{computeBranchSupports}!cmaple::Tree@{cmaple::Tree}}
-\doxysubsubsection{\texorpdfstring{computeBranchSupports()}{computeBranchSupports()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::compute\+Branch\+Supports (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads = {\ttfamily 1},  }\item[{const int}]{num\+\_\+replicates = {\ttfamily 1000},  }\item[{const double}]{epsilon = {\ttfamily 0.1},  }\item[{const bool}]{allow\+\_\+replacing\+\_\+\+ML\+\_\+tree = {\ttfamily true} }\end{DoxyParamCaption})}
-
-
-
-Compute branch supports (a\+LRT-\/\+SH) of the current tree, which may or may not contain all taxa in the alignment. 
-
-
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em num\+\_\+threads} & The number of threads (optional) \\
-\hline
-\mbox{\texttt{ in}}  & {\em num\+\_\+replicates} & A positive number of replicates (optional) \\
-\hline
-\mbox{\texttt{ in}}  & {\em epsilon} & A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-\/likelihood values (see Guindon et al., 2010) \\
-\hline
-\mbox{\texttt{ in}}  & {\em allow\+\_\+replacing\+\_\+\+ML\+\_\+tree} & TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional) \\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-A string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the branch supports values, one could call export\+String(\"{}\+BIN\"{}, true) later 
-\end{DoxyReturn}
-\Hypertarget{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}\label{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db} 
-\index{cmaple::Tree@{cmaple::Tree}!computeLh@{computeLh}}
-\index{computeLh@{computeLh}!cmaple::Tree@{cmaple::Tree}}
-\doxysubsubsection{\texorpdfstring{computeLh()}{computeLh()}}
-{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Tree\+::compute\+Lh (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
-
-
-
-Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment. 
-
-\begin{DoxyReturn}{Returns}
-The log likelihood of the current tree 
-\end{DoxyReturn}
-\Hypertarget{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021}\label{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021} 
-\index{cmaple::Tree@{cmaple::Tree}!exportString@{exportString}}
-\index{exportString@{exportString}!cmaple::Tree@{cmaple::Tree}}
-\doxysubsubsection{\texorpdfstring{exportString()}{exportString()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::export\+String (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{tree\+\_\+type = {\ttfamily \"{}BIN\"{}},  }\item[{const bool}]{show\+\_\+branch\+\_\+supports = {\ttfamily false} }\end{DoxyParamCaption})}
-
-
-
-Export the phylogenetic tree to a string in NEWICK format. 
-
-
-\begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em tree\+\_\+type} & The type of the output tree (optional)\+: \"{}\+BIN\"{} -\/ bifurcating tree or \"{}\+MUL\"{} -\/ multifurcating tree \\
-\hline
-\mbox{\texttt{ in}}  & {\em show\+\_\+branch\+\_\+supports} & TRUE to output the branch supports (a\+LRT-\/\+SH values) \\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-A tree string in NEWICK format 
-\end{DoxyReturn}
-\Hypertarget{classcmaple_1_1_tree_a0efa4425430d7b9dde4cafb4412536c1}\label{classcmaple_1_1_tree_a0efa4425430d7b9dde4cafb4412536c1} 
-\index{cmaple::Tree@{cmaple::Tree}!getParams@{getParams}}
-\index{getParams@{getParams}!cmaple::Tree@{cmaple::Tree}}
-\doxysubsubsection{\texorpdfstring{getParams()}{getParams()}}
-{\footnotesize\ttfamily \mbox{\hyperlink{classcmaple_1_1_params}{cmaple\+::\+Params}} \& cmaple\+::\+Tree\+::get\+Params (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
-
-
-
-Get an instance of \doxylink{classcmaple_1_1_params}{cmaple\+::\+Params}, which stores all parameter settings. Users can use that params instance to change \href{classcmaple_1_1_params.html}{\texttt{ {\bfseries{other minor settings}}}} of CMaple (which are not yet supported via the APIs) 
-
-\begin{DoxyReturn}{Returns}
-An instance of \doxylink{classcmaple_1_1_params}{cmaple\+::\+Params} 
-\end{DoxyReturn}
 \Hypertarget{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575}\label{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575} 
 \index{cmaple::Tree@{cmaple::Tree}!infer@{infer}}
 \index{infer@{infer}!cmaple::Tree@{cmaple::Tree}}
@@ -185,6 +115,76 @@ Infer a phylogenetic tree.
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 a string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call \doxylink{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021}{export\+String()} later 
+\end{DoxyReturn}
+\Hypertarget{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}\label{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db} 
+\index{cmaple::Tree@{cmaple::Tree}!computeLh@{computeLh}}
+\index{computeLh@{computeLh}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{computeLh()}{computeLh()}}
+{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Tree\+::compute\+Lh (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment. 
+
+\begin{DoxyReturn}{Returns}
+The log likelihood of the current tree 
+\end{DoxyReturn}
+\Hypertarget{classcmaple_1_1_tree_ac3d6efc278b68360108dac91b44c5055}\label{classcmaple_1_1_tree_ac3d6efc278b68360108dac91b44c5055} 
+\index{cmaple::Tree@{cmaple::Tree}!computeBranchSupports@{computeBranchSupports}}
+\index{computeBranchSupports@{computeBranchSupports}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{computeBranchSupports()}{computeBranchSupports()}}
+{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::compute\+Branch\+Supports (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads = {\ttfamily 1},  }\item[{const int}]{num\+\_\+replicates = {\ttfamily 1000},  }\item[{const double}]{epsilon = {\ttfamily 0.1},  }\item[{const bool}]{allow\+\_\+replacing\+\_\+\+ML\+\_\+tree = {\ttfamily true} }\end{DoxyParamCaption})}
+
+
+
+Compute branch supports (a\+LRT-\/\+SH) of the current tree, which may or may not contain all taxa in the alignment. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em num\+\_\+threads} & The number of threads (optional) \\
+\hline
+\mbox{\texttt{ in}}  & {\em num\+\_\+replicates} & A positive number of replicates (optional) \\
+\hline
+\mbox{\texttt{ in}}  & {\em epsilon} & A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-\/likelihood values (see Guindon et al., 2010) \\
+\hline
+\mbox{\texttt{ in}}  & {\em allow\+\_\+replacing\+\_\+\+ML\+\_\+tree} & TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the branch supports values, one could call export\+String(\"{}\+BIN\"{}, true) later 
+\end{DoxyReturn}
+\Hypertarget{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021}\label{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021} 
+\index{cmaple::Tree@{cmaple::Tree}!exportString@{exportString}}
+\index{exportString@{exportString}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{exportString()}{exportString()}}
+{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::export\+String (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{tree\+\_\+type = {\ttfamily \"{}BIN\"{}},  }\item[{const bool}]{show\+\_\+branch\+\_\+supports = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+Export the phylogenetic tree to a string in NEWICK format. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em tree\+\_\+type} & The type of the output tree (optional)\+: \"{}\+BIN\"{} -\/ bifurcating tree or \"{}\+MUL\"{} -\/ multifurcating tree \\
+\hline
+\mbox{\texttt{ in}}  & {\em show\+\_\+branch\+\_\+supports} & TRUE to output the branch supports (a\+LRT-\/\+SH values) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A tree string in NEWICK format 
+\end{DoxyReturn}
+\Hypertarget{classcmaple_1_1_tree_a0efa4425430d7b9dde4cafb4412536c1}\label{classcmaple_1_1_tree_a0efa4425430d7b9dde4cafb4412536c1} 
+\index{cmaple::Tree@{cmaple::Tree}!getParams@{getParams}}
+\index{getParams@{getParams}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{getParams()}{getParams()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classcmaple_1_1_params}{cmaple\+::\+Params}} \& cmaple\+::\+Tree\+::get\+Params (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Get an instance of \doxylink{classcmaple_1_1_params}{cmaple\+::\+Params}, which stores all parameter settings. Users can use that params instance to change \href{classcmaple_1_1_params.html}{\texttt{ {\bfseries{other minor settings}}}} of CMaple (which are not yet supported via the APIs) 
+
+\begin{DoxyReturn}{Returns}
+An instance of \doxylink{classcmaple_1_1_params}{cmaple\+::\+Params} 
 \end{DoxyReturn}
 
 

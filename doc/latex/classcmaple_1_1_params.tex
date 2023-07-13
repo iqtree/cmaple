@@ -9,19 +9,19 @@
 \item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509}{threshold\+\_\+prob}}
 \item 
-Position\+Type \mbox{\hyperlink{classcmaple_1_1_params_a026887ca6fbb3677729330f972d6a0a9}{mutation\+\_\+update\+\_\+period}}
+Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a26f833dbe75c3832f518eb0dbdf16780}{fixed\+\_\+min\+\_\+blength}}
 \item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a7cdbc01ec9d3bb923a4b7038ba5d34ac}{min\+\_\+blength\+\_\+factor}}
 \item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_ab1dd36bba7aaeb3fe8416bb49db0f56b}{max\+\_\+blength\+\_\+factor}}
 \item 
-int \mbox{\hyperlink{classcmaple_1_1_params_a245b150837d8178600ff29b80ea00fd8}{num\+\_\+tree\+\_\+improvement}}
+Position\+Type \mbox{\hyperlink{classcmaple_1_1_params_a026887ca6fbb3677729330f972d6a0a9}{mutation\+\_\+update\+\_\+period}}
 \item 
-Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a37e63254bb438e88ef66effa7a73b2d9}{thresh\+\_\+entire\+\_\+tree\+\_\+improvement}}
+int \mbox{\hyperlink{classcmaple_1_1_params_a245b150837d8178600ff29b80ea00fd8}{num\+\_\+tree\+\_\+improvement}}
 \item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a196eb6907df1f2dd02cba0c502e0b789}{thresh\+\_\+placement\+\_\+cost}}
 \item 
-Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a26f833dbe75c3832f518eb0dbdf16780}{fixed\+\_\+min\+\_\+blength}}
+Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a37e63254bb438e88ef66effa7a73b2d9}{thresh\+\_\+entire\+\_\+tree\+\_\+improvement}}
 \item 
 uint64\+\_\+t \mbox{\hyperlink{classcmaple_1_1_params_a7064032af46aae5d59e764a9e710e982}{ran\+\_\+seed}}
 \end{DoxyCompactItemize}
@@ -31,21 +31,19 @@ uint64\+\_\+t \mbox{\hyperlink{classcmaple_1_1_params_a7064032af46aae5d59e764a9e
 Program parameters, everything is specified here 
 
 \doxysubsection{Member Data Documentation}
-\Hypertarget{classcmaple_1_1_params_a26f833dbe75c3832f518eb0dbdf16780}\label{classcmaple_1_1_params_a26f833dbe75c3832f518eb0dbdf16780} 
+\Hypertarget{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509}\label{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509} 
+\index{cmaple::Params@{cmaple::Params}!threshold\_prob@{threshold\_prob}}
+\index{threshold\_prob@{threshold\_prob}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{threshold\_prob}{threshold\_prob}}
+{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::threshold\+\_\+prob}
+
+A relative probability threshold, which is used to ignore possible states with very low probabilities. Default\+: 1e-\/8 \Hypertarget{classcmaple_1_1_params_a26f833dbe75c3832f518eb0dbdf16780}\label{classcmaple_1_1_params_a26f833dbe75c3832f518eb0dbdf16780} 
 \index{cmaple::Params@{cmaple::Params}!fixed\_min\_blength@{fixed\_min\_blength}}
 \index{fixed\_min\_blength@{fixed\_min\_blength}!cmaple::Params@{cmaple::Params}}
 \doxysubsubsection{\texorpdfstring{fixed\_min\_blength}{fixed\_min\_blength}}
 {\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::fixed\+\_\+min\+\_\+blength}
 
-A minimum value of the branch lengths. Default\+: -\/1 (UNSPECIFIED), the minimum branch length is computed from \textquotesingle{}min\+\_\+blength\+\_\+factor\textquotesingle{} \Hypertarget{classcmaple_1_1_params_ab1dd36bba7aaeb3fe8416bb49db0f56b}\label{classcmaple_1_1_params_ab1dd36bba7aaeb3fe8416bb49db0f56b} 
-\index{cmaple::Params@{cmaple::Params}!max\_blength\_factor@{max\_blength\_factor}}
-\index{max\_blength\_factor@{max\_blength\_factor}!cmaple::Params@{cmaple::Params}}
-\doxysubsubsection{\texorpdfstring{max\_blength\_factor}{max\_blength\_factor}}
-{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::max\+\_\+blength\+\_\+factor}
-
-A factor to compute the maximum branch length. Default\+: 40 ~\newline
- $<$\+Maximum branch length$>$ = $<$max\+\_\+blength\+\_\+factor$>$ \texorpdfstring{$\ast$}{*} $<$default branch length$>$ ~\newline
- where $<$default branch length$>$ is one mutation per site. \Hypertarget{classcmaple_1_1_params_a7cdbc01ec9d3bb923a4b7038ba5d34ac}\label{classcmaple_1_1_params_a7cdbc01ec9d3bb923a4b7038ba5d34ac} 
+A minimum value of the branch lengths. Default\+: -\/1 (UNSPECIFIED), the minimum branch length is computed from \textquotesingle{}min\+\_\+blength\+\_\+factor\textquotesingle{} \Hypertarget{classcmaple_1_1_params_a7cdbc01ec9d3bb923a4b7038ba5d34ac}\label{classcmaple_1_1_params_a7cdbc01ec9d3bb923a4b7038ba5d34ac} 
 \index{cmaple::Params@{cmaple::Params}!min\_blength\_factor@{min\_blength\_factor}}
 \index{min\_blength\_factor@{min\_blength\_factor}!cmaple::Params@{cmaple::Params}}
 \doxysubsubsection{\texorpdfstring{min\_blength\_factor}{min\_blength\_factor}}
@@ -53,6 +51,14 @@ A factor to compute the maximum branch length. Default\+: 40 ~\newline
 
 A factor to compute the minimum branch length (if fixed\+\_\+min\+\_\+blength is specified, this factor is ignored). Default\+: 0.\+2 ~\newline
 $<$\+Minimum branch length$>$ = $<$min\+\_\+blength\+\_\+factor$>$ \texorpdfstring{$\ast$}{*} $<$default branch length$>$ ~\newline
+ where $<$default branch length$>$ is one mutation per site. \Hypertarget{classcmaple_1_1_params_ab1dd36bba7aaeb3fe8416bb49db0f56b}\label{classcmaple_1_1_params_ab1dd36bba7aaeb3fe8416bb49db0f56b} 
+\index{cmaple::Params@{cmaple::Params}!max\_blength\_factor@{max\_blength\_factor}}
+\index{max\_blength\_factor@{max\_blength\_factor}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{max\_blength\_factor}{max\_blength\_factor}}
+{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::max\+\_\+blength\+\_\+factor}
+
+A factor to compute the maximum branch length. Default\+: 40 ~\newline
+ $<$\+Maximum branch length$>$ = $<$max\+\_\+blength\+\_\+factor$>$ \texorpdfstring{$\ast$}{*} $<$default branch length$>$ ~\newline
  where $<$default branch length$>$ is one mutation per site. \Hypertarget{classcmaple_1_1_params_a026887ca6fbb3677729330f972d6a0a9}\label{classcmaple_1_1_params_a026887ca6fbb3677729330f972d6a0a9} 
 \index{cmaple::Params@{cmaple::Params}!mutation\_update\_period@{mutation\_update\_period}}
 \index{mutation\_update\_period@{mutation\_update\_period}!cmaple::Params@{cmaple::Params}}
@@ -65,31 +71,25 @@ The period (in term of the number of sample placements) to update the substituti
 \doxysubsubsection{\texorpdfstring{num\_tree\_improvement}{num\_tree\_improvement}}
 {\footnotesize\ttfamily int cmaple\+::\+Params\+::num\+\_\+tree\+\_\+improvement}
 
-The number of times we traverse the tree looking for topological improvements (applying SPR moves). Default\+: 1 \Hypertarget{classcmaple_1_1_params_a7064032af46aae5d59e764a9e710e982}\label{classcmaple_1_1_params_a7064032af46aae5d59e764a9e710e982} 
-\index{cmaple::Params@{cmaple::Params}!ran\_seed@{ran\_seed}}
-\index{ran\_seed@{ran\_seed}!cmaple::Params@{cmaple::Params}}
-\doxysubsubsection{\texorpdfstring{ran\_seed}{ran\_seed}}
-{\footnotesize\ttfamily uint64\+\_\+t cmaple\+::\+Params\+::ran\+\_\+seed}
-
-A seed number for random generators. Default\+: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number. \Hypertarget{classcmaple_1_1_params_a37e63254bb438e88ef66effa7a73b2d9}\label{classcmaple_1_1_params_a37e63254bb438e88ef66effa7a73b2d9} 
-\index{cmaple::Params@{cmaple::Params}!thresh\_entire\_tree\_improvement@{thresh\_entire\_tree\_improvement}}
-\index{thresh\_entire\_tree\_improvement@{thresh\_entire\_tree\_improvement}!cmaple::Params@{cmaple::Params}}
-\doxysubsubsection{\texorpdfstring{thresh\_entire\_tree\_improvement}{thresh\_entire\_tree\_improvement}}
-{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::thresh\+\_\+entire\+\_\+tree\+\_\+improvement}
-
-Threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default\+: 1 \Hypertarget{classcmaple_1_1_params_a196eb6907df1f2dd02cba0c502e0b789}\label{classcmaple_1_1_params_a196eb6907df1f2dd02cba0c502e0b789} 
+The number of times we traverse the tree looking for topological improvements (applying SPR moves). Default\+: 1 \Hypertarget{classcmaple_1_1_params_a196eb6907df1f2dd02cba0c502e0b789}\label{classcmaple_1_1_params_a196eb6907df1f2dd02cba0c502e0b789} 
 \index{cmaple::Params@{cmaple::Params}!thresh\_placement\_cost@{thresh\_placement\_cost}}
 \index{thresh\_placement\_cost@{thresh\_placement\_cost}!cmaple::Params@{cmaple::Params}}
 \doxysubsubsection{\texorpdfstring{thresh\_placement\_cost}{thresh\_placement\_cost}}
 {\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::thresh\+\_\+placement\+\_\+cost}
 
-Do not try to apply SPR moves on nodes that have the placement cost (i.\+e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default\+: -\/1e-\/5 \Hypertarget{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509}\label{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509} 
-\index{cmaple::Params@{cmaple::Params}!threshold\_prob@{threshold\_prob}}
-\index{threshold\_prob@{threshold\_prob}!cmaple::Params@{cmaple::Params}}
-\doxysubsubsection{\texorpdfstring{threshold\_prob}{threshold\_prob}}
-{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::threshold\+\_\+prob}
+Do not try to apply SPR moves on nodes that have the placement cost (i.\+e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default\+: -\/1e-\/5 \Hypertarget{classcmaple_1_1_params_a37e63254bb438e88ef66effa7a73b2d9}\label{classcmaple_1_1_params_a37e63254bb438e88ef66effa7a73b2d9} 
+\index{cmaple::Params@{cmaple::Params}!thresh\_entire\_tree\_improvement@{thresh\_entire\_tree\_improvement}}
+\index{thresh\_entire\_tree\_improvement@{thresh\_entire\_tree\_improvement}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{thresh\_entire\_tree\_improvement}{thresh\_entire\_tree\_improvement}}
+{\footnotesize\ttfamily Real\+Num\+Type cmaple\+::\+Params\+::thresh\+\_\+entire\+\_\+tree\+\_\+improvement}
 
-A relative probability threshold, which is used to ignore possible states with very low probabilities. Default\+: 1e-\/8 
+Threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default\+: 1 \Hypertarget{classcmaple_1_1_params_a7064032af46aae5d59e764a9e710e982}\label{classcmaple_1_1_params_a7064032af46aae5d59e764a9e710e982} 
+\index{cmaple::Params@{cmaple::Params}!ran\_seed@{ran\_seed}}
+\index{ran\_seed@{ran\_seed}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{ran\_seed}{ran\_seed}}
+{\footnotesize\ttfamily uint64\+\_\+t cmaple\+::\+Params\+::ran\+\_\+seed}
+
+A seed number for random generators. Default\+: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number. 
 
 The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
 \item 
