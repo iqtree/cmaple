@@ -3,7 +3,7 @@
 Introduction to CMaple library...
 
 
-
+<br>
 # How to use?
 Include CMaple as a submodule...
 
@@ -38,12 +38,16 @@ CMaple outputs debugging messages to the standard output `std::cout`. One could 
 <br> - `VB_MED` (default): common messages (showing the processing progress).
 <br> - `VB_DEBUG`: as many messages as possible (useful for debugging).
 
+
+<br>
 # More APIs?
 CMaple APIs are exposed in the following classes:
 <br>[**Alignment**](classcmaple_1_1_alignment.html)
 <br>[**Model**](classcmaple_1_1_model.html)
 <br>[**Tree**](classcmaple_1_1_tree.html)
 
+
+<br>
 # How to cite CMaple?
 CMaple manuscript...
 
