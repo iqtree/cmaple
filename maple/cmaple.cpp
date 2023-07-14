@@ -217,10 +217,14 @@ void cmaple::testing(cmaple::Params& params)
     cmaple::Alignment aln(params.aln_path);
 
     // Create a model
-    cmaple::Model model("GTR20");
+    cmaple::Model model("GTR");
 
     // Create a tree, attach the alignment and model to the tree
     cmaple::Tree tree(aln, model);
+    
+    // change aln
+    cmaple::Alignment aln1("test_100.maple");
+    tree.changeAln(aln1);
     
     // infer
     cout << tree.infer()<< endl;
@@ -228,15 +232,27 @@ void cmaple::testing(cmaple::Params& params)
     cout << tree.exportString() << endl;
     
     // change model
-    cmaple::Model model1("LG");
+    cmaple::Model model1("JC");
     tree.changeModel(model1);
     
     // change model again
     cmaple::Model model2("GTR");
     tree.changeModel(model2);
     
+    // change aln
+    cmaple::Alignment aln2("test_200.maple");
+    tree.changeAln(aln2);
+    
     // infer again
     cout << tree.infer()<< endl;
     
     cout << tree.exportString() << endl;
+    
+    // change aln
+    // cmaple::Alignment aln3("test_100.maple");
+    // tree.changeAln(aln3);
+    
+    // change aln with different seqtypes
+    Alignment aln4("test_aa/test_aa_100K.maple");
+    tree.changeAln(aln4);
 }

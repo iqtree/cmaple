@@ -35,6 +35,7 @@ void cmaple::TreeBase::setupFuncPtrs()
     switch (aln->num_states) {
         case 4:
             loadTreePtr = &TreeBase::loadTreeTemplate<4>;
+            changeAlnPtr = &TreeBase::changeAlnTemplate<4>;
             changeModelPtr = &TreeBase::changeModelTemplate<4>;
             doInferencePtr = &TreeBase::doInferenceTemplate<4>;
             calculateLhPtr = &TreeBase::calculateLhTemplate<4>;
@@ -42,6 +43,7 @@ void cmaple::TreeBase::setupFuncPtrs()
             break;
         case 20:
             loadTreePtr = &TreeBase::loadTreeTemplate<20>;
+            changeAlnPtr = &TreeBase::changeAlnTemplate<20>;
             changeModelPtr = &TreeBase::changeModelTemplate<20>;
             doInferencePtr = &TreeBase::doInferenceTemplate<20>;
             calculateLhPtr = &TreeBase::calculateLhTemplate<20>;
@@ -123,9 +125,10 @@ void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool n_
     bool missing_blength = readTree(tree_stream);
     
     // make sure users can only keep the blengths fixed if they input a complete tree with branch lengths
-    if (n_fixed_blengths && (!isComplete() || missing_blength) && cmaple::verbose_mode > cmaple::VB_QUIET)
+    if (n_fixed_blengths && (!isComplete() || missing_blength))
     {
-        outWarning("Disable the option to keep the branch lengths fixed because the input tree is incomplete (i.e., not containing all taxa from the alignment) or contains missing branch length(s).");
+        if (cmaple::verbose_mode > cmaple::VB_QUIET)
+            outWarning("Disable the option to keep the branch lengths fixed because the input tree is incomplete (i.e., not containing all taxa from the alignment) or contains missing branch length(s).");
         fixed_blengths = false;
     }
     else
@@ -171,6 +174,48 @@ void cmaple::TreeBase::updateModelLhAfterLoading()
     performDFS<&TreeBase::updateLowerLh<num_states>>();
 }
 
+void cmaple::TreeBase::changeAln(AlignmentBase* aln)
+{
+    (this->*changeAlnPtr)(aln);
+}
+
+template <const cmaple::StateType  num_states>
+void cmaple::TreeBase::changeAlnTemplate(AlignmentBase* n_aln)
+{
+    // make sure both alignments have the same seqtype
+    if (aln->getSeqType() != n_aln->getSeqType())
+        outError("Sorry! we have yet supported changing to a new alignment with a sequence type different from the current one.");
+    
+    // do nothing if new aln is the same as the current one
+    if (aln == n_aln) return;
+    
+    // record the old_aln
+    AlignmentBase* old_aln = aln;
+    
+    // change the alignment
+    aln = n_aln;
+    
+    // sort sequences by their distances to the reference sequence
+    aln->sortSeqsByDistances(params->hamming_weight);
+    
+    // update model according to the data in the new alignment
+    updateModelByAln();
+    
+    // re-mark taxa in the new alignment, which already existed in the current tree
+    remarkExistingSeqs(old_aln);
+    
+    // make sure users can only keep the blengths fixed if they input a complete tree with branch lengths
+    if (fixed_blengths && !isComplete())
+    {
+        if (cmaple::verbose_mode > cmaple::VB_QUIET)
+            outWarning("Disable the option to keep the branch lengths fixed because the input tree is incomplete (i.e., not containing all taxa from the alignment).");
+        fixed_blengths = false;
+    }
+    
+    // update Model params and partial lhs along the current tree (if any)
+    updateModelLhAfterLoading<num_states>();
+}
+
 void cmaple::TreeBase::changeModel(ModelBase* model)
 {
     (this->*changeModelPtr)(model);
@@ -181,7 +226,10 @@ void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
 {
     // make sure both models have the same seqtype
     if (model->num_states_ != n_model->num_states_)
-        outError("Sorry! we have yet supported changing to a new model with a different sequence type than the current one.");
+        outError("Sorry! we have yet supported changing to a new model with a sequence type different from the current one.");
+    
+    // do nothing if new model is the same as the current one
+    if (model == n_model) return;
     
     // change the model
     model = n_model;
@@ -6334,16 +6382,70 @@ const char cmaple::TreeBase::readNextChar(std::istream& in, PositionType& in_lin
     return ch;
 }
 
+std::map<std::string, NumSeqsType> cmaple::TreeBase::initMapSeqNameIndex()
+{
+    ASSERT(aln);
+    
+    // create the map
+    std::map<std::string, NumSeqsType> map_seqname_index;
+    const std::vector<Sequence>& sequences = aln->data;
+    for (NumSeqsType i = 0; i < sequences.size(); ++i)
+        map_seqname_index.emplace(sequences[i].seq_name, i);
+    
+    return map_seqname_index;
+}
+
+void cmaple::TreeBase::markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index)
+{
+    // Find the sequence name
+    auto iter = map_name_index.find(seq_name);
+    // If it's found -> mark it as added
+    if (iter != map_name_index.end())
+        aln->data[iter->second].is_added = true;
+    // otherwise, return an error
+    else
+        outError("Taxon " + seq_name + " is not found in the new alignment!");
+}
+
+void cmaple::TreeBase::remarkExistingSeqs(AlignmentBase* old_aln)
+{
+    ASSERT(aln && old_aln);
+    
+    // init a mapping between sequence names and its index in the alignment
+    std::map<std::string, NumSeqsType> map_name_index = initMapSeqNameIndex();
+    
+    // reset all marked sequences
+    Sequence* sequence = &aln->data.front();
+    const NumSeqsType num_seqs = aln->data.size();
+    for (auto i = 0; i < num_seqs; ++i, ++sequence)
+        sequence->is_added = false;
+    
+    // browse all nodes to mark existing leave as added
+    for (auto i = 0; i < nodes.size(); ++i)
+    {
+        // only consider leave
+        if (!nodes[i].isInternal())
+        {
+            PhyloNode& node = nodes[i];
+            
+            // mark the leaf itself
+            markAnExistingSeq(old_aln->data[node.getSeqNameIndex()].seq_name, map_name_index);
+            
+            // mark its less-info sequences
+            std::vector<NumSeqsType>& less_info_seqs = node.getLessInfoSeqs();
+            for (auto j = 0; j < less_info_seqs.size(); ++j)
+                markAnExistingSeq(old_aln->data[less_info_seqs[j]].seq_name, map_name_index);
+        }
+    }
+}
+
 bool cmaple::TreeBase::readTree(std::istream& in)
 {
     // Flag to check whether the tree contains missing branch length
     bool missing_blengths = false;
     
     // create a map between leave and sequences in the alignment
-    std::map<std::string, NumSeqsType> map_seqname_index;
-    const std::vector<Sequence>& sequences = aln->data;
-    for (NumSeqsType i = 0; i < sequences.size(); ++i)
-        map_seqname_index.emplace(sequences[i].seq_name, i);
+    std::map<std::string, NumSeqsType> map_seqname_index = initMapSeqNameIndex();
     
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "Reading a tree" << std::endl;

@@ -27,6 +27,12 @@ namespace cmaple
         ChangeModelPtrType changeModelPtr;
         
         /**
+            Pointer  to changeAln method
+         */
+        typedef void (TreeBase::*ChangeAlnPtrType)(AlignmentBase*);
+        ChangeAlnPtrType changeAlnPtr;
+        
+        /**
             Pointer  to doInference method
          */
         typedef void (TreeBase::*DoInferencePtrType)(const std::string&, const bool);
@@ -50,6 +56,11 @@ namespace cmaple
          */
         template <const cmaple::StateType  num_states>
         void loadTreeTemplate(std::istream& tree_stream, const bool fixed_blengths);
+        
+        /*! Template of changeAln()
+         */
+        template <const cmaple::StateType  num_states>
+        void changeAlnTemplate(AlignmentBase* aln);
         
         /*! Template of changeModel()
          */
@@ -565,6 +576,24 @@ namespace cmaple
         template <const cmaple::StateType  num_states>
         void updateModelLhAfterLoading();
         
+        /**
+         Initialize a mapping between sequence names and their index in the alignment
+         */
+        std::map<std::string, NumSeqsType> initMapSeqNameIndex();
+        
+        /**
+         * Re-mark the sequences in the alignment, which already existed in the current tree
+         * @param[in] old_aln the Old alignment
+         */
+        void remarkExistingSeqs(AlignmentBase* old_aln);
+        
+        /**
+         * Find and mark a sequence existed in the tree
+         * @param[in] seq_name Name of the sequence
+         * @param[in] map_name_index a mapping between sequence names and its index in the alignment
+         */
+        void markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index);
+        
         // NHANLT: Debug aLRT
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
         
@@ -632,6 +661,11 @@ namespace cmaple
          Attach alignment and model
          */
         void attachAlnModel(AlignmentBase* aln, ModelBase* model);
+        
+        /**
+         Change the alignment
+         */
+        void changeAln(AlignmentBase* aln);
         
         /**
          Change the substitution model

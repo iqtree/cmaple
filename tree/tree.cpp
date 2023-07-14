@@ -54,6 +54,14 @@ cmaple::Tree::~Tree()
     }
 }
 
+void cmaple::Tree::changeAln(Alignment& n_aln)
+{
+    ASSERT(tree_base);
+    
+    // change the aln_base
+    tree_base->changeAln(n_aln.aln_base);
+}
+
 void cmaple::Tree::changeModel(Model& n_model)
 {
     ASSERT(tree_base);

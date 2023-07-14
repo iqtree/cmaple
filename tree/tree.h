@@ -28,6 +28,11 @@ namespace cmaple
          */
         ~Tree();
         
+        /*! \brief Change the alignment
+         * @param[in] aln An alignment
+         */
+        void changeAln(Alignment& aln);
+        
         /*! \brief Change the substitution model
          * @param[in] model A substitution model
          */
