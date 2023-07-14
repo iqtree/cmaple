@@ -28,8 +28,7 @@
 // Some math & matrix functions  (some using SSE/AVX/NEON for significantly better speed)
 //
 
-// allows to use instrinc names for x64 (which SIMDe will translate to Neon for ARM automatically)
-#define SIMDE_ENABLE_NATIVE_ALIASES 
+// let's include some x64 instrinsics from SIMDe; SIMDe will translate to Neon for ARM automatically
 #include <simde/x86/sse2.h>
 #include <simde/x86/sse4.1.h>
 #include <simde/x86/avx.h>
@@ -42,45 +41,45 @@
 // Multiply 4 floats by another 4 floats.
 // inspired by https://stackoverflow.com/a/59495197
 template<int offsetRegs>
-inline __m128 mul4(const float* p1, const float* p2)
+inline simde__m128 mul4(const float* p1, const float* p2)
 {
   constexpr int lanes = offsetRegs * 4;
-  const __m128 a = _mm_loadu_ps(p1 + lanes);
-  const __m128 b = _mm_loadu_ps(p2 + lanes);
-  return _mm_mul_ps(a, b);
+  const simde__m128 a = simde_mm_loadu_ps(p1 + lanes);
+  const simde__m128 b = simde_mm_loadu_ps(p2 + lanes);
+  return simde_mm_mul_ps(a, b);
 }
 
 // Multiply 4 doubles by another 4 doubles.
 template<int offsetRegs>
-inline __m256d mul4(const double* p1, const double* p2)
+inline simde__m256d mul4(const double* p1, const double* p2)
 {
   constexpr int lanes = offsetRegs * 4;
-  const __m256d a = _mm256_loadu_pd(p1 + lanes);
-  const __m256d b = _mm256_loadu_pd(p2 + lanes);
-  return _mm256_mul_pd(a, b);
+  const simde__m256d a = simde_mm256_loadu_pd(p1 + lanes);
+  const simde__m256d b = simde_mm256_loadu_pd(p2 + lanes);
+  return simde_mm256_mul_pd(a, b);
 }
 
 // sum up 4 floats (SSE)
 // see https://stackoverflow.com/a/59495197
-inline float horiz_sum(__m128 v) {
+inline float horiz_sum(simde__m128 v) {
   // Add 4 values into 2
-  const __m128 r2 = _mm_add_ps(v, _mm_movehl_ps(v, v));
+  const simde__m128 r2 = simde_mm_add_ps(v, simde_mm_movehl_ps(v, v));
   // Add 2 lower values into the final result
-  const __m128 r1 = _mm_add_ss(r2, _mm_movehdup_ps(r2));
+  const simde__m128 r1 = simde_mm_add_ss(r2, simde_mm_movehdup_ps(r2));
   // Return the lowest lane of the result vector.
   // The intrinsic below compiles into noop, modern compilers return floats in the lowest lane of xmm0 register.
-  return _mm_cvtss_f32(r1);
+  return simde_mm_cvtss_f32(r1);
 }
 
 // sum up 4 doubles (AVX)
 // see https://stackoverflow.com/a/49943540
-inline double horiz_sum(__m256d v) {
-  __m128d vlow = _mm256_castpd256_pd128(v);
-  __m128d vhigh = _mm256_extractf128_pd(v, 1); // high 128
-  vlow = _mm_add_pd(vlow, vhigh);     // reduce down to 128
+inline double horiz_sum(simde__m256d v) {
+  simde__m128d vlow = simde_mm256_castpd256_pd128(v);
+  simde__m128d vhigh = simde_mm256_extractf128_pd(v, 1); // high 128
+  vlow = simde_mm_add_pd(vlow, vhigh);     // reduce down to 128
 
-  __m128d high64 = _mm_unpackhi_pd(vlow, vlow);
-  return  _mm_cvtsd_f64(_mm_add_sd(vlow, high64));  // reduce to scalar
+  simde__m128d high64 = simde_mm_unpackhi_pd(vlow, vlow);
+  return  simde_mm_cvtsd_f64(_mm_add_sd(vlow, high64));  // reduce to scalar
 }
 
 
@@ -110,10 +109,10 @@ inline float dotProduct<20>(const float* p1, const float* p2)
   auto dot4 = mul4<4>(p1, p2);
 
   // 20 to 4
-  const auto dot01 = _mm_add_ps(dot0, dot1);
-  const auto dot23 = _mm_add_ps(dot2, dot3);
-  const auto dot401 = _mm_add_ps(dot4, dot01);
-  const auto dot23401 = _mm_add_ps(dot23, dot401);
+  const auto dot01 = simde_mm_add_ps(dot0, dot1);
+  const auto dot23 = simde_mm_add_ps(dot2, dot3);
+  const auto dot401 = simde_mm_add_ps(dot4, dot01);
+  const auto dot23401 = simde_mm_add_ps(dot23, dot401);
 
   return horiz_sum(dot23401);
 }
@@ -132,10 +131,10 @@ inline double dotProduct<20>(const double* p1, const double* p2)
   auto dot4 = mul4<4>(p1, p2);
 
   // 20 to 4
-  const auto dot01 = _mm256_add_pd(dot0, dot1);
-  const auto dot23 = _mm256_add_pd(dot2, dot3);
-  const auto dot401 = _mm256_add_pd(dot4, dot01);
-  const auto dot23401 = _mm256_add_pd(dot23, dot401);
+  const auto dot01 = simde_mm256_add_pd(dot0, dot1);
+  const auto dot23 = simde_mm256_add_pd(dot2, dot3);
+  const auto dot401 = simde_mm256_add_pd(dot4, dot01);
+  const auto dot23401 = simde_mm256_add_pd(dot23, dot401);
 
   return horiz_sum(dot23401);
 }
