@@ -54,6 +54,14 @@ cmaple::Tree::~Tree()
     }
 }
 
+void cmaple::Tree::changeModel(Model& n_model)
+{
+    ASSERT(tree_base);
+    
+    // change the model_base
+    tree_base->changeModel(n_model.model_base);
+}
+
 std::string cmaple::Tree::infer(const std::string& tree_search_type, const bool shallow_tree_search)
 {
     ASSERT(tree_base);

@@ -21,6 +21,12 @@ namespace cmaple
         LoadTreePtrType loadTreePtr;
         
         /**
+            Pointer  to changeModel method
+         */
+        typedef void (TreeBase::*ChangeModelPtrType)(ModelBase*);
+        ChangeModelPtrType changeModelPtr;
+        
+        /**
             Pointer  to doInference method
          */
         typedef void (TreeBase::*DoInferencePtrType)(const std::string&, const bool);
@@ -44,6 +50,11 @@ namespace cmaple
          */
         template <const cmaple::StateType  num_states>
         void loadTreeTemplate(std::istream& tree_stream, const bool fixed_blengths);
+        
+        /*! Template of changeModel()
+         */
+        template <const cmaple::StateType  num_states>
+        void changeModelTemplate(ModelBase* model);
         
         /*! Template of doInference()
          */
@@ -543,6 +554,17 @@ namespace cmaple
          */
         bool isComplete();
         
+        /**
+         Update model according to alignment data
+         */
+        void updateModelByAln();
+        
+        /**
+         Update model params and partial likelihoods after loading a tree
+         */
+        template <const cmaple::StateType  num_states>
+        void updateModelLhAfterLoading();
+        
         // NHANLT: Debug aLRT
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
         
@@ -610,6 +632,11 @@ namespace cmaple
          Attach alignment and model
          */
         void attachAlnModel(AlignmentBase* aln, ModelBase* model);
+        
+        /**
+         Change the substitution model
+         */
+        void changeModel(ModelBase* model);
         
         /*! Load an input tree
          @param[in] tree_stream A stream of the input tree

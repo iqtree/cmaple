@@ -193,7 +193,7 @@ void cmaple::testing(cmaple::Params& params)
     std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;*/
 
     // Create an alignment from a file
-    cmaple::Alignment aln(params.aln_path);
+    /*cmaple::Alignment aln(params.aln_path);
 
     // Create a model
     cmaple::Model model("GTR");
@@ -211,5 +211,32 @@ void cmaple::testing(cmaple::Params& params)
     cout << "- Tree log likelihood: " << tree.computeLh() << endl;
 
     // Export the tree (with branch supports) in NEWICK format
-    cout << "- Tree: " << tree.exportString("BIN", true) << endl;
+    cout << "- Tree: " << tree.exportString("BIN", true) << endl;*/
+    
+    // Create an alignment from a file
+    cmaple::Alignment aln(params.aln_path);
+
+    // Create a model
+    cmaple::Model model("GTR20");
+
+    // Create a tree, attach the alignment and model to the tree
+    cmaple::Tree tree(aln, model);
+    
+    // infer
+    cout << tree.infer()<< endl;
+    
+    cout << tree.exportString() << endl;
+    
+    // change model
+    cmaple::Model model1("LG");
+    tree.changeModel(model1);
+    
+    // change model again
+    cmaple::Model model2("GTR");
+    tree.changeModel(model2);
+    
+    // infer again
+    cout << tree.infer()<< endl;
+    
+    cout << tree.exportString() << endl;
 }

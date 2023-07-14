@@ -35,12 +35,14 @@ void cmaple::TreeBase::setupFuncPtrs()
     switch (aln->num_states) {
         case 4:
             loadTreePtr = &TreeBase::loadTreeTemplate<4>;
+            changeModelPtr = &TreeBase::changeModelTemplate<4>;
             doInferencePtr = &TreeBase::doInferenceTemplate<4>;
             calculateLhPtr = &TreeBase::calculateLhTemplate<4>;
             calculateBranchSupportPtr = &TreeBase::calculateBranchSupportTemplate<4>;
             break;
         case 20:
             loadTreePtr = &TreeBase::loadTreeTemplate<20>;
+            changeModelPtr = &TreeBase::changeModelTemplate<20>;
             doInferencePtr = &TreeBase::doInferenceTemplate<20>;
             calculateLhPtr = &TreeBase::calculateLhTemplate<20>;
             calculateBranchSupportPtr = &TreeBase::calculateBranchSupportTemplate<20>;
@@ -90,6 +92,15 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     // sort sequences by their distances to the reference sequence
     aln->sortSeqsByDistances(params->hamming_weight);
     
+    // update model according to the data from the alignment
+    updateModelByAln();
+    
+    // setup function pointers
+    setupFuncPtrs();
+}
+
+void cmaple::TreeBase::updateModelByAln()
+{
     // extract related info (freqs, log_freqs) of the ref sequence
     model->extractRefInfo(aln);
     
@@ -98,9 +109,6 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     
     // compute cumulative rates of the ref sequence
     model->computeCumulativeRate(aln);
-    
-    // setup function pointers
-    setupFuncPtrs();
 }
 
 void cmaple::TreeBase::loadTree(std::istream& tree_stream, const bool fixed_blengths)
@@ -123,18 +131,8 @@ void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool n_
     else
         fixed_blengths = n_fixed_blengths;
     
-    // calculate all lower, upper left/right likelihoods
-    refreshAllLhs<num_states>(true);
-    
-    // update model params
-    /*cout << " - Model params before updating: " << endl;
-     tree.showModelParams();*/
-    updateModelParams<num_states>();
-    /*cout << " - Model params after updating: " << endl;
-     tree.showModelParams();*/
-    
-    // refresh all lower after updating model params
-    performDFS<&TreeBase::updateLowerLh<num_states>>();
+    // update model params & partial lhs along tree after loading the tree from a file
+    updateModelLhAfterLoading<num_states>();
     
     // If the tree contains any missing blengths -> re-estimate the blengths
     if (missing_blength)
@@ -151,6 +149,48 @@ void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool n_
     
     // set outdated = false at all nodes to avoid considering SPR moves at those nodes
     resetSPRFlags(false, true, false);
+}
+
+template <const cmaple::StateType  num_states>
+void cmaple::TreeBase::updateModelLhAfterLoading()
+{
+    // do nothing on an empty tree
+    if (!nodes.size()) return;
+    
+    // calculate all lower, upper left/right likelihoods
+    refreshAllLhs<num_states>(true);
+    
+    // update model params
+    /*cout << " - Model params before updating: " << endl;
+     tree.showModelParams();*/
+    updateModelParams<num_states>();
+    /*cout << " - Model params after updating: " << endl;
+     tree.showModelParams();*/
+    
+    // refresh all lower after updating model params
+    performDFS<&TreeBase::updateLowerLh<num_states>>();
+}
+
+void cmaple::TreeBase::changeModel(ModelBase* model)
+{
+    (this->*changeModelPtr)(model);
+}
+
+template <const cmaple::StateType  num_states>
+void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
+{
+    // make sure both models have the same seqtype
+    if (model->num_states_ != n_model->num_states_)
+        outError("Sorry! we have yet supported changing to a new model with a different sequence type than the current one.");
+    
+    // change the model
+    model = n_model;
+    
+    // update model according to the data in the alignment
+    updateModelByAln();
+    
+    // update Model params and partial lhs along the current tree (if any)
+    updateModelLhAfterLoading<num_states>();
 }
 
 void cmaple::TreeBase::doInference(const std::string& tree_search_type, const bool shallow_tree_search)
@@ -213,6 +253,7 @@ void cmaple::TreeBase::buildInitialTree(const bool from_input_tree)
         root.setUpperLength(0);
         
         // move to the next sequence in the alignment
+        sequence->is_added = true;
         ++sequence;
         ++i;
     }

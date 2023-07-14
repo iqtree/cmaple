@@ -80,6 +80,14 @@ void cmaple::ModelDNA::initMutationMat()
     }
 }
 
+void cmaple::ModelDNA::extractRootFreqs(const AlignmentBase* aln)
+{
+    // Keep state freqs equally for some models (e.g., JC)
+    if (model_name == "JC" || model_name == "jc") return;
+    
+    ModelBase::extractRootFreqs(aln);
+}
+
 void cmaple::ModelDNA::updateMutationMatEmpirical(const AlignmentBase* aln)
 {
     // don't update JC model parameters

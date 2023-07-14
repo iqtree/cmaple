@@ -28,6 +28,11 @@ namespace cmaple
          */
         ~Tree();
         
+        /*! \brief Change the substitution model
+         * @param[in] model A substitution model
+         */
+        void changeModel(Model& model);
+        
         /*! \brief Infer a phylogenetic tree
          * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:
          *  + performs placement (i.e., adding missing taxa from the alignment to the tree)

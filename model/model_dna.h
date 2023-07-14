@@ -15,6 +15,11 @@ namespace cmaple
          */
         void initMutationMatJC();
         
+        /**
+         extract root freqs from the reference sequence
+         */
+        virtual void extractRootFreqs(const AlignmentBase* aln);
+        
     public:    
         /**
          Constructor
