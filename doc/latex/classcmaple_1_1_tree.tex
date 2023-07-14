@@ -14,6 +14,10 @@
 \Hypertarget{classcmaple_1_1_tree_ae05ee284fd0e9edba07708ec914eb045}\label{classcmaple_1_1_tree_ae05ee284fd0e9edba07708ec914eb045} 
 {\bfseries \texorpdfstring{$\sim$}{\string~}\+Tree} ()
 \begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_tree_a85f68a84ae2bb43c56da610e5395d314}{change\+Aln}} (\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&aln)
+\begin{DoxyCompactList}\small\item\em Change the alignment. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_tree_a486d10b316db6388465625beef891d0f}{change\+Model}} (\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&model)
+\begin{DoxyCompactList}\small\item\em Change the substitution model. \end{DoxyCompactList}\item 
 std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575}{infer}} (const std\+::string \&tree\+\_\+search\+\_\+type=\"{}NORMAL\"{}, const bool shallow\+\_\+tree\+\_\+search=false)
 \begin{DoxyCompactList}\small\item\em Infer a phylogenetic tree. \end{DoxyCompactList}\item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{compute\+Lh}} ()
@@ -75,6 +79,36 @@ Constructor from an optional (bifurcating or multifurcating) tree (with/without 
 
 
 \doxysubsection{Member Function Documentation}
+\Hypertarget{classcmaple_1_1_tree_a85f68a84ae2bb43c56da610e5395d314}\label{classcmaple_1_1_tree_a85f68a84ae2bb43c56da610e5395d314} 
+\index{cmaple::Tree@{cmaple::Tree}!changeAln@{changeAln}}
+\index{changeAln@{changeAln}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{changeAln()}{changeAln()}}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::change\+Aln (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&}]{aln }\end{DoxyParamCaption})}
+
+
+
+Change the alignment. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em aln} & An alignment \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcmaple_1_1_tree_a486d10b316db6388465625beef891d0f}\label{classcmaple_1_1_tree_a486d10b316db6388465625beef891d0f} 
+\index{cmaple::Tree@{cmaple::Tree}!changeModel@{changeModel}}
+\index{changeModel@{changeModel}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{changeModel()}{changeModel()}}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::change\+Model (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&}]{model }\end{DoxyParamCaption})}
+
+
+
+Change the substitution model. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em model} & A substitution model \\
+\hline
+\end{DoxyParams}
 \Hypertarget{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575}\label{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575} 
 \index{cmaple::Tree@{cmaple::Tree}!infer@{infer}}
 \index{infer@{infer}!cmaple::Tree@{cmaple::Tree}}
