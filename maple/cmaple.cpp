@@ -15,7 +15,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         outError("File " + output_treefile + " already exists. Use `--overwrite` option if you really want to overwrite it.\n");
     
     // Initialize a Model
-    Model model(params.model_name, params.seq_type);
+    Model model(params.sub_model, params.seq_type);
     
     // Initializa an Alignment
     // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
@@ -115,7 +115,7 @@ void cmaple::testing(cmaple::Params& params)
     cmaple::Params& cmaple_params = cmaple.getSettings();
     cmaple_params = params;
     cmaple.inferTree();*/
-    /*Model model(params.model_name);
+    /*Model model(params.sub_model);
     // with an alignment file
     Alignment aln1(params.aln_path);
     // with an alignment file
@@ -217,7 +217,7 @@ void cmaple::testing(cmaple::Params& params)
     cmaple::Alignment aln(params.aln_path);
 
     // Create a model
-    cmaple::Model model("GTR");
+    cmaple::Model model(GTR);
 
     // Create a tree, attach the alignment and model to the tree
     cmaple::Tree tree(aln, model);
@@ -232,11 +232,11 @@ void cmaple::testing(cmaple::Params& params)
     cout << tree.exportString() << endl;
     
     // change model
-    cmaple::Model model1("JC");
+    cmaple::Model model1(JC);
     tree.changeModel(model1);
     
     // change model again
-    cmaple::Model model2("GTR");
+    cmaple::Model model2(GTR);
     tree.changeModel(model2);
     
     // change aln

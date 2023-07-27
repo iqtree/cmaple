@@ -33,12 +33,17 @@ namespace cmaple
          */
         virtual void extractRootFreqs(const AlignmentBase* aln);
         
+        /**
+         Get the model name
+         */
+        virtual std::string getModelName() const;
+        
     public:
         
         /**
          Constructor
          */
-        ModelAA(const std::string n_model_name);
+        ModelAA(const SubModel sub_model);
         
         /**
          Destructor

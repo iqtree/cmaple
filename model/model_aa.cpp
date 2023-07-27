@@ -861,7 +861,7 @@ model FLAVI=
 end;
 )";
 
-cmaple::ModelAA::ModelAA(const std::string n_model_name):ModelBase(n_model_name)
+cmaple::ModelAA::ModelAA(const SubModel sub_model):ModelBase(sub_model)
 {
     num_states_ = 20;
     init();
@@ -878,10 +878,8 @@ void cmaple::ModelAA::initMutationMat()
     // init variable pointers
     initPointers();
     
-    // convert model_name to upper_case
-    string name_upper = model_name;
-    for (string::iterator it = name_upper.begin(); it != name_upper.end(); it++)
-        (*it) = toupper(*it);
+    // Get the model_name
+    string name_upper = getModelName();
     
     // read model params from string/file
     bool reversible;
@@ -891,7 +889,7 @@ void cmaple::ModelAA::initMutationMat()
     NxsModel *nxs_model = model_block->findModel(name_upper);
     if (nxs_model) {
         if (nxs_model->flag != NM_ATOMIC)
-            outError("Invalid protein model name ", model_name);
+            outError("Invalid protein model name ", name_upper);
 
         reversible = readParametersString(nxs_model->description);
         
@@ -975,7 +973,7 @@ void cmaple::ModelAA::initMutationMat()
         updateMutationMat<20>();
     }
     else
-        outError("Model not found: ", model_name);
+        outError("Model not found: ", name_upper);
 }
 
 void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
@@ -1002,7 +1000,7 @@ void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
             string tmp_value;
             in >> tmp_value;
             if (!tmp_value.length())
-                outError(model_name + ": Rate entries could not be read");
+                outError(getModelName() + ": Rate entries could not be read");
             mutation_mat[id] = convert_real_number(tmp_value.c_str());
 
             if (mutation_mat[id] < 0.0)
@@ -1018,7 +1016,7 @@ void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
                 string tmp_value;
                 in >> tmp_value;
                 if (!tmp_value.length())
-                    outError(model_name + ": Rate entries could not be read");
+                    outError(getModelName() + ": Rate entries could not be read");
                 mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
                 
                 if (mutation_mat_ptr[0] < 0.0 && row != col)
@@ -1081,23 +1079,32 @@ void cmaple::ModelAA::rescaleAllRates()
 
 void cmaple::ModelAA::updateMutationMatEmpirical(const AlignmentBase* aln)
 {
-    // don't update parameters other model except GTR20 or NONREV
-    if (model_name != "GTR20" && model_name != "gtr20" && model_name != "NONREV" && model_name != "nonrev") return;
-    
-    updateMutationMatEmpiricalTemplate<20>(aln);
+    // only handle GTR20 or NONREV
+    if (sub_model == GTR20 || sub_model == NONREV)
+        updateMutationMatEmpiricalTemplate<20>(aln);
 }
 
 void cmaple::ModelAA::updatePesudoCount(const AlignmentBase* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // only handle GTR20 or NONREV
-    if (model_name == "GTR20" || model_name == "gtr20" || model_name == "NONREV" || model_name == "nonrev")
+    if (sub_model == GTR20 || sub_model == NONREV)
         ModelBase::updatePesudoCount(aln, regions1, regions2);
 }
 
 void cmaple::ModelAA::extractRootFreqs(const AlignmentBase* aln)
 {
     // only extract root freqs for GTR20 or NONREV
-    if (model_name != "GTR20" && model_name != "gtr20" && model_name != "NONREV" && model_name != "nonrev") return;
+    if (sub_model == GTR20 || sub_model == NONREV)
+        ModelBase::extractRootFreqs(aln);
+}
+
+std::string cmaple::ModelAA::getModelName() const
+{
+    // Look for the model name from the list of models
+    for(auto &it : aa_models_mapping)
+        if(it.second == sub_model)
+            return it.first;
     
-    ModelBase::extractRootFreqs(aln);
+    // if not found -> return ""
+    return "";
 }

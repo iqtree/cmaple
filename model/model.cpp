@@ -5,28 +5,28 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::Model::Model(const std::string& model_name, const SeqType n_seqtype):model_base(nullptr)
+cmaple::Model::Model(const SubModel sub_model, const SeqType n_seqtype):model_base(nullptr)
 {
     SeqType seqtype = n_seqtype;
-    // If sequence type is not specified -> detect it from model_name
+    // If sequence type is not specified -> detect it from sub_model
     if (seqtype == SEQ_UNKNOWN)
-        seqtype = ModelBase::detectSeqType(model_name);
+        seqtype = ModelBase::detectSeqType(sub_model);
     
-    // Init model from the corresponding seqtype and model_name
+    // Init model from the corresponding seqtype and sub_model
     switch (seqtype) {
         case SEQ_PROTEIN:
         {
-            model_base = new ModelAA(model_name);
+            model_base = new ModelAA(sub_model);
             break;
         }
         case SEQ_DNA:
         {
-            model_base = new ModelDNA(model_name);
+            model_base = new ModelDNA(sub_model);
             break;
         }
-        default: // DNA
+        default:
         {
-            outError("Unsupported model " + model_name);
+            outError("Unsupported model");
             break;
         }
     }

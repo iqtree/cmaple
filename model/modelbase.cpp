@@ -9,11 +9,7 @@ template void cmaple::ModelBase::updateMutationMat<20>();
 template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const AlignmentBase*);
 template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const AlignmentBase*);
 
-// init const strings
-const std::vector<std::string> cmaple::ModelBase::dna_models = {"JC", "GTR", "UNREST"};
-const std::vector<std::string> cmaple::ModelBase::aa_models = {"GTR20", "NONREV", "LG", "WAG", "JTT", "Q.PFAM", "Q.BIRD", "Q.MAMMAL", "Q.INSECT", "Q.PLANT", "Q.YEAST", "JTTDCMUT", "DCMUT", "VT", "PMB", "BLOSUM62", "DAYHOFF", "MTREV", "MTART", "MTZOA", "MTMET" , "MTVER" , "MTINV", "MTMAM", "FLAVI", "HIVB", "HIVW", "FLU", "RTREV", "CPREV", "NQ.PFAM", "NQ.BIRD", "NQ.MAMMAL", "NQ.INSECT", "NQ.PLANT", "NQ.YEAST"};
-
-cmaple::ModelBase::ModelBase(const std::string n_model_name):model_name(std::move(n_model_name)), mutation_mat(nullptr), diagonal_mut_mat(nullptr), transposed_mut_mat(nullptr), freqi_freqj_qij(nullptr),freq_j_transposed_ij(nullptr), root_freqs(nullptr), root_log_freqs(nullptr), inverse_root_freqs(nullptr), row_index(nullptr), model_block(nullptr), pseu_mutation_count(nullptr){}
+cmaple::ModelBase::ModelBase(const SubModel n_sub_model):sub_model(n_sub_model), mutation_mat(nullptr), diagonal_mut_mat(nullptr), transposed_mut_mat(nullptr), freqi_freqj_qij(nullptr),freq_j_transposed_ij(nullptr), root_freqs(nullptr), root_log_freqs(nullptr), inverse_root_freqs(nullptr), row_index(nullptr), model_block(nullptr), pseu_mutation_count(nullptr){}
 
 cmaple::ModelBase::~ModelBase()
 {
@@ -240,7 +236,7 @@ std::map<std::string, std::string> cmaple::ModelBase::exportModelParams()
     std::map<std::string, std::string> model_params;
     
     // model_name
-    model_params.insert({MODEL_NAME, model_name});
+    model_params.insert({MODEL_NAME, getModelName()});
     
     // root frequencies
     model_params.insert({MODEL_FREQS, exportRootFrequenciesStr()});
@@ -384,7 +380,7 @@ void cmaple::ModelBase::updateMutMatbyMutCount()
     RealNumType* mutation_mat_row = mutation_mat;
     
     // init UNREST model
-    if (model_name.compare("UNREST") == 0 || model_name.compare("unrest") == 0 || model_name.compare("NONREV") == 0 || model_name.compare("nonrev") == 0)
+    if (sub_model == UNREST || sub_model == NONREV)
     {
         for (StateType i = 0; i <  num_states_; ++i, pseu_mutation_count_row += num_states_, mutation_mat_row += num_states_)
         {
@@ -406,7 +402,7 @@ void cmaple::ModelBase::updateMutMatbyMutCount()
         }
     }
     // init GTR model
-    else if (model_name.compare("GTR") == 0 || model_name.compare("gtr") == 0 || model_name.compare("GTR20") == 0 || model_name.compare("gtr20") == 0)
+    else if (sub_model == GTR || sub_model == GTR20)
     {
         for (StateType i = 0; i <  num_states_; ++i, pseu_mutation_count_row += num_states_, mutation_mat_row += num_states_)
         {

@@ -280,6 +280,24 @@ namespace cmaple
     };
 
     /**
+     * substitution modela
+     */
+    enum SubModel {
+        // DNA models
+        JC, GTR, UNREST, \
+        // Protein models
+        GTR20, NONREV, LG, WAG, JTT, Q_PFAM, Q_BIRD, Q_MAMMAL, Q_INSECT, Q_PLANT, Q_YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ_PFAM, NQ_BIRD, NQ_MAMMAL, NQ_INSECT, NQ_PLANT, NQ_YEAST, \
+        // Unknown model
+        UNKNOWN_MODEL
+    };
+
+    /**
+     * mapping between model names and their enums
+     */
+    extern const std::map<std::string, SubModel> dna_models_mapping;
+    extern const std::map<std::string, SubModel> aa_models_mapping;
+
+    /**
         verbose level on the screen
      */
     extern VerboseMode verbose_mode;
@@ -431,9 +449,9 @@ namespace cmaple
         RealNumType hamming_weight;
         
         /**
-            Name of the substitution model (e.g., HKY, GTR, JC, etc.)
+            Substitution model (e.g., HKY, GTR, JC, etc.)
          */
-        std::string model_name;
+        SubModel sub_model;
         
         /**
             TRUE to override the output files
@@ -1128,4 +1146,10 @@ namespace cmaple
     * @param tree_type_str a tree type in string
     */
     TreeType parseTreeType(const std::string& tree_type_str);
+
+    /**
+    * Parse model from its name in a string
+    * @param n_seqtype_str a sequence type in string
+    */
+    SubModel parseModel(const std::string& model_name);
 }

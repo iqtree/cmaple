@@ -721,15 +721,15 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<AlignmentBase>& aln, ModelBase* model, const std::string model_name = "GTR")
+void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<AlignmentBase>& aln, ModelBase* model, const SubModel sub_model = GTR)
 {
     // Init params, aln, and model
-    params->model_name = model_name;
+    params->sub_model = sub_model;
     std::string diff_file_path("../../example/test_5K.maple");
     char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
     strcpy(diff_file_path_ptr, diff_file_path.c_str());
     aln->readMapleFile(diff_file_path_ptr, "");
-    model = std::make_unique<ModelDNA>(ModelDNA(params->model_name));
+    model = std::make_unique<ModelDNA>(ModelDNA(params->sub_model));
     // extract related info (freqs, log_freqs) of the ref sequence
     model->extractRefInfo(aln);
     // init the mutation matrix from a model name

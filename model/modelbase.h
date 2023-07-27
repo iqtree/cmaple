@@ -17,17 +17,7 @@ namespace cmaple
     /** Base class of evolutionary models */
     class ModelBase
     {
-    private:
-        /**
-         List of supported DNA models
-         */
-        static const std::vector<std::string> dna_models;
-        
-        /**
-         List of supported Protein models
-         */
-        static const std::vector<std::string> aa_models;
-        
+    private:        
         /**
          Initialize equal state frequencies
          */
@@ -111,10 +101,15 @@ namespace cmaple
         template <cmaple::StateType num_states>
         void updateMutationMatEmpiricalTemplate(const AlignmentBase* aln);
         
+        /**
+         Get the model name
+         */
+        virtual std::string getModelName() {return "";} const;
+        
     public:
         // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
-        /** Name of the model */
-        std::string model_name;
+        /** Substitution model */
+        SubModel sub_model;
         
         /** Number of states */
         cmaple::StateType num_states_;
@@ -151,7 +146,7 @@ namespace cmaple
         /**
          Constructor
          */
-        ModelBase(const std::string n_model_name);
+        ModelBase(const SubModel sub_model);
         
         /**
          Destructor
@@ -165,7 +160,6 @@ namespace cmaple
         
         /**
          Init the mutation rate matrix from a model
-         @param n_model_name: name of the model; num_states: the number of states
          */
         virtual void initMutationMat() {};
         
@@ -192,22 +186,20 @@ namespace cmaple
         std::map<std::string, std::string> exportModelParams();
         
         /**
-         Detect SeqType from model name
-         @param[in] model_name Name of a model
+         Detect SeqType from a SubModel enum
+         @param[in] sub_model SubModel enum
          */
-        static SeqType detectSeqType(const std::string& n_model_name)
+        static SeqType detectSeqType(const SubModel sub_model)
         {
-            // transform model_name to uppercase
-            std::string model_name(n_model_name);
-            transform(model_name.begin(), model_name.end(), model_name.begin(), ::toupper);
-            
             // search in the list of dna models
-            if (std::find(dna_models.begin(), dna_models.end(), model_name) != dna_models.end())
-                return SEQ_DNA;
+            for(auto &it : dna_models_mapping)
+                if(it.second == sub_model)
+                    return SEQ_DNA;
             
             // search in the list of protein models
-            if (std::find(aa_models.begin(), aa_models.end(), model_name) != aa_models.end())
-                return SEQ_PROTEIN;
+            for(auto &it : aa_models_mapping)
+                if(it.second == sub_model)
+                    return SEQ_PROTEIN;
             
             // not found
             return SEQ_UNKNOWN;

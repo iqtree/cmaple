@@ -2,7 +2,7 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::ModelDNA::ModelDNA(const string n_model_name):ModelBase(n_model_name)
+cmaple::ModelDNA::ModelDNA(const SubModel sub_model):ModelBase(sub_model)
 {
     num_states_ = 4;
     init();
@@ -62,15 +62,14 @@ void cmaple::ModelDNA::initMutationMat()
     initPointers();
     
     // for JC model
-    if (model_name.compare("JC") == 0 || model_name.compare("jc") == 0)
+    if (sub_model == JC)
         initMutationMatJC();
     // for other models
     else
     {
-        // convert model name to uppercase
-        transform(model_name.begin(), model_name.end(), model_name.begin(), ::toupper);
-        if (model_name.compare("UNREST") != 0 && model_name.compare("GTR") != 0)
-            outError("Invalid or unsupported DNA model: " + model_name + ". Please check and try again!");
+        // validate model
+        if (ModelBase::detectSeqType(sub_model) != SEQ_DNA)
+            outError("Invalid or unsupported model. Please check and try again!");
             
         // init pseu_mutation_counts
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
@@ -83,21 +82,30 @@ void cmaple::ModelDNA::initMutationMat()
 void cmaple::ModelDNA::extractRootFreqs(const AlignmentBase* aln)
 {
     // Keep state freqs equally for some models (e.g., JC)
-    if (model_name == "JC" || model_name == "jc") return;
-    
-    ModelBase::extractRootFreqs(aln);
+    if (sub_model != JC)
+        ModelBase::extractRootFreqs(aln);
 }
 
 void cmaple::ModelDNA::updateMutationMatEmpirical(const AlignmentBase* aln)
 {
     // don't update JC model parameters
-    if (model_name == "JC" || model_name == "jc") return;
-    
-    updateMutationMatEmpiricalTemplate<4>(aln);
+    if (sub_model != JC)
+        updateMutationMatEmpiricalTemplate<4>(aln);
 }
 
 void cmaple::ModelDNA::updatePesudoCount(const AlignmentBase* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
-    if (model_name != "JC" && model_name != "jc")
+    if (sub_model != JC)
         ModelBase::updatePesudoCount(aln, regions1, regions2);
+}
+
+std::string cmaple::ModelDNA::getModelName() const
+{
+    // Look for the model name from the list of models
+    for(auto &it : dna_models_mapping)
+        if(it.second == sub_model)
+            return it.first;
+    
+    // if not found -> return ""
+    return "";
 }

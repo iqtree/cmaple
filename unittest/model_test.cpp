@@ -4,13 +4,13 @@
 using namespace cmaple;
 
 /*
- Test void initMutationMat(const std::string n_model_name, const StateType num_states)
+ Test void initMutationMat(const SubModel sub_model, const StateType num_states)
  */
 TEST(Model, initMutationMat)
 {
-    std::unique_ptr<ModelBase> model1 = std::make_unique<ModelDNA>(ModelDNA("JC"));
+    std::unique_ptr<ModelBase> model1 = std::make_unique<ModelDNA>(ModelDNA(JC));
     model1->initMutationMat();
-    EXPECT_EQ(model1->model_name, "JC");
+    EXPECT_EQ(model1->sub_model, JC);
     EXPECT_EQ(model1->root_freqs[1], 0.25);
     EXPECT_EQ(model1->root_freqs[3], 0.25);
     EXPECT_EQ(model1->inverse_root_freqs[0], 4);

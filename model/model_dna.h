@@ -20,11 +20,16 @@ namespace cmaple
          */
         virtual void extractRootFreqs(const AlignmentBase* aln);
         
+        /**
+         Get the model name
+         */
+        virtual std::string getModelName() const;
+        
     public:    
         /**
          Constructor
          */
-        ModelDNA(const string n_model_name);
+        ModelDNA(const SubModel sub_model);
         
         /**
          Init the mutation rate matrix from a model
