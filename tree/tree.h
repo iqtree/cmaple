@@ -76,7 +76,7 @@ namespace cmaple
          * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH values)
          * @return A tree string in NEWICK format
          */
-        std::string exportString(const TreeType tree_type = BIN_TREE, const bool show_branch_supports = false);
+        std::string exportString(const TreeType tree_type = BIN_TREE, const bool show_branch_supports = false) const;
         
         /*! \brief Get an instance of cmaple::Params, which stores all parameter settings. Users can use that params instance to change [**other minor settings**](classcmaple_1_1_params.html) of CMaple (which are not yet supported via the APIs)
          * @return An instance of cmaple::Params
@@ -95,4 +95,8 @@ namespace cmaple
          */
         void initTree(Alignment& aln, Model& model);
     };
+
+    /** \brief Customized << operator to output the tree string in a (bifurcating) NEWICK format
+     */
+    std::ostream& operator<<(std::ostream& out_stream, const cmaple::Tree& tree);
 }

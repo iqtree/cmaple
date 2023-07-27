@@ -135,7 +135,7 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
      return target_cout.str();
 }
 
-std::string cmaple::Tree::exportString(const TreeType tree_type, const bool show_branch_supports)
+std::string cmaple::Tree::exportString(const TreeType tree_type, const bool show_branch_supports) const
 {
     ASSERT(tree_base);
     
@@ -150,4 +150,10 @@ cmaple::Params& cmaple::Tree::getParams()
 {
     ASSERT(tree_base && tree_base->params);
     return *tree_base->params;
+}
+
+std::ostream& cmaple::operator<<(std::ostream& out_stream, const cmaple::Tree& tree)
+{
+    out_stream << tree.exportString();
+    return out_stream;
 }
