@@ -3,10 +3,27 @@
 using namespace std;
 using namespace cmaple;
 
-void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype)
+cmaple::Alignment::Alignment():aln_base(new AlignmentBase()) {};
+
+cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
+{
+    // Initialize an alignment instance from the input stream
+    read(aln_stream, ref_seq, format, seqtype);
+}
+
+cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
+{
+    // Initialize an alignment instance from the input file
+    read(aln_filename, ref_seq, format, seqtype);
+}
+
+void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype)
 {
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "Reading an alignment" << std::endl;
+    
+    // Delete existing aln_base (in cases, users re-read the alignment)
+    if (aln_base) delete aln_base;
     
     // Init alignment base
     aln_base = new AlignmentBase();
@@ -36,13 +53,7 @@ void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_se
         aln_base->readMaple(aln_stream);
 }
 
-cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
-{
-    // Initialize an alignment instance from the input stream
-    init(aln_stream, ref_seq, format, seqtype);
-}
-
-cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
+void cmaple::Alignment::read(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype)
 {
     ASSERT(aln_filename.length() && "Please specify an alignnment file");
     
@@ -56,7 +67,7 @@ cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string&
     }
     
     // Initialize an alignment instance from the input stream
-    init(aln_stream, ref_seq, format, seqtype);
+    read(aln_stream, ref_seq, format, seqtype);
     
     // close aln_stream
     aln_stream.close();
@@ -74,6 +85,10 @@ cmaple::Alignment::~Alignment()
 void cmaple::Alignment::write(std::ostream& aln_stream, const InputType format)
 {
     ASSERT(aln_base);
+    
+    // Handle empty alignment
+    if (!aln_base->data.size())
+        outError("Alignment is empty. Please call read(...) first!");
         
     // Validate the format
     if (aln_base->aln_format == IN_UNKNOWN)

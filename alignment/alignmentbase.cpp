@@ -15,7 +15,7 @@ char cmaple::symbols_dna[]     = "ACGT";
 char cmaple::symbols_rna[]     = "ACGU";
 char cmaple::symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-cmaple::AlignmentBase::AlignmentBase() = default;
+cmaple::AlignmentBase::AlignmentBase():seq_type_(SEQ_UNKNOWN), data(std::vector<Sequence>()), ref_seq(std::vector<cmaple::StateType>()), num_states(4), aln_format(IN_UNKNOWN) {};
 
 cmaple::AlignmentBase::~AlignmentBase() = default;
 
