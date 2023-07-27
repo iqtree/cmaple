@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cmaple;
 
-void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_seq, const std::string& format, const std::string& seqtype)
+void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype)
 {
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "Reading an alignment" << std::endl;
@@ -11,15 +11,9 @@ void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_se
     // Init alignment base
     aln_base = new AlignmentBase();
     
-    // if users specify the format -> parse it
-    if (format.length())
-    {
-        aln_base->aln_format = aln_base->getAlignmentFormat(format);
-        
-        // validate the format
-        if (aln_base->aln_format == IN_UNKNOWN)
-            outError("Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP");
-    }
+    // Set format (is specified)
+    if (format != IN_UNKNOWN)
+        aln_base->aln_format = format;
     // Otherwise, detect the format from the alignment
     else
     {
@@ -30,16 +24,8 @@ void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_se
             outError("Failed to detect the format from the alignment!");
     }
     
-    // If users specify the sequence type -> parse it. Otherwise, we'll dectect it later when reading the alignment
-    if (seqtype.length())
-    {
-        // parse the sequence type
-        aln_base->setSeqType(parseSeqType(seqtype));
-        
-        // validate the sequence type
-        if (aln_base->getSeqType() == SEQ_UNKNOWN)
-            outError("Unknown sequence type " + seqtype + ", please use DNA or AA");
-    }
+    // Set seqtype. If it's unknown (not specified), we'll dectect it later when reading the alignment
+    aln_base->setSeqType(seqtype);
     
     // Read the input alignment
     // in FASTA or PHYLIP format
@@ -50,13 +36,13 @@ void cmaple::Alignment::init(std::istream& aln_stream, const std::string& ref_se
         aln_base->readMaple(aln_stream);
 }
 
-cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const std::string& format, const std::string& seqtype):aln_base(nullptr)
+cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
 {
     // Initialize an alignment instance from the input stream
     init(aln_stream, ref_seq, format, seqtype);
 }
 
-cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const std::string& format, const std::string& seqtype):aln_base(nullptr)
+cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
 {
     ASSERT(aln_filename.length() && "Please specify an alignnment file");
     
@@ -85,22 +71,19 @@ cmaple::Alignment::~Alignment()
     }
 }
 
-void cmaple::Alignment::write(std::ostream& aln_stream, const std::string& format)
+void cmaple::Alignment::write(std::ostream& aln_stream, const InputType format)
 {
     ASSERT(aln_base);
-    
-    // Parse the format
-    const InputType aln_format = aln_base->getAlignmentFormat(format);
         
     // Validate the format
     if (aln_base->aln_format == IN_UNKNOWN)
-        outError("Unsupported alignment format " + format + ". Please use MAPLE, FASTA, or PHYLIP");
+        outError("Unknown format! Please use IN_MAPLE, IN_FASTA, or IN_PHYLIP");
     
     // Write the alignment
-    aln_base->write(aln_stream, aln_format);
+    aln_base->write(aln_stream, format);
 }
 
-void cmaple::Alignment::write(const std::string& aln_filename, const std::string& format, const bool overwrite)
+void cmaple::Alignment::write(const std::string& aln_filename, const InputType format, const bool overwrite)
 {
     // Validate the input
     if (!aln_filename.length())

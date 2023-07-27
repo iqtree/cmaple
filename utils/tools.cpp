@@ -526,7 +526,7 @@ cmaple::Params::Params()
 void cmaple::Params::initDefaultValue()
 {
     aln_path = "";
-    aln_format_str = "";
+    aln_format = IN_UNKNOWN;
     ref_path = "";
     ref_seqname = "";
     hamming_weight = 1000;
@@ -551,7 +551,7 @@ void cmaple::Params::initDefaultValue()
     thresh_diff_update = 1e-7;
     thresh_diff_fold_update = 1.001;
     output_aln = "";
-    output_aln_format = "";
+    output_aln_format = IN_MAPLE;
     num_tree_improvement = 1;
     thresh_entire_tree_improvement = 1;
     thresh_placement_cost = -1e-5;
@@ -567,7 +567,7 @@ void cmaple::Params::initDefaultValue()
     output_prefix = "";
     allow_replace_input_tree = false;
     fixed_min_blength = -1;
-    seq_type_str = "";
+    seq_type = SEQ_UNKNOWN;
     tree_search_type_str = "NORMAL";
     
     // initialize random seed based on current time
@@ -661,10 +661,9 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                     if (!params.output_aln.length())
                         outError("<ALN_FILENAME> is empty!");
                     inputs.erase(0, pos + delimiter.length());
-                    transform(inputs.begin(), inputs.end(), inputs.begin(), ::toupper);
-                    params.output_aln_format = inputs;
+                    params.output_aln_format = parseAlnFormat(inputs);
                     // validate output_aln_format
-                    if (params.output_aln_format != "MAPLE" && params.output_aln_format != "PHYLIP" && params.output_aln_format != "FASTA")
+                    if (params.output_aln_format != IN_MAPLE && params.output_aln_format != IN_PHYLIP && params.output_aln_format != IN_FASTA)
                         outError("<ALN_FORMAT> must be MAPLE, PHYLIP, or FASTA");
                 }
                 else
@@ -675,12 +674,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "-st") == 0 || strcmp(argv[cnt], "--seqtype") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    outError("Use -st BIN or -st DNA or -st AA or -st CODON");
-                std::string seq_type = argv[cnt];
-                transform(seq_type.begin(), seq_type.end(), seq_type.begin(), ::toupper);
-                params.seq_type_str = seq_type;
-                if (seq_type != "DNA" && seq_type != "AA")
-                    outError("Use -st BIN or -st DNA or -st AA or -st CODON");
+                    outError("Use -st DNA or -st AA");
+                params.seq_type = parseSeqType(argv[cnt]);
+                // validate seq_type
+                if (params.seq_type != SEQ_DNA && params.seq_type != SEQ_PROTEIN)
+                    outError("Use -st DNA or -st AA");
                 
                 continue;
             }
@@ -709,10 +707,9 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 cnt++;
                 if (cnt >= argc)
                     outError("Use -format MAPLE, PHYLIP, or FASTA");
-                std::string format = argv[cnt];
-                transform(format.begin(), format.end(), format.begin(), ::toupper);
-                params.aln_format_str = format;
-                if (format != "MAPLE" && format != "PHYLIP" && format != "FASTA")
+                params.aln_format = parseAlnFormat(argv[cnt]);
+                // validate format
+                if (params.aln_format != IN_MAPLE && params.aln_format != IN_PHYLIP && params.aln_format != IN_FASTA)
                     outError("Use -format MAPLE, PHYLIP, or FASTA");
                 
                 continue;
@@ -1125,6 +1122,7 @@ void cmaple::resetStream(std::istream& instream)
 
 SeqType cmaple::parseSeqType(const std::string& n_seqtype_str)
 {
+    // transform to uppercase
     string seqtype_str(n_seqtype_str);
     transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);
     if (seqtype_str == "DNA")
@@ -1134,4 +1132,20 @@ SeqType cmaple::parseSeqType(const std::string& n_seqtype_str)
     
     // default
     return SEQ_UNKNOWN;
+}
+
+InputType cmaple::parseAlnFormat(const std::string& n_format)
+{
+    // transform to uppercase
+    string format(n_format);
+    transform(format.begin(), format.end(), format.begin(), ::toupper);
+    if (format == "MAPLE")
+        return IN_MAPLE;
+    if (format == "PHYLIP")
+        return IN_PHYLIP;
+    if (format == "FASTA")
+        return IN_FASTA;
+    
+    // default
+    return IN_UNKNOWN;
 }

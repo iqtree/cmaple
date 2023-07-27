@@ -213,11 +213,6 @@ namespace cmaple
          update num_states according to the seq_type
          */
         void updateNumStates();
-        
-        /**
-         Get alignment format from a string
-         */
-        InputType getAlignmentFormat(const std::string& n_format);
     };
 }
 #endif

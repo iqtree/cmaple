@@ -409,7 +409,7 @@ namespace cmaple
         /**
         *  Alignment format
         */
-        std::string aln_format_str;
+        InputType aln_format;
         
         /**
         *  Weight to calculate the hamming distance
@@ -538,7 +538,7 @@ namespace cmaple
         /**
         *  Format of the output alignment
         */
-        std::string output_aln_format;
+        InputType output_aln_format;
         
         /**
         *  Path to an input tree
@@ -618,7 +618,7 @@ namespace cmaple
         /**
         *  type of sequences
         */
-        std::string seq_type_str;
+        SeqType seq_type;
         
         /**
         *  type of tree search
@@ -1102,4 +1102,10 @@ namespace cmaple
     * @param n_seqtype_str a sequence type in string
     */
     SeqType parseSeqType(const std::string& n_seqtype_str);
+
+    /**
+     * Parse  alignment format from a string
+     * @param n_format a format in string
+     */
+    InputType parseAlnFormat(const std::string& n_format);
 }

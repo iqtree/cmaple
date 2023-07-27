@@ -1108,18 +1108,3 @@ void cmaple::AlignmentBase::updateNumStates()
             break;
     }
 }
-
-InputType cmaple::AlignmentBase::getAlignmentFormat(const std::string& n_format)
-{
-    string format(n_format);
-    transform(format.begin(), format.end(), format.begin(), ::toupper);
-    if (format == "MAPLE")
-        return IN_MAPLE;
-    if (format == "PHYLIP")
-        return IN_PHYLIP;
-    if (format == "FASTA")
-        return IN_FASTA;
-    
-    // default
-    return IN_UNKNOWN;
-}

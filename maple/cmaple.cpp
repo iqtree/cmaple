@@ -25,13 +25,13 @@ void cmaple::runCMaple(cmaple::Params &params)
         AlignmentBase aln_tmp;
         aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
     }
-    Alignment aln(params.aln_path, ref_seq, params.aln_format_str, params.seq_type_str);
+    Alignment aln(params.aln_path, ref_seq, params.aln_format, params.seq_type);
     
     // If users only want to convert the alignment to another format -> convert it and terminate
-    if (params.output_aln.length() && params.output_aln_format.length())
+    if (params.output_aln.length() && params.output_aln_format != IN_UNKNOWN)
     {
         if (cmaple::verbose_mode > cmaple::VB_QUIET)
-            std::cout << "Write the alignment to " + params.output_aln + " in " + params.output_aln_format + " format." << std::endl;
+            std::cout << "Write the alignment to " + params.output_aln << std::endl;
         aln.write(params.output_aln, params.output_aln_format, params.overwrite_output);
         return;
     }
