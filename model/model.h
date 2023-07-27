@@ -15,8 +15,9 @@ namespace cmaple
          * <br>**Protein models**: "GTR20", "NONREV", "LG", "WAG", "JTT", "Q.PFAM", "Q.BIRD", "Q.MAMMAL", "Q.INSECT", "Q.PLANT", "Q.YEAST", "JTTDCMUT", "DCMUT", "VT", "PMB", "BLOSUM62", "DAYHOFF", "MTREV", "MTART", "MTZOA", "MTMET" , "MTVER" , "MTINV", "MTMAM", "FLAVI", "HIVB", "HIVW", "FLU", "RTREV", "CPREV", "NQ.PFAM", "NQ.BIRD", "NQ.MAMMAL", "NQ.INSECT", "NQ.PLANT", "NQ.YEAST";
          * <br> <em> See [**Substitution models**](http://www.iqtree.org/doc/Substitution-Models) for references of those models.</em>
          * @param[in] seqtype Data type of sequences (optional): "" (auto detect), "DNA" (nucleotide data), "AA" (amino acid data)
+         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
          */
-        Model(const std::string& model_name = "GTR", const std::string& seqtype = "");
+        Model(const std::string& model_name = "GTR", const SeqType seqtype = SEQ_UNKNOWN);
         
         /*! \brief Destructor
          */

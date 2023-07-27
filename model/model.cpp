@@ -5,21 +5,11 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::Model::Model(const std::string& model_name, const std::string& seqtype_str):model_base(nullptr)
+cmaple::Model::Model(const std::string& model_name, const SeqType n_seqtype):model_base(nullptr)
 {
-    SeqType seqtype = SEQ_UNKNOWN;
-    // If users specify the sequence type -> parse it.
-    if (seqtype_str.length())
-    {
-        // parse the sequence type
-        seqtype = parseSeqType(seqtype_str);
-        
-        // validate the sequence type
-        if (seqtype == SEQ_UNKNOWN)
-            outError("Unknown sequence type " + seqtype_str + ", please use DNA or AA");
-    }
-    // Otherwise, detect seqtype from model_name
-    else
+    SeqType seqtype = n_seqtype;
+    // If sequence type is not specified -> detect it from model_name
+    if (seqtype == SEQ_UNKNOWN)
         seqtype = ModelBase::detectSeqType(model_name);
     
     // Init model from the corresponding seqtype and model_name
