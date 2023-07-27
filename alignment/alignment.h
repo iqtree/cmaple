@@ -51,14 +51,14 @@ namespace cmaple
          * @param[in] aln_stream A stream of the output alignment file
          * @param[in] format Format of the output alignment (optional): IN_MAPLE, IN_FASTA, or IN_PHYLIP
          */
-        void write(std::ostream& aln_stream, const InputType format = IN_MAPLE);
+        void write(std::ostream& aln_stream, const InputType format = IN_MAPLE) const;
         
         /** \brief Write the alignment to a file in FASTA, PHYLIP, or [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
          * @param[in] aln_filename Name of the output alignment file
          * @param[in] format Format of the output alignment (optional): IN_MAPLE, IN_FASTA, or IN_PHYLIP
          * @param[in] overwrite TRUE to overwrite the existing output file (optional)
          */
-        void write(const std::string& aln_filename, const InputType format = IN_MAPLE, const bool overwrite = false);
+        void write(const std::string& aln_filename, const InputType format = IN_MAPLE, const bool overwrite = false) const;
         
         // declare Tree as a friend class
         friend class Tree;
@@ -69,4 +69,12 @@ namespace cmaple
          */
         AlignmentBase* aln_base;
     };
+
+    /** \brief Customized << operator to output the alignment to a stream in MAPLE format
+     */
+    std::ostream& operator<<(std::ostream& out_stream, const cmaple::Alignment& aln);
+
+    /** \brief Customized >> operator to read the alignment from a stream
+     */
+    std::istream& operator>>(std::istream& in_stream, cmaple::Alignment& aln);
 }

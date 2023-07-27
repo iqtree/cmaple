@@ -82,7 +82,7 @@ cmaple::Alignment::~Alignment()
     }
 }
 
-void cmaple::Alignment::write(std::ostream& aln_stream, const InputType format)
+void cmaple::Alignment::write(std::ostream& aln_stream, const InputType format) const
 {
     ASSERT(aln_base);
     
@@ -98,7 +98,7 @@ void cmaple::Alignment::write(std::ostream& aln_stream, const InputType format)
     aln_base->write(aln_stream, format);
 }
 
-void cmaple::Alignment::write(const std::string& aln_filename, const InputType format, const bool overwrite)
+void cmaple::Alignment::write(const std::string& aln_filename, const InputType format, const bool overwrite) const
 {
     // Validate the input
     if (!aln_filename.length())
@@ -116,4 +116,22 @@ void cmaple::Alignment::write(const std::string& aln_filename, const InputType f
     
     // Close the stream
     aln_stream.close();
+}
+
+std::ostream& cmaple::operator<<(std::ostream& out_stream, const cmaple::Alignment& aln)
+{
+    // write the alignment to the stream in MAPLE format
+    aln.write(out_stream);
+    
+    // return the stream
+    return out_stream;
+}
+
+std::istream& cmaple::operator>>(std::istream& in_stream, cmaple::Alignment& aln)
+{
+    // read the alignment from a stream
+    aln.read(in_stream);
+    
+    // return the stream
+    return in_stream;
 }
