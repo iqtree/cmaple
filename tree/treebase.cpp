@@ -241,23 +241,21 @@ void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
     updateModelLhAfterLoading<num_states>();
 }
 
-void cmaple::TreeBase::doInference(const std::string& tree_search_type, const bool shallow_tree_search)
+void cmaple::TreeBase::doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
     (this->*doInferencePtr)(tree_search_type, shallow_tree_search);
 }
 
 template <const StateType num_states>
-void cmaple::TreeBase::doInferenceTemplate(const std::string& tree_search_type_str, const bool shallow_tree_search)
+void cmaple::TreeBase::doInferenceTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
     // validate input
     ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
     ASSERT(aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
     
-    // parse parameters
-    // set tree_search_type (if specified)
-    TreeSearchType tree_search_type = parseTreeSearchType(tree_search_type_str);
+    // Validate tree search type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
-        outError("Unknown tree search type " + tree_search_type_str + ". Please use <FAST|NORMAL|MORE_ACCURATE>");
+        outError("Unknown tree search type!");
     
     //  Check whether we infer a phologeny from an input tree
     const bool from_input_tree = nodes.size() > 0;
@@ -387,7 +385,7 @@ template <const StateType num_states>
 void cmaple::TreeBase::optimizeTree(const bool from_input_tree, const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
     // show information
-    if (tree_search_type == NO_TREE_SEARCH && cmaple::verbose_mode >= cmaple::VB_MED)
+    if (tree_search_type == FAST_TREE_SEARCH && cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "No tree search is invoked." << std::endl;
     // tree.params->debug = true;
     // string output_file(params->output_prefix);
@@ -395,10 +393,10 @@ void cmaple::TreeBase::optimizeTree(const bool from_input_tree, const TreeSearch
     
     // run a shallow (short range) search for tree topology improvement (if neccessary)
     // Don't apply shallow tree search if users chose no tree search
-    if (shallow_tree_search && tree_search_type != NO_TREE_SEARCH)
+    if (shallow_tree_search && tree_search_type != FAST_TREE_SEARCH)
     {
         // don't apply shallow tree search if users inputted a tree and wanted to run a partial tree search later (because outdated flags may become incorrect due to shallow tree search)
-        if (from_input_tree && tree_search_type == PARTIAL_TREE_SEARCH)
+        if (from_input_tree && tree_search_type == NORMAL_TREE_SEARCH)
         {
             if (cmaple::verbose_mode > cmaple::VB_QUIET)
                 outWarning("Disable shallow tree search because it's not supported if users input a tree and want to apply a normal tree search.");
@@ -423,7 +421,7 @@ void cmaple::TreeBase::optimizeTree(const bool from_input_tree, const TreeSearch
         std::cout << std::setprecision(10) << "Tree log likelihood (before a deeper tree search): " << calculateLh() << std::endl;
     
     // run a normal search for tree topology improvement
-    if (tree_search_type != NO_TREE_SEARCH)
+    if (tree_search_type != FAST_TREE_SEARCH)
     {
         if (cmaple::verbose_mode >= cmaple::VB_MED)
         {
@@ -670,18 +668,21 @@ const string cmaple::TreeBase::exportNodeString(const bool binary, const NumSeqs
     return output;
 }
 
-const std::string cmaple::TreeBase::exportTreeString(const std::string& n_tree_type, const bool show_branch_supports)
+const std::string cmaple::TreeBase::exportTreeString(const TreeType tree_type, const bool show_branch_supports)
 {
-    // transform tree_type to upper case
-    std::string tree_type(n_tree_type);
-    transform(tree_type.begin(), tree_type.end(), tree_type.begin(), ::toupper);
-    
-    if (n_tree_type == "BIN")
-        return exportTreeString(true, show_branch_supports);
-    else if (n_tree_type == "MUL")
-        return exportTreeString(false, show_branch_supports);
-    else
-        outError("Unsupported type of tree " + tree_type + ". Please use BIN or MUL");
+    // output the tree according to its type
+    switch (tree_type)
+    {
+        case BIN_TREE:
+            return exportTreeString(true, show_branch_supports);
+            break;
+        case MUL_TREE:
+            return exportTreeString(false, show_branch_supports);
+            break;
+        default:
+            outError("Unknown tree type. Please use BIN_TREE or MUL_TREE");
+            break;
+    }
 }
 
 const std::string cmaple::TreeBase::exportTreeString(const bool binary, const bool show_branch_supports)

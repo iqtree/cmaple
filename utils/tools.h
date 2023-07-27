@@ -259,10 +259,24 @@ namespace cmaple
     };
 
     /**
-        types of tree search
+     * types of tree search
+     * FAST_TREE_SEARCH: no tree search (placement only).
+     * NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
+     * MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
+     * UNKNOWN_TREE_SEARCH: unknown (not specified)
      */
     enum TreeSearchType {
-        NO_TREE_SEARCH, PARTIAL_TREE_SEARCH, COMPLETE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
+        FAST_TREE_SEARCH, NORMAL_TREE_SEARCH, MORE_ACCURATE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
+    };
+
+    /**
+     * types of trees
+     * BIN_TREE: binary tree
+     * MUL_TREE: multifurcating tree
+     * UNKNOWN_TREE: unknown tree type
+     */
+    enum TreeType {
+        BIN_TREE, MUL_TREE, UNKNOWN_TREE
     };
 
     /**
@@ -568,7 +582,7 @@ namespace cmaple
         /**
         *  format of the output tree
         */
-        std::string tree_format;
+        TreeType tree_format;
         
         /**
         *  TRUE to run an additional short range search for tree topology improvement
@@ -623,7 +637,7 @@ namespace cmaple
         /**
         *  type of tree search
         */
-        std::string tree_search_type_str;
+        TreeSearchType tree_search_type;
         
         /*
             TRUE to log debugging
@@ -1108,4 +1122,10 @@ namespace cmaple
      * @param n_format a format in string
      */
     InputType parseAlnFormat(const std::string& n_format);
+
+    /**
+    * Parse tree type from a string
+    * @param tree_type_str a tree type in string
+    */
+    TreeType parseTreeType(const std::string& tree_type_str);
 }

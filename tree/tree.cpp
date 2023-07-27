@@ -70,9 +70,13 @@ void cmaple::Tree::changeModel(Model& n_model)
     tree_base->changeModel(n_model.model_base);
 }
 
-std::string cmaple::Tree::infer(const std::string& tree_search_type, const bool shallow_tree_search)
+std::string cmaple::Tree::infer(const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
     ASSERT(tree_base);
+    
+    // Validate tree_search_type
+    if (tree_search_type == UNKNOWN_TREE_SEARCH)
+        outError("Unknown tree search type. Please check and try again!");
     
     // Redirect the original src_cout to the target_cout
     streambuf* src_cout = cout.rdbuf();
@@ -131,9 +135,14 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
      return target_cout.str();
 }
 
-std::string cmaple::Tree::exportString(const std::string& tree_type, const bool show_branch_supports)
+std::string cmaple::Tree::exportString(const TreeType tree_type, const bool show_branch_supports)
 {
     ASSERT(tree_base);
+    
+    // validate tree_type
+    if (tree_type == UNKNOWN_TREE)
+        outError("Unknown tree type. Please use BIN_TREE or MUL_TREE!");
+    
     return tree_base->exportTreeString(tree_type, show_branch_supports);
 }
 

@@ -49,13 +49,13 @@ namespace cmaple
          *  + If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE
          *
          * @param[in] tree_search_type One of the following tree search:
-         * <br><em>"FAST"</em>: no tree search (placement only).
-         * <br><em>"NORMAL"</em>: only consider pruning branches at newly-added nodes when seeking SPR moves.
-         * <br><em>"MORE_ACCURATE"</em>: consider all nodes when seeking SPR moves.
+         * <br><em>FAST_TREE_SEARCH</em>: no tree search (placement only).
+         * <br><em>NORMAL_TREE_SEARCH</em>: only consider pruning branches at newly-added nodes when seeking SPR moves.
+         * <br><em>MORE_ACCURATE_TREE_SEARCH</em>: consider all nodes when seeking SPR moves.
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportString() later
          */
-        std::string infer(const std::string& tree_search_type = "NORMAL", const bool shallow_tree_search = false);
+        std::string infer(const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH, const bool shallow_tree_search = false);
         
         /*! \brief Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment
          * @return The log likelihood of the current tree
@@ -72,11 +72,11 @@ namespace cmaple
         std::string computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
         
         /*! \brief Export the phylogenetic tree  to a string in NEWICK format.
-         * @param[in] tree_type The type of the output tree (optional): "BIN" - bifurcating tree or "MUL" - multifurcating tree
+         * @param[in] tree_type The type of the output tree (optional): BIN_TREE (bifurcating tree), MUL_TREE (multifurcating tree)
          * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH values)
          * @return A tree string in NEWICK format
          */
-        std::string exportString(const std::string& tree_type = "BIN", const bool show_branch_supports = false);
+        std::string exportString(const TreeType tree_type = BIN_TREE, const bool show_branch_supports = false);
         
         /*! \brief Get an instance of cmaple::Params, which stores all parameter settings. Users can use that params instance to change [**other minor settings**](classcmaple_1_1_params.html) of CMaple (which are not yet supported via the APIs)
          * @return An instance of cmaple::Params

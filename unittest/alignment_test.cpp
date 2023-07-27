@@ -271,7 +271,7 @@ TEST(Alignment, extractDiffFile)
     // ----- test on input.phy with ref file from ref.fa -----
     Params params = Params::getInstance();
     params.overwrite_output = true;
-    params.tree_search_type = COMPLETE_TREE_SEARCH;
+    params.tree_search_type = MORE_ACCURATE_TREE_SEARCH;
     params.aln_path = "../../example/input.phy";
     params.ref_path = "../../example/ref.fa";
     

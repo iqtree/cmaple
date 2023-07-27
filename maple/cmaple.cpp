@@ -43,7 +43,7 @@ void cmaple::runCMaple(cmaple::Params &params)
     tree_params = params;
     
     // Infer a phylogenetic tree
-    std::string redirected_msgs = tree.infer(params.tree_search_type_str, params.shallow_tree_search);
+    std::string redirected_msgs = tree.infer(params.tree_search_type, params.shallow_tree_search);
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << redirected_msgs << std::endl;
     

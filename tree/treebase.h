@@ -35,7 +35,7 @@ namespace cmaple
         /**
             Pointer  to doInference method
          */
-        typedef void (TreeBase::*DoInferencePtrType)(const std::string&, const bool);
+        typedef void (TreeBase::*DoInferencePtrType)(const TreeSearchType, const bool);
         DoInferencePtrType doInferencePtr;
         
         /**
@@ -70,7 +70,7 @@ namespace cmaple
         /*! Template of doInference()
          */
         template <const cmaple::StateType  num_states>
-        void doInferenceTemplate(const std::string& tree_search_type, const bool shallow_tree_search);
+        void doInferenceTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
         /*! Template of calculateLh()
          */
@@ -680,12 +680,12 @@ namespace cmaple
         
         /*! Do the inference
          * @param[in] tree_search_type one of the following tree search:
-         * - "FAST": no tree search (placement only).
-         * - "NORMAL": only consider pruning branches at newly-added nodes when seeking SPR moves.
-         * - "MORE_ACCURATE": consider all nodes when seeking SPR moves.
+         * - FAST_TREE_SEARCH: no tree search (placement only).
+         * - NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
+         * - MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          */
-        void doInference(const std::string& tree_search_type, const bool shallow_tree_search);
+        void doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
         /*! Calculate the likelihood of the tree
          */
@@ -699,7 +699,7 @@ namespace cmaple
         /**
          Export tree std::string in Newick format
          */
-        const std::string exportTreeString(const std::string& n_tree_type, const bool show_branch_supports);
+        const std::string exportTreeString(const TreeType n_tree_type, const bool show_branch_supports);
         
         /**
          Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()

@@ -556,7 +556,7 @@ void cmaple::Params::initDefaultValue()
     thresh_entire_tree_improvement = 1;
     thresh_placement_cost = -1e-5;
     thresh_placement_cost_short_search = -1;
-    tree_format = "BIN";
+    tree_format = BIN_TREE;
     shallow_tree_search = false;
     output_testing = NULL;
     compute_aLRT_SH = false;
@@ -568,7 +568,7 @@ void cmaple::Params::initDefaultValue()
     allow_replace_input_tree = false;
     fixed_min_blength = -1;
     seq_type = SEQ_UNKNOWN;
-    tree_search_type_str = "NORMAL";
+    tree_search_type = NORMAL_TREE_SEARCH;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -584,24 +584,24 @@ TreeSearchType cmaple::parseTreeSearchType(const string& n_tree_search_type)
     std::string tree_search_type(n_tree_search_type);
     transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
     if (tree_search_type == "FAST") // || tree_search_type == "NO")
-        return NO_TREE_SEARCH;
+        return FAST_TREE_SEARCH;
     if (tree_search_type == "NORMAL") // || tree_search_type == "PARTIAL")
-        return PARTIAL_TREE_SEARCH;
+        return NORMAL_TREE_SEARCH;
     if (tree_search_type == "MORE_ACCURATE") // tree_search_type == "COMPLETE")
-        return COMPLETE_TREE_SEARCH;
+        return MORE_ACCURATE_TREE_SEARCH;
     return UNKNOWN_TREE_SEARCH;
 }
 
 std::string cmaple::getTreeSearchStr(const TreeSearchType tree_search_type)
 {
     switch (tree_search_type) {
-        case cmaple::NO_TREE_SEARCH:
+        case cmaple::FAST_TREE_SEARCH:
             return "FAST";
             break;
-        case cmaple::PARTIAL_TREE_SEARCH:
+        case cmaple::NORMAL_TREE_SEARCH:
             return "NORMAL";
             break;
-        case cmaple::COMPLETE_TREE_SEARCH:
+        case cmaple::MORE_ACCURATE_TREE_SEARCH:
             return "MORE_ACCURATE";
             break;
         default:
@@ -790,11 +790,9 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
                 
-                std::string tree_search_type = argv[cnt];
-                transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
-                params.tree_search_type_str = tree_search_type;
+                params.tree_search_type = parseTreeSearchType(argv[cnt]);
                 // validate tree_search_type
-                if (tree_search_type != "FAST" && tree_search_type != "NORMAL" && tree_search_type != "MORE_ACCURATE")
+                if (params.tree_search_type == UNKNOWN_TREE_SEARCH)
                     outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
                 continue;
             }
@@ -872,7 +870,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--output-multifurcating-tree") == 0 || strcmp(argv[cnt], "-out-mul-tree") == 0) {
                 
-                params.tree_format = "MUL";
+                params.tree_format = MUL_TREE;
 
                 continue;
             }
@@ -1148,4 +1146,18 @@ InputType cmaple::parseAlnFormat(const std::string& n_format)
     
     // default
     return IN_UNKNOWN;
+}
+
+TreeType cmaple::parseTreeType(const std::string& n_tree_type_str)
+{
+    // transform to uppercase
+    string tree_type_str(n_tree_type_str);
+    transform(tree_type_str.begin(), tree_type_str.end(), tree_type_str.begin(), ::toupper);
+    if (tree_type_str == "BIN")
+        return BIN_TREE;
+    if (tree_type_str == "MUL")
+        return MUL_TREE;
+    
+    // default
+    return UNKNOWN_TREE;
 }
