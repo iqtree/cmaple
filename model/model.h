@@ -22,13 +22,13 @@ namespace cmaple
          */
         ~Model();
         
-        /*! \brief Export the substitution model and its parameters to a dictionary
-         * @return A dictionary (std::map<std::string, std::string>) with the keys and values as in the following.
-         * <br><em>"model_name"</em>: the name of the model in string
-         * <br><em>"model_freqs"</em>: the state frequencies in string
-         * <br><em>"model_rates"</em>: the mutation matrix in string
+        /*! \brief Export the substitution model and its parameters to ModelParams structure
+         * @return A ModelParams structure contains the following members.
+         * <br><em>model_name</em>: the name of the model in string
+         * <br><em>state_freqs</em>: the state frequencies in string
+         * <br><em>mut_rates</em>: the mutation matrix in string
          */
-        std::map<std::string, std::string> getParams();
+        ModelParams getParams();
         
         // TODO: allow users to specify model parameters
         

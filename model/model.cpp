@@ -41,13 +41,16 @@ cmaple::Model::~Model()
     }
 }
 
-std::map<std::string, std::string> cmaple::Model::getParams()
+ModelParams cmaple::Model::getParams()
 {
     // Handle cases when model is not yet initialized
     if (!model_base)
     {
-        std::map<std::string, std::string> empty_map;
-        return empty_map;
+        // Init an empty ModelParams
+        ModelParams model_params = {"", "", ""};
+        
+        // return the empty model_params
+        return model_params;
     }
     
     return model_base->exportModelParams();

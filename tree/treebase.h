@@ -842,7 +842,7 @@ namespace cmaple
         /**
          Export model parameters in string
          */
-        inline std::map<std::string, std::string> exportModelParams ()
+        inline cmaple::ModelParams exportModelParams ()
         {
             return model->exportModelParams();
         }

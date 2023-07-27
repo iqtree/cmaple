@@ -13,6 +13,27 @@
 namespace cmaple
 {
     class SeqRegions;
+    
+    /**
+     A structure to store model parameters
+     */
+    struct ModelParams
+    {
+        /**
+         Name of the model in string
+         */
+        std::string model_name;
+        
+        /**
+         State frequencies in string
+         */
+        std::string state_freqs;
+        
+        /**
+         Mutation rates in string
+         */
+        std::string mut_rates;
+    };
 
     /** Base class of evolutionary models */
     class ModelBase
@@ -104,7 +125,7 @@ namespace cmaple
         /**
          Get the model name
          */
-        virtual std::string getModelName() {return "";} const;
+        virtual std::string getModelName() const {return "";};
         
     public:
         // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in the following
@@ -183,7 +204,7 @@ namespace cmaple
         /**
          Export model parameters to a dictionary
          */
-        std::map<std::string, std::string> exportModelParams();
+        cmaple::ModelParams exportModelParams();
         
         /**
          Detect SeqType from a SubModel enum

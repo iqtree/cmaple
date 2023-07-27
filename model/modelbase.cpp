@@ -231,18 +231,18 @@ std::string cmaple::ModelBase::exportQMatrixStr()
     return output;
 }
 
-std::map<std::string, std::string> cmaple::ModelBase::exportModelParams()
+cmaple::ModelParams cmaple::ModelBase::exportModelParams()
 {
-    std::map<std::string, std::string> model_params;
+    cmaple::ModelParams model_params;
     
     // model_name
-    model_params.insert({MODEL_NAME, getModelName()});
+    model_params.model_name = getModelName();
     
     // root frequencies
-    model_params.insert({MODEL_FREQS, exportRootFrequenciesStr()});
+    model_params.state_freqs = exportRootFrequenciesStr();
     
     // Q matrix
-    model_params.insert({MODEL_RATES, exportQMatrixStr()});
+    model_params.mut_rates = exportQMatrixStr();
     
     return model_params;
 }

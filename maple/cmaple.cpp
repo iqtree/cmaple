@@ -78,12 +78,12 @@ void cmaple::runCMaple(cmaple::Params &params)
     // Show model parameters
     if (cmaple::verbose_mode > cmaple::VB_QUIET)
     {
-        std::map<std::string, std::string> model_params = model.getParams();
-        std::cout << "\nMODEL: " + model_params[cmaple::MODEL_NAME] + "\n";
+        cmaple::ModelParams model_params = model.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
         std::cout << "\nROOT FREQUENCIES\n";
-        std::cout << model_params[cmaple::MODEL_FREQS];
+        std::cout << model_params.state_freqs;
         std::cout << "\nMUTATION MATRIX\n";
-        std::cout << model_params[cmaple::MODEL_RATES] << std::endl;
+        std::cout << model_params.mut_rates << std::endl;
     }
         
     // Show information about output files
