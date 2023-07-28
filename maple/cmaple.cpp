@@ -37,7 +37,7 @@ void cmaple::runCMaple(cmaple::Params &params)
     }
     
     // Initialize a Tree
-    Tree tree(aln, model, params.input_treefile, params.fixed_blengths);
+    Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths);
     // clone all settings
     cmaple::Params& tree_params = tree.getParams();
     tree_params = params;
@@ -220,11 +220,11 @@ void cmaple::testing(cmaple::Params& params)
     cmaple::Model model(GTR);
 
     // Create a tree, attach the alignment and model to the tree
-    cmaple::Tree tree(aln, model);
+    cmaple::Tree tree(&aln, &model);
     
     // change aln
     cmaple::Alignment aln1("test_100.maple");
-    tree.changeAln(aln1);
+    tree.changeAln(&aln1);
     
     // infer
     cout << tree.infer()<< endl;
@@ -233,15 +233,15 @@ void cmaple::testing(cmaple::Params& params)
     
     // change model
     cmaple::Model model1(JC);
-    tree.changeModel(model1);
+    tree.changeModel(&model1);
     
     // change model again
     cmaple::Model model2(GTR);
-    tree.changeModel(model2);
+    tree.changeModel(&model2);
     
     // change aln
     cmaple::Alignment aln2("test_200.maple");
-    tree.changeAln(aln2);
+    tree.changeAln(&aln2);
     
     // infer again
     cout << tree.infer()<< endl;
@@ -254,5 +254,5 @@ void cmaple::testing(cmaple::Params& params)
     
     // change aln with different seqtypes
     Alignment aln4("test_aa/test_aa_100K.maple");
-    tree.changeAln(aln4);
+    tree.changeAln(&aln4);
 }

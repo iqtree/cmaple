@@ -3,20 +3,23 @@
 using namespace std;
 using namespace cmaple;
 
-void cmaple::Tree::initTree(Alignment& aln, Model& model)
+void cmaple::Tree::initTree(Alignment* aln, Model* model)
 {
+    ASSERT(aln && "Null pointer to the alignment");
+    ASSERT(model && "Null pointer to the model");
+    
     // Validate input aln
-    if (!aln.aln_base || !aln.aln_base->data.size())
+    if (!aln->aln_base || !aln->aln_base->data.size())
         outError("Alignment is empty. Please call read(...) first!");
     
     // Init the tree base
     tree_base = new TreeBase();
     
     // Attach alignment and model
-    tree_base->attachAlnModel(aln.aln_base, model.model_base);
+    tree_base->attachAlnModel(aln->aln_base, model->model_base);
 }
 
-cmaple::Tree::Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool fixed_blengths):tree_base(nullptr)
+cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths):tree_base(nullptr)
 {
     // Initialize a tree
     initTree(aln, model);
@@ -25,7 +28,7 @@ cmaple::Tree::Tree(Alignment& aln, Model& model, std::istream& tree_stream, cons
     tree_base->loadTree(tree_stream, fixed_blengths);
 }
 
-cmaple::Tree::Tree(Alignment& aln, Model& model, const std::string& tree_filename, const bool fixed_blengths):tree_base(nullptr)
+cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filename, const bool fixed_blengths):tree_base(nullptr)
 {
     // Initialize a tree
     initTree(aln, model);
@@ -58,24 +61,26 @@ cmaple::Tree::~Tree()
     }
 }
 
-void cmaple::Tree::changeAln(Alignment& n_aln)
+void cmaple::Tree::changeAln(Alignment* n_aln)
 {
+    ASSERT(n_aln && "Null pointer to the alignment");
     ASSERT(tree_base);
     
     // Validate input aln
-    if (!n_aln.aln_base || !n_aln.aln_base->data.size())
+    if (!n_aln->aln_base || !n_aln->aln_base->data.size())
         outError("Alignment is empty. Please call read(...) first!");
     
     // change the aln_base
-    tree_base->changeAln(n_aln.aln_base);
+    tree_base->changeAln(n_aln->aln_base);
 }
 
-void cmaple::Tree::changeModel(Model& n_model)
+void cmaple::Tree::changeModel(Model* n_model)
 {
+    ASSERT(n_model && "Null pointer to the model");
     ASSERT(tree_base);
     
     // change the model_base
-    tree_base->changeModel(n_model.model_base);
+    tree_base->changeModel(n_model->model_base);
 }
 
 std::string cmaple::Tree::infer(const TreeSearchType tree_search_type, const bool shallow_tree_search)

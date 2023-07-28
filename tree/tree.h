@@ -14,7 +14,7 @@ namespace cmaple
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          */
-        Tree(Alignment& aln, Model& model, std::istream& tree_stream, const bool fixed_blengths = false);
+        Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
         
         /*! \brief Constructor from an optional (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
          * @param[in] aln An alignment
@@ -22,7 +22,7 @@ namespace cmaple
          * @param[in] tree_filename Name of a tree file (optinal)
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          */
-        Tree(Alignment& aln, Model& model, const std::string& tree_filename = "", const bool fixed_blengths = false);
+        Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
         
         /*! \brief Destructor
          */
@@ -31,12 +31,12 @@ namespace cmaple
         /*! \brief Change the alignment
          * @param[in] aln An alignment
          */
-        void changeAln(Alignment& aln);
+        void changeAln(Alignment* aln);
         
         /*! \brief Change the substitution model
          * @param[in] model A substitution model
          */
-        void changeModel(Model& model);
+        void changeModel(Model* model);
         
         /*! \brief Infer a phylogenetic tree
          * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:
@@ -93,7 +93,7 @@ namespace cmaple
          * @param[in] aln An alignment
          * @param[in] model A substitution model
          */
-        void initTree(Alignment& aln, Model& model);
+        void initTree(Alignment* aln, Model* model);
     };
 
     /** \brief Customized << operator to output the tree string in a (bifurcating) NEWICK format
