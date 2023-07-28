@@ -78,6 +78,11 @@ namespace cmaple
         InputType aln_format = IN_UNKNOWN;
         
         /**
+         A set of trees that this alignment attached to
+         */
+        std::unordered_set<void*> attached_trees;
+        
+        /**
          *  Alignment constructor
          */
         AlignmentBase();
@@ -213,6 +218,11 @@ namespace cmaple
          update num_states according to the seq_type
          */
         void updateNumStates();
+        
+        /**
+         Reset all members
+         */
+        void reset();
     };
 }
 #endif

@@ -5,13 +5,13 @@ using namespace cmaple;
 
 cmaple::Alignment::Alignment():aln_base(new AlignmentBase()) {};
 
-cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
+cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(new AlignmentBase())
 {
     // Initialize an alignment instance from the input stream
     read(aln_stream, ref_seq, format, seqtype);
 }
 
-cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(nullptr)
+cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype):aln_base(new AlignmentBase())
 {
     // Initialize an alignment instance from the input file
     read(aln_filename, ref_seq, format, seqtype);
@@ -19,14 +19,14 @@ cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string&
 
 void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype)
 {
+    // Make sure aln_base is initialized
+    ASSERT(aln_base && "Null pointer to aln_base");
+    
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "Reading an alignment" << std::endl;
     
-    // Delete existing aln_base (in cases, users re-read the alignment)
-    if (aln_base) delete aln_base;
-    
-    // Init alignment base
-    aln_base = new AlignmentBase();
+    // Reset aln_base
+    aln_base->reset();
     
     // Set format (is specified)
     if (format != IN_UNKNOWN)

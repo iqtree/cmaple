@@ -248,7 +248,7 @@ namespace cmaple
         /**
          Export string: name + branch length
          */
-        const std::string exportString(const bool binary, const AlignmentBase* aln, const bool show_branch_supports);
+        const std::string exportString(const bool binary, const std::vector<std::string>& seq_names, const bool show_branch_supports);
     };
 
     /** An intermediate data structure to store data for calculating aLRT-SH  */

@@ -80,6 +80,8 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     
     // Attach aln
     aln = n_aln;
+    // record the current tree in the list of trees that the alignment is attached to
+    n_aln->attached_trees.insert(this);
     
     // Attach model
     model = n_model;
@@ -93,6 +95,11 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     
     // sort sequences by their distances to the reference sequence
     aln->sortSeqsByDistances(params->hamming_weight);
+    
+    // extract a backup vector of sequence names
+    seq_names.resize(aln->data.size());
+    for (auto i = 0; i < aln->data.size(); ++i)
+        seq_names[i] = aln->data[i].seq_name;
     
     // update model according to the data from the alignment
     updateModelByAln();
@@ -186,23 +193,24 @@ void cmaple::TreeBase::changeAlnTemplate(AlignmentBase* n_aln)
     if (aln->getSeqType() != n_aln->getSeqType())
         outError("Sorry! we have yet supported changing to a new alignment with a sequence type different from the current one.");
     
-    // do nothing if new aln is the same as the current one
-    if (aln == n_aln) return;
-    
-    // record the old_aln
-    AlignmentBase* old_aln = aln;
-    
     // change the alignment
     aln = n_aln;
+    // record the current tree in the list of trees that the alignment is attached to
+    n_aln->attached_trees.insert(this);
     
     // sort sequences by their distances to the reference sequence
     aln->sortSeqsByDistances(params->hamming_weight);
     
+    // re-mark taxa in the new alignment, which already existed in the current tree
+    remarkExistingSeqs();
+    
+    // extract a backup vector of sequence names
+    seq_names.resize(aln->data.size());
+    for (auto i = 0; i < aln->data.size(); ++i)
+        seq_names[i] = aln->data[i].seq_name;
+    
     // update model according to the data in the new alignment
     updateModelByAln();
-    
-    // re-mark taxa in the new alignment, which already existed in the current tree
-    remarkExistingSeqs(old_aln);
     
     // make sure users can only keep the blengths fixed if they input a complete tree with branch lengths
     if (fixed_blengths && !isComplete())
@@ -224,6 +232,12 @@ void cmaple::TreeBase::changeModel(ModelBase* model)
 template <const cmaple::StateType  num_states>
 void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
 {
+    ASSERT(n_model && model && aln);
+    
+    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
+    if (aln->attached_trees.find(this) == aln->attached_trees.end())
+        changeAln(aln);
+    
     // make sure both models have the same seqtype
     if (model->num_states_ != n_model->num_states_)
         outError("Sorry! we have yet supported changing to a new model with a sequence type different from the current one.");
@@ -256,6 +270,10 @@ void cmaple::TreeBase::doInferenceTemplate(const TreeSearchType tree_search_type
     // Validate tree search type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
         outError("Unknown tree search type!");
+    
+    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
+    if (aln->attached_trees.find(this) == aln->attached_trees.end())
+        changeAln(aln);
     
     //  Check whether we infer a phologeny from an input tree
     const bool from_input_tree = nodes.size() > 0;
@@ -559,6 +577,10 @@ RealNumType cmaple::TreeBase::calculateLhTemplate()
         return 0;
     }
     
+    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
+    if (aln->attached_trees.find(this) == aln->attached_trees.end())
+        changeAln(aln);
+    
     // traverse the tree from root to re-calculate all likelihoods after optimizing the tree topology
     refreshAllLhs<num_states>();
     
@@ -599,6 +621,10 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
     ASSERT(epsilon >= 0 && "Epsilon must be non-negative!");
     params->aLRT_SH_half_epsilon = epsilon * 0.5;
     
+    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
+    if (aln->attached_trees.find(this) == aln->attached_trees.end())
+        changeAln(aln);
+    
     // refresh all upper left/right lhs before calculating aLRT-SH
     refreshAllNonLowerLhs<num_states>();
     
@@ -635,7 +661,7 @@ const string cmaple::TreeBase::exportNodeString(const bool binary, const NumSeqs
     
     // if it's a leaf
     if (!node.isInternal())
-        return node.exportString(binary, aln, show_branch_supports);
+        return node.exportString(binary, seq_names, show_branch_supports);
     // if it's an internal node
     else
     {
@@ -6408,9 +6434,9 @@ void cmaple::TreeBase::markAnExistingSeq(const std::string& seq_name, const std:
         outError("Taxon " + seq_name + " is not found in the new alignment!");
 }
 
-void cmaple::TreeBase::remarkExistingSeqs(AlignmentBase* old_aln)
+void cmaple::TreeBase::remarkExistingSeqs()
 {
-    ASSERT(aln && old_aln);
+    ASSERT(aln);
     
     // init a mapping between sequence names and its index in the alignment
     std::map<std::string, NumSeqsType> map_name_index = initMapSeqNameIndex();
@@ -6430,12 +6456,12 @@ void cmaple::TreeBase::remarkExistingSeqs(AlignmentBase* old_aln)
             PhyloNode& node = nodes[i];
             
             // mark the leaf itself
-            markAnExistingSeq(old_aln->data[node.getSeqNameIndex()].seq_name, map_name_index);
+            markAnExistingSeq(seq_names[node.getSeqNameIndex()], map_name_index);
             
             // mark its less-info sequences
             std::vector<NumSeqsType>& less_info_seqs = node.getLessInfoSeqs();
             for (auto j = 0; j < less_info_seqs.size(); ++j)
-                markAnExistingSeq(old_aln->data[less_info_seqs[j]].seq_name, map_name_index);
+                markAnExistingSeq(seq_names[less_info_seqs[j]], map_name_index);
         }
     }
 }
@@ -6608,7 +6634,7 @@ void cmaple::TreeBase::collapseAllZeroLeave()
 void cmaple::TreeBase::collapseOneZeroLeaf(PhyloNode& node, Index& node_index, PhyloNode& neighbor_1, const Index neighbor_1_index, PhyloNode& neighbor_2)
 {
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-        std::cout << "Collapse " << aln->data[neighbor_2.getSeqNameIndex()].seq_name << " into the vector of less-info_seqs of " << aln->data[neighbor_1.getSeqNameIndex()].seq_name  << std::endl;
+        std::cout << "Collapse " << seq_names[neighbor_2.getSeqNameIndex()] << " into the vector of less-info_seqs of " << seq_names[neighbor_1.getSeqNameIndex()]  << std::endl;
     
     // add neighbor_2 and its less-info-seqs into that of neigbor_1
     neighbor_1.addLessInfoSeqs(neighbor_2.getSeqNameIndex());
@@ -6668,7 +6694,7 @@ void cmaple::TreeBase::expandTreeByOneLessInfoSeq(PhyloNode& node, const Index n
     
     // debug
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-        std::cout << "Add less-info-seq " + aln->data[seq_name_index].seq_name + " into the tree" << std::endl;
+        std::cout << "Add less-info-seq " + seq_names[seq_name_index] + " into the tree" << std::endl;
     
     // dummy variables
     std::unique_ptr<SeqRegions> lower_regions = aln->data[seq_name_index].getLowerLhVector(aln->ref_seq.size(), num_states, aln->getSeqType());

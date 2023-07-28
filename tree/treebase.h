@@ -583,9 +583,8 @@ namespace cmaple
         
         /**
          * Re-mark the sequences in the alignment, which already existed in the current tree
-         * @param[in] old_aln the Old alignment
          */
-        void remarkExistingSeqs(AlignmentBase* old_aln);
+        void remarkExistingSeqs();
         
         /**
          * Find and mark a sequence existed in the tree
@@ -638,6 +637,12 @@ namespace cmaple
          (vector) Index of root in the vector of phylonodes
          */
         cmaple::NumSeqsType  root_vector_index;
+        
+        /*
+         A backup of sequence names attached to the current tree, in cases that users re-read the alignment
+         NHANLT: @TODO - avoid this redundant vector (sequence names are store in alignment and here)
+         */
+        std::vector<std::string> seq_names;
         
         /**
          Constructor
