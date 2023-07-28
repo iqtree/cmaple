@@ -5,6 +5,10 @@ using namespace cmaple;
 
 void cmaple::Tree::initTree(Alignment& aln, Model& model)
 {
+    // Validate input aln
+    if (!aln.aln_base || !aln.aln_base->data.size())
+        outError("Alignment is empty. Please call read(...) first!");
+    
     // Init the tree base
     tree_base = new TreeBase();
     
@@ -57,6 +61,10 @@ cmaple::Tree::~Tree()
 void cmaple::Tree::changeAln(Alignment& n_aln)
 {
     ASSERT(tree_base);
+    
+    // Validate input aln
+    if (!n_aln.aln_base || !n_aln.aln_base->data.size())
+        outError("Alignment is empty. Please call read(...) first!");
     
     // change the aln_base
     tree_base->changeAln(n_aln.aln_base);
