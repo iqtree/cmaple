@@ -25,7 +25,7 @@ cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, cons
     initTree(aln, model);
     
     // load the input tree from a stream
-    tree_base->loadTree(tree_stream, fixed_blengths);
+    load(tree_stream, fixed_blengths);
 }
 
 cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filename, const bool fixed_blengths):tree_base(nullptr)
@@ -35,18 +35,7 @@ cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filenam
     
     // load the input tree from a tree file (if users specify it)
     if (tree_filename.length())
-    {
-        // open the treefile
-        std::ifstream tree_stream;
-        try {
-            tree_stream.exceptions(ios::failbit | ios::badbit);
-            tree_stream.open(tree_filename);
-            tree_base->loadTree(tree_stream, fixed_blengths);
-            tree_stream.close();
-        } catch (ios::failure) {
-            outError(ERR_READ_INPUT, tree_filename);
-        }
-    }
+        load(tree_filename, fixed_blengths);
     // Unable to keep blengths fixed if users don't input a tree
     else if (fixed_blengths && cmaple::verbose_mode > cmaple::VB_QUIET)
         outWarning("Disable the option to keep the branch lengths fixed because users didn't supply an input tree.");
@@ -58,6 +47,33 @@ cmaple::Tree::~Tree()
     {
         delete tree_base;
         tree_base = nullptr;
+    }
+}
+
+void cmaple::Tree::load(std::istream& tree_stream, const bool fixed_blengths)
+{
+    // Make sure tree_base is not null
+    ASSERT(tree_base && "tree_base is null");
+    
+    // load the input tree from a stream
+    tree_base->loadTree(tree_stream, fixed_blengths);
+}
+
+void cmaple::Tree::load(const std::string& tree_filename, const bool fixed_blengths)
+{
+    // Validate input
+    if (!tree_filename.length())
+        outError("Please specify the tree file");
+    
+    // open the treefile
+    std::ifstream tree_stream;
+    try {
+        tree_stream.exceptions(ios::failbit | ios::badbit);
+        tree_stream.open(tree_filename);
+        load(tree_stream, fixed_blengths);
+        tree_stream.close();
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, tree_filename);
     }
 }
 
@@ -169,4 +185,15 @@ std::ostream& cmaple::operator<<(std::ostream& out_stream, const cmaple::Tree& t
 {
     out_stream << tree.exportString();
     return out_stream;
+}
+
+std::istream& cmaple::operator>>(std::istream& in_stream, cmaple::Tree& tree)
+{
+    // go back to the beginning og the stream
+    in_stream.clear();
+    in_stream.seekg(0);
+    
+    // read the stream
+    tree.load(in_stream);
+    return in_stream;
 }

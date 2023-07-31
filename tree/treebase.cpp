@@ -71,6 +71,15 @@ void cmaple::TreeBase::setupBlengthThresh()
     params->threshold_prob2 = params->threshold_prob * params->threshold_prob;
 }
 
+void cmaple::TreeBase::resetSeqAdded()
+{
+    ASSERT(aln);
+    const NumSeqsType num_sequences = aln->data.size();
+    sequence_added.resize(num_sequences);
+    for (auto i = 0; i < num_sequences; ++i)
+        sequence_added[i] = false;
+}
+
 void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
 {
     // Validate inputs
@@ -91,9 +100,7 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     nodes.reserve(num_seqs + num_seqs);
     
     // Initialize sequence_added -> all sequences has yet added to the tree
-    sequence_added.resize(num_seqs);
-    for (auto i = 0; i < num_seqs; ++i)
-        sequence_added[i] = false;
+    resetSeqAdded();
     
     // init params & thresholds
     setupBlengthThresh();
@@ -130,6 +137,19 @@ void cmaple::TreeBase::loadTree(std::istream& tree_stream, const bool fixed_blen
 template <const StateType num_states>
 void cmaple::TreeBase::loadTreeTemplate(std::istream& tree_stream, const bool n_fixed_blengths)
 {
+    // reset variables in tree
+    ASSERT(aln);
+    const NumSeqsType num_seqs = aln->data.size();
+    // reset nodes
+    nodes.clear();
+    nodes.reserve(num_seqs + num_seqs);
+    // reset node_lhs
+    node_lhs.clear();
+    node_lhs.reserve(num_seqs);
+    node_lhs.emplace_back(0);
+    // reset sequence_added
+    resetSeqAdded();
+    
     // read tree from the input treefile
     bool missing_blength = readTree(tree_stream);
     
@@ -6465,10 +6485,7 @@ void cmaple::TreeBase::remarkExistingSeqs()
     std::map<std::string, NumSeqsType> map_name_index = initMapSeqNameIndex();
     
     // reset all marked sequences
-    const NumSeqsType num_seqs = aln->data.size();
-    sequence_added.resize(num_seqs);
-    for (auto i = 0; i < num_seqs; ++i)
-        sequence_added[i] = false;
+    resetSeqAdded();
     
     // browse all nodes to mark existing leave as added
     for (auto i = 0; i < nodes.size(); ++i)

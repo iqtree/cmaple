@@ -594,6 +594,11 @@ namespace cmaple
          */
         NumSeqsType markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index);
         
+        /**
+         * Mark all sequences (in the alignment) as not yet added to the current tree
+         */
+        void resetSeqAdded();
+        
         // NHANLT: Debug aLRT
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
         

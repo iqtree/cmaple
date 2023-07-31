@@ -28,6 +28,18 @@ namespace cmaple
          */
         ~Tree();
         
+        /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
+         * @param[in] tree_stream A stream of an input tree
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         */
+        void load(std::istream& tree_stream, const bool fixed_blengths = false);
+        
+        /*! \brief Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
+         * @param[in] tree_filename Name of a tree file
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         */
+        void load(const std::string& tree_filename, const bool fixed_blengths = false);
+        
         /*! \brief Change the alignment
          * @param[in] aln An alignment
          */
@@ -99,4 +111,8 @@ namespace cmaple
     /** \brief Customized << operator to output the tree string in a (bifurcating) NEWICK format
      */
     std::ostream& operator<<(std::ostream& out_stream, const cmaple::Tree& tree);
+
+    /** \brief Customized >> operator to read the tree from a stream
+     */
+    std::istream& operator>>(std::istream& in_stream, cmaple::Tree& tree);
 }

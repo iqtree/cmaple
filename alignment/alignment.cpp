@@ -132,6 +132,10 @@ std::ostream& cmaple::operator<<(std::ostream& out_stream, const cmaple::Alignme
 
 std::istream& cmaple::operator>>(std::istream& in_stream, cmaple::Alignment& aln)
 {
+    // go back to the beginning og the stream
+    in_stream.clear();
+    in_stream.seekg(0);
+    
     // read the alignment from a stream
     aln.read(in_stream);
     
