@@ -90,15 +90,17 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
     const NumSeqsType num_seqs = aln->data.size();
     nodes.reserve(num_seqs + num_seqs);
     
+    // Initialize sequence_added -> all sequences has yet added to the tree
+    sequence_added.resize(num_seqs);
+    for (auto i = 0; i < num_seqs; ++i)
+        sequence_added[i] = false;
+    
     // init params & thresholds
     setupBlengthThresh();
     
-    // sort sequences by their distances to the reference sequence
-    aln->sortSeqsByDistances(params->hamming_weight);
-    
     // extract a backup vector of sequence names
-    seq_names.resize(aln->data.size());
-    for (auto i = 0; i < aln->data.size(); ++i)
+    seq_names.resize(num_seqs);
+    for (auto i = 0; i < num_seqs; ++i)
         seq_names[i] = aln->data[i].seq_name;
     
     // update model according to the data from the alignment
@@ -193,13 +195,14 @@ void cmaple::TreeBase::changeAlnTemplate(AlignmentBase* n_aln)
     if (aln->getSeqType() != n_aln->getSeqType())
         outError("Sorry! we have yet supported changing to a new alignment with a sequence type different from the current one.");
     
+    // show information
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        std::cout << "Changing the alignment" << std::endl;
+    
     // change the alignment
     aln = n_aln;
     // record the current tree in the list of trees that the alignment is attached to
     n_aln->attached_trees.insert(this);
-    
-    // sort sequences by their distances to the reference sequence
-    aln->sortSeqsByDistances(params->hamming_weight);
     
     // re-mark taxa in the new alignment, which already existed in the current tree
     remarkExistingSeqs();
@@ -244,6 +247,10 @@ void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
     
     // do nothing if new model is the same as the current one
     if (model == n_model) return;
+    
+    // show information
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        std::cout << "Changing the model" << std::endl;
     
     // change the model
     model = n_model;
@@ -317,7 +324,7 @@ void cmaple::TreeBase::buildInitialTree(const bool from_input_tree)
         root.setUpperLength(0);
         
         // move to the next sequence in the alignment
-        sequence->is_added = true;
+        sequence_added[i] = true;
         ++sequence;
         ++i;
     }
@@ -326,14 +333,14 @@ void cmaple::TreeBase::buildInitialTree(const bool from_input_tree)
     for (; i < num_seqs; ++i, ++sequence)
     {
         // don't add sequence that was already added in the input tree
-        if (from_input_tree && sequence->is_added)
+        if (from_input_tree && sequence_added[i])
         {
             --num_new_sequences;
             continue;
         }
         // otherwise, mark the current sequence as added
         else
-            sequence->is_added = true;
+            sequence_added[i] = true;
         
         // get the lower likelihood vector of the current sequence
         std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
@@ -626,7 +633,8 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
         changeAln(aln);
     
     // refresh all upper left/right lhs before calculating aLRT-SH
-    refreshAllNonLowerLhs<num_states>();
+    // refreshAllNonLowerLhs<num_states>();
+    refreshAllLhs<num_states>();
     
     // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one less-info-seq to make sure all we compute the aLRT of all internal branches
     if (!params->input_treefile.length())
@@ -6309,7 +6317,7 @@ NumSeqsType cmaple::TreeBase::parseFile(std::istream &infile, char& ch, RealNumT
             tmp_root.setPartialLh(TOP, aln->data[sequence_index].getLowerLhVector(aln->ref_seq.size(), aln->num_states, aln->getSeqType()));
             
             // mark the sequece as added (to the tree)
-            aln->data[sequence_index].is_added = true;
+            sequence_added[sequence_index] = true;
         }        
     }
     /*if (!tmp_root.isInternal()) {
@@ -6438,7 +6446,7 @@ NumSeqsType cmaple::TreeBase::markAnExistingSeq(const std::string& seq_name, con
     // If it's found -> mark it as added
     if (iter != map_name_index.end())
     {
-        aln->data[iter->second].is_added = true;
+        sequence_added[iter->second] = true;
         new_seq_index = iter->second;
     }
     // otherwise, return an error
@@ -6457,10 +6465,10 @@ void cmaple::TreeBase::remarkExistingSeqs()
     std::map<std::string, NumSeqsType> map_name_index = initMapSeqNameIndex();
     
     // reset all marked sequences
-    Sequence* sequence = &aln->data.front();
     const NumSeqsType num_seqs = aln->data.size();
-    for (auto i = 0; i < num_seqs; ++i, ++sequence)
-        sequence->is_added = false;
+    sequence_added.resize(num_seqs);
+    for (auto i = 0; i < num_seqs; ++i)
+        sequence_added[i] = false;
     
     // browse all nodes to mark existing leave as added
     for (auto i = 0; i < nodes.size(); ++i)
@@ -6828,7 +6836,7 @@ bool cmaple::TreeBase::isComplete()
         // browse sequences in the alignment one by one
         for (auto i = 0; i < aln->data.size(); ++i)
             // if any of sequence has yet added -> this tree is incomplete
-            if (!aln->data[i].is_added)
+            if (!sequence_added[i])
                 return false;
     }
     

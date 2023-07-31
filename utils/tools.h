@@ -444,11 +444,6 @@ namespace cmaple
         InputType aln_format;
         
         /**
-        *  Weight to calculate the hamming distance
-        */
-        RealNumType hamming_weight;
-        
-        /**
             Substitution model (e.g., HKY, GTR, JC, etc.)
          */
         SubModel sub_model;

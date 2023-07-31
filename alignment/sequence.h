@@ -10,12 +10,7 @@ namespace cmaple
 
     /** Class present a sequence */
     class Sequence: public std::vector<Mutation> {
-    public:
-        /**
-         TRUE if this sequence is already added in the tree
-         */
-        bool is_added = false;
-        
+    public:        
         /**
          Name of the sequence
          */

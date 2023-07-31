@@ -51,6 +51,9 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
     // in MAPLE format
     else
         aln_base->readMaple(aln_stream);
+    
+    // sort sequences by their distances to the reference sequence
+    aln_base->sortSeqsByDistances();
 }
 
 void cmaple::Alignment::read(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype)

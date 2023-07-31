@@ -196,9 +196,8 @@ namespace cmaple
         /**
          Sort sequences by their distances to the reference genome
          distance = num_differents * hamming_weight + num_ambiguities
-         @param hamming_weight weight to calculate the hamming distance
          */
-        void sortSeqsByDistances(cmaple::RealNumType hamming_weight);
+        void sortSeqsByDistances();
         
         /**
          Compute the distance between a sequence and the ref sequence

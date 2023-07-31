@@ -532,7 +532,6 @@ void cmaple::Params::initDefaultValue()
     aln_format = IN_UNKNOWN;
     ref_path = "";
     ref_seqname = "";
-    hamming_weight = 1000;
     sub_model = GTR;
     fixed_blengths = false;
     overwrite_output = false;
@@ -752,19 +751,6 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 else
                     outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
             
-                continue;
-            }
-            if (strcmp(argv[cnt], "--hamming-weight") == 0 || strcmp(argv[cnt], "-hamming") == 0) {
-                
-                ++cnt;
-                if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -hamming <WEIGHT>");
-                
-                params.hamming_weight = convert_real_number(argv[cnt]);
-                
-                if (params.hamming_weight < 0)
-                    outError("<WEIGHT> must not be negative!");
-
                 continue;
             }
             if (strcmp(argv[cnt], "--min-blength") == 0 || strcmp(argv[cnt], "-min-bl") == 0) {

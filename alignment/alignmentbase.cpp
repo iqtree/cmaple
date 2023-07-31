@@ -838,9 +838,10 @@ PositionType cmaple::AlignmentBase::computeSeqDistance(Sequence& sequence, RealN
     return num_diffs * hamming_weight + num_ambiguities;
 }
 
-void cmaple::AlignmentBase::sortSeqsByDistances(RealNumType hamming_weight)
+void cmaple::AlignmentBase::sortSeqsByDistances()
 {
    // init dummy variables
+    const RealNumType hamming_weight = 1000;
     PositionType num_seqs = data.size();
     PositionType *distances = new PositionType[num_seqs];
     PositionType *sequence_indexes = new PositionType[num_seqs];

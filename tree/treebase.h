@@ -645,6 +645,11 @@ namespace cmaple
          */
         std::vector<std::string> seq_names;
         
+        /*
+         a vector denote whether a sequence in the alignment is added to the tree or not
+         */
+        std::vector<bool> sequence_added;
+        
         /**
          Constructor
          */
