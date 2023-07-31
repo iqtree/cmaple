@@ -6422,16 +6422,24 @@ std::map<std::string, NumSeqsType> cmaple::TreeBase::initMapSeqNameIndex()
     return map_seqname_index;
 }
 
-void cmaple::TreeBase::markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index)
+NumSeqsType cmaple::TreeBase::markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index)
 {
+    NumSeqsType new_seq_index = 0;
+    
     // Find the sequence name
     auto iter = map_name_index.find(seq_name);
     // If it's found -> mark it as added
     if (iter != map_name_index.end())
+    {
         aln->data[iter->second].is_added = true;
+        new_seq_index = iter->second;
+    }
     // otherwise, return an error
     else
         outError("Taxon " + seq_name + " is not found in the new alignment!");
+    
+    // return new_seq_index
+    return new_seq_index;
 }
 
 void cmaple::TreeBase::remarkExistingSeqs()
@@ -6456,12 +6464,12 @@ void cmaple::TreeBase::remarkExistingSeqs()
             PhyloNode& node = nodes[i];
             
             // mark the leaf itself
-            markAnExistingSeq(seq_names[node.getSeqNameIndex()], map_name_index);
+            node.setSeqNameIndex(markAnExistingSeq(seq_names[node.getSeqNameIndex()], map_name_index));
             
             // mark its less-info sequences
             std::vector<NumSeqsType>& less_info_seqs = node.getLessInfoSeqs();
             for (auto j = 0; j < less_info_seqs.size(); ++j)
-                markAnExistingSeq(seq_names[less_info_seqs[j]], map_name_index);
+                less_info_seqs[j] = markAnExistingSeq(seq_names[less_info_seqs[j]], map_name_index);
         }
     }
 }

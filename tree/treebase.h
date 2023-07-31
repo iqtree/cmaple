@@ -590,8 +590,9 @@ namespace cmaple
          * Find and mark a sequence existed in the tree
          * @param[in] seq_name Name of the sequence
          * @param[in] map_name_index a mapping between sequence names and its index in the alignment
+         * @return the new index of the corresponding sequence in the new alignment
          */
-        void markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index);
+        NumSeqsType markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index);
         
         // NHANLT: Debug aLRT
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
