@@ -5296,8 +5296,8 @@ PositionType cmaple::TreeBase::count_aRLT_SH_branch(std::vector<RealNumType>& si
         lh_diff_3 += site_lh_diff_3[j];
         lh_diff_3 += site_lh_root_diff_3[j];
     }
-    ASSERT(fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-3);
-    ASSERT(fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
+    ASSERT(isinf(lh_diff_2) || fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-3);
+    ASSERT(isinf(lh_diff_3) || fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
     
     // iterate a number of replicates
     #pragma omp parallel reduction(+:sh_count)
@@ -5682,6 +5682,13 @@ bool cmaple::TreeBase::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT,
     while (true)
     {
         PhyloNode& node = nodes[node_vec];
+    
+        // if new_lower_lh == null -> bad NNI -> stop
+        if (!new_lower_lh)
+        {
+            lh_diff = MIN_NEGATIVE;
+            break;
+        }
         
         // if the new lower lh is different from the old one -> traverse upward further
         if (node.getPartialLh(TOP)->areDiffFrom(*new_lower_lh, seq_length, num_states, *params) || fabs(prev_lh_diff) > threshold_prob)
