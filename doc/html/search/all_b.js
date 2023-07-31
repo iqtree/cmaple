@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['what_27s_20cmaple_20library_3f_0',['What&apos;s CMaple library?',['../index.html',1,'']]],
-  ['write_1',['write',['../classcmaple_1_1_alignment.html#a0564cc07f4576b5d9332442bb9fd350b',1,'cmaple::Alignment::write(std::ostream &amp;aln_stream, const std::string &amp;format=&quot;MAPLE&quot;)'],['../classcmaple_1_1_alignment.html#aa6fde65b30e8f14cc0c1d456701a37c2',1,'cmaple::Alignment::write(const std::string &amp;aln_filename, const std::string &amp;format=&quot;MAPLE&quot;, const bool overwrite=false)']]]
+  ['seq_5ftype_0',['seq_type',['../classcmaple_1_1_params.html#a84a1a0b083d92a1c7f8e9884b2b5189b',1,'cmaple::Params']]],
+  ['sub_5fmodel_1',['sub_model',['../classcmaple_1_1_params.html#a27b5328a7fcd136fbafbbf45c4d358fa',1,'cmaple::Params']]]
 ];

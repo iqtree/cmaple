@@ -7,6 +7,10 @@
 \doxysubsubsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
+Input\+Type \mbox{\hyperlink{classcmaple_1_1_params_a9d28cb5be632aec61f6121f9325525bd}{aln\+\_\+format}}
+\item 
+Sub\+Model \mbox{\hyperlink{classcmaple_1_1_params_a27b5328a7fcd136fbafbbf45c4d358fa}{sub\+\_\+model}}
+\item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509}{threshold\+\_\+prob}}
 \item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a26f833dbe75c3832f518eb0dbdf16780}{fixed\+\_\+min\+\_\+blength}}
@@ -24,6 +28,10 @@ Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a196eb6907df1f2dd02cba0c
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_params_a37e63254bb438e88ef66effa7a73b2d9}{thresh\+\_\+entire\+\_\+tree\+\_\+improvement}}
 \item 
 uint64\+\_\+t \mbox{\hyperlink{classcmaple_1_1_params_a7064032af46aae5d59e764a9e710e982}{ran\+\_\+seed}}
+\item 
+Seq\+Type \mbox{\hyperlink{classcmaple_1_1_params_a84a1a0b083d92a1c7f8e9884b2b5189b}{seq\+\_\+type}}
+\item 
+Tree\+Search\+Type \mbox{\hyperlink{classcmaple_1_1_params_a4bcd587043cd23c458c4bc833ca33b65}{tree\+\_\+search\+\_\+type}}
 \end{DoxyCompactItemize}
 
 
@@ -31,7 +39,19 @@ uint64\+\_\+t \mbox{\hyperlink{classcmaple_1_1_params_a7064032af46aae5d59e764a9e
 Program parameters, everything is specified here 
 
 \doxysubsection{Member Data Documentation}
-\Hypertarget{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509}\label{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509} 
+\Hypertarget{classcmaple_1_1_params_a9d28cb5be632aec61f6121f9325525bd}\label{classcmaple_1_1_params_a9d28cb5be632aec61f6121f9325525bd} 
+\index{cmaple::Params@{cmaple::Params}!aln\_format@{aln\_format}}
+\index{aln\_format@{aln\_format}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{aln\_format}{aln\_format}}
+{\footnotesize\ttfamily Input\+Type cmaple\+::\+Params\+::aln\+\_\+format}
+
+\doxylink{classcmaple_1_1_alignment}{Alignment} format \Hypertarget{classcmaple_1_1_params_a27b5328a7fcd136fbafbbf45c4d358fa}\label{classcmaple_1_1_params_a27b5328a7fcd136fbafbbf45c4d358fa} 
+\index{cmaple::Params@{cmaple::Params}!sub\_model@{sub\_model}}
+\index{sub\_model@{sub\_model}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{sub\_model}{sub\_model}}
+{\footnotesize\ttfamily Sub\+Model cmaple\+::\+Params\+::sub\+\_\+model}
+
+Substitution model (e.\+g., HKY, GTR, JC, etc.) \Hypertarget{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509}\label{classcmaple_1_1_params_af79b770dac4ce0a135f8d09bd99c3509} 
 \index{cmaple::Params@{cmaple::Params}!threshold\_prob@{threshold\_prob}}
 \index{threshold\_prob@{threshold\_prob}!cmaple::Params@{cmaple::Params}}
 \doxysubsubsection{\texorpdfstring{threshold\_prob}{threshold\_prob}}
@@ -89,7 +109,19 @@ Threshold to stop the tree search. If the total log likelihood improvement obtai
 \doxysubsubsection{\texorpdfstring{ran\_seed}{ran\_seed}}
 {\footnotesize\ttfamily uint64\+\_\+t cmaple\+::\+Params\+::ran\+\_\+seed}
 
-A seed number for random generators. Default\+: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number. 
+A seed number for random generators. Default\+: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number. \Hypertarget{classcmaple_1_1_params_a84a1a0b083d92a1c7f8e9884b2b5189b}\label{classcmaple_1_1_params_a84a1a0b083d92a1c7f8e9884b2b5189b} 
+\index{cmaple::Params@{cmaple::Params}!seq\_type@{seq\_type}}
+\index{seq\_type@{seq\_type}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{seq\_type}{seq\_type}}
+{\footnotesize\ttfamily Seq\+Type cmaple\+::\+Params\+::seq\+\_\+type}
+
+type of sequences \Hypertarget{classcmaple_1_1_params_a4bcd587043cd23c458c4bc833ca33b65}\label{classcmaple_1_1_params_a4bcd587043cd23c458c4bc833ca33b65} 
+\index{cmaple::Params@{cmaple::Params}!tree\_search\_type@{tree\_search\_type}}
+\index{tree\_search\_type@{tree\_search\_type}!cmaple::Params@{cmaple::Params}}
+\doxysubsubsection{\texorpdfstring{tree\_search\_type}{tree\_search\_type}}
+{\footnotesize\ttfamily Tree\+Search\+Type cmaple\+::\+Params\+::tree\+\_\+search\+\_\+type}
+
+type of tree search 
 
 The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
 \item 

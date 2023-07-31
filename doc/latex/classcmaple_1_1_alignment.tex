@@ -7,16 +7,23 @@
 \doxysubsubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\hyperlink{classcmaple_1_1_alignment_a6701d29a81fb5dd4149c5c5237b095de}{Alignment}} (std\+::istream \&aln\+\_\+stream, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const std\+::string \&format=\"{}\"{}, const std\+::string \&seqtype=\"{}\"{})
+\Hypertarget{classcmaple_1_1_alignment_a5a429c944ebac9aef2a2e20094a5dc2b}\label{classcmaple_1_1_alignment_a5a429c944ebac9aef2a2e20094a5dc2b} 
+{\bfseries Alignment} ()
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classcmaple_1_1_alignment_aa9f8671cc91b5f5ce9c06f053da3848e}{Alignment}} (std\+::istream \&aln\+\_\+stream, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const Input\+Type format=IN\+\_\+\+UNKNOWN, const Seq\+Type seqtype=SEQ\+\_\+\+UNKNOWN)
 \begin{DoxyCompactList}\small\item\em Constructor from a stream of an alignment in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
-\mbox{\hyperlink{classcmaple_1_1_alignment_a857b7e7f683234ec9c0afb54da04e8c0}{Alignment}} (const std\+::string \&aln\+\_\+filename, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const std\+::string \&format=\"{}\"{}, const std\+::string \&seqtype=\"{}\"{})
+\mbox{\hyperlink{classcmaple_1_1_alignment_ac974d609740095f7231c5c39cf166623}{Alignment}} (const std\+::string \&aln\+\_\+filename, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const Input\+Type format=IN\+\_\+\+UNKNOWN, const Seq\+Type seqtype=SEQ\+\_\+\+UNKNOWN)
 \begin{DoxyCompactList}\small\item\em Constructor from an alignment file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
 \Hypertarget{classcmaple_1_1_alignment_a36d8b2bbaf72d21162d6e273bb3674e1}\label{classcmaple_1_1_alignment_a36d8b2bbaf72d21162d6e273bb3674e1} 
 {\bfseries \texorpdfstring{$\sim$}{\string~}\+Alignment} ()
 \begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b}{write}} (std\+::ostream \&aln\+\_\+stream, const std\+::string \&format=\"{}MAPLE\"{})
+void \mbox{\hyperlink{classcmaple_1_1_alignment_a97561f9ab273f87399ada944e05513c9}{read}} (std\+::istream \&aln\+\_\+stream, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const Input\+Type format=IN\+\_\+\+UNKNOWN, const Seq\+Type seqtype=SEQ\+\_\+\+UNKNOWN)
+\begin{DoxyCompactList}\small\item\em Read an alignment from a stream in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_alignment_a1238effbb47614b86a19975759a10d7c}{read}} (const std\+::string \&aln\+\_\+filename, const std\+::string \&ref\+\_\+seq=\"{}\"{}, const Input\+Type format=IN\+\_\+\+UNKNOWN, const Seq\+Type seqtype=SEQ\+\_\+\+UNKNOWN)
+\begin{DoxyCompactList}\small\item\em Read an alignment from a file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_alignment_ae0ce6661352d6cf8a99cef8ceacb9590}{write}} (std\+::ostream \&aln\+\_\+stream, const Input\+Type format=IN\+\_\+\+MAPLE) const
 \begin{DoxyCompactList}\small\item\em Write the alignment to a stream in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2}{write}} (const std\+::string \&aln\+\_\+filename, const std\+::string \&format=\"{}MAPLE\"{}, const bool overwrite=false)
+void \mbox{\hyperlink{classcmaple_1_1_alignment_a3ee61caed70e549291126330f1e57b43}{write}} (const std\+::string \&aln\+\_\+filename, const Input\+Type format=IN\+\_\+\+MAPLE, const bool overwrite=false) const
 \begin{DoxyCompactList}\small\item\em Write the alignment to a file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
@@ -24,11 +31,11 @@ void \mbox{\hyperlink{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c
 Class represents the input alignment 
 
 \doxysubsection{Constructor \& Destructor Documentation}
-\Hypertarget{classcmaple_1_1_alignment_a6701d29a81fb5dd4149c5c5237b095de}\label{classcmaple_1_1_alignment_a6701d29a81fb5dd4149c5c5237b095de} 
+\Hypertarget{classcmaple_1_1_alignment_aa9f8671cc91b5f5ce9c06f053da3848e}\label{classcmaple_1_1_alignment_aa9f8671cc91b5f5ce9c06f053da3848e} 
 \index{cmaple::Alignment@{cmaple::Alignment}!Alignment@{Alignment}}
 \index{Alignment@{Alignment}!cmaple::Alignment@{cmaple::Alignment}}
 \doxysubsubsection{\texorpdfstring{Alignment()}{Alignment()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
-{\footnotesize\ttfamily cmaple\+::\+Alignment\+::\+Alignment (\begin{DoxyParamCaption}\item[{std\+::istream \&}]{aln\+\_\+stream,  }\item[{const std\+::string \&}]{ref\+\_\+seq = {\ttfamily \"{}\"{}},  }\item[{const std\+::string \&}]{format = {\ttfamily \"{}\"{}},  }\item[{const std\+::string \&}]{seqtype = {\ttfamily \"{}\"{}} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily cmaple\+::\+Alignment\+::\+Alignment (\begin{DoxyParamCaption}\item[{std\+::istream \&}]{aln\+\_\+stream,  }\item[{const std\+::string \&}]{ref\+\_\+seq = {\ttfamily \"{}\"{}},  }\item[{const Input\+Type}]{format = {\ttfamily IN\+\_\+UNKNOWN},  }\item[{const Seq\+Type}]{seqtype = {\ttfamily SEQ\+\_\+UNKNOWN} }\end{DoxyParamCaption})}
 
 
 
@@ -40,16 +47,16 @@ Constructor from a stream of an alignment in FASTA, PHYLIP, or \href{https://www
 \hline
 \mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A feference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: \"{}\"{} (auto detect), \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: IN\+\_\+\+MAPLE, IN\+\_\+\+FASTA, IN\+\_\+\+PHYLIP, or IN\+\_\+\+UNKNOWN (auto detection) \\
 \hline
-\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{} (auto detect), \"{}\+DNA\"{} (nucleotide data), \"{}\+AA\"{} (amino acid data) \\
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: SEQ\+\_\+\+DNA (nucleotide data), SEQ\+\_\+\+PROTEIN (amino acid data), or SEQ\+\_\+\+UNKNOWN (auto detection) \\
 \hline
 \end{DoxyParams}
-\Hypertarget{classcmaple_1_1_alignment_a857b7e7f683234ec9c0afb54da04e8c0}\label{classcmaple_1_1_alignment_a857b7e7f683234ec9c0afb54da04e8c0} 
+\Hypertarget{classcmaple_1_1_alignment_ac974d609740095f7231c5c39cf166623}\label{classcmaple_1_1_alignment_ac974d609740095f7231c5c39cf166623} 
 \index{cmaple::Alignment@{cmaple::Alignment}!Alignment@{Alignment}}
 \index{Alignment@{Alignment}!cmaple::Alignment@{cmaple::Alignment}}
 \doxysubsubsection{\texorpdfstring{Alignment()}{Alignment()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
-{\footnotesize\ttfamily cmaple\+::\+Alignment\+::\+Alignment (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{aln\+\_\+filename,  }\item[{const std\+::string \&}]{ref\+\_\+seq = {\ttfamily \"{}\"{}},  }\item[{const std\+::string \&}]{format = {\ttfamily \"{}\"{}},  }\item[{const std\+::string \&}]{seqtype = {\ttfamily \"{}\"{}} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily cmaple\+::\+Alignment\+::\+Alignment (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{aln\+\_\+filename,  }\item[{const std\+::string \&}]{ref\+\_\+seq = {\ttfamily \"{}\"{}},  }\item[{const Input\+Type}]{format = {\ttfamily IN\+\_\+UNKNOWN},  }\item[{const Seq\+Type}]{seqtype = {\ttfamily SEQ\+\_\+UNKNOWN} }\end{DoxyParamCaption})}
 
 
 
@@ -61,19 +68,61 @@ Constructor from an alignment file in FASTA, PHYLIP, or \href{https://www.nature
 \hline
 \mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: \"{}\"{} (auto detect), \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: IN\+\_\+\+MAPLE, IN\+\_\+\+FASTA, IN\+\_\+\+PHYLIP, or IN\+\_\+\+UNKNOWN (auto detection) \\
 \hline
-\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{} (auto detect), \"{}\+DNA\"{} (nucleotide data), \"{}\+AA\"{} (amino acid data) \\
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: SEQ\+\_\+\+DNA (nucleotide data), SEQ\+\_\+\+PROTEIN (amino acid data), or SEQ\+\_\+\+UNKNOWN (auto detection) \\
 \hline
 \end{DoxyParams}
 
 
 \doxysubsection{Member Function Documentation}
-\Hypertarget{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b}\label{classcmaple_1_1_alignment_a0564cc07f4576b5d9332442bb9fd350b} 
+\Hypertarget{classcmaple_1_1_alignment_a97561f9ab273f87399ada944e05513c9}\label{classcmaple_1_1_alignment_a97561f9ab273f87399ada944e05513c9} 
+\index{cmaple::Alignment@{cmaple::Alignment}!read@{read}}
+\index{read@{read}!cmaple::Alignment@{cmaple::Alignment}}
+\doxysubsubsection{\texorpdfstring{read()}{read()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::read (\begin{DoxyParamCaption}\item[{std\+::istream \&}]{aln\+\_\+stream,  }\item[{const std\+::string \&}]{ref\+\_\+seq = {\ttfamily \"{}\"{}},  }\item[{const Input\+Type}]{format = {\ttfamily IN\+\_\+UNKNOWN},  }\item[{const Seq\+Type}]{seqtype = {\ttfamily SEQ\+\_\+UNKNOWN} }\end{DoxyParamCaption})}
+
+
+
+Read an alignment from a stream in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em aln\+\_\+stream} & A stream of an alignment file \\
+\hline
+\mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
+\hline
+\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: IN\+\_\+\+MAPLE, IN\+\_\+\+FASTA, IN\+\_\+\+PHYLIP, or IN\+\_\+\+UNKNOWN (auto detection) \\
+\hline
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: SEQ\+\_\+\+DNA (nucleotide data), SEQ\+\_\+\+PROTEIN (amino acid data), or SEQ\+\_\+\+UNKNOWN (auto detection) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcmaple_1_1_alignment_a1238effbb47614b86a19975759a10d7c}\label{classcmaple_1_1_alignment_a1238effbb47614b86a19975759a10d7c} 
+\index{cmaple::Alignment@{cmaple::Alignment}!read@{read}}
+\index{read@{read}!cmaple::Alignment@{cmaple::Alignment}}
+\doxysubsubsection{\texorpdfstring{read()}{read()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::read (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{aln\+\_\+filename,  }\item[{const std\+::string \&}]{ref\+\_\+seq = {\ttfamily \"{}\"{}},  }\item[{const Input\+Type}]{format = {\ttfamily IN\+\_\+UNKNOWN},  }\item[{const Seq\+Type}]{seqtype = {\ttfamily SEQ\+\_\+UNKNOWN} }\end{DoxyParamCaption})}
+
+
+
+Read an alignment from a file in FASTA, PHYLIP, or \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} format. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em aln\+\_\+filename} & Name of an alignment file \\
+\hline
+\mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
+\hline
+\mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: IN\+\_\+\+MAPLE, IN\+\_\+\+FASTA, IN\+\_\+\+PHYLIP, or IN\+\_\+\+UNKNOWN (auto detection) \\
+\hline
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: SEQ\+\_\+\+DNA (nucleotide data), SEQ\+\_\+\+PROTEIN (amino acid data), or SEQ\+\_\+\+UNKNOWN (auto detection) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcmaple_1_1_alignment_ae0ce6661352d6cf8a99cef8ceacb9590}\label{classcmaple_1_1_alignment_ae0ce6661352d6cf8a99cef8ceacb9590} 
 \index{cmaple::Alignment@{cmaple::Alignment}!write@{write}}
 \index{write@{write}!cmaple::Alignment@{cmaple::Alignment}}
 \doxysubsubsection{\texorpdfstring{write()}{write()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
-{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::write (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{aln\+\_\+stream,  }\item[{const std\+::string \&}]{format = {\ttfamily \"{}MAPLE\"{}} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::write (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{aln\+\_\+stream,  }\item[{const Input\+Type}]{format = {\ttfamily IN\+\_\+MAPLE} }\end{DoxyParamCaption}) const}
 
 
 
@@ -83,14 +132,14 @@ Write the alignment to a stream in FASTA, PHYLIP, or \href{https://www.nature.co
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em aln\+\_\+stream} & A stream of the output alignment file \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: IN\+\_\+\+MAPLE, IN\+\_\+\+FASTA, or IN\+\_\+\+PHYLIP \\
 \hline
 \end{DoxyParams}
-\Hypertarget{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2}\label{classcmaple_1_1_alignment_aa6fde65b30e8f14cc0c1d456701a37c2} 
+\Hypertarget{classcmaple_1_1_alignment_a3ee61caed70e549291126330f1e57b43}\label{classcmaple_1_1_alignment_a3ee61caed70e549291126330f1e57b43} 
 \index{cmaple::Alignment@{cmaple::Alignment}!write@{write}}
 \index{write@{write}!cmaple::Alignment@{cmaple::Alignment}}
 \doxysubsubsection{\texorpdfstring{write()}{write()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
-{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::write (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{aln\+\_\+filename,  }\item[{const std\+::string \&}]{format = {\ttfamily \"{}MAPLE\"{}},  }\item[{const bool}]{overwrite = {\ttfamily false} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Alignment\+::write (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{aln\+\_\+filename,  }\item[{const Input\+Type}]{format = {\ttfamily IN\+\_\+MAPLE},  }\item[{const bool}]{overwrite = {\ttfamily false} }\end{DoxyParamCaption}) const}
 
 
 
@@ -100,9 +149,9 @@ Write the alignment to a file in FASTA, PHYLIP, or \href{https://www.nature.com/
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em aln\+\_\+filename} & Name of the output alignment file \\
 \hline
-\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: \"{}\+MAPLE\"{}, \"{}\+PHYLIP\"{}, \"{}\+FASTA\"{} \\
+\mbox{\texttt{ in}}  & {\em format} & Format of the output alignment (optional)\+: IN\+\_\+\+MAPLE, IN\+\_\+\+FASTA, or IN\+\_\+\+PHYLIP \\
 \hline
-\mbox{\texttt{ in}}  & {\em overwrite} & TRUE to overwrite the existing output file \\
+\mbox{\texttt{ in}}  & {\em overwrite} & TRUE to overwrite the existing output file (optional) \\
 \hline
 \end{DoxyParams}
 

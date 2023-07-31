@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['_7ealignment_0',['~Alignment',['../classcmaple_1_1_alignment.html#a36d8b2bbaf72d21162d6e273bb3674e1',1,'cmaple::Alignment']]],
-  ['_7emodel_1',['~Model',['../classcmaple_1_1_model.html#a777b4d174b5d7dac04ecd84def4e4ee4',1,'cmaple::Model']]],
-  ['_7etree_2',['~Tree',['../classcmaple_1_1_tree.html#ae05ee284fd0e9edba07708ec914eb045',1,'cmaple::Tree']]]
+  ['tree_0',['Tree',['../classcmaple_1_1_tree.html#a8a3afb72948e2b4c35cdfc7ffd97fcd2',1,'cmaple::Tree::Tree(Alignment *aln, Model *model, std::istream &amp;tree_stream, const bool fixed_blengths=false)'],['../classcmaple_1_1_tree.html#ad97a0f1f919cd772dcb13dc1a3552403',1,'cmaple::Tree::Tree(Alignment *aln, Model *model, const std::string &amp;tree_filename=&quot;&quot;, const bool fixed_blengths=false)']]]
 ];

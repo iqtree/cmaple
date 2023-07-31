@@ -7,24 +7,28 @@
 \doxysubsubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\hyperlink{classcmaple_1_1_tree_ab69aa0fd289ee38f5ec36d7eb6bfa45b}{Tree}} (\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&aln, \mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&model, std\+::istream \&tree\+\_\+stream, const bool fixed\+\_\+blengths=false)
+\mbox{\hyperlink{classcmaple_1_1_tree_a8a3afb72948e2b4c35cdfc7ffd97fcd2}{Tree}} (\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \texorpdfstring{$\ast$}{*}aln, \mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}model, std\+::istream \&tree\+\_\+stream, const bool fixed\+\_\+blengths=false)
 \begin{DoxyCompactList}\small\item\em Constructor from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
-\mbox{\hyperlink{classcmaple_1_1_tree_ab4cf4c0d2d31e11170e0691b1c6749ed}{Tree}} (\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&aln, \mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&model, const std\+::string \&tree\+\_\+filename=\"{}\"{}, const bool fixed\+\_\+blengths=false)
+\mbox{\hyperlink{classcmaple_1_1_tree_ad97a0f1f919cd772dcb13dc1a3552403}{Tree}} (\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \texorpdfstring{$\ast$}{*}aln, \mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}model, const std\+::string \&tree\+\_\+filename=\"{}\"{}, const bool fixed\+\_\+blengths=false)
 \begin{DoxyCompactList}\small\item\em Constructor from an optional (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
 \Hypertarget{classcmaple_1_1_tree_ae05ee284fd0e9edba07708ec914eb045}\label{classcmaple_1_1_tree_ae05ee284fd0e9edba07708ec914eb045} 
 {\bfseries \texorpdfstring{$\sim$}{\string~}\+Tree} ()
 \begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{classcmaple_1_1_tree_a85f68a84ae2bb43c56da610e5395d314}{change\+Aln}} (\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&aln)
+void \mbox{\hyperlink{classcmaple_1_1_tree_af8c288e5a4ae4277615cb24268dca2f2}{load}} (std\+::istream \&tree\+\_\+stream, const bool fixed\+\_\+blengths=false)
+\begin{DoxyCompactList}\small\item\em Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_tree_a1b2479eb26d00469ee1040dd9bee18e5}{load}} (const std\+::string \&tree\+\_\+filename, const bool fixed\+\_\+blengths=false)
+\begin{DoxyCompactList}\small\item\em Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_tree_ab932b3742c6e18d51554f72432c18151}{change\+Aln}} (\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \texorpdfstring{$\ast$}{*}aln)
 \begin{DoxyCompactList}\small\item\em Change the alignment. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{classcmaple_1_1_tree_a486d10b316db6388465625beef891d0f}{change\+Model}} (\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&model)
+void \mbox{\hyperlink{classcmaple_1_1_tree_aa4f982f45f38226193cd584bbe7e93ef}{change\+Model}} (\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}model)
 \begin{DoxyCompactList}\small\item\em Change the substitution model. \end{DoxyCompactList}\item 
-std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575}{infer}} (const std\+::string \&tree\+\_\+search\+\_\+type=\"{}NORMAL\"{}, const bool shallow\+\_\+tree\+\_\+search=false)
+std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a14e6dfd07d7638344b7e1c79be035a77}{infer}} (const Tree\+Search\+Type tree\+\_\+search\+\_\+type=NORMAL\+\_\+\+TREE\+\_\+\+SEARCH, const bool shallow\+\_\+tree\+\_\+search=false)
 \begin{DoxyCompactList}\small\item\em Infer a phylogenetic tree. \end{DoxyCompactList}\item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{compute\+Lh}} ()
 \begin{DoxyCompactList}\small\item\em Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
 std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_ac3d6efc278b68360108dac91b44c5055}{compute\+Branch\+Supports}} (const int num\+\_\+threads=1, const int num\+\_\+replicates=1000, const double epsilon=0.\+1, const bool allow\+\_\+replacing\+\_\+\+ML\+\_\+tree=true)
 \begin{DoxyCompactList}\small\item\em Compute branch supports (\href{https://academic.oup.com/sysbio/article/59/3/307/1702850}{\texttt{ a\+LRT-\/\+SH}}) of the current tree, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
-std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021}{export\+String}} (const std\+::string \&tree\+\_\+type=\"{}BIN\"{}, const bool show\+\_\+branch\+\_\+supports=false)
+std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_ac57f490e9a1fc891fd6ffa91b9b856cc}{export\+String}} (const Tree\+Type tree\+\_\+type=BIN\+\_\+\+TREE, const bool show\+\_\+branch\+\_\+supports=false) const
 \begin{DoxyCompactList}\small\item\em Export the phylogenetic tree to a string in NEWICK format. \end{DoxyCompactList}\item 
 \mbox{\hyperlink{classcmaple_1_1_params}{cmaple\+::\+Params}} \& \mbox{\hyperlink{classcmaple_1_1_tree_a0efa4425430d7b9dde4cafb4412536c1}{get\+Params}} ()
 \begin{DoxyCompactList}\small\item\em Get an instance of \doxylink{classcmaple_1_1_params}{cmaple\+::\+Params}, which stores all parameter settings. Users can use that params instance to change \href{classcmaple_1_1_params.html}{\texttt{ {\bfseries{other minor settings}}}} of CMaple (which are not yet supported via the APIs) \end{DoxyCompactList}\end{DoxyCompactItemize}
@@ -34,11 +38,11 @@ std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa087660
 Class represents a phylogenetic tree 
 
 \doxysubsection{Constructor \& Destructor Documentation}
-\Hypertarget{classcmaple_1_1_tree_ab69aa0fd289ee38f5ec36d7eb6bfa45b}\label{classcmaple_1_1_tree_ab69aa0fd289ee38f5ec36d7eb6bfa45b} 
+\Hypertarget{classcmaple_1_1_tree_a8a3afb72948e2b4c35cdfc7ffd97fcd2}\label{classcmaple_1_1_tree_a8a3afb72948e2b4c35cdfc7ffd97fcd2} 
 \index{cmaple::Tree@{cmaple::Tree}!Tree@{Tree}}
 \index{Tree@{Tree}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{Tree()}{Tree()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
-{\footnotesize\ttfamily cmaple\+::\+Tree\+::\+Tree (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&}]{aln,  }\item[{\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&}]{model,  }\item[{std\+::istream \&}]{tree\+\_\+stream,  }\item[{const bool}]{fixed\+\_\+blengths = {\ttfamily false} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily cmaple\+::\+Tree\+::\+Tree (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \texorpdfstring{$\ast$}{*}}]{aln,  }\item[{\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}}]{model,  }\item[{std\+::istream \&}]{tree\+\_\+stream,  }\item[{const bool}]{fixed\+\_\+blengths = {\ttfamily false} }\end{DoxyParamCaption})}
 
 
 
@@ -55,11 +59,11 @@ Constructor from a stream of a (bifurcating or multifurcating) tree (with/withou
 \mbox{\texttt{ in}}  & {\em fixed\+\_\+blengths} & TRUE to keep the input branch lengths unchanged (optional) \\
 \hline
 \end{DoxyParams}
-\Hypertarget{classcmaple_1_1_tree_ab4cf4c0d2d31e11170e0691b1c6749ed}\label{classcmaple_1_1_tree_ab4cf4c0d2d31e11170e0691b1c6749ed} 
+\Hypertarget{classcmaple_1_1_tree_ad97a0f1f919cd772dcb13dc1a3552403}\label{classcmaple_1_1_tree_ad97a0f1f919cd772dcb13dc1a3552403} 
 \index{cmaple::Tree@{cmaple::Tree}!Tree@{Tree}}
 \index{Tree@{Tree}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{Tree()}{Tree()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
-{\footnotesize\ttfamily cmaple\+::\+Tree\+::\+Tree (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&}]{aln,  }\item[{\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&}]{model,  }\item[{const std\+::string \&}]{tree\+\_\+filename = {\ttfamily \"{}\"{}},  }\item[{const bool}]{fixed\+\_\+blengths = {\ttfamily false} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily cmaple\+::\+Tree\+::\+Tree (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \texorpdfstring{$\ast$}{*}}]{aln,  }\item[{\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}}]{model,  }\item[{const std\+::string \&}]{tree\+\_\+filename = {\ttfamily \"{}\"{}},  }\item[{const bool}]{fixed\+\_\+blengths = {\ttfamily false} }\end{DoxyParamCaption})}
 
 
 
@@ -79,11 +83,45 @@ Constructor from an optional (bifurcating or multifurcating) tree (with/without 
 
 
 \doxysubsection{Member Function Documentation}
-\Hypertarget{classcmaple_1_1_tree_a85f68a84ae2bb43c56da610e5395d314}\label{classcmaple_1_1_tree_a85f68a84ae2bb43c56da610e5395d314} 
+\Hypertarget{classcmaple_1_1_tree_af8c288e5a4ae4277615cb24268dca2f2}\label{classcmaple_1_1_tree_af8c288e5a4ae4277615cb24268dca2f2} 
+\index{cmaple::Tree@{cmaple::Tree}!load@{load}}
+\index{load@{load}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{load()}{load()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::load (\begin{DoxyParamCaption}\item[{std\+::istream \&}]{tree\+\_\+stream,  }\item[{const bool}]{fixed\+\_\+blengths = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em tree\+\_\+stream} & A stream of an input tree \\
+\hline
+\mbox{\texttt{ in}}  & {\em fixed\+\_\+blengths} & TRUE to keep the input branch lengths unchanged (optional) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcmaple_1_1_tree_a1b2479eb26d00469ee1040dd9bee18e5}\label{classcmaple_1_1_tree_a1b2479eb26d00469ee1040dd9bee18e5} 
+\index{cmaple::Tree@{cmaple::Tree}!load@{load}}
+\index{load@{load}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{load()}{load()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::load (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{tree\+\_\+filename,  }\item[{const bool}]{fixed\+\_\+blengths = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em tree\+\_\+filename} & Name of a tree file \\
+\hline
+\mbox{\texttt{ in}}  & {\em fixed\+\_\+blengths} & TRUE to keep the input branch lengths unchanged (optional) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classcmaple_1_1_tree_ab932b3742c6e18d51554f72432c18151}\label{classcmaple_1_1_tree_ab932b3742c6e18d51554f72432c18151} 
 \index{cmaple::Tree@{cmaple::Tree}!changeAln@{changeAln}}
 \index{changeAln@{changeAln}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{changeAln()}{changeAln()}}
-{\footnotesize\ttfamily void cmaple\+::\+Tree\+::change\+Aln (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \&}]{aln }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::change\+Aln (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}} \texorpdfstring{$\ast$}{*}}]{aln }\end{DoxyParamCaption})}
 
 
 
@@ -94,11 +132,11 @@ Change the alignment.
 \mbox{\texttt{ in}}  & {\em aln} & An alignment \\
 \hline
 \end{DoxyParams}
-\Hypertarget{classcmaple_1_1_tree_a486d10b316db6388465625beef891d0f}\label{classcmaple_1_1_tree_a486d10b316db6388465625beef891d0f} 
+\Hypertarget{classcmaple_1_1_tree_aa4f982f45f38226193cd584bbe7e93ef}\label{classcmaple_1_1_tree_aa4f982f45f38226193cd584bbe7e93ef} 
 \index{cmaple::Tree@{cmaple::Tree}!changeModel@{changeModel}}
 \index{changeModel@{changeModel}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{changeModel()}{changeModel()}}
-{\footnotesize\ttfamily void cmaple\+::\+Tree\+::change\+Model (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \&}]{model }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::change\+Model (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}}]{model }\end{DoxyParamCaption})}
 
 
 
@@ -109,11 +147,11 @@ Change the substitution model.
 \mbox{\texttt{ in}}  & {\em model} & A substitution model \\
 \hline
 \end{DoxyParams}
-\Hypertarget{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575}\label{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575} 
+\Hypertarget{classcmaple_1_1_tree_a14e6dfd07d7638344b7e1c79be035a77}\label{classcmaple_1_1_tree_a14e6dfd07d7638344b7e1c79be035a77} 
 \index{cmaple::Tree@{cmaple::Tree}!infer@{infer}}
 \index{infer@{infer}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{infer()}{infer()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::infer (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{tree\+\_\+search\+\_\+type = {\ttfamily \"{}NORMAL\"{}},  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search = {\ttfamily false} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::infer (\begin{DoxyParamCaption}\item[{const Tree\+Search\+Type}]{tree\+\_\+search\+\_\+type = {\ttfamily NORMAL\+\_\+TREE\+\_\+SEARCH},  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search = {\ttfamily false} }\end{DoxyParamCaption})}
 
 
 
@@ -138,15 +176,15 @@ Infer a phylogenetic tree.
 
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em tree\+\_\+search\+\_\+type} & One of the following tree search\+: ~\newline
-{\itshape \"{}\+FAST\"{}}\+: no tree search (placement only). ~\newline
-{\itshape \"{}\+NORMAL\"{}}\+: only consider pruning branches at newly-\/added nodes when seeking SPR moves. ~\newline
-{\itshape \"{}\+MORE\+\_\+\+ACCURATE\"{}}\+: consider all nodes when seeking SPR moves. \\
+{\itshape FAST\+\_\+\+TREE\+\_\+\+SEARCH}\+: no tree search (placement only). ~\newline
+{\itshape NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}\+: only consider pruning branches at newly-\/added nodes when seeking SPR moves. ~\newline
+{\itshape MORE\+\_\+\+ACCURATE\+\_\+\+TREE\+\_\+\+SEARCH}\+: consider all nodes when seeking SPR moves. \\
 \hline
 \mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE ton enable a shallow tree search before a deeper tree search \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-a string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call \doxylink{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021}{export\+String()} later 
+a string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call \doxylink{classcmaple_1_1_tree_ac57f490e9a1fc891fd6ffa91b9b856cc}{export\+String()} later 
 \end{DoxyReturn}
 \Hypertarget{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}\label{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db} 
 \index{cmaple::Tree@{cmaple::Tree}!computeLh@{computeLh}}
@@ -185,11 +223,11 @@ Compute branch supports (\href{https://academic.oup.com/sysbio/article/59/3/307/
 \begin{DoxyReturn}{Returns}
 A string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the branch supports values, one could call export\+String(\"{}\+BIN\"{}, true) later 
 \end{DoxyReturn}
-\Hypertarget{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021}\label{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021} 
+\Hypertarget{classcmaple_1_1_tree_ac57f490e9a1fc891fd6ffa91b9b856cc}\label{classcmaple_1_1_tree_ac57f490e9a1fc891fd6ffa91b9b856cc} 
 \index{cmaple::Tree@{cmaple::Tree}!exportString@{exportString}}
 \index{exportString@{exportString}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{exportString()}{exportString()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::export\+String (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{tree\+\_\+type = {\ttfamily \"{}BIN\"{}},  }\item[{const bool}]{show\+\_\+branch\+\_\+supports = {\ttfamily false} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::export\+String (\begin{DoxyParamCaption}\item[{const Tree\+Type}]{tree\+\_\+type = {\ttfamily BIN\+\_\+TREE},  }\item[{const bool}]{show\+\_\+branch\+\_\+supports = {\ttfamily false} }\end{DoxyParamCaption}) const}
 
 
 
@@ -197,7 +235,7 @@ Export the phylogenetic tree to a string in NEWICK format.
 
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em tree\+\_\+type} & The type of the output tree (optional)\+: \"{}\+BIN\"{} -\/ bifurcating tree or \"{}\+MUL\"{} -\/ multifurcating tree \\
+\mbox{\texttt{ in}}  & {\em tree\+\_\+type} & The type of the output tree (optional)\+: BIN\+\_\+\+TREE (bifurcating tree), MUL\+\_\+\+TREE (multifurcating tree) \\
 \hline
 \mbox{\texttt{ in}}  & {\em show\+\_\+branch\+\_\+supports} & TRUE to output the branch supports (a\+LRT-\/\+SH values) \\
 \hline

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['fixed_5fmin_5fblength_0',['fixed_min_blength',['../classcmaple_1_1_params.html#a26f833dbe75c3832f518eb0dbdf16780',1,'cmaple::Params']]]
+  ['aln_5fformat_0',['aln_format',['../classcmaple_1_1_params.html#a9d28cb5be632aec61f6121f9325525bd',1,'cmaple::Params']]]
 ];

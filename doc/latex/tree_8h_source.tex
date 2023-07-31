@@ -11,31 +11,39 @@
 \DoxyCodeLine{00007\ \{}
 \DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcmaple_1_1_tree}{Tree}}\ \{}
 \DoxyCodeLine{00010\ \ \ \ \ \textcolor{keyword}{public}:}
-\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_tree_ab69aa0fd289ee38f5ec36d7eb6bfa45b}{Tree}}(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}\&\ aln,\ \mbox{\hyperlink{classcmaple_1_1_model}{Model}}\&\ model,\ std::istream\&\ tree\_stream,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_tree_a8a3afb72948e2b4c35cdfc7ffd97fcd2}{Tree}}(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}*\ aln,\ \mbox{\hyperlink{classcmaple_1_1_model}{Model}}*\ model,\ std::istream\&\ tree\_stream,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false});}
 \DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_tree_ab4cf4c0d2d31e11170e0691b1c6749ed}{Tree}}(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}\&\ aln,\ \mbox{\hyperlink{classcmaple_1_1_model}{Model}}\&\ model,\ \textcolor{keyword}{const}\ std::string\&\ tree\_filename\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_tree_ad97a0f1f919cd772dcb13dc1a3552403}{Tree}}(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}*\ aln,\ \mbox{\hyperlink{classcmaple_1_1_model}{Model}}*\ model,\ \textcolor{keyword}{const}\ std::string\&\ tree\_filename\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false});}
 \DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ }
 \DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_tree_ae05ee284fd0e9edba07708ec914eb045}{\string~Tree}}();}
 \DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_tree_a85f68a84ae2bb43c56da610e5395d314}{changeAln}}(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}\&\ aln);}
-\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_tree_a486d10b316db6388465625beef891d0f}{changeModel}}(\mbox{\hyperlink{classcmaple_1_1_model}{Model}}\&\ model);}
-\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_a45181505ceec62709cd2d7071602b575}{infer}}(\textcolor{keyword}{const}\ std::string\&\ tree\_search\_type\ =\ \textcolor{stringliteral}{"{}NORMAL"{}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ shallow\_tree\_search\ =\ \textcolor{keyword}{false});}
-\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ RealNumType\ \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{computeLh}}();}
-\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_ac3d6efc278b68360108dac91b44c5055}{computeBranchSupports}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ num\_threads\ =\ 1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ num\_replicates\ =\ 1000,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ epsilon\ =\ 0.1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ allow\_replacing\_ML\_tree\ =\ \textcolor{keyword}{true});}
-\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_ab8ac98e0838c7ebd070aa08766049021}{exportString}}(\textcolor{keyword}{const}\ std::string\&\ tree\_type\ =\ \textcolor{stringliteral}{"{}BIN"{}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_branch\_supports\ =\ \textcolor{keyword}{false});}
-\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_params}{cmaple::Params}}\&\ \mbox{\hyperlink{classcmaple_1_1_tree_a0efa4425430d7b9dde4cafb4412536c1}{getParams}}();}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_tree_af8c288e5a4ae4277615cb24268dca2f2}{load}}(std::istream\&\ tree\_stream,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_tree_a1b2479eb26d00469ee1040dd9bee18e5}{load}}(\textcolor{keyword}{const}\ std::string\&\ tree\_filename,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_tree_ab932b3742c6e18d51554f72432c18151}{changeAln}}(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}*\ aln);}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_tree_aa4f982f45f38226193cd584bbe7e93ef}{changeModel}}(\mbox{\hyperlink{classcmaple_1_1_model}{Model}}*\ model);}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_a14e6dfd07d7638344b7e1c79be035a77}{infer}}(\textcolor{keyword}{const}\ TreeSearchType\ tree\_search\_type\ =\ NORMAL\_TREE\_SEARCH,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ shallow\_tree\_search\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ RealNumType\ \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{computeLh}}();}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_ac3d6efc278b68360108dac91b44c5055}{computeBranchSupports}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ num\_threads\ =\ 1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ num\_replicates\ =\ 1000,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ epsilon\ =\ 0.1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ allow\_replacing\_ML\_tree\ =\ \textcolor{keyword}{true});}
 \DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{private}:}
-\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ TreeBase*\ tree\_base;}
-\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ initTree(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}\&\ aln,\ \mbox{\hyperlink{classcmaple_1_1_model}{Model}}\&\ model);}
-\DoxyCodeLine{00097\ \ \ \ \ \};}
-\DoxyCodeLine{00098\ \}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_ac57f490e9a1fc891fd6ffa91b9b856cc}{exportString}}(\textcolor{keyword}{const}\ TreeType\ tree\_type\ =\ BIN\_TREE,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_branch\_supports\ =\ \textcolor{keyword}{false})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_params}{cmaple::Params}}\&\ \mbox{\hyperlink{classcmaple_1_1_tree_a0efa4425430d7b9dde4cafb4412536c1}{getParams}}();}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ TreeBase*\ tree\_base;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ initTree(\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}*\ aln,\ \mbox{\hyperlink{classcmaple_1_1_model}{Model}}*\ model);}
+\DoxyCodeLine{00109\ \ \ \ \ \};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00113\ \ \ \ \ std::ostream\&\ operator<<(std::ostream\&\ out\_stream,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_tree}{cmaple::Tree}}\&\ tree);}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00117\ \ \ \ \ std::istream\&\ operator>>(std::istream\&\ in\_stream,\ \mbox{\hyperlink{classcmaple_1_1_tree}{cmaple::Tree}}\&\ tree);}
+\DoxyCodeLine{00118\ \}}
 
 \end{DoxyCode}

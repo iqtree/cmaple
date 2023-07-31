@@ -85,6 +85,10 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
+<tr class="memitem:a9d28cb5be632aec61f6121f9325525bd"><td class="memItemLeft" align="right" valign="top">InputType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_params.html#a9d28cb5be632aec61f6121f9325525bd">aln_format</a></td></tr>
+<tr class="separator:a9d28cb5be632aec61f6121f9325525bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27b5328a7fcd136fbafbbf45c4d358fa"><td class="memItemLeft" align="right" valign="top">SubModel&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_params.html#a27b5328a7fcd136fbafbbf45c4d358fa">sub_model</a></td></tr>
+<tr class="separator:a27b5328a7fcd136fbafbbf45c4d358fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af79b770dac4ce0a135f8d09bd99c3509"><td class="memItemLeft" align="right" valign="top">RealNumType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_params.html#af79b770dac4ce0a135f8d09bd99c3509">threshold_prob</a></td></tr>
 <tr class="separator:af79b770dac4ce0a135f8d09bd99c3509"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26f833dbe75c3832f518eb0dbdf16780"><td class="memItemLeft" align="right" valign="top">RealNumType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_params.html#a26f833dbe75c3832f518eb0dbdf16780">fixed_min_blength</a></td></tr>
@@ -103,10 +107,44 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a37e63254bb438e88ef66effa7a73b2d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7064032af46aae5d59e764a9e710e982"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_params.html#a7064032af46aae5d59e764a9e710e982">ran_seed</a></td></tr>
 <tr class="separator:a7064032af46aae5d59e764a9e710e982"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84a1a0b083d92a1c7f8e9884b2b5189b"><td class="memItemLeft" align="right" valign="top">SeqType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_params.html#a84a1a0b083d92a1c7f8e9884b2b5189b">seq_type</a></td></tr>
+<tr class="separator:a84a1a0b083d92a1c7f8e9884b2b5189b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4bcd587043cd23c458c4bc833ca33b65"><td class="memItemLeft" align="right" valign="top">TreeSearchType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_params.html#a4bcd587043cd23c458c4bc833ca33b65">tree_search_type</a></td></tr>
+<tr class="separator:a4bcd587043cd23c458c4bc833ca33b65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Program parameters, everything is specified here </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a9d28cb5be632aec61f6121f9325525bd" name="a9d28cb5be632aec61f6121f9325525bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d28cb5be632aec61f6121f9325525bd">&#9670;&#160;</a></span>aln_format</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">InputType cmaple::Params::aln_format</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="classcmaple_1_1_alignment.html">Alignment</a> format </p>
+
+</div>
+</div>
+<a id="a27b5328a7fcd136fbafbbf45c4d358fa" name="a27b5328a7fcd136fbafbbf45c4d358fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27b5328a7fcd136fbafbbf45c4d358fa">&#9670;&#160;</a></span>sub_model</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SubModel cmaple::Params::sub_model</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Substitution model (e.g., HKY, GTR, JC, etc.) </p>
+
+</div>
+</div>
 <a id="af79b770dac4ce0a135f8d09bd99c3509" name="af79b770dac4ce0a135f8d09bd99c3509"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af79b770dac4ce0a135f8d09bd99c3509">&#9670;&#160;</a></span>threshold_prob</h2>
 
@@ -243,6 +281,36 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>A seed number for random generators. Default: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number. </p>
+
+</div>
+</div>
+<a id="a84a1a0b083d92a1c7f8e9884b2b5189b" name="a84a1a0b083d92a1c7f8e9884b2b5189b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84a1a0b083d92a1c7f8e9884b2b5189b">&#9670;&#160;</a></span>seq_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SeqType cmaple::Params::seq_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>type of sequences </p>
+
+</div>
+</div>
+<a id="a4bcd587043cd23c458c4bc833ca33b65" name="a4bcd587043cd23c458c4bc833ca33b65"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4bcd587043cd23c458c4bc833ca33b65">&#9670;&#160;</a></span>tree_search_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TreeSearchType cmaple::Params::tree_search_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>type of tree search </p>
 
 </div>
 </div>

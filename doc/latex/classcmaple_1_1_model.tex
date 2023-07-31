@@ -7,24 +7,24 @@
 \doxysubsubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\hyperlink{classcmaple_1_1_model_a1a893bd878402e2b005901ecbf4af552}{Model}} (const std\+::string \&model\+\_\+name=\"{}GTR\"{}, const std\+::string \&seqtype=\"{}\"{})
+\mbox{\hyperlink{classcmaple_1_1_model_a445bc040b79901e6ef8e5bba36fcc89e}{Model}} (const Sub\+Model sub\+\_\+model=GTR, const Seq\+Type seqtype=SEQ\+\_\+\+UNKNOWN)
 \begin{DoxyCompactList}\small\item\em Constructor from a model name. \end{DoxyCompactList}\item 
 \Hypertarget{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4}\label{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4} 
 {\bfseries \texorpdfstring{$\sim$}{\string~}\+Model} ()
 \begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
-std\+::map$<$ std\+::string, std\+::string $>$ \mbox{\hyperlink{classcmaple_1_1_model_a337affc2b3c84f0548a4bd0d447429db}{get\+Params}} ()
-\begin{DoxyCompactList}\small\item\em Export the substitution model and its parameters to a dictionary. \end{DoxyCompactList}\end{DoxyCompactItemize}
+Model\+Params \mbox{\hyperlink{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}{get\+Params}} ()
+\begin{DoxyCompactList}\small\item\em Export the substitution model and its parameters to Model\+Params structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
 Class represents a substitution model 
 
 \doxysubsection{Constructor \& Destructor Documentation}
-\Hypertarget{classcmaple_1_1_model_a1a893bd878402e2b005901ecbf4af552}\label{classcmaple_1_1_model_a1a893bd878402e2b005901ecbf4af552} 
+\Hypertarget{classcmaple_1_1_model_a445bc040b79901e6ef8e5bba36fcc89e}\label{classcmaple_1_1_model_a445bc040b79901e6ef8e5bba36fcc89e} 
 \index{cmaple::Model@{cmaple::Model}!Model@{Model}}
 \index{Model@{Model}!cmaple::Model@{cmaple::Model}}
 \doxysubsubsection{\texorpdfstring{Model()}{Model()}}
-{\footnotesize\ttfamily cmaple\+::\+Model\+::\+Model (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{model\+\_\+name = {\ttfamily \"{}GTR\"{}},  }\item[{const std\+::string \&}]{seqtype = {\ttfamily \"{}\"{}} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily cmaple\+::\+Model\+::\+Model (\begin{DoxyParamCaption}\item[{const Sub\+Model}]{sub\+\_\+model = {\ttfamily GTR},  }\item[{const Seq\+Type}]{seqtype = {\ttfamily SEQ\+\_\+UNKNOWN} }\end{DoxyParamCaption})}
 
 
 
@@ -32,32 +32,32 @@ Constructor from a model name.
 
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em model\+\_\+name} & Name of a substitution model. List of supported models\+: ~\newline
-{\bfseries{DNA models}}\+: \"{}\+JC\"{}, \"{}\+GTR\"{}, \"{}\+UNREST\"{}; ~\newline
-{\bfseries{Protein models}}\+: \"{}\+GTR20\"{}, \"{}\+NONREV\"{}, \"{}\+LG\"{}, \"{}\+WAG\"{}, \"{}\+JTT\"{}, \"{}\+Q.\+PFAM\"{}, \"{}\+Q.\+BIRD\"{}, \"{}\+Q.\+MAMMAL\"{}, \"{}\+Q.\+INSECT\"{}, \"{}\+Q.\+PLANT\"{}, \"{}\+Q.\+YEAST\"{}, \"{}\+JTTDCMUT\"{}, \"{}\+DCMUT\"{}, \"{}\+VT\"{}, \"{}\+PMB\"{}, \"{}\+BLOSUM62\"{}, \"{}\+DAYHOFF\"{}, \"{}\+MTREV\"{}, \"{}\+MTART\"{}, \"{}\+MTZOA\"{}, \"{}\+MTMET\"{} , \"{}\+MTVER\"{} , \"{}\+MTINV\"{}, \"{}\+MTMAM\"{}, \"{}\+FLAVI\"{}, \"{}\+HIVB\"{}, \"{}\+HIVW\"{}, \"{}\+FLU\"{}, \"{}\+RTREV\"{}, \"{}\+CPREV\"{}, \"{}\+NQ.\+PFAM\"{}, \"{}\+NQ.\+BIRD\"{}, \"{}\+NQ.\+MAMMAL\"{}, \"{}\+NQ.\+INSECT\"{}, \"{}\+NQ.\+PLANT\"{}, \"{}\+NQ.\+YEAST\"{}; ~\newline
+\mbox{\texttt{ in}}  & {\em sub\+\_\+model} & a substitution model. List of supported models\+: ~\newline
+{\bfseries{DNA models}}\+: JC, GTR, UNREST; ~\newline
+{\bfseries{Protein models}}\+: GTR20, NONREV, LG, WAG, JTT, Q\+\_\+\+PFAM, Q\+\_\+\+BIRD, Q\+\_\+\+MAMMAL, Q\+\_\+\+INSECT, Q\+\_\+\+PLANT, Q\+\_\+\+YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ\+\_\+\+PFAM, NQ\+\_\+\+BIRD, NQ\+\_\+\+MAMMAL, NQ\+\_\+\+INSECT, NQ\+\_\+\+PLANT, NQ\+\_\+\+YEAST; ~\newline
  {\itshape  See \href{http://www.iqtree.org/doc/Substitution-Models}{\texttt{ {\bfseries{Substitution models}}}} for references of those models.} \\
 \hline
-\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: \"{}\"{} (auto detect), \"{}\+DNA\"{} (nucleotide data), \"{}\+AA\"{} (amino acid data) \\
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: SEQ\+\_\+\+DNA (nucleotide data), SEQ\+\_\+\+PROTEIN (amino acid data), or SEQ\+\_\+\+UNKNOWN (auto detection) \\
 \hline
 \end{DoxyParams}
 
 
 \doxysubsection{Member Function Documentation}
-\Hypertarget{classcmaple_1_1_model_a337affc2b3c84f0548a4bd0d447429db}\label{classcmaple_1_1_model_a337affc2b3c84f0548a4bd0d447429db} 
+\Hypertarget{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}\label{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96} 
 \index{cmaple::Model@{cmaple::Model}!getParams@{getParams}}
 \index{getParams@{getParams}!cmaple::Model@{cmaple::Model}}
 \doxysubsubsection{\texorpdfstring{getParams()}{getParams()}}
-{\footnotesize\ttfamily std\+::map$<$ std\+::string, std\+::string $>$ cmaple\+::\+Model\+::get\+Params (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily Model\+Params cmaple\+::\+Model\+::get\+Params (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
 
 
 
-Export the substitution model and its parameters to a dictionary. 
+Export the substitution model and its parameters to Model\+Params structure. 
 
 \begin{DoxyReturn}{Returns}
-A dictionary (std\+::map$<$std\+::string, std\+::string$>$) with the keys and values as in the following. ~\newline
-{\itshape \"{}model\+\_\+name\"{}}\+: the name of the model in string ~\newline
-{\itshape \"{}model\+\_\+freqs\"{}}\+: the state frequencies in string ~\newline
-{\itshape \"{}model\+\_\+rates\"{}}\+: the mutation matrix in string 
+A Model\+Params structure contains the following members. ~\newline
+{\itshape model\+\_\+name}\+: the name of the model in string ~\newline
+{\itshape state\+\_\+freqs}\+: the state frequencies in string ~\newline
+{\itshape mut\+\_\+rates}\+: the mutation matrix in string 
 \end{DoxyReturn}
 
 

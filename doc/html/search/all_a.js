@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['thresh_5fentire_5ftree_5fimprovement_0',['thresh_entire_tree_improvement',['../classcmaple_1_1_params.html#a37e63254bb438e88ef66effa7a73b2d9',1,'cmaple::Params']]],
-  ['thresh_5fplacement_5fcost_1',['thresh_placement_cost',['../classcmaple_1_1_params.html#a196eb6907df1f2dd02cba0c502e0b789',1,'cmaple::Params']]],
-  ['threshold_5fprob_2',['threshold_prob',['../classcmaple_1_1_params.html#af79b770dac4ce0a135f8d09bd99c3509',1,'cmaple::Params']]],
-  ['tree_3',['Tree',['../classcmaple_1_1_tree.html',1,'cmaple::Tree'],['../classcmaple_1_1_tree.html#ab69aa0fd289ee38f5ec36d7eb6bfa45b',1,'cmaple::Tree::Tree(Alignment &amp;aln, Model &amp;model, std::istream &amp;tree_stream, const bool fixed_blengths=false)'],['../classcmaple_1_1_tree.html#ab4cf4c0d2d31e11170e0691b1c6749ed',1,'cmaple::Tree::Tree(Alignment &amp;aln, Model &amp;model, const std::string &amp;tree_filename=&quot;&quot;, const bool fixed_blengths=false)']]]
+  ['ran_5fseed_0',['ran_seed',['../classcmaple_1_1_params.html#a7064032af46aae5d59e764a9e710e982',1,'cmaple::Params']]],
+  ['read_1',['read',['../classcmaple_1_1_alignment.html#a97561f9ab273f87399ada944e05513c9',1,'cmaple::Alignment::read(std::istream &amp;aln_stream, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)'],['../classcmaple_1_1_alignment.html#a1238effbb47614b86a19975759a10d7c',1,'cmaple::Alignment::read(const std::string &amp;aln_filename, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)']]]
 ];

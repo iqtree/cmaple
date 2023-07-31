@@ -1,7 +1,4 @@
 var searchData=
 [
-  ['max_5fblength_5ffactor_0',['max_blength_factor',['../classcmaple_1_1_params.html#ab1dd36bba7aaeb3fe8416bb49db0f56b',1,'cmaple::Params']]],
-  ['min_5fblength_5ffactor_1',['min_blength_factor',['../classcmaple_1_1_params.html#a7cdbc01ec9d3bb923a4b7038ba5d34ac',1,'cmaple::Params']]],
-  ['model_2',['Model',['../classcmaple_1_1_model.html',1,'cmaple::Model'],['../classcmaple_1_1_model.html#a1a893bd878402e2b005901ecbf4af552',1,'cmaple::Model::Model()']]],
-  ['mutation_5fupdate_5fperiod_3',['mutation_update_period',['../classcmaple_1_1_params.html#a026887ca6fbb3677729330f972d6a0a9',1,'cmaple::Params']]]
+  ['load_0',['load',['../classcmaple_1_1_tree.html#af8c288e5a4ae4277615cb24268dca2f2',1,'cmaple::Tree::load(std::istream &amp;tree_stream, const bool fixed_blengths=false)'],['../classcmaple_1_1_tree.html#a1b2479eb26d00469ee1040dd9bee18e5',1,'cmaple::Tree::load(const std::string &amp;tree_filename, const bool fixed_blengths=false)']]]
 ];
