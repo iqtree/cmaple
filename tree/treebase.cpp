@@ -490,6 +490,12 @@ void cmaple::TreeBase::optimizeTree(const bool from_input_tree, const TreeSearch
     if (!fixed_blengths)
         optimizeBranchLengthsOfTree<num_states>();
     
+    // Make writing and re-reading tree consistently
+    // colapse zero branch lengths in leave
+    collapseAllZeroLeave();
+    // 0. Traverse tree using DFS, at each non-zero-branch leaf -> expand the tree by adding one less-info-seq
+    performDFSAtLeave<&cmaple::TreeBase::expandTreeByOneLessInfoSeq<num_states>>();
+    
     // NhanLT: update the model params
     if (aln->getSeqType() == SEQ_DNA)
     {
@@ -657,8 +663,7 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
     refreshAllLhs<num_states>();
     
     // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one less-info-seq to make sure all we compute the aLRT of all internal branches
-    if (!params->input_treefile.length())
-        performDFSAtLeave<&cmaple::TreeBase::expandTreeByOneLessInfoSeq<num_states>>();
+    performDFSAtLeave<&cmaple::TreeBase::expandTreeByOneLessInfoSeq<num_states>>();
     
     // 1. calculate aLRT for each internal branches, replacing the ML tree if a higher ML NNI neighbor was found
     calculate_aRLT<num_states>(allow_replacing_ML_tree);
@@ -6653,12 +6658,13 @@ void cmaple::TreeBase::collapseAllZeroLeave()
                             ++num_collapsed_nodes;
                         }
                     }
-                    else
+                    // NHANLT - temporarily solution to keep writing and re-reading tree consistently - need more testing
+                    /*else
                     {
                         if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
                             std::cout << "Detect two zero-length branches connecting to an internal node. Reset one of those branches at the minmimum branch length " + convertDoubleToString(new_min_blength) + " to avoid potential error" << std::endl;
                         neighbor_1.setUpperLength(new_min_blength);
-                    }
+                    }*/
                 }
                 
                 last_node_index = Index(node_index.getVectorIndex(), TOP);
