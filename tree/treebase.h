@@ -83,6 +83,7 @@ namespace cmaple
         void calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree);
         
         /*! Setup function pointers
+         @throw std::invalid\_argument If the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          */
         void setupFuncPtrs();
         
@@ -675,6 +676,7 @@ namespace cmaple
         
         /**
          Attach alignment and model
+         @throw std::invalid\_argument If the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          */
         void attachAlnModel(AlignmentBase* aln, ModelBase* model);
         

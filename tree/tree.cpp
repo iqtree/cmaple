@@ -10,7 +10,7 @@ void cmaple::Tree::initTree(Alignment* aln, Model* model)
     
     // Validate input aln
     if (!aln->aln_base || !aln->aln_base->data.size())
-        outError("Alignment is empty. Please call read(...) first!");
+        throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
     
     // Init the tree base
     tree_base = new TreeBase();
@@ -63,7 +63,7 @@ void cmaple::Tree::load(const std::string& tree_filename, const bool fixed_bleng
 {
     // Validate input
     if (!tree_filename.length())
-        outError("Please specify the tree file");
+        throw std::invalid_argument("The tree file name is empty");
     
     // open the treefile
     std::ifstream tree_stream;
@@ -72,8 +72,9 @@ void cmaple::Tree::load(const std::string& tree_filename, const bool fixed_bleng
         tree_stream.open(tree_filename);
         load(tree_stream, fixed_blengths);
         tree_stream.close();
-    } catch (ios::failure) {
-        outError(ERR_READ_INPUT, tree_filename);
+    } catch (ios::failure const &e) {
+        std::string error_msg(ERR_READ_INPUT);
+        throw ios::failure(error_msg + tree_filename);
     }
 }
 
@@ -84,7 +85,7 @@ void cmaple::Tree::changeAln(Alignment* n_aln)
     
     // Validate input aln
     if (!n_aln->aln_base || !n_aln->aln_base->data.size())
-        outError("Alignment is empty. Please call read(...) first!");
+        throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
     
     // change the aln_base
     tree_base->changeAln(n_aln->aln_base);
@@ -105,7 +106,7 @@ std::string cmaple::Tree::infer(const TreeSearchType tree_search_type, const boo
     
     // Validate tree_search_type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
-        outError("Unknown tree search type. Please check and try again!");
+        throw std::invalid_argument("Unknown tree search type. Please check and try again!");
     
     // Redirect the original src_cout to the target_cout
     streambuf* src_cout = cout.rdbuf();
@@ -143,11 +144,11 @@ std::string cmaple::Tree::computeBranchSupports(const int num_threads, const int
     
     // validate inputs
     if (num_threads < 0)
-        outError("Number of threads cannot be negative!");
+        throw std::invalid_argument("Number of threads cannot be negative!");
     if (num_replicates <= 0)
-        outError("Number of replicates must be positive!");
+        throw std::invalid_argument("Number of replicates must be positive!");
     if (epsilon < 0)
-        outError("Epsilon cannot be negative!");
+        throw std::invalid_argument("Epsilon cannot be negative!");
     
     // Only compute the branch supports
     tree_base->calculateBranchSupport(num_threads, num_replicates, epsilon, allow_replacing_ML_tree);
@@ -170,7 +171,7 @@ std::string cmaple::Tree::exportString(const TreeType tree_type, const bool show
     
     // validate tree_type
     if (tree_type == UNKNOWN_TREE)
-        outError("Unknown tree type. Please use BIN_TREE or MUL_TREE!");
+        throw std::invalid_argument("Unknown tree type. Please use BIN_TREE or MUL_TREE!");
     
     return tree_base->exportTreeString(tree_type, show_branch_supports);
 }

@@ -726,9 +726,6 @@ namespace cmaple
     const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
     const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
 
-    const int SUCCESS = 0;
-    const int ERROR_1 = 1;
-
     /**
      * initialize the random number generator
      * @param seed seed for generator

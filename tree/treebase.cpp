@@ -51,7 +51,7 @@ void cmaple::TreeBase::setupFuncPtrs()
             break;
             
         default:
-            outError("Sorry! currently we only support DNA and Protein data!");
+            throw std::invalid_argument("Sorry! currently we only support DNA and Protein data!");
             break;
     }
 }

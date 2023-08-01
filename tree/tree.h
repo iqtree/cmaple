@@ -13,6 +13,9 @@ namespace cmaple
          * @param[in] model A substitution model
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::invalid\_argument If any of the following situation occurs.
+         * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
+         * - the alignment is empty
          */
         Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
         
@@ -21,6 +24,11 @@ namespace cmaple
          * @param[in] model A substitution model
          * @param[in] tree_filename Name of a tree file (optinal)
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::invalid\_argument If any of the following situation occurs.
+         * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
+         * - the alignment is empty
+         *
+         * @throw ios::failure if the tree file is not found or in an incorrect format
          */
         Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
         
@@ -37,11 +45,14 @@ namespace cmaple
         /*! \brief Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
          * @param[in] tree_filename Name of a tree file
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::invalid\_argument if tree\_filename is empty
+         * @throw ios::failure if the tree file is not found or in an incorrect format
          */
         void load(const std::string& tree_filename, const bool fixed_blengths = false);
         
         /*! \brief Change the alignment
          * @param[in] aln An alignment
+         * @throw std::invalid\_argument If the alignment is empty
          */
         void changeAln(Alignment* aln);
         
@@ -66,6 +77,7 @@ namespace cmaple
          * <br><em>MORE_ACCURATE_TREE_SEARCH</em>: consider all nodes when seeking SPR moves.
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportString() later
+         * @throw std::invalid\_argument if tree\_search\_type is unknown
          */
         std::string infer(const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH, const bool shallow_tree_search = false);
         
@@ -80,6 +92,10 @@ namespace cmaple
          * @param[in] epsilon A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see [Guindon et al., 2010](https://academic.oup.com/sysbio/article/59/3/307/1702850))
          * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
          * @return A string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the branch supports values, one could call exportString("BIN", true) later
+         * @throw std::invalid\_argument if any of the following situations occurs.
+         * - num_threads < 0
+         * - num_replicates <= 0
+         * - epsilon < 0
          */
         std::string computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
         
@@ -87,6 +103,7 @@ namespace cmaple
          * @param[in] tree_type The type of the output tree (optional): BIN_TREE (bifurcating tree), MUL_TREE (multifurcating tree)
          * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH values)
          * @return A tree string in NEWICK format
+         * @throw std::invalid\_argument if tree\_type is unknown
          */
         std::string exportString(const TreeType tree_type = BIN_TREE, const bool show_branch_supports = false) const;
         
@@ -104,6 +121,9 @@ namespace cmaple
         /*! \brief Initialize tree base instance
          * @param[in] aln An alignment
          * @param[in] model A substitution model
+         * @throw std::invalid\_argument If any of the following situation occurs.
+         * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
+         * - the alignment is empty
          */
         void initTree(Alignment* aln, Model* model);
     };
