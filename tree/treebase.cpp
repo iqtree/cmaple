@@ -111,7 +111,14 @@ void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
         seq_names[i] = aln->data[i].seq_name;
     
     // update model according to the data from the alignment
-    updateModelByAln();
+    try
+    {
+        updateModelByAln();
+    }
+    catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
     
     // setup function pointers
     setupFuncPtrs();
@@ -276,7 +283,14 @@ void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
     model = n_model;
     
     // update model according to the data in the alignment
-    updateModelByAln();
+    try
+    {
+        updateModelByAln();
+    }
+    catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
     
     // update Model params and partial lhs along the current tree (if any)
     updateModelLhAfterLoading<num_states>();

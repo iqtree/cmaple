@@ -59,6 +59,7 @@ namespace cmaple
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations
+         @throw  std::logic\_error if the substitution model is unknown/unsupported
          */
         virtual void updateMutationMatEmpirical(const AlignmentBase* aln);
         

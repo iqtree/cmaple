@@ -16,6 +16,7 @@ namespace cmaple
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
+         * - the model is unknown/unsupported
          */
         Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
         
@@ -27,6 +28,7 @@ namespace cmaple
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
+         * - the model is unknown/unsupported
          *
          * @throw ios::failure if the tree file is not found or in an incorrect format
          */
@@ -39,6 +41,7 @@ namespace cmaple
         /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
          */
         void load(std::istream& tree_stream, const bool fixed_blengths = false);
         
@@ -47,6 +50,7 @@ namespace cmaple
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          * @throw std::invalid\_argument if tree\_filename is empty
          * @throw ios::failure if the tree file is not found or in an incorrect format
+         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
          */
         void load(const std::string& tree_filename, const bool fixed_blengths = false);
         
@@ -58,6 +62,7 @@ namespace cmaple
         
         /*! \brief Change the substitution model
          * @param[in] model A substitution model
+         * @throw std::invalid\_argument if the model is unknown/unsupported
          */
         void changeModel(Model* model);
         
@@ -78,6 +83,7 @@ namespace cmaple
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportString() later
          * @throw std::invalid\_argument if tree\_search\_type is unknown
+         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
          */
         std::string infer(const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH, const bool shallow_tree_search = false);
         
@@ -124,6 +130,7 @@ namespace cmaple
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
+         * - model is unknown/unsupported
          */
         void initTree(Alignment* aln, Model* model);
     };

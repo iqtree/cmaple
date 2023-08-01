@@ -66,6 +66,8 @@ namespace cmaple
         
         /**
          Update the mutation rate matrix regarding the pseu_mutation_count
+         
+         @throw  std::logic\_error if the substitution model is unknown/unsupported
          */
         void updateMutMatbyMutCount();
         
@@ -99,6 +101,7 @@ namespace cmaple
         
         /**
          Normalize the Q matrix so that the expected number of subtitution is 1
+         @throw std::logic\_error if the Q matrix is empty
          */
         void normalizeQMatrix();
         
@@ -114,12 +117,14 @@ namespace cmaple
         
         /**
          Update the mutation rate matrix
+         @throw  std::logic\_error if the substitution model is unknown/unsupported
          */
         template <cmaple::StateType num_states>
         void updateMutationMat();
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations (template)
+         @throw  std::logic\_error if the substitution model is unknown/unsupported
          */
         template <cmaple::StateType num_states>
         void updateMutationMatEmpiricalTemplate(const AlignmentBase* aln);
@@ -194,6 +199,7 @@ namespace cmaple
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations
+         @throw std::logic\_error if the substitution model is unknown/unsupported
          */
         virtual void updateMutationMatEmpirical(const AlignmentBase* aln) {};
         

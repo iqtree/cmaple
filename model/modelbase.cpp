@@ -342,7 +342,7 @@ void cmaple::ModelBase::normalizeQMatrix()
     for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
         sum -= mutation_mat_row[i] * root_freqs[i];
     
-    if (sum == 0.0) outError("Empty Q matrix");
+    if (sum == 0.0) throw std::logic_error("Empty Q matrix");
     
     double delta = 1.0 / sum;
     
@@ -422,7 +422,7 @@ void cmaple::ModelBase::updateMutMatbyMutCount()
     }
     // handle other model names
     else
-        outError("Unsupported model! Please check and try again!");
+        throw std::logic_error("Unsupported model! Please check and try again!");
 }
 
 template <StateType num_states>

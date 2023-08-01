@@ -93,11 +93,13 @@ namespace cmaple
         void setupBlengthThresh();
         
         /*! Build an Initial Tree
+         @throw std::logic\_error if the attached substitution model is unknown/unsupported
          */
         template <const cmaple::StateType  num_states>
         void buildInitialTree(const bool from_input_tree);
         
         /*! Optimize the current tree
+         @throw std::logic\_error if the attached substitution model is unknown/unsupported
          */
         template <const cmaple::StateType  num_states>
         void optimizeTree(const bool from_input_tree, const TreeSearchType tree_search_type, const bool shallow_tree_search);
@@ -687,12 +689,14 @@ namespace cmaple
         
         /**
          Change the substitution model
+         @throw std::invalid\_argument if the model is unknown/unsupported
          */
         void changeModel(ModelBase* model);
         
         /*! Load an input tree
          @param[in] tree_stream A stream of the input tree
          @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         @throw std::logic\_error if the substitution model is unknown/unsupported
          */
         void loadTree(std::istream& tree_stream, const bool fixed_blengths = false);
         
@@ -702,6 +706,7 @@ namespace cmaple
          * - NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
          * - MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
+         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
          */
         void doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
