@@ -889,7 +889,7 @@ void cmaple::ModelAA::initMutationMat()
     NxsModel *nxs_model = model_block->findModel(name_upper);
     if (nxs_model) {
         if (nxs_model->flag != NM_ATOMIC)
-            outError("Invalid protein model name ", name_upper);
+            throw std::logic_error("Invalid protein model name " + name_upper);
 
         reversible = readParametersString(nxs_model->description);
         
@@ -973,7 +973,7 @@ void cmaple::ModelAA::initMutationMat()
         updateMutationMat<20>();
     }
     else
-        outError("Model not found: ", name_upper);
+        throw std::logic_error("Model not found: " + name_upper);
 }
 
 void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
@@ -1000,7 +1000,7 @@ void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
             string tmp_value;
             in >> tmp_value;
             if (!tmp_value.length())
-                outError(getModelName() + ": Rate entries could not be read");
+                throw getModelName() + ": Rate entries could not be read";
             mutation_mat[id] = convert_real_number(tmp_value.c_str());
 
             if (mutation_mat[id] < 0.0)
@@ -1016,7 +1016,7 @@ void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
                 string tmp_value;
                 in >> tmp_value;
                 if (!tmp_value.length())
-                    outError(getModelName() + ": Rate entries could not be read");
+                    throw getModelName() + ": Rate entries could not be read";
                 mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
                 
                 if (mutation_mat_ptr[0] < 0.0 && row != col)

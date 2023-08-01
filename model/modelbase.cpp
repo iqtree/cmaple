@@ -303,7 +303,7 @@ bool cmaple::ModelBase::readParametersString(string& model_str) {
         readStateFreq(in);
     }
     catch (const char *str) {
-        outError(str);
+        throw std::logic_error(str);
     }
     return is_reversible;
 }

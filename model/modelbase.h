@@ -87,7 +87,8 @@ namespace cmaple
         
         /**
          Read model parameters
-         return TRUE if the model is reversible
+         @return TRUE if the model is reversible
+         @throw std::logic\_error if failing to read the parameters
          */
         bool readParametersString(string& model_str);
         
