@@ -69,7 +69,7 @@ void cmaple::ModelDNA::initMutationMat()
     {
         // validate model
         if (ModelBase::detectSeqType(sub_model) != SEQ_DNA)
-            outError("Invalid or unsupported model. Please check and try again!");
+            throw std::logic_error("Invalid or unsupported model. Please check and try again!");
             
         // init pseu_mutation_counts
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";

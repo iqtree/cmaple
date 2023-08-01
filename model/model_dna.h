@@ -28,11 +28,13 @@ namespace cmaple
     public:    
         /**
          Constructor
+         @throw std::invalid\_argument if sub\_model is unknown/unsupported
          */
         ModelDNA(const SubModel sub_model);
         
         /**
          Init the mutation rate matrix from a model
+         @throw std::logic\_error if the substitution model is unknown/unsupported
          */
         virtual void initMutationMat();
         

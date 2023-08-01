@@ -76,6 +76,7 @@ namespace cmaple
         
         /**
          Initialize the model
+         @throw std::logic\_error if the substitution model is unknown/unsupported
          */
         void init();
         
@@ -181,6 +182,7 @@ namespace cmaple
         
         /**
          Init the mutation rate matrix from a model
+         @throw std::logic\_error if the substitution model is unknown/unsupported
          */
         virtual void initMutationMat() {};
         
