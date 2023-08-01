@@ -17,6 +17,13 @@ namespace cmaple
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
          * - the model is unknown/unsupported
+         * - the tree is in an incorrect format
+         *
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - taxa in the tree (is specified) is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         * @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
         Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
         
@@ -29,8 +36,14 @@ namespace cmaple
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
          * - the model is unknown/unsupported
+         * - the tree (is specified) but in an incorrect format
          *
-         * @throw ios::failure if the tree file is not found or in an incorrect format
+         * @throw ios::failure if the tree file (is specified)  is not found
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - taxa in the tree (is specified) is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         * @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
         Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
         
@@ -41,28 +54,46 @@ namespace cmaple
         /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
-         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
+         * @throw std::invalid\_argument if tree is empty or in an incorrect format
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the attached substitution model is unknown/unsupported
+         * - any taxa in the tree is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         *@throw std::bad\_alloc if failing to allocate memory to store the tree
          */
         void load(std::istream& tree_stream, const bool fixed_blengths = false);
         
         /*! \brief Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
          * @param[in] tree_filename Name of a tree file
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
-         * @throw std::invalid\_argument if tree\_filename is empty
-         * @throw ios::failure if the tree file is not found or in an incorrect format
-         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
+         * @throw std::invalid\_argument if tree is empty or in an incorrect format
+         * @throw ios::failure if the tree file is not found
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the attached substitution model is unknown/unsupported
+         * - any taxa in the tree is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         * @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
         void load(const std::string& tree_filename, const bool fixed_blengths = false);
         
         /*! \brief Change the alignment
          * @param[in] aln An alignment
          * @throw std::invalid\_argument If the alignment is empty
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - taxa in the current tree is not found in the new alignment
+         * - the sequence type of the new alignment is different from the old one
+         * - unexpected values/behaviors found during the operations
          */
         void changeAln(Alignment* aln);
         
         /*! \brief Change the substitution model
          * @param[in] model A substitution model
          * @throw std::invalid\_argument if the model is unknown/unsupported
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the sequence type of the new model is different from the old one
+         * - unexpected values/behaviors found during the operations
          */
         void changeModel(Model* model);
         
@@ -83,12 +114,17 @@ namespace cmaple
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportString() later
          * @throw std::invalid\_argument if tree\_search\_type is unknown
-         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the attached substitution model is unknown/unsupported
+         * - unexpected values/behaviors found during the operations
          */
         std::string infer(const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH, const bool shallow_tree_search = false);
         
         /*! \brief Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment
          * @return The log likelihood of the current tree
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the tree is empty
+         * - unexpected values/behaviors found during the operations
          */
         RealNumType computeLh();
         
@@ -102,6 +138,10 @@ namespace cmaple
          * - num_threads < 0
          * - num_replicates <= 0
          * - epsilon < 0
+         *
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the tree is empty
+         * - unexpected values/behaviors found during the operations
          */
         std::string computeBranchSupports(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
         
@@ -109,7 +149,9 @@ namespace cmaple
          * @param[in] tree_type The type of the output tree (optional): BIN_TREE (bifurcating tree), MUL_TREE (multifurcating tree)
          * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH values)
          * @return A tree string in NEWICK format
-         * @throw std::invalid\_argument if tree\_type is unknown
+         * @throw std::invalid\_argument if any of the following situations occurs.
+         * - n\_tree\_type is unknown
+         * - show\_branch\_supports = true but branch support values have yet been computed
          */
         std::string exportString(const TreeType tree_type = BIN_TREE, const bool show_branch_supports = false) const;
         

@@ -93,29 +93,36 @@ namespace cmaple
         void setupBlengthThresh();
         
         /*! Build an Initial Tree
-         @throw std::logic\_error if the attached substitution model is unknown/unsupported
+         @throw std::logic\_error if any of the following situations occurs.
+         - the attached substitution model is unknown/unsupported
+         - unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void buildInitialTree(const bool from_input_tree);
         
         /*! Optimize the current tree
-         @throw std::logic\_error if the attached substitution model is unknown/unsupported
+         @throw std::logic\_error if any of the following situations occurs.
+         - the attached substitution model is unknown/unsupported
+         - unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void optimizeTree(const bool from_input_tree, const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
         /*! Optimize the tree topology
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void optimizeTreeTopology(bool short_range_search = false);
         
         /*! Optimize the branch lengths of the current tree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void optimizeBranchLengthsOfTree();
         
         /**
          Traverse the intial tree from root to re-calculate all non-lower likelihoods regarding the latest/final estimated model parameters
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void refreshAllNonLowerLhs();
@@ -123,6 +130,7 @@ namespace cmaple
         /**
          Try to improve a subtree rooted at node with SPR moves
          @return total improvement
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         cmaple::RealNumType  improveSubTree(const cmaple::Index  index, PhyloNode& node, bool short_range_search);
@@ -231,36 +239,42 @@ namespace cmaple
         
         /**
          Connect a new sample to a branch
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, const cmaple::NumSeqsType  seq_name_index, const cmaple::Index  sibling_node_index, PhyloNode& sibling_node, const cmaple::RealNumType  top_distance, const cmaple::RealNumType  down_distance, const cmaple::RealNumType  best_blength, std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions);
         
         /**
          Connect a new sample to root
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void connectNewSample2Root(std::unique_ptr<SeqRegions>& sample, const cmaple::NumSeqsType  seq_name_index, const cmaple::Index  sibling_node_index, PhyloNode& sibling_node, const cmaple::RealNumType  best_root_blength, const cmaple::RealNumType  best_length2, std::unique_ptr<SeqRegions>& best_parent_regions);
         
         /**
          Place a subtree as a descendant of a node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void placeSubTreeAtNode(const cmaple::Index  selected_node_index, const cmaple::Index  subtree_index, PhyloNode& subtree, const std::unique_ptr<SeqRegions>& subtree_regions, const cmaple::RealNumType  new_branch_length, const cmaple::RealNumType  new_lh);
         
         /**
          Place a subtree at a mid-branch point
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void placeSubTreeMidBranch(const cmaple::Index  selected_node_index, const cmaple::Index  subtree_index, PhyloNode& subtree, const std::unique_ptr<SeqRegions>& subtree_regions, const cmaple::RealNumType  new_branch_length, const cmaple::RealNumType  new_lh);
         
         /**
          Connect a subtree to a branch
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template<const cmaple::StateType  num_states, void (TreeBase::*updateRegionsSubTree)(PhyloNode&, PhyloNode&, PhyloNode&, std::unique_ptr<SeqRegions>&&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, cmaple::RealNumType &)>
         void connectSubTree2Branch(const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& lower_regions, const cmaple::Index  subtree_index, PhyloNode& subtree, const cmaple::Index  sibling_node_index, PhyloNode& sibling_node, const cmaple::RealNumType  top_distance, const cmaple::RealNumType  down_distance, cmaple::RealNumType  &best_blength, std::unique_ptr<SeqRegions>&& best_child_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions);
         
         /**
          Connect a subtree to root
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void connectSubTree2Root(const cmaple::Index  subtree_index, PhyloNode& subtree, const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& lower_regions, const cmaple::Index  sibling_node_index, PhyloNode& sibling_node, const cmaple::RealNumType  best_root_blength, const cmaple::RealNumType  best_length2, std::unique_ptr<SeqRegions>&& best_parent_regions);
@@ -285,12 +299,14 @@ namespace cmaple
         
         /**
          Update likelihood at mid-branch point
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateMidBranchLh(const cmaple::Index  node_index, PhyloNode& node, const std::unique_ptr<SeqRegions>& parent_upper_regions, std::stack<cmaple::Index > &node_stack, bool &update_blength);
         
         /**
          Compute Upper Left/Right regions at a node, updating the top branch length if neccessary
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         std::unique_ptr<SeqRegions> computeUpperLeftRightRegions(const cmaple::Index  node_index, PhyloNode& node, const cmaple::MiniIndex  next_node_mini, const std::unique_ptr<SeqRegions>& parent_upper_regions, std::stack<cmaple::Index > &node_stack, bool &update_blength);
@@ -302,6 +318,7 @@ namespace cmaple
         
         /**
          Handle cases when the new seqregions is null/empty: (1) update the branch length; or (2) return an error message
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void inline handleNullNewRegions(const cmaple::Index  index, PhyloNode& node, const bool do_update_zeroblength, std::stack<cmaple::Index > &node_stack, bool &update_blength, const std::string err_msg)
@@ -312,17 +329,21 @@ namespace cmaple
                 update_blength = true;
             }
             else
-                cmaple::outError(err_msg);
+                throw std::logic_error(err_msg);
         }
         
         /**
          Update partial_lh comming from the parent node
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updatePartialLhFromParent(const cmaple::Index  index, PhyloNode& node, std::stack<cmaple::Index > &node_stack, const std::unique_ptr<SeqRegions>& parent_upper_regions, const cmaple::PositionType  seq_length);
         
         /**
          Update partial_lh comming from the children
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updatePartialLhFromChildren(const cmaple::Index  index, PhyloNode& node, std::stack<cmaple::Index > &node_stack, const std::unique_ptr<SeqRegions>& parent_upper_regions, const bool is_non_root, const cmaple::PositionType  seq_length);
@@ -340,12 +361,14 @@ namespace cmaple
         
         /**
          Refresh all non-lowerlhs traversing from a parent node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void refreshNonLowerLhsFromParent(cmaple::Index & node_index, cmaple::Index & last_node_index);
         
         /**
          Refresh upper left/right regions
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void refreshUpperLR(const cmaple::Index  node_index, PhyloNode& node, const cmaple::Index  neighbor_index, std::unique_ptr<SeqRegions>& replaced_regions, const SeqRegions& parent_upper_lr_lh);
@@ -385,6 +408,7 @@ namespace cmaple
         
         /**
          Handle branch length changed when improve a subtree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void handleBlengthChanged(PhyloNode& node, const cmaple::Index  node_index, const cmaple::RealNumType  best_blength);
@@ -397,6 +421,7 @@ namespace cmaple
         
         /**
          Check and apply SPR move
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void checkAndApplySPR(const cmaple::RealNumType  best_lh_diff, const cmaple::RealNumType  best_blength, const cmaple::RealNumType  best_lh, const cmaple::Index  node_index, PhyloNode& node, const cmaple::Index  best_node_index, const cmaple::Index  parent_node_index, const bool is_mid_node, cmaple::RealNumType & total_improvement, bool& topology_updated);
@@ -424,30 +449,35 @@ namespace cmaple
         
         /**
          Calculate the likelihood of an NNI neighbor
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         bool calculateNNILh(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root, const bool allow_replacing_ML_tree);
         
         /**
          Calculate the likelihood of an NNI neighbor on the branch connecting to root
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         bool calculateNNILhRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root, const bool allow_replacing_ML_tree);
         
         /**
          Calculate the likelihood of an NNI neighbor on the branch connecting to a non-root node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         bool calculateNNILhNonRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index, cmaple::RealNumType & lh_at_root, const bool allow_replacing_ML_tree);
         
         /**
          Replace the current ML Tree by an NNI neighbor on a branch connecting to root
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void replaceMLTreebyNNIRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, cmaple::RealNumType & lh_at_root, const cmaple::RealNumType  child_1_best_blength, const cmaple::RealNumType  child_2_best_blength, const cmaple::RealNumType  sibling_best_blength, const cmaple::RealNumType  parent_best_blength);
         
         /**
          Replace the current ML Tree by an NNI neighbor on a branch connecting to a non-root node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void replaceMLTreebyNNINonRoot(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, cmaple::RealNumType & lh_at_root, const cmaple::RealNumType  child_1_best_blength, const cmaple::RealNumType  child_2_best_blength, const cmaple::RealNumType  sibling_best_blength, const cmaple::RealNumType  parent_best_blength, const cmaple::RealNumType  new_parent_best_blength);
@@ -466,12 +496,14 @@ namespace cmaple
         /**
          Calculate aLRT for each internal branches
          @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void calculate_aRLT(const bool allow_replacing_ML_tree);
         
         /**
          Perform a DFS to calculate the Site-lh-contribution
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         cmaple::RealNumType  calculateSiteLhs(std::vector<cmaple::RealNumType >& site_lh_contributions, std::vector<cmaple::RealNumType >& site_lh_root);
@@ -513,6 +545,7 @@ namespace cmaple
         
         /**
          Read string from tree file to create new nodes
+         @throw std::logic\_error if any taxa in the tree is not found in the  alignment
          */
         cmaple::NumSeqsType  parseFile(std::istream &infile, char& ch, cmaple::RealNumType & branch_len, cmaple::PositionType & in_line, cmaple::PositionType & in_column, const std::map<std::string, cmaple::NumSeqsType >& map_seqname_index, bool& missing_blengths);
         
@@ -534,6 +567,7 @@ namespace cmaple
         
         /**
          Expand the tree by placing one less-info-seq
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void expandTreeByOneLessInfoSeq(PhyloNode& node, const cmaple::Index  node_index, const cmaple::Index  parent_index);
@@ -541,24 +575,30 @@ namespace cmaple
         /**
          Carefully update blength of a node when replacing the ML tree by an NNI neighbor
          Expand the new tree by adding one less-info -seq of the current node (if neccessary) to make sure we compute aLRT for all non-zero internal branches
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateBlengthReplaceMLTree(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& node, const cmaple::Index  node_index, const cmaple::RealNumType  best_blength);
         
         /**
          Expand the new tree by adding one less-info -seq of the current node after replacing the ML tree by an NNI neighbor to make sure we compute aLRT for all non-zero internal branches
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void addLessInfoSeqReplacingMLTree(std::stack<cmaple::Index >& node_stack_aLRT, cmaple::RealNumType & lh_diff, PhyloNode& node, const cmaple::Index  node_index, const cmaple::Index  parent_index);
         
         /**
          Export Node in Newick format
+         @throw std::invalid\_argument if show\_branch\_supports = true but branch support values have yet been computed
          */
         const std::string exportNodeString(const bool binary, const cmaple::NumSeqsType  node_vec_index, const bool show_branch_supports);
         
         /**
          Read an input tree from a stream
          @Return TRUE if the tree contains any branch without a length
+         @throw std::invalid\_argument if the tree in an incorrect format
+         @throw std::logic\_error if any taxa in the tree is not found in the alignment
+         @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
         bool readTree(std::istream& tree_stream);
         
@@ -575,6 +615,7 @@ namespace cmaple
         
         /**
          Update model params and partial likelihoods after loading a tree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateModelLhAfterLoading();
@@ -586,6 +627,7 @@ namespace cmaple
         
         /**
          * Re-mark the sequences in the alignment, which already existed in the current tree
+         * @throw std::logic\_error if any taxa in the current tree is not found in the new alignment
          */
         void remarkExistingSeqs();
         
@@ -594,6 +636,7 @@ namespace cmaple
          * @param[in] seq_name Name of the sequence
          * @param[in] map_name_index a mapping between sequence names and its index in the alignment
          * @return the new index of the corresponding sequence in the new alignment
+         * @throw std::logic\_error if the taxon named seq\_name is not found the alignment
          */
         NumSeqsType markAnExistingSeq(const std::string& seq_name, const std::map<std::string, NumSeqsType>& map_name_index);
         
@@ -684,19 +727,32 @@ namespace cmaple
         
         /**
          Change the alignment
+         @throw std::logic\_error if any of the following situations occurs.
+         - taxa in the current tree is not found in the new alignment
+         - the sequence type of the new alignment is different from the old one
+         - unexpected values/behaviors found during the operations
          */
         void changeAln(AlignmentBase* aln);
         
         /**
          Change the substitution model
          @throw std::invalid\_argument if the model is unknown/unsupported
+         @throw std::logic\_error if any of the following situations occurs.
+         - the sequence type of the new model is different from the old one
+         - unexpected values/behaviors found during the operations
          */
         void changeModel(ModelBase* model);
         
         /*! Load an input tree
          @param[in] tree_stream A stream of the input tree
          @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
-         @throw std::logic\_error if the substitution model is unknown/unsupported
+         @throw std::invalid\_argument if the tree in an incorrect format
+         @throw std::logic\_error if any of the following situations occurs.
+         - the substitution model is unknown/unsupported
+         - any taxa in the tree is not found in the alignment
+         - unexpected values/behaviors found during the operations
+         
+         @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
         void loadTree(std::istream& tree_stream, const bool fixed_blengths = false);
         
@@ -706,21 +762,31 @@ namespace cmaple
          * - NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
          * - MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
-         * @throw std::logic\_error if the attached substitution model is unknown/unsupported
+         * @throw std::invalid\_argument if tree\_search\_type is unknown
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the attached substitution model is unknown/unsupported
+         * - unexpected values/behaviors found during the operations
          */
         void doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
         /*! Calculate the likelihood of the tree
+         @throw std::logic\_error if any of the following situations occurs.
+         - the tree is empty
+         - unexpected values/behaviors found during the operations
          */
         RealNumType calculateLh();
         
         /**
          Export tree std::string in Newick format
+         @throw std::invalid\_argument if show\_branch\_supports = true but branch support values have yet been computed
          */
         const std::string exportTreeString(const bool binary, const bool show_branch_supports);
         
         /**
          Export tree std::string in Newick format
+         @throw std::invalid\_argument if any of the following situations occurs.
+         - n\_tree\_type is unknown
+         - show\_branch\_supports = true but branch support values have yet been computed
          */
         const std::string exportTreeString(const TreeType n_tree_type, const bool show_branch_supports);
         
@@ -732,7 +798,9 @@ namespace cmaple
         
         /**
          Iteratively update partial_lh starting from the nodes in node_stack
+         
          @param node_stack stack of nodes;
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updatePartialLh(std::stack<cmaple::Index > &node_stack);
@@ -751,12 +819,14 @@ namespace cmaple
         
         /**
          Place a new sample at a mid-branch point
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void placeNewSampleMidBranch(const cmaple::Index & selected_node_index, std::unique_ptr<SeqRegions>& sample, const cmaple::NumSeqsType  seq_name_index, const cmaple::RealNumType  best_lh_diff);
         
         /**
          Place a new sample as a descendant of a node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void placeNewSampleAtNode(const cmaple::Index  selected_node_index, std::unique_ptr<SeqRegions>& sample, const cmaple::NumSeqsType  seq_name_index, const cmaple::RealNumType  best_lh_diff, const cmaple::RealNumType  best_up_lh_diff, const cmaple::RealNumType  best_down_lh_diff, const cmaple::Index  best_child_index);
@@ -764,12 +834,14 @@ namespace cmaple
         /**
          Apply SPR move
          pruning a subtree then regrafting it to a new position
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void applySPR(const cmaple::Index  subtree_index, PhyloNode& subtree, const cmaple::Index  best_node_index, const bool is_mid_branch, const cmaple::RealNumType  branch_length, const cmaple::RealNumType  best_lh_diff);
         
         /**
          Traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void refreshAllLhs(bool avoid_using_upper_lr_lhs = false);
@@ -785,6 +857,7 @@ namespace cmaple
         /**
          Try to improve the entire tree with SPR moves
          @return total improvement
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         cmaple::RealNumType  improveEntireTree(bool short_range_search);
@@ -792,6 +865,7 @@ namespace cmaple
         /**
          Try to optimize branch lengths of the tree
          @return num of improvements
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         cmaple::PositionType  optimizeBranchLengths();
@@ -824,6 +898,7 @@ namespace cmaple
         
         /**
          Update lower lh of a node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateLowerLh(cmaple::RealNumType & total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const cmaple::Index  neighbor_1_index, PhyloNode& neighbor_1, const cmaple::Index  neighbor_2_index, PhyloNode& neighbor_2, const cmaple::PositionType & seq_length);
@@ -831,12 +906,14 @@ namespace cmaple
         /**
          Update lower lh of a node but avoid using UpperLeft/Right lhs to update zero-blength
          This function is called after reading a tree from an input file, thus, UpperLeft/Right lhs have not yet been computed
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateLowerLhAvoidUsingUpperLRLh(cmaple::RealNumType & total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const cmaple::Index  neighbor_1_index, PhyloNode& neighbor_1, const cmaple::Index  neighbor_2_index, PhyloNode& neighbor_2, const cmaple::PositionType & seq_length);
         
         /**
          compute the likelihood contribution of (the upper branch of) a node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void computeLhContribution(cmaple::RealNumType & total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const cmaple::Index  neighbor_1_index, PhyloNode& neighbor_1, const cmaple::Index  neighbor_2_index, PhyloNode& neighbor_2, const cmaple::PositionType & seq_length);
@@ -853,6 +930,9 @@ namespace cmaple
          * @param[in] num_replicates a positive number of replicates (optional)
          * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
          * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
+         * @throw std::logic\_error if any of the following situations occurs.
+         * - the tree is empty
+         * - unexpected values/behaviors found during the operations
          */
         void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
         

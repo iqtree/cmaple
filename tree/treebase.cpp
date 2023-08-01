@@ -220,7 +220,7 @@ void cmaple::TreeBase::changeAlnTemplate(AlignmentBase* n_aln)
 {
     // make sure both alignments have the same seqtype
     if (aln->getSeqType() != n_aln->getSeqType())
-        outError("Sorry! we have yet supported changing to a new alignment with a sequence type different from the current one.");
+        throw std::logic_error("Sorry! we have yet supported changing to a new alignment with a sequence type different from the current one.");
     
     // show information
     if (cmaple::verbose_mode >= cmaple::VB_MED)
@@ -270,7 +270,7 @@ void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
     
     // make sure both models have the same seqtype
     if (model->num_states_ != n_model->num_states_)
-        outError("Sorry! we have yet supported changing to a new model with a sequence type different from the current one.");
+        throw std::logic_error("Sorry! we have yet supported changing to a new model with a sequence type different from the current one.");
     
     // do nothing if new model is the same as the current one
     if (model == n_model) return;
@@ -310,7 +310,7 @@ void cmaple::TreeBase::doInferenceTemplate(const TreeSearchType tree_search_type
     
     // Validate tree search type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
-        outError("Unknown tree search type!");
+        throw std::invalid_argument("Unknown tree search type!");
     
     // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
     if (aln->attached_trees.find(this) == aln->attached_trees.end())
@@ -620,7 +620,7 @@ RealNumType cmaple::TreeBase::calculateLhTemplate()
     // Make sure the tree is not empty
     if (!nodes.size())
     {
-        outError("Tree is empty. Please call infer() to infer a tree from the alignment before computing the likelihood!", false);
+        throw std::logic_error("Tree is empty. Please call infer() to infer a tree from the alignment before computing the likelihood!");
         return 0;
     }
     
@@ -652,7 +652,7 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
     // Make sure the tree is not empty
     if (!nodes.size())
     {
-        outError("Tree is empty. Please call infer() to infer a tree from the alignment first!", false);
+        throw std::invalid_argument("Tree is empty. Please call infer() to infer a tree from the alignment first!");
         return;
     }
     
@@ -731,7 +731,7 @@ const string cmaple::TreeBase::exportNodeString(const bool binary, const NumSeqs
     {
         // Make sure Branch supports have been computed
         if (!node.getNodelhIndex())
-            outError("Branch supports is not available. Please compute them first!");
+            throw std::logic_error("Branch supports is not available. Please compute them first!");
         
         branch_support = convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
     }
@@ -753,7 +753,7 @@ const std::string cmaple::TreeBase::exportTreeString(const TreeType tree_type, c
             return exportTreeString(false, show_branch_supports);
             break;
         default:
-            outError("Unknown tree type. Please use BIN_TREE or MUL_TREE");
+            throw std::invalid_argument("Unknown tree type. Please use BIN_TREE or MUL_TREE");
             break;
     }
 }
@@ -830,7 +830,7 @@ void cmaple::TreeBase::updatePartialLhFromParent(const Index index, PhyloNode& n
             node.computeTotalLhAtNode<num_states>(node.getTotalLh(), nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model, params->threshold_prob, root_vector_index == index.getVectorIndex());
             
             if (!node.getTotalLh() || node.getTotalLh()->size() == 0)
-                outError("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
+                throw std::logic_error("inside updatePartialLh(), from parent 2: should not have happened since node->length > 0");
         }
     }
     
@@ -2130,7 +2130,7 @@ void cmaple::TreeBase::connectSubTree2Branch(const std::unique_ptr<SeqRegions>& 
     internal.computeTotalLhAtNode<num_states>(internal.getTotalLh(), nodes[parent_vec], aln, model, threshold_prob, root_vector_index == internal_vec);
     
     if (!internal.getTotalLh()) //->total_lh || new_internal_node->total_lh->size() == 0)
-        outError("Problem, None vector when re-placing sample, placing subtree at mid-branch point");
+        throw std::logic_error("Problem, None vector when re-placing sample, placing subtree at mid-branch point");
     
     //if distTop>=2*min_blengthForMidNode:
     // createFurtherMidNodes(newInternalNode,upper_left_right_regions)
@@ -2706,7 +2706,7 @@ void cmaple::TreeBase::connectNewSample2Branch(std::unique_ptr<SeqRegions>& samp
     
     //if (!internal.getTotalLh() || internal.getTotalLh()->empty())
     if (!internal.getTotalLh())
-        outError("Problem, None vector when placing sample, below node");
+        throw std::logic_error("Problem, None vector when placing sample, below node");
     
     if (best_blength > 0)
     {
@@ -2993,7 +2993,7 @@ void cmaple::TreeBase::connectNewSample2Root(std::unique_ptr<SeqRegions>& sample
     
     if (!new_root.getTotalLh()) //(!new_root.getTotalLh() || new_root->total_lh->size() == 0)
     {
-        outError("Problem, None vector when placing sample, new root");
+        throw std::logic_error("Problem, None vector when placing sample, new root");
         //print(merged_root_sample_regions)
         //print(node.probVect)
         //print(sample)
@@ -3248,7 +3248,7 @@ void cmaple::TreeBase::refreshUpperLR(const Index node_index, PhyloNode& node, c
             updatePartialLh<num_states>(node_stack);
         }
         else
-            outError("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
+            throw std::logic_error("Strange, inconsistent upper left/right lh creation in refreshAllNonLowerLhs()");
     }
     // otherwise, everything is good -> update upper left/right lh of the current node
     else
@@ -3276,7 +3276,7 @@ void cmaple::TreeBase::refreshNonLowerLhsFromParent(Index& node_index, Index& la
         node.computeTotalLhAtNode<num_states>(node.getTotalLh(), parent_node, aln, model, threshold_prob, root_vector_index == node_index.getVectorIndex());
         
         if (!node.getTotalLh())
-            outError("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
+            throw std::logic_error("Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
 
         // update mid_branch_lh
         computeMidBranchRegions<num_states>(node, node.getMidBranchLh(), *parent_upper_lr_lh);
@@ -4045,9 +4045,9 @@ RealNumType cmaple::TreeBase::improveSubTree(const Index node_index, PhyloNode& 
             
             // validate the new placement cost
             if (best_lh_diff > params->threshold_prob2)
-                outError("Strange, lh cost is positive");
+                throw std::logic_error("Strange, lh cost is positive");
             else if (best_lh_diff < -1e50)
-                outError("Likelihood cost is very heavy, this might mean that the reference used is not the same used to generate the input MAPLE file");
+                throw std::logic_error("Likelihood cost is very heavy, this might mean that the reference used is not the same used to generate the input MAPLE file");
             
             if (best_lh_diff + thresh_placement_cost > best_lh)
             {
@@ -4793,7 +4793,7 @@ void cmaple::TreeBase::updateLowerLh(RealNumType& total_lh, std::unique_ptr<SeqR
             updatePartialLh<num_states>(node_stack);
         }
         else
-            outError("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
+            throw std::logic_error("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
     }
     // otherwise, everything is good -> update the lower lh of the current node
     else
@@ -4817,7 +4817,7 @@ void cmaple::TreeBase::updateLowerLhAvoidUsingUpperLRLh(RealNumType& total_lh, s
         else if (neighbor_2.getUpperLength() <= 0) // next_node_2->length <= 0)
             neighbor_2.setUpperLength(min_blength);
         else
-            outError("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
+            throw std::logic_error("Strange, branch lengths > 0 but inconsistent lower lh creation in refreshAllLowerLhs()");
         
         // recompute lower_lh
         lower_lh_1->mergeTwoLowers<num_states>(node.getPartialLh(TOP), neighbor_1.getUpperLength(), *lower_lh_2, neighbor_2.getUpperLength(), aln, model, params->threshold_prob);
@@ -4849,10 +4849,10 @@ void cmaple::TreeBase::computeLhContribution(RealNumType& total_lh, std::unique_
     // ASSERT(params.has_value());
     ASSERT(params);
     if (!new_lower_lh)
-        outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
+        throw std::logic_error("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
     // otherwise, everything is good -> update the lower lh of the current node
     else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, *params))
-        outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
+        throw std::logic_error("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
 }
 
 template <void(cmaple::TreeBase::*task)(RealNumType&, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const Index, PhyloNode&, const Index, PhyloNode&, const PositionType&)>
@@ -6216,11 +6216,11 @@ RealNumType cmaple::TreeBase::calculateSiteLhs(std::vector<RealNumType>& site_lh
                 
                 // if new_lower_lh is NULL
                 if (!new_lower_lh)
-                    outError("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
+                    throw std::logic_error("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
                 // otherwise, everything is good -> update the lower lh of the current node
                 else if (new_lower_lh->areDiffFrom(*node.getPartialLh(TOP), seq_length, num_states, *params))
                 {
-                    // outError("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
+                    // ("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
                     // non-updated lower likelihood may be due to a replacement of ML tree by an NNI neighbor
                     node.setPartialLh(TOP, std::move(new_lower_lh));
                 }
@@ -6348,7 +6348,7 @@ NumSeqsType cmaple::TreeBase::parseFile(std::istream &infile, char& ch, RealNumT
     {
         auto it = map_seqname_index.find(seqname);
         if (it == map_seqname_index.end())
-            outError("Leaf " + seqname + " is not found in the alignment. Please check and try again!");
+            throw std::logic_error("Leaf " + seqname + " is not found in the alignment. Please check and try again!");
         else
         {
             const NumSeqsType sequence_index = it->second;
@@ -6490,7 +6490,7 @@ NumSeqsType cmaple::TreeBase::markAnExistingSeq(const std::string& seq_name, con
     }
     // otherwise, return an error
     else
-        outError("Taxon " + seq_name + " is not found in the new alignment!");
+        throw std::logic_error("Taxon " + seq_name + " is not found in the new alignment!");
     
     // return new_seq_index
     return new_seq_index;
@@ -6596,16 +6596,16 @@ bool cmaple::TreeBase::readTree(std::istream& in)
         if (in.eof() || ch != ';')
             throw "Tree file must be ended with a semi-colon ';'";
     } catch (bad_alloc) {
-        outError(ERR_NO_MEMORY);
+        throw std::bad_alloc();
     } catch (const char *str) {
-        outError(str, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+         std::string err_msg(str);
+         throw std::invalid_argument(err_msg + " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
     } catch (string str) {
-        outError(str.c_str(), " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
-    } catch (ios::failure) {
-        outError(ERR_READ_INPUT, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+        throw std::invalid_argument(str + " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
     } catch (...) {
         // anything else
-        outError(ERR_READ_ANY, " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
+        std::string err_msg(ERR_READ_ANY);
+        throw std::invalid_argument(err_msg + " (line " + convertIntToString(in_line) + " column " + convertIntToString(in_column - 1) + ")");
     }
     
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
