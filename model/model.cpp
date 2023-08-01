@@ -26,7 +26,7 @@ cmaple::Model::Model(const SubModel sub_model, const SeqType n_seqtype):model_ba
         }
         default:
         {
-            outError("Unsupported model");
+            throw std::invalid_argument("Unsupported model");
             break;
         }
     }
