@@ -16,7 +16,7 @@ namespace cmaple
          * @param[in] ref_seq A feference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection)
          * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
-         * @throw std::invalid\_argument if the alignment is incorrect format
+         * @throw std::invalid\_argument if the alignment is empty or in an incorrect format
          */
         Alignment(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
         
@@ -25,8 +25,8 @@ namespace cmaple
          * @param[in] ref_seq A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection)
          * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
-         * @throw std::invalid\_argument if the alignment is incorrect format
-         * @throw ios::failure if the alignment file is not found or in an incorrect format
+         * @throw std::invalid\_argument if the alignment is empty or in an incorrect format
+         * @throw ios::failure if the alignment file is not found
          */
         Alignment(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
         
@@ -39,7 +39,7 @@ namespace cmaple
          * @param[in] ref_seq A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection)
          * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
-         * @throw std::invalid\_argument if the alignment is incorrect format
+         * @throw std::invalid\_argument if the alignment is empty or in an incorrect format
          */
         void read(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
         
@@ -48,8 +48,8 @@ namespace cmaple
          * @param[in] ref_seq A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection)
          * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
-         * @throw std::invalid\_argument if the alignment is incorrect format
-         * @throw ios::failure if the alignment file is not found or in an incorrect format
+         * @throw std::invalid\_argument if the alignment is empty or in an incorrect format
+         * @throw ios::failure if the alignment file is not found
          */
         void read(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
         

@@ -45,15 +45,29 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
     aln_base->setSeqType(seqtype);
     
     // Read the input alignment
-    // in FASTA or PHYLIP format
-    if (aln_base->aln_format != IN_MAPLE)
-        aln_base->readFastaOrPhylip(aln_stream, ref_seq);
-    // in MAPLE format
-    else
-        aln_base->readMaple(aln_stream);
+    try
+    {
+        // in FASTA or PHYLIP format
+        if (aln_base->aln_format != IN_MAPLE)
+            aln_base->readFastaOrPhylip(aln_stream, ref_seq);
+        // in MAPLE format
+        else
+            aln_base->readMaple(aln_stream);
+    }
+    catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
     
     // sort sequences by their distances to the reference sequence
-    aln_base->sortSeqsByDistances();
+    try
+    {
+        aln_base->sortSeqsByDistances();
+    }
+    catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
 }
 
 void cmaple::Alignment::read(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype)

@@ -22,11 +22,13 @@ namespace cmaple
         
         /**
          Read sequence from a string line
+         @throw std::logic\_error if the sequence is an incorrect format
          */
         void processSeq(std::string &sequence, std::string &line, cmaple::PositionType line_num);
         
         /**
          Add a mutation to a sequence
+         @throw std::logic\_error if sequence contains invalid states
          */
         void addMutation(Sequence* sequence, char state_char, cmaple::PositionType pos, cmaple::PositionType length = -1);
         
@@ -110,6 +112,8 @@ namespace cmaple
          @param aln_stream A stream of the alignment;
          @param check_min_seqs check the minimum number of input sequences
          @return sequences, seq_names
+         
+         @throw std::logic\_error if the alignment is in an incorrect format
          */
         void readFasta(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
@@ -118,6 +122,8 @@ namespace cmaple
          @param aln_stream A stream of the alignment;
          @param check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
+         
+         @throw std::logic\_error if the alignment is in an incorrect format
          */
         void readPhylip(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, bool check_min_seqs = true);
         
@@ -127,6 +133,8 @@ namespace cmaple
          @param[in,out] aln_format the format of the alignment
          @param check_min_seqs: check the minimum number of input sequences
          @return sequences, seq_names
+         
+         @throw std::logic\_error if the alignment is in an incorrect format
          */
         void readSequences(std::istream& aln_stream, cmaple::StrVector &sequences, cmaple::StrVector &seq_names, InputType aln_format = IN_UNKNOWN, bool check_min_seqs = true);
         
@@ -134,6 +142,8 @@ namespace cmaple
          Generate a reference genome from input_sequences
          @param sequences the input sequences; only_extract_diff: TRUE to only extract MAPLE file without running inference
          @return a reference genome
+         
+         @throw std::logic\_error if the input sequences are empty
          */
         std::string generateRef(cmaple::StrVector &sequences);
         
@@ -142,6 +152,9 @@ namespace cmaple
          @param ref_filename Name of an alignment file
          @param seq_name Name of the reference sequence
          @return a reference genome
+         @throw std::invalid\_argument if seq\_name is empty
+         @throw ios::failure if ref\_filename is not found
+         @throw std::logic\_error if the alignment is empty or in an incorrect format
          */
          std::string readRefSeq(const std::string& ref_filename, const std::string& seq_name);
         
@@ -150,12 +163,16 @@ namespace cmaple
          @param sequences a vector of sequences
          @param seq_names a vector of sequence names
          @param ref_sequence the reference sequence
+         @throw std::logic\_error if any of the following situations occurs.
+         - the lengths of sequences are different from that of the reference genome
+         - sequences contains invalid states
          */
         void extractMutations(const cmaple::StrVector &sequences, const cmaple::StrVector &seq_names, const std::string& ref_sequence);
         
         /**
          Read an alignment in MAPLE format from a stream
          @param aln_stream A stream of an alignment file
+         @throw std::logic\_error if the alignment is empty or in an incorrect format
          */
         void readMaple(std::istream& aln_stream);
         
@@ -163,6 +180,7 @@ namespace cmaple
          Read an alignment in FASTA or PHYLIP format from a stream
          @param aln_stream A stream of an alignment file
          @param[in] ref_seq The reference sequence
+         @throw std::logic\_error if the alignment is empty or in an incorrect format
          */
         void readFastaOrPhylip(std::istream& aln_stream, const std::string& ref_seq = "");
         
@@ -170,12 +188,14 @@ namespace cmaple
          Write alignment to a stream
          @param[in] ostream A stream of the output alignment file
          @param[in] format the format of the output alignment file: IN_FASTA, IN_PHYLIP, IN_MAPLE
+         @throw std::invalid\_argument if format is unknown/unsupported
          */
         void write(std::ostream& aln_stream, const InputType& format);
         
         /**
          Parse the reference sequence into vector of state
          @param ref_sequence reference genome in string
+         @throw std::logic\_error if ref\_sequence contains invalid states
          */
         void parseRefSeq(std::string& ref_sequence);
         
@@ -190,12 +210,15 @@ namespace cmaple
          Convert a raw character state into ID, indexed from 0
          @param state input raw state
          @return state ID
+         @throw std::invalid\_argument if state is invalid
          */
         cmaple::StateType convertChar2State(char state);
         
         /**
          Sort sequences by their distances to the reference genome
          distance = num_differents * hamming_weight + num_ambiguities
+         
+         @throw std::logic\_error if the sequences contain an invalid type (R)
          */
         void sortSeqsByDistances();
         
@@ -203,6 +226,8 @@ namespace cmaple
          Compute the distance between a sequence and the ref sequence
          distance = num_differents * hamming_weight + num_ambiguities
          @param hamming_weight weight to calculate the hamming distance
+         
+         @throw std::logic\_error if the sequence contains an invalid type (R)
          */
         cmaple::PositionType computeSeqDistance(Sequence& sequence, cmaple::RealNumType hamming_weight);
         
