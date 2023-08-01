@@ -38,7 +38,7 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
         
         // validate the format
         if (aln_base->aln_format == IN_UNKNOWN)
-            outError("Failed to detect the format from the alignment!");
+            throw std::invalid_argument("Failed to detect the format from the alignment!");
     }
     
     // Set seqtype. If it's unknown (not specified), we'll dectect it later when reading the alignment
@@ -66,7 +66,8 @@ void cmaple::Alignment::read(const std::string& aln_filename, const std::string&
         aln_stream.exceptions(ios::failbit | ios::badbit);
         aln_stream.open(aln_filename);
     } catch (ios::failure) {
-        outError(ERR_READ_INPUT, aln_filename);
+        std::string err_msg(ERR_READ_INPUT);
+        throw ios::failure(err_msg + aln_filename);
     }
     
     // Initialize an alignment instance from the input stream
@@ -91,11 +92,11 @@ void cmaple::Alignment::write(std::ostream& aln_stream, const InputType format) 
     
     // Handle empty alignment
     if (!aln_base->data.size())
-        outError("Alignment is empty. Please call read(...) first!");
+        throw std::logic_error("Alignment is empty. Please call read(...) first!");
         
     // Validate the format
-    if (aln_base->aln_format == IN_UNKNOWN)
-        outError("Unknown format! Please use IN_MAPLE, IN_FASTA, or IN_PHYLIP");
+    if (format == IN_UNKNOWN)
+        throw std::invalid_argument("Unknown format! Please use IN_MAPLE, IN_FASTA, or IN_PHYLIP");
     
     // Write the alignment
     aln_base->write(aln_stream, format);
@@ -105,11 +106,11 @@ void cmaple::Alignment::write(const std::string& aln_filename, const InputType f
 {
     // Validate the input
     if (!aln_filename.length())
-        outError("Please specify a filename to output the alignment");
+        throw std::invalid_argument("Please specify a filename to output the alignment");
     
     // Check whether the output file already exists
     if (!overwrite && fileExists(aln_filename))
-        outError("File " + aln_filename + " already exists. Please set overwrite = true to overwrite it.");
+        throw ios::failure("File " + aln_filename + " already exists. Please set overwrite = true to overwrite it.");
     
     // Open a stream to write the output
     std::ofstream aln_stream = ofstream(aln_filename);

@@ -104,6 +104,10 @@ void cmaple::runCMaple(cmaple::Params &params)
     {
         outError(e.what());
     }
+    catch (std::logic_error e)
+    {
+        outError(e.what());
+    }
     catch (ios::failure e)
     {
         outError(e.what());
