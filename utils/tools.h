@@ -806,6 +806,7 @@ namespace cmaple
         Convert string to int, with error checking
         @param str original string
         @return the number
+        @throw std::invalid\_argument if the input str is invalid
      */
     int convert_int(const char *str);
 
@@ -813,6 +814,7 @@ namespace cmaple
         Convert string to int64, with error checking
         @param str original string
         @return the number
+        @throw std::invalid\_argument if the input str is invalid
      */
     int64_t convert_int64(const char *str);
 
@@ -821,6 +823,7 @@ namespace cmaple
         @param str original string
         @param end_pos end position
         @return the number
+        @throw std::invalid\_argument if the input str is invalid
      */
     int convert_int(const char *str, int &end_pos);
 
@@ -828,6 +831,7 @@ namespace cmaple
         Convert comma-separated string to integer vector, with error checking
         @param str original string with integers separated by comma
         @param vec (OUT) integer vector
+        @throw std::invalid\_argument if the input str is invalid
      */
     void convert_int_vec(const char *str, IntVector &vec);
 
@@ -835,6 +839,7 @@ namespace cmaple
         Convert string to int64_t, with error checking
         @param str original string
         @return the number
+        @throw std::invalid\_argument if the input str is invalid
      */
     int64_t convert_int64(const char *str);
 
@@ -843,6 +848,7 @@ namespace cmaple
         @param str original string
         @param end_pos end position
         @return the number
+        @throw std::invalid\_argument if the input str is invalid
      */
     int64_t convert_int64(const char *str, int &end_pos);
 
@@ -850,6 +856,7 @@ namespace cmaple
         Convert string to a real number, with error checking
         @param str original string
         @return the RealNumType
+        @throw std::invalid\_argument if the input str is invalid
      */
     RealNumType convert_real_number(const char *str);
 
@@ -858,54 +865,32 @@ namespace cmaple
         @param str original string
         @param end_pos end position
         @return the RealNumType
+        @throw std::invalid\_argument if the input str is invalid
      */
     RealNumType convert_real_number(const char *str, int &end_pos);
 
     /**
         Parse an array of real numbers from a tring
         @param input_str: a string of  real_numbers; arr: the output array of real_numbers
+        @throw std::invalid\_argument if the input str is invalid
      */
     void convert_real_numbers(RealNumType* &arr, std::string input_str);
-
-    /**
-        Convert string to real number, or generate it from a distribution
-        @param str original string
-        @param end_pos end position
-        @param separator char separating elements
-        @return the real number
-     */
-    RealNumType convert_real_number_with_distribution(const char *str, int &end_pos, char separator = ',');
 
     /**
         Convert comma-separated string to integer vector, with error checking
         @param str original string with integers separated by comma
         @param vec (OUT) integer vector
         @param separator char separating elements
+        @throw std::invalid\_argument if the input str is invalid
      */
     void convert_real_number_vec(const char *str, RealNumberVector &vec, char separator = ',');
-
-    /**
-        Convert comma-separated string to real number vector or generate real number vector from distributions
-        @param str original string with real numbers separated by comma
-        @param vec (OUT) real number vector
-        @param separator char separating elements
-     */
-    void convert_real_number_vec_with_distributions(const char *str, RealNumberVector &vec, char separator = ',');
-
-    /**
-        Convert separated string to an array of real number (RealNumType*) or generate them from distributions
-        @param tmp_str original string with real numbers separated by separator
-        @param array an array of RealNumType number (RealNumType*)
-        @param num_items the number of items in the array
-        @param separator char separating elements
-     */
-    void convert_real_number_array_with_distributions(std::string tmp_str, RealNumType* array, int num_items, char separator);
 
     /**
         Normalize state frequencies so that sum of them is equal to 1
         @param freqs original state frequencies
         @param num_states the number of states
         @param total_freq sum of all original state frequencies
+        @throw std::logic\_error if sum of freqs is zero
      */
     void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index);
 
@@ -955,6 +940,7 @@ namespace cmaple
         @param lower (OUT) lower bound of the range
         @param upper (OUT) upper bound of the range
         @param step_size (OUT) step size of the range
+        @throw std::invalid\_argument if the input str is invalid
      */
     void convert_range(const char *str, int &lower, int &upper, int &step_size);
 
@@ -964,6 +950,7 @@ namespace cmaple
         @param lower (OUT) lower bound of the range
         @param upper (OUT) upper bound of the range
         @param step_size (OUT) step size of the range
+        @throw std::invalid\_argument if the input str is invalid
      */
     void convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size);
 
@@ -985,6 +972,7 @@ namespace cmaple
         Convert string to PositionType, with error checking
         @param str original string
         @return the number
+        @throw std::invalid\_argument if the input str is invalid
      */
     PositionType convert_positiontype(const char *str);
 
@@ -1098,6 +1086,7 @@ namespace cmaple
     /**
      * Set number of threads
      * @param num_threads the number of OpenMP threads
+     * @throw std::invalid\_argument if num\_threads > the number of CPU cores
      */
     void setNumThreads(const int num_threads);
 

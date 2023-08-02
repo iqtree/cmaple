@@ -28,6 +28,7 @@ namespace cmaple
         
         /**
          *  Regions constructor
+         *  @throw std::invalid\_argument if n\_regions is null
          */
         explicit SeqRegions(const std::unique_ptr<SeqRegions>& n_regions);
         
@@ -38,6 +39,7 @@ namespace cmaple
         
         /**
          Add a new region and automatically merged consecutive R regions
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         static void addNonConsecutiveRRegion(SeqRegions& regions, const cmaple::StateType new_region_type, const cmaple::RealNumType plength_observation2node, const cmaple::RealNumType plength_observation2root, const cmaple::PositionType end_pos, const cmaple::RealNumType threshold_prob)
         {
@@ -105,6 +107,8 @@ namespace cmaple
          @param aln the alignment
          @param model the model of evolution
          @param threshold the threshold for approximation
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType num_states>
         void mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions, cmaple::RealNumType upper_plength, const SeqRegions& lower_regions, cmaple::RealNumType lower_plength, const
@@ -120,6 +124,7 @@ namespace cmaple
          @param model the model of evolution
          @param threshold the threshold for approximation
          @param return_log_lh TRUE to return the log likelihood
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType num_states>
         cmaple::RealNumType mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const cmaple::RealNumType plength1, const SeqRegions& regions2, const cmaple::RealNumType plength2, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, const bool return_log_lh = false) const;
@@ -134,6 +139,7 @@ namespace cmaple
          @param model the model of evolution
          @param threshold the threshold for approximation
          @param return_log_lh TRUE to return the log likelihood
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType num_states>
         cmaple::RealNumType calculateSiteLhContributions(std::vector<cmaple::RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const cmaple::RealNumType plength1, const SeqRegions& regions2, const cmaple::RealNumType plength2, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob) const;
@@ -141,6 +147,8 @@ namespace cmaple
         /**
          Compute total lh/upper left_right for root node
          @param blength the branch length; (-1 by default).
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType num_states>
         void computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh, const ModelBase* model, cmaple::RealNumType blength = -1) const;
@@ -198,6 +206,10 @@ namespace cmaple
                 return cmaple::TYPE_O;
         }
         
+        /*
+         Add an simplified O seqregion to the current vectors of seqregions
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
+         */
         static void addSimplifiedO(const cmaple::PositionType end_pos, SeqRegion::LHType& new_lh, const AlignmentBase* aln, const cmaple::RealNumType threshold_prob, SeqRegions& merged_regions)
         {
             cmaple::StateType new_state = SeqRegions::simplifyO(new_lh.data(), aln->ref_seq[end_pos], aln->num_states, threshold_prob);
@@ -224,6 +236,7 @@ namespace cmaple
 
     /**
      MergeUpperLower case N with O
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     void merge_N_O(const cmaple::RealNumType lower_plength, const SeqRegion& reg_o, const ModelBase* model,
@@ -231,47 +244,63 @@ namespace cmaple
 
     /**
      MergeUpperLower case N_RACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     void merge_N_RACGT(const SeqRegion& reg_racgt, const cmaple::RealNumType lower_plength, const cmaple::PositionType end_pos,
                        const cmaple::RealNumType threshold_prob, SeqRegions& merged_regions);
 
     /**
      MergeUpperLower case O_N
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     void merge_O_N(const SeqRegion& reg_o, const cmaple::RealNumType upper_plength, const cmaple::PositionType end_pos, const ModelBase* model, SeqRegions& merged_regions);
 
     /**
      MergeUpperLower case RACGT_N
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     void merge_RACGT_N(const SeqRegion& reg_n, const cmaple::RealNumType upper_plength, const cmaple::PositionType end_pos,
                        const cmaple::RealNumType threshold_prob, SeqRegions& merged_regions);
 
     /**
      MergeUpperLower case Zero_Distance
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     bool merge_Zero_Distance(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const cmaple::RealNumType total_blength_1, const cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const cmaple::RealNumType threshold_prob, const cmaple::StateType num_states, std::unique_ptr<SeqRegions>& merged_regions);
 
     /**
      MergeUpperLower case O_ORACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     void merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const cmaple::RealNumType total_blength_1, const cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const cmaple::RealNumType threshold_prob, const ModelBase* model, const AlignmentBase* aln, SeqRegions& merged_regions);
 
     /**
      MergeUpperLower case RACGT_O
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     void merge_RACGT_O(const SeqRegion& seq2_region, const cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, SeqRegion::LHType& new_lh, const cmaple::RealNumType threshold_prob, const ModelBase* model, const AlignmentBase* aln, SeqRegions& merged_regions);
 
     /**
      MergeUpperLower case RACGT_RACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     void merge_RACGT_RACGT(const SeqRegion& seq2_region, const cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, SeqRegion::LHType& new_lh, const ModelBase* model, const AlignmentBase* aln, SeqRegions& merged_regions);
 
     /**
      MergeUpperLower case RACGT_ORACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     void merge_RACGT_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const cmaple::RealNumType total_blength_1, const cmaple::RealNumType total_blength_2, const cmaple::RealNumType upper_plength, const cmaple::PositionType end_pos, const cmaple::RealNumType threshold_prob, const ModelBase* model, const AlignmentBase* aln, SeqRegions& merged_regions);
@@ -283,52 +312,69 @@ namespace cmaple
 
     /**
      MergeTwoLowers case N_RACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     void merge_N_RACGT_TwoLowers(const SeqRegion& seq2_region, const cmaple::PositionType end_pos, const cmaple::RealNumType plength2, const cmaple::RealNumType threshold_prob, SeqRegions& merged_regions);
 
     /**
      MergeTwoLowers case identicalRACGT
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const cmaple::PositionType end_pos, cmaple::RealNumType total_blength_1, cmaple::RealNumType total_blength_2, const cmaple::PositionType pos, const cmaple::RealNumType threshold_prob, const ModelBase* model, cmaple::RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case O_O
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     bool merge_O_O_TwoLowers(const SeqRegion& seq2_region, cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, cmaple::RealNumType &log_lh, SeqRegion::LHType& new_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case O_RACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region, cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, cmaple::RealNumType &log_lh, SeqRegion::LHType& new_lh, cmaple::RealNumType& sum_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case O_ORACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, cmaple::RealNumType total_blength_1, cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, cmaple::RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case RACGT_O
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region, cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, SeqRegion::LHType& new_lh, cmaple::RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case RACGT_RACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region, cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, SeqRegion::LHType& new_lh, cmaple::RealNumType& sum_lh, cmaple::RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case RACGT_ORACGT
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, cmaple::RealNumType total_blength_1, cmaple::RealNumType total_blength_2, const cmaple::PositionType end_pos, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, cmaple::RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case notN_notN
+     
+     @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
     bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const cmaple::RealNumType plength1, const cmaple::RealNumType plength2, const cmaple::PositionType end_pos, const cmaple::PositionType pos, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, cmaple::RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);

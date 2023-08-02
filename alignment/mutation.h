@@ -30,6 +30,9 @@ namespace cmaple
         
         /**
          *  Mutation constructor
+         *  @throw throw std::invalid\_argument any of the following situations occur.
+         *  - n_type is invalid
+         *  - n_length is greater than the maximum value of the LengthType
          */
         Mutation(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::LengthTypeLarge n_length);
         

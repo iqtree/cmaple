@@ -155,48 +155,56 @@ namespace cmaple
         
         /**
          Traverse downwards polytomy for more fine-grained placement
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void finetuneSamplePlacementAtNode(const PhyloNode& selected_node, cmaple::RealNumType  &best_down_lh_diff, cmaple::Index & best_child_index, const std::unique_ptr<SeqRegions>& sample_regions);
         
         /**
          Add start nodes for seeking a placement for a subtree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void addStartingNodes(const cmaple::Index & node_index, PhyloNode& node, const cmaple::Index & other_child_node_index, const cmaple::RealNumType  best_lh_diff, std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
         
         /**
          Examine placing a subtree at a mid-branch point
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         bool examineSubtreePlacementMidBranch(cmaple::Index & best_node_index, PhyloNode& current_node, cmaple::RealNumType & best_lh_diff, bool& is_mid_branch, cmaple::RealNumType & lh_diff_at_node, cmaple::RealNumType & lh_diff_mid_branch, cmaple::RealNumType & best_up_lh_diff, cmaple::RealNumType & best_down_lh_diff, std::unique_ptr<UpdatingNode>& updating_node, const std::unique_ptr<SeqRegions>& subtree_regions, const cmaple::RealNumType  threshold_prob, const cmaple::RealNumType  removed_blength, const cmaple::Index  top_node_index, std::unique_ptr<SeqRegions>& bottom_regions);
         
         /**
          Examine placing a subtree as a descendant of an existing node
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         bool examineSubTreePlacementAtNode(cmaple::Index & best_node_index, PhyloNode& current_node, cmaple::RealNumType  &best_lh_diff, bool& is_mid_branch, cmaple::RealNumType & lh_diff_at_node, cmaple::RealNumType & lh_diff_mid_branch, cmaple::RealNumType  &best_up_lh_diff, cmaple::RealNumType  &best_down_lh_diff, std::unique_ptr<UpdatingNode>& updating_node, const std::unique_ptr<SeqRegions>& subtree_regions, const cmaple::RealNumType  threshold_prob, const cmaple::RealNumType  removed_blength, const cmaple::Index  top_node_index);
         
         /**
          Add a child node for downwards traversal when seeking a new subtree placement
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void addChildSeekSubtreePlacement(const cmaple::Index  child_1_index, const cmaple::Index  child_2_index, PhyloNode& child_1, PhyloNode& child_2, const cmaple::RealNumType & lh_diff_at_node, const std::unique_ptr<UpdatingNode>& updating_node, std::stack<std::unique_ptr<UpdatingNode>>& node_stack, const cmaple::RealNumType  threshold_prob);
         
         /**
          Add neighbor nodes (parent/sibling) for traversal when seeking a new subtree placement
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         bool addNeighborsSeekSubtreePlacement(PhyloNode& current_node, const cmaple::Index  other_child_index, std::unique_ptr<SeqRegions>&& bottom_regions, const cmaple::RealNumType & lh_diff_at_node, const std::unique_ptr<UpdatingNode>& updating_node, std::stack<std::unique_ptr<UpdatingNode>>& node_stack, const cmaple::RealNumType  threshold_prob);
         
         /**
          Check whether we can obtain a higher likelihood with a shorter length for an existing branch
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states, cmaple::RealNumType (TreeBase::*calculatePlacementCost)(const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::RealNumType )>
         bool tryShorterBranch(const cmaple::RealNumType  current_blength, std::unique_ptr<SeqRegions>& best_child_regions, const std::unique_ptr<SeqRegions>& sample, const std::unique_ptr<SeqRegions>& upper_left_right_regions, const std::unique_ptr<SeqRegions>& lower_regions, cmaple::RealNumType  &best_split_lh, cmaple::RealNumType  &best_branch_length_split, const cmaple::RealNumType  new_branch_length, const bool try_first_branch);
         
         /**
          Check whether we can obtain a higher likelihood with a shorter length at root
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void tryShorterBranchAtRoot(const std::unique_ptr<SeqRegions>& sample, const std::unique_ptr<SeqRegions>& lower_regions, std::unique_ptr<SeqRegions>& best_parent_regions, cmaple::RealNumType  &best_root_blength, cmaple::RealNumType  &best_parent_lh, const cmaple::RealNumType  fixed_blength);
@@ -209,12 +217,14 @@ namespace cmaple
         
         /**
          Check whether we can obtain a higher likelihood with a longer length for the new branch at root
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         bool tryLongerNewBranchAtRoot(const std::unique_ptr<SeqRegions>& sample, const std::unique_ptr<SeqRegions>& lower_regions, std::unique_ptr<SeqRegions>& best_parent_regions, cmaple::RealNumType  &best_length, cmaple::RealNumType  &best_parent_lh, const cmaple::RealNumType  fixed_blength);
         
         /**
          Estimate the length for a new branch at root
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void estimateLengthNewBranchAtRoot(const std::unique_ptr<SeqRegions>& sample, const std::unique_ptr<SeqRegions>& lower_regions, std::unique_ptr<SeqRegions>& best_parent_regions, cmaple::RealNumType  &best_length, cmaple::RealNumType  &best_parent_lh, const cmaple::RealNumType  fixed_blength, const cmaple::RealNumType  short_blength_thresh, const bool optional_check);
@@ -281,18 +291,23 @@ namespace cmaple
         
         /**
          Update next_node_1->partial_lh and new_internal_node->partial_lh after placing a subtree in common cases (e.g., at a mid-branch point, under a node)
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateRegionsPlaceSubTree(PhyloNode& subtree, PhyloNode& sibling_node, PhyloNode& internal, std::unique_ptr<SeqRegions>&& best_child_regions, const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions, const std::unique_ptr<SeqRegions>& lower_regions, cmaple::RealNumType & best_blength);
         
         /**
          Update next_node_1->partial_lh and new_internal_node->partial_lh after placing a subtree in other cases (i.e., above a node)
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateRegionsPlaceSubTreeAbove(PhyloNode& subtree, PhyloNode& sibling_node, PhyloNode& internal, std::unique_ptr<SeqRegions>&& best_child_regions, const std::unique_ptr<SeqRegions>& subtree_regions, const std::unique_ptr<SeqRegions>& upper_left_right_regions, const std::unique_ptr<SeqRegions>& lower_regions, cmaple::RealNumType & best_blength);
         
         /**
          Handle polytomy when placing a subtree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void handlePolytomyPlaceSubTree(const cmaple::Index  selected_node_index, PhyloNode& selected_node, const std::unique_ptr<SeqRegions>& subtree_regions, const cmaple::RealNumType  new_branch_length, cmaple::RealNumType & best_down_lh_diff, cmaple::Index & best_child_index, cmaple::RealNumType & best_child_blength_split, std::unique_ptr<SeqRegions>& best_child_regions);
@@ -350,6 +365,7 @@ namespace cmaple
         
         /**
          Compute the mid-branch region for a node/branch
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         inline void computeMidBranchRegions(PhyloNode& node, std::unique_ptr<SeqRegions>& regions_2_update, const SeqRegions &parent_upper_lr_lh)
@@ -484,6 +500,8 @@ namespace cmaple
         
         /**
          Traverse downward to update the upper_left/right_region until the changes is insignificant
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void updateUpperLR(std::stack<cmaple::Index >& node_stack, std::stack<cmaple::Index >& node_stack_aLRT);
@@ -510,30 +528,35 @@ namespace cmaple
         
         /**
          Calculate aLRT-SH for each internal branches
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void calculate_aRLT_SH(std::vector<cmaple::RealNumType >& site_lh_contributions, std::vector<cmaple::RealNumType >& site_lh_root, const cmaple::RealNumType & LT1);
         
         /**
          Count aLRT-SH for an internal branch
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         cmaple::PositionType  count_aRLT_SH_branch(std::vector<cmaple::RealNumType >& site_lh_contributions, std::vector<cmaple::RealNumType >& site_lh_root, PhyloNode& node, const cmaple::RealNumType & LT1);
         
         /**
          Calculate the site-lh differences  between an NNI neighbor on the branch connecting to root and the ML tree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void calSiteLhDiffRoot(std::vector<cmaple::RealNumType >& site_lh_diff, std::vector<cmaple::RealNumType >& site_lh_root_diff, const std::vector<cmaple::RealNumType >& site_lh_root, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index);
         
         /**
          Calculate the site-lh differences  between an NNI neighbor on the branch connecting to a non-root node and the ML tree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void calSiteLhDiffNonRoot(std::vector<cmaple::RealNumType >& site_lh_diff, std::vector<cmaple::RealNumType >& site_lh_root_diff, const std::vector<cmaple::RealNumType >& site_lh_root, std::unique_ptr<SeqRegions>& parent_new_lower_lh, const cmaple::RealNumType & child_2_new_blength, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index);
         
         /**
          Calculate the site-lh differences  between an NNI neighbor and the ML tree
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void calSiteLhDiff(std::vector<cmaple::RealNumType >& site_lh_diff, std::vector<cmaple::RealNumType >& site_lh_root_diff, const std::vector<cmaple::RealNumType >& site_lh_root, PhyloNode& current_node, PhyloNode& child_1, PhyloNode& child_2, PhyloNode& sibling, PhyloNode& parent, const cmaple::Index  parent_index);
@@ -545,7 +568,9 @@ namespace cmaple
         
         /**
          Read string from tree file to create new nodes
-         @throw std::logic\_error if any taxa in the tree is not found in the  alignment
+         @throw std::logic\_error if any of the following situations occur.
+         - taxa in the tree is not found in the  alignment
+         - unexpected values/behaviors found during the operations
          */
         cmaple::NumSeqsType  parseFile(std::istream &infile, char& ch, cmaple::RealNumType & branch_len, cmaple::PositionType & in_line, cmaple::PositionType & in_column, const std::map<std::string, cmaple::NumSeqsType >& map_seqname_index, bool& missing_blengths);
         
@@ -597,7 +622,10 @@ namespace cmaple
          Read an input tree from a stream
          @Return TRUE if the tree contains any branch without a length
          @throw std::invalid\_argument if the tree in an incorrect format
-         @throw std::logic\_error if any taxa in the tree is not found in the alignment
+         @throw std::logic\_error if any of the following situations occur.
+         - any taxa in the tree is not found in the alignment
+         - unexpected values/behaviors found during the operations
+         
          @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
         bool readTree(std::istream& tree_stream);
@@ -809,12 +837,16 @@ namespace cmaple
         
         /**
          Seek a position for a sample placement starting at the start_node
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void seekSamplePlacement(const cmaple::Index  start_node_index, const cmaple::NumSeqsType  seq_name_index, const std::unique_ptr<SeqRegions>& sample_regions, cmaple::Index & selected_node_index, cmaple::RealNumType  &best_lh_diff, bool &is_mid_branch, cmaple::RealNumType  &best_up_lh_diff, cmaple::RealNumType  &best_down_lh_diff, cmaple::Index & best_child_index);
         
         /**
          Seek a position for placing a subtree/sample starting at the start_node
+         
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void seekSubTreePlacement(cmaple::Index & best_node_index, cmaple::RealNumType  &best_lh_diff, bool &is_mid_branch, cmaple::RealNumType  &best_up_lh_diff, cmaple::RealNumType  &best_down_lh_diff, cmaple::Index & best_child_index, const bool short_range_search, const cmaple::Index  child_node_index, cmaple::RealNumType  &removed_blength); //, bool search_subtree_placement = true, SeqRegions* sample_regions = NULL);
@@ -933,7 +965,7 @@ namespace cmaple
          * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
          * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
          * @throw std::invalid\_argument if any of the following situations occur.
-         * - num_threads < 0
+         * - num_threads < 0 or num_threads > the number of CPU cores
          * - num_replicates <= 0
          * - epsilon < 0
          *

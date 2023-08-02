@@ -226,6 +226,7 @@ namespace cmaple
         
         /**
          Compute the total likelihood vector for a node.
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
         void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, const bool is_root, const cmaple::RealNumType blength = -1);

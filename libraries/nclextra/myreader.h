@@ -41,12 +41,13 @@ public:
 	/**
 		constructor
 		@param infname input file name
+        @throw ios::failure if failing to open infname
 	*/
 	MyReader(char *infname) : NxsReader()
 	{
 		inf.open(infname, ios::binary);
 		if (!inf.is_open())
-            cmaple::outError(cmaple::ERR_READ_INPUT);
+            throw ios::failure(cmaple::ERR_READ_INPUT);
 	}
 
 	/**

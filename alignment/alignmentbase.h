@@ -172,7 +172,10 @@ namespace cmaple
         /**
          Read an alignment in MAPLE format from a stream
          @param aln_stream A stream of an alignment file
-         @throw std::logic\_error if the alignment is empty or in an incorrect format
+         @throw std::logic\_error if any of the following situations occur.
+         - the alignment is empty or in an incorrect format
+         - the sequences contains invalid states
+         - unexpected values/behaviors found during the operations
          */
         void readMaple(std::istream& aln_stream);
         

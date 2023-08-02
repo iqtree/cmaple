@@ -53,7 +53,7 @@ void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_sta
             break;
             
         default:
-            outError("Sorry! Currently, we only support DNA and Protein data.");
+            throw std::invalid_argument("Sorry! Currently, we only support DNA and Protein data.");
             break;
     }
 }
@@ -69,7 +69,7 @@ void cmaple::SeqRegion::convertAmbiguiousStateAA(int max_num_states)
             type = TYPE_N;
             break;
         default:
-            outError("Invalid character for a genome entry. Please check and try again!");
+            throw std::logic_error("Invalid character for a genome entry. Please check and try again!");
     }
 }
 
@@ -144,7 +144,7 @@ void cmaple::SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
             break;
         }
         default:
-            outError("Invalid character for a genome entry. Please check and try again!");
+            throw std::logic_error("Invalid character for a genome entry. Please check and try again!");
     }
 }
 

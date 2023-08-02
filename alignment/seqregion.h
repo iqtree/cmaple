@@ -19,17 +19,20 @@ namespace cmaple
         
         /**
          *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R
+         *  @throw std::invalid\_argument if seq\_type is unknown/unsupported
          *  @throw std::logic\_error if invalid type of seqregion found
          */
         void convertAmbiguiousState(cmaple::SeqType seq_type, int max_num_states);
         
         /**
          *  Convert Ambiguious state (of DNA data) into typical states: A/C/G/T; N; O; R
+         *  @throw std::logic\_error if invalid type of seqregion found
          */
         void convertAmbiguiousStateDNA(int max_num_states);
         
         /**
          *  Convert Ambiguious state (of AA data) into typical states: amino-acid; N; O; R
+         *  @throw std::logic\_error if invalid type of seqregion found
          */
         void convertAmbiguiousStateAA(int max_num_states);
         
@@ -72,13 +75,17 @@ namespace cmaple
         
         /**
          *  Region constructor
-         *  @throw std::invalid\_argument if n\_type is invalid
+         *  @throw std::invalid\_argument if any of the following situations occur.
+         *  - n\_type is invalid
+         *  - seq\_type is unknown/unsupported
          */
         SeqRegion(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::SeqType seq_type, int max_num_states);
         
         /**
          *  Region constructor
-         *  @throw std::invalid\_argument if n\_type is invalid
+         *  @throw std::invalid\_argument if any of the following situations occur.
+         *  - the type of n_mutation  is invalid
+         *  - seq\_type is unknown/unsupported
          */
         SeqRegion(Mutation* n_mutation, cmaple::SeqType seq_type, int max_num_states);
         

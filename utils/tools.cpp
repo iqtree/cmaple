@@ -228,7 +228,7 @@ int cmaple::convert_int(const char *str, int &end_pos) {
 		string err = "Expecting integer, but found \"";
 		err += str;
 		err += "\" instead";
-		outError(err);
+		throw std::invalid_argument(err);
 	}
 	end_pos = endptr - str;
 	return i;
@@ -242,7 +242,7 @@ int cmaple::convert_int(const char *str) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     return i;
@@ -256,7 +256,7 @@ PositionType cmaple::convert_positiontype(const char *str) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     return i;
@@ -272,7 +272,7 @@ void cmaple::convert_int_vec(const char *str, IntVector &vec) {
 			string err = "Expecting integer, but found \"";
 			err += beginptr;
 			err += "\" instead";
-            outError(err);
+            throw std::invalid_argument(err);
 		}
 		vec.push_back(i);
 		if (*endptr == ',') endptr++;
@@ -289,7 +289,7 @@ int64_t cmaple::convert_int64(const char *str) {
         string err = "Expecting large integer , but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     return i;
@@ -303,7 +303,7 @@ int64_t cmaple::convert_int64(const char *str, int &end_pos) {
 		string err = "Expecting large integer, but found \"";
 		err += str;
 		err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
 	}
 	end_pos = endptr - str;
 	return i;
@@ -317,7 +317,7 @@ RealNumType cmaple::convert_real_number(const char *str) {
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     return d;
 }
@@ -329,7 +329,7 @@ RealNumType cmaple::convert_real_number(const char *str, int &end_pos) {
 		string err = "Expecting floating-point number, but found \"";
 		err += str;
 		err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
 	}
 	end_pos = endptr - str;
 	return d;
@@ -363,7 +363,7 @@ void cmaple::convert_real_number_vec(const char *str, RealNumberVector &vec, cha
 			string err = "Expecting floating-point number, but found \"";
 			err += beginptr;
 			err += "\" instead";
-            outError(err);
+            throw std::invalid_argument(err);
 		}
 		vec.push_back(d);
 		if (*endptr == separator) endptr++;
@@ -390,7 +390,7 @@ void cmaple::convert_range(const char *str, int &lower, int &upper, int &step_si
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     //lower = d;
     int d_save = d;
@@ -405,7 +405,7 @@ void cmaple::convert_range(const char *str, int &lower, int &upper, int &step_si
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     lower = d_save;
@@ -419,7 +419,7 @@ void cmaple::convert_range(const char *str, int &lower, int &upper, int &step_si
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     step_size = d;
 }
@@ -433,7 +433,7 @@ void cmaple::convert_range(const char *str, RealNumType &lower, RealNumType &upp
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     //lower = d;
     RealNumType d_save = d;
@@ -448,7 +448,7 @@ void cmaple::convert_range(const char *str, RealNumType &lower, RealNumType &upp
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     lower = d_save;
@@ -462,7 +462,7 @@ void cmaple::convert_range(const char *str, RealNumType &lower, RealNumType &upp
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     step_size = d;
 }
@@ -508,7 +508,7 @@ void cmaple::normalize_frequencies_from_index(RealNumType* freqs, int num_states
     
     // normalize the freqs
     if (fabs(total_freqs) < 1e-5)
-        outError("Sum of state frequencies must be greater than zero!");
+        throw std::logic_error("Sum of state frequencies must be greater than zero!");
     total_freqs = 1.0 / total_freqs;
     for (int i = starting_index; i < starting_index+num_states; ++i)
         freqs[i] *= total_freqs;
@@ -758,8 +758,13 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use -min-bl <NUMBER>");
-                
-                params.fixed_min_blength = convert_real_number(argv[cnt]);
+                try
+                {
+                    params.fixed_min_blength = convert_real_number(argv[cnt]);
+                } catch (std::exception e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.fixed_min_blength <= 0)
                     outError("<NUMBER> following -min-bl must be positive!");
@@ -807,7 +812,13 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use -thresh-prob <PROB_THRESH>");
                 
-                params.threshold_prob = convert_real_number(argv[cnt]);
+                try
+                {
+                    params.threshold_prob = convert_real_number(argv[cnt]);
+                } catch (std::exception e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.threshold_prob <= 0)
                     outError("<PROB_THRESH> must be positive!");
@@ -820,7 +831,14 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use -mut-update <NUMBER>");
                 
-                params.mutation_update_period = convert_int(argv[cnt]);
+                try
+                {
+                    params.mutation_update_period = convert_int(argv[cnt]);
+                }
+                catch(std::exception e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.mutation_update_period <= 0)
                     outError("<NUMBER> must be positive!");
@@ -831,7 +849,14 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 
-                params.failure_limit_sample = convert_int(argv[cnt]);
+                try
+                {
+                    params.failure_limit_sample = convert_int(argv[cnt]);
+                }
+                catch(std::exception e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.failure_limit_sample <= 0)
                     outError("<NUMBER> must be positive!");
@@ -842,7 +867,14 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 
-                params.failure_limit_subtree = convert_int(argv[cnt]);
+                try
+                {
+                    params.failure_limit_subtree = convert_int(argv[cnt]);
+                }
+                catch(std::exception e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.failure_limit_subtree <= 0)
                     outError("<NUMBER> must be positive!");
@@ -895,7 +927,14 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc)
                     outError("Use --replicates <NUM_REPLICATES>");
                 
-                params.aLRT_SH_replicates = convert_int(argv[cnt]);
+                try
+                {
+                    params.aLRT_SH_replicates = convert_int(argv[cnt]);
+                }
+                catch(std::exception e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.aLRT_SH_replicates <= 0)
                     outError("<NUM_REPLICATES> must be positive!");
@@ -905,8 +944,13 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 ++cnt;
                 if (cnt >= argc)
                     outError("Use --epsilon <FLOATING_NUM>");
-                
-                params.aLRT_SH_half_epsilon = convert_real_number(argv[cnt]) * 0.5;
+                try
+                {
+                    params.aLRT_SH_half_epsilon = convert_real_number(argv[cnt]) * 0.5;
+                } catch (std::exception e)
+                {
+                    outError(e.what());
+                }
                 
                 continue;
             }
@@ -914,7 +958,15 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 cnt++;
                 if (cnt >= argc)
                     outError("Use -seed <random_seed>");
-                params.ran_seed = abs(convert_int(argv[cnt]));
+                
+                try
+                {
+                    params.ran_seed = abs(convert_int(argv[cnt]));
+                }
+                catch(std::exception e)
+                {
+                    outError(e.what());
+                }
                 continue;
             }
             if (strcmp(argv[cnt], "-nt") == 0 || strcmp(argv[cnt], "-c") == 0 ||
@@ -925,7 +977,14 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (iEquals(argv[cnt], "AUTO"))
                     params.num_threads = 0;
                 else {
-                    params.num_threads = convert_int(argv[cnt]);
+                    try
+                    {
+                        params.num_threads = convert_int(argv[cnt]);
+                    }
+                    catch(std::exception e)
+                    {
+                        outError(e.what());
+                    }
                     if (params.num_threads < 1)
                       outError("At least 1 thread please");
                 }
@@ -1091,14 +1150,14 @@ void cmaple::setNumThreads(const int num_threads)
     }
     msg += " (" + convertIntToString(max_procs) + " CPU cores detected)";
     if (num_threads  > max_procs) {
-        outError("\nYou have specified more threads than CPU cores available!");
+        throw std::invalid_argument("\nYou have specified more threads than CPU cores available!");
     }
     #ifndef WIN32  // not supported on Windows (only <=OpenMP2.0)
     omp_set_max_active_levels(1);
     #endif
 #else
     if (num_threads != 1) {
-        outError("\n\nNumber of threads must be 1 for sequential version.");
+        throw std::invalid_argument("\n\nNumber of threads must be 1 for sequential version.");
     }
 #endif
     if (cmaple::verbose_mode > cmaple::VB_QUIET)

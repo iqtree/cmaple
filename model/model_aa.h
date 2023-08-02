@@ -14,6 +14,7 @@ namespace cmaple
         
         /**
          Read model's rates from string/file
+         @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         virtual void readRates(istream &in, const bool is_reversible);
         

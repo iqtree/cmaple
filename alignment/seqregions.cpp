@@ -106,7 +106,7 @@ cmaple::SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions)
 {
   if (!n_regions)
   {
-    outError("oops");
+    throw std::invalid_argument("n_regions is null");
   }
     // clone regions one by one
     reserve(n_regions->size());
@@ -454,7 +454,7 @@ void cmaple::merge_O_ORACGT(const SeqRegion& seq1_region, const SeqRegion& seq2_
     
     // normalize the new partial lh
     if (sum_new_lh == 0)
-        outError("Sum of new partital lh is zero.");
+        throw std::logic_error("Sum of new partital lh is zero.");
     
     // normalize the new partial likelihood
     normalize_arr(new_lh->data(), num_states, sum_new_lh);

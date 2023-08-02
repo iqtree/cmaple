@@ -135,7 +135,7 @@ namespace cmaple
          * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
          * @return A string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the branch supports values, one could call exportString("BIN", true) later
          * @throw std::invalid\_argument if any of the following situations occur.
-         * - num_threads < 0
+         * - num_threads < 0 or num_threads > the number of CPU cores
          * - num_replicates <= 0
          * - epsilon < 0
          *
