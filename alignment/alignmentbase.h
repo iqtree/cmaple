@@ -163,7 +163,7 @@ namespace cmaple
          @param sequences a vector of sequences
          @param seq_names a vector of sequence names
          @param ref_sequence the reference sequence
-         @throw std::logic\_error if any of the following situations occurs.
+         @throw std::logic\_error if any of the following situations occur.
          - the lengths of sequences are different from that of the reference genome
          - sequences contains invalid states
          */
@@ -180,7 +180,9 @@ namespace cmaple
          Read an alignment in FASTA or PHYLIP format from a stream
          @param aln_stream A stream of an alignment file
          @param[in] ref_seq The reference sequence
-         @throw std::logic\_error if the alignment is empty or in an incorrect format
+         @throw std::logic\_error if any of the following situations occur.
+         - the alignment is empty or in an incorrect format
+         - the alignment format is unknown
          */
         void readFastaOrPhylip(std::istream& aln_stream, const std::string& ref_seq = "");
         

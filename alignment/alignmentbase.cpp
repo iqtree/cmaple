@@ -336,7 +336,11 @@ void cmaple::AlignmentBase::addMutation(Sequence* sequence, char state_char, Pos
 
 void cmaple::AlignmentBase::extractMutations(const StrVector &str_sequences, const StrVector &seq_names, const string& ref_sequence)
 {
-    ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0);
+    // Validate the inputs
+    ASSERT(str_sequences.size() == seq_names.size());
+    if (!str_sequences.size())
+        throw std::invalid_argument("The vector of sequences is empty");
+    
     data.clear();
     Sequence* sequence = NULL;
     PositionType seq_length = ref_sequence.length();
@@ -1004,7 +1008,8 @@ void cmaple::AlignmentBase::write(std::ostream& aln_stream, const InputType& for
 void cmaple::AlignmentBase::readFastaOrPhylip(std::istream& aln_stream, const std::string& ref_seq)
 {
     // read input sequences
-    ASSERT(aln_format != IN_UNKNOWN && "Unknown alignment format");
+    if(aln_format == IN_UNKNOWN)
+        throw std::logic_error("Unknown alignment format");
     StrVector sequences;
     StrVector seq_names;
     readSequences(aln_stream, sequences, seq_names, aln_format);

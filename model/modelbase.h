@@ -107,6 +107,7 @@ namespace cmaple
         
         /**
          Extract root freqs from the reference sequence
+         @throw std::logic\_error if the reference genome is empty
          */
         virtual void extractRootFreqs(const AlignmentBase* aln);
         
@@ -183,6 +184,8 @@ namespace cmaple
         
         /**
          Extract reference-related info (freqs, log_freqs)
+         
+         @throw std::logic\_error if the reference genome is empty
          */
         void extractRefInfo(const AlignmentBase* aln);
         
@@ -194,12 +197,15 @@ namespace cmaple
         
         /**
          Compute cumulative rate of the ref genome
+         @throw std::logic\_error if the reference genome is empty
          */
         void computeCumulativeRate(const AlignmentBase* aln);
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations
-         @throw std::logic\_error if the substitution model is unknown/unsupported
+         @throw std::logic\_error if any of the following situations occur.
+         - the substitution model is unknown/unsupported
+         - the reference genome is empty
          */
         virtual void updateMutationMatEmpirical(const AlignmentBase* aln) {};
         

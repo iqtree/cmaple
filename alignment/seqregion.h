@@ -19,6 +19,7 @@ namespace cmaple
         
         /**
          *  Convert Ambiguious state into typical states: nucleotides/amino-acids...; N; O; R
+         *  @throw std::logic\_error if invalid type of seqregion found
          */
         void convertAmbiguiousState(cmaple::SeqType seq_type, int max_num_states);
         
@@ -71,11 +72,13 @@ namespace cmaple
         
         /**
          *  Region constructor
+         *  @throw std::invalid\_argument if n\_type is invalid
          */
         SeqRegion(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::SeqType seq_type, int max_num_states);
         
         /**
          *  Region constructor
+         *  @throw std::invalid\_argument if n\_type is invalid
          */
         SeqRegion(Mutation* n_mutation, cmaple::SeqType seq_type, int max_num_states);
         

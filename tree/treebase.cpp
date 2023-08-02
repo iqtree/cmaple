@@ -83,9 +83,14 @@ void cmaple::TreeBase::resetSeqAdded()
 void cmaple::TreeBase::attachAlnModel(AlignmentBase* n_aln, ModelBase* n_model)
 {
     // Validate inputs
-    ASSERT(n_aln && n_model);
+    if (!n_aln)
+        throw std::invalid_argument("The alignment is null");
+    if (!n_model)
+        throw std::invalid_argument("The model is null");
+    
     // Sequence type (~num_states) of model must match that of alignment
-    ASSERT(n_aln->num_states == n_model->num_states_ && "Sequence type (~num_states) of model must match that of alignment");
+    if (n_aln->num_states != n_model->num_states_)
+        throw std::invalid_argument("Sequence type (~num_states) of model must match that of alignment");
     
     // Attach aln
     aln = n_aln;
@@ -262,7 +267,9 @@ void cmaple::TreeBase::changeModel(ModelBase* model)
 template <const cmaple::StateType  num_states>
 void cmaple::TreeBase::changeModelTemplate(ModelBase* n_model)
 {
-    ASSERT(n_model && model && aln);
+    ASSERT(model && aln);
+    if (!n_model)
+        throw std::invalid_argument("The new model is null");
     
     // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
     if (aln->attached_trees.find(this) == aln->attached_trees.end())
@@ -306,7 +313,8 @@ void cmaple::TreeBase::doInferenceTemplate(const TreeSearchType tree_search_type
 {
     // validate input
     ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
-    ASSERT(aln->data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
+    if (aln->data.size() < 3)
+        throw std::logic_error("The number of input sequences must be at least 3! Please check and try again!");
     
     // Validate tree search type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
@@ -657,15 +665,18 @@ void cmaple::TreeBase::calculateBranchSupportTemplate(const int num_threads, con
     }
     
     // set num_threads
-    ASSERT(num_threads >= 0 && "Number of threads must be non-negative!");
+    if (num_threads < 0)
+        throw std::invalid_argument("Number of threads must be non-negative!");
     setNumThreads(num_threads);
     
     // set num_replicates
-    ASSERT(num_replicates > 0 && "Number of replicates must be positive!");
+    if (num_replicates <= 0)
+        throw std::invalid_argument("Number of replicates must be positive!");
     params->aLRT_SH_replicates = num_replicates;
     
     // set epsilon
-    ASSERT(epsilon >= 0 && "Epsilon must be non-negative!");
+    if (epsilon < 0)
+        throw std::invalid_argument("Epsilon must be non-negative!");
     params->aLRT_SH_half_epsilon = epsilon * 0.5;
     
     // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)

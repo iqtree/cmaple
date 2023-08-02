@@ -885,7 +885,8 @@ void cmaple::ModelAA::initMutationMat()
     bool reversible;
     ASSERT(num_states_ == 20);
     model_block = readModelsDefinition(builtin_prot_models);
-    ASSERT(model_block && "model_block uninitialized");
+    if(!model_block)
+        throw std::logic_error("model_block uninitialized");
     NxsModel *nxs_model = model_block->findModel(name_upper);
     if (nxs_model) {
         if (nxs_model->flag != NM_ATOMIC)

@@ -41,7 +41,9 @@ cmaple::SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num
 
 void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
 {
-    ASSERT(type >= 0 && type < TYPE_INVALID);
+    if (type < 0 || type >= TYPE_INVALID)
+        throw std::logic_error("Invalid type of seqregion");
+        
     switch (seq_type) {
         case SEQ_DNA:
             convertAmbiguiousStateDNA(max_num_states);

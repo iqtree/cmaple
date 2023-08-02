@@ -53,15 +53,8 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
         // in MAPLE format
         else
             aln_base->readMaple(aln_stream);
-    }
-    catch (std::logic_error e)
-    {
-        throw std::invalid_argument(e.what());
-    }
-    
-    // sort sequences by their distances to the reference sequence
-    try
-    {
+        
+        // sort sequences by their distances to the reference sequence
         aln_base->sortSeqsByDistances();
     }
     catch (std::logic_error e)
@@ -72,7 +65,8 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
 
 void cmaple::Alignment::read(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype)
 {
-    ASSERT(aln_filename.length() && "Please specify an alignnment file");
+    if (!aln_filename.length())
+        throw std::invalid_argument("Please specify an alignnment file");
     
     // Create a stream from the input alignment
     ifstream aln_stream;

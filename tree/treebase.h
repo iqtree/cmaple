@@ -93,7 +93,7 @@ namespace cmaple
         void setupBlengthThresh();
         
         /*! Build an Initial Tree
-         @throw std::logic\_error if any of the following situations occurs.
+         @throw std::logic\_error if any of the following situations occur.
          - the attached substitution model is unknown/unsupported
          - unexpected values/behaviors found during the operations
          */
@@ -101,7 +101,7 @@ namespace cmaple
         void buildInitialTree(const bool from_input_tree);
         
         /*! Optimize the current tree
-         @throw std::logic\_error if any of the following situations occurs.
+         @throw std::logic\_error if any of the following situations occur.
          - the attached substitution model is unknown/unsupported
          - unexpected values/behaviors found during the operations
          */
@@ -610,6 +610,7 @@ namespace cmaple
         
         /**
          Update model according to alignment data
+         @throw std::logic\_error if the reference genome is empty
          */
         void updateModelByAln();
         
@@ -722,12 +723,13 @@ namespace cmaple
         /**
          Attach alignment and model
          @throw std::invalid\_argument If the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
+         @throw std::logic\_error if the reference genome is empty
          */
         void attachAlnModel(AlignmentBase* aln, ModelBase* model);
         
         /**
          Change the alignment
-         @throw std::logic\_error if any of the following situations occurs.
+         @throw std::logic\_error if any of the following situations occur.
          - taxa in the current tree is not found in the new alignment
          - the sequence type of the new alignment is different from the old one
          - unexpected values/behaviors found during the operations
@@ -737,7 +739,7 @@ namespace cmaple
         /**
          Change the substitution model
          @throw std::invalid\_argument if the model is unknown/unsupported
-         @throw std::logic\_error if any of the following situations occurs.
+         @throw std::logic\_error if any of the following situations occur.
          - the sequence type of the new model is different from the old one
          - unexpected values/behaviors found during the operations
          */
@@ -747,7 +749,7 @@ namespace cmaple
          @param[in] tree_stream A stream of the input tree
          @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          @throw std::invalid\_argument if the tree in an incorrect format
-         @throw std::logic\_error if any of the following situations occurs.
+         @throw std::logic\_error if any of the following situations occur.
          - the substitution model is unknown/unsupported
          - any taxa in the tree is not found in the alignment
          - unexpected values/behaviors found during the operations
@@ -763,14 +765,14 @@ namespace cmaple
          * - MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
          * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
          * @throw std::invalid\_argument if tree\_search\_type is unknown
-         * @throw std::logic\_error if any of the following situations occurs.
+         * @throw std::logic\_error if any of the following situations occur.
          * - the attached substitution model is unknown/unsupported
          * - unexpected values/behaviors found during the operations
          */
         void doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
         /*! Calculate the likelihood of the tree
-         @throw std::logic\_error if any of the following situations occurs.
+         @throw std::logic\_error if any of the following situations occur.
          - the tree is empty
          - unexpected values/behaviors found during the operations
          */
@@ -784,7 +786,7 @@ namespace cmaple
         
         /**
          Export tree std::string in Newick format
-         @throw std::invalid\_argument if any of the following situations occurs.
+         @throw std::invalid\_argument if any of the following situations occur.
          - n\_tree\_type is unknown
          - show\_branch\_supports = true but branch support values have yet been computed
          */
@@ -930,7 +932,12 @@ namespace cmaple
          * @param[in] num_replicates a positive number of replicates (optional)
          * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
          * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
-         * @throw std::logic\_error if any of the following situations occurs.
+         * @throw std::invalid\_argument if any of the following situations occur.
+         * - num_threads < 0
+         * - num_replicates <= 0
+         * - epsilon < 0
+         *
+          @throw std::logic\_error if any of the following situations occur.
          * - the tree is empty
          * - unexpected values/behaviors found during the operations
          */
@@ -938,6 +945,7 @@ namespace cmaple
         
         /**
          Update model parameters from an alignment and a tree
+         @throw std::logic\_error if the reference genome is empty
          */
         template <const cmaple::StateType  num_states>
         void updateModelParams ();

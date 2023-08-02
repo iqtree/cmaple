@@ -65,7 +65,7 @@ namespace cmaple
          * @param[in] aln_filename Name of the output alignment file
          * @param[in] format Format of the output alignment (optional): IN_MAPLE, IN_FASTA, or IN_PHYLIP
          * @param[in] overwrite TRUE to overwrite the existing output file (optional)
-         * @throw std::invalid\_argument if any of the following situations occurs.
+         * @throw std::invalid\_argument if any of the following situations occur.
          * - aln_filename is empty
          * - format is unknown
          *

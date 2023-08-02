@@ -121,7 +121,8 @@ void cmaple::ModelBase::extractRootFreqs(const AlignmentBase* aln)
 {
     // init variables
     const vector<StateType>& ref_seq = aln->ref_seq;
-    ASSERT(ref_seq.size() > 0);
+    if(!ref_seq.size())
+        throw std::logic_error("The reference genome is empty!");
     const PositionType seq_length = ref_seq.size();
     
     // init root_freqs
@@ -152,7 +153,9 @@ void cmaple::ModelBase::extractRootFreqs(const AlignmentBase* aln)
 void cmaple::ModelBase::computeCumulativeRate(const AlignmentBase* aln)
 {
     const PositionType sequence_length = aln->ref_seq.size();
-    ASSERT(sequence_length > 0);
+    
+    if (sequence_length <= 0)
+        throw std::logic_error("Reference genome is empty");
     
     // init cumulative_rate
     if (!cumulative_rate)

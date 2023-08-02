@@ -4,13 +4,14 @@ using namespace std;
 using namespace cmaple;
 
 void cmaple::Tree::initTree(Alignment* aln, Model* model)
-{
-    ASSERT(aln && "Null pointer to the alignment");
-    ASSERT(model && "Null pointer to the model");
-    
+{    
     // Validate input aln
-    if (!aln->aln_base || !aln->aln_base->data.size())
+    if (!aln || !aln->aln_base || !aln->aln_base->data.size())
         throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
+    
+    // Validate input model
+    if (!model || !model->model_base)
+        throw std::invalid_argument("Model is null!");
     
     // Init the tree base
     tree_base = new TreeBase();
@@ -80,11 +81,10 @@ void cmaple::Tree::load(const std::string& tree_filename, const bool fixed_bleng
 
 void cmaple::Tree::changeAln(Alignment* n_aln)
 {
-    ASSERT(n_aln && "Null pointer to the alignment");
     ASSERT(tree_base);
     
     // Validate input aln
-    if (!n_aln->aln_base || !n_aln->aln_base->data.size())
+    if (!n_aln || !n_aln->aln_base || !n_aln->aln_base->data.size())
         throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
     
     // change the aln_base
@@ -93,8 +93,11 @@ void cmaple::Tree::changeAln(Alignment* n_aln)
 
 void cmaple::Tree::changeModel(Model* n_model)
 {
-    ASSERT(n_model && "Null pointer to the model");
     ASSERT(tree_base);
+    
+    // Validate input model
+    if (!n_model || !n_model->model_base)
+        throw std::invalid_argument("Model is null!");
     
     // change the model_base
     tree_base->changeModel(n_model->model_base);
