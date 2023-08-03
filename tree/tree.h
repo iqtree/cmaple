@@ -1,7 +1,6 @@
 #include "updatingnode.h"
 #include "../alignment/alignment.h"
 #include "../model/model.h"
-#include <optional>
 #ifdef _OPENMP
     #include <omp.h>
 #endif
@@ -12,6 +11,225 @@ namespace cmaple
 {
     /** The tree structure */
     class Tree {
+    public:
+        
+        // ----------------- BEGIN OF PUBLIC APIs ------------------------------------ //
+        /*! \brief Constructor from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
+         * @param[in] aln An alignment
+         * @param[in] model A substitution model
+         * @param[in] tree_stream A stream of an input tree
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::invalid\_argument If any of the following situation occurs.
+         * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
+         * - the alignment is empty
+         * - the model is unknown/unsupported
+         * - the tree is in an incorrect format
+         *
+         * @throw std::logic\_error if any of the following situations occur.
+         * - taxa in the tree (is specified) is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         * @throw std::bad\_alloc if failing to allocate memory to store the tree
+         */
+        Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
+        
+        /*! \brief Constructor from an optional (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
+         * @param[in] aln An alignment
+         * @param[in] model A substitution model
+         * @param[in] tree_filename Name of a tree file (optinal)
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::invalid\_argument If any of the following situation occurs.
+         * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
+         * - the alignment is empty
+         * - the model is unknown/unsupported
+         * - the tree (is specified) but in an incorrect format
+         *
+         * @throw ios::failure if the tree file (is specified)  is not found
+         * @throw std::logic\_error if any of the following situations occur.
+         * - taxa in the tree (is specified) is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         * @throw std::bad\_alloc if failing to allocate memory to store the tree
+         */
+        Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
+        
+        /*! \brief Destructor
+         */
+        ~Tree() = default;
+        
+        /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
+         * @param[in] tree_stream A stream of an input tree
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::invalid\_argument if tree is empty or in an incorrect format
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the attached substitution model is unknown/unsupported
+         * - any taxa in the tree is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         *@throw std::bad\_alloc if failing to allocate memory to store the tree
+         */
+        void load(std::istream& tree_stream, const bool fixed_blengths = false);
+        
+        /*! \brief Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
+         * @param[in] tree_filename Name of a tree file
+         * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @throw std::invalid\_argument if tree is empty or in an incorrect format
+         * @throw ios::failure if the tree file is not found
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the attached substitution model is unknown/unsupported
+         * - any taxa in the tree is not found in the alignment
+         * - unexpected values/behaviors found during the operations
+         *
+         * @throw std::bad\_alloc if failing to allocate memory to store the tree
+         */
+        void load(const std::string& tree_filename, const bool fixed_blengths = false);
+        
+        /*! \brief Change the alignment
+         * @param[in] aln An alignment
+         * @throw std::invalid\_argument If the alignment is empty
+         * @throw std::logic\_error if any of the following situations occur.
+         * - taxa in the current tree is not found in the new alignment
+         * - the sequence type of the new alignment is different from the old one
+         * - unexpected values/behaviors found during the operations
+         */
+        void changeAln(Alignment* aln);
+        
+        /*! \brief Change the substitution model
+         * @param[in] model A substitution model
+         * @throw std::invalid\_argument if the model is unknown/unsupported
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the sequence type of the new model is different from the old one
+         * - unexpected values/behaviors found during the operations
+         */
+        void changeModel(Model* model);
+        
+        /*! \brief Infer a phylogenetic tree
+         * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:
+         *  + performs placement (i.e., adding missing taxa from the alignment to the tree)
+         *  + applies a NORMAL tree search (which does SPR moves only on newly-added nodes)
+         *  + optimizes all branch lengths
+         * - If users already supplied a complete tree, this function:
+         *  + by default, does neither placment nor tree search, but it optimizes all branch lengths.
+         *  + If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);
+         *  + If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE
+         *
+         * @param[in] tree_search_type One of the following tree search:
+         * <br><em>FAST_TREE_SEARCH</em>: no tree search (placement only).
+         * <br><em>NORMAL_TREE_SEARCH</em>: only consider pruning branches at newly-added nodes when seeking SPR moves.
+         * <br><em>MORE_ACCURATE_TREE_SEARCH</em>: consider all nodes when seeking SPR moves.
+         * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
+         * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportNewick() later
+         * @throw std::invalid\_argument if tree\_search\_type is unknown
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the attached substitution model is unknown/unsupported
+         * - unexpected values/behaviors found during the operations
+         */
+        std::string doInference(const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH, const bool shallow_tree_search = false);
+        
+        /*! \brief Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment
+         * @return The log likelihood of the current tree
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the tree is empty
+         * - unexpected values/behaviors found during the operations
+         */
+        RealNumType computeLh();
+        
+        /*! \brief Compute branch supports ([aLRT-SH](https://academic.oup.com/sysbio/article/59/3/307/1702850)) of the current tree, which may or may not contain all taxa in the alignment
+         * @param[in] num_threads The number of threads (optional)
+         * @param[in] num_replicates A positive number of replicates (optional)
+         * @param[in] epsilon A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see [Guindon et al., 2010](https://academic.oup.com/sysbio/article/59/3/307/1702850))
+         * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
+         * @return A string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the branch supports values, one could call exportNewick(BIN, true) later
+         * @throw std::invalid\_argument if any of the following situations occur.
+         * - num_threads < 0 or num_threads > the number of CPU cores
+         * - num_replicates <= 0
+         * - epsilon < 0
+         *
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the tree is empty
+         * - unexpected values/behaviors found during the operations
+         */
+        std::string computeBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
+        
+        /*! \brief Export the phylogenetic tree  to a string in NEWICK format.
+         * @param[in] tree_type The type of the output tree (optional): BIN_TREE (bifurcating tree), MUL_TREE (multifurcating tree)
+         * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH values)
+         * @return A tree string in NEWICK format
+         * @throw std::invalid\_argument if any of the following situations occur.
+         * - n\_tree\_type is unknown
+         * - show\_branch\_supports = true but branch support values have yet been computed
+         */
+        std::string exportNewick(const TreeType tree_type = BIN_TREE, const bool show_branch_supports = false);
+        
+        /*! \brief Get an instance of cmaple::Params, which stores all parameter settings. Users can use that params instance to change [**other minor settings**](classcmaple_1_1_params.html) of CMaple (which are not yet supported via the APIs)
+         * @return An instance of cmaple::Params
+         */
+        cmaple::Params& getParams();
+        
+        // ----------------- END OF PUBLIC APIs ------------------------------------ //
+        
+        /**
+         @private
+         TRUE to keep the branch lengths fixed
+         */
+        bool fixed_blengths = false;
+        
+        /**
+         @private
+         Branch length thresholds
+         */
+        cmaple::RealNumType  default_blength, min_blength, max_blength, min_blength_mid, min_blength_sensitivity, half_max_blength, half_min_blength_mid, double_min_blength;
+        
+        /**
+         @private
+         Program parameters
+         */
+        //std::optional<cmaple::Params> params;
+        std::unique_ptr<cmaple::Params> params = nullptr;
+        
+        /**
+         @private
+         Alignment
+         */
+        Alignment* aln = nullptr;
+        
+        /**
+         @private
+         Evolutionary model
+         */
+        ModelBase* model = nullptr;
+        
+        /**
+         @private
+         Vector of phylonodes
+         */
+        std::vector<PhyloNode> nodes;
+        
+        /**
+         @private
+         Vector of likelihood contributions of internal nodes
+         */
+        std::vector<NodeLh> node_lhs;
+        
+        /**
+         @private
+         (vector) Index of root in the vector of phylonodes
+         */
+        cmaple::NumSeqsType  root_vector_index;
+        
+        /**
+         @private
+         A backup of sequence names attached to the current tree, in cases that users re-read the alignment
+         NHANLT: @TODO - avoid this redundant vector (sequence names are store in alignment and here)
+         */
+        std::vector<std::string> seq_names;
+        
+        /**
+         @private
+         a vector denote whether a sequence in the alignment is added to the tree or not
+         */
+        std::vector<bool> sequence_added;
+    
     private:
         /**
             Pointer  to LoadTree method
@@ -22,7 +240,7 @@ namespace cmaple
         /**
             Pointer  to changeModel method
          */
-        typedef void (Tree::*ChangeModelPtrType)(ModelBase*);
+        typedef void (Tree::*ChangeModelPtrType)(Model*);
         ChangeModelPtrType changeModelPtr;
         
         /**
@@ -34,20 +252,20 @@ namespace cmaple
         /**
             Pointer  to doInference method
          */
-        typedef void (Tree::*DoInferencePtrType)(const TreeSearchType, const bool);
+        typedef std::string (Tree::*DoInferencePtrType)(const TreeSearchType, const bool);
         DoInferencePtrType doInferencePtr;
         
         /**
-            Pointer  to calculateLh method
+            Pointer  to computeLh method
          */
-        typedef RealNumType (Tree::*CalculateLhPtrType)();
-        CalculateLhPtrType calculateLhPtr;
+        typedef RealNumType (Tree::*computeLhPtrType)();
+        computeLhPtrType computeLhPtr;
         
         /**
-            Pointer  to calculateBranchSupport method
+            Pointer  to computeBranchSupport method
          */
-        typedef void (Tree::*CalculateBranchSupportPtrType)(const int, const int, const double, const bool);
-        CalculateBranchSupportPtrType calculateBranchSupportPtr;
+        typedef std::string (Tree::*computeBranchSupportPtrType)(const int, const int, const double, const bool);
+        computeBranchSupportPtrType computeBranchSupportPtr;
         
         /*! Template of loadTree()
          @param[in] tree_stream A stream of the input tree
@@ -64,22 +282,22 @@ namespace cmaple
         /*! Template of changeModel()
          */
         template <const cmaple::StateType  num_states>
-        void changeModelTemplate(ModelBase* model);
+        void changeModelTemplate(Model* model);
         
         /*! Template of doInference()
          */
         template <const cmaple::StateType  num_states>
-        void doInferenceTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search);
+        std::string doInferenceTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
-        /*! Template of calculateLh()
+        /*! Template of computeLh()
          */
         template <const cmaple::StateType  num_states>
-        RealNumType calculateLhTemplate();
+        RealNumType computeLhTemplate();
         
-        /*! Template of calculateBranchSupport()
+        /*! Template of computeBranchSupport()
          */
         template <const cmaple::StateType  num_states>
-        void calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree);
+        std::string computeBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree);
         
         /*! Setup function pointers
          @throw std::invalid\_argument If the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
@@ -90,6 +308,18 @@ namespace cmaple
          Setup function pointers
          */
         void setupBlengthThresh();
+        
+        /*! \brief Initialize tree base instance
+         * @param[in] aln An alignment
+         * @param[in] model A substitution model
+         * @throw std::invalid\_argument If any of the following situation occurs.
+         * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
+         * - the alignment is empty
+         * - model is unknown/unsupported
+         *
+         * @throw std::logic\_error if the reference genome is empty
+         */
+        void initTree(Alignment* aln, Model* model);
         
         /*! Build an Initial Tree
          @throw std::logic\_error if any of the following situations occur.
@@ -615,7 +845,7 @@ namespace cmaple
          Export Node in Newick format
          @throw std::invalid\_argument if show\_branch\_supports = true but branch support values have yet been computed
          */
-        const std::string exportNodeString(const bool binary, const cmaple::NumSeqsType  node_vec_index, const bool show_branch_supports);
+        std::string exportNodeString(const bool binary, const cmaple::NumSeqsType  node_vec_index, const bool show_branch_supports);
         
         /**
          Read an input tree from a stream
@@ -673,81 +903,8 @@ namespace cmaple
          */
         void resetSeqAdded();
         
-        // NHANLT: Debug aLRT
-        // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
-        
-    public:
-        /*
-         TRUE to keep the branch lengths fixed
-         */
-        bool fixed_blengths = false;
-        
-        /*
-         Branch length thresholds
-         */
-        cmaple::RealNumType  default_blength, min_blength, max_blength, min_blength_mid, min_blength_sensitivity, half_max_blength, half_min_blength_mid, double_min_blength;
-        
         /**
-         Program parameters
-         */
-        //std::optional<cmaple::Params> params;
-        std::unique_ptr<cmaple::Params> params = nullptr;
-        
-        /**
-         Alignment
-         */
-        Alignment* aln;
-        
-        /**
-         Evolutionary model
-         */
-        ModelBase* model = nullptr;
-        
-        /*
-         Vector of phylonodes
-         */
-        std::vector<PhyloNode> nodes;
-        
-        /*
-         Vector of likelihood contributions of internal nodes
-         */
-        std::vector<NodeLh> node_lhs;
-        
-        /*
-         (vector) Index of root in the vector of phylonodes
-         */
-        cmaple::NumSeqsType  root_vector_index;
-        
-        /*
-         A backup of sequence names attached to the current tree, in cases that users re-read the alignment
-         NHANLT: @TODO - avoid this redundant vector (sequence names are store in alignment and here)
-         */
-        std::vector<std::string> seq_names;
-        
-        /*
-         a vector denote whether a sequence in the alignment is added to the tree or not
-         */
-        std::vector<bool> sequence_added;
-        
-        /**
-         Constructor
-         */
-        Tree():params(cmaple::make_unique<cmaple::Params>()), aln(nullptr), model(nullptr), fixed_blengths(false) {
-            // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
-            if (node_lhs.size() == 0)
-                node_lhs.emplace_back(0);
-        };
-        
-        // TODO: remove or disable
-        /**
-         Constructor
-         */
-        // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        /*Tree(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new Alignment()), fixed_blengths(false){
-            aln->setSeqType(params->seq_type);
-        };*/
-        
-        /**
+         @private
          Attach alignment and model
          @throw std::invalid\_argument If the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          @throw std::logic\_error if the reference genome is empty
@@ -755,77 +912,21 @@ namespace cmaple
         void attachAlnModel(Alignment* aln, ModelBase* model);
         
         /**
-         Change the alignment
-         @throw std::logic\_error if any of the following situations occur.
-         - taxa in the current tree is not found in the new alignment
-         - the sequence type of the new alignment is different from the old one
-         - unexpected values/behaviors found during the operations
-         */
-        void changeAln(Alignment* aln);
-        
-        /**
-         Change the substitution model
-         @throw std::invalid\_argument if the model is unknown/unsupported
-         @throw std::logic\_error if any of the following situations occur.
-         - the sequence type of the new model is different from the old one
-         - unexpected values/behaviors found during the operations
-         */
-        void changeModel(ModelBase* model);
-        
-        /*! Load an input tree
-         @param[in] tree_stream A stream of the input tree
-         @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
-         @throw std::invalid\_argument if the tree in an incorrect format
-         @throw std::logic\_error if any of the following situations occur.
-         - the substitution model is unknown/unsupported
-         - any taxa in the tree is not found in the alignment
-         - unexpected values/behaviors found during the operations
-         
-         @throw std::bad\_alloc if failing to allocate memory to store the tree
-         */
-        void loadTree(std::istream& tree_stream, const bool fixed_blengths = false);
-        
-        /*! Do the inference
-         * @param[in] tree_search_type one of the following tree search:
-         * - FAST_TREE_SEARCH: no tree search (placement only).
-         * - NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
-         * - MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
-         * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
-         * @throw std::invalid\_argument if tree\_search\_type is unknown
-         * @throw std::logic\_error if any of the following situations occur.
-         * - the attached substitution model is unknown/unsupported
-         * - unexpected values/behaviors found during the operations
-         */
-        void doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search);
-        
-        /*! Calculate the likelihood of the tree
-         @throw std::logic\_error if any of the following situations occur.
-         - the tree is empty
-         - unexpected values/behaviors found during the operations
-         */
-        RealNumType calculateLh();
-        
-        /**
+         @private
          Export tree std::string in Newick format
          @throw std::invalid\_argument if show\_branch\_supports = true but branch support values have yet been computed
          */
-        const std::string exportTreeString(const bool binary, const bool show_branch_supports);
+        std::string exportNewick(const bool binary, const bool show_branch_supports);
         
         /**
-         Export tree std::string in Newick format
-         @throw std::invalid\_argument if any of the following situations occur.
-         - n\_tree\_type is unknown
-         - show\_branch\_supports = true but branch support values have yet been computed
-         */
-        const std::string exportTreeString(const TreeType n_tree_type, const bool show_branch_supports);
-        
-        /**
+         @private
          Increase the length of a 0-length branch (connecting this node to its parent) to resolve the inconsistency when updating regions in updatePartialLh()
          */
         template <const cmaple::StateType  num_states>
         void updateZeroBlength(const cmaple::Index  index, PhyloNode& node, std::stack<cmaple::Index > &node_stack);
         
         /**
+         @private
          Iteratively update partial_lh starting from the nodes in node_stack
          
          @param node_stack stack of nodes;
@@ -835,6 +936,7 @@ namespace cmaple
         void updatePartialLh(std::stack<cmaple::Index > &node_stack);
         
         /**
+         @private
          Seek a position for a sample placement starting at the start_node
          
          @throw std::logic\_error if unexpected values/behaviors found during the operations
@@ -843,6 +945,7 @@ namespace cmaple
         void seekSamplePlacement(const cmaple::Index  start_node_index, const cmaple::NumSeqsType  seq_name_index, const std::unique_ptr<SeqRegions>& sample_regions, cmaple::Index & selected_node_index, cmaple::RealNumType  &best_lh_diff, bool &is_mid_branch, cmaple::RealNumType  &best_up_lh_diff, cmaple::RealNumType  &best_down_lh_diff, cmaple::Index & best_child_index);
         
         /**
+         @private
          Seek a position for placing a subtree/sample starting at the start_node
          
          @throw std::logic\_error if unexpected values/behaviors found during the operations
@@ -851,6 +954,7 @@ namespace cmaple
         void seekSubTreePlacement(cmaple::Index & best_node_index, cmaple::RealNumType  &best_lh_diff, bool &is_mid_branch, cmaple::RealNumType  &best_up_lh_diff, cmaple::RealNumType  &best_down_lh_diff, cmaple::Index & best_child_index, const bool short_range_search, const cmaple::Index  child_node_index, cmaple::RealNumType  &removed_blength); //, bool search_subtree_placement = true, SeqRegions* sample_regions = NULL);
         
         /**
+         @private
          Place a new sample at a mid-branch point
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
@@ -858,6 +962,7 @@ namespace cmaple
         void placeNewSampleMidBranch(const cmaple::Index & selected_node_index, std::unique_ptr<SeqRegions>& sample, const cmaple::NumSeqsType  seq_name_index, const cmaple::RealNumType  best_lh_diff);
         
         /**
+         @private
          Place a new sample as a descendant of a node
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
@@ -865,6 +970,7 @@ namespace cmaple
         void placeNewSampleAtNode(const cmaple::Index  selected_node_index, std::unique_ptr<SeqRegions>& sample, const cmaple::NumSeqsType  seq_name_index, const cmaple::RealNumType  best_lh_diff, const cmaple::RealNumType  best_up_lh_diff, const cmaple::RealNumType  best_down_lh_diff, const cmaple::Index  best_child_index);
         
         /**
+         @private
          Apply SPR move
          pruning a subtree then regrafting it to a new position
          @throw std::logic\_error if unexpected values/behaviors found during the operations
@@ -873,6 +979,7 @@ namespace cmaple
         void applySPR(const cmaple::Index  subtree_index, PhyloNode& subtree, const cmaple::Index  best_node_index, const bool is_mid_branch, const cmaple::RealNumType  branch_length, const cmaple::RealNumType  best_lh_diff);
         
         /**
+         @private
          Traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
@@ -880,6 +987,7 @@ namespace cmaple
         void refreshAllLhs(bool avoid_using_upper_lr_lhs = false);
         
         /**
+         @private
          Reset the SPR flags
          @param n_SPR_applied the new value of SPR_applied
          @param update_outdated TRUE to update outdated
@@ -888,6 +996,7 @@ namespace cmaple
         void resetSPRFlags(const bool n_SPR_applied, const bool update_outdated, const bool n_outdated);
         
         /**
+         @private
          Try to improve the entire tree with SPR moves
          @return total improvement
          @throw std::logic\_error if unexpected values/behaviors found during the operations
@@ -896,6 +1005,7 @@ namespace cmaple
         cmaple::RealNumType  improveEntireTree(bool short_range_search);
         
         /**
+         @private
          Try to optimize branch lengths of the tree
          @return num of improvements
          @throw std::logic\_error if unexpected values/behaviors found during the operations
@@ -904,18 +1014,21 @@ namespace cmaple
         cmaple::PositionType  optimizeBranchLengths();
         
         /**
+         @private
          Estimate the length of a branch using the derivative of the likelihood cost function wrt the branch length
          */
         template <const cmaple::StateType  num_states>
         cmaple::RealNumType  estimateBranchLength(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions);
         
         /**
+         @private
          Estimate the length of a branch and check whether the new branch is different from the current one
          */
         template <const cmaple::StateType  num_states>
         cmaple::RealNumType  estimateBranchLengthWithCheck(const std::unique_ptr<SeqRegions>& upper_lr_regions, const std::unique_ptr<SeqRegions>& lower_regions, const cmaple::RealNumType  current_blength);
         
         /**
+         @private
          Calculate the placement cost of a sample
          @param child_regions: vector of regions of the new sample
          */
@@ -923,6 +1036,7 @@ namespace cmaple
         cmaple::RealNumType  calculateSamplePlacementCost(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions, const cmaple::RealNumType  blength);
         
         /**
+         @private
          Calculate the placement cost of a subtree
          @param child_regions: vector of regions of the new sample
          */
@@ -930,6 +1044,7 @@ namespace cmaple
         cmaple::RealNumType  calculateSubTreePlacementCost(const std::unique_ptr<SeqRegions>& parent_regions, const std::unique_ptr<SeqRegions>& child_regions, const cmaple::RealNumType  blength);
         
         /**
+         @private
          Update lower lh of a node
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
@@ -937,6 +1052,7 @@ namespace cmaple
         void updateLowerLh(cmaple::RealNumType & total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const cmaple::Index  neighbor_1_index, PhyloNode& neighbor_1, const cmaple::Index  neighbor_2_index, PhyloNode& neighbor_2, const cmaple::PositionType & seq_length);
         
         /**
+         @private
          Update lower lh of a node but avoid using UpperLeft/Right lhs to update zero-blength
          This function is called after reading a tree from an input file, thus, UpperLeft/Right lhs have not yet been computed
          @throw std::logic\_error if unexpected values/behaviors found during the operations
@@ -945,6 +1061,7 @@ namespace cmaple
         void updateLowerLhAvoidUsingUpperLRLh(cmaple::RealNumType & total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const cmaple::Index  neighbor_1_index, PhyloNode& neighbor_1, const cmaple::Index  neighbor_2_index, PhyloNode& neighbor_2, const cmaple::PositionType & seq_length);
         
         /**
+         @private
          compute the likelihood contribution of (the upper branch of) a node
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
@@ -952,29 +1069,14 @@ namespace cmaple
         void computeLhContribution(cmaple::RealNumType & total_lh, std::unique_ptr<SeqRegions>& new_lower_lh, PhyloNode& node, const std::unique_ptr<SeqRegions>& lower_lh_1, const std::unique_ptr<SeqRegions>& lower_lh_2, const cmaple::Index  neighbor_1_index, PhyloNode& neighbor_1, const cmaple::Index  neighbor_2_index, PhyloNode& neighbor_2, const cmaple::PositionType & seq_length);
         
         /**
+         @private
          Employ Depth First Search to do a task at internal nodes
          */
         template <void(Tree::*task)(cmaple::RealNumType &, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const cmaple::Index , PhyloNode&, const cmaple::Index , PhyloNode&, const cmaple::PositionType &)>
         cmaple::RealNumType  performDFS();
         
         /**
-         Calculate branch supports
-         * @param[in] num_threads number of threads (optional)
-         * @param[in] num_replicates a positive number of replicates (optional)
-         * @param[in] epsilon a positive epsilon, which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see Guindon et al., 2010) (optional)
-         * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional)
-         * @throw std::invalid\_argument if any of the following situations occur.
-         * - num_threads < 0 or num_threads > the number of CPU cores
-         * - num_replicates <= 0
-         * - epsilon < 0
-         *
-          @throw std::logic\_error if any of the following situations occur.
-         * - the tree is empty
-         * - unexpected values/behaviors found during the operations
-         */
-        void calculateBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
-        
-        /**
+         @private
          Update model parameters from an alignment and a tree
          @throw std::logic\_error if the reference genome is empty
          */
@@ -982,6 +1084,7 @@ namespace cmaple
         void updateModelParams ();
         
         /**
+         @private
          Export model parameters in string
          */
         inline cmaple::ModelParams exportModelParams ()
@@ -990,9 +1093,21 @@ namespace cmaple
         }
         
         /**
+         @private
          Employ Depth First Search to do a task at leaves
          */
         template <void(Tree::*task)(PhyloNode&, const cmaple::Index , const cmaple::Index )>
         void performDFSAtLeave();
+        
+        // NHANLT: Debug aLRT
+        // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
     };
+
+    /** \brief Customized << operator to output the tree string in a (bifurcating) NEWICK format
+     */
+    std::ostream& operator<<(std::ostream& out_stream, cmaple::Tree& tree);
+
+    /** \brief Customized >> operator to read the tree from a stream
+     */
+    std::istream& operator>>(std::istream& in_stream, cmaple::Tree& tree);
 }

@@ -28,6 +28,135 @@ template int cmaple::Tree::optimizeBranchLengths<20>();
 template void cmaple::Tree::placeNewSampleMidBranch<4>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 template void cmaple::Tree::placeNewSampleMidBranch<20>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 
+void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
+{
+    // Validate input aln
+    if (!n_aln || !n_aln->data.size())
+        throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
+    
+    // Validate input model
+    if (!n_model)
+        throw std::invalid_argument("Model is null!");
+    
+    // Init variables of the tree
+    params = cmaple::make_unique<cmaple::Params>();
+    aln = nullptr;
+    model = nullptr;
+    fixed_blengths = false;
+    // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
+    node_lhs.clear();
+    node_lhs.push_back(NodeLh(0));
+    
+    // Attach alignment and model
+    attachAlnModel(n_aln, n_model->model_base);
+}
+
+cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths)
+{
+    // Initialize a tree
+    initTree(aln, model);
+    
+    // load the input tree from a stream
+    load(tree_stream, fixed_blengths);
+}
+
+cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filename, const bool fixed_blengths)
+{
+    // Initialize a tree
+    initTree(aln, model);
+    
+    // load the input tree from a tree file (if users specify it)
+    if (tree_filename.length())
+        load(tree_filename, fixed_blengths);
+    // Unable to keep blengths fixed if users don't input a tree
+    else if (fixed_blengths && cmaple::verbose_mode > cmaple::VB_QUIET)
+        outWarning("Disable the option to keep the branch lengths fixed because users didn't supply an input tree.");
+}
+
+void cmaple::Tree::load(std::istream& tree_stream, const bool fixed_blengths)
+{
+    (this->*loadTreePtr)(tree_stream, fixed_blengths);
+}
+
+void cmaple::Tree::load(const std::string& tree_filename, const bool fixed_blengths)
+{
+    // Validate input
+    if (!tree_filename.length())
+        throw std::invalid_argument("The tree file name is empty");
+    
+    // open the treefile
+    std::ifstream tree_stream;
+    try {
+        tree_stream.exceptions(ios::failbit | ios::badbit);
+        tree_stream.open(tree_filename);
+        load(tree_stream, fixed_blengths);
+        tree_stream.close();
+    } catch (ios::failure const &e) {
+        std::string error_msg(ERR_READ_INPUT);
+        throw ios::failure(error_msg + tree_filename);
+    }
+}
+
+void cmaple::Tree::changeAln(Alignment* aln)
+{
+    (this->*changeAlnPtr)(aln);
+}
+
+void cmaple::Tree::changeModel(Model* model)
+{
+    (this->*changeModelPtr)(model);
+}
+
+std::string cmaple::Tree::doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search)
+{
+    return (this->*doInferencePtr)(tree_search_type, shallow_tree_search);
+}
+
+RealNumType cmaple::Tree::computeLh()
+{
+    return (this->*computeLhPtr)();
+}
+
+std::string cmaple::Tree::exportNewick(const TreeType tree_type, const bool show_branch_supports)
+{
+    // output the tree according to its type
+    switch (tree_type)
+    {
+        case BIN_TREE:
+            return exportNewick(true, show_branch_supports);
+            break;
+        case MUL_TREE:
+            return exportNewick(false, show_branch_supports);
+            break;
+        default:
+            throw std::invalid_argument("Unknown tree type. Please use BIN_TREE or MUL_TREE");
+            break;
+    }
+}
+
+cmaple::Params& cmaple::Tree::getParams()
+{
+    ASSERT(params);
+    return *params;
+}
+
+std::ostream& cmaple::operator<<(std::ostream& out_stream, cmaple::Tree& tree)
+{
+    out_stream << tree.exportNewick();
+    return out_stream;
+}
+
+std::istream& cmaple::operator>>(std::istream& in_stream, cmaple::Tree& tree)
+{
+    // go back to the beginning og the stream
+    in_stream.clear();
+    in_stream.seekg(0);
+    
+    // read the stream
+    tree.load(in_stream);
+    return in_stream;
+}
+
 void cmaple::Tree::setupFuncPtrs()
 {
     ASSERT(aln);
@@ -38,16 +167,16 @@ void cmaple::Tree::setupFuncPtrs()
             changeAlnPtr = &Tree::changeAlnTemplate<4>;
             changeModelPtr = &Tree::changeModelTemplate<4>;
             doInferencePtr = &Tree::doInferenceTemplate<4>;
-            calculateLhPtr = &Tree::calculateLhTemplate<4>;
-            calculateBranchSupportPtr = &Tree::calculateBranchSupportTemplate<4>;
+            computeLhPtr = &Tree::computeLhTemplate<4>;
+            computeBranchSupportPtr = &Tree::computeBranchSupportTemplate<4>;
             break;
         case 20:
             loadTreePtr = &Tree::loadTreeTemplate<20>;
             changeAlnPtr = &Tree::changeAlnTemplate<20>;
             changeModelPtr = &Tree::changeModelTemplate<20>;
             doInferencePtr = &Tree::doInferenceTemplate<20>;
-            calculateLhPtr = &Tree::calculateLhTemplate<20>;
-            calculateBranchSupportPtr = &Tree::calculateBranchSupportTemplate<20>;
+            computeLhPtr = &Tree::computeLhTemplate<20>;
+            computeBranchSupportPtr = &Tree::computeBranchSupportTemplate<20>;
             break;
             
         default:
@@ -141,11 +270,6 @@ void cmaple::Tree::updateModelByAln()
     model->computeCumulativeRate(aln);
 }
 
-void cmaple::Tree::loadTree(std::istream& tree_stream, const bool fixed_blengths)
-{
-    (this->*loadTreePtr)(tree_stream, fixed_blengths);
-}
-
 template <const StateType num_states>
 void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream, const bool n_fixed_blengths)
 {
@@ -215,14 +339,13 @@ void cmaple::Tree::updateModelLhAfterLoading()
     performDFS<&Tree::updateLowerLh<num_states>>();
 }
 
-void cmaple::Tree::changeAln(Alignment* aln)
-{
-    (this->*changeAlnPtr)(aln);
-}
-
 template <const cmaple::StateType  num_states>
 void cmaple::Tree::changeAlnTemplate(Alignment* n_aln)
 {
+    // Validate input aln
+    if (!n_aln || !n_aln->data.size())
+        throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
+    
     // make sure both alignments have the same seqtype
     if (aln->getSeqType() != n_aln->getSeqType())
         throw std::logic_error("Sorry! we have yet supported changing to a new alignment with a sequence type different from the current one.");
@@ -259,35 +382,31 @@ void cmaple::Tree::changeAlnTemplate(Alignment* n_aln)
     updateModelLhAfterLoading<num_states>();
 }
 
-void cmaple::Tree::changeModel(ModelBase* model)
-{
-    (this->*changeModelPtr)(model);
-}
-
 template <const cmaple::StateType  num_states>
-void cmaple::Tree::changeModelTemplate(ModelBase* n_model)
+void cmaple::Tree::changeModelTemplate(Model* n_model)
 {
     ASSERT(model && aln);
-    if (!n_model)
-        throw std::invalid_argument("The new model is null");
+    // Validate input model
+    if (!n_model || !n_model->model_base)
+        throw std::invalid_argument("The new model is null!");
     
     // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
     if (aln->attached_trees.find(this) == aln->attached_trees.end())
         changeAln(aln);
     
     // make sure both models have the same seqtype
-    if (model->num_states_ != n_model->num_states_)
+    if (model->num_states_ != n_model->model_base->num_states_)
         throw std::logic_error("Sorry! we have yet supported changing to a new model with a sequence type different from the current one.");
     
     // do nothing if new model is the same as the current one
-    if (model == n_model) return;
+    if (model == n_model->model_base) return;
     
     // show information
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "Changing the model" << std::endl;
     
     // change the model
-    model = n_model;
+    model = n_model->model_base;
     
     // update model according to the data in the alignment
     try
@@ -303,13 +422,8 @@ void cmaple::Tree::changeModelTemplate(ModelBase* n_model)
     updateModelLhAfterLoading<num_states>();
 }
 
-void cmaple::Tree::doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search)
-{
-    (this->*doInferencePtr)(tree_search_type, shallow_tree_search);
-}
-
 template <const StateType num_states>
-void cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search)
+std::string cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
     // validate input
     ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
@@ -319,6 +433,11 @@ void cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_type, co
     // Validate tree search type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
         throw std::invalid_argument("Unknown tree search type!");
+    
+    // Redirect the original src_cout to the target_cout
+    streambuf* src_cout = cout.rdbuf();
+    ostringstream target_cout;
+    cout.rdbuf(target_cout.rdbuf());
     
     // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
     if (aln->attached_trees.find(this) == aln->attached_trees.end())
@@ -332,6 +451,12 @@ void cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_type, co
     
     // 2. Optimize the tree with SPR if there is any new nodes added to the tree
     optimizeTree<num_states>(from_input_tree, tree_search_type, shallow_tree_search);
+    
+    // Restore the source cout
+    cout.rdbuf(src_cout);
+
+    // Will output our Hello World! from above.
+    return target_cout.str();
 }
 
 template <const StateType num_states>
@@ -418,11 +543,11 @@ void cmaple::Tree::buildInitialTree(const bool from_input_tree)
         // NHANLT: debug
         //cout << "Added node " << (*sequence)->seq_name << endl;
         //cout << (*sequence)->seq_name << endl;
-        //cout << tree.exportTreeString() << endl;
+        //cout << tree.exportNewick() << endl;
         
         //if ((*sequence)->seq_name == "2219")
         //{
-            //cout << tree.exportTreeString() << endl;
+            //cout << tree.exportNewick() << endl;
             //string output_file(tree.params->output_prefix);
             //exportOutput(output_file + "_init.treefile");
             //exit(0);
@@ -485,7 +610,7 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
     
     // output log-likelihood of the tree
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-        std::cout << std::setprecision(10) << "Tree log likelihood (before a deeper tree search): " << calculateLh() << std::endl;
+        std::cout << std::setprecision(10) << "Tree log likelihood (before a deeper tree search): " << computeLh() << std::endl;
     
     // run a normal search for tree topology improvement
     if (tree_search_type != FAST_TREE_SEARCH)
@@ -506,7 +631,7 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
     
     // output log-likelihood of the tree
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-        std::cout << std::setprecision(10) << "Tree log likelihood (after the deeper tree search (if any)): " << calculateLh() << std::endl;
+        std::cout << std::setprecision(10) << "Tree log likelihood (after the deeper tree search (if any)): " << computeLh() << std::endl;
     
     // do further optimization on branch lengths (if needed)
     if (!fixed_blengths)
@@ -530,7 +655,7 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
     
     // output log-likelihood of the tree
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-        std::cout << std::setprecision(10) << "Tree log likelihood (at the end of the inference): " << calculateLh() << std::endl;
+        std::cout << std::setprecision(10) << "Tree log likelihood (at the end of the inference): " << computeLh() << std::endl;
 }
 
 template <const StateType num_states>
@@ -617,13 +742,8 @@ void cmaple::Tree::optimizeBranchLengthsOfTree()
         cout << " - Time spent on optimizing the branch lengths: " << std::setprecision(3) << end - start << endl;
 }
 
-RealNumType cmaple::Tree::calculateLh()
-{
-    return (this->*calculateLhPtr)();
-}
-
 template <const StateType num_states>
-RealNumType cmaple::Tree::calculateLhTemplate()
+RealNumType cmaple::Tree::computeLhTemplate()
 {
     // Make sure the tree is not empty
     if (!nodes.size())
@@ -649,13 +769,13 @@ RealNumType cmaple::Tree::calculateLhTemplate()
     return total_lh;
 }
 
-void cmaple::Tree::calculateBranchSupport(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
+std::string cmaple::Tree::computeBranchSupport(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
 {
-    return (this->*calculateBranchSupportPtr)(num_threads, num_replicates, epsilon, allow_replacing_ML_tree);
+    return (this->*computeBranchSupportPtr)(num_threads, num_replicates, epsilon, allow_replacing_ML_tree);
 }
 
 template <const StateType num_states>
-void cmaple::Tree::calculateBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
+std::string cmaple::Tree::computeBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree)
 {
     // Make sure the tree is not empty
     if (!nodes.size())
@@ -678,6 +798,16 @@ void cmaple::Tree::calculateBranchSupportTemplate(const int num_threads, const i
     if (epsilon < 0)
         throw std::invalid_argument("Epsilon must be non-negative!");
     params->aLRT_SH_half_epsilon = epsilon * 0.5;
+    
+    // Redirect the original src_cout to the target_cout
+    streambuf* src_cout = cout.rdbuf();
+    ostringstream target_cout;
+    cout.rdbuf(target_cout.rdbuf());
+    
+    // record the start time
+    auto start = getRealTime();
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        cout << "Calculating branch supports" << endl;
     
     // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
     if (aln->attached_trees.find(this) == aln->attached_trees.end())
@@ -710,9 +840,20 @@ void cmaple::Tree::calculateBranchSupportTemplate(const int num_threads, const i
     
     // refresh all non-lower likelihoods
     refreshAllNonLowerLhs<num_states>();
+    
+    // show the runtime for calculating branch supports
+    auto end = getRealTime();
+    if (cmaple::verbose_mode >= cmaple::VB_MAX)
+        cout << " - Time spent on calculating branch supports: " << std::setprecision(3) << end - start << endl;
+    
+     // Restore the source cout
+     cout.rdbuf(src_cout);
+
+     // return the redirected messages
+     return target_cout.str();
 }
 
-const string cmaple::Tree::exportNodeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
+std::string cmaple::Tree::exportNodeString(const bool binary, const NumSeqsType node_vec_index, const bool show_branch_supports)
 {
     PhyloNode& node = nodes[node_vec_index];
     string output = "(";
@@ -752,24 +893,7 @@ const string cmaple::Tree::exportNodeString(const bool binary, const NumSeqsType
     return output;
 }
 
-const std::string cmaple::Tree::exportTreeString(const TreeType tree_type, const bool show_branch_supports)
-{
-    // output the tree according to its type
-    switch (tree_type)
-    {
-        case BIN_TREE:
-            return exportTreeString(true, show_branch_supports);
-            break;
-        case MUL_TREE:
-            return exportTreeString(false, show_branch_supports);
-            break;
-        default:
-            throw std::invalid_argument("Unknown tree type. Please use BIN_TREE or MUL_TREE");
-            break;
-    }
-}
-
-const std::string cmaple::Tree::exportTreeString(const bool binary, const bool show_branch_supports)
+std::string cmaple::Tree::exportNewick(const bool binary, const bool show_branch_supports)
 {
     // make sure tree is not empty
     if (nodes.size() < 3)

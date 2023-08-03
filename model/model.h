@@ -34,7 +34,7 @@ namespace cmaple
         // TODO: allow users to specify model parameters
         
         // declare Tree as a friend class
-        friend class TreeWrapper;
+        friend class Tree;
     
     private:
         /**

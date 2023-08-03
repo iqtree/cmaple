@@ -34,7 +34,7 @@
 #include "../utils/operatingsystem.h" //for getOSName()
 #include "../utils/logstream.h"
 #include "../maple/cmaple.h"
-#include "../tree/treewrapper.h"
+#include "../tree/tree.h"
 
 #include <stdlib.h>
 #include <stdio.h>

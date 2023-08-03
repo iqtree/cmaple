@@ -39,13 +39,13 @@ void cmaple::runCMaple(cmaple::Params &params)
         }
         
         // Initialize a Tree
-        TreeWrapper tree(&aln, &model, params.input_treefile, params.fixed_blengths);
+        Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths);
         // clone all settings
         cmaple::Params& tree_params = tree.getParams();
         tree_params = params;
         
         // Infer a phylogenetic tree
-        std::string redirected_msgs = tree.infer(params.tree_search_type, params.shallow_tree_search);
+        std::string redirected_msgs = tree.doInference(params.tree_search_type, params.shallow_tree_search);
         if (cmaple::verbose_mode >= cmaple::VB_MED)
             std::cout << redirected_msgs << std::endl;
         
@@ -58,13 +58,13 @@ void cmaple::runCMaple(cmaple::Params &params)
             if (params.input_treefile.length())
                 allow_replacing_ML_tree = params.allow_replace_input_tree;
             
-            redirected_msgs = tree.computeBranchSupports(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree);
+            redirected_msgs = tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree);
             if (cmaple::verbose_mode >= cmaple::VB_MED)
                 std::cout << redirected_msgs << std::endl;
             
             // write the tree file with branch supports
             ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
-            out_tree_branch_supports << tree.exportString(params.tree_format, true);
+            out_tree_branch_supports << tree.exportNewick(params.tree_format, true);
             out_tree_branch_supports.close();
         }
         
@@ -74,7 +74,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Write the normal tree file
         ofstream out = ofstream(output_treefile);
-        out << tree.exportString(params.tree_format);
+        out << tree.exportNewick(params.tree_format);
         out.close();
             
         // Show model parameters
@@ -131,13 +131,13 @@ void cmaple::testing(cmaple::Params& params)
     // -------- Test write and read tree -----------
     Alignment aln10("test_100.maple");
     Model model10(GTR);
-    TreeWrapper tree10(&aln10, &model10);
-    std::cout << tree10.infer() << std::endl;
-    std::stringstream tree10_stream(tree10.exportString(MUL_TREE));
+    Tree tree10(&aln10, &model10);
+    std::cout << tree10.doInference() << std::endl;
+    std::stringstream tree10_stream(tree10.exportNewick(MUL_TREE));
     //tree10_stream << tree10;
     
-    TreeWrapper tree10_1(&aln10, &model10, tree10_stream);
-    std::stringstream tree10_1_stream(tree10.exportString(MUL_TREE));
+    Tree tree10_1(&aln10, &model10, tree10_stream);
+    std::stringstream tree10_1_stream(tree10.exportNewick(MUL_TREE));
     //tree10_1_stream << tree10_1;
     
     std::cout << tree10_stream.str() << std::endl;
@@ -162,17 +162,17 @@ void cmaple::testing(cmaple::Params& params)
     Alignment aln(params.aln_path, "", params.aln_format, params.seq_type);
     
     // Initialize a Tree
-    TreeWrapper tree(&aln, &model);
+    Tree tree(&aln, &model);
     
     // Infer a phylogenetic tree
-    std::string redirected_msgs = tree.infer(params.tree_search_type, params.shallow_tree_search);
+    std::string redirected_msgs = tree.doInference(params.tree_search_type, params.shallow_tree_search);
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << redirected_msgs << std::endl;
     
     // Compute branch supports (if users want to do so)
     if (params.compute_aLRT_SH)
     {
-        redirected_msgs = tree.computeBranchSupports(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, true);
+        redirected_msgs = tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, true);
         if (cmaple::verbose_mode >= cmaple::VB_MED)
             std::cout << redirected_msgs << std::endl;
     }
@@ -196,20 +196,20 @@ void cmaple::testing(cmaple::Params& params)
         std::cout << "Mismatch tree strings" << std:: endl;
     Model model2(JC);
     tree.changeModel(&model2);
-    tree.infer();
+    tree.doInference();
     tree.computeLh();
-    tree.computeBranchSupports(4);*/
+    tree.computeBranchSupport(4);*/
     
     // -------- Test changeAln -----------
     
     // -------- Test re-read alignment -----------
     std::stringstream tree_str_1;
-    tree_str_1 << tree.exportString(MUL_TREE);
+    tree_str_1 << tree.exportNewick(MUL_TREE);
     
     Model model3(GTR);
-    TreeWrapper tree2(&aln,&model3, tree_str_1, true);
+    Tree tree2(&aln,&model3, tree_str_1, true);
     std::stringstream tree_str_2;
-    tree_str_2 << tree2.exportString(MUL_TREE);
+    tree_str_2 << tree2.exportNewick(MUL_TREE);
     if (tree_str_1.str() != tree_str_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;
     
@@ -223,14 +223,14 @@ void cmaple::testing(cmaple::Params& params)
     
     tree_str_1 >> tree2;
     std::stringstream tree_str_2_6;
-    tree_str_2_6 << tree2.exportString(MUL_TREE);
+    tree_str_2_6 << tree2.exportNewick(MUL_TREE);
     if (tree_str_2_6.str() != tree_str_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;
     
     aln.read("test_200.maple");
-    std::cout << tree2.infer(FAST_TREE_SEARCH) << std::endl;
+    std::cout << tree2.doInference(FAST_TREE_SEARCH) << std::endl;
     std::stringstream tree_str_2_5;
-    tree_str_2_5 << tree2.exportString(MUL_TREE);
+    tree_str_2_5 << tree2.exportNewick(MUL_TREE);
     if (tree_str_2_5.str() != tree_str_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;
     
@@ -254,7 +254,7 @@ void cmaple::testing(cmaple::Params& params)
     std::cout << tree.computeLh() << std::endl;
     
     std::stringstream tree_str_4;
-    std::cout << tree.infer() << std::endl;
+    std::cout << tree.doInference() << std::endl;
     tree_str_4 << tree;
     if (tree_str_1.str() != tree_str_4.str())
         std::cout << "Mismatch tree strings" << std:: endl;
@@ -268,14 +268,14 @@ void cmaple::testing(cmaple::Params& params)
     tree_str_2_2 << tree2;
     if (tree_str_1.str() != tree_str_2_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;
-    std::cout << tree2.infer(FAST_TREE_SEARCH, false) << std::endl;
+    std::cout << tree2.doInference(FAST_TREE_SEARCH, false) << std::endl;
     std::stringstream tree_str_2_3;
     tree_str_2_3 << tree2;
     if (tree_str_1.str() != tree_str_2_3.str())
         std::cout << "Mismatch tree strings" << std:: endl;*/
     
     
-    tree.computeBranchSupports(4);
+    tree.computeBranchSupport(4);
     
     // -------- Test re-read alignment -----------
     
@@ -334,7 +334,7 @@ void cmaple::testing(cmaple::Params& params)
     //Tree tree4(aln, model, "topo.treefile", true);
     // Test keeing blengths fixed (successfully)
     Tree tree5(aln, model, "test_200_5.diff.treefile", true);
-    std::cout << tree5.infer("Normal", true) << std::endl;
+    std::cout << tree5.doInference("Normal", true) << std::endl;
     
     // with a tree stream
     std::ifstream tree_stream;
@@ -346,20 +346,20 @@ void cmaple::testing(cmaple::Params& params)
     }
     Tree tree(aln, model, tree_stream);
     tree_stream.close();
-    std::cout << tree.infer("FAST", true) << std::endl;
+    std::cout << tree.doInference("FAST", true) << std::endl;
     
-    std::cout << tree.infer("MORE_accurate") << std::endl;
+    std::cout << tree.doInference("MORE_accurate") << std::endl;
 
-    // std::cout << tree.exportString("BIN", true) << std::endl;
+    // std::cout << tree.exportNewick("BIN", true) << std::endl;
     //Tree tree(aln, model, "");
     std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
-    std::cout << tree.computeBranchSupports(8, 100, 0.1, false) << std::endl;
-    //std::cout << tree.computeBranchSupports(8, 100, 0.1, true) << std::endl;
-    std::cout << tree.exportString("BIN", true) << std::endl;
-    tree.infer();
-    std::cout << tree.exportString() << std::endl;
-    tree.computeBranchSupports(8, 100);
-    std::cout << tree.exportString("BIN", true) << std::endl;
+    std::cout << tree.computeBranchSupport(8, 100, 0.1, false) << std::endl;
+    //std::cout << tree.computeBranchSupport(8, 100, 0.1, true) << std::endl;
+    std::cout << tree.exportNewick("BIN", true) << std::endl;
+    tree.doInference();
+    std::cout << tree.exportNewick() << std::endl;
+    tree.computeBranchSupport(8, 100);
+    std::cout << tree.exportNewick("BIN", true) << std::endl;
     std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;*/
 
     // Create an alignment from a file
@@ -372,16 +372,16 @@ void cmaple::testing(cmaple::Params& params)
     cmaple::Tree tree(aln, model);
 
     // Infer a phylogenetic tree from the alignment and the model
-    cout << tree.infer() << endl;
+    cout << tree.doInference() << endl;
 
     // Compute the branch supports for the inferred tree
-    cout << tree.computeBranchSupports() << endl;
+    cout << tree.computeBranchSupport() << endl;
 
     // Compute the likelihood of the tree
     cout << "- Tree log likelihood: " << tree.computeLh() << endl;
 
     // Export the tree (with branch supports) in NEWICK format
-    cout << "- Tree: " << tree.exportString("BIN", true) << endl;*/
+    cout << "- Tree: " << tree.exportNewick("BIN", true) << endl;*/
     
     // Create an alignment from a file
     /*cmaple::Alignment aln(params.aln_path);
@@ -397,9 +397,9 @@ void cmaple::testing(cmaple::Params& params)
     tree.changeAln(&aln1);
     
     // infer
-    cout << tree.infer()<< endl;
+    cout << tree.doInference()<< endl;
     
-    cout << tree.exportString() << endl;
+    cout << tree.exportNewick() << endl;
     
     // change model
     cmaple::Model model1(JC);
@@ -414,9 +414,9 @@ void cmaple::testing(cmaple::Params& params)
     tree.changeAln(&aln2);
     
     // infer again
-    cout << tree.infer()<< endl;
+    cout << tree.doInference()<< endl;
     
-    cout << tree.exportString() << endl;
+    cout << tree.exportNewick() << endl;
     
     // change aln
     // cmaple::Alignment aln3("test_100.maple");
