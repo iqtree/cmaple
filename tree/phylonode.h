@@ -229,7 +229,7 @@ namespace cmaple
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
-        void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const AlignmentBase* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, const bool is_root, const cmaple::RealNumType blength = -1);
+        void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh, PhyloNode& neighbor, const Alignment* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, const bool is_root, const cmaple::RealNumType blength = -1);
         
         /**
          Get the index of the node likelihood

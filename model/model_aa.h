@@ -32,7 +32,7 @@ namespace cmaple
          extract root freqs from the reference sequence
          for AA models, we directly get root_freqs from predefined state_freqs
          */
-        virtual void extractRootFreqs(const AlignmentBase* aln);
+        virtual void extractRootFreqs(const Alignment* aln);
         
         /**
          Get the model name
@@ -64,13 +64,13 @@ namespace cmaple
          - the substitution model is unknown/unsupported
          - the reference genome is empty
          */
-        virtual void updateMutationMatEmpirical(const AlignmentBase* aln);
+        virtual void updateMutationMatEmpirical(const Alignment* aln);
         
         /**
          Update pseudocounts from new sample to improve the estimate of the substitution rates
          @param node_regions the genome list at the node where the appending happens;
          @param sample_regions the genome list for the new sample.
          */
-        virtual void updatePesudoCount(const AlignmentBase* aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
+        virtual void updatePesudoCount(const Alignment* aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
     };
 }

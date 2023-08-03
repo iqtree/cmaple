@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../alignment/alignmentbase.h"
+#include "../alignment/alignment.h"
 using namespace cmaple;
 
 /*
@@ -7,7 +7,7 @@ using namespace cmaple;
  */
 TEST(Alignment, readSequences)
 {
-    AlignmentBase aln;
+    Alignment aln;
     StrVector sequences, seq_names;
     
     // Test readFasta()
@@ -60,7 +60,7 @@ TEST(Alignment, readSequences)
  */
 TEST(Alignment, readRef)
 {
-    AlignmentBase aln;
+    Alignment aln;
     std::string file_path("../../example/ref.fa");
     aln.setSeqType(SEQ_DNA);
     aln.readRef(file_path);
@@ -87,7 +87,7 @@ TEST(Alignment, extractMutations)
 {
     // Don't need to test empty inputs (sequences, seq_names, ref_sequence); we have ASSERT to check them in extractMutations()
     // ----- test on input.fa; generate ref_sequence -----
-    AlignmentBase aln;
+    Alignment aln;
     StrVector sequences, seq_names;
     std::string ref_sequence;
     
@@ -192,7 +192,7 @@ TEST(Alignment, extractMutations)
  */
 TEST(Alignment, readMapleFile)
 {
-    AlignmentBase aln;
+    Alignment aln;
     
     // ----- test on test_100.maple -----
     std::string diff_file_path("../../example/test_100.maple");
@@ -266,7 +266,7 @@ TEST(Alignment, readMapleFile)
  */
 TEST(Alignment, extractDiffFile)
 {
-    AlignmentBase aln;
+    Alignment aln;
     
     // ----- test on input.phy with ref file from ref.fa -----
     Params params = Params::getInstance();
@@ -360,7 +360,7 @@ TEST(Alignment, extractDiffFile)
  */
 TEST(Alignment, convertState2Char)
 {
-    AlignmentBase aln;
+    Alignment aln;
     aln.setSeqType(SEQ_DNA);
     EXPECT_EQ(aln.convertState2Char(-1), '?');
     EXPECT_EQ(aln.convertState2Char(0.1), 'A');
@@ -386,7 +386,7 @@ TEST(Alignment, convertState2Char)
  */
 TEST(Alignment, convertChar2State)
 {
-    AlignmentBase aln;
+    Alignment aln;
     aln.setSeqType(SEQ_DNA);
     
     // ----- Test convertChar2State() with an invalid state
@@ -414,7 +414,7 @@ TEST(Alignment, convertChar2State)
  */
 TEST(Alignment, computeSeqDistance)
 {
-    AlignmentBase aln;
+    Alignment aln;
     aln.setSeqType(SEQ_DNA);
     
     // test empty sequence
@@ -467,7 +467,7 @@ TEST(Alignment, computeSeqDistance)
  */
 TEST(Alignment, sortSeqsByDistances)
 {
-    AlignmentBase aln;
+    Alignment aln;
     aln.setSeqType(SEQ_DNA);
     
     // ----- test empty aln -----

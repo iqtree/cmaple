@@ -79,21 +79,21 @@ void cmaple::ModelDNA::initMutationMat()
     }
 }
 
-void cmaple::ModelDNA::extractRootFreqs(const AlignmentBase* aln)
+void cmaple::ModelDNA::extractRootFreqs(const Alignment* aln)
 {
     // Keep state freqs equally for some models (e.g., JC)
     if (sub_model != JC)
         ModelBase::extractRootFreqs(aln);
 }
 
-void cmaple::ModelDNA::updateMutationMatEmpirical(const AlignmentBase* aln)
+void cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment* aln)
 {
     // don't update JC model parameters
     if (sub_model != JC)
         updateMutationMatEmpiricalTemplate<4>(aln);
 }
 
-void cmaple::ModelDNA::updatePesudoCount(const AlignmentBase* aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelDNA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     if (sub_model != JC)
         ModelBase::updatePesudoCount(aln, regions1, regions2);

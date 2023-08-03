@@ -3,7 +3,7 @@
 
 #include <string>
 #include "../utils/tools.h"
-#include "../alignment/alignmentbase.h"
+#include "../alignment/alignment.h"
 #include "../utils/matrix.h"
 #include "../libraries/nclextra/modelsblock.h"
 #include "../libraries/ncl/ncl.h"
@@ -111,7 +111,7 @@ namespace cmaple
          Extract root freqs from the reference sequence
          @throw std::logic\_error if the reference genome is empty
          */
-        virtual void extractRootFreqs(const AlignmentBase* aln);
+        virtual void extractRootFreqs(const Alignment* aln);
         
         /**
          Init pointers
@@ -130,7 +130,7 @@ namespace cmaple
          @throw  std::logic\_error if the substitution model is unknown/unsupported
          */
         template <cmaple::StateType num_states>
-        void updateMutationMatEmpiricalTemplate(const AlignmentBase* aln);
+        void updateMutationMatEmpiricalTemplate(const Alignment* aln);
         
         /**
          Get the model name
@@ -189,7 +189,7 @@ namespace cmaple
          
          @throw std::logic\_error if the reference genome is empty
          */
-        void extractRefInfo(const AlignmentBase* aln);
+        void extractRefInfo(const Alignment* aln);
         
         /**
          Init the mutation rate matrix from a model
@@ -201,7 +201,7 @@ namespace cmaple
          Compute cumulative rate of the ref genome
          @throw std::logic\_error if the reference genome is empty
          */
-        void computeCumulativeRate(const AlignmentBase* aln);
+        void computeCumulativeRate(const Alignment* aln);
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations
@@ -209,14 +209,14 @@ namespace cmaple
          - the substitution model is unknown/unsupported
          - the reference genome is empty
          */
-        virtual void updateMutationMatEmpirical(const AlignmentBase* aln) {};
+        virtual void updateMutationMatEmpirical(const Alignment* aln) {};
         
         /**
          Update pseudocounts from new sample to improve the estimate of the substitution rates
          @param node_regions the genome list at the node where the appending happens;
          @param sample_regions the genome list for the new sample.
          */
-        virtual void updatePesudoCount(const AlignmentBase* aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
+        virtual void updatePesudoCount(const Alignment* aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
         
         /**
          Export model parameters to a dictionary

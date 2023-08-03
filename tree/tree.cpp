@@ -6,7 +6,7 @@ using namespace cmaple;
 void cmaple::Tree::initTree(Alignment* aln, Model* model)
 {    
     // Validate input aln
-    if (!aln || !aln->aln_base || !aln->aln_base->data.size())
+    if (!aln || !aln->data.size())
         throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
     
     // Validate input model
@@ -17,7 +17,7 @@ void cmaple::Tree::initTree(Alignment* aln, Model* model)
     tree_base = new TreeBase();
     
     // Attach alignment and model
-    tree_base->attachAlnModel(aln->aln_base, model->model_base);
+    tree_base->attachAlnModel(aln, model->model_base);
 }
 
 cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths):tree_base(nullptr)
@@ -84,11 +84,11 @@ void cmaple::Tree::changeAln(Alignment* n_aln)
     ASSERT(tree_base);
     
     // Validate input aln
-    if (!n_aln || !n_aln->aln_base || !n_aln->aln_base->data.size())
+    if (!n_aln || !n_aln->data.size())
         throw std::invalid_argument("Alignment is empty. Please call read(...) first!");
     
     // change the aln_base
-    tree_base->changeAln(n_aln->aln_base);
+    tree_base->changeAln(n_aln);
 }
 
 void cmaple::Tree::changeModel(Model* n_model)

@@ -6,8 +6,8 @@ using namespace cmaple;
 // explicit instantiation of templates
 template void cmaple::ModelBase::updateMutationMat<4>();
 template void cmaple::ModelBase::updateMutationMat<20>();
-template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const AlignmentBase*);
-template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const AlignmentBase*);
+template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const Alignment*);
+template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const Alignment*);
 
 cmaple::ModelBase::ModelBase(const SubModel n_sub_model):sub_model(n_sub_model), mutation_mat(nullptr), diagonal_mut_mat(nullptr), transposed_mut_mat(nullptr), freqi_freqj_qij(nullptr),freq_j_transposed_ij(nullptr), root_freqs(nullptr), root_log_freqs(nullptr), inverse_root_freqs(nullptr), row_index(nullptr), model_block(nullptr), pseu_mutation_count(nullptr){}
 
@@ -106,7 +106,7 @@ void cmaple::ModelBase::init()
     initMutationMat();
 }
 
-void cmaple::ModelBase::extractRefInfo(const AlignmentBase* aln)
+void cmaple::ModelBase::extractRefInfo(const Alignment* aln)
 {
     // init variables
     if (!root_freqs) root_freqs = new RealNumType[num_states_];
@@ -117,7 +117,7 @@ void cmaple::ModelBase::extractRefInfo(const AlignmentBase* aln)
     extractRootFreqs(aln);
 }
 
-void cmaple::ModelBase::extractRootFreqs(const AlignmentBase* aln)
+void cmaple::ModelBase::extractRootFreqs(const Alignment* aln)
 {
     // init variables
     const vector<StateType>& ref_seq = aln->ref_seq;
@@ -150,7 +150,7 @@ void cmaple::ModelBase::extractRootFreqs(const AlignmentBase* aln)
     }
 }
 
-void cmaple::ModelBase::computeCumulativeRate(const AlignmentBase* aln)
+void cmaple::ModelBase::computeCumulativeRate(const Alignment* aln)
 {
     const PositionType sequence_length = aln->ref_seq.size();
     
@@ -167,9 +167,10 @@ void cmaple::ModelBase::computeCumulativeRate(const AlignmentBase* aln)
     cumulative_base[0].resize(num_states_, 0);
     
     // compute cumulative_base and cumulative_rate
+    const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
     for (PositionType i = 0; i < sequence_length; ++i)
     {
-        StateType state = aln->ref_seq[i];
+        StateType state = ref_seq[i];
         cumulative_rate[i + 1] = cumulative_rate[i] + diagonal_mut_mat[state];
         
         cumulative_base[i + 1] =  cumulative_base[i];
@@ -186,7 +187,7 @@ std::string cmaple::ModelBase::exportRootFrequenciesStr()
     string header{};
     
     // Init a dummy alignment to get states (in readable character)
-    AlignmentBase aln;
+    Alignment aln;
     aln.setSeqType(getSeqType());
     
     for (StateType i = 0; i < num_states_; ++i)
@@ -207,7 +208,7 @@ std::string cmaple::ModelBase::exportQMatrixStr()
     string output{};
     
     // Init a dummy alignment to get states (in readable character)
-    AlignmentBase aln;
+    Alignment aln;
     aln.setSeqType(getSeqType());
     
     // generate header
@@ -473,7 +474,7 @@ void cmaple::ModelBase::updateMutationMat()
 }
 
 template <StateType num_states>
-void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const AlignmentBase* aln)
+void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
 {
     // clone the current mutation matrix
     RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
@@ -502,7 +503,7 @@ void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const AlignmentBase* 
     delete[] tmp_diagonal_mut_mat;
 }
 
-void cmaple::ModelBase::updatePesudoCount(const AlignmentBase* aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelBase::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // init variables
     PositionType pos = 0;
@@ -510,7 +511,8 @@ void cmaple::ModelBase::updatePesudoCount(const AlignmentBase* aln, const SeqReg
     const SeqRegions& seq2_regions = regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
-    const PositionType seq_length = aln->ref_seq.size();
+    const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
+    const PositionType seq_length = ref_seq.size();
                 
     while (pos < seq_length)
     {
@@ -524,9 +526,9 @@ void cmaple::ModelBase::updatePesudoCount(const AlignmentBase* aln, const SeqReg
         if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) && (seq2_region->type < num_states_ || seq2_region->type == TYPE_R))
         {
             if (seq1_region->type == TYPE_R)
-                pseu_mutation_count[row_index[aln->ref_seq[end_pos]] + seq2_region->type] += 1;
+                pseu_mutation_count[row_index[ref_seq[end_pos]] + seq2_region->type] += 1;
             else if (seq2_region->type == TYPE_R)
-                pseu_mutation_count[row_index[seq1_region->type] + aln->ref_seq[end_pos]] += 1;
+                pseu_mutation_count[row_index[seq1_region->type] + ref_seq[end_pos]] += 1;
             else
                 pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
         }

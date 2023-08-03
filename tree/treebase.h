@@ -1,7 +1,6 @@
 #include "updatingnode.h"
-#include "../alignment/alignmentbase.h"
-#include "../model/model_dna.h"
-#include "../model/model_aa.h"
+#include "../alignment/alignment.h"
+#include "../model/model.h"
 #include <optional>
 #ifdef _OPENMP
     #include <omp.h>
@@ -29,7 +28,7 @@ namespace cmaple
         /**
             Pointer  to changeAln method
          */
-        typedef void (TreeBase::*ChangeAlnPtrType)(AlignmentBase*);
+        typedef void (TreeBase::*ChangeAlnPtrType)(Alignment*);
         ChangeAlnPtrType changeAlnPtr;
         
         /**
@@ -60,7 +59,7 @@ namespace cmaple
         /*! Template of changeAln()
          */
         template <const cmaple::StateType  num_states>
-        void changeAlnTemplate(AlignmentBase* aln);
+        void changeAlnTemplate(Alignment* aln);
         
         /*! Template of changeModel()
          */
@@ -697,7 +696,7 @@ namespace cmaple
         /**
          Alignment
          */
-        AlignmentBase* aln;
+        Alignment* aln;
         
         /**
          Evolutionary model
@@ -744,7 +743,7 @@ namespace cmaple
          Constructor
          */
         // Tree(cmaple::Params && n_params):params(std::move(n_params)) {
-        /*TreeBase(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new AlignmentBase()), fixed_blengths(false){
+        /*TreeBase(cmaple::Params && n_params):params(cmaple::make_unique<cmaple::Params>(std::move(n_params))),aln(new Alignment()), fixed_blengths(false){
             aln->setSeqType(params->seq_type);
         };*/
         
@@ -753,7 +752,7 @@ namespace cmaple
          @throw std::invalid\_argument If the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          @throw std::logic\_error if the reference genome is empty
          */
-        void attachAlnModel(AlignmentBase* aln, ModelBase* model);
+        void attachAlnModel(Alignment* aln, ModelBase* model);
         
         /**
          Change the alignment
@@ -762,7 +761,7 @@ namespace cmaple
          - the sequence type of the new alignment is different from the old one
          - unexpected values/behaviors found during the operations
          */
-        void changeAln(AlignmentBase* aln);
+        void changeAln(Alignment* aln);
         
         /**
          Change the substitution model

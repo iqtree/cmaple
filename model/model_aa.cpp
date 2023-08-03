@@ -1078,21 +1078,21 @@ void cmaple::ModelAA::rescaleAllRates()
     }
 }
 
-void cmaple::ModelAA::updateMutationMatEmpirical(const AlignmentBase* aln)
+void cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln)
 {
     // only handle GTR20 or NONREV
     if (sub_model == GTR20 || sub_model == NONREV)
         updateMutationMatEmpiricalTemplate<20>(aln);
 }
 
-void cmaple::ModelAA::updatePesudoCount(const AlignmentBase* aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelAA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // only handle GTR20 or NONREV
     if (sub_model == GTR20 || sub_model == NONREV)
         ModelBase::updatePesudoCount(aln, regions1, regions2);
 }
 
-void cmaple::ModelAA::extractRootFreqs(const AlignmentBase* aln)
+void cmaple::ModelAA::extractRootFreqs(const Alignment* aln)
 {
     // only extract root freqs for GTR20 or NONREV
     if (sub_model == GTR20 || sub_model == NONREV)

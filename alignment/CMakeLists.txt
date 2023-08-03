@@ -4,7 +4,6 @@ mutation.h mutation.cpp
 seqregion.h seqregion.cpp
 seqregions.h seqregions.cpp
 sequence.h sequence.cpp
-alignmentbase.h alignmentbase.cpp
 alignment.h alignment.cpp
 )
 target_compile_definitions(cmaple_alignment PUBLIC NUM_STATES=4)
@@ -16,7 +15,6 @@ mutation.h mutation.cpp
 seqregion.h seqregion.cpp
 seqregions.h seqregions.cpp
 sequence.h sequence.cpp
-alignmentbase.h alignmentbase.cpp
 alignment.h alignment.cpp
 )
 target_compile_definitions(cmaple_alignment-aa PUBLIC NUM_STATES=20)
