@@ -53,10 +53,6 @@ namespace cmaple
          */
         Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
         
-        /*! \brief Destructor
-         */
-        ~Tree() = default;
-        
         /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
