@@ -259,16 +259,6 @@ namespace cmaple
     };
 
     /**
-     * types of trees
-     * BIN_TREE: binary tree
-     * MUL_TREE: multifurcating tree
-     * UNKNOWN_TREE: unknown tree type
-     */
-    enum TreeType {
-        BIN_TREE, MUL_TREE, UNKNOWN_TREE
-    };
-
-    /**
      * substitution modela
      */
     enum SubModel {
@@ -584,7 +574,7 @@ namespace cmaple
         /**
         *  format of the output tree
         */
-        TreeType tree_format;
+        std::string tree_format_str;
         
         /**
         *  TRUE to run an additional short range search for tree topology improvement
@@ -1095,12 +1085,6 @@ namespace cmaple
      * @param n_format a format in string
      */
     InputType parseAlnFormat(const std::string& n_format);
-
-    /**
-    * Parse tree type from a string
-    * @param tree_type_str a tree type in string
-    */
-    TreeType parseTreeType(const std::string& tree_type_str);
 
     /**
     * Parse model from its name in a string

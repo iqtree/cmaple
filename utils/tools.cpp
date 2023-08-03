@@ -558,7 +558,7 @@ void cmaple::Params::initDefaultValue()
     thresh_entire_tree_improvement = 1;
     thresh_placement_cost = -1e-5;
     thresh_placement_cost_short_search = -1;
-    tree_format = BIN_TREE;
+    tree_format_str = "BIN";
     shallow_tree_search = false;
     output_testing = NULL;
     compute_aLRT_SH = false;
@@ -860,7 +860,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--output-multifurcating-tree") == 0 || strcmp(argv[cnt], "-out-mul-tree") == 0) {
                 
-                params.tree_format = MUL_TREE;
+                params.tree_format_str = "MUL";
 
                 continue;
             }
@@ -1163,20 +1163,6 @@ InputType cmaple::parseAlnFormat(const std::string& n_format)
     
     // default
     return IN_UNKNOWN;
-}
-
-TreeType cmaple::parseTreeType(const std::string& n_tree_type_str)
-{
-    // transform to uppercase
-    string tree_type_str(n_tree_type_str);
-    transform(tree_type_str.begin(), tree_type_str.end(), tree_type_str.begin(), ::toupper);
-    if (tree_type_str == "BIN")
-        return BIN_TREE;
-    if (tree_type_str == "MUL")
-        return MUL_TREE;
-    
-    // default
-    return UNKNOWN_TREE;
 }
 
 SubModel cmaple::parseModel(const std::string& n_model_name)

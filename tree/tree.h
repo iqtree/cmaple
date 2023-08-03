@@ -24,6 +24,16 @@ namespace cmaple
             FAST_TREE_SEARCH, NORMAL_TREE_SEARCH, MORE_ACCURATE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
         };
         
+        /**
+         * Types of trees
+         * BIN_TREE: binary tree
+         * MUL_TREE: multifurcating tree
+         * UNKNOWN_TREE: unknown tree type
+         */
+        enum TreeType {
+            BIN_TREE, MUL_TREE, UNKNOWN_TREE
+        };
+        
         // ----------------- BEGIN OF PUBLIC APIs ------------------------------------ //
         /*! \brief Constructor from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
          * @param[in] aln An alignment
@@ -252,6 +262,14 @@ namespace cmaple
          * @return a  type of tree search from a string
          */
         static std::string getTreeSearchStr(const TreeSearchType tree_search_type);
+        
+        /**
+         * @private
+         * Parse tree type from a string
+         * @param tree_type_str a tree type in string
+         * @return a TreeType
+         */
+        static TreeType parseTreeType(const std::string& tree_type_str);
         
     private:
         /**

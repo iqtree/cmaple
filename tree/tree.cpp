@@ -7047,3 +7047,17 @@ std::string cmaple::Tree::getTreeSearchStr(const cmaple::Tree::TreeSearchType tr
     }
     return "";
 }
+
+cmaple::Tree::TreeType cmaple::Tree::parseTreeType(const std::string& n_tree_type_str)
+{
+    // transform to uppercase
+    string tree_type_str(n_tree_type_str);
+    transform(tree_type_str.begin(), tree_type_str.end(), tree_type_str.begin(), ::toupper);
+    if (tree_type_str == "BIN")
+        return cmaple::Tree::BIN_TREE;
+    if (tree_type_str == "MUL")
+        return cmaple::Tree::MUL_TREE;
+    
+    // default
+    return cmaple::Tree::UNKNOWN_TREE;
+}

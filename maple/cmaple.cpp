@@ -16,6 +16,9 @@ void cmaple::runCMaple(cmaple::Params &params)
         if (!params.overwrite_output && fileExists(output_treefile))
             outError("File " + output_treefile + " already exists. Use `--overwrite` option if you really want to overwrite it.\n");
         
+        // Dummy variables
+        const cmaple::Tree::TreeType tree_format = cmaple::Tree::parseTreeType(params.tree_format_str);
+        
         // Initialize a Model
         Model model(params.sub_model, params.seq_type);
         
@@ -45,7 +48,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         tree_params = params;
         
         // Infer a phylogenetic tree
-        cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
+        const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
         std::string redirected_msgs = tree.doInference(tree_search_type, params.shallow_tree_search);
         if (cmaple::verbose_mode >= cmaple::VB_MED)
             std::cout << redirected_msgs << std::endl;
@@ -65,7 +68,7 @@ void cmaple::runCMaple(cmaple::Params &params)
             
             // write the tree file with branch supports
             ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
-            out_tree_branch_supports << tree.exportNewick(params.tree_format, true);
+            out_tree_branch_supports << tree.exportNewick(tree_format, true);
             out_tree_branch_supports.close();
         }
         
@@ -75,7 +78,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Write the normal tree file
         ofstream out = ofstream(output_treefile);
-        out << tree.exportNewick(params.tree_format);
+        out << tree.exportNewick(tree_format);
         out.close();
             
         // Show model parameters
@@ -134,11 +137,11 @@ void cmaple::testing(cmaple::Params& params)
     Model model10(GTR);
     Tree tree10(&aln10, &model10);
     std::cout << tree10.doInference() << std::endl;
-    std::stringstream tree10_stream(tree10.exportNewick(MUL_TREE));
+    std::stringstream tree10_stream(tree10.exportNewick(cmaple::Tree::MUL_TREE));
     //tree10_stream << tree10;
     
     Tree tree10_1(&aln10, &model10, tree10_stream);
-    std::stringstream tree10_1_stream(tree10.exportNewick(MUL_TREE));
+    std::stringstream tree10_1_stream(tree10.exportNewick(cmaple::Tree::MUL_TREE));
     //tree10_1_stream << tree10_1;
     
     std::cout << tree10_stream.str() << std::endl;
@@ -206,12 +209,12 @@ void cmaple::testing(cmaple::Params& params)
     
     // -------- Test re-read alignment -----------
     std::stringstream tree_str_1;
-    tree_str_1 << tree.exportNewick(MUL_TREE);
+    tree_str_1 << tree.exportNewick(cmaple::Tree::MUL_TREE);
     
     Model model3(GTR);
     Tree tree2(&aln,&model3, tree_str_1, true);
     std::stringstream tree_str_2;
-    tree_str_2 << tree2.exportNewick(MUL_TREE);
+    tree_str_2 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
     if (tree_str_1.str() != tree_str_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;
     
@@ -225,14 +228,14 @@ void cmaple::testing(cmaple::Params& params)
     
     tree_str_1 >> tree2;
     std::stringstream tree_str_2_6;
-    tree_str_2_6 << tree2.exportNewick(MUL_TREE);
+    tree_str_2_6 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
     if (tree_str_2_6.str() != tree_str_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;
     
     aln.read("test_200.maple");
     std::cout << tree2.doInference(cmaple::Tree::FAST_TREE_SEARCH) << std::endl;
     std::stringstream tree_str_2_5;
-    tree_str_2_5 << tree2.exportNewick(MUL_TREE);
+    tree_str_2_5 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
     if (tree_str_2_5.str() != tree_str_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;
     
