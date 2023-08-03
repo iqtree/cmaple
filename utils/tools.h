@@ -245,13 +245,6 @@ namespace cmaple
     };
 
     /**
-        types of sequences
-     */
-    enum SeqType {
-        SEQ_DNA, SEQ_PROTEIN, SEQ_BINARY, SEQ_MORPH, SEQ_MULTISTATE, SEQ_CODON, SEQ_POMO, SEQ_UNKNOWN
-    };
-
-    /**
      * substitution modela
      */
     enum SubModel {
@@ -617,7 +610,7 @@ namespace cmaple
         /**
         *  type of sequences
         */
-        SeqType seq_type;
+        std::string seq_type_str;
         
         /**
         *  type of tree search
@@ -1053,12 +1046,6 @@ namespace cmaple
      * @param instream the input stream
      */
     void resetStream(std::istream& instream);
-
-    /**
-    * Parse sequence type from a string
-    * @param n_seqtype_str a sequence type in string
-    */
-    SeqType parseSeqType(const std::string& n_seqtype_str);
 
     /**
     * Parse model from its name in a string

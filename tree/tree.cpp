@@ -644,7 +644,7 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
     performDFSAtLeave<&cmaple::Tree::expandTreeByOneLessInfoSeq<num_states>>();
     
     // NhanLT: update the model params
-    if (aln->getSeqType() == SEQ_DNA)
+    if (aln->getSeqType() == cmaple::SeqRegion::SEQ_DNA)
     {
         model->initMutationMat();
         updateModelParams<num_states>();

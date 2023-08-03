@@ -45,10 +45,10 @@ void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_sta
         throw std::logic_error("Invalid type of seqregion");
         
     switch (seq_type) {
-        case SEQ_DNA:
+        case cmaple::SeqRegion::SEQ_DNA:
             convertAmbiguiousStateDNA(max_num_states);
             break;
-        case SEQ_PROTEIN:
+        case cmaple::SeqRegion::SEQ_PROTEIN:
             convertAmbiguiousStateAA(max_num_states);
             break;
             
@@ -193,4 +193,18 @@ bool cmaple::SeqRegion::operator==(const SeqRegion& seqregion_1) const
     }
     
     return true;
+}
+
+cmaple::SeqRegion::SeqType cmaple::SeqRegion::parseSeqType(const std::string& n_seqtype_str)
+{
+    // transform to uppercase
+    std::string seqtype_str(n_seqtype_str);
+    transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);
+    if (seqtype_str == "DNA")
+        return cmaple::SeqRegion::SEQ_DNA;
+    if (seqtype_str == "AA")
+        return cmaple::SeqRegion::SEQ_PROTEIN;
+    
+    // default
+    return cmaple::SeqRegion::SEQ_UNKNOWN;
 }

@@ -15,15 +15,15 @@ char cmaple::symbols_dna[]     = "ACGT";
 char cmaple::symbols_rna[]     = "ACGU";
 char cmaple::symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-cmaple::Alignment::Alignment():seq_type_(SEQ_UNKNOWN), data(std::vector<Sequence>()), ref_seq(std::vector<cmaple::StateType>()), num_states(4), aln_format(IN_UNKNOWN), attached_trees(std::unordered_set<void*>()) {};
+cmaple::Alignment::Alignment():seq_type_(cmaple::SeqRegion::SEQ_UNKNOWN), data(std::vector<Sequence>()), ref_seq(std::vector<cmaple::StateType>()), num_states(4), aln_format(IN_UNKNOWN), attached_trees(std::unordered_set<void*>()) {};
 
-cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype):Alignment()
+cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const cmaple::SeqRegion::SeqType seqtype):Alignment()
 {
     // Initialize an alignment instance from the input stream
     read(aln_stream, ref_seq, format, seqtype);
 }
 
-cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype):Alignment()
+cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const cmaple::SeqRegion::SeqType seqtype):Alignment()
 {
     // Initialize an alignment instance from the input file
     read(aln_filename, ref_seq, format, seqtype);
@@ -31,7 +31,7 @@ cmaple::Alignment::Alignment(const std::string& aln_filename, const std::string&
 
 cmaple::Alignment::~Alignment() = default;
 
-void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const SeqType seqtype)
+void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const cmaple::SeqRegion::SeqType seqtype)
 {
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "Reading an alignment" << std::endl;
@@ -74,7 +74,7 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
     }
 }
 
-void cmaple::Alignment::read(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const SeqType seqtype)
+void cmaple::Alignment::read(const std::string& aln_filename, const std::string& ref_seq, const InputType format, const cmaple::SeqRegion::SeqType seqtype)
 {
     if (!aln_filename.length())
         throw std::invalid_argument("Please specify an alignnment file");
@@ -162,7 +162,7 @@ std::istream& cmaple::operator>>(std::istream& in_stream, cmaple::Alignment& aln
 
 void cmaple::Alignment::reset()
 {
-    setSeqType(SEQ_UNKNOWN);
+    setSeqType(cmaple::SeqRegion::SEQ_UNKNOWN);
     data.clear();
     ref_seq.clear();
     aln_format = IN_UNKNOWN;
@@ -511,7 +511,7 @@ void cmaple::Alignment::extractMutations(const StrVector &str_sequences, const S
                         length = 1;
                         
                         // starting a sequence of 'N'
-                        if (toupper(str_sequence[pos]) == 'N' && getSeqType() == SEQ_DNA)
+                        if (toupper(str_sequence[pos]) == 'N' && getSeqType() == cmaple::SeqRegion::SEQ_DNA)
                             state = 1;
                         // starting a sequence of '-'
                         else if (str_sequence[pos] == '-')
@@ -566,7 +566,7 @@ void cmaple::Alignment::extractMutations(const StrVector &str_sequences, const S
                         {
                             length = 1;
                             // starting a sequence of 'N'
-                            if (toupper(str_sequence[pos]) == 'N' && getSeqType() == SEQ_DNA)
+                            if (toupper(str_sequence[pos]) == 'N' && getSeqType() == cmaple::SeqRegion::SEQ_DNA)
                                 state = 1;
                             // output a mutation
                             else
@@ -653,7 +653,7 @@ void cmaple::Alignment::readMaple(std::istream& in)
             transform(line.begin(), line.end(), line.begin(), ::toupper);
             
             // detect the seq_type from the ref_sequences
-            if (getSeqType() == SEQ_UNKNOWN)
+            if (getSeqType() == cmaple::SeqRegion::SEQ_UNKNOWN)
             {
                 StrVector tmp_str_vec;
                 tmp_str_vec.push_back(line);
@@ -763,7 +763,7 @@ char cmaple::Alignment::convertState2Char(StateType state) {
     if (state > TYPE_INVALID) return '?';
 
     switch (getSeqType()) {
-    case SEQ_BINARY:
+    /*case cmaple::SeqRegion::SEQ_BINARY:
         switch (state) {
         case 0:
             return '0';
@@ -771,8 +771,8 @@ char cmaple::Alignment::convertState2Char(StateType state) {
             return '1';
         default:
             return '?'; // unrecognize character
-        }
-    case SEQ_DNA: // DNA
+        }*/
+    case cmaple::SeqRegion::SEQ_DNA: // DNA
         switch (state) {
         case 0:
             return 'A';
@@ -806,7 +806,7 @@ char cmaple::Alignment::convertState2Char(StateType state) {
             return '?'; // unrecognize character
         }
         return state;
-    case SEQ_PROTEIN: // Protein
+    case cmaple::SeqRegion::SEQ_PROTEIN: // Protein
         if (state < 20)
             return symbols_protein[(StateType)state];
         else if (state == 20) return 'B';
@@ -816,12 +816,12 @@ char cmaple::Alignment::convertState2Char(StateType state) {
 //        else if (state == 32+64+19) return 'Z';
         else
             return '-';
-    case SEQ_MORPH:
+    /*case SEQ_MORPH:
         // morphological state
         if (state < strlen(symbols_morph))
             return symbols_morph[state];
         else
-            return '-';
+            return '-';*/
     default:
         // unknown
         return '*';
@@ -837,7 +837,7 @@ StateType cmaple::Alignment::convertChar2State(char state) {
     char *loc;
 
     switch (getSeqType()) {
-    case SEQ_BINARY:
+    /*case SEQ_BINARY:
         switch (state) {
         case '0':
             return 0;
@@ -852,8 +852,8 @@ StateType cmaple::Alignment::convertChar2State(char state) {
                 return TYPE_INVALID;
             }
         }
-        break;
-    case SEQ_DNA: // DNA
+        break;*/
+    case cmaple::SeqRegion::SEQ_DNA: // DNA
         switch (state) {
         case 'A':
             return 0;
@@ -899,7 +899,7 @@ StateType cmaple::Alignment::convertChar2State(char state) {
             }
         }
         return state;
-    case SEQ_PROTEIN: // Protein
+    case cmaple::SeqRegion::SEQ_PROTEIN: // Protein
 //        if (state == 'B') return 4+8+19;
 //        if (state == 'Z') return 32+64+19;
         if (state == 'B') return 20;
@@ -923,7 +923,7 @@ StateType cmaple::Alignment::convertChar2State(char state) {
             return state;
         else
             return TYPE_N;
-    case SEQ_MORPH: // Standard morphological character
+    /*case SEQ_MORPH: // Standard morphological character
         loc = strchr(symbols_morph, state);
 
         if (!loc)
@@ -935,7 +935,7 @@ StateType cmaple::Alignment::convertChar2State(char state) {
             return TYPE_INVALID; // unrecognize character
         }
         state = loc - symbols_morph;
-        return state;
+        return state;*/
     default:
         {
             string invalid_state_msg = "Invalid state ";
@@ -1149,7 +1149,7 @@ void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream, const std::s
         }
     
     // detect the type of the input sequences
-    if (getSeqType() == SEQ_UNKNOWN)
+    if (getSeqType() == cmaple::SeqRegion::SEQ_UNKNOWN)
         setSeqType(detectSequenceType(sequences));
     
     // generate reference sequence from the input sequences
@@ -1167,7 +1167,7 @@ void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream, const std::s
     extractMutations(sequences, seq_names, ref_sequence);
 }
 
-SeqType cmaple::Alignment::detectSequenceType(StrVector& sequences)
+cmaple::SeqRegion::SeqType cmaple::Alignment::detectSequenceType(StrVector& sequences)
 {
     size_t num_nuc   = 0;
     size_t num_ungap = 0;
@@ -1212,33 +1212,33 @@ SeqType cmaple::Alignment::detectSequenceType(StrVector& sequences)
     {
         if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
             std::cout << "DNA data detected." << std::endl;
-        return SEQ_DNA;
+        return cmaple::SeqRegion::SEQ_DNA;
     }
-    if (((double)num_bin) / num_ungap > 0.9)
+    /*if (((double)num_bin) / num_ungap > 0.9)
     {
         if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
             std::cout << "Binary data detected." << std::endl;
         return SEQ_BINARY;
-    }
+    }*/
     if (((double)num_alpha + num_nuc) / num_ungap > 0.9)
     {
         if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
             std::cout << "Protein data detected." << std::endl;
-        return SEQ_PROTEIN;
+        return cmaple::SeqRegion::SEQ_PROTEIN;
     }
-    if (((double)(num_alpha + num_digit + num_nuc)) / num_ungap > 0.9)
+    /*if (((double)(num_alpha + num_digit + num_nuc)) / num_ungap > 0.9)
     {
         if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
             std::cout << "Morphological data detected." << std::endl;
         return SEQ_MORPH;
-    }
-    return SEQ_UNKNOWN;
+    }*/
+    return cmaple::SeqRegion::SEQ_UNKNOWN;
 }
 
 void cmaple::Alignment::updateNumStates()
 {
     switch (getSeqType()) {
-        case SEQ_PROTEIN:
+        case cmaple::SeqRegion::SEQ_PROTEIN:
             num_states = 20;
             break;
             

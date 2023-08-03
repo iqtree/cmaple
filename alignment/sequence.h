@@ -45,7 +45,7 @@ namespace cmaple
          Extract the lower likelihood vector (converting a vector of Mutations into a vector of Regions)
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
-        std::unique_ptr<SeqRegions> getLowerLhVector(const cmaple::PositionType sequence_length, const cmaple::StateType num_states, const cmaple::SeqType seq_type);
+        std::unique_ptr<SeqRegions> getLowerLhVector(const cmaple::PositionType sequence_length, const cmaple::StateType num_states, const cmaple::SeqRegion::SeqType seq_type);
     };
 }
 #endif

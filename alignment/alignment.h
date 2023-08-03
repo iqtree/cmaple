@@ -33,7 +33,7 @@ namespace cmaple
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          */
-        Alignment(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
+        Alignment(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
         
         /*! \brief Constructor from an alignment file in FASTA, PHYLIP, or [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
          * @param[in] aln_filename Name of an alignment file
@@ -46,7 +46,7 @@ namespace cmaple
          *
          * @throw ios::failure if the alignment file is not found
          */
-        Alignment(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
+        Alignment(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
         
         /*! \brief Destructor
          */
@@ -61,7 +61,7 @@ namespace cmaple
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          */
-        void read(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
+        void read(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
         
         /*! \brief Read an alignment from a file in FASTA, PHYLIP, or [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
          * @param[in] aln_filename Name of an alignment file
@@ -74,7 +74,7 @@ namespace cmaple
          *
          * @throw ios::failure if the alignment file is not found
          */
-        void read(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const SeqType seqtype = SEQ_UNKNOWN);
+        void read(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_UNKNOWN, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
         
         /** \brief Write the alignment to a stream in FASTA, PHYLIP, or [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
          * @param[in] aln_stream A stream of the output alignment file
@@ -103,13 +103,13 @@ namespace cmaple
          * @private
          * Get seq_type
          */
-        inline cmaple::SeqType getSeqType() const { return seq_type_; };
+        inline cmaple::SeqRegion::SeqType getSeqType() const { return seq_type_; };
         
         /**
          * @private
          * Set seq_type
          */
-        inline void setSeqType(cmaple::SeqType seq_type) {
+        inline void setSeqType(cmaple::SeqRegion::SeqType seq_type) {
             seq_type_ = seq_type;
             updateNumStates();
         };
@@ -138,6 +138,7 @@ namespace cmaple
          * @private
          * Parse  alignment format from a string
          * @param n_format a format in string
+         * @return an InputType
          */
         static InputType parseAlnFormat(const std::string& n_format);
         
@@ -175,7 +176,7 @@ namespace cmaple
         /**
          Type of sequences
          */
-        cmaple::SeqType seq_type_ = cmaple::SEQ_UNKNOWN;
+        cmaple::SeqRegion::SeqType seq_type_ = cmaple::SeqRegion::SEQ_UNKNOWN;
         
         /**
          @private
@@ -195,7 +196,7 @@ namespace cmaple
          @param sequences vector of strings
          @return the data type of the input sequences
          */
-        cmaple::SeqType detectSequenceType(cmaple::StrVector& sequences);
+        cmaple::SeqRegion::SeqType detectSequenceType(cmaple::StrVector& sequences);
         
         /**
          @private

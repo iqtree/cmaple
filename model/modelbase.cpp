@@ -127,7 +127,7 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln)
     
     // init root_freqs
     switch (aln->getSeqType()) {
-        case SEQ_PROTEIN:
+        case cmaple::SeqRegion::SEQ_PROTEIN:
             resetVec<20>(root_freqs);
             break;
             
@@ -538,34 +538,34 @@ void cmaple::ModelBase::updatePesudoCount(const Alignment* aln, const SeqRegions
     }
 }
 
-SeqType cmaple::ModelBase::getSeqType()
+cmaple::SeqRegion::SeqType cmaple::ModelBase::getSeqType()
 {
     switch (num_states_) {
         case 20:
-            return SEQ_PROTEIN;
+            return cmaple::SeqRegion::SEQ_PROTEIN;
             break;
         case 4:
-            return SEQ_DNA;
+            return cmaple::SeqRegion::SEQ_DNA;
             break;
             
         default: // unkown
-            return SEQ_UNKNOWN;
+            return cmaple::SeqRegion::SEQ_UNKNOWN;
             break;
     }
 }
 
-SeqType cmaple::ModelBase::detectSeqType(const SubModel sub_model)
+cmaple::SeqRegion::SeqType cmaple::ModelBase::detectSeqType(const SubModel sub_model)
 {
     // search in the list of dna models
     for(auto &it : dna_models_mapping)
         if(it.second == sub_model)
-            return SEQ_DNA;
+            return cmaple::SeqRegion::SEQ_DNA;
     
     // search in the list of protein models
     for(auto &it : aa_models_mapping)
         if(it.second == sub_model)
-            return SEQ_PROTEIN;
+            return cmaple::SeqRegion::SEQ_PROTEIN;
     
     // not found
-    return SEQ_UNKNOWN;
+    return cmaple::SeqRegion::SEQ_UNKNOWN;
 }

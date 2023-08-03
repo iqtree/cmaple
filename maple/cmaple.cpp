@@ -20,7 +20,8 @@ void cmaple::runCMaple(cmaple::Params &params)
         const cmaple::Tree::TreeType tree_format = cmaple::Tree::parseTreeType(params.tree_format_str);
         
         // Initialize a Model
-        Model model(params.sub_model, params.seq_type);
+        const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
+        Model model(params.sub_model, seq_type);
         
         // Initializa an Alignment
         // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
@@ -31,7 +32,7 @@ void cmaple::runCMaple(cmaple::Params &params)
             aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
         }
         const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
-        Alignment aln(params.aln_path, ref_seq, aln_format, params.seq_type);
+        Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())
@@ -158,7 +159,8 @@ void cmaple::testing(cmaple::Params& params)
     // -------- Test write and read tree -----------
     
     // Initialize a Model
-    Model model(params.sub_model, params.seq_type);
+    const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
+    Model model(params.sub_model, seq_type);
     
     Alignment aln_empty;
     // Initialize a Tree
@@ -166,7 +168,7 @@ void cmaple::testing(cmaple::Params& params)
     
     // Initialize an Alignment
     const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
-    Alignment aln(params.aln_path, "", aln_format, params.seq_type);
+    Alignment aln(params.aln_path, "", aln_format, seq_type);
     
     // Initialize a Tree
     Tree tree(&aln, &model);

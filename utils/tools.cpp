@@ -569,7 +569,7 @@ void cmaple::Params::initDefaultValue()
     output_prefix = "";
     allow_replace_input_tree = false;
     fixed_min_blength = -1;
-    seq_type = SEQ_UNKNOWN;
+    seq_type_str = "UNKNOWN";
     tree_search_type_str = "NORMAL";
     
     // initialize random seed based on current time
@@ -642,10 +642,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 cnt++;
                 if (cnt >= argc)
                     outError("Use -st DNA or -st AA");
-                params.seq_type = parseSeqType(argv[cnt]);
-                // validate seq_type
-                if (params.seq_type != SEQ_DNA && params.seq_type != SEQ_PROTEIN)
-                    outError("Use -st DNA or -st AA");
+                params.seq_type_str = argv[cnt];
                 
                 continue;
             }
@@ -1049,20 +1046,6 @@ void cmaple::resetStream(std::istream& instream)
 {
     instream.clear();
     instream.seekg(0, ios::beg);
-}
-
-SeqType cmaple::parseSeqType(const std::string& n_seqtype_str)
-{
-    // transform to uppercase
-    string seqtype_str(n_seqtype_str);
-    transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);
-    if (seqtype_str == "DNA")
-        return SEQ_DNA;
-    if (seqtype_str == "AA")
-        return SEQ_PROTEIN;
-    
-    // default
-    return SEQ_UNKNOWN;
 }
 
 SubModel cmaple::parseModel(const std::string& n_model_name)

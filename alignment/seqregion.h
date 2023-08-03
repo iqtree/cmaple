@@ -11,6 +11,16 @@ namespace cmaple
     public:
         using LHType = std::array<cmaple::RealNumType, NUM_STATES>;
         using LHPtrType = std::unique_ptr<LHType>;
+        
+        /*!
+            Types of sequences
+         */
+        enum SeqType {
+            SEQ_DNA, /*!< Nucleotide */
+            SEQ_PROTEIN, /*!< Protein */
+            SEQ_UNKNOWN, /*!< Unknown */
+        };
+        
     private:
         /**
          *  Compute the relative likelihood for an ambiguous state
@@ -22,7 +32,7 @@ namespace cmaple
          *  @throw std::invalid\_argument if seq\_type is unknown/unsupported
          *  @throw std::logic\_error if invalid type of seqregion found
          */
-        void convertAmbiguiousState(cmaple::SeqType seq_type, int max_num_states);
+        void convertAmbiguiousState(cmaple::SeqRegion::SeqType seq_type, int max_num_states);
         
         /**
          *  Convert Ambiguious state (of DNA data) into typical states: A/C/G/T; N; O; R
@@ -79,7 +89,7 @@ namespace cmaple
          *  - n\_type is invalid
          *  - seq\_type is unknown/unsupported
          */
-        SeqRegion(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::SeqType seq_type, int max_num_states);
+        SeqRegion(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::SeqRegion::SeqType seq_type, int max_num_states);
         
         /**
          *  Region constructor
@@ -87,7 +97,7 @@ namespace cmaple
          *  - the type of n_mutation  is invalid
          *  - seq\_type is unknown/unsupported
          */
-        SeqRegion(Mutation* n_mutation, cmaple::SeqType seq_type, int max_num_states);
+        SeqRegion(Mutation* n_mutation, cmaple::SeqRegion::SeqType seq_type, int max_num_states);
         
         /**
          *  Region constructor
@@ -122,5 +132,13 @@ namespace cmaple
          Compare two regions
          */
         bool operator==(const SeqRegion& seqregion_1) const;
+        
+        /**
+         * @private
+         * Parse sequence type from a string
+         * @param n_seqtype_str a sequence type in string
+         * @return a SeqType
+         */
+        static SeqType parseSeqType(const std::string& n_seqtype_str);
     };
 }

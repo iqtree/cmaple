@@ -5,21 +5,21 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::Model::Model(const SubModel sub_model, const SeqType n_seqtype):model_base(nullptr)
+cmaple::Model::Model(const SubModel sub_model, const cmaple::SeqRegion::SeqType n_seqtype):model_base(nullptr)
 {
-    SeqType seqtype = n_seqtype;
+    cmaple::SeqRegion::SeqType seqtype = n_seqtype;
     // If sequence type is not specified -> detect it from sub_model
-    if (seqtype == SEQ_UNKNOWN)
+    if (seqtype == cmaple::SeqRegion::SEQ_UNKNOWN)
         seqtype = ModelBase::detectSeqType(sub_model);
     
     // Init model from the corresponding seqtype and sub_model
     switch (seqtype) {
-        case SEQ_PROTEIN:
+        case cmaple::SeqRegion::SEQ_PROTEIN:
         {
             model_base = new ModelAA(sub_model);
             break;
         }
-        case SEQ_DNA:
+        case cmaple::SeqRegion::SEQ_DNA:
         {
             model_base = new ModelDNA(sub_model);
             break;

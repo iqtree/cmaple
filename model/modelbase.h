@@ -47,7 +47,7 @@ namespace cmaple
         /**
          Get SeqType from num_states
          */
-        SeqType getSeqType();
+        cmaple::SeqRegion::SeqType getSeqType();
         
         /**
          Export state frequencies at root
@@ -227,6 +227,6 @@ namespace cmaple
          Detect SeqType from a SubModel enum
          @param[in] sub_model SubModel enum
          */
-        static SeqType detectSeqType(const SubModel sub_model);
+        static cmaple::SeqRegion::SeqType detectSeqType(const SubModel sub_model);
     };
 }
