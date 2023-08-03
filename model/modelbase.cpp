@@ -238,22 +238,6 @@ std::string cmaple::ModelBase::exportQMatrixStr()
     return output;
 }
 
-cmaple::ModelParams cmaple::ModelBase::exportModelParams()
-{
-    cmaple::ModelParams model_params;
-    
-    // model_name
-    model_params.model_name = getModelName();
-    
-    // root frequencies
-    model_params.state_freqs = exportRootFrequenciesStr();
-    
-    // Q matrix
-    model_params.mut_rates = exportQMatrixStr();
-    
-    return model_params;
-}
-
 ModelsBlock* cmaple::ModelBase::readModelsDefinition(const char* builtin_models) {
 
     ModelsBlock *models_block = new ModelsBlock;

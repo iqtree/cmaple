@@ -88,7 +88,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         // Show model parameters
         if (cmaple::verbose_mode > cmaple::VB_QUIET)
         {
-            cmaple::ModelParams model_params = model.getParams();
+            cmaple::Model::ModelParams model_params = model.getParams();
             std::cout << "\nMODEL: " + model_params.model_name + "\n";
             std::cout << "\nROOT FREQUENCIES\n";
             std::cout << model_params.state_freqs;

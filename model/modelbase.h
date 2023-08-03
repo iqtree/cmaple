@@ -13,27 +13,6 @@
 namespace cmaple
 {
     class SeqRegions;
-    
-    /*!
-     A structure to store model parameters
-     */
-    struct ModelParams
-    {
-        /**
-         Name of the model in string
-         */
-        std::string model_name;
-        
-        /**
-         State frequencies in string
-         */
-        std::string state_freqs;
-        
-        /**
-         Mutation rates in string
-         */
-        std::string mut_rates;
-    };
 
     /** Base class of evolutionary models */
     class ModelBase
@@ -48,16 +27,6 @@ namespace cmaple
          Get SeqType from num_states
          */
         cmaple::SeqRegion::SeqType getSeqType();
-        
-        /**
-         Export state frequencies at root
-         */
-        std::string exportRootFrequenciesStr();
-        
-        /**
-         Export Q matrix
-         */
-        std::string exportQMatrixStr();
         
         /**
          Read root state frequencies from string/file
@@ -143,12 +112,6 @@ namespace cmaple
          */
         template <cmaple::StateType num_states>
         void updateMutationMatEmpiricalTemplate(const Alignment* aln);
-        
-        /**
-         @private
-         Get the model name
-         */
-        virtual std::string getModelName() const {return "";};
         
     public:
         /*!
@@ -287,6 +250,24 @@ namespace cmaple
         
         /**
          @private
+         Get the model name
+         */
+        virtual std::string getModelName() const {return "";};
+        
+        /**
+         @private
+         Export state frequencies at root
+         */
+        std::string exportRootFrequenciesStr();
+        
+        /**
+         @private
+         Export Q matrix
+         */
+        std::string exportQMatrixStr();
+        
+        /**
+         @private
          Extract reference-related info (freqs, log_freqs)
          
          @throw std::logic\_error if the reference genome is empty
@@ -323,12 +304,6 @@ namespace cmaple
          @param sample_regions the genome list for the new sample.
          */
         virtual void updatePesudoCount(const Alignment* aln, const SeqRegions& node_regions, const SeqRegions& sample_regions);
-        
-        /**
-         @private
-         Export model parameters to a dictionary
-         */
-        cmaple::ModelParams exportModelParams();
         
         /**
          @private

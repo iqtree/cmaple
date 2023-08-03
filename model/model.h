@@ -9,6 +9,27 @@ namespace cmaple
     class Model
     {
     public:
+        /*!
+         A structure to store model parameters
+         */
+        struct ModelParams
+        {
+            /*!
+             Name of the model in string
+             */
+            std::string model_name;
+            
+            /*!
+             State frequencies in string
+             */
+            std::string state_freqs;
+            
+            /*!
+             Mutation rates in string
+             */
+            std::string mut_rates;
+        };
+        
         /*! \brief Constructor from a model name
          * @param[in] sub_model a substitution model. List of supported models:
          * <br>**DNA models**: JC, GTR, UNREST;
@@ -24,10 +45,7 @@ namespace cmaple
         ~Model();
         
         /*! \brief Export the substitution model and its parameters to ModelParams structure
-         * @return A ModelParams structure contains the following members.
-         * <br><em>model_name</em>: the name of the model in string
-         * <br><em>state_freqs</em>: the state frequencies in string
-         * <br><em>mut_rates</em>: the mutation matrix in string
+         * @return A ModelParams structure.
          */
         ModelParams getParams();
         

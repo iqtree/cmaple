@@ -41,17 +41,23 @@ cmaple::Model::~Model()
     }
 }
 
-ModelParams cmaple::Model::getParams()
+cmaple::Model::ModelParams cmaple::Model::getParams()
 {
+    // Init an empty ModelParams
+    ModelParams model_params = {"", "", ""};
+    
     // Handle cases when model is not yet initialized
-    if (!model_base)
+    if (model_base)
     {
-        // Init an empty ModelParams
-        ModelParams model_params = {"", "", ""};
+        // model_name
+        model_params.model_name = model_base->getModelName();
         
-        // return the empty model_params
-        return model_params;
+        // root frequencies
+        model_params.state_freqs = model_base->exportRootFrequenciesStr();
+        
+        // Q matrix
+        model_params.mut_rates = model_base->exportQMatrixStr();
     }
     
-    return model_base->exportModelParams();
+    return model_params;;
 }

@@ -1075,7 +1075,7 @@ EXCLUDE_PATTERNS       =
 
 EXCLUDE_SYMBOLS        = cmaple::Distribution cmaple::Index stdext \
 						getInstance() \
-						aln_path aln_format_str ref_path ref_seqname model_name hamming_weight threshold_prob2 failure_limit_* strict_stop_seeking_* thresh_log_lh_* thresh_diff_update thresh_diff_fold_update output_aln* output_prefix allow_replace_input_tree seq_type_str tree_search_type_str overwrite_output fixed_blengths input_treefile tree_format shallow_tree_search output_testing compute_aLRT_SH thresh_placement_cost_short_search aLRT_SH_replicates aLRT_SH_half_epsilon num_threads min_blength_mid_factor
+						aln_path aln_format_str ref_path ref_seqname model_name_str hamming_weight threshold_prob2 failure_limit_* strict_stop_seeking_* thresh_log_lh_* thresh_diff_update thresh_diff_fold_update output_aln* output_prefix allow_replace_input_tree seq_type_str tree_search_type_str overwrite_output fixed_blengths input_treefile tree_format shallow_tree_search output_testing compute_aLRT_SH thresh_placement_cost_short_search aLRT_SH_replicates aLRT_SH_half_epsilon num_threads min_blength_mid_factor
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include

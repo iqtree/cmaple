@@ -1124,15 +1124,6 @@ namespace cmaple
         
         /**
          @private
-         Export model parameters in string
-         */
-        inline cmaple::ModelParams exportModelParams ()
-        {
-            return model->exportModelParams();
-        }
-        
-        /**
-         @private
          Employ Depth First Search to do a task at leaves
          */
         template <void(Tree::*task)(PhyloNode&, const cmaple::Index , const cmaple::Index )>
