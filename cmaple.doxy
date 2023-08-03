@@ -945,6 +945,7 @@ WARN_LOGFILE           =
 
 INPUT                  = CMapleLib.md \
                          tree/tree.h \
+                         alignment/seqregion.h \
                          alignment/alignment.h \
                          model/model.h \
                          utils/tools.h \
