@@ -15,23 +15,21 @@ namespace cmaple
         
         /*!
          * Types of tree search
-         * FAST_TREE_SEARCH: no tree search (placement only).
-         * NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
-         * MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
-         * UNKNOWN_TREE_SEARCH: unknown (not specified)
          */
         enum TreeSearchType {
-            FAST_TREE_SEARCH, NORMAL_TREE_SEARCH, MORE_ACCURATE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
+            FAST_TREE_SEARCH,/*!< No tree search (placement only) */
+            NORMAL_TREE_SEARCH, /*!< Only consider pruning branches at newly-added nodes when seeking SPR moves */
+            MORE_ACCURATE_TREE_SEARCH, /*!< Consider all nodes when seeking SPR moves */
+            UNKNOWN_TREE_SEARCH, /*!< Unknown (not specified) */
         };
         
         /*!
          * Types of trees
-         * BIN_TREE: binary tree
-         * MUL_TREE: multifurcating tree
-         * UNKNOWN_TREE: unknown tree type
          */
         enum TreeType {
-            BIN_TREE, MUL_TREE, UNKNOWN_TREE
+            BIN_TREE, /*!< Binary tree */
+            MUL_TREE, /*!< Multifurcating tree */
+            UNKNOWN_TREE, /*!< Unknown tree type */
         };
         
         // ----------------- BEGIN OF PUBLIC APIs ------------------------------------ //
