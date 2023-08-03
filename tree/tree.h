@@ -9,11 +9,11 @@
 
 namespace cmaple
 {
-    /** The tree structure */
+    /** The structure of a phylogenetic tree */
     class Tree {
     public:
         
-        /**
+        /*!
          * Types of tree search
          * FAST_TREE_SEARCH: no tree search (placement only).
          * NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
@@ -24,7 +24,7 @@ namespace cmaple
             FAST_TREE_SEARCH, NORMAL_TREE_SEARCH, MORE_ACCURATE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
         };
         
-        /**
+        /*!
          * Types of trees
          * BIN_TREE: binary tree
          * MUL_TREE: multifurcating tree
