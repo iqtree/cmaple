@@ -39,7 +39,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         }
         
         // Initialize a Tree
-        Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths);
+        TreeWrapper tree(&aln, &model, params.input_treefile, params.fixed_blengths);
         // clone all settings
         cmaple::Params& tree_params = tree.getParams();
         tree_params = params;
@@ -131,12 +131,12 @@ void cmaple::testing(cmaple::Params& params)
     // -------- Test write and read tree -----------
     Alignment aln10("test_100.maple");
     Model model10(GTR);
-    Tree tree10(&aln10, &model10);
+    TreeWrapper tree10(&aln10, &model10);
     std::cout << tree10.infer() << std::endl;
     std::stringstream tree10_stream(tree10.exportString(MUL_TREE));
     //tree10_stream << tree10;
     
-    Tree tree10_1(&aln10, &model10, tree10_stream);
+    TreeWrapper tree10_1(&aln10, &model10, tree10_stream);
     std::stringstream tree10_1_stream(tree10.exportString(MUL_TREE));
     //tree10_1_stream << tree10_1;
     
@@ -162,7 +162,7 @@ void cmaple::testing(cmaple::Params& params)
     Alignment aln(params.aln_path, "", params.aln_format, params.seq_type);
     
     // Initialize a Tree
-    Tree tree(&aln, &model);
+    TreeWrapper tree(&aln, &model);
     
     // Infer a phylogenetic tree
     std::string redirected_msgs = tree.infer(params.tree_search_type, params.shallow_tree_search);
@@ -207,7 +207,7 @@ void cmaple::testing(cmaple::Params& params)
     tree_str_1 << tree.exportString(MUL_TREE);
     
     Model model3(GTR);
-    Tree tree2(&aln,&model3, tree_str_1, true);
+    TreeWrapper tree2(&aln,&model3, tree_str_1, true);
     std::stringstream tree_str_2;
     tree_str_2 << tree2.exportString(MUL_TREE);
     if (tree_str_1.str() != tree_str_2.str())
