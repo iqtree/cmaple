@@ -21,7 +21,8 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Initialize a Model
         const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
-        Model model(params.sub_model, seq_type);
+        const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
+        Model model(sub_model, seq_type);
         
         // Initializa an Alignment
         // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
@@ -137,7 +138,7 @@ void cmaple::testing(cmaple::Params& params)
     
     // -------- Test write and read tree -----------
     Alignment aln10("test_100.maple");
-    Model model10(GTR);
+    Model model10(cmaple::ModelBase::GTR);
     Tree tree10(&aln10, &model10);
     std::cout << tree10.doInference() << std::endl;
     std::stringstream tree10_stream(tree10.exportNewick(cmaple::Tree::MUL_TREE));
@@ -160,7 +161,8 @@ void cmaple::testing(cmaple::Params& params)
     
     // Initialize a Model
     const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
-    Model model(params.sub_model, seq_type);
+    const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
+    Model model(sub_model, seq_type);
     
     Alignment aln_empty;
     // Initialize a Tree
@@ -216,7 +218,7 @@ void cmaple::testing(cmaple::Params& params)
     std::stringstream tree_str_1;
     tree_str_1 << tree.exportNewick(cmaple::Tree::MUL_TREE);
     
-    Model model3(GTR);
+    Model model3(cmaple::ModelBase::GTR);
     Tree tree2(&aln,&model3, tree_str_1, true);
     std::stringstream tree_str_2;
     tree_str_2 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
@@ -246,7 +248,7 @@ void cmaple::testing(cmaple::Params& params)
     
     // aln.read("test_100.maple"); // PASSED - unable to change to a smaller alignment
     aln.read("test_500.maple");
-    Model model2(JC);
+    Model model2(cmaple::ModelBase::JC);
     /*
     std::stringstream tree_str_2;
     tree.changeModel(&model2);

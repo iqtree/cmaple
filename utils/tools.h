@@ -245,24 +245,6 @@ namespace cmaple
     };
 
     /**
-     * substitution modela
-     */
-    enum SubModel {
-        // DNA models
-        JC, GTR, UNREST, \
-        // Protein models
-        GTR20, NONREV, LG, WAG, JTT, Q_PFAM, Q_BIRD, Q_MAMMAL, Q_INSECT, Q_PLANT, Q_YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ_PFAM, NQ_BIRD, NQ_MAMMAL, NQ_INSECT, NQ_PLANT, NQ_YEAST, \
-        // Unknown model
-        UNKNOWN_MODEL
-    };
-
-    /**
-     * mapping between model names and their enums
-     */
-    extern const std::map<std::string, SubModel> dna_models_mapping;
-    extern const std::map<std::string, SubModel> aa_models_mapping;
-
-    /**
         verbose level on the screen
      */
     extern VerboseMode verbose_mode;
@@ -411,7 +393,7 @@ namespace cmaple
         /**
             Substitution model (e.g., HKY, GTR, JC, etc.)
          */
-        SubModel sub_model;
+        std::string sub_model_str;
         
         /**
             TRUE to override the output files
@@ -1046,10 +1028,4 @@ namespace cmaple
      * @param instream the input stream
      */
     void resetStream(std::istream& instream);
-
-    /**
-    * Parse model from its name in a string
-    * @param n_seqtype_str a sequence type in string
-    */
-    SubModel parseModel(const std::string& model_name);
 }

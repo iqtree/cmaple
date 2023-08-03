@@ -861,7 +861,7 @@ model FLAVI=
 end;
 )";
 
-cmaple::ModelAA::ModelAA(const SubModel sub_model):ModelBase(sub_model)
+cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
 {
     num_states_ = 20;
     init();

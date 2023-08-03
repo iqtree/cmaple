@@ -5,7 +5,7 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::Model::Model(const SubModel sub_model, const cmaple::SeqRegion::SeqType n_seqtype):model_base(nullptr)
+cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model, const cmaple::SeqRegion::SeqType n_seqtype):model_base(nullptr)
 {
     cmaple::SeqRegion::SeqType seqtype = n_seqtype;
     // If sequence type is not specified -> detect it from sub_model

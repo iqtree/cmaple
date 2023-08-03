@@ -9,7 +9,10 @@ template void cmaple::ModelBase::updateMutationMat<20>();
 template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const Alignment*);
 template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const Alignment*);
 
-cmaple::ModelBase::ModelBase(const SubModel n_sub_model):sub_model(n_sub_model), mutation_mat(nullptr), diagonal_mut_mat(nullptr), transposed_mut_mat(nullptr), freqi_freqj_qij(nullptr),freq_j_transposed_ij(nullptr), root_freqs(nullptr), root_log_freqs(nullptr), inverse_root_freqs(nullptr), row_index(nullptr), model_block(nullptr), pseu_mutation_count(nullptr){}
+const std::map<std::string, cmaple::ModelBase::SubModel> cmaple::ModelBase::dna_models_mapping = {{"JC", cmaple::ModelBase::JC}, {"GTR", cmaple::ModelBase::GTR}, {"UNREST", cmaple::ModelBase::UNREST}};
+const std::map<std::string, cmaple::ModelBase::SubModel> cmaple::ModelBase::aa_models_mapping = {{"GTR20", cmaple::ModelBase::GTR20}, {"NONREV", cmaple::ModelBase::NONREV}, {"LG", cmaple::ModelBase::LG}, {"WAG", cmaple::ModelBase::WAG}, {"JTT", cmaple::ModelBase::JTT}, {"Q.PFAM", cmaple::ModelBase::Q_PFAM}, {"Q.BIRD", cmaple::ModelBase::Q_BIRD}, {"Q.MAMMAL", cmaple::ModelBase::Q_MAMMAL}, {"Q.INSECT", cmaple::ModelBase::Q_INSECT}, {"Q.PLANT", cmaple::ModelBase::Q_PLANT}, {"Q.YEAST", cmaple::ModelBase::Q_YEAST}, {"JTTDCMUT", cmaple::ModelBase::JTTDCMUT}, {"DCMUT", cmaple::ModelBase::DCMUT}, {"VT", cmaple::ModelBase::VT}, {"PMB", cmaple::ModelBase::PMB}, {"BLOSUM62", cmaple::ModelBase::BLOSUM62}, {"DAYHOFF", cmaple::ModelBase::DAYHOFF}, {"MTREV", cmaple::ModelBase::MTREV}, {"MTART", cmaple::ModelBase::MTART}, {"MTZOA", cmaple::ModelBase::MTZOA}, {"MTMET", cmaple::ModelBase::MTMET}, {"MTVER", cmaple::ModelBase::MTVER}, {"MTINV", cmaple::ModelBase::MTINV}, {"MTMAM", cmaple::ModelBase::MTMAM}, {"FLAVI", cmaple::ModelBase::FLAVI}, {"HIVB", cmaple::ModelBase::HIVB}, {"HIVW", cmaple::ModelBase::HIVW}, {"FLU", cmaple::ModelBase::FLU}, {"RTREV", cmaple::ModelBase::RTREV}, {"CPREV", cmaple::ModelBase::CPREV}, {"NQ.PFAM", cmaple::ModelBase::NQ_PFAM}, {"NQ.BIRD", cmaple::ModelBase::NQ_BIRD}, {"NQ.MAMMAL", cmaple::ModelBase::NQ_MAMMAL}, {"NQ.INSECT", cmaple::ModelBase::NQ_INSECT}, {"NQ.PLANT", cmaple::ModelBase::NQ_PLANT}, {"NQ.YEAST", cmaple::ModelBase::NQ_YEAST}};
+
+cmaple::ModelBase::ModelBase(const cmaple::ModelBase::SubModel n_sub_model):sub_model(n_sub_model), mutation_mat(nullptr), diagonal_mut_mat(nullptr), transposed_mut_mat(nullptr), freqi_freqj_qij(nullptr),freq_j_transposed_ij(nullptr), root_freqs(nullptr), root_log_freqs(nullptr), inverse_root_freqs(nullptr), row_index(nullptr), model_block(nullptr), pseu_mutation_count(nullptr){}
 
 cmaple::ModelBase::~ModelBase()
 {
@@ -554,7 +557,7 @@ cmaple::SeqRegion::SeqType cmaple::ModelBase::getSeqType()
     }
 }
 
-cmaple::SeqRegion::SeqType cmaple::ModelBase::detectSeqType(const SubModel sub_model)
+cmaple::SeqRegion::SeqType cmaple::ModelBase::detectSeqType(const cmaple::ModelBase::SubModel sub_model)
 {
     // search in the list of dna models
     for(auto &it : dna_models_mapping)
@@ -568,4 +571,24 @@ cmaple::SeqRegion::SeqType cmaple::ModelBase::detectSeqType(const SubModel sub_m
     
     // not found
     return cmaple::SeqRegion::SEQ_UNKNOWN;
+}
+
+cmaple::ModelBase::SubModel cmaple::ModelBase::parseModel(const std::string& n_model_name)
+{
+    // transform to uppercase
+    string model_name(n_model_name);
+    transform(model_name.begin(), model_name.end(), model_name.begin(), ::toupper);
+    
+    // parse model
+    // search in list of dna models
+    auto it = dna_models_mapping.find(model_name);
+    if (it != dna_models_mapping.end())
+      return it->second;
+    // search in list of protein models
+    it = aa_models_mapping.find(model_name);
+    if (it != aa_models_mapping.end())
+      return it->second;
+    
+    // model not found
+    return UNKNOWN_MODEL;
 }

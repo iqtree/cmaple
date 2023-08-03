@@ -17,7 +17,7 @@ namespace cmaple
          * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
          * @throw std::invalid\_argument if sub\_model is unknown/unsupported
          */
-        Model(const SubModel sub_model = GTR, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
+        Model(const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::GTR, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
         
         /*! \brief Destructor
          */

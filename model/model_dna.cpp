@@ -2,7 +2,7 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::ModelDNA::ModelDNA(const SubModel sub_model):ModelBase(sub_model)
+cmaple::ModelDNA::ModelDNA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
 {
     num_states_ = 4;
     init();

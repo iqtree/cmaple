@@ -721,7 +721,7 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 /*
     Initialize Alignment, Model, and Parameters
  */
-void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignment>& aln, ModelBase* model, const SubModel sub_model = GTR)
+void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignment>& aln, ModelBase* model, const cmaple::ModelBase::SubModel sub_model = GTR)
 {
     // Init params, aln, and model
     params->sub_model = sub_model;

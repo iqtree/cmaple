@@ -30,7 +30,7 @@ namespace cmaple
          Constructor
          @throw std::invalid\_argument if sub\_model is unknown/unsupported
          */
-        ModelDNA(const SubModel sub_model);
+        ModelDNA(const cmaple::ModelBase::SubModel sub_model);
         
         /**
          Init the mutation rate matrix from a model

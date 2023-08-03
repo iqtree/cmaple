@@ -38,9 +38,6 @@ using namespace cmaple;
 
 VerboseMode cmaple::verbose_mode = VB_MED;
 
-const std::map<std::string, SubModel> cmaple::dna_models_mapping = {{"JC", JC}, {"GTR", GTR}, {"UNREST", UNREST}};
-const std::map<std::string, SubModel> cmaple::aa_models_mapping = {{"GTR20", GTR20}, {"NONREV", NONREV}, {"LG", LG}, {"WAG", WAG}, {"JTT", JTT}, {"Q.PFAM", Q_PFAM}, {"Q.BIRD", Q_BIRD}, {"Q.MAMMAL", Q_MAMMAL}, {"Q.INSECT", Q_INSECT}, {"Q.PLANT", Q_PLANT}, {"Q.YEAST", Q_YEAST}, {"JTTDCMUT", JTTDCMUT}, {"DCMUT", DCMUT}, {"VT", VT}, {"PMB", PMB}, {"BLOSUM62", BLOSUM62}, {"DAYHOFF", DAYHOFF}, {"MTREV", MTREV}, {"MTART", MTART}, {"MTZOA", MTZOA}, {"MTMET", MTMET}, {"MTVER", MTVER}, {"MTINV", MTINV}, {"MTMAM", MTMAM}, {"FLAVI", FLAVI}, {"HIVB", HIVB}, {"HIVW", HIVW}, {"FLU", FLU}, {"RTREV", RTREV}, {"CPREV", CPREV}, {"NQ.PFAM", NQ_PFAM}, {"NQ.BIRD", NQ_BIRD}, {"NQ.MAMMAL", NQ_MAMMAL}, {"NQ.INSECT", NQ_INSECT}, {"NQ.PLANT", NQ_PLANT}, {"NQ.YEAST", NQ_YEAST}};
-
 void cmaple::printCopyright(ostream &out) {
     out << "CMAPLE version ";
     out << cmaple_VERSION_MAJOR << "." << cmaple_VERSION_MINOR << cmaple_VERSION_PATCH;
@@ -532,7 +529,7 @@ void cmaple::Params::initDefaultValue()
     aln_format_str = "UNKNOWN";
     ref_path = "";
     ref_seqname = "";
-    sub_model = GTR;
+    sub_model_str = "GTR";
     fixed_blengths = false;
     overwrite_output = false;
     threshold_prob = 1e-8;
@@ -735,11 +732,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc)
                     outError("Use -m <model_name>");
                 
-                const std::string model_name(argv[cnt]);
-                params.sub_model = parseModel(model_name);
-                // validate model
-                if (params.sub_model == UNKNOWN_MODEL)
-                    outError("Unknown model " + model_name + ". Please check and try again!");
+                params.sub_model_str = argv[cnt];
                 continue;
             }
             if (strcmp(argv[cnt], "--tree-search") == 0 || strcmp(argv[cnt], "-tree-search") == 0) {
@@ -1046,24 +1039,4 @@ void cmaple::resetStream(std::istream& instream)
 {
     instream.clear();
     instream.seekg(0, ios::beg);
-}
-
-SubModel cmaple::parseModel(const std::string& n_model_name)
-{
-    // transform to uppercase
-    string model_name(n_model_name);
-    transform(model_name.begin(), model_name.end(), model_name.begin(), ::toupper);
-    
-    // parse model
-    // search in list of dna models
-    auto it = dna_models_mapping.find(model_name);
-    if (it != dna_models_mapping.end())
-      return it->second;
-    // search in list of protein models
-    it = aa_models_mapping.find(model_name);
-    if (it != aa_models_mapping.end())
-      return it->second;
-    
-    // model not found
-    return UNKNOWN_MODEL;
 }

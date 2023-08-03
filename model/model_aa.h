@@ -45,7 +45,7 @@ namespace cmaple
          Constructor
          @throw std::invalid\_argument if sub\_model is unknown/unsupported
          */
-        ModelAA(const SubModel sub_model);
+        ModelAA(const cmaple::ModelBase::SubModel sub_model);
         
         /**
          Destructor

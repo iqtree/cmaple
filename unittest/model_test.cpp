@@ -4,7 +4,7 @@
 using namespace cmaple;
 
 /*
- Test void initMutationMat(const SubModel sub_model, const StateType num_states)
+ Test void initMutationMat(const cmaple::ModelBase::SubModel sub_model, const StateType num_states)
  */
 TEST(Model, initMutationMat)
 {
