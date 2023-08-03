@@ -1247,3 +1247,97 @@ void cmaple::Alignment::updateNumStates()
             break;
     }
 }
+
+cmaple::Alignment::InputType cmaple::Alignment::detectMAPLEorFASTA(std::istream& in) {
+    PositionType num_taxa = 0;
+    string line;
+
+    // set the failbit and badbit
+    in.exceptions(ios::failbit | ios::badbit);
+    // remove the failbit
+    in.exceptions(ios::badbit);
+    
+    // extract reference sequence first
+    for (; !in.eof();)
+    {
+        safeGetline(in, line);
+        if (line == "") continue;
+        
+        // count lines that begin with >
+        if (line[0] == '>')
+            ++num_taxa;
+        // handle other lines that presents a sequence (in FASTA) or a mutation (in MAPLE)
+        else
+        {
+            // only check the line if we pass the first two lines that begins with >
+            if (num_taxa >= 2)
+            {
+                // a mutation should be in pattern: <character><space_or_tab><number>[<space_or_tab><number>]
+                std::regex pattern("^.+[ \t]\\d+$");
+                
+                if (std::regex_match(line, pattern))
+                {
+                    // reset aln_stream
+                    resetStream(in);
+                    return cmaple::Alignment::IN_MAPLE;
+                }
+                else
+                {
+                    // reset aln_stream
+                    resetStream(in);
+                    
+                    return cmaple::Alignment::IN_FASTA;
+                }
+                
+            }
+        }
+    }
+    
+    // reset aln_stream
+    resetStream(in);
+    
+    return cmaple::Alignment::IN_FASTA;
+}
+
+cmaple::Alignment::InputType cmaple::Alignment::detectInputFile(std::istream& in) {
+    unsigned char ch = ' ';
+    unsigned char ch2 = ' ';
+    int count = 0;
+    do {
+        in >> ch;
+    } while (ch <= 32 && !in.eof() && count++ < 20);
+    in >> ch2;
+    // reset aln_stream
+    resetStream(in);
+    switch (ch) {
+        // case '#': return IN_NEXUS;
+        // case '(': return IN_NEWICK;
+        // case '[': return IN_NEWICK;
+        case '>': return detectMAPLEorFASTA(in);
+        /*case 'C': if (ch2 == 'L') return IN_CLUSTAL;
+                  else if (ch2 == 'O') return IN_COUNTS;
+                  else return IN_OTHER;
+        case '!': if (ch2 == '!') return IN_MSF; else return IN_OTHER;*/
+        default:
+            if (isdigit(ch)) return cmaple::Alignment::IN_PHYLIP;
+            return cmaple::Alignment::IN_UNKNOWN;
+    }
+
+    return cmaple::Alignment::IN_UNKNOWN;
+}
+
+cmaple::Alignment::InputType cmaple::Alignment::parseAlnFormat(const std::string& n_format)
+{
+    // transform to uppercase
+    string format(n_format);
+    transform(format.begin(), format.end(), format.begin(), ::toupper);
+    if (format == "MAPLE")
+        return cmaple::Alignment::IN_MAPLE;
+    if (format == "PHYLIP")
+        return cmaple::Alignment::IN_PHYLIP;
+    if (format == "FASTA")
+        return cmaple::Alignment::IN_FASTA;
+    
+    // default
+    return cmaple::Alignment::IN_UNKNOWN;
+}

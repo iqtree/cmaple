@@ -30,14 +30,16 @@ void cmaple::runCMaple(cmaple::Params &params)
             Alignment aln_tmp;
             aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
         }
-        Alignment aln(params.aln_path, ref_seq, params.aln_format, params.seq_type);
+        const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
+        Alignment aln(params.aln_path, ref_seq, aln_format, params.seq_type);
         
         // If users only want to convert the alignment to another format -> convert it and terminate
-        if (params.output_aln.length() && params.output_aln_format != IN_UNKNOWN)
+        if (params.output_aln.length())
         {
             if (cmaple::verbose_mode > cmaple::VB_QUIET)
                 std::cout << "Write the alignment to " + params.output_aln << std::endl;
-            aln.write(params.output_aln, params.output_aln_format, params.overwrite_output);
+            const Alignment::InputType output_aln_format = Alignment::parseAlnFormat(params.output_aln_format_str);
+            aln.write(params.output_aln, output_aln_format, params.overwrite_output);
             return;
         }
         
@@ -163,7 +165,8 @@ void cmaple::testing(cmaple::Params& params)
     //Tree tree_empty(&aln_empty, &model);
     
     // Initialize an Alignment
-    Alignment aln(params.aln_path, "", params.aln_format, params.seq_type);
+    const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
+    Alignment aln(params.aln_path, "", aln_format, params.seq_type);
     
     // Initialize a Tree
     Tree tree(&aln, &model);

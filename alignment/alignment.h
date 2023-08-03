@@ -9,6 +9,15 @@ namespace cmaple
     /** Class presents the input alignment */
     class Alignment {
     public:
+        /*!
+            Alignment format
+         */
+        enum InputType {
+            IN_FASTA, /*!< FASTA format */
+            IN_PHYLIP, /*!< PHYLIP format */
+            IN_MAPLE, /*!< [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format */
+            IN_UNKNOWN, /*!< Unknown format */
+        };
         
         // ----------------- BEGIN OF PUBLIC APIs ------------------------------------ //
         /*! \brief Default constructor
@@ -124,6 +133,13 @@ namespace cmaple
          @return a raw state
          */
         char convertState2Char(cmaple::StateType state);
+        
+        /**
+         * @private
+         * Parse  alignment format from a string
+         * @param n_format a format in string
+         */
+        static InputType parseAlnFormat(const std::string& n_format);
         
         /**
          @private
@@ -334,6 +350,26 @@ namespace cmaple
          Get a sequence in string
          */
         std::string getSeqString(const std::string& ref_seq_str, Sequence* sequence);
+        
+        /**
+        Detect the format of input file in MAPLE or FASTA format
+        @param aln_stream A stream of the alignment file
+        @return
+            IN_FASTA if in fasta format,
+            IN_MAPLE if in MAPLE format
+         */
+        InputType detectMAPLEorFASTA(std::istream& aln_stream);
+        
+        /**
+        Detect the format of input file
+        @param aln_stream A stream of the alignment file
+        @return
+            IN_FASTA if in fasta format,
+            IN_PHYLIP if in phylip format,
+            IN_MAPLE if in MAPLE format,
+            IN_UNKNOWN if file format unknown.
+         */
+        InputType detectInputFile(std::istream& aln_stream);
     };
 
     /** \brief Customized << operator to output the alignment to a stream in MAPLE format

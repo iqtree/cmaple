@@ -529,7 +529,7 @@ cmaple::Params::Params()
 void cmaple::Params::initDefaultValue()
 {
     aln_path = "";
-    aln_format = IN_UNKNOWN;
+    aln_format_str = "UNKNOWN";
     ref_path = "";
     ref_seqname = "";
     sub_model = GTR;
@@ -553,7 +553,7 @@ void cmaple::Params::initDefaultValue()
     thresh_diff_update = 1e-7;
     thresh_diff_fold_update = 1.001;
     output_aln = "";
-    output_aln_format = IN_MAPLE;
+    output_aln_format_str = "MAPLE";
     num_tree_improvement = 1;
     thresh_entire_tree_improvement = 1;
     thresh_placement_cost = -1e-5;
@@ -631,10 +631,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                     if (!params.output_aln.length())
                         outError("<ALN_FILENAME> is empty!");
                     inputs.erase(0, pos + delimiter.length());
-                    params.output_aln_format = parseAlnFormat(inputs);
-                    // validate output_aln_format
-                    if (params.output_aln_format != IN_MAPLE && params.output_aln_format != IN_PHYLIP && params.output_aln_format != IN_FASTA)
-                        outError("<ALN_FORMAT> must be MAPLE, PHYLIP, or FASTA");
+                    params.output_aln_format_str = inputs;
                 }
                 else
                     outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>");
@@ -677,10 +674,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 cnt++;
                 if (cnt >= argc)
                     outError("Use -format MAPLE, PHYLIP, or FASTA");
-                params.aln_format = parseAlnFormat(argv[cnt]);
-                // validate format
-                if (params.aln_format != IN_MAPLE && params.aln_format != IN_PHYLIP && params.aln_format != IN_FASTA)
-                    outError("Use -format MAPLE, PHYLIP, or FASTA");
+                params.aln_format_str = argv[cnt];
                 
                 continue;
             }
@@ -991,84 +985,6 @@ void cmaple::quickStartGuide() {
     exit(0);
 }
 
-InputType detectMAPLEorFASTA(std::istream& in) {
-    PositionType num_taxa = 0;
-    string line;
-
-    // set the failbit and badbit
-    in.exceptions(ios::failbit | ios::badbit);
-    // remove the failbit
-    in.exceptions(ios::badbit);
-    
-    // extract reference sequence first
-    for (; !in.eof();)
-    {
-        safeGetline(in, line);
-        if (line == "") continue;
-        
-        // count lines that begin with >
-        if (line[0] == '>')
-            ++num_taxa;
-        // handle other lines that presents a sequence (in FASTA) or a mutation (in MAPLE)
-        else
-        {
-            // only check the line if we pass the first two lines that begins with >
-            if (num_taxa >= 2)
-            {
-                // a mutation should be in pattern: <character><space_or_tab><number>[<space_or_tab><number>]
-                std::regex pattern("^.+[ \t]\\d+$");
-                
-                if (std::regex_match(line, pattern))
-                {
-                    // reset aln_stream
-                    resetStream(in);
-                    return cmaple::IN_MAPLE;
-                }
-                else
-                {
-                    // reset aln_stream
-                    resetStream(in);
-                    
-                    return cmaple::IN_FASTA;
-                }
-                
-            }
-        }
-    }
-    
-    // reset aln_stream
-    resetStream(in);
-    
-    return cmaple::IN_FASTA;
-}
-
-InputType cmaple::detectInputFile(std::istream& in) {
-    unsigned char ch = ' ';
-    unsigned char ch2 = ' ';
-    int count = 0;
-    do {
-        in >> ch;
-    } while (ch <= 32 && !in.eof() && count++ < 20);
-    in >> ch2;
-    // reset aln_stream
-    resetStream(in);
-    switch (ch) {
-        case '#': return IN_NEXUS;
-        case '(': return IN_NEWICK;
-        case '[': return IN_NEWICK;
-        case '>': return detectMAPLEorFASTA(in);
-        case 'C': if (ch2 == 'L') return IN_CLUSTAL;
-                  else if (ch2 == 'O') return IN_COUNTS;
-                  else return IN_OTHER;
-        case '!': if (ch2 == '!') return IN_MSF; else return IN_OTHER;
-        default:
-            if (isdigit(ch)) return IN_PHYLIP;
-            return IN_OTHER;
-    }
-
-    return IN_OTHER;
-}
-
 void cmaple::trimString(string &str) {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
     str.erase(str.find_last_not_of(" \n\r\t")+1);
@@ -1147,22 +1063,6 @@ SeqType cmaple::parseSeqType(const std::string& n_seqtype_str)
     
     // default
     return SEQ_UNKNOWN;
-}
-
-InputType cmaple::parseAlnFormat(const std::string& n_format)
-{
-    // transform to uppercase
-    string format(n_format);
-    transform(format.begin(), format.end(), format.begin(), ::toupper);
-    if (format == "MAPLE")
-        return IN_MAPLE;
-    if (format == "PHYLIP")
-        return IN_PHYLIP;
-    if (format == "FASTA")
-        return IN_FASTA;
-    
-    // default
-    return IN_UNKNOWN;
 }
 
 SubModel cmaple::parseModel(const std::string& n_model_name)

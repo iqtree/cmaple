@@ -238,13 +238,6 @@ namespace cmaple
     };
 
     /**
-        input type, tree or splits graph
-     */
-    enum InputType {
-        IN_NEWICK, IN_NEXUS, IN_FASTA, IN_PHYLIP, IN_COUNTS, IN_CLUSTAL, IN_MSF, IN_MAPLE, IN_OTHER, IN_UNKNOWN
-    };
-
-    /**
         verbose mode, determine how verbose should the screen be printed.
      */
     enum VerboseMode {
@@ -420,7 +413,7 @@ namespace cmaple
         /**
         *  Alignment format
         */
-        InputType aln_format;
+        std::string aln_format_str;
         
         /**
             Substitution model (e.g., HKY, GTR, JC, etc.)
@@ -544,7 +537,7 @@ namespace cmaple
         /**
         *  Format of the output alignment
         */
-        InputType output_aln_format;
+        std::string output_aln_format_str;
         
         /**
         *  Path to an input tree
@@ -976,19 +969,6 @@ namespace cmaple
     void quickStartGuide();
 
     /**
-        Detect the format of input file
-        @param aln_stream A stream of the alignment file
-        @return
-            IN_NEWICK if file in newick format,
-            IN_NEXUS if in nexus format,
-            IN_FASTA if in fasta format,
-            IN_PHYLIP if in phylip format,
-            IN_COUNTSFILE if in counts format (PoMo),
-            IN_OTHER if file format unknown.
-     */
-    InputType detectInputFile(std::istream& aln_stream);
-
-    /**
         Remove white space at the beginning and end of the string
         @param str (IN/OUT) string to be trimmed
     */
@@ -1079,12 +1059,6 @@ namespace cmaple
     * @param n_seqtype_str a sequence type in string
     */
     SeqType parseSeqType(const std::string& n_seqtype_str);
-
-    /**
-     * Parse  alignment format from a string
-     * @param n_format a format in string
-     */
-    InputType parseAlnFormat(const std::string& n_format);
 
     /**
     * Parse model from its name in a string
