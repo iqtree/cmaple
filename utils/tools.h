@@ -122,17 +122,16 @@
     #include <set>
 #endif
 
-
 #if    defined(USE_HASH_MAP) && GCC_VERSION < 40300 && !defined(_MSC_VER) && !defined(__clang__)
 /*
         Define the hash function of Split
  */
 #if !defined(__GNUC__)
-namespace stdext {
+namespace stdext
 #else
-namespace __gnu_cxx {
+namespace __gnu_cxx
 #endif
-
+{
     template<>
     struct hash<string> {
 
@@ -154,11 +153,6 @@ namespace cmaple
         std::cerr << sfile << ":" << line << ": " << func << ": Assertion `" << expression << "' failed." << std::endl;
         abort();
     }
-
-    struct Distribution {
-      std::string random_numbers_str;
-      int pool_size;
-    } ;
 
     /**
         Type of site states
@@ -249,7 +243,10 @@ namespace cmaple
      */
     extern VerboseMode verbose_mode;
 
-    /** Index for a mininode of a phylonode */
+    /**
+     @private
+     Index for a mininode of a phylonode
+     */
     enum MiniIndex : NumSeqsType
     {
         TOP,
@@ -259,7 +256,10 @@ namespace cmaple
     };
 
     /*--------------------------- NODE's INDEX -----------------------------------*/
-    /** Holds a space efficient index into a vector<PhyloNode> and subindex for the MiniNode inside the Phylonode */
+    /**
+     @private
+     Holds a space efficient index into a vector<PhyloNode> and subindex for the MiniNode inside the Phylonode
+     */
     struct Index
     {
         /**
@@ -350,9 +350,7 @@ namespace cmaple
     /*--------------------------------------------------------------*/
     /*--------------------------------------------------------------*/
 
-    /**
-            Program parameters, everything is specified here
-     */
+    /** Program parameters, everything is specified here */
     class Params {
     private:
         
@@ -371,36 +369,43 @@ namespace cmaple
         Params();
         
         /**
-        *  Path to input sequences
-        */
+         * @private
+         *  Path to input sequences
+         */
         std::string aln_path;
         
         /**
-        *  Name of an alignment that contains the reference sequence
-        */
+         * @private
+         *  Name of an alignment that contains the reference sequence
+         */
         std::string ref_path;
         
         /**
-        *  Name of the reference sequence
-        */
+         * @private
+         *  Name of the reference sequence
+         */
         std::string ref_seqname;
         
         /**
-        *  Alignment format
-        */
+         * @private
+         *  Alignment format
+         */
         std::string aln_format_str;
         
         /**
-            Substitution model (e.g., HKY, GTR, JC, etc.)
+         * @private
+         * Substitution model (e.g., HKY, GTR, JC, etc.)
          */
         std::string sub_model_str;
         
         /**
+         @private
             TRUE to override the output files
          */
         bool overwrite_output;
         
         /**
+         @private
             TRUE to fixed the branch lengths in the input tree
          */
         bool fixed_blengths;
@@ -411,56 +416,67 @@ namespace cmaple
         RealNumType threshold_prob;
         
         /**
-        *       threshold_prob ^ 2
+         * @private
+         * threshold_prob ^ 2
          */
         RealNumType threshold_prob2;
         
         /**
-        *      The number to limit the attempts of seeking a placement for a sample
-        */
+         * @private
+         *      The number to limit the attempts of seeking a placement for a sample
+         */
         int failure_limit_sample;
         
         /**
+         @private
         *      The number to limit the attempts of seeking a placement for a subtree
         */
         int failure_limit_subtree;
         
         /**
+         @private
         *      The number to limit the attempts of seeking a placement for a subtree (short range search
         */
         int failure_limit_subtree_short_search;
         
         /**
+         @private
         *       TRUE to apply strict stop rules when seeking placement for a new sample
          */
         bool strict_stop_seeking_placement_sample;
         
         /**
+         @private
         *       TRUE to apply strict stop rules when seeking placement for a subtree
          */
         bool strict_stop_seeking_placement_subtree;
         
         /**
+         @private
         *       TRUE to apply strict stop rules when seeking placement for a subtree (short range search)
          */
         bool strict_stop_seeking_placement_subtree_short_search;
         
         /**
+         @private
         *  Threshold of loglh to continue explore the subtree to seek a placement for a sample
         */
         RealNumType thresh_log_lh_sample;
         
         /**
+         @private
         *  Threshold of loglh to continue explore the subtree to seek a placement for a subtree
         */
         RealNumType thresh_log_lh_subtree;
         
         /**
+         @private
         *  Threshold of loglh to continue explore the subtree to seek a placement for a subtree (short range search)
         */
         RealNumType thresh_log_lh_subtree_short_search;
         
         /**
+         @private
         *  Threshold of loglh to count failure
         */
         RealNumType thresh_log_lh_failure;
@@ -472,29 +488,32 @@ namespace cmaple
         
         /**
         *  A factor to compute the minimum branch length (if fixed_min_blength is specified, this factor is ignored). Default: 0.2
-        * <br><Minimum branch length> = <min_blength_factor> * <default branch length>
-        * <br> where <default branch length> is one mutation per site.
+        * <br>\<Minimum branch length> = \<min_blength_factor> * \<default branch length>
+        * <br> where \<default branch length> is one mutation per site.
         */
         RealNumType min_blength_factor;
         
         /**
         * A factor to compute the maximum branch length. Default: 40
-        * <br> <Maximum branch length> = <max_blength_factor> * <default branch length>
-        * <br> where <default branch length> is one mutation per site.
+        * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch length>
+        * <br> where \<default branch length> is one mutation per site.
         */
         RealNumType max_blength_factor;
         
         /**
+         @private
         *  The minium branch length (for mid-branch point) to try for placement
         */
         RealNumType min_blength_mid_factor;
         
         /**
+         @private
         *  Threshold to determine whether a changed partial is different from its former value
         */
         RealNumType thresh_diff_update;
         
         /**
+         @private
         *  Threshold to determine whether a changed partial is different from its former value by folds
         */
         RealNumType thresh_diff_fold_update;
@@ -505,16 +524,19 @@ namespace cmaple
         PositionType mutation_update_period;
         
         /**
+         @private
         *  Name of the output alignment
         */
         std::string output_aln;
         
         /**
+         @private
         *  Format of the output alignment
         */
         std::string output_aln_format_str;
         
         /**
+         @private
         *  Path to an input tree
         */
         std::string input_treefile;
@@ -535,41 +557,49 @@ namespace cmaple
         RealNumType thresh_entire_tree_improvement;
         
         /**
+         @private
         *  Don't try to re-place nodes (during short range topology search) that have the placement cost exceeds this threshold
         */
         RealNumType thresh_placement_cost_short_search;
         
         /**
+         @private
         *  format of the output tree
         */
         std::string tree_format_str;
         
         /**
+         @private
         *  TRUE to run an additional short range search for tree topology improvement
         */
         bool shallow_tree_search;
         
         /**
+         @private
         *  path to output testing codes
         */
         char* output_testing;
         
         /**
+         @private
         * TRUE to compute aLRT-SH
         */
         bool compute_aLRT_SH;
         
         /**
+         @private
         * Number of replicates to compute aLRT-SH
         */
         PositionType aLRT_SH_replicates;
         
         /**
+         @private
         * (Half) epsilon value when computing aLRT-SH
         */
         RealNumType aLRT_SH_half_epsilon;
         
         /**
+         @private
         * number of threads
         */
         uint32_t num_threads;
@@ -580,21 +610,25 @@ namespace cmaple
         uint64_t ran_seed;
         
         /**
+         @private
         *  prefix output
         */
         std::string output_prefix;
         
         /**
+         @private
         *  TRUE to allow replace the input tree by its NNI neighbor (with a higher lh) when computing aLRT-SH
         */
         bool allow_replace_input_tree;
         
         /**
+         @private
         *  type of sequences
         */
         std::string seq_type_str;
         
         /**
+         @private
         *  type of tree search
         */
         std::string tree_search_type_str;
