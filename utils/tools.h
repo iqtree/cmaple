@@ -259,17 +259,6 @@ namespace cmaple
     };
 
     /**
-     * types of tree search
-     * FAST_TREE_SEARCH: no tree search (placement only).
-     * NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
-     * MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
-     * UNKNOWN_TREE_SEARCH: unknown (not specified)
-     */
-    enum TreeSearchType {
-        FAST_TREE_SEARCH, NORMAL_TREE_SEARCH, MORE_ACCURATE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
-    };
-
-    /**
      * types of trees
      * BIN_TREE: binary tree
      * MUL_TREE: multifurcating tree
@@ -650,7 +639,7 @@ namespace cmaple
         /**
         *  type of tree search
         */
-        TreeSearchType tree_search_type;
+        std::string tree_search_type_str;
         
         /*
             TRUE to log debugging
@@ -1072,16 +1061,6 @@ namespace cmaple
      * Print copyright
      */
     void printCopyright(std::ostream &out);
-
-    /**
-     * Parse type of tree search from a string
-     */
-    TreeSearchType parseTreeSearchType(const std::string& tree_search_type);
-
-    /**
-     * Get tree search type in string
-     */
-    std::string getTreeSearchStr(const TreeSearchType tree_search_type);
 
     /**
      * Set number of threads

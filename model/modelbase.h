@@ -227,20 +227,6 @@ namespace cmaple
          Detect SeqType from a SubModel enum
          @param[in] sub_model SubModel enum
          */
-        static SeqType detectSeqType(const SubModel sub_model)
-        {
-            // search in the list of dna models
-            for(auto &it : dna_models_mapping)
-                if(it.second == sub_model)
-                    return SEQ_DNA;
-            
-            // search in the list of protein models
-            for(auto &it : aa_models_mapping)
-                if(it.second == sub_model)
-                    return SEQ_PROTEIN;
-            
-            // not found
-            return SEQ_UNKNOWN;
-        }
+        static SeqType detectSeqType(const SubModel sub_model);
     };
 }

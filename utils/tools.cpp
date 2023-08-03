@@ -570,7 +570,7 @@ void cmaple::Params::initDefaultValue()
     allow_replace_input_tree = false;
     fixed_min_blength = -1;
     seq_type = SEQ_UNKNOWN;
-    tree_search_type = NORMAL_TREE_SEARCH;
+    tree_search_type_str = "NORMAL";
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -578,38 +578,6 @@ void cmaple::Params::initDefaultValue()
     gettimeofday(&tv, &tz);
     //ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
     ran_seed = (tv.tv_usec);
-}
-
-TreeSearchType cmaple::parseTreeSearchType(const string& n_tree_search_type)
-{
-    // convert tree_search_type to uppercase
-    std::string tree_search_type(n_tree_search_type);
-    transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
-    if (tree_search_type == "FAST") // || tree_search_type == "NO")
-        return FAST_TREE_SEARCH;
-    if (tree_search_type == "NORMAL") // || tree_search_type == "PARTIAL")
-        return NORMAL_TREE_SEARCH;
-    if (tree_search_type == "MORE_ACCURATE") // tree_search_type == "COMPLETE")
-        return MORE_ACCURATE_TREE_SEARCH;
-    return UNKNOWN_TREE_SEARCH;
-}
-
-std::string cmaple::getTreeSearchStr(const TreeSearchType tree_search_type)
-{
-    switch (tree_search_type) {
-        case cmaple::FAST_TREE_SEARCH:
-            return "FAST";
-            break;
-        case cmaple::NORMAL_TREE_SEARCH:
-            return "NORMAL";
-            break;
-        case cmaple::MORE_ACCURATE_TREE_SEARCH:
-            return "MORE_ACCURATE";
-            break;
-        default:
-            break;
-    }
-    return "";
 }
 
 void cmaple::parseArg(int argc, char *argv[], Params &params) {
@@ -788,10 +756,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 if (cnt >= argc || argv[cnt][0] == '-')
                     outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
                 
-                params.tree_search_type = parseTreeSearchType(argv[cnt]);
-                // validate tree_search_type
-                if (params.tree_search_type == UNKNOWN_TREE_SEARCH)
-                    outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
+                params.tree_search_type_str = argv[cnt];
                 continue;
             }
             if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {

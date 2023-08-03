@@ -13,6 +13,17 @@ namespace cmaple
     class Tree {
     public:
         
+        /**
+         * Types of tree search
+         * FAST_TREE_SEARCH: no tree search (placement only).
+         * NORMAL_TREE_SEARCH: only consider pruning branches at newly-added nodes when seeking SPR moves.
+         * MORE_ACCURATE_TREE_SEARCH: consider all nodes when seeking SPR moves.
+         * UNKNOWN_TREE_SEARCH: unknown (not specified)
+         */
+        enum TreeSearchType {
+            FAST_TREE_SEARCH, NORMAL_TREE_SEARCH, MORE_ACCURATE_TREE_SEARCH, UNKNOWN_TREE_SEARCH
+        };
+        
         // ----------------- BEGIN OF PUBLIC APIs ------------------------------------ //
         /*! \brief Constructor from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
          * @param[in] aln An alignment
@@ -226,6 +237,22 @@ namespace cmaple
          */
         std::vector<bool> sequence_added;
     
+        /**
+         * @private
+         * Parse type of tree search from a string
+         * @param[in] tree_search_type Tree search type in string
+         * @return a TreeSearchType
+         */
+        static TreeSearchType parseTreeSearchType(const std::string& tree_search_type);
+
+        /**
+         * @private
+         * Get tree search type in string
+         * @param[in] tree_search_type a type of tree search
+         * @return a  type of tree search from a string
+         */
+        static std::string getTreeSearchStr(const TreeSearchType tree_search_type);
+        
     private:
         /**
             Pointer  to LoadTree method

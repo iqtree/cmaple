@@ -1597,3 +1597,77 @@ void cmaple::SeqRegions::writeConstructionCodes(const std::string regions_name, 
     for (const SeqRegion& region : regions)
         region.writeConstructionCodes(regions_name, out, num_states);
 }
+
+void cmaple::SeqRegions::addNonConsecutiveRRegion(SeqRegions& regions, const cmaple::StateType new_region_type, const cmaple::RealNumType plength_observation2node, const cmaple::RealNumType plength_observation2root, const cmaple::PositionType end_pos, const cmaple::RealNumType threshold_prob)
+{
+    // cannot merge consecutive R regions if no region exists in regions
+    if (!regions.empty())
+    {
+        // try to merge consecutive R regions
+        SeqRegion& last_region = regions.back();
+        if (new_region_type == cmaple::TYPE_R
+            && last_region.type == cmaple::TYPE_R
+            && fabs(last_region.plength_observation2node - plength_observation2node) < threshold_prob
+            && fabs(last_region.plength_observation2root - plength_observation2root) < threshold_prob)
+        {
+            last_region.position = end_pos;
+            last_region.plength_observation2node = plength_observation2node;
+            last_region.plength_observation2root = plength_observation2root;
+            return;
+        }
+    }
+    
+    // if we cannot merge new region into existing R region => just add a new one
+    regions.emplace_back(new_region_type, end_pos, plength_observation2node, plength_observation2root);
+}
+
+cmaple::StateType cmaple::SeqRegions::simplifyO(cmaple::RealNumType* const partial_lh, cmaple::StateType ref_state, cmaple::StateType num_states, cmaple::RealNumType threshold)
+{
+    // dummy variables
+    ASSERT(partial_lh);
+    cmaple::RealNumType max_prob = 0;
+    cmaple::StateType max_index = 0;
+    cmaple::StateType high_prob_count = 0;
+    
+    // Check all states one by one
+    for (cmaple::StateType i = 0; i < num_states; ++i)
+    {
+        // record the state with the highest likelihood
+        if (partial_lh[i] > max_prob)
+        {
+            max_prob = partial_lh[i];
+            max_index = i;
+        }
+        
+        // count the number of states that have the likelihood greater than a threshold
+        if (partial_lh[i] > threshold)
+            ++high_prob_count;
+    }
+    
+    // if the partial lh concentrates at a specific state -> return new state
+    if (high_prob_count == 1)
+    {
+        // new state matches with the reference state
+        if (max_index == ref_state)
+            return cmaple::TYPE_R;
+        // return a nucleotide
+        else
+            return max_index;
+    }
+    // otherwise, cannot simplify
+    else
+        return cmaple::TYPE_O;
+}
+
+void cmaple::SeqRegions::addSimplifiedO(const cmaple::PositionType end_pos, SeqRegion::LHType& new_lh, const Alignment* aln, const cmaple::RealNumType threshold_prob, SeqRegions& merged_regions)
+{
+    cmaple::StateType new_state = SeqRegions::simplifyO(new_lh.data(), aln->ref_seq[end_pos], aln->num_states, threshold_prob);
+    
+    if (new_state == cmaple::TYPE_O)
+        merged_regions.emplace_back(cmaple::TYPE_O, end_pos, 0, 0, std::move(new_lh));
+    else
+    {
+        // add a new region and try to merge consecutive R regions together
+        SeqRegions::addNonConsecutiveRRegion(merged_regions, new_state, -1, -1, end_pos, threshold_prob);
+    }
+}

@@ -7015,3 +7015,35 @@ bool cmaple::Tree::isComplete()
     // Return complete (by default)
     return true;
 }
+
+cmaple::Tree::TreeSearchType cmaple::Tree::parseTreeSearchType(const string& n_tree_search_type)
+{
+    // convert tree_search_type to uppercase
+    std::string tree_search_type(n_tree_search_type);
+    transform(tree_search_type.begin(), tree_search_type.end(), tree_search_type.begin(), ::toupper);
+    if (tree_search_type == "FAST") // || tree_search_type == "NO")
+        return cmaple::Tree::FAST_TREE_SEARCH;
+    if (tree_search_type == "NORMAL") // || tree_search_type == "PARTIAL")
+        return cmaple::Tree::NORMAL_TREE_SEARCH;
+    if (tree_search_type == "MORE_ACCURATE") // tree_search_type == "COMPLETE")
+        return cmaple::Tree::MORE_ACCURATE_TREE_SEARCH;
+    return UNKNOWN_TREE_SEARCH;
+}
+
+std::string cmaple::Tree::getTreeSearchStr(const cmaple::Tree::TreeSearchType tree_search_type)
+{
+    switch (tree_search_type) {
+        case cmaple::Tree::FAST_TREE_SEARCH:
+            return "FAST";
+            break;
+        case cmaple::Tree::NORMAL_TREE_SEARCH:
+            return "NORMAL";
+            break;
+        case cmaple::Tree::MORE_ACCURATE_TREE_SEARCH:
+            return "MORE_ACCURATE";
+            break;
+        default:
+            break;
+    }
+    return "";
+}
