@@ -373,6 +373,7 @@ string cmaple::Alignment::generateRef(StrVector &sequences)
     const char NULL_CHAR = '\0';
     const char GAP = '-';
     string ref_str (sequences[0].length(), NULL_CHAR);
+    const char DEFAULT_CHAR = cmaple::Alignment::convertState2Char(0, seq_type_);
     
     // determine a character for each site one by one
     PositionType threshold = sequences.size() * 0.5;
@@ -406,7 +407,7 @@ string cmaple::Alignment::generateRef(StrVector &sequences)
         
         // if not found -> all characters in this site are gaps -> choose the default state
         if (ref_str[i] == NULL_CHAR)
-            ref_str[i] = convertState2Char(0);
+            ref_str[i] = DEFAULT_CHAR;
     }
     
     // return the reference genome
@@ -592,6 +593,7 @@ void cmaple::Alignment::extractMutations(const StrVector &str_sequences, const S
 void cmaple::Alignment::parseRefSeq(string& ref_sequence)
 {
     ref_seq.resize(ref_sequence.length());
+    const char DEFAULT_CHAR = cmaple::Alignment::convertState2Char(0, seq_type_);
     
     // transform ref_sequence to uppercase
     transform(ref_sequence.begin(), ref_sequence.end(), ref_sequence.begin(), ::toupper);
@@ -603,9 +605,9 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence)
         // validate the ref state
         if (ref_seq[i] >= num_states)
         {
-            ref_sequence[i] = convertState2Char(0);
+            ref_sequence[i] = DEFAULT_CHAR;
             if (cmaple::verbose_mode > cmaple::VB_QUIET)
-                outWarning("Invalid reference state found at site " + convertPosTypeToString(i) + " was replaced by a default state " + ref_sequence[i]);
+                outWarning("Invalid reference state found at site " + convertPosTypeToString(i) + " was replaced by a default state " + DEFAULT_CHAR);
             ref_seq[i] = 0;
         }
     }
@@ -762,11 +764,11 @@ void cmaple::Alignment::readMaple(std::istream& in)
     resetStream(in);
 }
 
-char cmaple::Alignment::convertState2Char(StateType state) {
+char cmaple::Alignment::convertState2Char(const cmaple::StateType& state, const cmaple::SeqRegion::SeqType& seqtype) {
     if (state == TYPE_N || state == TYPE_DEL) return '-';
     if (state > TYPE_INVALID) return '?';
 
-    switch (getSeqType()) {
+    switch (seqtype) {
     /*case cmaple::SeqRegion::SEQ_BINARY:
         switch (state) {
         case 0:
@@ -1031,7 +1033,7 @@ std::string cmaple::Alignment::getRefSeqStr()
     const PositionType seq_length = ref_seq.size();
     std::string ref_sequence(seq_length, ' ');
     for (auto i = 0; i < seq_length; ++i)
-        ref_sequence[i] = convertState2Char(ref_seq[i]);
+        ref_sequence[i] = cmaple::Alignment::convertState2Char(ref_seq[i], seq_type_);
     return ref_sequence;
 }
 
@@ -1043,7 +1045,7 @@ std::string cmaple::Alignment::getSeqString(const std::string& ref_seq_str, Sequ
     Mutation* mutation = &sequence->front();
     for (auto j = 0; j < sequence->size(); ++j, ++mutation)
     {
-        char state = convertState2Char(mutation->type);
+        char state = cmaple::Alignment::convertState2Char(mutation->type, seq_type_);
         
         // replace characters in sequence_str
         for (auto pos = mutation->position; pos < mutation->position + mutation->getLength(); ++pos)
@@ -1072,7 +1074,7 @@ void cmaple::Alignment::writeMAPLE(std::ostream& out)
         for (auto j = 0; j < sequence->size(); ++j, ++mutation)
         {
             const StateType type = mutation->type;
-            out << convertState2Char(type) << "\t" << (mutation->position + 1);
+            out << cmaple::Alignment::convertState2Char(type, seq_type_) << "\t" << (mutation->position + 1);
             if (type == TYPE_N || type == TYPE_DEL)
                 out << "\t" << mutation->getLength();
             out << endl;

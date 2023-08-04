@@ -131,9 +131,10 @@ namespace cmaple
          @private
          Convert a state ID, indexed from 0, to a raw character
          @param state ID input a state ID
+         @param seqtype The sequence type
          @return a raw state
          */
-        char convertState2Char(cmaple::StateType state);
+        static char convertState2Char(const cmaple::StateType& state, const cmaple::SeqRegion::SeqType& seqtype);
         
         /**
          * @private

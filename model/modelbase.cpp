@@ -189,13 +189,12 @@ std::string cmaple::ModelBase::exportRootFrequenciesStr()
     string output{};
     string header{};
     
-    // Init a dummy alignment to get states (in readable character)
-    Alignment aln;
-    aln.setSeqType(getSeqType());
+    // Get the seqtype
+    const cmaple::SeqRegion::SeqType seqtype = getSeqType();
     
     for (StateType i = 0; i < num_states_; ++i)
     {
-        header += aln.convertState2Char(i);
+        header += cmaple::Alignment::convertState2Char(i, seqtype);
         header += "\t\t\t";
         output += convertDoubleToString(root_freqs[i]) + "\t";
     }
@@ -210,15 +209,14 @@ std::string cmaple::ModelBase::exportQMatrixStr()
     
     string output{};
     
-    // Init a dummy alignment to get states (in readable character)
-    Alignment aln;
-    aln.setSeqType(getSeqType());
+    // Get the seqtype
+    const cmaple::SeqRegion::SeqType seqtype = getSeqType();
     
     // generate header
     output += "\t";
     for (StateType i = 0; i < num_states_; ++i)
     {
-        output += aln.convertState2Char(i);
+        output += cmaple::Alignment::convertState2Char(i, seqtype);
         output += "\t\t\t";
     }
     output += "\n";
@@ -226,7 +224,7 @@ std::string cmaple::ModelBase::exportQMatrixStr()
     RealNumType* mut_mat_row = mutation_mat;
     for (StateType i = 0; i < num_states_; ++i, mut_mat_row += num_states_)
     {
-        output += aln.convertState2Char(i);
+        output += cmaple::Alignment::convertState2Char(i, seqtype);
         output += "\t";
         
         for (StateType j = 0; j < num_states_; ++j)
