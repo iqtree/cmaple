@@ -15,7 +15,7 @@ char cmaple::symbols_dna[]     = "ACGT";
 char cmaple::symbols_rna[]     = "ACGU";
 char cmaple::symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-cmaple::Alignment::Alignment():seq_type_(cmaple::SeqRegion::SEQ_UNKNOWN), data(std::vector<Sequence>()), ref_seq(std::vector<cmaple::StateType>()), num_states(4), aln_format(IN_UNKNOWN), attached_trees(std::unordered_set<void*>()) {};
+cmaple::Alignment::Alignment():seq_type_(cmaple::SeqRegion::SEQ_UNKNOWN), data(std::vector<Sequence>()), ref_seq(std::vector<cmaple::StateType>()), num_states(4), aln_format(IN_AUTO), attached_trees(std::unordered_set<void*>()) {};
 
 cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const cmaple::SeqRegion::SeqType seqtype):Alignment()
 {
@@ -39,8 +39,8 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
     // Reset aln_base
     reset();
     
-    // Set format (is specified)
-    if (format != IN_UNKNOWN)
+    // Set format (if specified)
+    if (format != IN_AUTO && format != IN_UNKNOWN)
         aln_format = format;
     // Otherwise, detect the format from the alignment
     else
@@ -112,7 +112,7 @@ void cmaple::Alignment::write(std::ostream& aln_stream, const InputType& format)
         case IN_PHYLIP:
             writePHYLIP(aln_stream);
             break;
-        default:
+        default: // IN_AUTO or IN_UNKNOWN
             throw std::invalid_argument("Unsupported format for outputting the alignment!");
             break;
     }
@@ -165,7 +165,7 @@ void cmaple::Alignment::reset()
     setSeqType(cmaple::SeqRegion::SEQ_UNKNOWN);
     data.clear();
     ref_seq.clear();
-    aln_format = IN_UNKNOWN;
+    aln_format = IN_AUTO;
     attached_trees.clear();
 }
 
@@ -336,7 +336,7 @@ void cmaple::Alignment::readPhylip(std::istream& in, StrVector &sequences, StrVe
 void cmaple::Alignment::readSequences(std::istream& aln_stream, StrVector &sequences, StrVector &seq_names, InputType n_aln_format, bool check_min_seqs)
 {
     // detect the input file format
-    if (n_aln_format == IN_UNKNOWN)
+    if (n_aln_format == IN_AUTO || n_aln_format == IN_UNKNOWN)
         n_aln_format = detectInputFile(aln_stream);
     
     // read the input file
@@ -437,7 +437,7 @@ string cmaple::Alignment::readRefSeq(const std::string& ref_filename, const std:
     }
     
     // Read sequences from the alignment
-    readSequences(ref_stream, str_sequences, seq_names, IN_UNKNOWN, false);
+    readSequences(ref_stream, str_sequences, seq_names, IN_AUTO, false);
     
     // close ref_stream
     ref_stream.close();
@@ -1337,6 +1337,8 @@ cmaple::Alignment::InputType cmaple::Alignment::parseAlnFormat(const std::string
         return cmaple::Alignment::IN_PHYLIP;
     if (format == "FASTA")
         return cmaple::Alignment::IN_FASTA;
+    if (format == "AUTO")
+        return cmaple::Alignment::IN_AUTO;
     
     // default
     return cmaple::Alignment::IN_UNKNOWN;

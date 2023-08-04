@@ -526,7 +526,7 @@ cmaple::Params::Params()
 void cmaple::Params::initDefaultValue()
 {
     aln_path = "";
-    aln_format_str = "UNKNOWN";
+    aln_format_str = "AUTO";
     ref_path = "";
     ref_seqname = "";
     sub_model_str = "GTR";
