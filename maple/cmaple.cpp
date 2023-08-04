@@ -53,7 +53,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Infer a phylogenetic tree
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
-        std::string redirected_msgs = tree.doInference(tree_search_type, params.shallow_tree_search);
+        std::string redirected_msgs = tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
         if (cmaple::verbose_mode >= cmaple::VB_MED)
             std::cout << redirected_msgs << std::endl;
         
@@ -75,6 +75,10 @@ void cmaple::runCMaple(cmaple::Params &params)
             out_tree_branch_supports << tree.exportNewick(tree_format, true);
             out_tree_branch_supports.close();
         }
+        
+        // If needed, apply some minor changes (collapsing zero-branch leaves into less-info sequences, re-estimating model parameters) to make the processes of outputting then re-inputting a tree result in a consistent tree
+        if (params.make_consistent)
+            tree.makeTreeInOutConsistent();
         
         // output log-likelihood of the tree
         if (cmaple::verbose_mode > cmaple::VB_QUIET)
@@ -140,7 +144,7 @@ void cmaple::testing(cmaple::Params& params)
     Alignment aln10("test_100.maple");
     Model model10(cmaple::ModelBase::GTR);
     Tree tree10(&aln10, &model10);
-    std::cout << tree10.doInference() << std::endl;
+    std::cout << tree10.autoProceedMAPLE() << std::endl;
     std::stringstream tree10_stream(tree10.exportNewick(cmaple::Tree::MUL_TREE));
     //tree10_stream << tree10;
     
@@ -177,7 +181,7 @@ void cmaple::testing(cmaple::Params& params)
     
     // Infer a phylogenetic tree
     cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
-    std::string redirected_msgs = tree.doInference(tree_search_type, params.shallow_tree_search);
+    std::string redirected_msgs = tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << redirected_msgs << std::endl;
     
@@ -240,7 +244,7 @@ void cmaple::testing(cmaple::Params& params)
         std::cout << "Mismatch tree strings" << std:: endl;
     
     aln.read("test_200.maple");
-    std::cout << tree2.doInference(cmaple::Tree::FAST_TREE_SEARCH) << std::endl;
+    std::cout << tree2.autoProceedMAPLE(cmaple::Tree::FAST_TREE_SEARCH) << std::endl;
     std::stringstream tree_str_2_5;
     tree_str_2_5 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
     if (tree_str_2_5.str() != tree_str_2.str())
@@ -266,7 +270,7 @@ void cmaple::testing(cmaple::Params& params)
     std::cout << tree.computeLh() << std::endl;
     
     std::stringstream tree_str_4;
-    std::cout << tree.doInference() << std::endl;
+    std::cout << tree.autoProceedMAPLE() << std::endl;
     tree_str_4 << tree;
     if (tree_str_1.str() != tree_str_4.str())
         std::cout << "Mismatch tree strings" << std:: endl;

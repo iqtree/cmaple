@@ -568,6 +568,7 @@ void cmaple::Params::initDefaultValue()
     fixed_min_blength = -1;
     seq_type_str = "UNKNOWN";
     tree_search_type_str = "NORMAL";
+    make_consistent = false;
     
     // initialize random seed based on current time
     struct timeval tv;
@@ -749,6 +750,10 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             }
             if (strcmp(argv[cnt], "--overwrite") == 0 || strcmp(argv[cnt], "-overwrite") == 0) {
                 params.overwrite_output = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--make-consistent") == 0 || strcmp(argv[cnt], "-consistent") == 0) {
+                params.make_consistent = true;
                 continue;
             }
             if (strcmp(argv[cnt], "--replace-input-tree") == 0 || strcmp(argv[cnt], "-rep-tree") == 0) {

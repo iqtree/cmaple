@@ -118,7 +118,26 @@ namespace cmaple
          */
         void changeModel(Model* model);
         
-        /*! \brief Infer a phylogenetic tree
+        /*! Do placement (using stepwise addition) to build an initial tree
+         * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function will add new taxa (which are not existed in the input tree) from the alignment to the tree.
+         * - If users already supplied a complete tree, this function does nothing.
+         *
+         * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportNewick() later
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the attached substitution model is unknown/unsupported
+         * - unexpected values/behaviors found during the operations
+         */
+        std::string doPlacement();
+        
+        /*! Optimize the branch lengths of the current tree
+         * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportNewick() later
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the tree is empty
+         * - unexpected values/behaviors found during the operations
+         */
+        std::string optimizeBranch();
+        
+        /*! \brief Infer a phylogenetic tree by executing doPlacement(), applySPR(), and optimizeBranch()
          * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:
          *  + performs placement (i.e., adding missing taxa from the alignment to the tree)
          *  + applies a NORMAL tree search (which does SPR moves only on newly-added nodes)
@@ -128,18 +147,15 @@ namespace cmaple
          *  + If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);
          *  + If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE
          *
-         * @param[in] tree_search_type One of the following tree search:
-         * <br><em>FAST_TREE_SEARCH</em>: no tree search (placement only).
-         * <br><em>NORMAL_TREE_SEARCH</em>: only consider pruning branches at newly-added nodes when seeking SPR moves.
-         * <br><em>MORE_ACCURATE_TREE_SEARCH</em>: consider all nodes when seeking SPR moves.
-         * @param[in] shallow_tree_search TRUE ton enable a shallow tree search before a deeper tree search
+         * @param[in] tree_search_type A type of tree search
+         * @param[in] shallow_tree_search TRUE to enable a shallow tree search before a deeper tree search
          * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportNewick() later
          * @throw std::invalid\_argument if tree\_search\_type is unknown
          * @throw std::logic\_error if any of the following situations occur.
          * - the attached substitution model is unknown/unsupported
          * - unexpected values/behaviors found during the operations
          */
-        std::string doInference(const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH, const bool shallow_tree_search = false);
+        std::string autoProceedMAPLE(const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH, const bool shallow_tree_search = false);
         
         /*! \brief Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment
          * @return The log likelihood of the current tree
@@ -244,6 +260,13 @@ namespace cmaple
          a vector denote whether a sequence in the alignment is added to the tree or not
          */
         std::vector<bool> sequence_added;
+        
+        /*!
+         * @private
+         * Apply some minor changes (collapsing zero-branch leaves into less-info sequences, re-estimating model parameters) to make the processes of outputting then re-inputting a tree result in a consistent tree
+         * @throw std::logic\_error if unexpected values/behaviors found during the operations
+         */
+        void makeTreeInOutConsistent();
     
         /**
          * @private
@@ -295,6 +318,18 @@ namespace cmaple
         DoInferencePtrType doInferencePtr;
         
         /**
+            Pointer  to doPlacement method
+         */
+        typedef std::string (Tree::*DoPlacementPtrType)();
+        DoPlacementPtrType doPlacementPtr;
+        
+        /**
+            Pointer  to optimizeBranch method
+         */
+        typedef std::string (Tree::*OptimizeBranchPtrType)();
+        OptimizeBranchPtrType optimizeBranchPtr;
+        
+        /**
             Pointer  to computeLh method
          */
         typedef RealNumType (Tree::*computeLhPtrType)();
@@ -305,6 +340,9 @@ namespace cmaple
          */
         typedef std::string (Tree::*computeBranchSupportPtrType)(const int, const int, const double, const bool);
         computeBranchSupportPtrType computeBranchSupportPtr;
+        
+        typedef void (Tree::*MakeTreeInOutConsistentPtrType)();
+        MakeTreeInOutConsistentPtrType makeTreeInOutConsistentPtr;
         
         /*! Template of loadTree()
          @param[in] tree_stream A stream of the input tree
@@ -328,6 +366,16 @@ namespace cmaple
         template <const cmaple::StateType  num_states>
         std::string doInferenceTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
+        /*! Template of doPlacement()
+         */
+        template <const cmaple::StateType  num_states>
+        std::string doPlacementTemplate();
+        
+        /*! Template of optimizeBranch()
+         */
+        template <const cmaple::StateType  num_states>
+        std::string optimizeBranchTemplate();
+        
         /*! Template of computeLh()
          */
         template <const cmaple::StateType  num_states>
@@ -337,6 +385,11 @@ namespace cmaple
          */
         template <const cmaple::StateType  num_states>
         std::string computeBranchSupportTemplate(const int num_threads, const int num_replicates, const double epsilon, const bool allow_replacing_ML_tree);
+        
+        /*! Template of makeTreeInOutConsistent()
+         */
+        template <const cmaple::StateType  num_states>
+        void makeTreeInOutConsistentTemplate();
         
         /*! Setup function pointers
          @throw std::invalid\_argument If the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
@@ -360,14 +413,6 @@ namespace cmaple
          */
         void initTree(Alignment* aln, Model* model);
         
-        /*! Build an Initial Tree
-         @throw std::logic\_error if any of the following situations occur.
-         - the attached substitution model is unknown/unsupported
-         - unexpected values/behaviors found during the operations
-         */
-        template <const cmaple::StateType  num_states>
-        void buildInitialTree(const bool from_input_tree);
-        
         /*! Optimize the current tree
          @throw std::logic\_error if any of the following situations occur.
          - the attached substitution model is unknown/unsupported
@@ -381,12 +426,6 @@ namespace cmaple
          */
         template <const cmaple::StateType  num_states>
         void optimizeTreeTopology(bool short_range_search = false);
-        
-        /*! Optimize the branch lengths of the current tree
-         @throw std::logic\_error if unexpected values/behaviors found during the operations
-         */
-        template <const cmaple::StateType  num_states>
-        void optimizeBranchLengthsOfTree();
         
         /**
          Traverse the intial tree from root to re-calculate all non-lower likelihoods regarding the latest/final estimated model parameters
@@ -1045,12 +1084,12 @@ namespace cmaple
         
         /**
          @private
-         Try to optimize branch lengths of the tree
+         Try to optimize branch lengths of the tree by one round of tree traversal 
          @return num of improvements
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
-        cmaple::PositionType  optimizeBranchLengths();
+        cmaple::PositionType  optimizeBranchIter();
         
         /**
          @private

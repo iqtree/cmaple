@@ -22,9 +22,6 @@ template void cmaple::Tree::seekSamplePlacement<20>(const Index, const NumSeqsTy
 template void cmaple::Tree::placeNewSampleAtNode<4>(const Index, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType, const RealNumType, const RealNumType, const Index);
 template void cmaple::Tree::placeNewSampleAtNode<20>(const Index, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType, const RealNumType, const RealNumType, const Index);
 
-template int cmaple::Tree::optimizeBranchLengths<4>();
-template int cmaple::Tree::optimizeBranchLengths<20>();
-
 template void cmaple::Tree::placeNewSampleMidBranch<4>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 template void cmaple::Tree::placeNewSampleMidBranch<20>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 
@@ -107,7 +104,17 @@ void cmaple::Tree::changeModel(Model* model)
     (this->*changeModelPtr)(model);
 }
 
-std::string cmaple::Tree::doInference(const TreeSearchType tree_search_type, const bool shallow_tree_search)
+std::string cmaple::Tree::doPlacement()
+{
+    return (this->*doPlacementPtr)();
+}
+
+std::string cmaple::Tree::optimizeBranch()
+{
+    return (this->*optimizeBranchPtr)();
+}
+
+std::string cmaple::Tree::autoProceedMAPLE(const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
     return (this->*doInferencePtr)(tree_search_type, shallow_tree_search);
 }
@@ -115,6 +122,11 @@ std::string cmaple::Tree::doInference(const TreeSearchType tree_search_type, con
 RealNumType cmaple::Tree::computeLh()
 {
     return (this->*computeLhPtr)();
+}
+
+void cmaple::Tree::makeTreeInOutConsistent()
+{
+    (this->*makeTreeInOutConsistentPtr)();
 }
 
 std::string cmaple::Tree::exportNewick(const TreeType tree_type, const bool show_branch_supports)
@@ -166,17 +178,23 @@ void cmaple::Tree::setupFuncPtrs()
             loadTreePtr = &Tree::loadTreeTemplate<4>;
             changeAlnPtr = &Tree::changeAlnTemplate<4>;
             changeModelPtr = &Tree::changeModelTemplate<4>;
+            doPlacementPtr = &Tree::doPlacementTemplate<4>;
+            optimizeBranchPtr = &Tree::optimizeBranchTemplate<4>;
             doInferencePtr = &Tree::doInferenceTemplate<4>;
             computeLhPtr = &Tree::computeLhTemplate<4>;
             computeBranchSupportPtr = &Tree::computeBranchSupportTemplate<4>;
+            makeTreeInOutConsistentPtr = &Tree::makeTreeInOutConsistentTemplate<4>;
             break;
         case 20:
             loadTreePtr = &Tree::loadTreeTemplate<20>;
             changeAlnPtr = &Tree::changeAlnTemplate<20>;
             changeModelPtr = &Tree::changeModelTemplate<20>;
+            doPlacementPtr = &Tree::doPlacementTemplate<20>;
+            optimizeBranchPtr = &Tree::optimizeBranchTemplate<20>;
             doInferencePtr = &Tree::doInferenceTemplate<20>;
             computeLhPtr = &Tree::computeLhTemplate<20>;
             computeBranchSupportPtr = &Tree::computeBranchSupportTemplate<20>;
+            makeTreeInOutConsistentPtr = &Tree::makeTreeInOutConsistentTemplate<20>;
             break;
             
         default:
@@ -309,7 +327,7 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream, const bool n_fixe
             std::cout << "The input tree contains missing branch lengths. Re-estimate all branch lengths." << std::endl;
         
         // optimize blengths
-        optimizeBranchLengths<num_states>();
+        optimizeBranch();
         
         // refresh all likelihoods
         refreshAllLhs<num_states>();
@@ -427,8 +445,6 @@ std::string cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_t
 {
     // validate input
     ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
-    if (aln->data.size() < 3)
-        throw std::logic_error("The number of input sequences must be at least 3! Please check and try again!");
     
     // Validate tree search type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
@@ -446,11 +462,19 @@ std::string cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_t
     //  Check whether we infer a phologeny from an input tree
     const bool from_input_tree = nodes.size() > 0;
         
-    // 1. Build an initial tree
-    buildInitialTree<num_states>(from_input_tree);
+    // 1. Do placement to build an initial tree
+    std::cout << doPlacement() << std::endl;
     
     // 2. Optimize the tree with SPR if there is any new nodes added to the tree
     optimizeTree<num_states>(from_input_tree, tree_search_type, shallow_tree_search);
+    
+    // 3. Optimize branch lengths (if needed)
+    if (!fixed_blengths)
+        std::cout << optimizeBranch() << std::endl;
+    
+    // output log-likelihood of the tree
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+        std::cout << std::setprecision(10) << "Tree log likelihood (at the end of the inference): " << computeLh() << std::endl;
     
     // Restore the source cout
     cout.rdbuf(src_cout);
@@ -460,8 +484,20 @@ std::string cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_t
 }
 
 template <const StateType num_states>
-void cmaple::Tree::buildInitialTree(const bool from_input_tree)
+std::string cmaple::Tree::doPlacementTemplate()
 {
+    if (aln->data.size() < 3)
+        throw std::logic_error("The number of input sequences must be at least 3! Please check and try again!");
+    
+    // Redirect the original src_cout to the target_cout
+    streambuf* src_cout = cout.rdbuf();
+    ostringstream target_cout;
+    cout.rdbuf(target_cout.rdbuf());
+    
+    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
+    if (aln->attached_trees.find(this) == aln->attached_trees.end())
+        changeAln(aln);
+    
     // show information
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "Performing placement" << std::endl;
@@ -470,6 +506,8 @@ void cmaple::Tree::buildInitialTree(const bool from_input_tree)
     auto start = getRealTime();
     
     // dummy variables
+    //  Check whether we infer a phologeny from an input tree
+    const bool from_input_tree = nodes.size() > 0;
     const PositionType seq_length = aln->ref_seq.size();
     const PositionType num_seqs = aln->data.size();
     PositionType num_new_sequences = num_seqs;
@@ -571,6 +609,12 @@ void cmaple::Tree::buildInitialTree(const bool from_input_tree)
     auto end = getRealTime();
     if (cmaple::verbose_mode >= cmaple::VB_MAX)
         cout << " - Time spent on building an initial tree: " << std::setprecision(3) << end - start << endl;
+    
+    // Restore the source cout
+    cout.rdbuf(src_cout);
+
+    // Will output our Hello World! from above.
+    return target_cout.str();
 }
 
 template <const StateType num_states>
@@ -632,10 +676,18 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
     // output log-likelihood of the tree
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
         std::cout << std::setprecision(10) << "Tree log likelihood (after the deeper tree search (if any)): " << computeLh() << std::endl;
+}
+
+template <const cmaple::StateType  num_states>
+void cmaple::Tree::makeTreeInOutConsistentTemplate()
+{
+    // validate data
+    ASSERT(aln && "Null alignment");
+    ASSERT(model && "Null model");
     
-    // do further optimization on branch lengths (if needed)
-    if (!fixed_blengths)
-        optimizeBranchLengthsOfTree<num_states>();
+    // Make sure the tree is not empty
+    if (!nodes.size())
+        throw std::logic_error("Tree is empty. Please build/infer a tree first!");
     
     // Make writing and re-reading tree consistently
     // colapse zero branch lengths in leave
@@ -650,12 +702,8 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
         updateModelParams<num_states>();
     }
     
-    // traverse the tree from root to re-calculate all lower likelihoods after optimizing branch lengths
+    // traverse the tree from root to re-calculate all lower likelihoods
     performDFS<&Tree::updateLowerLh<num_states>>();
-    
-    // output log-likelihood of the tree
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-        std::cout << std::setprecision(10) << "Tree log likelihood (at the end of the inference): " << computeLh() << std::endl;
 }
 
 template <const StateType num_states>
@@ -710,10 +758,26 @@ void cmaple::Tree::optimizeTreeTopology(bool short_range_search)
 }
 
 template <const StateType num_states>
-void cmaple::Tree::optimizeBranchLengthsOfTree()
+std::string cmaple::Tree::optimizeBranchTemplate()
 {
+    // Make sure the tree is not empty
+    if (!nodes.size())
+    {
+        throw std::logic_error("Tree is empty. Please infer a tree first!");
+        return 0;
+    }
+    
+    // Redirect the original src_cout to the target_cout
+    streambuf* src_cout = cout.rdbuf();
+    ostringstream target_cout;
+    cout.rdbuf(target_cout.rdbuf());
+    
     // record the start time
     auto start = getRealTime();
+    
+    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
+    if (aln->attached_trees.find(this) == aln->attached_trees.end())
+        changeAln(aln);
     
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         cout << "Optimizing branch lengths" << endl;
@@ -722,7 +786,7 @@ void cmaple::Tree::optimizeBranchLengthsOfTree()
     resetSPRFlags(false, true, true);
    
     // traverse the tree from root to optimize branch lengths
-    PositionType num_improvement = optimizeBranchLengths<num_states>();
+    PositionType num_improvement = optimizeBranchIter<num_states>();
    
     // run improvements only on the nodes that have been affected by some changes in the last round, and so on
     for (int j = 0; j < 20; ++j)
@@ -733,13 +797,22 @@ void cmaple::Tree::optimizeBranchLengthsOfTree()
             break;
         
         // traverse the tree from root to optimize branch lengths
-        num_improvement = optimizeBranchLengths<num_states>();
+        num_improvement = optimizeBranchIter<num_states>();
     }
+    
+    // traverse the tree from root to re-calculate all likelihoods after optimizing the branch lengths
+    refreshAllLhs<num_states>();
 
     // show the runtime for optimize the branch lengths
     auto end = getRealTime();
     if (cmaple::verbose_mode >= cmaple::VB_MAX)
         cout << " - Time spent on optimizing the branch lengths: " << std::setprecision(3) << end - start << endl;
+    
+    // Restore the source cout
+    cout.rdbuf(src_cout);
+
+    // Will output our Hello World! from above.
+    return target_cout.str();
 }
 
 template <const StateType num_states>
@@ -748,7 +821,7 @@ RealNumType cmaple::Tree::computeLhTemplate()
     // Make sure the tree is not empty
     if (!nodes.size())
     {
-        throw std::logic_error("Tree is empty. Please call infer() to infer a tree from the alignment before computing the likelihood!");
+        throw std::logic_error("Tree is empty. Please build/infer a tree before computing the likelihood!");
         return 0;
     }
     
@@ -780,7 +853,7 @@ std::string cmaple::Tree::computeBranchSupportTemplate(const int num_threads, co
     // Make sure the tree is not empty
     if (!nodes.size())
     {
-        throw std::invalid_argument("Tree is empty. Please call infer() to infer a tree from the alignment first!");
+        throw std::invalid_argument("Tree is empty. Please build/infer a tree from the alignment first!");
         return;
     }
     
@@ -3608,7 +3681,7 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search)
 }
 
 template <const StateType num_states>
-PositionType cmaple::Tree::optimizeBranchLengths()
+PositionType cmaple::Tree::optimizeBranchIter()
 {
     // start from the root's children
     stack<Index> node_stack;
