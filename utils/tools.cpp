@@ -718,7 +718,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 try
                 {
                     params.fixed_min_blength = convert_real_number(argv[cnt]);
-                } catch (std::exception e)
+                } catch (std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -769,7 +769,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 try
                 {
                     params.threshold_prob = convert_real_number(argv[cnt]);
-                } catch (std::exception e)
+                } catch (std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -789,7 +789,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 {
                     params.mutation_update_period = convert_int(argv[cnt]);
                 }
-                catch(std::exception e)
+                catch(std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -807,7 +807,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 {
                     params.failure_limit_sample = convert_int(argv[cnt]);
                 }
-                catch(std::exception e)
+                catch(std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -825,7 +825,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 {
                     params.failure_limit_subtree = convert_int(argv[cnt]);
                 }
-                catch(std::exception e)
+                catch(std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -885,7 +885,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 {
                     params.aLRT_SH_replicates = convert_int(argv[cnt]);
                 }
-                catch(std::exception e)
+                catch(std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -901,7 +901,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 try
                 {
                     params.aLRT_SH_half_epsilon = convert_real_number(argv[cnt]) * 0.5;
-                } catch (std::exception e)
+                } catch (std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -917,7 +917,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 {
                     params.ran_seed = abs(convert_int(argv[cnt]));
                 }
-                catch(std::exception e)
+                catch(std::invalid_argument e)
                 {
                     outError(e.what());
                 }
@@ -935,7 +935,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                     {
                         params.num_threads = convert_int(argv[cnt]);
                     }
-                    catch(std::exception e)
+                    catch(std::invalid_argument e)
                     {
                         outError(e.what());
                     }
