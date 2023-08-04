@@ -109,6 +109,11 @@ std::string cmaple::Tree::doPlacement()
     return (this->*doPlacementPtr)();
 }
 
+std::string cmaple::Tree::applySPR(const TreeSearchType tree_search_type, const bool shallow_tree_search)
+{
+    return (this->*applySPRPtr)(tree_search_type, shallow_tree_search);
+}
+
 std::string cmaple::Tree::optimizeBranch()
 {
     return (this->*optimizeBranchPtr)();
@@ -179,6 +184,7 @@ void cmaple::Tree::setupFuncPtrs()
             changeAlnPtr = &Tree::changeAlnTemplate<4>;
             changeModelPtr = &Tree::changeModelTemplate<4>;
             doPlacementPtr = &Tree::doPlacementTemplate<4>;
+            applySPRPtr = &Tree::applySPRTemplate<4>;
             optimizeBranchPtr = &Tree::optimizeBranchTemplate<4>;
             doInferencePtr = &Tree::doInferenceTemplate<4>;
             computeLhPtr = &Tree::computeLhTemplate<4>;
@@ -190,6 +196,7 @@ void cmaple::Tree::setupFuncPtrs()
             changeAlnPtr = &Tree::changeAlnTemplate<20>;
             changeModelPtr = &Tree::changeModelTemplate<20>;
             doPlacementPtr = &Tree::doPlacementTemplate<20>;
+            applySPRPtr = &Tree::applySPRTemplate<20>;
             optimizeBranchPtr = &Tree::optimizeBranchTemplate<20>;
             doInferencePtr = &Tree::doInferenceTemplate<20>;
             computeLhPtr = &Tree::computeLhTemplate<20>;
@@ -327,10 +334,7 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream, const bool n_fixe
             std::cout << "The input tree contains missing branch lengths. Re-estimate all branch lengths." << std::endl;
         
         // optimize blengths
-        optimizeBranch();
-        
-        // refresh all likelihoods
-        refreshAllLhs<num_states>();
+        std::cout << optimizeBranch() << std::endl;
     }
     
     // set outdated = false at all nodes to avoid considering SPR moves at those nodes
@@ -446,27 +450,16 @@ std::string cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_t
     // validate input
     ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
     
-    // Validate tree search type
-    if (tree_search_type == UNKNOWN_TREE_SEARCH)
-        throw std::invalid_argument("Unknown tree search type!");
-    
     // Redirect the original src_cout to the target_cout
     streambuf* src_cout = cout.rdbuf();
     ostringstream target_cout;
     cout.rdbuf(target_cout.rdbuf());
-    
-    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
-    if (aln->attached_trees.find(this) == aln->attached_trees.end())
-        changeAln(aln);
-    
-    //  Check whether we infer a phologeny from an input tree
-    const bool from_input_tree = nodes.size() > 0;
         
     // 1. Do placement to build an initial tree
     std::cout << doPlacement() << std::endl;
     
     // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-    optimizeTree<num_states>(from_input_tree, tree_search_type, shallow_tree_search);
+    std::cout << applySPR(tree_search_type, shallow_tree_search) << std::endl;
     
     // 3. Optimize branch lengths (if needed)
     if (!fixed_blengths)
@@ -618,8 +611,25 @@ std::string cmaple::Tree::doPlacementTemplate()
 }
 
 template <const StateType num_states>
-void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType tree_search_type, const bool shallow_tree_search)
+std::string cmaple::Tree::applySPRTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search)
 {
+    // Validate tree search type
+    if (tree_search_type == UNKNOWN_TREE_SEARCH)
+        throw std::invalid_argument("Unknown tree search type!");
+    
+    // Make sure the tree is not empty
+    if (!nodes.size())
+        throw std::logic_error("Tree is empty. Please build/infer a tree first!");
+    
+    // Redirect the original src_cout to the target_cout
+    streambuf* src_cout = cout.rdbuf();
+    ostringstream target_cout;
+    cout.rdbuf(target_cout.rdbuf());
+    
+    // Make sure we use the updated alignment (in case users re-read the alignment from a new file after attaching the alignment to the tree)
+    if (aln->attached_trees.find(this) == aln->attached_trees.end())
+        changeAln(aln);
+
     // show information
     if (tree_search_type == FAST_TREE_SEARCH && cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << "No tree search is invoked." << std::endl;
@@ -631,25 +641,20 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
     // Don't apply shallow tree search if users chose no tree search
     if (shallow_tree_search && tree_search_type != FAST_TREE_SEARCH)
     {
-        // don't apply shallow tree search if users inputted a tree and wanted to run a partial tree search later (because outdated flags may become incorrect due to shallow tree search)
-        if (from_input_tree && tree_search_type == NORMAL_TREE_SEARCH)
-        {
-            if (cmaple::verbose_mode > cmaple::VB_QUIET)
-                outWarning("Disable shallow tree search because it's not supported if users input a tree and want to apply a normal tree search.");
-        }
-        // otherwise, apply a shallow tree search
-        else
-        {
-            if (cmaple::verbose_mode >= cmaple::VB_MED)
-                std::cout << "Applying a shallow tree search" << std::endl;
-            
-            // apply short-range SPR search
-            optimizeTreeTopology<num_states>(true);
-            // exportOutput(output_file + "_short_search.treefile");
-            
-            // reset the SPR flags so that we can start a deeper SPR search later
-            resetSPRFlags(false, true, true);
-        }
+        // show info
+        if (cmaple::verbose_mode >= cmaple::VB_MED)
+            std::cout << "Applying a shallow tree search" << std::endl;
+        
+        // show a warning if applying a shallow tree search will follow by a full
+        if (tree_search_type == NORMAL_TREE_SEARCH && cmaple::verbose_mode > cmaple::VB_QUIET)
+            outWarning("A shallow tree search will be followed by a MORE_ACCURATE_TREE_SEARCH instead of a NORMAL_TREE_SEARCH");
+
+        // apply short-range SPR search
+        optimizeTreeTopology<num_states>(true);
+        // exportOutput(output_file + "_short_search.treefile");
+        
+        // reset the SPR flags so that we can start a deeper SPR search later
+        resetSPRFlags(false, true, true);
     }
     
     // output log-likelihood of the tree
@@ -676,6 +681,12 @@ void cmaple::Tree::optimizeTree(const bool from_input_tree, const TreeSearchType
     // output log-likelihood of the tree
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
         std::cout << std::setprecision(10) << "Tree log likelihood (after the deeper tree search (if any)): " << computeLh() << std::endl;
+    
+    // Restore the source cout
+    cout.rdbuf(src_cout);
+
+    // Will output our Hello World! from above.
+    return target_cout.str();
 }
 
 template <const cmaple::StateType  num_states>
@@ -2136,7 +2147,7 @@ void cmaple::Tree::seekSubTreePlacement(Index& best_node_index, RealNumType &bes
 }
 
 template <const StateType num_states>
-void cmaple::Tree::applySPR(const Index subtree_index, PhyloNode& subtree, const Index best_node_index, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff)
+void cmaple::Tree::applyOneSPR(const Index subtree_index, PhyloNode& subtree, const Index best_node_index, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff)
 {
     // record the SPR applied at this subtree
     subtree.setSPRApplied(true);
@@ -4203,7 +4214,7 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff, const RealNu
                 cout << "In improveSubTree() found SPR move with improvement " << total_improvement << endl;
             
             // apply an SPR move
-            applySPR<num_states>(node_index, node, best_node_index, is_mid_node, best_blength, best_lh_diff);
+            applyOneSPR<num_states>(node_index, node, best_node_index, is_mid_node, best_blength, best_lh_diff);
             
             topology_updated = true;
         }

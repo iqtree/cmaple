@@ -129,10 +129,22 @@ namespace cmaple
          */
         std::string doPlacement();
         
+        /*! Apply SPR moves to optimize the tree
+         * @param[in] tree_search_type A type of tree search
+         * @param[in] shallow_tree_search TRUE to enable a shallow tree search before a deeper tree search
+         * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportNewick() later
+         * @throw std::logic\_error if any of the following situations occur.
+         * - the tree is empty
+         * - the attached substitution model is unknown/unsupported
+         * - unexpected values/behaviors found during the operations
+         */
+        std::string applySPR(const TreeSearchType tree_search_type, const bool shallow_tree_search);
+        
         /*! Optimize the branch lengths of the current tree
          * @return a string contains all messages redirected from std::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call exportNewick() later
          * @throw std::logic\_error if any of the following situations occur.
          * - the tree is empty
+         * - the attached substitution model is unknown/unsupported
          * - unexpected values/behaviors found during the operations
          */
         std::string optimizeBranch();
@@ -161,6 +173,7 @@ namespace cmaple
          * @return The log likelihood of the current tree
          * @throw std::logic\_error if any of the following situations occur.
          * - the tree is empty
+         * - the attached substitution model is unknown/unsupported
          * - unexpected values/behaviors found during the operations
          */
         RealNumType computeLh();
@@ -178,6 +191,7 @@ namespace cmaple
          *
          * @throw std::logic\_error if any of the following situations occur.
          * - the tree is empty
+         * - the attached substitution model is unknown/unsupported
          * - unexpected values/behaviors found during the operations
          */
         std::string computeBranchSupport(const int num_threads = 1, const int num_replicates = 1000, const double epsilon = 0.1, const bool allow_replacing_ML_tree = true);
@@ -324,6 +338,12 @@ namespace cmaple
         DoPlacementPtrType doPlacementPtr;
         
         /**
+            Pointer  to applySPR method
+         */
+        typedef std::string (Tree::*ApplySPRPtrType)(const TreeSearchType, const bool);
+        ApplySPRPtrType applySPRPtr;
+        
+        /**
             Pointer  to optimizeBranch method
          */
         typedef std::string (Tree::*OptimizeBranchPtrType)();
@@ -371,6 +391,11 @@ namespace cmaple
         template <const cmaple::StateType  num_states>
         std::string doPlacementTemplate();
         
+        /*! Template of applySPR()
+         */
+        template <const cmaple::StateType  num_states>
+        std::string applySPRTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search);
+        
         /*! Template of optimizeBranch()
          */
         template <const cmaple::StateType  num_states>
@@ -412,14 +437,6 @@ namespace cmaple
          * @throw std::logic\_error if the reference genome is empty
          */
         void initTree(Alignment* aln, Model* model);
-        
-        /*! Optimize the current tree
-         @throw std::logic\_error if any of the following situations occur.
-         - the attached substitution model is unknown/unsupported
-         - unexpected values/behaviors found during the operations
-         */
-        template <const cmaple::StateType  num_states>
-        void optimizeTree(const bool from_input_tree, const TreeSearchType tree_search_type, const bool shallow_tree_search);
         
         /*! Optimize the tree topology
          @throw std::logic\_error if unexpected values/behaviors found during the operations
@@ -1049,12 +1066,12 @@ namespace cmaple
         
         /**
          @private
-         Apply SPR move
+         Apply a single SPR move
          pruning a subtree then regrafting it to a new position
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType  num_states>
-        void applySPR(const cmaple::Index  subtree_index, PhyloNode& subtree, const cmaple::Index  best_node_index, const bool is_mid_branch, const cmaple::RealNumType  branch_length, const cmaple::RealNumType  best_lh_diff);
+        void applyOneSPR(const cmaple::Index  subtree_index, PhyloNode& subtree, const cmaple::Index  best_node_index, const bool is_mid_branch, const cmaple::RealNumType  branch_length, const cmaple::RealNumType  best_lh_diff);
         
         /**
          @private
