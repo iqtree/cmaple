@@ -29,25 +29,25 @@ namespace cmaple
          * @param[in] aln_stream A stream of an alignment file
          * @param[in] ref_seq A feference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection)
-         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
+         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
          * @throw std::invalid\_argument if any of the following situations occur.
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          */
-        Alignment(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
+        Alignment(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
         
         /*! \brief Constructor from an alignment file in FASTA, PHYLIP, or [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
          * @param[in] aln_filename Name of an alignment file
          * @param[in] ref_seq A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection)
-         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
+         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
          * @throw std::invalid\_argument if any of the following situations occur.
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          *
          * @throw ios::failure if the alignment file is not found
          */
-        Alignment(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
+        Alignment(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
         
         /*! \brief Destructor
          */
@@ -57,25 +57,25 @@ namespace cmaple
          * @param[in] aln_stream A stream of an alignment file
          * @param[in] ref_seq A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection)
-         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
+         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
          * @throw std::invalid\_argument if any of the following situations occur.
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          */
-        void read(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
+        void read(std::istream& aln_stream, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
         
         /*! \brief Read an alignment from a file in FASTA, PHYLIP, or [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
          * @param[in] aln_filename Name of an alignment file
          * @param[in] ref_seq A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format)
          * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection)
-         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection)
+         * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
          * @throw std::invalid\_argument if any of the following situations occur.
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          *
          * @throw ios::failure if the alignment file is not found
          */
-        void read(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_UNKNOWN);
+        void read(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
         
         /** \brief Write the alignment to a stream in FASTA, PHYLIP, or [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
          * @param[in] aln_stream A stream of the output alignment file
@@ -177,7 +177,7 @@ namespace cmaple
         /**
          Type of sequences
          */
-        cmaple::SeqRegion::SeqType seq_type_ = cmaple::SeqRegion::SEQ_UNKNOWN;
+        cmaple::SeqRegion::SeqType seq_type_ = cmaple::SeqRegion::SEQ_AUTO;
         
         /**
          @private

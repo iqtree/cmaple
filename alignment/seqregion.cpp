@@ -204,6 +204,8 @@ cmaple::SeqRegion::SeqType cmaple::SeqRegion::parseSeqType(const std::string& n_
         return cmaple::SeqRegion::SEQ_DNA;
     if (seqtype_str == "AA")
         return cmaple::SeqRegion::SEQ_PROTEIN;
+    if (seqtype_str == "AUTO")
+        return cmaple::SeqRegion::SEQ_AUTO;
     
     // default
     return cmaple::SeqRegion::SEQ_UNKNOWN;

@@ -566,7 +566,7 @@ void cmaple::Params::initDefaultValue()
     output_prefix = "";
     allow_replace_input_tree = false;
     fixed_min_blength = -1;
-    seq_type_str = "UNKNOWN";
+    seq_type_str = "AUTO";
     tree_search_type_str = "NORMAL";
     make_consistent = false;
     
@@ -616,7 +616,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>");
+                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> could be MAPLE, PHYLIP, FASTA, or AUTO");
                 
                 // parse inputs
                 std::string inputs = argv[cnt];
@@ -632,14 +632,14 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                     params.output_aln_format_str = inputs;
                 }
                 else
-                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>");
+                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> could be MAPLE, PHYLIP, FASTA, or AUTO");
 
                 continue;
             }
             if (strcmp(argv[cnt], "-st") == 0 || strcmp(argv[cnt], "--seqtype") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    outError("Use -st DNA or -st AA");
+                    outError("Use -st DNA or -st AA or -st AUTO");
                 params.seq_type_str = argv[cnt];
                 
                 continue;
@@ -668,7 +668,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             if (strcmp(argv[cnt], "-format") == 0 || strcmp(argv[cnt], "--aln-format") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    outError("Use -format MAPLE, PHYLIP, or FASTA");
+                    outError("Use -format MAPLE, PHYLIP, FASTA, or AUTO");
                 params.aln_format_str = argv[cnt];
                 
                 continue;

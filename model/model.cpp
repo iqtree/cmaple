@@ -9,7 +9,7 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model, const cmaple::
 {
     cmaple::SeqRegion::SeqType seqtype = n_seqtype;
     // If sequence type is not specified -> detect it from sub_model
-    if (seqtype == cmaple::SeqRegion::SEQ_UNKNOWN)
+    if (seqtype == cmaple::SeqRegion::SEQ_AUTO || seqtype == cmaple::SeqRegion::SEQ_UNKNOWN)
         seqtype = ModelBase::detectSeqType(sub_model);
     
     // Init model from the corresponding seqtype and sub_model

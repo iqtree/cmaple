@@ -15,7 +15,7 @@ char cmaple::symbols_dna[]     = "ACGT";
 char cmaple::symbols_rna[]     = "ACGU";
 char cmaple::symbols_morph[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-cmaple::Alignment::Alignment():seq_type_(cmaple::SeqRegion::SEQ_UNKNOWN), data(std::vector<Sequence>()), ref_seq(std::vector<cmaple::StateType>()), num_states(4), aln_format(IN_AUTO), attached_trees(std::unordered_set<void*>()) {};
+cmaple::Alignment::Alignment():seq_type_(cmaple::SeqRegion::SEQ_AUTO), data(std::vector<Sequence>()), ref_seq(std::vector<cmaple::StateType>()), num_states(4), aln_format(IN_AUTO), attached_trees(std::unordered_set<void*>()) {};
 
 cmaple::Alignment::Alignment(std::istream& aln_stream, const std::string& ref_seq, const InputType format, const cmaple::SeqRegion::SeqType seqtype):Alignment()
 {
@@ -52,8 +52,11 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
             throw std::invalid_argument("Failed to detect the format from the alignment!");
     }
     
-    // Set seqtype. If it's unknown (not specified), we'll dectect it later when reading the alignment
-    setSeqType(seqtype);
+    // Set seqtype. If it's auto (not specified), we'll dectect it later when reading the alignment
+    if (seqtype != SeqRegion::SEQ_UNKNOWN)
+        setSeqType(seqtype);
+    else
+        setSeqType(SeqRegion::SEQ_AUTO);
     
     // Read the input alignment
     try
@@ -162,7 +165,7 @@ std::istream& cmaple::operator>>(std::istream& in_stream, cmaple::Alignment& aln
 
 void cmaple::Alignment::reset()
 {
-    setSeqType(cmaple::SeqRegion::SEQ_UNKNOWN);
+    setSeqType(cmaple::SeqRegion::SEQ_AUTO);
     data.clear();
     ref_seq.clear();
     aln_format = IN_AUTO;
@@ -653,7 +656,8 @@ void cmaple::Alignment::readMaple(std::istream& in)
             transform(line.begin(), line.end(), line.begin(), ::toupper);
             
             // detect the seq_type from the ref_sequences
-            if (getSeqType() == cmaple::SeqRegion::SEQ_UNKNOWN)
+            const cmaple::SeqRegion::SeqType current_seq_type = getSeqType();
+            if (current_seq_type == cmaple::SeqRegion::SEQ_AUTO || current_seq_type == cmaple::SeqRegion::SEQ_UNKNOWN)
             {
                 StrVector tmp_str_vec;
                 tmp_str_vec.push_back(line);
@@ -1149,7 +1153,8 @@ void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream, const std::s
         }
     
     // detect the type of the input sequences
-    if (getSeqType() == cmaple::SeqRegion::SEQ_UNKNOWN)
+    const cmaple::SeqRegion::SeqType current_seq_type = getSeqType();
+    if (current_seq_type == cmaple::SeqRegion::SEQ_AUTO || current_seq_type == cmaple::SeqRegion::SEQ_UNKNOWN)
         setSeqType(detectSequenceType(sequences));
     
     // generate reference sequence from the input sequences

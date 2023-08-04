@@ -21,6 +21,9 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Initialize a Model
         const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
+        // Validate the seq_type
+        if (seq_type == cmaple::SeqRegion::SEQ_UNKNOWN)
+            throw std::invalid_argument("Unknown SeqType " + params.seq_type_str);
         const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
         Model model(sub_model, seq_type);
         
@@ -33,6 +36,9 @@ void cmaple::runCMaple(cmaple::Params &params)
             aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
         }
         const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
+        // Validate the aln_format
+        if (aln_format == cmaple::Alignment::IN_UNKNOWN)
+            throw std::invalid_argument("Unknown alignment format " + params.aln_format_str);
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
         // If users only want to convert the alignment to another format -> convert it and terminate
@@ -41,6 +47,9 @@ void cmaple::runCMaple(cmaple::Params &params)
             if (cmaple::verbose_mode > cmaple::VB_QUIET)
                 std::cout << "Write the alignment to " + params.output_aln << std::endl;
             const Alignment::InputType output_aln_format = Alignment::parseAlnFormat(params.output_aln_format_str);
+            // Validate the aln_format
+            if (output_aln_format == cmaple::Alignment::IN_UNKNOWN)
+                throw std::invalid_argument("Unknown alignment format " + params.output_aln_format_str);
             aln.write(params.output_aln, output_aln_format, params.overwrite_output);
             return;
         }

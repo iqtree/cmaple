@@ -26,6 +26,7 @@ namespace cmaple
         enum SeqType {
             SEQ_DNA, /*!< Nucleotide */
             SEQ_PROTEIN, /*!< Protein */
+            SEQ_AUTO, /*!< Auto Detect */
             SEQ_UNKNOWN, /*!< Unknown */
         };
         
