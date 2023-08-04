@@ -18,14 +18,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Dummy variables
         const cmaple::Tree::TreeType tree_format = cmaple::Tree::parseTreeType(params.tree_format_str);
-        
-        // Initialize a Model
         const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
         // Validate the seq_type
         if (seq_type == cmaple::SeqRegion::SEQ_UNKNOWN)
             throw std::invalid_argument("Unknown SeqType " + params.seq_type_str);
-        const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
-        Model model(sub_model, seq_type);
         
         // Initializa an Alignment
         // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
@@ -40,6 +36,13 @@ void cmaple::runCMaple(cmaple::Params &params)
         if (aln_format == cmaple::Alignment::IN_UNKNOWN)
             throw std::invalid_argument("Unknown alignment format " + params.aln_format_str);
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
+        
+        // Initialize a Model
+        const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
+        // Validate the sub_model
+        if (sub_model == cmaple::ModelBase::MODEL_UNKNOWN)
+            throw std::invalid_argument("Unknown Model " + params.sub_model_str);
+        Model model(sub_model, aln.getSeqType());
         
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())

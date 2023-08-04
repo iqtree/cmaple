@@ -20,11 +20,6 @@ namespace cmaple
          */
         virtual void extractRootFreqs(const Alignment* aln);
         
-        /**
-         Get the model name
-         */
-        virtual std::string getModelName() const;
-        
     public:    
         /**
          Constructor

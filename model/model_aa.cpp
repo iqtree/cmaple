@@ -863,8 +863,14 @@ end;
 
 cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
 {
-    num_states_ = 20;
-    init();
+    try
+    {
+        num_states_ = 20;
+        init();
+    } catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
 }
 
 cmaple::ModelAA::~ModelAA()
@@ -1097,15 +1103,4 @@ void cmaple::ModelAA::extractRootFreqs(const Alignment* aln)
     // only extract root freqs for GTR20 or NONREV
     if (sub_model == GTR20 || sub_model == NONREV)
         ModelBase::extractRootFreqs(aln);
-}
-
-std::string cmaple::ModelAA::getModelName() const
-{
-    // Look for the model name from the list of models
-    for(auto &it : aa_models_mapping)
-        if(it.second == sub_model)
-            return it.first;
-    
-    // if not found -> return ""
-    return "";
 }

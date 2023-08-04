@@ -130,7 +130,8 @@ namespace cmaple
             GTR20, NONREV, LG, WAG, JTT, Q_PFAM, Q_BIRD, Q_MAMMAL, Q_INSECT, Q_PLANT, Q_YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ_PFAM, NQ_BIRD, NQ_MAMMAL, NQ_INSECT, NQ_PLANT, NQ_YEAST,
             ///@}
             
-            UNKNOWN_MODEL, ///<  Unknown model
+            MODEL_AUTO, ///<  Auto select (GTR for DNA, and LG for Protein data)
+            MODEL_UNKNOWN, ///<  Unknown model
         };
         
         /**
@@ -252,7 +253,7 @@ namespace cmaple
          @private
          Get the model name
          */
-        virtual std::string getModelName() const {return "";};
+        std::string getModelName() const;
         
         /**
          @private

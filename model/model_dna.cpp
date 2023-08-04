@@ -4,8 +4,14 @@ using namespace cmaple;
 
 cmaple::ModelDNA::ModelDNA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
 {
-    num_states_ = 4;
-    init();
+    try
+    {
+        num_states_ = 4;
+        init();
+    } catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
 }
 
 void cmaple::ModelDNA::initMutationMatJC()
@@ -69,7 +75,7 @@ void cmaple::ModelDNA::initMutationMat()
     {
         // validate model
         if (ModelBase::detectSeqType(sub_model) != cmaple::SeqRegion::SEQ_DNA)
-            throw std::logic_error("Invalid or unsupported model. Please check and try again!");
+            throw std::logic_error("Invalid or unsupported DNA model: " + getModelName());
             
         // init pseu_mutation_counts
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
@@ -97,15 +103,4 @@ void cmaple::ModelDNA::updatePesudoCount(const Alignment* aln, const SeqRegions&
 {
     if (sub_model != JC)
         ModelBase::updatePesudoCount(aln, regions1, regions2);
-}
-
-std::string cmaple::ModelDNA::getModelName() const
-{
-    // Look for the model name from the list of models
-    for(auto &it : dna_models_mapping)
-        if(it.second == sub_model)
-            return it.first;
-    
-    // if not found -> return ""
-    return "";
 }

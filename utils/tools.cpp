@@ -529,7 +529,7 @@ void cmaple::Params::initDefaultValue()
     aln_format_str = "AUTO";
     ref_path = "";
     ref_seqname = "";
-    sub_model_str = "GTR";
+    sub_model_str = "AUTO";
     fixed_blengths = false;
     overwrite_output = false;
     threshold_prob = 1e-8;

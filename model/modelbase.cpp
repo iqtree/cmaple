@@ -564,6 +564,9 @@ cmaple::ModelBase::SubModel cmaple::ModelBase::parseModel(const std::string& n_m
     transform(model_name.begin(), model_name.end(), model_name.begin(), ::toupper);
     
     // parse model
+    // handle "AUTO"
+    if (n_model_name == "AUTO")
+        return MODEL_AUTO;
     // search in list of dna models
     auto it = dna_models_mapping.find(model_name);
     if (it != dna_models_mapping.end())
@@ -574,5 +577,21 @@ cmaple::ModelBase::SubModel cmaple::ModelBase::parseModel(const std::string& n_m
       return it->second;
     
     // model not found
-    return UNKNOWN_MODEL;
+    return MODEL_UNKNOWN;
+}
+
+std::string cmaple::ModelBase::getModelName() const
+{
+    // Look for the model name from the list of DNA models
+    for(auto &it : dna_models_mapping)
+        if(it.second == sub_model)
+            return it.first;
+    
+    // Look for the model name from the list of Protein models
+    for(auto &it : aa_models_mapping)
+        if(it.second == sub_model)
+            return it.first;
+    
+    // if not found -> return ""
+    return "";
 }
