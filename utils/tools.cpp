@@ -577,11 +577,6 @@ cmaple::ParamsBuilder::ParamsBuilder(): params_ptr(new Params())
 {
 }
 
-cmaple::ParamsBuilder cmaple::ParamsBuilder::create()
-{
-    return cmaple::ParamsBuilder();
-}
-
 cmaple::ParamsBuilder& cmaple::ParamsBuilder::withRandomSeed(const uint64_t& seed)
 {
     if (seed >= 0)

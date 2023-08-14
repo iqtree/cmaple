@@ -650,10 +650,10 @@ namespace cmaple
 
 class ParamsBuilder {
 public:
-    /*! \brief Create an instance of ParamsBuilder, which initializes all program parameters using the default values.
-     * @return an ParamsBuilder
+    
+    /*! \brief Default constructor - Initializing a builder using the default values.
      */
-    static ParamsBuilder create();
+    ParamsBuilder();
     
     /*! \brief Specify a seed number for random generators. Default: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number.
      * @param[in] seed A non-negative number
@@ -721,9 +721,6 @@ public:
     std::unique_ptr<cmaple::Params> build();
     
 private:
-    /*! \brief Default constructor - Initializing all program parameters using the default values.
-     */
-    ParamsBuilder();
     
     /**
      * @private
