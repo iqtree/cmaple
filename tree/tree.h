@@ -38,6 +38,7 @@ namespace cmaple
          * @param[in] model A substitution model
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @param[in] fixed_model_params TRUE to keep model parameters unchanged (optional)
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
@@ -50,13 +51,14 @@ namespace cmaple
          *
          * @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
-        Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
+        Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false, const bool fixed_model_params = false);
         
         /*! \brief Constructor from an optional (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
          * @param[in] aln An alignment
          * @param[in] model A substitution model
          * @param[in] tree_filename Name of a tree file (optinal)
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @param[in] fixed_model_params TRUE to keep model parameters unchanged (optional)
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
@@ -70,7 +72,7 @@ namespace cmaple
          *
          * @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
-        Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
+        Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false, const bool fixed_model_params = false);
         
         /*! Destructor
          */
@@ -115,12 +117,13 @@ namespace cmaple
         
         /*! \brief Change the substitution model
          * @param[in] model A substitution model
+         * @param[in] fixed_model_params TRUE to keep model parameters unchanged (optional)
          * @throw std::invalid\_argument if the model is unknown/unsupported
          * @throw std::logic\_error if any of the following situations occur.
          * - the sequence type of the new model is different from the old one
          * - unexpected values/behaviors found during the operations
          */
-        void changeModel(Model* model);
+        void changeModel(Model* model, const bool fixed_model_params = false);
         
         /*! Do placement (using stepwise addition) to build an initial tree
          * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function will add new taxa (which are not existed in the input tree) from the alignment to the tree.
@@ -324,6 +327,12 @@ namespace cmaple
         
     private:
         /**
+         @private
+         TRUE to keep model parameters unchanged (i.e., No estimation on model parameters)
+         */
+        bool fixed_model_params = false;
+        
+        /**
             Pointer  to LoadTree method
          */
         typedef void (Tree::*LoadTreePtrType)(std::istream&, const bool);
@@ -445,6 +454,7 @@ namespace cmaple
         /*! \brief Initialize tree base instance
          * @param[in] aln An alignment
          * @param[in] model A substitution model
+         * @param[in] fixed_model_params TRUE to keep model parameters unchanged
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
@@ -452,7 +462,7 @@ namespace cmaple
          *
          * @throw std::logic\_error if the reference genome is empty
          */
-        void initTree(Alignment* aln, Model* model);
+        void initTree(Alignment* aln, Model* model, const bool fixed_model_params);
         
         /**
          @private

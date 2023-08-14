@@ -25,7 +25,7 @@ template void cmaple::Tree::placeNewSampleAtNode<20>(const Index, std::unique_pt
 template void cmaple::Tree::placeNewSampleMidBranch<4>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 template void cmaple::Tree::placeNewSampleMidBranch<20>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 
-void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
+void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model, const bool n_fixed_model_params)
 {
     // Validate input aln
     if (!n_aln || !n_aln->data.size())
@@ -41,6 +41,7 @@ void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
     model = nullptr;
     cumulative_rate = nullptr;
     fixed_blengths = false;
+    fixed_model_params = n_fixed_model_params;
     // bug fixed: don't use the first element to store node_lh because node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
     node_lhs.clear();
     node_lhs.push_back(NodeLh(0));
@@ -49,19 +50,19 @@ void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
     attachAlnModel(n_aln, n_model->model_base);
 }
 
-cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths)
+cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths, const bool fixed_model_params)
 {
     // Initialize a tree
-    initTree(aln, model);
+    initTree(aln, model, fixed_model_params);
     
     // load the input tree from a stream
     load(tree_stream, fixed_blengths);
 }
 
-cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filename, const bool fixed_blengths)
+cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filename, const bool fixed_blengths, const bool fixed_model_params)
 {
     // Initialize a tree
-    initTree(aln, model);
+    initTree(aln, model, fixed_model_params);
     
     // load the input tree from a tree file (if users specify it)
     if (tree_filename.length())
@@ -111,8 +112,12 @@ void cmaple::Tree::changeAln(Alignment* aln)
     (this->*changeAlnPtr)(aln);
 }
 
-void cmaple::Tree::changeModel(Model* model)
+void cmaple::Tree::changeModel(Model* model, const bool n_fixed_model_params)
 {
+    // update fixed_model_params
+    fixed_model_params = n_fixed_model_params;
+    
+    // change the model
     (this->*changeModelPtr)(model);
 }
 
@@ -297,14 +302,17 @@ void cmaple::Tree::attachAlnModel(Alignment* n_aln, ModelBase* n_model)
 
 void cmaple::Tree::updateModelByAln()
 {
-    // extract related info (freqs, log_freqs) of the ref sequence
-    model->extractRefInfo(aln);
+    // update model params (if allowed)
+    if (!fixed_model_params)
+    {
+        // extract related info (freqs, log_freqs) of the ref sequence
+        model->extractRefInfo(aln);
+        
+        // update the mutation matrix
+        model->updateMutationMatEmpirical(aln);
+    }
     
-    // update the mutation matrix
-    if (model->updateMutationMatEmpirical(aln))
-        computeCumulativeRate();
-    
-    // compute cumulative rates of the ref sequence
+    // always re-compute cumulative rates of the ref sequence
     computeCumulativeRate();
 }
 
@@ -469,14 +477,14 @@ std::string cmaple::Tree::doInferenceTemplate(const TreeSearchType tree_search_t
     cout.rdbuf(target_cout.rdbuf());
         
     // 1. Do placement to build an initial tree
-    std::cout << doPlacement() << std::endl;
+    std::cout << doPlacement();
     
     // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-    std::cout << applySPR(tree_search_type, shallow_tree_search) << std::endl;
+    std::cout << applySPR(tree_search_type, shallow_tree_search);
     
     // 3. Optimize branch lengths (if needed)
     if (!fixed_blengths)
-        std::cout << optimizeBranch() << std::endl;
+        std::cout << optimizeBranch();
     
     // output log-likelihood of the tree
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
@@ -556,8 +564,8 @@ std::string cmaple::Tree::doPlacementTemplate()
         // get the lower likelihood vector of the current sequence
         std::unique_ptr<SeqRegions> lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
         
-        // update the mutation matrix from empirical number of mutations observed from the recent sequences
-        if (i % params->mutation_update_period == 0)
+        // update the mutation matrix from empirical number of mutations observed from the recent sequences (if allowed)
+        if (!fixed_model_params && !(i % params->mutation_update_period))
             if (model->updateMutationMatEmpirical(aln))
                 computeCumulativeRate();
         
@@ -720,11 +728,21 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate()
     // 0. Traverse tree using DFS, at each non-zero-branch leaf -> expand the tree by adding one less-info-seq
     performDFSAtLeave<&cmaple::Tree::expandTreeByOneLessInfoSeq<num_states>>();
     
-    // NhanLT: update the model params
+    // NhanLT: re-estimate the model params
     if (aln->getSeqType() == cmaple::SeqRegion::SEQ_DNA)
     {
+        // clone fixed_model_params
+        const bool fixed_model_params_clone = fixed_model_params;
+        
+        // show a warning if users want to keep the model parameters unchanged
+        if (!fixed_model_params && cmaple::verbose_mode > cmaple::VB_QUIET)
+            outWarning("Model parameters could be re-estimated in makeTreeInOutConsistentTemplate().");
+            
         model->initMutationMat();
         updateModelParams<num_states>();
+        
+        // retore fixed_model_params
+        fixed_model_params = fixed_model_params_clone;
     }
     
     // traverse the tree from root to re-calculate all lower likelihoods
@@ -2959,8 +2977,9 @@ void cmaple::Tree::connectNewSample2Branch(std::unique_ptr<SeqRegions>& sample, 
         cout << std::setprecision(20) << internal.getUpperLength() << " " << internal.getCorrespondingLength(RIGHT, nodes) << " " << internal.getCorrespondingLength(LEFT, nodes) << std::endl;
     }*/
     
-    // update pseudo_count
-    model->updatePesudoCount(aln, *internal.getPartialLh(LEFT), *leaf.getPartialLh(TOP));
+    // update pseudo_count (if allowed)
+    if (!fixed_model_params)
+        model->updatePesudoCount(aln, *internal.getPartialLh(LEFT), *leaf.getPartialLh(TOP));
 
     // iteratively traverse the tree to update partials from the current node
     stack<Index> node_stack;
@@ -6959,12 +6978,16 @@ void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node, Index& node_index, Phylo
 template <const StateType num_states>
 void cmaple::Tree::updateModelParams()
 {
-    // perform a DFS -> at each leaf, update the pesudoCount of the model based on the sequence of that leaf
-    performDFSAtLeave<&cmaple::Tree::updatePesudoCountModel<num_states>>();
-    
-    // update model params based on the pseudo count
-    if (model->updateMutationMatEmpirical(aln))
-        computeCumulativeRate();
+    // only update model params (if allowed)
+    if (!fixed_model_params)
+    {
+        // perform a DFS -> at each leaf, update the pesudoCount of the model based on the sequence of that leaf
+        performDFSAtLeave<&cmaple::Tree::updatePesudoCountModel<num_states>>();
+        
+        // update model params based on the pseudo count
+        if (model->updateMutationMatEmpirical(aln))
+            computeCumulativeRate();
+    }
 }
 
 template <const StateType num_states>
@@ -6972,7 +6995,7 @@ void cmaple::Tree::updatePesudoCountModel(PhyloNode& node, const Index node_inde
 {
     std::unique_ptr<SeqRegions>& upper_lr_regions = getPartialLhAtNode(parent_index);
     std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
-    if (upper_lr_regions && lower_regions)
+    if (!fixed_model_params && upper_lr_regions && lower_regions)
         model->updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
 }
 
