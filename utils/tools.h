@@ -633,8 +633,9 @@ namespace cmaple
         */
         std::string tree_search_type_str;
         
-        /*
-            TRUE to make the processes of outputting->re-inputting a tree consistent
+        /**
+         * @private
+         * TRUE to make the processes of outputting->re-inputting a tree consistent
          */
         bool make_consistent;
         
