@@ -36,7 +36,7 @@ void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
         throw std::invalid_argument("Model is null!");
     
     // Init variables of the tree
-    params = cmaple::make_unique<cmaple::Params>();
+    params = cmaple::make_unique<cmaple::Params>(cmaple::Params::create());
     aln = nullptr;
     model = nullptr;
     cumulative_rate = nullptr;

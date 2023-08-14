@@ -520,11 +520,6 @@ bool cmaple::is_number(const std::string& s)
 
 cmaple::Params::Params()
 {
-    initDefaultValue();
-}
-
-void cmaple::Params::initDefaultValue()
-{
     aln_path = "";
     aln_format_str = "AUTO";
     ref_path = "";
@@ -576,6 +571,110 @@ void cmaple::Params::initDefaultValue()
     gettimeofday(&tv, &tz);
     //ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
     ran_seed = (tv.tv_usec);
+}
+
+cmaple::Params cmaple::Params::create()
+{
+    return cmaple::Params();
+}
+
+cmaple::Params& cmaple::Params::withRandomSeed(const uint64_t& seed)
+{
+    if (seed >= 0)
+        ran_seed = seed;
+    else
+        throw std::invalid_argument("Random seed number must be non-negative");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withThreshProb(const double& n_thresh_prob)
+{
+    if (n_thresh_prob > 0)
+        threshold_prob = n_thresh_prob;
+    else
+        throw std::invalid_argument("threshold_prob must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withMinBlengthFactor(const double& n_min_blength_factor)
+{
+    if (n_min_blength_factor > 0)
+        min_blength_factor = n_min_blength_factor;
+    else
+        throw std::invalid_argument("min_blength_factor must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withMaxBlengthFactor(const double& n_max_blength_factor)
+{
+    if (n_max_blength_factor > 0)
+        max_blength_factor = n_max_blength_factor;
+    else
+        throw std::invalid_argument("max_blength_factor must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withFixedMinBlength(const double& n_fixed_min_blength)
+{
+    if (n_fixed_min_blength > 0)
+        fixed_min_blength = n_fixed_min_blength;
+    else
+        throw std::invalid_argument("fixed_min_blength must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withMutationUpdatePeriod(const int32_t& n_mutation_update_period)
+{
+    if (n_mutation_update_period > 0)
+        mutation_update_period = n_mutation_update_period;
+    else
+        throw std::invalid_argument("mutation_update_period must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withNumTreeTraversal(const int32_t& num_tree_traversal)
+{
+    if (num_tree_traversal > 0)
+        num_tree_improvement = num_tree_traversal;
+    else
+        throw std::invalid_argument("num_tree_traversal must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withSPRThresh(const double& SPR_thresh)
+{
+    if (SPR_thresh > 0)
+        thresh_placement_cost = SPR_thresh;
+    else
+        throw std::invalid_argument("SPR_thresh must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::Params& cmaple::Params::withStopTreeSearchThresh(const double& stop_search_thresh)
+{
+    if (stop_search_thresh > 0)
+        thresh_entire_tree_improvement = stop_search_thresh;
+    else
+        throw std::invalid_argument("stop_search_thresh must be positive");
+    
+    // return
+    return *this;
 }
 
 void cmaple::parseArg(int argc, char *argv[], Params &params) {
@@ -1002,11 +1101,6 @@ int cmaple::countPhysicalCPUCores() {
     #else
     return std::thread::hardware_concurrency();
     #endif
-}
-
-Params& Params::getInstance() {
-    static Params instance;
-    return instance;
 }
 
 void cmaple::setNumThreads(const int num_threads)
