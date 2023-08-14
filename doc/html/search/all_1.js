@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['changealn_0',['changeAln',['../classcmaple_1_1_tree.html#ab932b3742c6e18d51554f72432c18151',1,'cmaple::Tree']]],
-  ['changemodel_1',['changeModel',['../classcmaple_1_1_tree.html#aa4f982f45f38226193cd584bbe7e93ef',1,'cmaple::Tree']]],
-  ['computebranchsupports_2',['computeBranchSupports',['../classcmaple_1_1_tree.html#ac3d6efc278b68360108dac91b44c5055',1,'cmaple::Tree']]],
-  ['computelh_3',['computeLh',['../classcmaple_1_1_tree.html#a987c92b41faa1303b5b0c8393c0704db',1,'cmaple::Tree']]]
+  ['bin_5ftree_0',['BIN_TREE',['../classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da',1,'cmaple::Tree']]],
+  ['blosum62_1',['BLOSUM62',['../classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1ac1a608b84e89c56a2183a34929d7b072',1,'cmaple::ModelBase']]],
+  ['build_2',['build',['../classcmaple_1_1_params_builder.html#a77ad01885d330623ea8475452549538e',1,'cmaple::ParamsBuilder']]]
 ];

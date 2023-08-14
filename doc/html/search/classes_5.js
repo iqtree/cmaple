@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['params_0',['Params',['../classcmaple_1_1_params.html',1,'cmaple']]]
+  ['tree_0',['Tree',['../classcmaple_1_1_tree.html',1,'cmaple']]]
 ];

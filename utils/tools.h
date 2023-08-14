@@ -350,7 +350,9 @@ namespace cmaple
     /*--------------------------------------------------------------*/
     /*--------------------------------------------------------------*/
 
-    /** Program parameters, everything is specified here */
+    /**
+     @private
+     Program parameters, everything is specified here */
     class Params {
     private:
         /*! \brief Default constructor - Initializing all program parameters using the default values.
@@ -648,6 +650,10 @@ namespace cmaple
         // bool debug = false;
     };
 
+/**
+ A PatternBuilder to build an instance of Params which stores all program parameters.
+ <br> One can build an instance of Params and specify several parameters by: ParamsBuilder().withRandomSeed().withFixedMinBlength().with<...>().build();
+ */
 class ParamsBuilder {
 public:
     
@@ -715,8 +721,8 @@ public:
      */
     ParamsBuilder& withStopTreeSearchThresh(const double& stop_search_thresh);
     
-    /*! \brief Build the Params object after initializing
-     * @return an unique pointer to an instance of Params
+    /*! \brief Build the Params object after initializing parameters
+     * @return a unique pointer to an instance of Params
      */
     std::unique_ptr<cmaple::Params> build();
     

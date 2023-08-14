@@ -76,12 +76,12 @@ void funcAbort(int signal_number)
 /** ############## Redirect output to a log file ############## **/
 
 int main(int argc, char *argv[]) {
-    cmaple::Params& params = Params::getInstance();
-    parseArg(argc, argv, params);
+    std::unique_ptr<cmaple::Params> params = cmaple::ParamsBuilder().build();
+    parseArg(argc, argv, *params);
     
     // Config log file
     // atexit(logstream.funcExit);
-    logstream.startLogFile(params);
+    logstream.startLogFile(*params);
     signal(SIGABRT, &funcAbort);
     signal(SIGFPE, &funcAbort);
     signal(SIGILL, &funcAbort);
@@ -102,15 +102,15 @@ int main(int argc, char *argv[]) {
         cout << endl;
         
         // Show the random seed number
-        cout << "Seed:    " << params.ran_seed <<  " " << std::endl << std::endl;
+        cout << "Seed:    " << params->ran_seed <<  " " << std::endl << std::endl;
     }
     
     // Measure runtime
     time_t start_time;
     
     // call the main function
-    cmaple::runCMaple(params);
-    // cmaple::testing(params);
+    cmaple::runCMaple(*params);
+    // cmaple::testing(*params);
     
     time(&start_time);
     if (cmaple::verbose_mode > cmaple::VB_QUIET)

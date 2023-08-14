@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['fixed_5fmin_5fblength_0',['fixed_min_blength',['../classcmaple_1_1_params.html#a26f833dbe75c3832f518eb0dbdf16780',1,'cmaple::Params']]]
+  ['state_5ffreqs_0',['state_freqs',['../structcmaple_1_1_model_1_1_model_params.html#a725349a3fc3609fb8e200cd9eb11bfc6',1,'cmaple::Model::ModelParams']]]
 ];

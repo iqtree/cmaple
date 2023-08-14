@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['model_0',['Model',['../classcmaple_1_1_model.html#a445bc040b79901e6ef8e5bba36fcc89e',1,'cmaple::Model']]]
+  ['getparams_0',['getParams',['../classcmaple_1_1_model.html#a9050e8b392d2502af1e8fc8b50e44b96',1,'cmaple::Model']]]
 ];

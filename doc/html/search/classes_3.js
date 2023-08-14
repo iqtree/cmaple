@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['tree_0',['Tree',['../classcmaple_1_1_tree.html',1,'cmaple']]]
+  ['seqregion_0',['SeqRegion',['../classcmaple_1_1_seq_region.html',1,'cmaple']]]
 ];

@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['load_0',['load',['../classcmaple_1_1_tree.html#af8c288e5a4ae4277615cb24268dca2f2',1,'cmaple::Tree::load(std::istream &amp;tree_stream, const bool fixed_blengths=false)'],['../classcmaple_1_1_tree.html#a1b2479eb26d00469ee1040dd9bee18e5',1,'cmaple::Tree::load(const std::string &amp;tree_filename, const bool fixed_blengths=false)']]]
+  ['getparams_0',['getParams',['../classcmaple_1_1_model.html#a9050e8b392d2502af1e8fc8b50e44b96',1,'cmaple::Model']]],
+  ['gtr_1',['GTR',['../classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1ad22bc80e9ed276aafacf7f4fc569b94f',1,'cmaple::ModelBase']]],
+  ['gtr20_2',['GTR20',['../classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1ac41a4bf5bac096106628d404526a4169',1,'cmaple::ModelBase']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['params_0',['Params',['../classcmaple_1_1_params.html',1,'cmaple']]]
+  ['paramsbuilder_0',['ParamsBuilder',['../classcmaple_1_1_params_builder.html',1,'cmaple']]]
 ];

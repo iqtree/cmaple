@@ -4,27 +4,34 @@
 
 {\ttfamily \#include $<$model.\+h$>$}
 
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params}{Model\+Params}}
+\end{DoxyCompactItemize}
 \doxysubsubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\hyperlink{classcmaple_1_1_model_a445bc040b79901e6ef8e5bba36fcc89e}{Model}} (const Sub\+Model sub\+\_\+model=GTR, const Seq\+Type seqtype=SEQ\+\_\+\+UNKNOWN)
+\mbox{\hyperlink{classcmaple_1_1_model_a4482e3498230d1555584dfc951f2d01c}{Model}} (const \mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1}{cmaple\+::\+Model\+Base\+::\+Sub\+Model}} sub\+\_\+model=\mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1a5bbe0ea9b788df22aefa117b7c7c13ae}{cmaple\+::\+Model\+Base\+::\+MODEL\+\_\+\+AUTO}}, const \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple\+::\+Seq\+Region\+::\+Seq\+Type}} seqtype=\mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple\+::\+Seq\+Region\+::\+SEQ\+\_\+\+AUTO}})
 \begin{DoxyCompactList}\small\item\em Constructor from a model name. \end{DoxyCompactList}\item 
 \Hypertarget{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4}\label{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4} 
 {\bfseries \texorpdfstring{$\sim$}{\string~}\+Model} ()
 \begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
-Model\+Params \mbox{\hyperlink{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}{get\+Params}} ()
-\begin{DoxyCompactList}\small\item\em Export the substitution model and its parameters to Model\+Params structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
+void \mbox{\hyperlink{classcmaple_1_1_model_a3ee90312ac8a303f3c8cce9ca5766584}{fix\+Parameters}} (const bool \&fixed\+\_\+model\+\_\+params)
+\begin{DoxyCompactList}\small\item\em Keep the model parameters unchanged. This API is useful when using one model for multiple trees -\/ after the model parameters are estimated according to a tree, users can keep them unchanged, then use the model for other trees. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params}{Model\+Params}} \mbox{\hyperlink{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}{get\+Params}} ()
+\begin{DoxyCompactList}\small\item\em Export the substitution model and its parameters to \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
 Class represents a substitution model 
 
 \doxysubsection{Constructor \& Destructor Documentation}
-\Hypertarget{classcmaple_1_1_model_a445bc040b79901e6ef8e5bba36fcc89e}\label{classcmaple_1_1_model_a445bc040b79901e6ef8e5bba36fcc89e} 
+\Hypertarget{classcmaple_1_1_model_a4482e3498230d1555584dfc951f2d01c}\label{classcmaple_1_1_model_a4482e3498230d1555584dfc951f2d01c} 
 \index{cmaple::Model@{cmaple::Model}!Model@{Model}}
 \index{Model@{Model}!cmaple::Model@{cmaple::Model}}
 \doxysubsubsection{\texorpdfstring{Model()}{Model()}}
-{\footnotesize\ttfamily cmaple\+::\+Model\+::\+Model (\begin{DoxyParamCaption}\item[{const Sub\+Model}]{sub\+\_\+model = {\ttfamily GTR},  }\item[{const Seq\+Type}]{seqtype = {\ttfamily SEQ\+\_\+UNKNOWN} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily cmaple\+::\+Model\+::\+Model (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1}{cmaple\+::\+Model\+Base\+::\+Sub\+Model}}}]{sub\+\_\+model = {\ttfamily \mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1a5bbe0ea9b788df22aefa117b7c7c13ae}{cmaple\+::\+Model\+Base\+::\+MODEL\+\_\+\+AUTO}}},  }\item[{const \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple\+::\+Seq\+Region\+::\+Seq\+Type}}}]{seqtype = {\ttfamily \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple\+::\+Seq\+Region\+::\+SEQ\+\_\+\+AUTO}}} }\end{DoxyParamCaption})}
 
 
 
@@ -32,32 +39,53 @@ Constructor from a model name.
 
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em sub\+\_\+model} & a substitution model. List of supported models\+: ~\newline
+\mbox{\texttt{ in}}  & {\em sub\+\_\+model} & a substitution model. Default\+: MODEL\+\_\+\+AUTO -\/ auto select GTR for DNA, and LG for Protein data. List of supported models\+: ~\newline
 {\bfseries{DNA models}}\+: JC, GTR, UNREST; ~\newline
 {\bfseries{Protein models}}\+: GTR20, NONREV, LG, WAG, JTT, Q\+\_\+\+PFAM, Q\+\_\+\+BIRD, Q\+\_\+\+MAMMAL, Q\+\_\+\+INSECT, Q\+\_\+\+PLANT, Q\+\_\+\+YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ\+\_\+\+PFAM, NQ\+\_\+\+BIRD, NQ\+\_\+\+MAMMAL, NQ\+\_\+\+INSECT, NQ\+\_\+\+PLANT, NQ\+\_\+\+YEAST; ~\newline
  {\itshape  See \href{http://www.iqtree.org/doc/Substitution-Models}{\texttt{ {\bfseries{Substitution models}}}} for references of those models.} \\
 \hline
-\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: SEQ\+\_\+\+DNA (nucleotide data), SEQ\+\_\+\+PROTEIN (amino acid data), or SEQ\+\_\+\+UNKNOWN (auto detection) \\
+\mbox{\texttt{ in}}  & {\em seqtype} & Data type of sequences (optional)\+: SEQ\+\_\+\+DNA (nucleotide data), SEQ\+\_\+\+PROTEIN (amino acid data), or SEQ\+\_\+\+AUTO (auto detection) \\
 \hline
 \end{DoxyParams}
 
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
+\begin{DoxyItemize}
+\item sub\+\_\+model is unknown/unsupported
+\item both sub\+\_\+model and seqtype are specified as AUTO 
+\end{DoxyItemize}\\
+\hline
+\end{DoxyExceptions}
+
 
 \doxysubsection{Member Function Documentation}
+\Hypertarget{classcmaple_1_1_model_a3ee90312ac8a303f3c8cce9ca5766584}\label{classcmaple_1_1_model_a3ee90312ac8a303f3c8cce9ca5766584} 
+\index{cmaple::Model@{cmaple::Model}!fixParameters@{fixParameters}}
+\index{fixParameters@{fixParameters}!cmaple::Model@{cmaple::Model}}
+\doxysubsubsection{\texorpdfstring{fixParameters()}{fixParameters()}}
+{\footnotesize\ttfamily void cmaple\+::\+Model\+::fix\+Parameters (\begin{DoxyParamCaption}\item[{const bool \&}]{fixed\+\_\+model\+\_\+params }\end{DoxyParamCaption})}
+
+
+
+Keep the model parameters unchanged. This API is useful when using one model for multiple trees -\/ after the model parameters are estimated according to a tree, users can keep them unchanged, then use the model for other trees. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em fixed\+\_\+model\+\_\+params} & TRUE to keep the model parameters unchanged \\
+\hline
+\end{DoxyParams}
 \Hypertarget{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}\label{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96} 
 \index{cmaple::Model@{cmaple::Model}!getParams@{getParams}}
 \index{getParams@{getParams}!cmaple::Model@{cmaple::Model}}
 \doxysubsubsection{\texorpdfstring{getParams()}{getParams()}}
-{\footnotesize\ttfamily Model\+Params cmaple\+::\+Model\+::get\+Params (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily \mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params}{Model\+Params}} cmaple\+::\+Model\+::get\+Params (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
 
 
 
-Export the substitution model and its parameters to Model\+Params structure. 
+Export the substitution model and its parameters to \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. 
 
 \begin{DoxyReturn}{Returns}
-A Model\+Params structure contains the following members. ~\newline
-{\itshape model\+\_\+name}\+: the name of the model in string ~\newline
-{\itshape state\+\_\+freqs}\+: the state frequencies in string ~\newline
-{\itshape mut\+\_\+rates}\+: the mutation matrix in string 
+A \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. 
 \end{DoxyReturn}
 
 

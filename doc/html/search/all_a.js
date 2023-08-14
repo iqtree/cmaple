@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['ran_5fseed_0',['ran_seed',['../classcmaple_1_1_params.html#a7064032af46aae5d59e764a9e710e982',1,'cmaple::Params']]],
-  ['read_1',['read',['../classcmaple_1_1_alignment.html#a97561f9ab273f87399ada944e05513c9',1,'cmaple::Alignment::read(std::istream &amp;aln_stream, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)'],['../classcmaple_1_1_alignment.html#a1238effbb47614b86a19975759a10d7c',1,'cmaple::Alignment::read(const std::string &amp;aln_filename, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)']]]
+  ['lg_0',['LG',['../classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1a5f0d3ea99de39bb37deb1fbffc91ba74',1,'cmaple::ModelBase']]],
+  ['load_1',['load',['../classcmaple_1_1_tree.html#af8c288e5a4ae4277615cb24268dca2f2',1,'cmaple::Tree::load(std::istream &amp;tree_stream, const bool fixed_blengths=false)'],['../classcmaple_1_1_tree.html#a1b2479eb26d00469ee1040dd9bee18e5',1,'cmaple::Tree::load(const std::string &amp;tree_filename, const bool fixed_blengths=false)']]]
 ];

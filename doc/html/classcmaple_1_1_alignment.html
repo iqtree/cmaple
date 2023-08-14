@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classcmaple_1_1_alignment-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">cmaple::Alignment Class Reference</div></div>
@@ -83,40 +84,81 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="alignment_8h_source.html">alignment.h</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aee3f54a67adb568735bbc1db96944e3b"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> { <br />
+&#160;&#160;<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba4e2c0251b5ac83d386bc3ba19cf528e4">IN_FASTA</a>
+, <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba70a7e3edeb35284e39c8f9fe7214fde1">IN_PHYLIP</a>
+, <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80">IN_MAPLE</a>
+, <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a>
+, <br />
+&#160;&#160;<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba2fed9cbb7e537d6a2976264543c712cc">IN_UNKNOWN</a>
+<br />
+ }</td></tr>
+<tr class="separator:aee3f54a67adb568735bbc1db96944e3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a5a429c944ebac9aef2a2e20094a5dc2b"><td class="memItemLeft" align="right" valign="top"><a id="a5a429c944ebac9aef2a2e20094a5dc2b" name="a5a429c944ebac9aef2a2e20094a5dc2b"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Alignment</b> ()</td></tr>
 <tr class="memdesc:a5a429c944ebac9aef2a2e20094a5dc2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor. <br /></td></tr>
 <tr class="separator:a5a429c944ebac9aef2a2e20094a5dc2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9f8671cc91b5f5ce9c06f053da3848e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#aa9f8671cc91b5f5ce9c06f053da3848e">Alignment</a> (std::istream &amp;aln_stream, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)</td></tr>
-<tr class="memdesc:aa9f8671cc91b5f5ce9c06f053da3848e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from a stream of an alignment in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
-<tr class="separator:aa9f8671cc91b5f5ce9c06f053da3848e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac974d609740095f7231c5c39cf166623"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#ac974d609740095f7231c5c39cf166623">Alignment</a> (const std::string &amp;aln_filename, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)</td></tr>
-<tr class="memdesc:ac974d609740095f7231c5c39cf166623"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from an alignment file in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
-<tr class="separator:ac974d609740095f7231c5c39cf166623"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88ba338239e3863ced3d5dc3e63a350f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a88ba338239e3863ced3d5dc3e63a350f">Alignment</a> (std::istream &amp;aln_stream, const std::string &amp;ref_seq=&quot;&quot;, const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> format=<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a>, const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a> seqtype=<a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a>)</td></tr>
+<tr class="memdesc:a88ba338239e3863ced3d5dc3e63a350f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from a stream of an alignment in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
+<tr class="separator:a88ba338239e3863ced3d5dc3e63a350f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a128c4d12df8c70419d75edb9fd7b8d58"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a128c4d12df8c70419d75edb9fd7b8d58">Alignment</a> (const std::string &amp;aln_filename, const std::string &amp;ref_seq=&quot;&quot;, const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> format=<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a>, const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a> seqtype=<a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a>)</td></tr>
+<tr class="memdesc:a128c4d12df8c70419d75edb9fd7b8d58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from an alignment file in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
+<tr class="separator:a128c4d12df8c70419d75edb9fd7b8d58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36d8b2bbaf72d21162d6e273bb3674e1"><td class="memItemLeft" align="right" valign="top"><a id="a36d8b2bbaf72d21162d6e273bb3674e1" name="a36d8b2bbaf72d21162d6e273bb3674e1"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>~Alignment</b> ()</td></tr>
 <tr class="memdesc:a36d8b2bbaf72d21162d6e273bb3674e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor. <br /></td></tr>
 <tr class="separator:a36d8b2bbaf72d21162d6e273bb3674e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97561f9ab273f87399ada944e05513c9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a97561f9ab273f87399ada944e05513c9">read</a> (std::istream &amp;aln_stream, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)</td></tr>
-<tr class="memdesc:a97561f9ab273f87399ada944e05513c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an alignment from a stream in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
-<tr class="separator:a97561f9ab273f87399ada944e05513c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1238effbb47614b86a19975759a10d7c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a1238effbb47614b86a19975759a10d7c">read</a> (const std::string &amp;aln_filename, const std::string &amp;ref_seq=&quot;&quot;, const InputType format=IN_UNKNOWN, const SeqType seqtype=SEQ_UNKNOWN)</td></tr>
-<tr class="memdesc:a1238effbb47614b86a19975759a10d7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an alignment from a file in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
-<tr class="separator:a1238effbb47614b86a19975759a10d7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0ce6661352d6cf8a99cef8ceacb9590"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#ae0ce6661352d6cf8a99cef8ceacb9590">write</a> (std::ostream &amp;aln_stream, const InputType format=IN_MAPLE) const</td></tr>
-<tr class="memdesc:ae0ce6661352d6cf8a99cef8ceacb9590"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the alignment to a stream in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
-<tr class="separator:ae0ce6661352d6cf8a99cef8ceacb9590"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3ee61caed70e549291126330f1e57b43"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a3ee61caed70e549291126330f1e57b43">write</a> (const std::string &amp;aln_filename, const InputType format=IN_MAPLE, const bool overwrite=false) const</td></tr>
-<tr class="memdesc:a3ee61caed70e549291126330f1e57b43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the alignment to a file in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
-<tr class="separator:a3ee61caed70e549291126330f1e57b43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d0cc7a3b1321c2f22351e8801a8890a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a1d0cc7a3b1321c2f22351e8801a8890a">read</a> (std::istream &amp;aln_stream, const std::string &amp;ref_seq=&quot;&quot;, const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> format=<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a>, const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a> seqtype=<a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a>)</td></tr>
+<tr class="memdesc:a1d0cc7a3b1321c2f22351e8801a8890a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an alignment from a stream in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
+<tr class="separator:a1d0cc7a3b1321c2f22351e8801a8890a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a669f8cd477943459407b7ed32c934816"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a669f8cd477943459407b7ed32c934816">read</a> (const std::string &amp;aln_filename, const std::string &amp;ref_seq=&quot;&quot;, const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> format=<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a>, const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a> seqtype=<a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a>)</td></tr>
+<tr class="memdesc:a669f8cd477943459407b7ed32c934816"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an alignment from a file in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
+<tr class="separator:a669f8cd477943459407b7ed32c934816"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cc0a73cc105173130dac55d78786f43"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a7cc0a73cc105173130dac55d78786f43">write</a> (std::ostream &amp;aln_stream, const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> &amp;format=<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80">IN_MAPLE</a>)</td></tr>
+<tr class="memdesc:a7cc0a73cc105173130dac55d78786f43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the alignment to a stream in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
+<tr class="separator:a7cc0a73cc105173130dac55d78786f43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a793e2c9b076c92298d812e35aa073952"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_alignment.html#a793e2c9b076c92298d812e35aa073952">write</a> (const std::string &amp;aln_filename, const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> &amp;format=<a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80">IN_MAPLE</a>, const bool overwrite=false)</td></tr>
+<tr class="memdesc:a793e2c9b076c92298d812e35aa073952"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the alignment to a file in FASTA, PHYLIP, or <a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format.  <br /></td></tr>
+<tr class="separator:a793e2c9b076c92298d812e35aa073952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Class represents the input alignment </p>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aa9f8671cc91b5f5ce9c06f053da3848e" name="aa9f8671cc91b5f5ce9c06f053da3848e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa9f8671cc91b5f5ce9c06f053da3848e">&#9670;&#160;</a></span>Alignment() <span class="overload">[1/2]</span></h2>
+<div class="textblock"><p>Class presents the input alignment </p>
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a id="aee3f54a67adb568735bbc1db96944e3b" name="aee3f54a67adb568735bbc1db96944e3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee3f54a67adb568735bbc1db96944e3b">&#9670;&#160;</a></span>InputType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">cmaple::Alignment::InputType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="classcmaple_1_1_alignment.html">Alignment</a> format </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aee3f54a67adb568735bbc1db96944e3ba4e2c0251b5ac83d386bc3ba19cf528e4" name="aee3f54a67adb568735bbc1db96944e3ba4e2c0251b5ac83d386bc3ba19cf528e4"></a>IN_FASTA&#160;</td><td class="fielddoc"><p>FASTA format </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aee3f54a67adb568735bbc1db96944e3ba70a7e3edeb35284e39c8f9fe7214fde1" name="aee3f54a67adb568735bbc1db96944e3ba70a7e3edeb35284e39c8f9fe7214fde1"></a>IN_PHYLIP&#160;</td><td class="fielddoc"><p>PHYLIP format </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80" name="aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80"></a>IN_MAPLE&#160;</td><td class="fielddoc"><p><a href="https://www.nature.com/articles/s41588-023-01368-0">MAPLE</a> format </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5" name="aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5"></a>IN_AUTO&#160;</td><td class="fielddoc"><p>Auto detect </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aee3f54a67adb568735bbc1db96944e3ba2fed9cbb7e537d6a2976264543c712cc" name="aee3f54a67adb568735bbc1db96944e3ba2fed9cbb7e537d6a2976264543c712cc"></a>IN_UNKNOWN&#160;</td><td class="fielddoc"><p>Unknown format </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a88ba338239e3863ced3d5dc3e63a350f" name="a88ba338239e3863ced3d5dc3e63a350f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88ba338239e3863ced3d5dc3e63a350f">&#9670;&#160;</a></span>Alignment() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -136,14 +178,14 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const InputType&#160;</td>
-          <td class="paramname"><em>format</em> = <code>IN_UNKNOWN</code>, </td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a>&#160;</td>
+          <td class="paramname"><em>format</em> = <code><a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a></code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const SeqType&#160;</td>
-          <td class="paramname"><em>seqtype</em> = <code>SEQ_UNKNOWN</code>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a>&#160;</td>
+          <td class="paramname"><em>seqtype</em> = <code><a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -158,16 +200,26 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">aln_stream</td><td>A stream of an alignment file </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ref_seq</td><td>A feference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
+<li>the alignment is empty or in an incorrect format</li>
+<li>the sequences contains invalid states </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="ac974d609740095f7231c5c39cf166623" name="ac974d609740095f7231c5c39cf166623"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac974d609740095f7231c5c39cf166623">&#9670;&#160;</a></span>Alignment() <span class="overload">[2/2]</span></h2>
+<a id="a128c4d12df8c70419d75edb9fd7b8d58" name="a128c4d12df8c70419d75edb9fd7b8d58"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a128c4d12df8c70419d75edb9fd7b8d58">&#9670;&#160;</a></span>Alignment() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -187,14 +239,14 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const InputType&#160;</td>
-          <td class="paramname"><em>format</em> = <code>IN_UNKNOWN</code>, </td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a>&#160;</td>
+          <td class="paramname"><em>format</em> = <code><a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a></code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const SeqType&#160;</td>
-          <td class="paramname"><em>seqtype</em> = <code>SEQ_UNKNOWN</code>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a>&#160;</td>
+          <td class="paramname"><em>seqtype</em> = <code><a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -209,8 +261,19 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">aln_filename</td><td>Name of an alignment file </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ref_seq</td><td>A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
+<li>the alignment is empty or in an incorrect format</li>
+<li>the sequences contains invalid states</li>
+</ul>
+</td></tr>
+    <tr><td class="paramname">ios::failure</td><td>if the alignment file is not found </td></tr>
   </table>
   </dd>
 </dl>
@@ -218,8 +281,8 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a97561f9ab273f87399ada944e05513c9" name="a97561f9ab273f87399ada944e05513c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97561f9ab273f87399ada944e05513c9">&#9670;&#160;</a></span>read() <span class="overload">[1/2]</span></h2>
+<a id="a1d0cc7a3b1321c2f22351e8801a8890a" name="a1d0cc7a3b1321c2f22351e8801a8890a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d0cc7a3b1321c2f22351e8801a8890a">&#9670;&#160;</a></span>read() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -239,14 +302,14 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const InputType&#160;</td>
-          <td class="paramname"><em>format</em> = <code>IN_UNKNOWN</code>, </td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a>&#160;</td>
+          <td class="paramname"><em>format</em> = <code><a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a></code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const SeqType&#160;</td>
-          <td class="paramname"><em>seqtype</em> = <code>SEQ_UNKNOWN</code>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a>&#160;</td>
+          <td class="paramname"><em>seqtype</em> = <code><a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -261,16 +324,26 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">aln_stream</td><td>A stream of an alignment file </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ref_seq</td><td>A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
+<li>the alignment is empty or in an incorrect format</li>
+<li>the sequences contains invalid states </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a1238effbb47614b86a19975759a10d7c" name="a1238effbb47614b86a19975759a10d7c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1238effbb47614b86a19975759a10d7c">&#9670;&#160;</a></span>read() <span class="overload">[2/2]</span></h2>
+<a id="a669f8cd477943459407b7ed32c934816" name="a669f8cd477943459407b7ed32c934816"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a669f8cd477943459407b7ed32c934816">&#9670;&#160;</a></span>read() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -290,14 +363,14 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const InputType&#160;</td>
-          <td class="paramname"><em>format</em> = <code>IN_UNKNOWN</code>, </td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a>&#160;</td>
+          <td class="paramname"><em>format</em> = <code><a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5">IN_AUTO</a></code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const SeqType&#160;</td>
-          <td class="paramname"><em>seqtype</em> = <code>SEQ_UNKNOWN</code>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a>&#160;</td>
+          <td class="paramname"><em>seqtype</em> = <code><a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -312,16 +385,27 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">aln_filename</td><td>Name of an alignment file </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ref_seq</td><td>A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_UNKNOWN (auto detection) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_UNKNOWN (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
+<li>the alignment is empty or in an incorrect format</li>
+<li>the sequences contains invalid states</li>
+</ul>
+</td></tr>
+    <tr><td class="paramname">ios::failure</td><td>if the alignment file is not found </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="ae0ce6661352d6cf8a99cef8ceacb9590" name="ae0ce6661352d6cf8a99cef8ceacb9590"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0ce6661352d6cf8a99cef8ceacb9590">&#9670;&#160;</a></span>write() <span class="overload">[1/2]</span></h2>
+<a id="a7cc0a73cc105173130dac55d78786f43" name="a7cc0a73cc105173130dac55d78786f43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7cc0a73cc105173130dac55d78786f43">&#9670;&#160;</a></span>write() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -335,13 +419,13 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const InputType&#160;</td>
-          <td class="paramname"><em>format</em> = <code>IN_MAPLE</code>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> &amp;&#160;</td>
+          <td class="paramname"><em>format</em> = <code><a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80">IN_MAPLE</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -354,11 +438,18 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if format is unknown </td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if the alignment is empty (i.e., nothing to write) </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="a3ee61caed70e549291126330f1e57b43" name="a3ee61caed70e549291126330f1e57b43"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3ee61caed70e549291126330f1e57b43">&#9670;&#160;</a></span>write() <span class="overload">[2/2]</span></h2>
+<a id="a793e2c9b076c92298d812e35aa073952" name="a793e2c9b076c92298d812e35aa073952"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a793e2c9b076c92298d812e35aa073952">&#9670;&#160;</a></span>write() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -372,8 +463,8 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const InputType&#160;</td>
-          <td class="paramname"><em>format</em> = <code>IN_MAPLE</code>, </td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3b">InputType</a> &amp;&#160;</td>
+          <td class="paramname"><em>format</em> = <code><a class="el" href="classcmaple_1_1_alignment.html#aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80">IN_MAPLE</a></code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -384,7 +475,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -395,6 +486,18 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">aln_filename</td><td>Name of the output alignment file </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the output alignment (optional): IN_MAPLE, IN_FASTA, or IN_PHYLIP </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">overwrite</td><td>TRUE to overwrite the existing output file (optional) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
+<li>aln_filename is empty</li>
+<li>format is unknown</li>
+</ul>
+</td></tr>
+    <tr><td class="paramname">std::logic_error</td><td>if the alignment is empty (i.e., nothing to write) </td></tr>
+    <tr><td class="paramname">ios::failure</td><td>if aln_filename already exists and overwrite = false </td></tr>
   </table>
   </dd>
 </dl>

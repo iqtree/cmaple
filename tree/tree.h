@@ -38,7 +38,7 @@ namespace cmaple
          * @param[in] model A substitution model
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
-         * @param[in] params an instance of program parameters (optional)
+         * @param[in] params an instance of Params which stores all program parameters (optional). Users can build an instance of Params and specify several parameters by using ParamsBuilder
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
@@ -58,7 +58,7 @@ namespace cmaple
          * @param[in] model A substitution model
          * @param[in] tree_filename Name of a tree file (optinal)
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
-         * @param[in] params an instance of program parameters (optional)
+         * @param[in] params an instance of Params which stores all program parameters (optional). Users can build an instance of Params and specify several parameters by using ParamsBuilder
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
