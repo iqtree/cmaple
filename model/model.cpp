@@ -74,6 +74,12 @@ cmaple::Model::~Model()
     }
 }
 
+void cmaple::Model::fixParameters(const bool& n_fixed_model_params)
+{
+    if (model_base)
+        model_base->fixed_params = n_fixed_model_params;
+}
+
 cmaple::Model::ModelParams cmaple::Model::getParams()
 {
     // Init an empty ModelParams

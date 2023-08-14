@@ -17,7 +17,7 @@ namespace cmaple
     /** Base class of evolutionary models */
     class ModelBase
     {
-    private:        
+    private:
         /**
          Initialize equal state frequencies
          */
@@ -219,6 +219,12 @@ namespace cmaple
          the starting index of row i: i * num_states
          */
         cmaple::StateType *row_index;
+        
+        /**
+         @private
+         TRUE to keep the model parameters unchanged
+         */
+        bool fixed_params = false;
         
         /**
          @private

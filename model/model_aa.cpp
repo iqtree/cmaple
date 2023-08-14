@@ -1087,7 +1087,7 @@ void cmaple::ModelAA::rescaleAllRates()
 bool cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln)
 {
     // only handle GTR20 or NONREV
-    if (sub_model == GTR20 || sub_model == NONREV)
+    if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV))
         return updateMutationMatEmpiricalTemplate<20>(aln);
     
     // no update -> return false;
@@ -1097,7 +1097,7 @@ bool cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln)
 void cmaple::ModelAA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
     // only handle GTR20 or NONREV
-    if (sub_model == GTR20 || sub_model == NONREV)
+    if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV))
         ModelBase::updatePesudoCount(aln, regions1, regions2);
 }
 

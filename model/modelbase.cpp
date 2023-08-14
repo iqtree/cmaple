@@ -12,7 +12,7 @@ template bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const Al
 const std::map<std::string, cmaple::ModelBase::SubModel> cmaple::ModelBase::dna_models_mapping = {{"JC", cmaple::ModelBase::JC}, {"GTR", cmaple::ModelBase::GTR}, {"UNREST", cmaple::ModelBase::UNREST}};
 const std::map<std::string, cmaple::ModelBase::SubModel> cmaple::ModelBase::aa_models_mapping = {{"GTR20", cmaple::ModelBase::GTR20}, {"NONREV", cmaple::ModelBase::NONREV}, {"LG", cmaple::ModelBase::LG}, {"WAG", cmaple::ModelBase::WAG}, {"JTT", cmaple::ModelBase::JTT}, {"Q.PFAM", cmaple::ModelBase::Q_PFAM}, {"Q.BIRD", cmaple::ModelBase::Q_BIRD}, {"Q.MAMMAL", cmaple::ModelBase::Q_MAMMAL}, {"Q.INSECT", cmaple::ModelBase::Q_INSECT}, {"Q.PLANT", cmaple::ModelBase::Q_PLANT}, {"Q.YEAST", cmaple::ModelBase::Q_YEAST}, {"JTTDCMUT", cmaple::ModelBase::JTTDCMUT}, {"DCMUT", cmaple::ModelBase::DCMUT}, {"VT", cmaple::ModelBase::VT}, {"PMB", cmaple::ModelBase::PMB}, {"BLOSUM62", cmaple::ModelBase::BLOSUM62}, {"DAYHOFF", cmaple::ModelBase::DAYHOFF}, {"MTREV", cmaple::ModelBase::MTREV}, {"MTART", cmaple::ModelBase::MTART}, {"MTZOA", cmaple::ModelBase::MTZOA}, {"MTMET", cmaple::ModelBase::MTMET}, {"MTVER", cmaple::ModelBase::MTVER}, {"MTINV", cmaple::ModelBase::MTINV}, {"MTMAM", cmaple::ModelBase::MTMAM}, {"FLAVI", cmaple::ModelBase::FLAVI}, {"HIVB", cmaple::ModelBase::HIVB}, {"HIVW", cmaple::ModelBase::HIVW}, {"FLU", cmaple::ModelBase::FLU}, {"RTREV", cmaple::ModelBase::RTREV}, {"CPREV", cmaple::ModelBase::CPREV}, {"NQ.PFAM", cmaple::ModelBase::NQ_PFAM}, {"NQ.BIRD", cmaple::ModelBase::NQ_BIRD}, {"NQ.MAMMAL", cmaple::ModelBase::NQ_MAMMAL}, {"NQ.INSECT", cmaple::ModelBase::NQ_INSECT}, {"NQ.PLANT", cmaple::ModelBase::NQ_PLANT}, {"NQ.YEAST", cmaple::ModelBase::NQ_YEAST}};
 
-cmaple::ModelBase::ModelBase(const cmaple::ModelBase::SubModel n_sub_model):sub_model(n_sub_model), mutation_mat(nullptr), diagonal_mut_mat(nullptr), transposed_mut_mat(nullptr), freqi_freqj_qij(nullptr),freq_j_transposed_ij(nullptr), root_freqs(nullptr), root_log_freqs(nullptr), inverse_root_freqs(nullptr), row_index(nullptr), model_block(nullptr), pseu_mutation_count(nullptr){}
+cmaple::ModelBase::ModelBase(const cmaple::ModelBase::SubModel n_sub_model):sub_model(n_sub_model), mutation_mat(nullptr), diagonal_mut_mat(nullptr), transposed_mut_mat(nullptr), freqi_freqj_qij(nullptr),freq_j_transposed_ij(nullptr), root_freqs(nullptr), root_log_freqs(nullptr), inverse_root_freqs(nullptr), row_index(nullptr), model_block(nullptr), pseu_mutation_count(nullptr), fixed_params(false) {}
 
 cmaple::ModelBase::~ModelBase()
 {
@@ -106,13 +106,16 @@ void cmaple::ModelBase::init()
 
 void cmaple::ModelBase::extractRefInfo(const Alignment* aln)
 {
-    // init variables
-    if (!root_freqs) root_freqs = new RealNumType[num_states_];
-    if (!root_log_freqs) root_log_freqs = new RealNumType[num_states_];
-    if (!inverse_root_freqs) inverse_root_freqs = new RealNumType[num_states_];
-    
-    // extract root freqs from the ref_seq
-    extractRootFreqs(aln);
+    if (!fixed_params)
+    {
+        // init variables
+        if (!root_freqs) root_freqs = new RealNumType[num_states_];
+        if (!root_log_freqs) root_log_freqs = new RealNumType[num_states_];
+        if (!inverse_root_freqs) inverse_root_freqs = new RealNumType[num_states_];
+        
+        // extract root freqs from the ref_seq
+        extractRootFreqs(aln);
+    }
 }
 
 void cmaple::ModelBase::extractRootFreqs(const Alignment* aln)
@@ -428,27 +431,31 @@ void cmaple::ModelBase::updateMutationMat()
 template <StateType num_states>
 bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
 {
-    // clone the current mutation matrix
-    RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
-    memcpy(tmp_diagonal_mut_mat, diagonal_mut_mat, num_states_ * sizeof(RealNumType));
-    
-    // update the mutation matrix regarding the pseu_mutation_count
-    updateMutationMat<num_states>();
-    
-    // set update = true if the mutation matrix changes more than a threshold
-    RealNumType change_thresh = 1e-3;
     bool update = false;
-    for (StateType j = 0; j < num_states_; ++j)
-    {
-        if (fabs(tmp_diagonal_mut_mat[j] - diagonal_mut_mat[j]) > change_thresh)
-        {
-            update = true;
-            break;
-        }
-    }
     
-    // delete tmp_diagonal_mutation_mat
-    delete[] tmp_diagonal_mut_mat;
+    if (!fixed_params)
+    {
+        // clone the current mutation matrix
+        RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
+        memcpy(tmp_diagonal_mut_mat, diagonal_mut_mat, num_states_ * sizeof(RealNumType));
+        
+        // update the mutation matrix regarding the pseu_mutation_count
+        updateMutationMat<num_states>();
+        
+        // set update = true if the mutation matrix changes more than a threshold
+        RealNumType change_thresh = 1e-3;
+        for (StateType j = 0; j < num_states_; ++j)
+        {
+            if (fabs(tmp_diagonal_mut_mat[j] - diagonal_mut_mat[j]) > change_thresh)
+            {
+                update = true;
+                break;
+            }
+        }
+        
+        // delete tmp_diagonal_mutation_mat
+        delete[] tmp_diagonal_mut_mat;
+    }
     
     // return update
     return update;
@@ -456,36 +463,39 @@ bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
 
 void cmaple::ModelBase::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
-    // init variables
-    PositionType pos = 0;
-    const SeqRegions& seq1_regions = regions1;
-    const SeqRegions& seq2_regions = regions2;
-    size_t iseq1 = 0;
-    size_t iseq2 = 0;
-    const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
-    const PositionType seq_length = ref_seq.size();
-                
-    while (pos < seq_length)
+    if (!fixed_params)
     {
-        PositionType end_pos;
+        // init variables
+        PositionType pos = 0;
+        const SeqRegions& seq1_regions = regions1;
+        const SeqRegions& seq2_regions = regions2;
+        size_t iseq1 = 0;
+        size_t iseq2 = 0;
+        const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
+        const PositionType seq_length = ref_seq.size();
         
-        // get the next shared segment in the two sequences
-        SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
-        const auto* const seq1_region = &seq1_regions[iseq1];
-        const auto* const seq2_region = &seq2_regions[iseq2];
-
-        if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) && (seq2_region->type < num_states_ || seq2_region->type == TYPE_R))
+        while (pos < seq_length)
         {
-            if (seq1_region->type == TYPE_R)
-                pseu_mutation_count[row_index[ref_seq[end_pos]] + seq2_region->type] += 1;
-            else if (seq2_region->type == TYPE_R)
-                pseu_mutation_count[row_index[seq1_region->type] + ref_seq[end_pos]] += 1;
-            else
-                pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
+            PositionType end_pos;
+            
+            // get the next shared segment in the two sequences
+            SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
+            const auto* const seq1_region = &seq1_regions[iseq1];
+            const auto* const seq2_region = &seq2_regions[iseq2];
+            
+            if (seq1_region->type != seq2_region->type && (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) && (seq2_region->type < num_states_ || seq2_region->type == TYPE_R))
+            {
+                if (seq1_region->type == TYPE_R)
+                    pseu_mutation_count[row_index[ref_seq[end_pos]] + seq2_region->type] += 1;
+                else if (seq2_region->type == TYPE_R)
+                    pseu_mutation_count[row_index[seq1_region->type] + ref_seq[end_pos]] += 1;
+                else
+                    pseu_mutation_count[row_index[seq1_region->type] + seq2_region->type] += 1;
+            }
+            
+            // update pos
+            pos = end_pos + 1;
         }
-
-        // update pos
-        pos = end_pos + 1;
     }
 }
 

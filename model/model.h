@@ -46,6 +46,11 @@ namespace cmaple
          */
         ~Model();
         
+        /*! \brief Keep the model parameters unchanged. This API is useful when using one model for multiple trees - after the model parameters are estimated according to a tree, users can keep them unchanged, then use the model for other trees.
+         * @param[in] fixed_model_params TRUE to keep the model parameters unchanged
+         */
+        void fixParameters(const bool& fixed_model_params);
+        
         /*! \brief Export the substitution model and its parameters to ModelParams structure
          * @return A ModelParams structure.
          */
