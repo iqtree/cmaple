@@ -58,10 +58,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         }
         
         // Initialize a Tree
-        Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths);
-        // clone all settings
-        cmaple::Params& tree_params = tree.getParams();
-        tree_params = params;
+        Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths, std::make_unique<cmaple::Params>(params));
         
         // Infer a phylogenetic tree
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
@@ -153,7 +150,7 @@ void cmaple::testing(cmaple::Params& params)
     cmaple::verbose_mode = VB_DEBUG;
     
     // -------- Test write and read tree -----------
-    Alignment aln10("test_100.maple");
+   /* Alignment aln10("test_100.maple");
     Model model10(cmaple::ModelBase::GTR);
     Tree tree10(&aln10, &model10);
     std::cout << tree10.autoProceedMAPLE() << std::endl;
@@ -205,7 +202,7 @@ void cmaple::testing(cmaple::Params& params)
             std::cout << redirected_msgs << std::endl;
     }
     
-    std::cout << tree << std::endl;
+    std::cout << tree << std::endl;*/
     
     // -------- Test changeAln -----------
     // tree.changeAln(&aln_empty); // PASSED
@@ -231,7 +228,7 @@ void cmaple::testing(cmaple::Params& params)
     // -------- Test changeAln -----------
     
     // -------- Test re-read alignment -----------
-    std::stringstream tree_str_1;
+    /*std::stringstream tree_str_1;
     tree_str_1 << tree.exportNewick(cmaple::Tree::MUL_TREE);
     
     Model model3(cmaple::ModelBase::GTR);
@@ -264,7 +261,7 @@ void cmaple::testing(cmaple::Params& params)
     
     // aln.read("test_100.maple"); // PASSED - unable to change to a smaller alignment
     aln.read("test_500.maple");
-    Model model2(cmaple::ModelBase::JC);
+    Model model2(cmaple::ModelBase::JC);*/
     /*
     std::stringstream tree_str_2;
     tree.changeModel(&model2);
@@ -272,7 +269,7 @@ void cmaple::testing(cmaple::Params& params)
     if (tree_str_1.str() != tree_str_2.str())
         std::cout << "Mismatch tree strings" << std:: endl;*/
     
-    std::cout << tree.computeLh() << std::endl;
+    /*std::cout << tree.computeLh() << std::endl;
     std::stringstream tree_str_3;
     tree_str_3 << tree;
     if (tree_str_1.str() != tree_str_3.str())
@@ -290,7 +287,7 @@ void cmaple::testing(cmaple::Params& params)
     
     std::cout << tree.computeLh() << std::endl;
     tree_str_2_5 >> tree;
-    std::cout << tree.computeLh() << std::endl;
+    std::cout << tree.computeLh() << std::endl;*/
     
     /*std::stringstream tree_str_2_2;
     tree_str_2_2 << tree2;
@@ -303,11 +300,11 @@ void cmaple::testing(cmaple::Params& params)
         std::cout << "Mismatch tree strings" << std:: endl;*/
     
     
-    tree.computeBranchSupport(4);
+    /*tree.computeBranchSupport(4);
     
     // -------- Test re-read alignment -----------
     
-    std::cout << "DONE" << std::endl;
+    std::cout << "DONE" << std::endl;*/
     
     /*CMaple cmaple;
     cmaple::Params& cmaple_params = cmaple.getSettings();
@@ -453,4 +450,82 @@ void cmaple::testing(cmaple::Params& params)
     // change aln with different seqtypes
     Alignment aln4("test_aa/test_aa_100K.maple");
     tree.changeAln(&aln4);*/
+    
+    // -------- One model attaches to multiple trees -----------
+    std::unique_ptr<cmaple::Params> params1 = std::make_unique<cmaple::Params>(cmaple::Params::create().withRandomSeed(9).withThreshProb(1e-7));
+    std::cout << params1->ran_seed << std::endl;
+    std::cout << params1->threshold_prob << std::endl;
+    
+    Alignment aln1("test_200.maple");
+    Alignment aln2("test_1K.diff");
+    Model model1(cmaple::ModelBase::JC);
+    model1.fixParameters(true);
+    Tree tree101(&aln2, &model1, "", false, std::move(params1));
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    std::cout << tree101.autoProceedMAPLE() << std::endl;
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    model1.fixParameters(false);
+    Tree tree100(&aln1, &model1);
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    std::cout << tree100.autoProceedMAPLE() << std::endl;
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    model1.fixParameters(true);
+    std::cout << tree101.autoProceedMAPLE() << std::endl;
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    std::cout << tree101.computeLh() << std::endl;
+    // -------- One model attaches to multiple trees -----------
 }

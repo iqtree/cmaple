@@ -25,7 +25,7 @@ template void cmaple::Tree::placeNewSampleAtNode<20>(const Index, std::unique_pt
 template void cmaple::Tree::placeNewSampleMidBranch<4>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 template void cmaple::Tree::placeNewSampleMidBranch<20>(const Index&, std::unique_ptr<SeqRegions>&, const NumSeqsType, const RealNumType);
 
-void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
+void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model, std::unique_ptr<cmaple::Params>&& n_params)
 {
     // Validate input aln
     if (!n_aln || !n_aln->data.size())
@@ -36,7 +36,10 @@ void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
         throw std::invalid_argument("Model is null!");
     
     // Init variables of the tree
-    params = cmaple::make_unique<cmaple::Params>(cmaple::Params::create());
+    if (n_params)
+        params = std::move(n_params);
+    else
+        params = cmaple::make_unique<cmaple::Params>(cmaple::Params::create());
     aln = nullptr;
     model = nullptr;
     cumulative_rate = nullptr;
@@ -49,19 +52,19 @@ void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model)
     attachAlnModel(n_aln, n_model->model_base);
 }
 
-cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths)
+cmaple::Tree::Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths, std::unique_ptr<cmaple::Params>&& params)
 {
     // Initialize a tree
-    initTree(aln, model);
+    initTree(aln, model, std::move(params));
     
     // load the input tree from a stream
     load(tree_stream, fixed_blengths);
 }
 
-cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filename, const bool fixed_blengths)
+cmaple::Tree::Tree(Alignment* aln, Model* model, const std::string& tree_filename, const bool fixed_blengths, std::unique_ptr<cmaple::Params>&& params)
 {
     // Initialize a tree
-    initTree(aln, model);
+    initTree(aln, model, std::move(params));
     
     // load the input tree from a tree file (if users specify it)
     if (tree_filename.length())
@@ -161,12 +164,6 @@ std::string cmaple::Tree::exportNewick(const TreeType tree_type, const bool show
             throw std::invalid_argument("Unknown tree type. Please use BIN_TREE or MUL_TREE");
             break;
     }
-}
-
-cmaple::Params& cmaple::Tree::getParams()
-{
-    ASSERT(params);
-    return *params;
 }
 
 std::ostream& cmaple::operator<<(std::ostream& out_stream, cmaple::Tree& tree)

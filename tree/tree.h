@@ -38,6 +38,7 @@ namespace cmaple
          * @param[in] model A substitution model
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @param[in] params an instance of program parameters (optional)
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
@@ -50,13 +51,14 @@ namespace cmaple
          *
          * @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
-        Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
+        Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false, std::unique_ptr<cmaple::Params>&& params = nullptr);
         
         /*! \brief Constructor from an optional (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment. If users specify an input tree, model parameters (if not fixed) will be estimated according to that tree and the alignment.
          * @param[in] aln An alignment
          * @param[in] model A substitution model
          * @param[in] tree_filename Name of a tree file (optinal)
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
+         * @param[in] params an instance of program parameters (optional)
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
@@ -70,7 +72,7 @@ namespace cmaple
          *
          * @throw std::bad\_alloc if failing to allocate memory to store the tree
          */
-        Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
+        Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false, std::unique_ptr<cmaple::Params>&& params = nullptr);
         
         /*! Destructor
          */
@@ -209,11 +211,6 @@ namespace cmaple
          * - show\_branch\_supports = true but branch support values have yet been computed
          */
         std::string exportNewick(const TreeType tree_type = BIN_TREE, const bool show_branch_supports = false);
-        
-        /*! \brief Get an instance of cmaple::Params, which stores all parameter settings. Users can use that params instance to change [**other minor settings**](classcmaple_1_1_params.html) of CMaple (which are not yet supported via the APIs)
-         * @return An instance of cmaple::Params
-         */
-        cmaple::Params& getParams();
         
         // ----------------- END OF PUBLIC APIs ------------------------------------ //
         
@@ -446,6 +443,7 @@ namespace cmaple
         /*! \brief Initialize tree base instance
          * @param[in] aln An alignment
          * @param[in] model A substitution model
+         * @param[in] params an instance of program parameters
          * @throw std::invalid\_argument If any of the following situation occurs.
          * - the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
          * - the alignment is empty
@@ -453,7 +451,7 @@ namespace cmaple
          *
          * @throw std::logic\_error if the reference genome is empty
          */
-        void initTree(Alignment* aln, Model* model);
+        void initTree(Alignment* aln, Model* model, std::unique_ptr<cmaple::Params>&& params);
         
         /**
          @private
