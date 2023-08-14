@@ -33,7 +33,7 @@ namespace cmaple
         };
         
         // ----------------- BEGIN OF PUBLIC APIs ------------------------------------ //
-        /*! \brief Constructor from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
+        /*! \brief Constructor from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment. Model parameters (if not fixed) will be estimated according to the input tree and the alignment.
          * @param[in] aln An alignment
          * @param[in] model A substitution model
          * @param[in] tree_stream A stream of an input tree
@@ -52,7 +52,7 @@ namespace cmaple
          */
         Tree(Alignment* aln, Model* model, std::istream& tree_stream, const bool fixed_blengths = false);
         
-        /*! \brief Constructor from an optional (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment
+        /*! \brief Constructor from an optional (bifurcating or multifurcating) tree (with/without branch lengths in NEWICK format), which may or may not contain all taxa in the alignment. If users specify an input tree, model parameters (if not fixed) will be estimated according to that tree and the alignment.
          * @param[in] aln An alignment
          * @param[in] model A substitution model
          * @param[in] tree_filename Name of a tree file (optinal)
@@ -76,7 +76,7 @@ namespace cmaple
          */
         ~Tree();
         
-        /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
+        /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment. Model parameters (if not fixed) will be estimated according to the input tree and the alignment.
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          * @throw std::invalid\_argument if tree is empty or in an incorrect format
@@ -89,7 +89,7 @@ namespace cmaple
          */
         void load(std::istream& tree_stream, const bool fixed_blengths = false);
         
-        /*! \brief Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
+        /*! \brief Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment. Model parameters (if not fixed) will be estimated according to the input tree and the alignment.
          * @param[in] tree_filename Name of a tree file
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
          * @throw std::invalid\_argument if tree is empty or in an incorrect format
@@ -122,7 +122,7 @@ namespace cmaple
          */
         void changeModel(Model* model);
         
-        /*! Do placement (using stepwise addition) to build an initial tree
+        /*! Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will be estimated during the placement process.
          * - If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function will add new taxa (which are not existed in the input tree) from the alignment to the tree.
          * - If users already supplied a complete tree, this function does nothing.
          *
