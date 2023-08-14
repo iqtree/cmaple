@@ -39,7 +39,7 @@ void cmaple::Tree::initTree(Alignment* n_aln, Model* n_model, std::unique_ptr<cm
     if (n_params)
         params = std::move(n_params);
     else
-        params = cmaple::make_unique<cmaple::Params>(cmaple::Params::create());
+        params = cmaple::ParamsBuilder::create().build();
     aln = nullptr;
     model = nullptr;
     cumulative_rate = nullptr;

@@ -573,15 +573,19 @@ cmaple::Params::Params()
     ran_seed = (tv.tv_usec);
 }
 
-cmaple::Params cmaple::Params::create()
+cmaple::ParamsBuilder::ParamsBuilder(): params_ptr(new Params())
 {
-    return cmaple::Params();
 }
 
-cmaple::Params& cmaple::Params::withRandomSeed(const uint64_t& seed)
+cmaple::ParamsBuilder cmaple::ParamsBuilder::create()
+{
+    return cmaple::ParamsBuilder();
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withRandomSeed(const uint64_t& seed)
 {
     if (seed >= 0)
-        ran_seed = seed;
+        params_ptr->ran_seed = seed;
     else
         throw std::invalid_argument("Random seed number must be non-negative");
     
@@ -589,10 +593,10 @@ cmaple::Params& cmaple::Params::withRandomSeed(const uint64_t& seed)
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withThreshProb(const double& n_thresh_prob)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withThreshProb(const double& n_thresh_prob)
 {
     if (n_thresh_prob > 0)
-        threshold_prob = n_thresh_prob;
+        params_ptr->threshold_prob = n_thresh_prob;
     else
         throw std::invalid_argument("threshold_prob must be positive");
     
@@ -600,10 +604,10 @@ cmaple::Params& cmaple::Params::withThreshProb(const double& n_thresh_prob)
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withMinBlengthFactor(const double& n_min_blength_factor)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMinBlengthFactor(const double& n_min_blength_factor)
 {
     if (n_min_blength_factor > 0)
-        min_blength_factor = n_min_blength_factor;
+        params_ptr->min_blength_factor = n_min_blength_factor;
     else
         throw std::invalid_argument("min_blength_factor must be positive");
     
@@ -611,10 +615,10 @@ cmaple::Params& cmaple::Params::withMinBlengthFactor(const double& n_min_blength
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withMaxBlengthFactor(const double& n_max_blength_factor)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMaxBlengthFactor(const double& n_max_blength_factor)
 {
     if (n_max_blength_factor > 0)
-        max_blength_factor = n_max_blength_factor;
+        params_ptr->max_blength_factor = n_max_blength_factor;
     else
         throw std::invalid_argument("max_blength_factor must be positive");
     
@@ -622,10 +626,10 @@ cmaple::Params& cmaple::Params::withMaxBlengthFactor(const double& n_max_blength
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withFixedMinBlength(const double& n_fixed_min_blength)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withFixedMinBlength(const double& n_fixed_min_blength)
 {
     if (n_fixed_min_blength > 0)
-        fixed_min_blength = n_fixed_min_blength;
+        params_ptr->fixed_min_blength = n_fixed_min_blength;
     else
         throw std::invalid_argument("fixed_min_blength must be positive");
     
@@ -633,10 +637,10 @@ cmaple::Params& cmaple::Params::withFixedMinBlength(const double& n_fixed_min_bl
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withMutationUpdatePeriod(const int32_t& n_mutation_update_period)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMutationUpdatePeriod(const int32_t& n_mutation_update_period)
 {
     if (n_mutation_update_period > 0)
-        mutation_update_period = n_mutation_update_period;
+        params_ptr->mutation_update_period = n_mutation_update_period;
     else
         throw std::invalid_argument("mutation_update_period must be positive");
     
@@ -644,10 +648,10 @@ cmaple::Params& cmaple::Params::withMutationUpdatePeriod(const int32_t& n_mutati
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withNumTreeTraversal(const int32_t& num_tree_traversal)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withNumTreeTraversal(const int32_t& num_tree_traversal)
 {
     if (num_tree_traversal > 0)
-        num_tree_improvement = num_tree_traversal;
+        params_ptr->num_tree_improvement = num_tree_traversal;
     else
         throw std::invalid_argument("num_tree_traversal must be positive");
     
@@ -655,10 +659,10 @@ cmaple::Params& cmaple::Params::withNumTreeTraversal(const int32_t& num_tree_tra
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withSPRThresh(const double& SPR_thresh)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withSPRThresh(const double& SPR_thresh)
 {
     if (SPR_thresh > 0)
-        thresh_placement_cost = SPR_thresh;
+        params_ptr->thresh_placement_cost = SPR_thresh;
     else
         throw std::invalid_argument("SPR_thresh must be positive");
     
@@ -666,15 +670,20 @@ cmaple::Params& cmaple::Params::withSPRThresh(const double& SPR_thresh)
     return *this;
 }
 
-cmaple::Params& cmaple::Params::withStopTreeSearchThresh(const double& stop_search_thresh)
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withStopTreeSearchThresh(const double& stop_search_thresh)
 {
     if (stop_search_thresh > 0)
-        thresh_entire_tree_improvement = stop_search_thresh;
+        params_ptr->thresh_entire_tree_improvement = stop_search_thresh;
     else
         throw std::invalid_argument("stop_search_thresh must be positive");
     
     // return
     return *this;
+}
+
+std::unique_ptr<cmaple::Params> cmaple::ParamsBuilder::build()
+{
+    return std::move(params_ptr);
 }
 
 void cmaple::parseArg(int argc, char *argv[], Params &params) {

@@ -357,71 +357,10 @@ namespace cmaple
          */
         Params();
         
+        // declare ParamsBuilder as a friend class to allow it access to the default contructor Params();
+        friend class ParamsBuilder;
+        
     public:
-        
-        /*! \brief Create an instance Params which stores all program parameters. All of them are initialized with the default values.
-         */
-        static Params create();
-        
-        /*! \brief Specify a seed number for random generators. Default: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number.
-         * @param[in] seed A non-negative number
-         * @throw std::invalid\_argument if seed is negative
-         */
-        Params& withRandomSeed(const uint64_t& seed);
-        
-        /*! \brief Specify a relative probability threshold, which is used to ignore possible states with very low probabilities. Default: 1e-8
-         * @param[in] thresh_prob A positive relative probability threshold
-         * @throw std::invalid\_argument if thresh\_prob is non-positive
-         */
-        Params& withThreshProb(const double& thresh_prob);
-        
-        /*! \brief Specify a factor to compute the minimum branch length (if fixed\_min\_blength is specified, this factor is ignored). Default: 0.2
-         * <br>\<Minimum branch length> = \<min_blength_factor> * \<default branch length>
-         * <br> where \<default branch length> is one mutation per site.
-         *
-         * @param[in] min_blength_factor A positive factor to compute the minimum branch length
-         * @throw std::invalid\_argument if min\_blength\_factor is non-positive
-         */
-        Params& withMinBlengthFactor(const double& min_blength_factor);
-        
-        /*! \brief Specify a factor to compute the maximum branch length. Default: 40
-         * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch length>
-         * <br> where \<default branch length> is one mutation per site.
-         *
-         * @param[in] max_blength_factor A positive factor to compute the maximum branch length
-         * @throw std::invalid\_argument if max\_blength\_factor is non-positive
-         */
-        Params& withMaxBlengthFactor(const double& max_blength_factor);
-        
-        /*! \brief Specify a minimum value of the branch lengths. Default: the minimum branch length is computed from 'min\_blength\_factor'
-         * @param[in] fixed_min_blength A positive value for the minimum branch lengths
-         * @throw std::invalid\_argument if fixed\_min\_blength is non-positive
-         */
-        Params& withFixedMinBlength(const double& fixed_min_blength);
-        
-        /*! \brief Specify the period (in term of the number of sample placements) to update the substitution rate matrix. Default: 25
-         * @param[in] mutation_update_period A positive value for the period (in term of the number of sample placements)
-         * @throw std::invalid\_argument if mutation\_update\_period is non-positive
-         */
-        Params& withMutationUpdatePeriod(const int32_t& mutation_update_period);
-        
-        /*! \brief Specify the number of times we traverse the tree looking for topological improvements (applying SPR moves). Default: 1
-         * @param[in] num_tree_traversal A positive number of tree traversals
-         * @throw std::invalid\_argument if num\_tree\_traversal is non-positive
-         */
-        Params& withNumTreeTraversal(const int32_t& num_tree_traversal);
-        
-        /*! \brief Specify a threshold that avoids CMaple trying to apply SPR moves on nodes that have the placement cost (i.e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default: -1e-5
-         * @param[in] SPR_thresh A positive threshold to consider applying SPR moves at nodes
-         * @throw std::invalid\_argument if SPR\_thresh is non-positive
-         */
-        Params& withSPRThresh(const double& SPR_thresh);
-        
-        /*! \brief Specify a threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default: 1
-         * @param[in] stop_search_thresh A positive value for the threshold to stop the tree search
-         * @throw std::invalid\_argument if stop\_search\_thresh is non-positive
-         */
-        Params& withStopTreeSearchThresh(const double& stop_search_thresh);
         
         /**
          * @private
@@ -708,6 +647,90 @@ namespace cmaple
          */
         // bool debug = false;
     };
+
+class ParamsBuilder {
+public:
+    /*! \brief Create an instance of ParamsBuilder, which initializes all program parameters using the default values.
+     * @return an ParamsBuilder
+     */
+    static ParamsBuilder create();
+    
+    /*! \brief Specify a seed number for random generators. Default: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number.
+     * @param[in] seed A non-negative number
+     * @throw std::invalid\_argument if seed is negative
+     */
+    ParamsBuilder& withRandomSeed(const uint64_t& seed);
+    
+    /*! \brief Specify a relative probability threshold, which is used to ignore possible states with very low probabilities. Default: 1e-8
+     * @param[in] thresh_prob A positive relative probability threshold
+     * @throw std::invalid\_argument if thresh\_prob is non-positive
+     */
+    ParamsBuilder& withThreshProb(const double& thresh_prob);
+    
+    /*! \brief Specify a factor to compute the minimum branch length (if fixed\_min\_blength is specified, this factor is ignored). Default: 0.2
+     * <br>\<Minimum branch length> = \<min_blength_factor> * \<default branch length>
+     * <br> where \<default branch length> is one mutation per site.
+     *
+     * @param[in] min_blength_factor A positive factor to compute the minimum branch length
+     * @throw std::invalid\_argument if min\_blength\_factor is non-positive
+     */
+    ParamsBuilder& withMinBlengthFactor(const double& min_blength_factor);
+    
+    /*! \brief Specify a factor to compute the maximum branch length. Default: 40
+     * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch length>
+     * <br> where \<default branch length> is one mutation per site.
+     *
+     * @param[in] max_blength_factor A positive factor to compute the maximum branch length
+     * @throw std::invalid\_argument if max\_blength\_factor is non-positive
+     */
+    ParamsBuilder& withMaxBlengthFactor(const double& max_blength_factor);
+    
+    /*! \brief Specify a minimum value of the branch lengths. Default: the minimum branch length is computed from 'min\_blength\_factor'
+     * @param[in] fixed_min_blength A positive value for the minimum branch lengths
+     * @throw std::invalid\_argument if fixed\_min\_blength is non-positive
+     */
+    ParamsBuilder& withFixedMinBlength(const double& fixed_min_blength);
+    
+    /*! \brief Specify the period (in term of the number of sample placements) to update the substitution rate matrix. Default: 25
+     * @param[in] mutation_update_period A positive value for the period (in term of the number of sample placements)
+     * @throw std::invalid\_argument if mutation\_update\_period is non-positive
+     */
+    ParamsBuilder& withMutationUpdatePeriod(const int32_t& mutation_update_period);
+    
+    /*! \brief Specify the number of times we traverse the tree looking for topological improvements (applying SPR moves). Default: 1
+     * @param[in] num_tree_traversal A positive number of tree traversals
+     * @throw std::invalid\_argument if num\_tree\_traversal is non-positive
+     */
+    ParamsBuilder& withNumTreeTraversal(const int32_t& num_tree_traversal);
+    
+    /*! \brief Specify a threshold that avoids CMaple trying to apply SPR moves on nodes that have the placement cost (i.e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default: -1e-5
+     * @param[in] SPR_thresh A positive threshold to consider applying SPR moves at nodes
+     * @throw std::invalid\_argument if SPR\_thresh is non-positive
+     */
+    ParamsBuilder& withSPRThresh(const double& SPR_thresh);
+    
+    /*! \brief Specify a threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default: 1
+     * @param[in] stop_search_thresh A positive value for the threshold to stop the tree search
+     * @throw std::invalid\_argument if stop\_search\_thresh is non-positive
+     */
+    ParamsBuilder& withStopTreeSearchThresh(const double& stop_search_thresh);
+    
+    /*! \brief Build the Params object after initializing
+     * @return an unique pointer to an instance of Params
+     */
+    std::unique_ptr<cmaple::Params> build();
+    
+private:
+    /*! \brief Default constructor - Initializing all program parameters using the default values.
+     */
+    ParamsBuilder();
+    
+    /**
+     * @private
+     * Pointer to a Params object
+     */
+    std::unique_ptr<Params> params_ptr{};
+};
 
     /*--------------------------------------------------------------*/
     /*--------------------------------------------------------------*/
