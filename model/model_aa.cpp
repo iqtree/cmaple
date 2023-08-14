@@ -1084,11 +1084,14 @@ void cmaple::ModelAA::rescaleAllRates()
     }
 }
 
-void cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln)
+bool cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln)
 {
     // only handle GTR20 or NONREV
     if (sub_model == GTR20 || sub_model == NONREV)
-        updateMutationMatEmpiricalTemplate<20>(aln);
+        return updateMutationMatEmpiricalTemplate<20>(aln);
+    
+    // no update -> return false;
+    return false;
 }
 
 void cmaple::ModelAA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)

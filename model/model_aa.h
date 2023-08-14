@@ -55,11 +55,12 @@ namespace cmaple
         
         /**
          Update the mutation matrix periodically from the empirical count of mutations
+         @return TRUE if the mutation matrix is updated
          @throw  std::logic\_error if any of the following situations occur.
          - the substitution model is unknown/unsupported
          - the reference genome is empty
          */
-        virtual void updateMutationMatEmpirical(const Alignment* aln);
+        virtual bool updateMutationMatEmpirical(const Alignment* aln);
         
         /**
          Update pseudocounts from new sample to improve the estimate of the substitution rates

@@ -108,10 +108,11 @@ namespace cmaple
         /**
          @private
          Update the mutation matrix periodically from the empirical count of mutations (template)
+         @return TRUE if the mutation matrix is updated
          @throw  std::logic\_error if the substitution model is unknown/unsupported
          */
         template <cmaple::StateType num_states>
-        void updateMutationMatEmpiricalTemplate(const Alignment* aln);
+        bool updateMutationMatEmpiricalTemplate(const Alignment* aln);
         
     public:
         /*!
@@ -176,18 +177,6 @@ namespace cmaple
          Mutation matrix
          */
         cmaple::RealNumType *mutation_mat = nullptr;
-        
-        /**
-         @private
-         cumulative rates
-         */
-        cmaple::RealNumType *cumulative_rate = nullptr;
-        
-        /**
-         @private
-         cumulative bases
-         */
-        std::vector< std::vector<cmaple::PositionType> > cumulative_base;
         
         /**
          @private
@@ -284,19 +273,13 @@ namespace cmaple
         
         /**
          @private
-         Compute cumulative rate of the ref genome
-         @throw std::logic\_error if the reference genome is empty
-         */
-        void computeCumulativeRate(const Alignment* aln);
-        
-        /**
-         @private
          Update the mutation matrix periodically from the empirical count of mutations
+         @return TRUE if the mutation matrix is updated
          @throw std::logic\_error if any of the following situations occur.
          - the substitution model is unknown/unsupported
          - the reference genome is empty
          */
-        virtual void updateMutationMatEmpirical(const Alignment* aln) {};
+        virtual bool updateMutationMatEmpirical(const Alignment* aln) {};
         
         /**
          @private

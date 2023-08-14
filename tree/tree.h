@@ -72,6 +72,10 @@ namespace cmaple
          */
         Tree(Alignment* aln, Model* model, const std::string& tree_filename = "", const bool fixed_blengths = false);
         
+        /*! Destructor
+         */
+        ~Tree();
+        
         /*! \brief Load a tree from a stream of a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK format, which may or may not contain all taxa in the alignment
          * @param[in] tree_stream A stream of an input tree
          * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged (optional)
@@ -243,6 +247,18 @@ namespace cmaple
          Evolutionary model
          */
         ModelBase* model = nullptr;
+        
+        /**
+         @private
+         cumulative rates
+         */
+        cmaple::RealNumType *cumulative_rate = nullptr;
+        
+        /**
+         @private
+         cumulative bases
+         */
+        std::vector< std::vector<cmaple::PositionType> > cumulative_base;
         
         /**
          @private
@@ -437,6 +453,13 @@ namespace cmaple
          * @throw std::logic\_error if the reference genome is empty
          */
         void initTree(Alignment* aln, Model* model);
+        
+        /**
+         @private
+         Compute cumulative rate of the ref genome
+         @throw std::logic\_error if the reference genome is empty
+         */
+        void computeCumulativeRate();
         
         /*! Optimize the tree topology
          @throw std::logic\_error if unexpected values/behaviors found during the operations

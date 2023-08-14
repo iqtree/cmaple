@@ -6,8 +6,8 @@ using namespace cmaple;
 // explicit instantiation of templates
 template void cmaple::ModelBase::updateMutationMat<4>();
 template void cmaple::ModelBase::updateMutationMat<20>();
-template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const Alignment*);
-template void cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const Alignment*);
+template bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(const Alignment*);
+template bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(const Alignment*);
 
 const std::map<std::string, cmaple::ModelBase::SubModel> cmaple::ModelBase::dna_models_mapping = {{"JC", cmaple::ModelBase::JC}, {"GTR", cmaple::ModelBase::GTR}, {"UNREST", cmaple::ModelBase::UNREST}};
 const std::map<std::string, cmaple::ModelBase::SubModel> cmaple::ModelBase::aa_models_mapping = {{"GTR20", cmaple::ModelBase::GTR20}, {"NONREV", cmaple::ModelBase::NONREV}, {"LG", cmaple::ModelBase::LG}, {"WAG", cmaple::ModelBase::WAG}, {"JTT", cmaple::ModelBase::JTT}, {"Q.PFAM", cmaple::ModelBase::Q_PFAM}, {"Q.BIRD", cmaple::ModelBase::Q_BIRD}, {"Q.MAMMAL", cmaple::ModelBase::Q_MAMMAL}, {"Q.INSECT", cmaple::ModelBase::Q_INSECT}, {"Q.PLANT", cmaple::ModelBase::Q_PLANT}, {"Q.YEAST", cmaple::ModelBase::Q_YEAST}, {"JTTDCMUT", cmaple::ModelBase::JTTDCMUT}, {"DCMUT", cmaple::ModelBase::DCMUT}, {"VT", cmaple::ModelBase::VT}, {"PMB", cmaple::ModelBase::PMB}, {"BLOSUM62", cmaple::ModelBase::BLOSUM62}, {"DAYHOFF", cmaple::ModelBase::DAYHOFF}, {"MTREV", cmaple::ModelBase::MTREV}, {"MTART", cmaple::ModelBase::MTART}, {"MTZOA", cmaple::ModelBase::MTZOA}, {"MTMET", cmaple::ModelBase::MTMET}, {"MTVER", cmaple::ModelBase::MTVER}, {"MTINV", cmaple::ModelBase::MTINV}, {"MTMAM", cmaple::ModelBase::MTMAM}, {"FLAVI", cmaple::ModelBase::FLAVI}, {"HIVB", cmaple::ModelBase::HIVB}, {"HIVW", cmaple::ModelBase::HIVW}, {"FLU", cmaple::ModelBase::FLU}, {"RTREV", cmaple::ModelBase::RTREV}, {"CPREV", cmaple::ModelBase::CPREV}, {"NQ.PFAM", cmaple::ModelBase::NQ_PFAM}, {"NQ.BIRD", cmaple::ModelBase::NQ_BIRD}, {"NQ.MAMMAL", cmaple::ModelBase::NQ_MAMMAL}, {"NQ.INSECT", cmaple::ModelBase::NQ_INSECT}, {"NQ.PLANT", cmaple::ModelBase::NQ_PLANT}, {"NQ.YEAST", cmaple::ModelBase::NQ_YEAST}};
@@ -68,11 +68,6 @@ cmaple::ModelBase::~ModelBase()
     {
         delete[] row_index;
         row_index = NULL;
-    }
-    
-    if (cumulative_rate)
-    {
-        delete[] cumulative_rate;
     }
     
     if (pseu_mutation_count)
@@ -150,34 +145,6 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln)
         root_freqs[i] *= inverse_seq_length;
         inverse_root_freqs[i] = 1.0 / root_freqs[i];
         root_log_freqs[i] = log(root_freqs[i]);
-    }
-}
-
-void cmaple::ModelBase::computeCumulativeRate(const Alignment* aln)
-{
-    const PositionType sequence_length = aln->ref_seq.size();
-    
-    if (sequence_length <= 0)
-        throw std::logic_error("Reference genome is empty");
-    
-    // init cumulative_rate
-    if (!cumulative_rate)
-        cumulative_rate = new RealNumType[sequence_length + 1];
-    
-    // init cumulative_base and cumulative_rate
-    cumulative_base.resize(sequence_length + 1);
-    cumulative_rate[0] = 0;
-    cumulative_base[0].resize(num_states_, 0);
-    
-    // compute cumulative_base and cumulative_rate
-    const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
-    for (PositionType i = 0; i < sequence_length; ++i)
-    {
-        StateType state = ref_seq[i];
-        cumulative_rate[i + 1] = cumulative_rate[i] + diagonal_mut_mat[state];
-        
-        cumulative_base[i + 1] =  cumulative_base[i];
-        cumulative_base[i + 1][state] = cumulative_base[i][state] + 1;
     }
 }
 
@@ -459,7 +426,7 @@ void cmaple::ModelBase::updateMutationMat()
 }
 
 template <StateType num_states>
-void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
+bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
 {
     // clone the current mutation matrix
     RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
@@ -468,7 +435,7 @@ void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
     // update the mutation matrix regarding the pseu_mutation_count
     updateMutationMat<num_states>();
     
-    // update cumulative_rate if the mutation matrix changes more than a threshold
+    // set update = true if the mutation matrix changes more than a threshold
     RealNumType change_thresh = 1e-3;
     bool update = false;
     for (StateType j = 0; j < num_states_; ++j)
@@ -480,12 +447,11 @@ void cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
         }
     }
     
-    // update the cumulative_rate
-    if (update)
-        computeCumulativeRate(aln);
-    
     // delete tmp_diagonal_mutation_mat
     delete[] tmp_diagonal_mut_mat;
+    
+    // return update
+    return update;
 }
 
 void cmaple::ModelBase::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)

@@ -106,7 +106,7 @@ namespace cmaple
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType num_states>
-        cmaple::RealNumType mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const cmaple::RealNumType plength1, const SeqRegions& regions2, const cmaple::RealNumType plength2, const Alignment* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, const bool return_log_lh = false) const;
+        cmaple::RealNumType mergeTwoLowers(std::unique_ptr<SeqRegions>& merged_regions, const cmaple::RealNumType plength1, const SeqRegions& regions2, const cmaple::RealNumType plength2, const Alignment* aln, const ModelBase* model, const RealNumType* const cumulative_rate, const cmaple::RealNumType threshold_prob, const bool return_log_lh = false) const;
         
         /**
          Calculate site-lh contributions by merging two lower likelihood vectors
@@ -121,7 +121,7 @@ namespace cmaple
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
         template <const cmaple::StateType num_states>
-        cmaple::RealNumType calculateSiteLhContributions(std::vector<cmaple::RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const cmaple::RealNumType plength1, const SeqRegions& regions2, const cmaple::RealNumType plength2, const Alignment* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob) const;
+        cmaple::RealNumType calculateSiteLhContributions(std::vector<cmaple::RealNumType>& site_lh_contributions, std::unique_ptr<SeqRegions>& merged_regions, const cmaple::RealNumType plength1, const SeqRegions& regions2, const cmaple::RealNumType plength2, const Alignment* aln, const ModelBase* model, const RealNumType* const cumulative_rate, const cmaple::RealNumType threshold_prob) const;
         
         /**
          Compute total lh/upper left_right for root node
@@ -136,13 +136,13 @@ namespace cmaple
          Compute the likelihood by merging the lower lh with root frequencies
          */
         template <const cmaple::StateType num_states>
-        cmaple::RealNumType computeAbsoluteLhAtRoot(const ModelBase* model);
+        cmaple::RealNumType computeAbsoluteLhAtRoot(const ModelBase* model, const std::vector< std::vector<PositionType> > &cumulative_base);
         
         /**
          Compute the site likelihood at root by merging the lower lh with root frequencies
          */
         template <const cmaple::StateType num_states>
-        cmaple::RealNumType computeSiteLhAtRoot(std::vector<cmaple::RealNumType>& site_lh_contributions, const ModelBase* model);
+        cmaple::RealNumType computeSiteLhAtRoot(std::vector<cmaple::RealNumType>& site_lh_contributions, const ModelBase* model, const std::vector< std::vector<PositionType> > &cumulative_base);
         
         /**
          Convert an entry 'O' into a normal nucleotide if its probability dominated others
@@ -253,7 +253,7 @@ namespace cmaple
      MergeTwoLowers case identicalRACGT
      @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
-    void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const cmaple::PositionType end_pos, cmaple::RealNumType total_blength_1, cmaple::RealNumType total_blength_2, const cmaple::PositionType pos, const cmaple::RealNumType threshold_prob, const ModelBase* model, cmaple::RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh);
+    void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region, const cmaple::PositionType end_pos, cmaple::RealNumType total_blength_1, cmaple::RealNumType total_blength_2, const cmaple::PositionType pos, const cmaple::RealNumType threshold_prob, const ModelBase* model, const RealNumType* const cumulative_rate, cmaple::RealNumType &log_lh, SeqRegions& merged_regions, const bool return_log_lh);
 
     /**
      MergeTwoLowers case O_O
@@ -309,6 +309,6 @@ namespace cmaple
      @throw std::logic\_error if unexpected values/behaviors found during the operations
      */
     template <const cmaple::StateType num_states>
-    bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const cmaple::RealNumType plength1, const cmaple::RealNumType plength2, const cmaple::PositionType end_pos, const cmaple::PositionType pos, const Alignment* aln, const ModelBase* model, const cmaple::RealNumType threshold_prob, cmaple::RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
+    bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region, const SeqRegion& seq2_region, const cmaple::RealNumType plength1, const cmaple::RealNumType plength2, const cmaple::PositionType end_pos, const cmaple::PositionType pos, const Alignment* aln, const ModelBase* model, const RealNumType* const cumulative_rate, const cmaple::RealNumType threshold_prob, cmaple::RealNumType &log_lh, std::unique_ptr<SeqRegions>& merged_regions, const bool return_log_lh);
 
 }

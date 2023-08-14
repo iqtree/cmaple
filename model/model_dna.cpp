@@ -92,11 +92,14 @@ void cmaple::ModelDNA::extractRootFreqs(const Alignment* aln)
         ModelBase::extractRootFreqs(aln);
 }
 
-void cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment* aln)
+bool cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment* aln)
 {
     // don't update JC model parameters
     if (sub_model != JC)
-        updateMutationMatEmpiricalTemplate<4>(aln);
+        return updateMutationMatEmpiricalTemplate<4>(aln);
+    
+    // no update -> return false;
+    return false;
 }
 
 void cmaple::ModelDNA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
