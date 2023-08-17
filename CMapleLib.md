@@ -14,23 +14,23 @@ Include CMaple as a submodule...
     	// Create an alignment from a file
     	cmaple::Alignment aln("alignment.maple");
     	
-    	// Create a model
-    	cmaple::Model model("GTR");
+    	// Create an auto-selected model according to the data type from the alignment (i.e., GTR for DNA, and LG for protein data)
+    	Model model(cmaple::ModelBase::MODEL_AUTO, aln.getSeqType());
     	
     	// Create a tree, attach the alignment and model to the tree
-    	cmaple::Tree tree(aln, model);
+    	cmaple::Tree tree(&aln, &model);
     	
-    	// Infer a phylogenetic tree from the alignment and the model
-    	cout << tree.infer() << endl;
+    	// Infer a phylogenetic tree from the alignment and the model using MAPLE algorithm
+    	cout << tree.autoProceedMAPLE() << endl;
     	
     	// Compute the branch supports for the inferred tree
-    	cout << tree.computeBranchSupports() << endl;
+    	cout << tree.computeBranchSupport() << endl;
     	
     	// Compute the likelihood of the tree
     	cout << "- Tree log likelihood: " << tree.computeLh() << endl;
     	
     	// Export the tree (with branch supports) in NEWICK format
-    	cout << "- Tree: " << tree.exportString("BIN", true) << endl;
+    	cout << "- Tree: " << tree.exportNewick("cmaple::Tree::BIN_TREE, true) << endl;
 
 ### Tips for Debugging
 CMaple outputs debugging messages to the standard output `std::cout`. One could control the amount of those messages via setting `cmaple::verbose_mode` to one of the following values.
