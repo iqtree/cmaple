@@ -888,7 +888,7 @@ std::string cmaple::Tree::computeBranchSupportTemplate(const int num_threads, co
     if (!nodes.size())
     {
         throw std::invalid_argument("Tree is empty. Please build/infer a tree from the alignment first!");
-        return;
+        return "";
     }
     
     // set num_threads

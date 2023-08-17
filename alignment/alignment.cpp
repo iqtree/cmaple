@@ -329,6 +329,10 @@ void cmaple::Alignment::readPhylip(std::istream& in, StrVector &sequences, StrVe
         }
     }
     
+    // validate the number of seqs
+    if (seq_id != sequences.size())
+        throw logic_error("Number of sequences " + convertIntToString(sequences.size()) + " (in the header) is different from the actual number of sequences " + convertIntToString(seq_id));
+    
     // set the failbit again
     in.exceptions(ios::failbit | ios::badbit);
     
