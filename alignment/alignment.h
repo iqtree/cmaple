@@ -375,13 +375,20 @@ namespace cmaple
         InputType detectInputFile(std::istream& aln_stream);
     };
 
-    /** \brief Customized << operator to output the alignment to a stream in MAPLE format
+    /*!
+     *  \addtogroup cmaple
+     *  @{
+     */
+
+    /** \brief Customized << operator to output the alignment (in MAPLE format) to a stream
      */
     std::ostream& operator<<(std::ostream& out_stream, cmaple::Alignment& aln);
 
     /** \brief Customized >> operator to read the alignment from a stream
      */
     std::istream& operator>>(std::istream& in_stream, cmaple::Alignment& aln);
+
+    /*! @} End of Doxygen Groups*/
 
     /** Sets of valid characters/states of different data types
      */

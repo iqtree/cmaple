@@ -1211,11 +1211,18 @@ namespace cmaple
         // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
     };
 
-    /** \brief Customized << operator to output the tree string in a (bifurcating) NEWICK format
+    /*!
+     *  \addtogroup cmaple
+     *  @{
+     */
+
+    /** \brief Customized << operator to output the tree string in a (bifurcating) NEWICK format to a stream
      */
     std::ostream& operator<<(std::ostream& out_stream, cmaple::Tree& tree);
 
     /** \brief Customized >> operator to read the tree from a stream
      */
     std::istream& operator>>(std::istream& in_stream, cmaple::Tree& tree);
+
+    /*! @} End of Doxygen Groups*/
 }
