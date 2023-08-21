@@ -6,7 +6,8 @@ var indexSectionsWithContent =
   3: "ms",
   4: "ist",
   5: "bcdfghijlmnpqrsuvw",
-  6: "w"
+  6: "c",
+  7: "w"
 };
 
 var indexSectionNames =
@@ -17,7 +18,8 @@ var indexSectionNames =
   3: "variables",
   4: "enums",
   5: "enumvalues",
-  6: "pages"
+  6: "groups",
+  7: "pages"
 };
 
 var indexSectionLabels =
@@ -28,6 +30,7 @@ var indexSectionLabels =
   3: "Variables",
   4: "Enumerations",
   5: "Enumerator",
-  6: "Pages"
+  6: "Modules",
+  7: "Pages"
 };
 
