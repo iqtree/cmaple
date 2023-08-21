@@ -524,7 +524,7 @@ cmaple::Params::Params()
     aln_format_str = "AUTO";
     ref_path = "";
     ref_seqname = "";
-    sub_model_str = "AUTO";
+    sub_model_str = "DEFAULT";
     fixed_blengths = false;
     overwrite_output = false;
     threshold_prob = 1e-8;

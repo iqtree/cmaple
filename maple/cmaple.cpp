@@ -40,7 +40,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         // Initialize a Model
         const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
         // Validate the sub_model
-        if (sub_model == cmaple::ModelBase::MODEL_UNKNOWN)
+        if (sub_model == cmaple::ModelBase::UNKNOWN)
             throw std::invalid_argument("Unknown Model " + params.sub_model_str);
         Model model(sub_model, aln.getSeqType());
         

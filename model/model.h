@@ -31,7 +31,7 @@ namespace cmaple
         };
         
         /*! \brief Constructor from a model name
-         * @param[in] sub_model a substitution model. Default: MODEL_AUTO - auto select GTR for DNA, and LG for Protein data. List of supported models:
+         * @param[in] sub_model a substitution model. Default: DEFAULT - GTR for DNA, and LG for Protein data. List of supported models:
          * <br>**DNA models**: JC, GTR, UNREST;
          * <br>**Protein models**: GTR20, NONREV, LG, WAG, JTT, Q_PFAM, Q_BIRD, Q_MAMMAL, Q_INSECT, Q_PLANT, Q_YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ_PFAM, NQ_BIRD, NQ_MAMMAL, NQ_INSECT, NQ_PLANT, NQ_YEAST;
          * <br> <em> See [**Substitution models**](http://www.iqtree.org/doc/Substitution-Models) for references of those models.</em>
@@ -40,7 +40,7 @@ namespace cmaple
          * - sub\_model is unknown/unsupported
          * - both sub_model and seqtype are specified as AUTO
          */
-        Model(const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::MODEL_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
+        Model(const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::DEFAULT, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
         
         /*! \brief Destructor
          */

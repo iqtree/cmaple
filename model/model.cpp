@@ -11,11 +11,11 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model, const cmaple::
     cmaple::SeqRegion::SeqType n_seqtype = seqtype;
     
     // Make sure either sub_model or n_seqtype is non-auto
-    if (n_sub_model == ModelBase::MODEL_AUTO && n_seqtype == SeqRegion::SEQ_AUTO)
+    if (n_sub_model == ModelBase::DEFAULT && n_seqtype == SeqRegion::SEQ_AUTO)
         throw std::invalid_argument("Either sub_model or seqtype must be non-AUTO");
     
-    // If sub_model is MODEL_AUTO, select the default model according to the seqtype
-    if (n_sub_model == ModelBase::MODEL_AUTO || n_sub_model == ModelBase::MODEL_UNKNOWN)
+    // If sub_model is DEFAULT, select the default model according to the seqtype
+    if (n_sub_model == ModelBase::DEFAULT || n_sub_model == ModelBase::UNKNOWN)
     {
         switch (n_seqtype) {
             case SeqRegion::SEQ_DNA:
@@ -34,7 +34,7 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model, const cmaple::
             }
             default:
             {
-                n_sub_model = ModelBase::MODEL_UNKNOWN;
+                n_sub_model = ModelBase::UNKNOWN;
                 throw std::invalid_argument("Unable to select a substitution model from an unknown/auto-detect seqtype");
                 break;
             }

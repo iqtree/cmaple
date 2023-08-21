@@ -131,8 +131,8 @@ namespace cmaple
             GTR20, NONREV, LG, WAG, JTT, Q_PFAM, Q_BIRD, Q_MAMMAL, Q_INSECT, Q_PLANT, Q_YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ_PFAM, NQ_BIRD, NQ_MAMMAL, NQ_INSECT, NQ_PLANT, NQ_YEAST,
             ///@}
             
-            MODEL_AUTO, ///<  Auto select (GTR for DNA, and LG for Protein data)
-            MODEL_UNKNOWN, ///<  Unknown model
+            DEFAULT, ///<  Default - GTR for DNA, and LG for Protein data
+            UNKNOWN, ///<  Unknown model
         };
         
         /**
