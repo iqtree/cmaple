@@ -2,6 +2,49 @@
 using namespace std;
 using namespace cmaple;
 
+std::string cmaple::getVersion()
+{
+    return "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "." + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH;
+}
+
+std::string cmaple::getCitations()
+{
+    return "[Citations]";
+}
+
+bool cmaple::checkMapleSuitability(const Alignment& aln)
+{
+    // validate the input
+    const auto seq_length = aln.ref_seq.size();
+    const auto num_seqs = aln.data.size();
+    if (!seq_length)
+        throw std::invalid_argument("Empty reference genome!");
+    if (num_seqs < 3)
+        throw std::invalid_argument("Empty alignment or the number of sequences is less than 3!");
+    
+    // Get the sequence length
+    const auto max_mutations = seq_length * MAX_SUBS_PER_SITE;
+    auto max_sum_mutations = seq_length * MEAN_SUBS_PER_SITE * num_seqs;
+    
+    // check the thresholds:
+    // (1) The number of mutations per sequence is no greater then <max_mutations>
+    // (2) The mean number of mutations per sequence is no greater than <seq_length * MEAN_SUBS_PER_SITE>, which means the total mutations (of all sequences) is no greater than max_sum_mutations
+    for (const Sequence& sequence: aln.data)
+    {
+        // check the first (1) threshold
+        if (sequence.size() > max_mutations)
+            return false;
+        
+        // check the second (2) threshold
+        max_sum_mutations -= sequence.size();
+        if (max_sum_mutations < 0)
+            return false;
+    }
+    
+    // return TRUE (if the thresholds were not exceeded)
+    return true;
+}
+
 void cmaple::runCMaple(cmaple::Params &params)
 {
     try
@@ -36,6 +79,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         if (aln_format == cmaple::Alignment::IN_UNKNOWN)
             throw std::invalid_argument("Unknown alignment format " + params.aln_format_str);
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
+        
+        // check if CMaple is suitable for the input alignment
+        if (!checkMapleSuitability(aln))
+            outWarning("Look like the input sequences are too divergent from each other, which makes CMaple very slow. We highly recommend users to use other methods (e.g., IQ-TREE) to analyse this alignment!");
         
         // Initialize a Model
         const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
@@ -133,16 +180,6 @@ void cmaple::runCMaple(cmaple::Params &params)
     {
         outError(e.what());
     }
-}
-
-std::string cmaple::getVersion()
-{
-    return "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "." + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH;
-}
-
-std::string cmaple::getCitations()
-{
-    return "[Citations]";
 }
 
 void cmaple::testing(cmaple::Params& params)

@@ -344,6 +344,9 @@ namespace cmaple
     template<> constexpr float getMinCarryOver<float>() { return 1e-36f; };    // of -38
 
     const RealNumType MIN_CARRY_OVER = getMinCarryOver<RealNumType>();
+    const RealNumType MEAN_SUBS_PER_SITE = 0.02;
+    const RealNumType MAX_SUBS_PER_SITE = 0.067;
+
 
 
 
