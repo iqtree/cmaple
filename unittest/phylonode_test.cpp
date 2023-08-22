@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "../tree/phylonode.h"
-#include "../model/model_dna.h"
+#include "../tree/tree.h"
+#include "../model/model.h"
 
 using namespace cmaple;
 
@@ -303,54 +304,36 @@ TEST(PhyloNode, TestGetSetPartialLh)
 TEST(PhyloNode, TestExportString)
 {
     const int NUM_SEQS = 10;
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
+    std::vector<std::string> seq_names;
     // init NUM_SEQS
-    aln->data.reserve(NUM_SEQS);
+    seq_names.reserve(NUM_SEQS);
     for (int i =0 ; i < NUM_SEQS; ++i)
     {
-        aln->data.emplace_back("sequence " + convertIntToString(i));
+        seq_names.emplace_back("sequence " + convertIntToString(i));
     }
     
     // test on an internal node
     PhyloNode node1((InternalNode()));
-    EXPECT_EQ(node1.exportString(true, aln, false), ""); // internal node returns ""
-    EXPECT_EQ(node1.exportString(false, aln, false), ""); // internal node returns ""
+    EXPECT_EQ(node1.exportString(true, seq_names, false), ""); // internal node returns ""
+    EXPECT_EQ(node1.exportString(false, seq_names, false), ""); // internal node returns ""
     
     // test on a leaf
     PhyloNode node2(LeafNode(1));
-    EXPECT_EQ(node2.exportString(true, aln, false), "sequence 1:0");
-    EXPECT_EQ(node2.exportString(false, aln, false), "sequence 1:0");
+    EXPECT_EQ(node2.exportString(true, seq_names, false), "sequence 1:0");
+    EXPECT_EQ(node2.exportString(false, seq_names, false), "sequence 1:0");
     
     // add a lessinfoseq
     node2.addLessInfoSeqs(3);
     node2.setUpperLength(-1);
-    EXPECT_EQ(node2.exportString(true, aln, false), "(sequence 1:0,sequence 3:0):0");
-    EXPECT_EQ(node2.exportString(false, aln, false), "(sequence 1:0,sequence 3:0):0");
+    EXPECT_EQ(node2.exportString(true, seq_names, false), "(sequence 1:0,sequence 3:0):0");
+    EXPECT_EQ(node2.exportString(false, seq_names, false), "(sequence 1:0,sequence 3:0):0");
     
     // add two more lessinfoseqs
     node2.addLessInfoSeqs(6);
     node2.addLessInfoSeqs(8);
     node2.setUpperLength(0.5);
-    EXPECT_EQ(node2.exportString(true, aln, false), "(sequence 1:0,(sequence 3:0,(sequence 6:0,sequence 8:0):0):0):0.5");
-    EXPECT_EQ(node2.exportString(false, aln, false), "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
-}
-
-/*
-    Initialize Alignment, Model, and Parameters
- */
-void initTestData(Params& params, std::unique_ptr<Alignment>& aln, ModelBase* model, const cmaple::ModelBase::SubModel sub_model = GTR)
-{
-    // Init params, aln, and model
-    params.sub_model = sub_model;
-    std::string diff_file_path("../../example/test_5K.maple");
-    aln->readMapleFile(diff_file_path, "");
-    model = std::make_unique<ModelDNA>(ModelDNA(params.sub_model));
-    // extract related info (freqs, log_freqs) of the ref sequence
-    model->extractRefInfo(aln);
-    // init the mutation matrix from a model name
-    model->initMutationMat();
-    // compute cumulative rates of the ref sequence
-    model->computeCumulativeRate(aln);
+    EXPECT_EQ(node2.exportString(true, seq_names, false), "(sequence 1:0,(sequence 3:0,(sequence 6:0,sequence 8:0):0):0):0.5");
+    EXPECT_EQ(node2.exportString(false, seq_names, false), "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
 }
 
 /*
@@ -390,12 +373,10 @@ void genTestData(SeqRegions& seqregions1, SeqRegions& seqregions2)
  */
 TEST(PhyloNode, TestComputeTotalLhAtNode)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<ModelBase> model = nullptr;
-    Params params = Params::getInstance();
-    
-    // Init params, aln, and model
-    initTestData(params, aln, model);
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
     SeqRegions seqregions1, seqregions2;
     genTestData(seqregions1, seqregions2);
@@ -405,7 +386,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     PhyloNode node1((InternalNode()));
     std::unique_ptr<SeqRegions> total_lh = nullptr;
     node1.setPartialLh(TOP, std::make_unique<SeqRegions>(std::move(seqregions1)));
-    node1.computeTotalLhAtNode<4>(total_lh, neighbor, aln, model, params.threshold_prob, true); // deafault blength = -1
+    node1.computeTotalLhAtNode<4>(total_lh, neighbor, tree.aln, tree.model, params->threshold_prob, true); // deafault blength = -1
     EXPECT_EQ(total_lh->size(), 9);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
     EXPECT_EQ(total_lh->at(1).position, 654);
@@ -416,12 +397,12 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     EXPECT_EQ(*total_lh->at(6).likelihood, lh_value);
     
     // test on a non-root node
-    aln->ref_seq.resize(3500);
+    aln.ref_seq.resize(3500);
     const MiniIndex parent_mini = RIGHT;
     neighbor.setPartialLh(parent_mini, std::make_unique<SeqRegions>(std::move(seqregions2)));
     node1.setNeighborIndex(TOP, Index(0, parent_mini));
     node1.setUpperLength(0.123);
-    node1.computeTotalLhAtNode<4>(total_lh, neighbor, aln, model, params.threshold_prob, false, 141e-5);
+    node1.computeTotalLhAtNode<4>(total_lh, neighbor, tree.aln, tree.model, params->threshold_prob, false, 141e-5);
     EXPECT_EQ(total_lh->size(), 15);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
     EXPECT_EQ(total_lh->at(1).position, 381);
@@ -433,7 +414,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     
     // default blength
     node1.setUpperLength(0.012);
-    node1.computeTotalLhAtNode<4>(total_lh, neighbor, aln, model, params.threshold_prob, false);
+    node1.computeTotalLhAtNode<4>(total_lh, neighbor, tree.aln, tree.model, params->threshold_prob, false);
     EXPECT_EQ(total_lh->size(), 13);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
     EXPECT_EQ(total_lh->at(1).position, 654);

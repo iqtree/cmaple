@@ -4,9 +4,8 @@ file(COPY "${PROJECT_SOURCE_DIR}/example" DESTINATION "${PROJECT_BINARY_DIR}")
 
 add_executable(
   cmaple_maintest          ## todo: should be called 'SeqRegions_test'
-  #tree_test.h tree_test.cpp
-  #cmaple_test.cpp
-  #phylonode_test.cpp
+  cmaple_test.cpp
+  phylonode_test.cpp
   seqregions_test.cpp
   model_test.cpp
   alignment_test.cpp
