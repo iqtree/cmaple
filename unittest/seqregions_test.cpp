@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "../alignment/seqregions.h"
 #include "../model/model_dna.h"
+#include "../tree/tree.h"
 
 using namespace cmaple;
 
@@ -28,7 +29,7 @@ TEST(SeqRegions, constructor)
     EXPECT_EQ(seqregions2.back().plength_observation2root, 0.1321);
     
     // Test constructor with null param
-    EXPECT_EXIT(SeqRegions invalidSeqRegions(NULL), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_THROW(SeqRegions invalidSeqRegions(NULL), std::invalid_argument);
 }
 
 /*
@@ -353,7 +354,7 @@ TEST(SeqRegions, areDiffFrom)
     
     // init testing data
     const PositionType seq_length = 3500;
-    Params params;
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     seqregions1.emplace_back(TYPE_R, 382, -1, 0.321);
     seqregions1.emplace_back(TYPE_N, 654);
     seqregions1.emplace_back(0, 655, 0);
@@ -368,12 +369,12 @@ TEST(SeqRegions, areDiffFrom)
     seqregions1.emplace_back(TYPE_R, seq_length, 0, 0.1321);
     
     // ---- seqregions2 is empty -----
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), true);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     // ---- seqregions2 is empty -----
     
     // ---- other tests -----
     seqregions2.emplace_back(TYPE_R, seq_length, -1, 0.321);
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), true);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
     seqregions2.back().position = 382;
     seqregions2.emplace_back(TYPE_N, 654);
@@ -387,43 +388,43 @@ TEST(SeqRegions, areDiffFrom)
     seqregions2.emplace_back(TYPE_O, 2432, 0, -1, std::move(new_lh));
     seqregions2.emplace_back(TYPE_N, 3381);
     seqregions2.emplace_back(TYPE_R, seq_length, 0, 0.1321);
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), false);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
     seqregions2.data()[3].type = TYPE_R;
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), true);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
     seqregions2.data()[3].type = TYPE_N;
     seqregions2.data()[4].plength_observation2root = -1;
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), true);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
     seqregions2.data()[4].plength_observation2root = 1e-9;
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), false);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
     seqregions1.back().plength_observation2node = 0.0113;
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), true);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
     seqregions2.back().plength_observation2node = 0.0113 + 1e-10;
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), false);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
     // test on type O
-    RealNumType thresh_diff_update = params.thresh_diff_update / 2; // difference is too small less then thresh_diff_update
+    RealNumType thresh_diff_update = params->thresh_diff_update / 2; // difference is too small less then thresh_diff_update
     seqregions2.data()[6].likelihood->data()[0] += thresh_diff_update;
     seqregions2.data()[6].likelihood->data()[2] -= thresh_diff_update;
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), false);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
     seqregions2.data()[6].likelihood->data()[0] = thresh_diff_update; // reset lh so that all pairs of lh between seqregions1 and seqregions2 equal to each other
     seqregions2.data()[6].likelihood->data()[2] += seqregions2.data()[6].likelihood->data()[0];
     seqregions1.data()[6].likelihood->data()[0] = seqregions2.data()[6].likelihood->data()[0];
     seqregions1.data()[6].likelihood->data()[2] = seqregions2.data()[6].likelihood->data()[2];
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), false);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
     seqregions2.data()[6].likelihood->data()[2] += seqregions2.data()[6].likelihood->data()[0];
     seqregions2.data()[6].likelihood->data()[0] = 0; // one lh = 0 but diff != 0
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), true);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
     seqregions2.data()[6].likelihood->data()[2] -= thresh_diff_update / 10;
     seqregions2.data()[6].likelihood->data()[0] = thresh_diff_update / 10;
-    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, params), true);
+    EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     // ---- other tests -----
 }
 
@@ -434,7 +435,7 @@ TEST(SeqRegions, simplifyO)
 {
     // init testing data
     SeqRegions seqregions1;
-    std::unique_ptr<Params> params = std::make_unique<Params>();
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     RealNumType threshold_prob = params->threshold_prob;
     
     // tests
@@ -719,55 +720,34 @@ void genOutputData2(SeqRegions& seqregions2_total_lh, SeqRegions& seqregions3_to
 }
 
 /*
-    Initialize Alignment, Model, and Parameters
- */
-void initAlnModelParams(std::unique_ptr<Params>& params, std::unique_ptr<Alignment>& aln, ModelBase* model, const cmaple::ModelBase::SubModel sub_model = GTR)
-{
-    // Init params, aln, and model
-    params->sub_model = sub_model;
-    std::string diff_file_path("../../example/test_5K.maple");
-    char* diff_file_path_ptr = new char[diff_file_path.length() + 1];
-    strcpy(diff_file_path_ptr, diff_file_path.c_str());
-    aln->readMapleFile(diff_file_path_ptr, "");
-    model = std::make_unique<ModelDNA>(ModelDNA(params->sub_model));
-    // extract related info (freqs, log_freqs) of the ref sequence
-    model->extractRefInfo(aln);
-    // init the mutation matrix from a model name
-    model->initMutationMat();
-    // compute cumulative rates of the ref sequence
-    model->computeCumulativeRate(aln);
-}
-
-/*
  Test computeAbsoluteLhAtRoot(const Alignment& aln, const ModelBase* model)
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<ModelBase> model = nullptr;
-    std::unique_ptr<Params> params = std::make_unique<Params>();
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Simple tests -----
     SeqRegions seqregions1;
     seqregions1.emplace_back(TYPE_R, seq_length - 1);
-    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot<4>(model), -40547.865582541948);
+    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot<4>(tree.model, tree.cumulative_base), -40547.865582541948);
     
     seqregions1.emplace(seqregions1.begin(), 3, 3242);
     seqregions1.emplace(seqregions1.begin(), TYPE_R, 3241);
-    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot<4>(model), -40547.372963956892);
+    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot<4>(tree.model, tree.cumulative_base), -40547.372963956892);
     
     auto new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.1,0.3,0.2,0.4};
     (*new_lh) = new_lh_value;
     seqregions1.emplace(seqregions1.begin(), TYPE_O, 243, 0, -1, std::move(new_lh));
     seqregions1.emplace(seqregions1.begin(), TYPE_R, 242);
-    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot<4>(model), -40547.053844652924);
+    EXPECT_EQ(seqregions1.computeAbsoluteLhAtRoot<4>(tree.model, tree.cumulative_base), -40547.053844652924);
     // ----- Simple tests -----
     
     // Generate complex seqregions
@@ -775,15 +755,15 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
     genTestData2(seqregions2, seqregions3, seqregions4);
     
     // ----- Test 1 on a more complex seqregions -----
-    EXPECT_EQ(seqregions2.computeAbsoluteLhAtRoot<4>(model), -40547.644608026116);
+    EXPECT_EQ(seqregions2.computeAbsoluteLhAtRoot<4>(tree.model, tree.cumulative_base), -40547.644608026116);
     // ----- Test 1 on a more complex seqregions -----
     
     // ----- Test 2 on a more complex seqregions -----
-    EXPECT_EQ(seqregions3.computeAbsoluteLhAtRoot<4>(model), -40548.188644939095);
+    EXPECT_EQ(seqregions3.computeAbsoluteLhAtRoot<4>(tree.model, tree.cumulative_base), -40548.188644939095);
     // ----- Test 2 on a more complex seqregions -----
     
     // ----- Test 3 on a more complex seqregions -----
-    EXPECT_EQ(seqregions4.computeAbsoluteLhAtRoot<4>(model), -40548.424295613549);
+    EXPECT_EQ(seqregions4.computeAbsoluteLhAtRoot<4>(tree.model, tree.cumulative_base), -40548.424295613549);
     // ----- Test 3 on a more complex seqregions -----
 }
 
@@ -792,28 +772,27 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
  */
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<ModelBase> model = nullptr;
-    std::unique_ptr<Params> params = std::make_unique<Params>();
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Simple tests -----
     SeqRegions seqregions1;
     seqregions1.emplace_back(TYPE_R, seq_length - 1);
     std::unique_ptr<SeqRegions> seqregions_total_lh = nullptr;
-    seqregions1.computeTotalLhAtRoot<4>(seqregions_total_lh, model);
+    seqregions1.computeTotalLhAtRoot<4>(seqregions_total_lh, tree.model);
     EXPECT_EQ(seqregions_total_lh->size(), 1);
     EXPECT_EQ(seqregions_total_lh->front().plength_observation2root, -1);
     EXPECT_EQ(seqregions_total_lh->front().plength_observation2node, -1);
     
     seqregions1.emplace(seqregions1.begin(), 3, 3242);
     seqregions1.emplace(seqregions1.begin(), TYPE_R, 3241);
-    seqregions1.computeTotalLhAtRoot<4>(seqregions_total_lh, model);
+    seqregions1.computeTotalLhAtRoot<4>(seqregions_total_lh, tree.model);
     EXPECT_EQ(seqregions_total_lh->size(), 3);
     EXPECT_EQ(seqregions_total_lh->front().type, seqregions_total_lh->back().type); // TYPE_R
     EXPECT_EQ(seqregions_total_lh->data()[1].type, 3);
@@ -824,7 +803,7 @@ TEST(SeqRegions, computeTotalLhAtRoot)
     (*new_lh) = new_lh_value;
     seqregions1.emplace(seqregions1.begin(), TYPE_O, 243, 0, -1, std::move(new_lh));
     seqregions1.emplace(seqregions1.begin(), TYPE_N, 242);
-    seqregions1.computeTotalLhAtRoot<4>(seqregions_total_lh, model);
+    seqregions1.computeTotalLhAtRoot<4>(seqregions_total_lh, tree.model);
     EXPECT_EQ(seqregions_total_lh->size(), 5);
     EXPECT_EQ(seqregions_total_lh->front().type, TYPE_N);
     EXPECT_EQ(seqregions_total_lh->front().plength_observation2root, -1);
@@ -841,17 +820,17 @@ TEST(SeqRegions, computeTotalLhAtRoot)
     genOutputData2(seqregions2_total_lh, seqregions3_total_lh, seqregions4_total_lh);
     
     // ----- Test 1 on a more complex seqregions -----
-    seqregions2.computeTotalLhAtRoot<4>(seqregions_total_lh, model);
+    seqregions2.computeTotalLhAtRoot<4>(seqregions_total_lh, tree.model);
     EXPECT_EQ(*seqregions_total_lh, seqregions2_total_lh);
     // ----- Test 1 on a more complex seqregions -----
     
     // ----- Test 2 on a more complex seqregions -----
-    seqregions3.computeTotalLhAtRoot<4>(seqregions_total_lh, model, 1e-5);
+    seqregions3.computeTotalLhAtRoot<4>(seqregions_total_lh, tree.model, 1e-5);
     EXPECT_EQ(*seqregions_total_lh, seqregions3_total_lh);
     // ----- Test 2 on a more complex seqregions -----
     
     // ----- Test 3 on a more complex seqregions -----
-    seqregions4.computeTotalLhAtRoot<4>(seqregions_total_lh, model, 0.03762);
+    seqregions4.computeTotalLhAtRoot<4>(seqregions_total_lh, tree.model, 0.03762);
     EXPECT_EQ(*seqregions_total_lh, seqregions4_total_lh);
     // ----- Test 3 on a more complex seqregions -----
     
@@ -863,15 +842,14 @@ TEST(SeqRegions, computeTotalLhAtRoot)
  */
 TEST(SeqRegions, merge_N_O)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -881,7 +859,7 @@ TEST(SeqRegions, merge_N_O)
     SeqRegion::LHType new_lh_value{0.27595781923293211113090706021466758102178573608398,8.3817209383128356075479820086471249851456377655268e-06,0.72401575181023847260775028189527802169322967529297,1.8047235891267821277644811672757896303664892911911e-05};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -892,7 +870,7 @@ TEST(SeqRegions, merge_N_O)
     
     // ----- Test 2 -----
     seqregion1.plength_observation2root = 0.311; // plength_observation2root does NOT affect the likelihood of new merged region
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -902,7 +880,7 @@ TEST(SeqRegions, merge_N_O)
     
     // ----- Test 3 -----
     seqregion1.plength_observation2node = 0; // plength_observation2node = 0 does NOT affect the likelihood of new merged region
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -912,7 +890,7 @@ TEST(SeqRegions, merge_N_O)
     
     // ----- Test 4 -----
     seqregion1.plength_observation2node = 0.1252; // plength_observation2node > 0 affects the likelihood of new merged region
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -923,7 +901,7 @@ TEST(SeqRegions, merge_N_O)
     
     // ----- Test 5 -----
     lower_plength = 0; // lower_plength = 0; plength_observation2node > 0
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -934,7 +912,7 @@ TEST(SeqRegions, merge_N_O)
     // ----- Test 6 -----
     lower_plength = 0; // lower_plength = 0; plength_observation2node = 0
     seqregion1.plength_observation2node = 0;
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -945,7 +923,7 @@ TEST(SeqRegions, merge_N_O)
     // ----- Test 7 -----
     lower_plength = 0; // lower_plength = 0; plength_observation2node = -1
     seqregion1.plength_observation2node = -1;
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 7);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -956,7 +934,7 @@ TEST(SeqRegions, merge_N_O)
     // ----- Test 8 -----
     lower_plength = 0.02331; // lower_plength > 0; plength_observation2node = -1
     seqregion1.plength_observation2node = -1;
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 8);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -968,7 +946,7 @@ TEST(SeqRegions, merge_N_O)
     // ----- Test 9 -----
     lower_plength = 0.02331; // lower_plength > 0; plength_observation2node = 0
     seqregion1.plength_observation2node = 0;
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 9);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -979,7 +957,7 @@ TEST(SeqRegions, merge_N_O)
     // ----- Test 10 -----
     lower_plength = 0.02331; // lower_plength > 0; plength_observation2node > 0
     seqregion1.plength_observation2node = 0.1e-6;
-    merge_N_O<4>(lower_plength, seqregion1, model,
+    merge_N_O<4>(lower_plength, seqregion1, tree.model,
               end_pos, merged_regions);
     EXPECT_EQ(merged_regions.size(), 10);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -995,15 +973,14 @@ TEST(SeqRegions, merge_N_O)
  */
 TEST(SeqRegions, merge_N_RACGT)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -1335,15 +1312,14 @@ TEST(SeqRegions, merge_N_RACGT)
  */
 TEST(SeqRegions, merge_O_N)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -1353,7 +1329,7 @@ TEST(SeqRegions, merge_O_N)
     SeqRegion::LHType new_lh_value{7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781,7.4346402191731947664294494204639818235591519623995e-06,0.33332094226630137878686355179524980485439300537109};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1363,7 +1339,7 @@ TEST(SeqRegions, merge_O_N)
     
     // ----- Test 2 -----
     seqregion1.plength_observation2root = 0.311; // plength_observation2root does NOT affect the likelihood of new merged region
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1372,7 +1348,7 @@ TEST(SeqRegions, merge_O_N)
     
     // ----- Test 3 -----
     seqregion1.plength_observation2node = 0; // plength_observation2node = 0 does NOT affect the likelihood of new merged region
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1381,7 +1357,7 @@ TEST(SeqRegions, merge_O_N)
     
     // ----- Test 4 -----
     seqregion1.plength_observation2node = 0.1252; // plength_observation2node > 0 affects the likelihood of new merged region
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1391,7 +1367,7 @@ TEST(SeqRegions, merge_O_N)
     
     // ----- Test 5 -----
     upper_plength = 0; // lower_plength = 0; plength_observation2node > 0
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1401,7 +1377,7 @@ TEST(SeqRegions, merge_O_N)
     // ----- Test 6 -----
     upper_plength = 0; // lower_plength = 0; plength_observation2node = 0
     seqregion1.plength_observation2node = 0;
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1411,7 +1387,7 @@ TEST(SeqRegions, merge_O_N)
     // ----- Test 7 -----
     upper_plength = 0; // lower_plength = 0; plength_observation2node = -1
     seqregion1.plength_observation2node = -1;
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 7);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1421,7 +1397,7 @@ TEST(SeqRegions, merge_O_N)
     // ----- Test 8 -----
     upper_plength = 0.02331; // lower_plength > 0; plength_observation2node = -1
     seqregion1.plength_observation2node = -1;
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 8);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1432,7 +1408,7 @@ TEST(SeqRegions, merge_O_N)
     // ----- Test 9 -----
     upper_plength = 0.02331; // lower_plength > 0; plength_observation2node = 0
     seqregion1.plength_observation2node = 0;
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 9);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1442,7 +1418,7 @@ TEST(SeqRegions, merge_O_N)
     // ----- Test 10 -----
     upper_plength = 0.02331; // lower_plength > 0; plength_observation2node > 0
     seqregion1.plength_observation2node = 0.1e-6;
-    merge_O_N<4>(seqregion1, upper_plength, end_pos, model, merged_regions);
+    merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
     EXPECT_EQ(merged_regions.size(), 10);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
@@ -1457,15 +1433,14 @@ TEST(SeqRegions, merge_O_N)
  */
 TEST(SeqRegions, merge_RACGT_N)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -1797,15 +1772,14 @@ TEST(SeqRegions, merge_RACGT_N)
  */
 TEST(SeqRegions, merge_Zero_Distance)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     std::unique_ptr<SeqRegions> merged_regions_ptr = std::make_unique<SeqRegions>();
@@ -1915,15 +1889,14 @@ TEST(SeqRegions, merge_Zero_Distance)
  */
 TEST(SeqRegions, merge_O_ORACGT)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -1939,7 +1912,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     RealNumType total_blength_2 = -1;
     const RealNumType threshold_prob = params->threshold_prob;
     const PositionType end_pos = 3213;
-    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -1951,7 +1924,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     // ----- Test 2 -----
     total_blength_1 = -1;
     total_blength_2 = 1e-5;
-    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -1963,7 +1936,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     // ----- Test 3 -----
     total_blength_1 = 0.01;
     total_blength_2 = -1;
-    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -1975,7 +1948,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     // ----- Test 4 -----
     total_blength_1 = 0.011321;
     total_blength_2 = 1e-3;
-    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -1988,7 +1961,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     total_blength_1 = -1;
     total_blength_2 = -1;
     SeqRegion seqregion3(TYPE_R, 4324, 0.121, 0);
-    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().type, seqregion3.type);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -1999,7 +1972,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     total_blength_1 = -1;
     total_blength_2 = 0; // either total_blength_2 = -1 or = 0 leads to the same result
     seqregion3.type = 2;
-    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().type, seqregion3.type);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -2010,7 +1983,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     total_blength_1 = -1;
     total_blength_2 = 0;
     seqregion3.type = 0;
-    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 7);
     EXPECT_EQ(merged_regions.back().type, seqregion3.type);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -2021,7 +1994,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     total_blength_1 = 0.231;
     total_blength_2 = 0;
     seqregion3.type = 0;
-    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 8);
     EXPECT_EQ(merged_regions.back().type, seqregion3.type);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -2032,7 +2005,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     total_blength_1 = 0.231;
     total_blength_2 = 0.3121;
     seqregion3.type = 2;
-    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_O_ORACGT<4>(seqregion1, seqregion3, total_blength_1, total_blength_2, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 9);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2047,15 +2020,14 @@ TEST(SeqRegions, merge_O_ORACGT)
  */
 TEST(SeqRegions, merge_RACGT_O)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -2069,7 +2041,7 @@ TEST(SeqRegions, merge_RACGT_O)
     new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.99997490659690790870683940738672390580177307128906,2.5092097243268992381179730011275808010395849123597e-05,6.5292438309787796439726148030194621818544931102224e-10,6.5292438309787796439726148030194621818544931102224e-10};
     (*new_lh) = new_lh_value1;
-    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().type, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -2079,7 +2051,7 @@ TEST(SeqRegions, merge_RACGT_O)
     // ----- Test 2 -----
     SeqRegion::LHType new_lh_value2{0.24998327274350143345493791002809302881360054016113,0.74997769674260927885711680573876947164535522460938,1.9515256944661845116837164959555650511902058497071e-05,1.9515256944661845116837164959555650511902058497071e-05};
     (*new_lh) = new_lh_value2;
-    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2091,7 +2063,7 @@ TEST(SeqRegions, merge_RACGT_O)
     // ----- Test 3 -----
     total_blength_1 = 0; // either total_blength_1 = 0 or = -1 does not affect the merged region
     (*new_lh) = new_lh_value2;
-    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2102,7 +2074,7 @@ TEST(SeqRegions, merge_RACGT_O)
     // ----- Test 4 -----
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2115,7 +2087,7 @@ TEST(SeqRegions, merge_RACGT_O)
     seqregion1.plength_observation2root = 0.231; // neither plength_observation2root nor plength_observation2node affect the merged region
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2127,7 +2099,7 @@ TEST(SeqRegions, merge_RACGT_O)
     seqregion1.plength_observation2node = 1e-7; // neither plength_observation2root nor plength_observation2node affect the merged region
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2141,15 +2113,14 @@ TEST(SeqRegions, merge_RACGT_O)
  */
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -2160,7 +2131,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     auto new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
     (*new_lh) = new_lh_value1;
-    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2172,7 +2143,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     // ----- Test 2 -----
     SeqRegion::LHType new_lh_value2{8.3640013382402129011325767060647251582850003615022e-06,8.3640013382402129011325767060647251582850003615022e-06,0.24998327199732350845096107150311581790447235107422,0.74999999999999988897769753748434595763683319091797};
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2183,7 +2154,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     // ----- Test 3 -----
     total_blength_1 = 0; // either total_blength_1 = 0 or = -1 does not affect the merged region
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2194,7 +2165,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     // ----- Test 4 -----
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2207,7 +2178,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     seqregion1.plength_observation2root = 0.231; // neither plength_observation2root nor plength_observation2node affect the merged region
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2219,7 +2190,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     seqregion1.plength_observation2node = 1e-7; // neither plength_observation2root nor plength_observation2node affect the merged region
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2231,7 +2202,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     SeqRegion seqregion2(1, 5345);
     total_blength_1 = -1;
     (*new_lh) = new_lh_value1;
-    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 7);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2242,7 +2213,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     
     // ----- Test 8 -----
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 8);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2253,7 +2224,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     // ----- Test 9 -----
     total_blength_1 = 0; // either total_blength_1 = 0 or = -1 does not affect the merged region
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 9);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2264,7 +2235,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     // ----- Test 10 -----
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 10);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2277,7 +2248,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     seqregion1.plength_observation2root = 0.231; // neither plength_observation2root nor plength_observation2node affect the merged region
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 11);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2289,7 +2260,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     seqregion1.plength_observation2node = 1e-7; // neither plength_observation2root nor plength_observation2node affect the merged region
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
-    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, model, aln, merged_regions);
+    merge_RACGT_RACGT<4>(seqregion2, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 12);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2304,15 +2275,14 @@ TEST(SeqRegions, merge_RACGT_RACGT)
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
     // NOTE: if plength_observation2root > 0 then must be plength_observation2node != -1;
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -2326,7 +2296,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     SeqRegion::LHType new_lh_value1{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
     (*new_lh) = new_lh_value1;
     SeqRegion seqregion2(TYPE_O, 543, -1, -1, std::move(new_lh));
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().type, TYPE_R);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -2343,7 +2313,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 0;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = -1;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2362,7 +2332,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = 0.0233;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2381,7 +2351,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 3;
     seqregion2.plength_observation2root = 0.12;
     seqregion2.plength_observation2node = 3e-4;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2400,7 +2370,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_R;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = 1e-7;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2419,7 +2389,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 2;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = 0;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 6);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2438,7 +2408,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_R;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = 0;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 7);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2457,7 +2427,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 1;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 0;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 8);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2476,7 +2446,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 1e-4;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 9);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2495,7 +2465,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_R;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 1e-5;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 10);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2514,7 +2484,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = -1;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 11);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2533,7 +2503,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 1e-7;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 12);
     EXPECT_EQ(merged_regions.back().type, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -2550,7 +2520,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 3;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 0.0032;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 13);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2569,7 +2539,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 3;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 0;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 14);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2588,7 +2558,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 0;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = -1;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 15);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2607,7 +2577,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = 3e-2;
     seqregion2.plength_observation2node = 5e-5;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 16);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2626,7 +2596,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 1;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = 0;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 17);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2645,7 +2615,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = 2e-5;
     seqregion2.plength_observation2node = 121e-6;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 18);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2664,7 +2634,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_R;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = 0;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 19);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2683,7 +2653,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = -1;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 20);
     EXPECT_EQ(merged_regions.back().type, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
@@ -2700,7 +2670,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_R;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 0.0142;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 21);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2719,7 +2689,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = 1;
     seqregion2.plength_observation2root = -1;
     seqregion2.plength_observation2node = -1;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 22);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2738,7 +2708,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_R;
     seqregion2.plength_observation2root = 0;
     seqregion2.plength_observation2node = 0.0042;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 23);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -2757,7 +2727,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     seqregion2.type = TYPE_O;
     seqregion2.plength_observation2root = 342e-7;
     seqregion2.plength_observation2node = 13e-4;
-    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, model, aln, merged_regions);
+    merge_RACGT_ORACGT<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, upper_plength, end_pos, threshold_prob, tree.model, tree.aln, merged_regions);
     EXPECT_EQ(merged_regions.size(), 24);
     EXPECT_EQ(merged_regions.back().type, TYPE_O);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
@@ -3932,15 +3902,14 @@ void genTestData4(SeqRegions& seqregions1, SeqRegions& seqregions2, SeqRegions& 
  */
 TEST(SeqRegions, mergeUpperLower)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::JC);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model, "JC");
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -3948,61 +3917,61 @@ TEST(SeqRegions, mergeUpperLower)
     std::unique_ptr<SeqRegions> merged_regions_ptr = nullptr;
     
     genTestData3(seqregions1, seqregions2, output_regions, 1);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 1 -----
     
     // ----- Test 2 -----
     genTestData3(seqregions1, seqregions2, output_regions, 2);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 2 -----
     
     // ----- Test 3 -----
     genTestData3(seqregions1, seqregions2, output_regions, 3);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, seqregions2, 0.00013381954434445151344394708825547013475443236529827, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, seqregions2, 0.00013381954434445151344394708825547013475443236529827, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 3 -----
     
     // ----- Test 4 -----
     genTestData3(seqregions1, seqregions2, output_regions, 4);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 4 -----
     
     // ----- Test 5 -----
     genTestData3(seqregions1, seqregions2, output_regions, 5);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, -1, seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, -1, seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 5 -----
     
     // ----- Test 6 -----
     genTestData3(seqregions1, seqregions2, output_regions, 6);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 6 -----
     
     // ----- Test 7 -----
     genTestData3(seqregions1, seqregions2, output_regions, 7);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, -1, seqregions2, -1, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 7 -----
     
     // ----- Test 8 -----
     genTestData3(seqregions1, seqregions2, output_regions, 8);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 8 -----
     
     // ----- Test 9 -----
     genTestData3(seqregions1, seqregions2, output_regions, 9);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 9 -----
     
     // ----- Test 10 -----
     genTestData3(seqregions1, seqregions2, output_regions, 10);
-    seqregions1.mergeUpperLower<4>(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeUpperLower<4>(merged_regions_ptr, -1, seqregions2, -1, tree.aln, tree.model, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 10 -----
 }
@@ -4012,15 +3981,14 @@ TEST(SeqRegions, mergeUpperLower)
  */
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -4129,15 +4097,14 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
  */
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -4470,15 +4437,14 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -4489,7 +4455,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     RealNumType total_blength_2 = -1;
     RealNumType log_lh = 0;
     SeqRegion seqregion1(TYPE_R, 3442, -1, -1);
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, tree.model, tree.cumulative_rate, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 1);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4502,7 +4468,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = 0;
     log_lh = 0;
     seqregion1.type = 0;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, tree.model, tree.cumulative_rate, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4515,7 +4481,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = 13e-4;
     log_lh = 0;
     seqregion1.type = 3;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, tree.model, tree.cumulative_rate, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4528,7 +4494,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = -1;
     log_lh = 0;
     seqregion1.type = TYPE_R;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, tree.model, tree.cumulative_rate, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 4);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4541,7 +4507,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
     total_blength_2 = 0.04231;
     log_lh = 0;
     seqregion1.type = 1;
-    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, model, log_lh, merged_regions, true);
+    merge_identicalRACGT_TwoLowers(seqregion1, end_pos, total_blength_1, total_blength_2, pos, threshold_prob, tree.model, tree.cumulative_rate, log_lh, merged_regions, true);
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, -1);
@@ -4555,15 +4521,14 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -4578,7 +4543,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     (*new_lh1) = new_lh_value1;
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 3213;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4592,7 +4557,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     log_lh = 0;
     total_blength_2 = 1e-5;
     (*new_lh1) = new_lh_value1;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4606,7 +4571,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     log_lh = 0;
     total_blength_2 = 0;
     (*new_lh1) = new_lh_value1;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4621,7 +4586,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = -1;
     SeqRegion::LHType new_lh_value2{1.1151877415789591228433182135137968771232408471406e-05,1.2436575683940661210420103588707597258578019250308e-10,0.99998884787385255989988763758447021245956420898438,1.2436575683940661210420103588707597258578019250308e-10};
     (*new_lh1) = new_lh_value2;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4636,7 +4601,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = 0;
     SeqRegion::LHType new_lh_value3{0.80000178432426516383912940000300295650959014892578,8.9216213262436184458807272856795123061601771041751e-06,0.19998037243308225408000566858390811830759048461914,8.9216213262436184458807272856795123061601771041751e-06};
     (*new_lh1) = new_lh_value3;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4651,7 +4616,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = 121e-5;
     SeqRegion::LHType new_lh_value4{0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10};
     (*new_lh1) = new_lh_value4;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4666,7 +4631,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = 121e-5;
     SeqRegion::LHType new_lh_value5{0.99999442305078967141440671184682287275791168212891,5.5758298847802999098784669518291678969035274349153e-06,5.5966272240860645628430121287970669397004996881151e-10,5.5966272240860645628430121287970669397004996881151e-10};
     *seqregion1.likelihood = new_lh_value5;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4679,7 +4644,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     total_blength_2 = -1;
     SeqRegion::LHType new_lh_value6{0.80000044606912734668213715849560685455799102783203,2.2303456366633140507259747825630213924341660458595e-06,2.2303456366633140507259747825630213924341660458595e-06,0.1999950932395993530299449503218056634068489074707};
     *seqregion1.likelihood = new_lh_value6;
-    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
+    EXPECT_TRUE(merge_O_O_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4694,15 +4659,14 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
  */
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -4715,7 +4679,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     (*new_lh1) = new_lh_value1;
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 243;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4728,7 +4692,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     total_blength_2 = 1e-5;
     seqregion1.type = 1;
     (*new_lh1) = new_lh_value1;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4743,7 +4707,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     total_blength_2 = 0;
     seqregion1.type = 0;
     (*new_lh1) = new_lh_value1;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4757,7 +4721,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     seqregion1.type = 2;
     SeqRegion::LHType new_lh_value2{1.1151877415789591228433182135137968771232408471406e-05,1.2436575683940661210420103588707597258578019250308e-10,0.99998884787385255989988763758447021245956420898438,1.2436575683940661210420103588707597258578019250308e-10};
     (*new_lh1) = new_lh_value2;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, 2);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4771,7 +4735,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     seqregion1.type = TYPE_R;
     SeqRegion::LHType new_lh_value3{0.80000178432426516383912940000300295650959014892578,8.9216213262436184458807272856795123061601771041751e-06,0.19998037243308225408000566858390811830759048461914,8.9216213262436184458807272856795123061601771041751e-06};
     (*new_lh1) = new_lh_value3;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4785,7 +4749,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     seqregion1.type = 0;
     SeqRegion::LHType new_lh_value4{0.99999721161091070786852696983260102570056915283203,2.7982277946960444848486499948455024505689081593118e-10,2.7878294439446026602288583595701254580490058287978e-06,2.7982277946960444848486499948455024505689081593118e-10};
     (*new_lh1) = new_lh_value4;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4797,7 +4761,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     log_lh = 0;
     total_blength_2 = 121e-5;
     seqregion1.type = 3;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4809,7 +4773,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     log_lh = 0;
     total_blength_2 = -1;
     seqregion1.type = TYPE_R;
-    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_RACGT_TwoLowers<4>(seqregion1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, *new_lh1, sum_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4824,15 +4788,14 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -4849,7 +4812,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     RealNumType total_blength_1 = -1;
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 412;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4864,7 +4827,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     total_blength_1 = -1;
     total_blength_2 = 32e-5;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4881,7 +4844,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     SeqRegion::LHType new_lh_value2{2.7879382638950842936132173272012479969816922675818e-06,0.49999721206173608489820026079542003571987152099609,2.7879382638950842936132173272012479969816922675818e-06,0.49999721206173608489820026079542003571987152099609};
     (*seqregion1.likelihood) = new_lh_value2;
     seqregion2.type = 0;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, 0);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4894,7 +4857,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     total_blength_1 = 0;
     total_blength_2 = 12e-10;
     seqregion2.type = 3;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, 3);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4909,7 +4872,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     SeqRegion::LHType new_lh_value3{8.3640013382402129011325767060647251582850003615022e-06,0.24998327199732350845096107150311581790447235107422,8.3640013382402129011325767060647251582850003615022e-06,0.74999999999999988897769753748434595763683319091797};
     (*seqregion1.likelihood) = new_lh_value3;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4926,7 +4889,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value6{0.39998126426090857554740409796067979186773300170898,1.3382670779607485874503763900733588343427982181311e-05,0.59999197039753215943136410714942030608654022216797,1.3382670779607485874503763900733588343427982181311e-05};
     (*seqregion2.likelihood) = new_lh_value6;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4943,7 +4906,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     SeqRegion::LHType new_lh_value4{7.4346402191731947664294494204639818235591519623995e-06,0.33332094226630137878686355179524980485439300537109,7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781};
     (*seqregion1.likelihood) = new_lh_value4;
     seqregion2.type = 1;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4958,7 +4921,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value7{2.4874076016223502201974116939081453636628538106379e-10,7.4343638397288813108904244331132105116921593435109e-06,2.4874076016223502201974116939081453636628538106379e-10,0.99999256513867862405930964087019674479961395263672};
     (*seqregion2.likelihood) = new_lh_value7;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -4975,7 +4938,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     SeqRegion::LHType new_lh_value5{0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06};
     (*seqregion1.likelihood) = new_lh_value5;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 9);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -4988,7 +4951,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     total_blength_1 = -1;
     total_blength_2 = 0;
     seqregion2.type = 2;
-    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_O_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 10);
     EXPECT_EQ(merged_regions->back().type, 2);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5002,15 +4965,14 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -5025,7 +4987,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     SeqRegion seqregion2(TYPE_O, 412, -1, -1, std::move(new_lh1));
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 412;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5041,7 +5003,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     (*seqregion2.likelihood) = new_lh_value1;
     SeqRegion::LHType new_lh_value2{6.9955421312460765020272434505291649434188805400936e-11,6.9955421312460765020272434505291649434188805400936e-11,0.99999686351370775660996059741592034697532653808594,3.1363463814122085285697027340345854895531374495476e-06};
     (*new_lh) = new_lh_value2;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5057,7 +5019,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     SeqRegion::LHType new_lh_value3{4.9563776809356656518181297177427779843128519132733e-06,4.9563776809356656518181297177427779843128519132733e-06,0.11109844481259316395505010177657823078334331512451,0.88889164243204510373885796070680953562259674072266};
     (*seqregion2.likelihood) = new_lh_value3;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5073,7 +5035,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     (*seqregion2.likelihood) = new_lh_value1;
     SeqRegion::LHType new_lh_value4{2.6136903006998423677005767562508964374501374550164e-06,0.062492812351673081294745060176865081302821636199951,2.6136903006998423677005767562508964374501374550164e-06,0.93750196026772558699491355582722462713718414306641};
     (*new_lh) = new_lh_value4;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5089,7 +5051,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     SeqRegion::LHType new_lh_value5{9.9498152920206932387357935649403392619483099679201e-10,8.9219993723549547142565030455330088443588465452194e-05,9.9498152920206932387357935649403392619483099679201e-10,0.99991077801631333965559633725206367671489715576172};
     (*seqregion2.likelihood) = new_lh_value5;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5105,7 +5067,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     (*seqregion2.likelihood) = new_lh_value1;
     SeqRegion::LHType new_lh_value6{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
     (*new_lh) = new_lh_value6;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5121,7 +5083,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     SeqRegion::LHType new_lh_value7{1.2436575683940661210420103588707597258578019250308e-10,1.1151877415789591228433182135137968771232408471406e-05,1.2436575683940661210420103588707597258578019250308e-10,0.99998884787385255989988763758447021245956420898438};
     (*seqregion2.likelihood) = new_lh_value7;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5137,7 +5099,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     (*seqregion2.likelihood) = new_lh_value1;
     SeqRegion::LHType new_lh_value8{0.74997769674260927885711680573876947164535522460938,0.24998327274350143345493791002809302881360054016113,1.9515256944661845116837164959555650511902058497071e-05,1.9515256944661845116837164959555650511902058497071e-05};
     (*new_lh) = new_lh_value8;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5153,7 +5115,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     SeqRegion::LHType new_lh_value9{0.99997490659690790870683940738672390580177307128906,2.5092097243268992381179730011275808010395849123597e-05,6.5292438309787796439726148030194621818544931102224e-10,6.5292438309787796439726148030194621818544931102224e-10};
     (*seqregion2.likelihood) = new_lh_value9;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_O_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 9);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5167,15 +5129,14 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -5188,7 +5149,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     SeqRegion seqregion2(TYPE_R, 412, -1, -1);
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 412;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, seqregion2.type);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5203,7 +5164,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     seqregion2.type = 0;
     SeqRegion::LHType new_lh_value2{6.9955421312460765020272434505291649434188805400936e-11,3.1363463814122085285697027340345854895531374495476e-06,0.99999686351370775660996059741592034697532653808594,6.9955421312460765020272434505291649434188805400936e-11};
     (*new_lh) = new_lh_value2;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5219,7 +5180,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     total_blength_2 = 0;
     seqregion2.type = TYPE_R;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, seqregion2.type);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5234,7 +5195,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     seqregion2.type = 1;
     SeqRegion::LHType new_lh_value4{0.062492812351673081294745060176865081302821636199951,0.93750196026772558699491355582722462713718414306641,2.6136903006998423677005767562508964374501374550164e-06,2.6136903006998423677005767562508964374501374550164e-06};
     (*new_lh) = new_lh_value4;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5250,7 +5211,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     total_blength_2 = -1;
     seqregion2.type = 0;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, seqregion2.type);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5265,7 +5226,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     seqregion2.type = 3;
     SeqRegion::LHType new_lh_value6{0.49999442406129068761089229155913926661014556884766,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,5.5759387092817078802929955938516570768115343526006e-06};
     (*new_lh) = new_lh_value6;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5281,7 +5242,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     total_blength_2 = 1.2436575683940661210420103588707597258578019250308e-10;
     seqregion2.type = 0;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5298,7 +5259,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     seqregion2.type = TYPE_R;
     SeqRegion::LHType new_lh_value8{0.74997769674260927885711680573876947164535522460938,1.9515256944661845116837164959555650511902058497071e-05,1.9515256944661845116837164959555650511902058497071e-05,0.24998327274350143345493791002809302881360054016113};
     (*new_lh) = new_lh_value8;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5314,7 +5275,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     total_blength_2 = 0;
     seqregion2.type = 1;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 9);
     EXPECT_EQ(merged_regions->back().type, seqregion2.type);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5328,7 +5289,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     total_blength_2 = -1;
     seqregion2.type = 2;
     (*new_lh) = new_lh_value;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 10);
     EXPECT_EQ(merged_regions->back().type, seqregion2.type);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5343,7 +5304,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     seqregion2.type = TYPE_R;
     SeqRegion::LHType new_lh_value11{2.5092097243268992381179730011275808010395849123597e-05,0.99997490659690790870683940738672390580177307128906,6.5292438309787796439726148030194621818544931102224e-10,6.5292438309787796439726148030194621818544931102224e-10};
     (*new_lh) = new_lh_value11;
-    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_RACGT_TwoLowers<4>(seqregion2, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 11);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5360,15 +5321,14 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -5382,7 +5342,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     RealNumType total_blength_1 = 1326e-5;
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 3223;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5398,7 +5358,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     total_blength_2 = 32e-5;
     seqregion1.type = 2;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, 2);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5412,7 +5372,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     total_blength_2 = 0;
     seqregion1.type = TYPE_R;
     seqregion2.type = 1;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5426,7 +5386,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     total_blength_2 = 12e-10;
     seqregion1.type = 0;
     seqregion2.type = 3;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5440,7 +5400,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     total_blength_2 = 68e-4;
     seqregion1.type = 1;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5458,7 +5418,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value6{1.3382670779607485874503763900733588343427982181311e-05,1.3382670779607485874503763900733588343427982181311e-05,0.39998126426090857554740409796067979186773300170898,0.59999197039753215943136410714942030608654022216797};
     (*seqregion2.likelihood) = new_lh_value6;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, 2);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5473,7 +5433,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     total_blength_2 = 0;
     seqregion1.type = TYPE_R;
     seqregion2.type = 1;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5489,7 +5449,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value7{0.99999256513867862405930964087019674479961395263672,7.4343638397288813108904244331132105116921593435109e-06,2.4874076016223502201974116939081453636628538106379e-10,2.4874076016223502201974116939081453636628538106379e-10};
     (*seqregion2.likelihood) = new_lh_value7;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, 3);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5503,7 +5463,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     total_blength_2 = -1;
     seqregion1.type = 3;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 9);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5517,7 +5477,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     total_blength_2 = 42.165e-8;
     seqregion1.type = 2;
     seqregion2.type = 3;
-    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_RACGT_ORACGT_TwoLowers<4>(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, tree.aln, tree.model, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 10);
     EXPECT_EQ(merged_regions->back().type, 2);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5531,15 +5491,14 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model);
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -5557,7 +5516,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     RealNumType plength2 = -1;
     const PositionType end_pos = 1412;
     const PositionType pos = 1355;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 1);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5573,7 +5532,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 1.3382670779607485874503763900733588343427982181311e-05;
     seqregion1.type = TYPE_R;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 2);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5587,7 +5546,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 3.283e-9;
     seqregion1.type = 2;
     seqregion2.type = 0;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 3);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5603,7 +5562,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 0.00031223631362821728;
     seqregion1.type = TYPE_R;
     seqregion2.type = 3;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 4);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5619,7 +5578,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     SeqRegion::LHType new_lh_value3{4.9383548301647924830444502664050787643645890057087e-05,0.71422131017848822231997019116533920168876647949219,4.9383548301647924830444502664050787643645890057087e-05,0.28567992272490849714472460618708282709121704101562};
     (*seqregion2.likelihood) = new_lh_value3;
     seqregion2.type = TYPE_O;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 5);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5637,7 +5596,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value6{6.6911562987199814600764238847752096717158565297723e-06,0.39999063238118182095348629445652477443218231201172,6.6911562987199814600764238847752096717158565297723e-06,0.59999598530622066938633452082285657525062561035156};
     (*seqregion2.likelihood) = new_lh_value6;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 6);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5653,7 +5612,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value4;
     seqregion1.type = TYPE_O;
     seqregion2.type = 1;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 7);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5669,7 +5628,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value7{1.1815113248226830777267349123884135342343881802663e-09,0.9999702585027225865133004845120012760162353515625,1.1815113248226830777267349123884135342343881802663e-09,2.9739134254674524059092188821296076639555394649506e-05};
     (*seqregion2.likelihood) = new_lh_value7;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5685,7 +5644,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value5;
     seqregion1.type = TYPE_O;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 8); // consecutive R regions -> merged
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5699,7 +5658,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 231.65e-8;
     seqregion1.type = 2;
     seqregion2.type = 2;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 9);
     EXPECT_EQ(merged_regions->back().type, 2);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5715,7 +5674,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value11;
     seqregion1.type = TYPE_O;
     seqregion2.type = TYPE_R;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 10);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5729,7 +5688,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 3.4820599267114684E-5;
     seqregion1.type = 3;
     seqregion2.type = 1;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 11);
     EXPECT_EQ(merged_regions->back().type, 3);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5745,7 +5704,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     (*seqregion1.likelihood) = new_lh_value13;
     seqregion1.type = TYPE_O;
     seqregion2.type = 0;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 12);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5761,7 +5720,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     plength2 = 0.31223631362821728e-10;
     seqregion1.type = 1;
     seqregion2.type = 3;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 13);
     EXPECT_EQ(merged_regions->back().type, 1);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5777,7 +5736,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     SeqRegion::LHType new_lh_value15{9.9493714778138372440088605107603655919312757305306e-10,0.99996654175612176285170562550774775445461273193359,9.9493714778138372440088605107603655919312757305306e-10,3.345625400403152548828300538730218249838799238205e-05};
     (*seqregion2.likelihood) = new_lh_value15;
     seqregion2.type = TYPE_O;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 14);
     EXPECT_EQ(merged_regions->back().type, TYPE_O);
     EXPECT_EQ(merged_regions->back().plength_observation2root, 0);
@@ -5795,7 +5754,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     seqregion2.type = TYPE_O;
     SeqRegion::LHType new_lh_value16{1.5333235876614054963434918832376752106938511133194e-05,0.99996236262065618660699328756891191005706787109375,1.1152071733605872690944446623539931806590175256133e-05,1.1152071733605872690944446623539931806590175256133e-05};
     (*seqregion2.likelihood) = new_lh_value16;
-    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, aln, model, threshold_prob, log_lh, merged_regions, true));
+    EXPECT_TRUE(merge_notN_notN_TwoLowers<4>(seqregion1, seqregion2, plength1, plength2, end_pos, pos, tree.aln, tree.model, tree.cumulative_rate, threshold_prob, log_lh, merged_regions, true));
     EXPECT_EQ(merged_regions->size(), 15);
     EXPECT_EQ(merged_regions->back().type, TYPE_R);
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
@@ -5809,15 +5768,14 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
-    std::unique_ptr<Alignment> aln = std::make_unique<Alignment>();
-    std::unique_ptr<Params> params = std::make_unique<Params>();
-    std::unique_ptr<ModelBase> model = nullptr;
+    Alignment aln("../../example/test_5K.maple");
+    Model model(cmaple::ModelBase::JC);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    // Init params, aln, and model
-    initAlnModelParams(params, aln, model, "JC");
     // dummy variables
-    const PositionType seq_length = aln->ref_seq.size();
-    const StateType num_states = aln->num_states;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -5825,61 +5783,61 @@ TEST(SeqRegions, mergeTwoLowers)
     std::unique_ptr<SeqRegions> merged_regions_ptr = nullptr;
     
     genTestData4(seqregions1, seqregions2, output_regions, 1);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 1 -----
     
     // ----- Test 2 -----
     genTestData4(seqregions1, seqregions2, output_regions, 2);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 0.00023418420260279014175064382641267002327367663383484, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 2 -----
     
     // ----- Test 3 -----
     genTestData4(seqregions1, seqregions2, output_regions, 3);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, seqregions2, 0.00013381954434445151344394708825547013475443236529827, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 0.00020072931651667725661339347631439977703848853707314, seqregions2, 0.00013381954434445151344394708825547013475443236529827, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 3 -----
     
     // ----- Test 4 -----
     genTestData4(seqregions1, seqregions2, output_regions, 4);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 4 -----
     
     // ----- Test 5 -----
     genTestData4(seqregions1, seqregions2, output_regions, 5);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, -1, seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, -1, seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 5 -----
     
     // ----- Test 6 -----
     genTestData4(seqregions1, seqregions2, output_regions, 6);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, -1, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 6 -----
     
     // ----- Test 7 -----
     genTestData4(seqregions1, seqregions2, output_regions, 7);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, -1, seqregions2, -1, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 7 -----
     
     // ----- Test 8 -----
     genTestData4(seqregions1, seqregions2, output_regions, 8);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 3.3454886086112878360986772063867533688608091324568e-05, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 8 -----
     
     // ----- Test 9 -----
     genTestData4(seqregions1, seqregions2, output_regions, 9);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, seqregions2, 6.6909772172225756721973544127735067377216182649136e-05, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 9 -----
     
     // ----- Test 10 -----
     genTestData4(seqregions1, seqregions2, output_regions, 10);
-    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, -1, seqregions2, -1, aln, model, threshold_prob);
+    seqregions1.mergeTwoLowers<4>(merged_regions_ptr, -1, seqregions2, -1, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     EXPECT_EQ(*merged_regions_ptr, output_regions);
     // ----- Test 10 -----
 }
