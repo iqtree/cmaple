@@ -87,7 +87,7 @@ TEST(Sequence, operators)
 TEST(Sequence, getLowerLhVector)
 {
     Sequence sequence1;
-    std::unique_ptr<SeqRegions> seqregions1 = sequence1.getLowerLhVector(30000, 4, SEQ_DNA);
+    std::unique_ptr<SeqRegions> seqregions1 = sequence1.getLowerLhVector(30000, 4, cmaple::SeqRegion::SEQ_DNA);
     EXPECT_EQ(seqregions1->size(), 1);
     SeqRegion& seqregion0 = seqregions1->data()[0];
     EXPECT_EQ(seqregion0.type, TYPE_R);
@@ -107,7 +107,7 @@ TEST(Sequence, getLowerLhVector)
     sequence2.emplace_back(3, 28967, 1);
     sequence2.emplace_back(1+2+4+3, 28968, 1);
     
-    std::unique_ptr<SeqRegions> seqregions2 = sequence2.getLowerLhVector(30000, 4, SEQ_DNA);
+    std::unique_ptr<SeqRegions> seqregions2 = sequence2.getLowerLhVector(30000, 4, cmaple::SeqRegion::SEQ_DNA);
     EXPECT_EQ(seqregions2->size(), 17);
     EXPECT_EQ(seqregions2->data()[0].type, TYPE_R);
     EXPECT_EQ(seqregions2->data()[1].position, 132);

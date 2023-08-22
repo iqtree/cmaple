@@ -45,7 +45,7 @@ namespace cmaple
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          *
-         * @throw ios::failure if the alignment file is not found
+         * @throw std::ios\_base::failure if the alignment file is not found
          */
         Alignment(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
         
@@ -73,7 +73,7 @@ namespace cmaple
          * - the alignment is empty or in an incorrect format
          * - the sequences contains invalid states
          *
-         * @throw ios::failure if the alignment file is not found
+         * @throw std::ios\_base::failure if the alignment file is not found
          */
         void read(const std::string& aln_filename, const std::string& ref_seq = "", const InputType format = IN_AUTO, const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
         
@@ -94,7 +94,7 @@ namespace cmaple
          * - format is unknown
          *
          * @throw std::logic\_error if the alignment is empty (i.e., nothing to write)
-         * @throw ios::failure if aln\_filename already exists and overwrite = false
+         * @throw std::ios\_base::failure if aln\_filename already exists and overwrite = false
          */
         void write(const std::string& aln_filename, const InputType& format = IN_MAPLE, const bool overwrite = false);
         

@@ -130,15 +130,15 @@ TEST(SeqRegion, constructor_3)
 {
     // TODO: don't allow TYPE_INVALID or TYPE_O as an input value for n_type in this constructor
     
-    SeqRegion seqregion1(3, 3213, SEQ_DNA, 4);
-    SeqRegion seqregion2(TYPE_N, 2131, SEQ_DNA, 4);
-    SeqRegion seqregion3(TYPE_R, 21, SEQ_DNA, 4);
-    SeqRegion seqregion4(TYPE_DEL, 4543, SEQ_DNA, 4);
+    SeqRegion seqregion1(3, 3213, cmaple::SeqRegion::SEQ_DNA, 4);
+    SeqRegion seqregion2(TYPE_N, 2131, cmaple::SeqRegion::SEQ_DNA, 4);
+    SeqRegion seqregion3(TYPE_R, 21, cmaple::SeqRegion::SEQ_DNA, 4);
+    SeqRegion seqregion4(TYPE_DEL, 4543, cmaple::SeqRegion::SEQ_DNA, 4);
     
-    SeqRegion seqregion5(1+4+3, 12, SEQ_DNA, 4); // {0.5,0,0.5,0}
-    SeqRegion seqregion6(1+2+8+3, 3243, SEQ_DNA, 4); // { 1.0/3, 1.0/3, 0, 1.0/3}
-    SeqRegion seqregion7(1+2+3, 553, SEQ_DNA, 4); // {0.5, 0.5, 0, 0}
-    SeqRegion seqregion8(1+2+4+3, 49, SEQ_DNA, 4); // { 1.0/3, 1.0/3, 1.0/3, 0}
+    SeqRegion seqregion5(1+4+3, 12, cmaple::SeqRegion::SEQ_DNA, 4); // {0.5,0,0.5,0}
+    SeqRegion seqregion6(1+2+8+3, 3243, cmaple::SeqRegion::SEQ_DNA, 4); // { 1.0/3, 1.0/3, 0, 1.0/3}
+    SeqRegion seqregion7(1+2+3, 553, cmaple::SeqRegion::SEQ_DNA, 4); // {0.5, 0.5, 0, 0}
+    SeqRegion seqregion8(1+2+4+3, 49, cmaple::SeqRegion::SEQ_DNA, 4); // { 1.0/3, 1.0/3, 1.0/3, 0}
     
     EXPECT_EQ(seqregion1.type, 3);
     EXPECT_EQ(seqregion1.position, 3213);
@@ -215,17 +215,17 @@ TEST(SeqRegion, constructor_3)
 TEST(SeqRegion, constructor_4)
 {
     Mutation m1(1, 132, 1);
-    SeqRegion seqregion1(&m1, SEQ_DNA, 4);
+    SeqRegion seqregion1(&m1, cmaple::SeqRegion::SEQ_DNA, 4);
     Mutation m2(TYPE_N, 5434, 943);
-    SeqRegion seqregion2(&m2, SEQ_DNA, 4);
+    SeqRegion seqregion2(&m2, cmaple::SeqRegion::SEQ_DNA, 4);
     Mutation m3(TYPE_R, 38432, 45);
-    SeqRegion seqregion3(&m3, SEQ_DNA, 4);
+    SeqRegion seqregion3(&m3, cmaple::SeqRegion::SEQ_DNA, 4);
     Mutation m4(TYPE_DEL, 153, 3);
-    SeqRegion seqregion4(&m4, SEQ_DNA, 4);
+    SeqRegion seqregion4(&m4, cmaple::SeqRegion::SEQ_DNA, 4);
     Mutation m5(2+8+3, 43823, 1); // {0, 0.5, 0, 0.5}
-    SeqRegion seqregion5(&m5, SEQ_DNA, 4);
+    SeqRegion seqregion5(&m5, cmaple::SeqRegion::SEQ_DNA, 4);
     Mutation m6(1+4+8+3, 543, 1); // { 1.0/3, 0, 1.0/3, 1.0/3}
-    SeqRegion seqregion6(&m6, SEQ_DNA, 4);
+    SeqRegion seqregion6(&m6, cmaple::SeqRegion::SEQ_DNA, 4);
     
     EXPECT_EQ(seqregion1.type, 1);
     EXPECT_EQ(seqregion1.position, 132);
@@ -282,7 +282,7 @@ TEST(SeqRegion, constructor_4)
 TEST(SeqRegion, operators)
 {
     Mutation m1(1+4+8+3, 543, 1); // { 1.0/3, 0, 1.0/3, 1.0/3}
-    SeqRegion seqregion1(&m1, SEQ_DNA, 4);
+    SeqRegion seqregion1(&m1, cmaple::SeqRegion::SEQ_DNA, 4);
     
     auto new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{1.0/3, 0, 1.0/3, 1.0/3};

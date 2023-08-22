@@ -87,9 +87,9 @@ TEST(Mutation, constructor_2)
     EXPECT_EQ(m5.getLength(), 3);
     
     // Test constructor with invalid length for A/C/G/T
-    EXPECT_EXIT(Mutation invalidMutation(0, 1000, 5), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_THROW(Mutation invalidMutation(0, 1000, 5), std::exception);
     
     // Test constructor with overflow length
     LengthTypeLarge overflow_length = (std::numeric_limits<LengthType>::max)() + 1;
-    EXPECT_EXIT(Mutation invalidMutation(TYPE_R, 1000, overflow_length), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_THROW(Mutation invalidMutation(TYPE_R, 1000, overflow_length), std::exception);
 }

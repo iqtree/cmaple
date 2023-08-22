@@ -3,87 +3,69 @@
 using namespace cmaple;
 
 /*
- Test readSequences(), readFasta(), readPhylip(), and generateRef()
+ Test read() and generateRef()
  */
 TEST(Alignment, readSequences)
 {
     Alignment aln;
-    StrVector sequences, seq_names;
     
     // Test readFasta()
-    std::string file_path = "../../example/input.fa";
-    aln.readSequences(file_path.c_str(), sequences, seq_names);
-    // detect the type of the input sequences
-    aln.setSeqType(aln.detectSequenceType(sequences));
-    EXPECT_EQ(sequences.size(), 10);
-    EXPECT_EQ(sequences.size(), seq_names.size());
-    EXPECT_EQ(sequences[1], "ATTAAAGGTTTATACCTVCA");
-    EXPECT_EQ(seq_names[9], "T9");
+    aln.read("../../example/input.fa");
+    EXPECT_EQ(aln.data.size(), 10);
+    EXPECT_EQ(aln.data[9].seq_name, "T6"); // after sorting
     
     // Test generateRef()
-    std::string ref_str = std::move(aln.generateRef(sequences));
     EXPECT_EQ(aln.ref_seq.size(), 20);
-    EXPECT_EQ(ref_str.length(), 20);
-    EXPECT_EQ(ref_str[0], 'A');
-    EXPECT_EQ(ref_str[7], 'G');
-    EXPECT_EQ(ref_str[17], 'A');
+    EXPECT_EQ(aln.ref_seq[0], 0);
+    EXPECT_EQ(aln.ref_seq[7], 2);
+    EXPECT_EQ(aln.ref_seq[17], 0);
     
     // Test readPhylip()
-    sequences.clear();
-    seq_names.clear();
-    file_path = "../../example/input.phy";
-    aln.readSequences(file_path.c_str(), sequences, seq_names);
-    EXPECT_EQ(sequences.size(), 10);
-    EXPECT_EQ(sequences.size(), seq_names.size());
-    EXPECT_EQ(sequences[1], "ATTAAAGGTTTATACCTVCA");
-    EXPECT_EQ(seq_names[9], "T9");
+    aln.read("../../example/input.phy");
+    EXPECT_EQ(aln.data.size(), 10);
+    EXPECT_EQ(aln.data[9].seq_name, "T6"); // after sorting
     
     // Test generateRef()
-    ref_str = std::move(aln.generateRef(sequences));
     EXPECT_EQ(aln.ref_seq.size(), 20);
     EXPECT_EQ(aln.ref_seq[0], 0);
     EXPECT_EQ(aln.ref_seq[10], 3);
     EXPECT_EQ(aln.ref_seq[18], 1);
     
-    // Test generateRef() with empty input
-    sequences.clear();
-    EXPECT_EXIT(aln.generateRef(sequences), ::testing::ExitedWithCode(2), ".*");
+    // Test generateRef() with empty input -> already moved to private section
+    // EXPECT_EXIT(aln.generateRef(sequences), ::testing::ExitedWithCode(2), ".*");
     
     // Test input not found
-    file_path = "../../example/notfound";
-    EXPECT_EXIT(aln.readSequences(file_path.c_str(), sequences, seq_names), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_THROW(aln.read("../../example/notfound"), std::ios_base::failure);
 }
 
 /*
- Test readRef(const std::string& ref_path)
- also test parseRefSeq(std::string& ref_sequence)
+ Test readRefSeq(const std::string& ref_path)
  */
 TEST(Alignment, readRef)
 {
     Alignment aln;
-    std::string file_path("../../example/ref.fa");
-    aln.setSeqType(SEQ_DNA);
-    aln.readRef(file_path);
+    aln.setSeqType(cmaple::SeqRegion::SEQ_DNA);
+    std::string ref_seq = aln.readRefSeq("../../example/ref.fa", "REF");
     
-    EXPECT_EQ(aln.ref_seq.size(), 20);
-    EXPECT_EQ(aln.ref_seq[0], 0);
-    EXPECT_EQ(aln.ref_seq[2], 3);
-    EXPECT_EQ(aln.ref_seq[7], 2);
-    EXPECT_EQ(aln.ref_seq[11], 0);
+    EXPECT_EQ(ref_seq.length(), 20);
+    EXPECT_EQ(ref_seq[0], 'A');
+    EXPECT_EQ(ref_seq[2], 'T');
+    EXPECT_EQ(ref_seq[7], 'G');
+    EXPECT_EQ(ref_seq[11], 'A');
     
-    // Test readRef() with NULL
-    EXPECT_DEATH(aln.readRef(NULL), ".*");
+    // Test readRef() with an empty seq_name
+    EXPECT_THROW(aln.readRefSeq("../../example/ref.fa", ""), std::invalid_argument);
     
     //  Test readRef() from not-found file
-    file_path = "../../example/notfound";
-    EXPECT_EXIT(aln.readRef(file_path), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_THROW(aln.readRefSeq("../../example/notfound", "REF"), std::ios_base::failure);
 }
 
 /*
+ extractMutations() -> was moved to private
  Test extractMutations(StrVector &sequences, StrVector &seq_names, std::string ref_sequence, std::ofstream &out, bool only_extract_diff)
  Also test outputMutation()
  */
-TEST(Alignment, extractMutations)
+/*TEST(Alignment, extractMutations)
 {
     // Don't need to test empty inputs (sequences, seq_names, ref_sequence); we have ASSERT to check them in extractMutations()
     // ----- test on input.fa; generate ref_sequence -----
@@ -152,7 +134,7 @@ TEST(Alignment, extractMutations)
     sequences.clear();
     EXPECT_DEATH(aln.extractMutations(sequences, seq_names, ref_sequence, out, false), ".*");
     
-    /*// ----- test on input_full.phy; generate ref_sequence -----
+    // ----- test on input_full.phy; generate ref_sequence -----
     aln.data.clear();
     sequences.clear();
     seq_names.clear();
@@ -184,8 +166,8 @@ TEST(Alignment, extractMutations)
     EXPECT_EQ(aln.data[477][186].getLength(), 1);
     EXPECT_EQ(aln.data[796][356].position, 28897);
     EXPECT_EQ(aln.ref_seq.size(), 29903);
-    // ----- test on input_full.phy; generate ref_sequence -----*/
-}
+    // ----- test on input_full.phy; generate ref_sequence -----
+}*/
 
 /*
  Test readMapleFile(const std::string& diff_path, const std::string& ref_path)
@@ -195,24 +177,23 @@ TEST(Alignment, readMapleFile)
     Alignment aln;
     
     // ----- test on test_100.maple -----
-    std::string diff_file_path("../../example/test_100.maple");
-    aln.readMapleFile(diff_file_path, ""); // read ref_seq from the MAPLE file
+    aln.read("../../example/test_100.maple");
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 100);
-    EXPECT_EQ(aln.data[4].seq_name, "4");
-    EXPECT_EQ(aln.data[18].size(), 33);
+    EXPECT_EQ(aln.data[4].seq_name, "12");
+    EXPECT_EQ(aln.data[18].size(), 24);
     EXPECT_EQ(aln.data[90][34].type, 1);
     EXPECT_EQ(aln.data[53][7].getLength(), 1);
-    EXPECT_EQ(aln.data[46][11].position, 10516);
-    EXPECT_EQ(aln.data[38].size(), 32);
+    EXPECT_EQ(aln.data[46][11].position, 8371);
+    EXPECT_EQ(aln.data[38].size(), 31);
     EXPECT_EQ(aln.data[49][5].type, 3);
     EXPECT_EQ(aln.data[66][30].getLength(), 1);
-    EXPECT_EQ(aln.data[75][3].position, 11272);
-    EXPECT_EQ(aln.data[30].size(), 35);
+    EXPECT_EQ(aln.data[75][3].position, 4570);
+    EXPECT_EQ(aln.data[30].size(), 29);
     EXPECT_EQ(aln.data[43][25].type, 3);
     EXPECT_EQ(aln.data[51][27].getLength(), 1);
-    EXPECT_EQ(aln.data[66][4].position, 1426);
+    EXPECT_EQ(aln.data[66][4].position, 5685);
 
     EXPECT_EQ(aln.ref_seq.size(), 29891);
     EXPECT_EQ(aln.ref_seq[8], 3);
@@ -221,26 +202,24 @@ TEST(Alignment, readMapleFile)
     // ----- test on test_100.maple -----
     
     // ----- test on test_5K.maple, load ref_seq from test_100.maple -----
-    aln.data.clear();
-    diff_file_path = "../../example/test_5K.maple";
-    std::string ref_file_path("../../example/ref_test_100.maple");
-    aln.readMapleFile(diff_file_path, ref_file_path);
+    std::string ref_seq = aln.readRefSeq("../../example/ref_test_100.maple", "REF");
+    aln.read("../../example/test_5K.maple", ref_seq);
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 5000);
-    EXPECT_EQ(aln.data[454].seq_name, "454");
-    EXPECT_EQ(aln.data[1328].size(), 15);
-    EXPECT_EQ(aln.data[943][22].type, 1);
+    EXPECT_EQ(aln.data[454].seq_name, "3521");
+    EXPECT_EQ(aln.data[1328].size(), 12);
+    EXPECT_EQ(aln.data[943][22].type, 3);
     EXPECT_EQ(aln.data[953][9].getLength(), 1);
     EXPECT_EQ(aln.data[76][25].position, 240);
-    EXPECT_EQ(aln.data[1543].size(), 12);
-    EXPECT_EQ(aln.data[2435][8].type, 0);
+    EXPECT_EQ(aln.data[1543].size(), 13);
+    EXPECT_EQ(aln.data[2435][8].type, 3);
     EXPECT_EQ(aln.data[4864][17].getLength(), 1);
-    EXPECT_EQ(aln.data[3854][23].position, 14407);
-    EXPECT_EQ(aln.data[2454].size(), 12);
+    EXPECT_EQ(aln.data[3854][10].position, 23402);
+    EXPECT_EQ(aln.data[2454].size(), 14);
     EXPECT_EQ(aln.data[4423][14].type, 0);
     EXPECT_EQ(aln.data[643][5].getLength(), 1);
-    EXPECT_EQ(aln.data[59][12].position, 25540);
+    EXPECT_EQ(aln.data[59][12].position, 14407);
 
     EXPECT_EQ(aln.ref_seq.size(), 29891);
     EXPECT_EQ(aln.ref_seq[8], 3);
@@ -248,59 +227,50 @@ TEST(Alignment, readMapleFile)
     EXPECT_EQ(aln.ref_seq[1593], 1);
     // ----- test on test_5K.maple, load ref_seq from test_100.maple -----
     
-    // ----- Test readMapleFile() with null input
-    EXPECT_DEATH(aln.readMapleFile("", ""), ".*");
+    // ----- Test read() with an empty input
+    EXPECT_THROW(aln.read(""), std::invalid_argument);
     
     //  Test readMapleFile() from not-found file
-    diff_file_path = "../../example/notfound";
-    EXPECT_EXIT(aln.readMapleFile(diff_file_path, ""), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_THROW(aln.read("../../example/notfound"), std::ios_base::failure);
     
     // ----- Test readMapleFile() with wrong format file
-    aln.data.clear();
-    diff_file_path = "../../example/input.fa";
-    EXPECT_EXIT(aln.readMapleFile(diff_file_path, ""), ::testing::ExitedWithCode(2), ".*");
+    EXPECT_THROW(aln.read("../../example/input.fa", "", cmaple::Alignment::IN_MAPLE), std::invalid_argument);
 }
 
 /*
- Test extractDiffFile(Params& params)
+ Test write()
  */
-TEST(Alignment, extractDiffFile)
+TEST(Alignment, write)
 {
     Alignment aln;
     
-    // ----- test on input.phy with ref file from ref.fa -----
-    Params params = Params::getInstance();
-    params.overwrite_output = true;
-    params.tree_search_type = MORE_ACCURATE_TREE_SEARCH;
-    params.aln_path = "../../example/input.phy";
-    params.ref_path = "../../example/ref.fa";
-    
     // extract MAPLE file
-    aln.extractMapleFile(params.aln_path, params.aln_path + ".maple", params);
+    std::string ref_seq = aln.readRefSeq("../../example/ref.fa", "REF");
+    aln.read("../../example/input.phy", ref_seq);
+    aln.write("../../example/input.phy.maple", cmaple::Alignment::IN_MAPLE, true);
     
     // reset data
     aln.data.clear();
     aln.ref_seq.clear();
     
     // read MAPLE file (for testing)
-    std::string diff_file_path = params.aln_path + ".maple";
-    aln.readMapleFile(diff_file_path, ""); // read ref_seq from the MAPLE file
+    aln.read("../../example/input.phy.maple");
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 10);
-    EXPECT_EQ(aln.data[0].seq_name, "T1");
+    EXPECT_EQ(aln.data[0].seq_name, "T3");
     EXPECT_EQ(aln.data[1].size(), 2);
-    EXPECT_EQ(aln.data[2][0].type, TYPE_N);
+    EXPECT_EQ(aln.data[2][0].type, 10);
     EXPECT_EQ(aln.data[3][0].getLength(), 1);
     EXPECT_EQ(aln.data[4][1].position, 17);
-    EXPECT_EQ(aln.data[5].size(), 5);
-    EXPECT_EQ(aln.data[6][1].type, 3);
+    EXPECT_EQ(aln.data[5].size(), 3);
+    EXPECT_EQ(aln.data[6][1].type, TYPE_DEL);
     EXPECT_EQ(aln.data[7][2].getLength(), 1);
     EXPECT_EQ(aln.data[8][1].position, 12);
-    EXPECT_EQ(aln.data[9].size(), 2);
-    EXPECT_EQ(aln.data[0][0].type, 1);
+    EXPECT_EQ(aln.data[9].size(), 5);
+    EXPECT_EQ(aln.data[0][0].type, 10);
     EXPECT_EQ(aln.data[1][1].getLength(), 1);
-    EXPECT_EQ(aln.data[2][2].position, 17);
+    EXPECT_EQ(aln.data[2][1].position, 19);
 
     EXPECT_EQ(aln.ref_seq.size(), 20);
     EXPECT_EQ(aln.ref_seq[8], 3);
@@ -308,9 +278,8 @@ TEST(Alignment, extractDiffFile)
     EXPECT_EQ(aln.ref_seq[15], 1);
     // ----- test on input.phy with ref file from ref.fa -----
     
-    // ----- Test extractDiffFile() with null params.aln_path
-    params.aln_path = "";
-    EXPECT_DEATH(aln.extractMapleFile(params.aln_path, params.aln_path + ".maple", params), ".*");
+    // ----- Test write() with an empty input
+    EXPECT_THROW(aln.write(""), std::invalid_argument);
     
     /*// ----- test on input.fa without ref file, specifying MAPLE file path -----
     aln.data.clear();
@@ -360,31 +329,29 @@ TEST(Alignment, extractDiffFile)
  */
 TEST(Alignment, convertState2Char)
 {
-    Alignment aln;
-    aln.setSeqType(SEQ_DNA);
-    EXPECT_EQ(aln.convertState2Char(-1), '?');
-    EXPECT_EQ(aln.convertState2Char(0.1), 'A');
-    EXPECT_EQ(aln.convertState2Char(0.99), 'A');
-    EXPECT_EQ(aln.convertState2Char(1000), '?');
+    EXPECT_EQ(Alignment::convertState2Char(-1, cmaple::SeqRegion::SEQ_DNA), '?');
+    EXPECT_EQ(Alignment::convertState2Char(0.1, cmaple::SeqRegion::SEQ_DNA), 'A');
+    EXPECT_EQ(Alignment::convertState2Char(0.99, cmaple::SeqRegion::SEQ_DNA), 'A');
+    EXPECT_EQ(Alignment::convertState2Char(1000, cmaple::SeqRegion::SEQ_DNA), '?');
     
-    EXPECT_EQ(aln.convertState2Char(TYPE_N), '-');
-    EXPECT_EQ(aln.convertState2Char(TYPE_DEL), '-');
-    EXPECT_EQ(aln.convertState2Char(TYPE_INVALID), '?');
+    EXPECT_EQ(Alignment::convertState2Char(TYPE_N, cmaple::SeqRegion::SEQ_DNA), '-');
+    EXPECT_EQ(Alignment::convertState2Char(TYPE_DEL, cmaple::SeqRegion::SEQ_DNA), '-');
+    EXPECT_EQ(Alignment::convertState2Char(TYPE_INVALID, cmaple::SeqRegion::SEQ_DNA), '?');
     
-    EXPECT_EQ(aln.convertState2Char(0), 'A');
-    EXPECT_EQ(aln.convertState2Char(3), 'T');
+    EXPECT_EQ(Alignment::convertState2Char(0, cmaple::SeqRegion::SEQ_DNA), 'A');
+    EXPECT_EQ(Alignment::convertState2Char(3, cmaple::SeqRegion::SEQ_DNA), 'T');
     
-    EXPECT_EQ(aln.convertState2Char(1+4+3), 'R');
-    EXPECT_EQ(aln.convertState2Char(2+8+3), 'Y');
-    EXPECT_EQ(aln.convertState2Char(2+4+8+3), 'B');
-    EXPECT_EQ(aln.convertState2Char(1+2+4+3), 'V');
-    EXPECT_EQ(aln.convertState2Char(1+2+3), 'M');
+    EXPECT_EQ(Alignment::convertState2Char(1+4+3, cmaple::SeqRegion::SEQ_DNA), 'R');
+    EXPECT_EQ(Alignment::convertState2Char(2+8+3, cmaple::SeqRegion::SEQ_DNA), 'Y');
+    EXPECT_EQ(Alignment::convertState2Char(2+4+8+3, cmaple::SeqRegion::SEQ_DNA), 'B');
+    EXPECT_EQ(Alignment::convertState2Char(1+2+4+3, cmaple::SeqRegion::SEQ_DNA), 'V');
+    EXPECT_EQ(Alignment::convertState2Char(1+2+3, cmaple::SeqRegion::SEQ_DNA), 'M');
 }
 
 /*
- Test convertChar2State(char state)
+ Test convertChar2State(char state) -> moved to private
  */
-TEST(Alignment, convertChar2State)
+/*TEST(Alignment, convertChar2State)
 {
     Alignment aln;
     aln.setSeqType(SEQ_DNA);
@@ -407,12 +374,12 @@ TEST(Alignment, convertChar2State)
     EXPECT_EQ(aln.convertChar2State('B'), 2+4+8+3);
     EXPECT_EQ(aln.convertChar2State('D'), 1+4+8+3);
     EXPECT_EQ(aln.convertChar2State('V'), 1+2+4+3);
-}
+}*/
 
 /*
- Test computeSeqDistance(Sequence& sequence, RealNumType hamming_weight)
+ Test computeSeqDistance(Sequence& sequence, RealNumType hamming_weight) -> moved to private
  */
-TEST(Alignment, computeSeqDistance)
+/*TEST(Alignment, computeSeqDistance)
 {
     Alignment aln;
     aln.setSeqType(SEQ_DNA);
@@ -460,12 +427,12 @@ TEST(Alignment, computeSeqDistance)
     EXPECT_EQ(aln.computeSeqDistance(sequence6, 0), 957);
     EXPECT_EQ(aln.computeSeqDistance(sequence6, 1), 966);
     EXPECT_EQ(aln.computeSeqDistance(sequence6, 1000), 9957);
-}
+}*/
 
 /*
- Test sortSeqsByDistances(RealNumType hamming_weight)
+ Test sortSeqsByDistances(RealNumType hamming_weight) -> moved to private, already tested in read()
  */
-TEST(Alignment, sortSeqsByDistances)
+/*TEST(Alignment, sortSeqsByDistances)
 {
     Alignment aln;
     aln.setSeqType(SEQ_DNA);
@@ -556,4 +523,4 @@ TEST(Alignment, sortSeqsByDistances)
     EXPECT_EQ(aln.data[39].seq_name, "65");
     EXPECT_EQ(aln.data[62].seq_name, "3");
     EXPECT_EQ(aln.data[74].seq_name, "64");
-}
+}*/
