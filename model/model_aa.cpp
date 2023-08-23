@@ -865,9 +865,6 @@ cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model):ModelBase(
 {
     try
     {
-        // avoid using DNA build for AA model
-        if (NUM_STATES < 20)
-            throw std::invalid_argument("Look like you're using the wrong compilation version (for DNA models) while you're using Protein models. Please use the version for Protein models instead.");
         num_states_ = 20;
         init();
     } catch (std::logic_error e)

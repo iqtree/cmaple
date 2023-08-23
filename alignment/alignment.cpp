@@ -74,6 +74,10 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
         
         // sort sequences by their distances to the reference sequence
         sortSeqsByDistances();
+        
+        // avoid using DNA build for protein data
+        if (NUM_STATES < num_states)
+            throw std::invalid_argument("Look like you're using the wrong (DNA) compilation version for Protein data. Please use the version for Protein data (*-aa) instead.");
     }
     catch (std::logic_error e)
     {
