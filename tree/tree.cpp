@@ -621,8 +621,9 @@ std::string cmaple::Tree::doPlacementTemplate()
 }
 
 template <const StateType num_states>
-std::string cmaple::Tree::applySPRTemplate(const TreeSearchType tree_search_type, const bool shallow_tree_search)
+std::string cmaple::Tree::applySPRTemplate(const TreeSearchType n_tree_search_type, const bool shallow_tree_search)
 {
+    TreeSearchType tree_search_type = n_tree_search_type;
     // Validate tree search type
     if (tree_search_type == UNKNOWN_TREE_SEARCH)
         throw std::invalid_argument("Unknown tree search type!");
@@ -657,7 +658,10 @@ std::string cmaple::Tree::applySPRTemplate(const TreeSearchType tree_search_type
         
         // show a warning if applying a shallow tree search will follow by a full
         if (tree_search_type == NORMAL_TREE_SEARCH && cmaple::verbose_mode > cmaple::VB_QUIET)
+        {
             outWarning("A shallow tree search will be followed by a MORE_ACCURATE_TREE_SEARCH instead of a NORMAL_TREE_SEARCH");
+            tree_search_type = MORE_ACCURATE_TREE_SEARCH;
+        }
 
         // apply short-range SPR search
         optimizeTreeTopology<num_states>(true);
@@ -6589,7 +6593,7 @@ NumSeqsType cmaple::Tree::parseFile(std::istream &infile, char& ch, RealNumType&
     {
         auto it = map_seqname_index.find(seqname);
         if (it == map_seqname_index.end())
-            throw std::logic_error("Leaf " + seqname + " is not found in the alignment. Please check and try again!");
+            throw "Leaf " + seqname + " is not found in the alignment. Please check and try again!";
         else
         {
             const NumSeqsType sequence_index = it->second;

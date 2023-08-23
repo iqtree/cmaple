@@ -68,11 +68,11 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Initializa an Alignment
         // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
-        const std::string ref_seq = "";
+        std::string ref_seq = "";
         if (params.ref_path.length() && params.ref_seqname.length())
         {
             Alignment aln_tmp;
-            aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
+            ref_seq = aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
         }
         const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
         // Validate the aln_format

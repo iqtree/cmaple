@@ -66,7 +66,11 @@ void cmaple::Alignment::read(std::istream& aln_stream, const std::string& ref_se
             readFastaOrPhylip(aln_stream, ref_seq);
         // in MAPLE format
         else
+        {
+            if (ref_seq.length() && cmaple::verbose_mode > cmaple::VB_QUIET)
+                outWarning("Ignore the input reference as it must be already specified in the MAPLE format");
             readMaple(aln_stream);
+        }
         
         // sort sequences by their distances to the reference sequence
         sortSeqsByDistances();
