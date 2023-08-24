@@ -133,7 +133,7 @@ Constructor from an alignment file in FASTA, PHYLIP, or \href{https://www.nature
 \item the sequences contains invalid states
 \end{DoxyItemize}\\
 \hline
-{\em ios\+::failure} & if the alignment file is not found \\
+{\em std\+::ios\+\_\+base\+::failure} & if the alignment file is not found \\
 \hline
 \end{DoxyExceptions}
 
@@ -198,7 +198,7 @@ Read an alignment from a file in FASTA, PHYLIP, or \href{https://www.nature.com/
 \item the sequences contains invalid states
 \end{DoxyItemize}\\
 \hline
-{\em ios\+::failure} & if the alignment file is not found \\
+{\em std\+::ios\+\_\+base\+::failure} & if the alignment file is not found \\
 \hline
 \end{DoxyExceptions}
 \Hypertarget{classcmaple_1_1_alignment_a7cc0a73cc105173130dac55d78786f43}\label{classcmaple_1_1_alignment_a7cc0a73cc105173130dac55d78786f43} 
@@ -254,7 +254,7 @@ Write the alignment to a file in FASTA, PHYLIP, or \href{https://www.nature.com/
 \hline
 {\em std\+::logic\+\_\+error} & if the alignment is empty (i.\+e., nothing to write) \\
 \hline
-{\em ios\+::failure} & if aln\+\_\+filename already exists and overwrite = false \\
+{\em std\+::ios\+\_\+base\+::failure} & if aln\+\_\+filename already exists and overwrite = false \\
 \hline
 \end{DoxyExceptions}
 
