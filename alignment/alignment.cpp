@@ -1291,10 +1291,13 @@ cmaple::Alignment::InputType cmaple::Alignment::detectMAPLEorFASTA(std::istream&
             // only check the line if we pass the first two lines that begins with >
             if (num_taxa >= 2)
             {
-                // a mutation should be in pattern: <character><space_or_tab><number>[<space_or_tab><number>]
-                std::regex pattern("^.+[ \t]\\d+$");
+                // mutation must contain either a tab or a space in the middle
+                auto pos_tab = line.find("\t");
+                auto pos_space = line.find(" ");
+                auto last_index = line.length() - 1;
                 
-                if (std::regex_match(line, pattern))
+                if ((pos_tab != string::npos && pos_tab < last_index)
+                    || (pos_space != string::npos && pos_space < last_index))
                 {
                     // reset aln_stream
                     resetStream(in);
