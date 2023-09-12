@@ -5329,6 +5329,12 @@ void cmaple::Tree::calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std
     child_2_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff, parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, cumulative_rate, threshold_prob);
     child_2_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff_old, tmp_lower_lh, child_2.getUpperLength(), *child_1_lower_regions, child_1.getUpperLength(), aln, model, cumulative_rate, threshold_prob);
     // 7.2. the new_parent node
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        return;
+    }
     parent_new_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff, new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, cumulative_rate, threshold_prob);
     current_node.getPartialLh(TOP)->calculateSiteLhContributions<num_states>(site_lh_diff_old, tmp_lower_lh, current_node.getUpperLength(), *sibling_lower_lh, sibling.getUpperLength(), aln, model, cumulative_rate, threshold_prob);
     // 7.3 the absolute likelihood at root
@@ -5454,6 +5460,12 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     child_2_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff, parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, cumulative_rate, threshold_prob);
     child_2_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff_old, tmp_lower_lh, child_2.getUpperLength(), *child_1_lower_regions, child_1.getUpperLength(), aln, model, cumulative_rate, threshold_prob);
     // 7.2. the new_parent node
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        return;
+    }
     RealNumType prev_lh_diff = parent_new_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff, new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, cumulative_rate, threshold_prob) - node_lhs[parent.getNodelhIndex()].getLhContribution() ;
     // 7.3. other ancestors on the path from the new_parent to root (stop when the change is insignificant)
     Index node_index = parent_index;
@@ -5835,6 +5847,12 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
     }
     lh_diff += child_2_lower_lh->mergeTwoLowers<num_states>(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, cumulative_rate, threshold_prob, true) - node_lhs[current_node.getNodelhIndex()].getLhContribution();
     // 7.2. the new_parent node
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     lh_diff += parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, cumulative_rate, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].getLhContribution();
     // 7.3 the absolute likelihood at root
     lh_diff += new_parent_new_lower_lh->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base) - lh_at_root;
