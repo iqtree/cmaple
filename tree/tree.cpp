@@ -5281,7 +5281,7 @@ void cmaple::Tree::calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std
     // NHANLT: avoid null
     if (!parent_new_lower_lh)
     {
-        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        std::fill(site_lh_diff.begin(), site_lh_diff.end(), MIN_NEGATIVE);
         return;
     }
     RealNumType best_parent_lh = parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_new_blength, *child_1_lower_regions, child_1_blength, aln, model, cumulative_rate, threshold_prob, true);
@@ -5306,7 +5306,7 @@ void cmaple::Tree::calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std
     // NHANLT: avoid null
     if (!new_parent_new_upper_lr_1)
     {
-        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        std::fill(site_lh_diff.begin(), site_lh_diff.end(), MIN_NEGATIVE);
         return;
     }
     std::unique_ptr<SeqRegions> parent_new_upper_lr_1 = nullptr;
@@ -5332,7 +5332,7 @@ void cmaple::Tree::calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std
     // NHANLT: avoid null
     if (!parent_new_lower_lh)
     {
-        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        std::fill(site_lh_diff.begin(), site_lh_diff.end(), MIN_NEGATIVE);
         return;
     }
     parent_new_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff, new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, cumulative_rate, threshold_prob);
@@ -5379,7 +5379,7 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     // NHANLT: avoid null
     if (!grand_parent_upper_lr)
     {
-        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        std::fill(site_lh_diff.begin(), site_lh_diff.end(), MIN_NEGATIVE);
         return;
     }
     grand_parent_upper_lr->mergeUpperLower<num_states>(parent_new_mid_branch_lh, parent_mid_blength, *parent_new_lower_lh, parent_mid_blength, aln, model, threshold_prob);
@@ -5420,7 +5420,7 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     // NHANLT: avoid null
     if (!parent_new_lower_lh)
     {
-        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        std::fill(site_lh_diff.begin(), site_lh_diff.end(), MIN_NEGATIVE);
         return;
     }
     parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_new_blength, *child_1_lower_regions, child_1_new_blength, aln, model, cumulative_rate, params->threshold_prob, false);
@@ -5435,7 +5435,7 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     // NHANLT: avoid null
     if (!new_parent_new_upper_lr_1)
     {
-        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        std::fill(site_lh_diff.begin(), site_lh_diff.end(), MIN_NEGATIVE);
         return;
     }
     std::unique_ptr<SeqRegions> parent_new_upper_lr_1 = nullptr;
@@ -5463,7 +5463,7 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     // NHANLT: avoid null
     if (!parent_new_lower_lh)
     {
-        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        std::fill(site_lh_diff.begin(), site_lh_diff.end(), MIN_NEGATIVE);
         return;
     }
     RealNumType prev_lh_diff = parent_new_lower_lh->calculateSiteLhContributions<num_states>(site_lh_diff, new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, cumulative_rate, threshold_prob) - node_lhs[parent.getNodelhIndex()].getLhContribution() ;
