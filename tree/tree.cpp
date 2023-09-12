@@ -5278,6 +5278,12 @@ void cmaple::Tree::calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std
     // 2. estimate x ~ the length of the new branch connecting the parent and the new_parent nodes
     RealNumType parent_new_blength = default_blength;
     // merge 2 lower vector into one
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        return;
+    }
     RealNumType best_parent_lh = parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_new_blength, *child_1_lower_regions, child_1_blength, aln, model, cumulative_rate, threshold_prob, true);
     best_parent_lh += new_parent_new_lower_lh->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
     // Try shorter branch lengths at root
@@ -5297,6 +5303,12 @@ void cmaple::Tree::calSiteLhDiffRoot(std::vector<RealNumType>& site_lh_diff, std
     std::unique_ptr<SeqRegions> new_parent_new_upper_lr_2 = nullptr;
     parent_new_lower_lh->computeTotalLhAtRoot<num_states>(new_parent_new_upper_lr_2, model, parent_new_blength);
     // 5.2. for the parent node
+    // NHANLT: avoid null
+    if (!new_parent_new_upper_lr_1)
+    {
+        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        return;
+    }
     std::unique_ptr<SeqRegions> parent_new_upper_lr_1 = nullptr;
     new_parent_new_upper_lr_1->mergeUpperLower<num_states>(parent_new_upper_lr_1, parent_new_blength, *sibling_lower_lh, sibling.getUpperLength(), aln, model, threshold_prob);
     std::unique_ptr<SeqRegions> parent_new_upper_lr_2 = nullptr;
@@ -5358,6 +5370,12 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     // because mid_branch_lh is outdated! => compute a new one
     const RealNumType parent_mid_blength = 0.5 * parent_blength;
     std::unique_ptr<SeqRegions> parent_new_mid_branch_lh = nullptr;
+    // NHANLT: avoid null
+    if (!grand_parent_upper_lr)
+    {
+        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        return;
+    }
     grand_parent_upper_lr->mergeUpperLower<num_states>(parent_new_mid_branch_lh, parent_mid_blength, *parent_new_lower_lh, parent_mid_blength, aln, model, threshold_prob);
     RealNumType best_parent_lh = calculateSubTreePlacementCost<num_states>(parent_new_mid_branch_lh, child_1_lower_regions, child_1_blength);
     RealNumType best_parent_blength_split = parent_mid_blength;
@@ -5393,6 +5411,12 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     }
     
     // 4. recompute the lower_lh of the new_parent
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        return;
+    }
     parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_new_blength, *child_1_lower_regions, child_1_new_blength, aln, model, cumulative_rate, params->threshold_prob, false);
     
     // 5. compute the new upper_left/right lh for the parent and the new parent nodes
@@ -5402,6 +5426,12 @@ void cmaple::Tree::calSiteLhDiffNonRoot(std::vector<RealNumType>& site_lh_diff, 
     std::unique_ptr<SeqRegions> new_parent_new_upper_lr_2 = nullptr;
     grand_parent_upper_lr->mergeUpperLower<num_states>(new_parent_new_upper_lr_2, new_parent_new_blength, *parent_new_lower_lh, parent_new_blength, aln, model, threshold_prob);
     // 5.2. for the parent node
+    // NHANLT: avoid null
+    if (!new_parent_new_upper_lr_1)
+    {
+        memset(&site_lh_diff, MIN_NEGATIVE, seq_length * sizeof(double));
+        return;
+    }
     std::unique_ptr<SeqRegions> parent_new_upper_lr_1 = nullptr;
     new_parent_new_upper_lr_1->mergeUpperLower<num_states>(parent_new_upper_lr_1, parent_new_blength, *sibling_lower_lh, sibling.getUpperLength(), aln, model, threshold_prob);
     std::unique_ptr<SeqRegions> parent_new_upper_lr_2 = nullptr;
@@ -5749,6 +5779,12 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
     // 2. estimate x ~ the length of the new branch connecting the parent and the new_parent nodes
     RealNumType parent_new_blength = default_blength;
     // merge 2 lower vector into one
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     RealNumType best_parent_lh = parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_new_blength, *child_1_lower_regions, child_1_blength, aln, model, cumulative_rate, threshold_prob, true);
     best_parent_lh += new_parent_new_lower_lh->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
     // Try shorter branch lengths at root
@@ -5768,6 +5804,12 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
     std::unique_ptr<SeqRegions> new_parent_new_upper_lr_2 = nullptr;
     parent_new_lower_lh->computeTotalLhAtRoot<num_states>(new_parent_new_upper_lr_2, model, parent_new_blength);
     // 5.2. for the parent node
+    // NHANLT: avoid null
+    if (!new_parent_new_upper_lr_1)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     std::unique_ptr<SeqRegions> parent_new_upper_lr_1 = nullptr;
     new_parent_new_upper_lr_1->mergeUpperLower<num_states>(parent_new_upper_lr_1, parent_new_blength, *sibling_lower_lh, sibling.getUpperLength(), aln, model, threshold_prob);
     std::unique_ptr<SeqRegions> parent_new_upper_lr_2 = nullptr;
@@ -5785,6 +5827,12 @@ bool cmaple::Tree::calculateNNILhRoot(std::stack<Index>& node_stack_aLRT, RealNu
     
     // 7. caculate the likelihood contribution changed at
     // 7.1. the parent node
+    // NHANLT: avoid null
+    if (!child_2_lower_lh)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     lh_diff += child_2_lower_lh->mergeTwoLowers<num_states>(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, cumulative_rate, threshold_prob, true) - node_lhs[current_node.getNodelhIndex()].getLhContribution();
     // 7.2. the new_parent node
     lh_diff += parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, cumulative_rate, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].getLhContribution();
@@ -5883,6 +5931,14 @@ bool cmaple::Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, Rea
     std::unique_ptr<SeqRegions> new_parent_new_lower_lh = nullptr;
     
     const std::unique_ptr<SeqRegions>& grand_parent_upper_lr = getPartialLhAtNode(parent.getNeighborIndex(TOP));
+    
+    // NHANLT: avoid null
+    if (!grand_parent_upper_lr)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
+    
     std::unique_ptr<SeqRegions> best_parent_regions = nullptr;
     RealNumType parent_blength = parent.getUpperLength();
     // update parent_blength if it's <= 0
@@ -5931,6 +5987,12 @@ bool cmaple::Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, Rea
     }
     
     // 4. recompute the lower_lh of the new_parent
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_new_blength, *child_1_lower_regions, child_1_new_blength, aln, model, cumulative_rate, params->threshold_prob, false);
     
     // 5. compute the new upper_left/right lh for the parent and the new parent nodes
@@ -5940,6 +6002,12 @@ bool cmaple::Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, Rea
     std::unique_ptr<SeqRegions> new_parent_new_upper_lr_2 = nullptr;
     grand_parent_upper_lr->mergeUpperLower<num_states>(new_parent_new_upper_lr_2, new_parent_new_blength, *parent_new_lower_lh, parent_new_blength, aln, model, threshold_prob);
     // 5.2. for the parent node
+    // NHANLT: avoid null
+    if (!new_parent_new_upper_lr_1)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     std::unique_ptr<SeqRegions> parent_new_upper_lr_1 = nullptr;
     new_parent_new_upper_lr_1->mergeUpperLower<num_states>(parent_new_upper_lr_1, parent_new_blength, *sibling_lower_lh, sibling.getUpperLength(), aln, model, threshold_prob);
     std::unique_ptr<SeqRegions> parent_new_upper_lr_2 = nullptr;
@@ -5960,9 +6028,21 @@ bool cmaple::Tree::calculateNNILhNonRoot(std::stack<Index>& node_stack_aLRT, Rea
     // 7. caculate the likelihood contribution changed at
     // 7.1. the parent node
     // std::cout << "lh_contribution (before): " << node_lhs[current_node.getNodelhIndex()].getLhContribution() << std::endl;
+    // NHANLT: avoid null
+    if (!child_2_lower_lh)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     lh_diff += child_2_lower_lh->mergeTwoLowers<num_states>(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, cumulative_rate, threshold_prob, true) - node_lhs[current_node.getNodelhIndex()].getLhContribution();
     // std::cout << "lh_contribution (after): " << child_2_lower_lh->mergeTwoLowers<num_states>(parent_new_lower_lh, child_2_best_blength, *sibling_lower_lh, sibling_best_blength, aln, model, threshold_prob, true) << std::endl;
     // 7.2. the new_parent node
+    // NHANLT: avoid null
+    if (!parent_new_lower_lh)
+    {
+        lh_diff = MIN_NEGATIVE;
+        return true;
+    }
     RealNumType prev_lh_diff = parent_new_lower_lh->mergeTwoLowers<num_states>(new_parent_new_lower_lh, parent_best_blength, *child_1_lower_regions, child_1_best_blength, aln, model, cumulative_rate, threshold_prob, true) - node_lhs[parent.getNodelhIndex()].getLhContribution();
     // 7.3. other ancestors on the path from the new_parent to root (stop when the change is insignificant)
     const PositionType seq_length = aln->ref_seq.size();
