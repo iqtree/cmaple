@@ -684,6 +684,12 @@ std::unique_ptr<cmaple::Params> cmaple::ParamsBuilder::build()
 void cmaple::parseArg(int argc, char *argv[], Params &params) {
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
+            if (strcmp(argv[cnt], "--help") == 0 || strcmp(argv[cnt], "-h") == 0 || strcmp(argv[cnt], "-?") == 0) {
+                
+                usage_cmaple();
+
+                continue;
+            }
             if (strcmp(argv[cnt], "--alignment") == 0 || strcmp(argv[cnt], "-aln") == 0) {
                 
                 ++cnt;
@@ -1080,6 +1086,50 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 void cmaple::quickStartGuide() {
     cmaple::printCopyright(cout);
     cout << "Quick Start Guide" << endl;
+    exit(0);
+}
+
+void cmaple::usage_cmaple()
+{
+    cmaple::printCopyright(cout);
+    
+    cout << "Usage: cmaple -aln <ALIGNMENT> [-m <MODEL>] [-t <TREE>] ..." << endl << endl;
+    
+    cout << "GENERAL OPTIONS:" << endl
+    << "  -h, --help           Print help usages." << endl
+    << "  -aln <ALIGNMENT>     Specify an input alignment file in PHYLIP, FASTA," << endl
+    << "                       or MAPLE format." << endl
+    << "  -m <MODEL>           Specify a model name." << endl
+    << "  -st <SEQ_TYPE>       Specify a sequence type (DNA/AA)." << endl
+    << "  -format <FORMAT>     Set the alignment format (PHYLIP/FASTA/MAPLE)." << endl
+    << "  -t <TREE_FILE>       Specify a starting tree for tree search." << endl
+    << "  -blfix               Keep branch lengths unchanged. " << endl
+    << "  -tree-search <TYPE>  Set tree search type (FAST/NORMAL/MORE_ACCURATE)." << endl
+    << "  -shallow-search      Perform a shallow tree search" << endl
+    << "                       before a deeper tree search." << endl
+    << "  -branch-support      Compute branch supports (aLRT-SH)." << endl
+    << "  --replicates <NUM>   Set the number of replicates for computing" << endl
+    << "                       branch supports (aLRT-SH)." << endl
+    << "  -eps <NUM>           Set the epsilon value for computing" << endl
+    << "                       branch supports (aLRT-SH)." << endl
+    << "  -nt <NUM_THREADS>    Set the number of threads for computing" << endl
+    << "                       branch supports. Use `-nt AUTO` " << endl
+    << "                       to employ all available CPU cores." << endl
+    << "  -pre <PREFIX>        Specify a prefix for all output files." << endl
+    << "  -rep-tree            Allow CMAPLE to replace the input tree" << endl
+    << "                       when computing branch supports." << endl
+    << "  -out-mul-tree        Output the tree in multifurcating format." << endl
+    << "  -overwrite           Overwrite output files if existing." << endl
+    << "  -ref <FILE>,<SEQ>    Specify the reference genome." << endl
+    << "  -out-aln <FILE>,<FORMAT> Write the input alignment to a file in a" << endl
+    << "                       specific format (PHYLIP/FASTA/MAPLE)." << endl
+    << "  --min-blength <NUM>  Set the minimum branch length." << endl
+    << "  --threshold-prob <NUM> Specify a parameter for approximations." << endl
+    << "  -mut-update <NUM>    Set the period to update the substitution rates." << endl
+    << "  -seed <NUM>          Set a seed number for random generators." << endl
+    << "  -v <MODE>            Set the verbose mode (QUIET/MIN/MED/MAX/DEBUG)." << endl
+    << endl;
+    
     exit(0);
 }
 

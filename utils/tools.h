@@ -1086,6 +1086,11 @@ private:
     void quickStartGuide();
 
     /**
+        Show help
+     */
+    void usage_cmaple();
+
+    /**
         Remove white space at the beginning and end of the string
         @param str (IN/OUT) string to be trimmed
     */
