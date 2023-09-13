@@ -18,9 +18,9 @@ All the options available in CMAPLE are shown below:
 | `-blfix`   | Keep the branch lengths of the input tree unchanged (only applicable if the input tree consists all the taxa in the alignment). |
 | `-tree-search <TYPE>`   | Specify a [tree search type](TREE_SEARCH) as either of `FAST`, `NORMAL`, or `MORE_ACCURATE`. *DEFAULT: `NORMAL`* |
 | `-shallow-search`   | Enable a shallow tree search before a deeper tree search. *DEFAULT: No shallow search* |
-| `-branch-support`   | Compute the branch supports (aLRT-SH) of the tree. |
-| `--replicates <NUM>`   | Set the number of replicates for computing the branch supports (aLRT-SH). *DEFAULT: 1000* |
-| `-eps <NUM>`   | Set the epsilon value (see [Guindon et al., 2010]) for computing the branch supports (aLRT-SH). *DEFAULT: 0.1*|
+| `-branch-support`   | Compute branch supports (aLRT-SH) of the tree. |
+| `--replicates <NUM>`   | Set the number of replicates for computing branch supports (aLRT-SH). *DEFAULT: 1000* |
+| `-eps <NUM>`   | Set the epsilon value (see [Guindon et al., 2010]) for computing branch supports (aLRT-SH). *DEFAULT: 0.1*|
 | `-nt <NUM_THREADS>` | Set the number of CPU cores used for computing branch supports. One can use `-nt AUTO` to use all CPU cores available on the current machine. *DEFAULT: 1* |
 | `-pre <PREFIX>` | Specify a prefix for all output files. *DEFAULT: the alignment file name (`-aln`)* |
 | `-rep-tree` | Allow CMAPLE to replace the input tree if a better likelihood tree is found when computing branch supports. |
