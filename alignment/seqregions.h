@@ -74,7 +74,7 @@ namespace cmaple
         /**
          Check if the current regions and regions2 represent the same partial likelihoods or not -> be used to stop traversing the tree further for updating partial likelihoods
          */
-        bool areDiffFrom(const SeqRegions& regions2, cmaple::PositionType seq_length, cmaple::StateType num_states, const cmaple::Params& params) const;
+        bool areDiffFrom(const std::unique_ptr<SeqRegions>& regions2, cmaple::PositionType seq_length, cmaple::StateType num_states, const cmaple::Params& params) const;
         
         /**
          Merge two likelihood vectors, one from above and one from below

@@ -350,7 +350,8 @@ TEST(SeqRegions, compareWithSample)
  */
 TEST(SeqRegions, areDiffFrom)
 {
-    SeqRegions seqregions1, seqregions2;
+    SeqRegions seqregions1;
+    std::unique_ptr<SeqRegions> seqregions2 = std::make_unique<SeqRegions>();
     
     // init testing data
     const PositionType seq_length = 3500;
@@ -373,57 +374,57 @@ TEST(SeqRegions, areDiffFrom)
     // ---- seqregions2 is empty -----
     
     // ---- other tests -----
-    seqregions2.emplace_back(TYPE_R, seq_length, -1, 0.321);
+    seqregions2->emplace_back(TYPE_R, seq_length, -1, 0.321);
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
-    seqregions2.back().position = 382;
-    seqregions2.emplace_back(TYPE_N, 654);
-    seqregions2.emplace_back(0, 655, 0);
-    seqregions2.emplace_back(TYPE_N, 1431);
-    seqregions2.emplace_back(3, 1432, 0.432, 0);
-    seqregions2.emplace_back(TYPE_N, 2431);
+    seqregions2->back().position = 382;
+    seqregions2->emplace_back(TYPE_N, 654);
+    seqregions2->emplace_back(0, 655, 0);
+    seqregions2->emplace_back(TYPE_N, 1431);
+    seqregions2->emplace_back(3, 1432, 0.432, 0);
+    seqregions2->emplace_back(TYPE_N, 2431);
     new_lh = std::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.1,0.3,0.2,0.4};
     (*new_lh) = new_lh_value1;
-    seqregions2.emplace_back(TYPE_O, 2432, 0, -1, std::move(new_lh));
-    seqregions2.emplace_back(TYPE_N, 3381);
-    seqregions2.emplace_back(TYPE_R, seq_length, 0, 0.1321);
+    seqregions2->emplace_back(TYPE_O, 2432, 0, -1, std::move(new_lh));
+    seqregions2->emplace_back(TYPE_N, 3381);
+    seqregions2->emplace_back(TYPE_R, seq_length, 0, 0.1321);
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
-    seqregions2.data()[3].type = TYPE_R;
+    seqregions2->data()[3].type = TYPE_R;
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
-    seqregions2.data()[3].type = TYPE_N;
-    seqregions2.data()[4].plength_observation2root = -1;
+    seqregions2->data()[3].type = TYPE_N;
+    seqregions2->data()[4].plength_observation2root = -1;
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
-    seqregions2.data()[4].plength_observation2root = 1e-9;
+    seqregions2->data()[4].plength_observation2root = 1e-9;
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
     seqregions1.back().plength_observation2node = 0.0113;
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
-    seqregions2.back().plength_observation2node = 0.0113 + 1e-10;
+    seqregions2->back().plength_observation2node = 0.0113 + 1e-10;
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
     // test on type O
     RealNumType thresh_diff_update = params->thresh_diff_update / 2; // difference is too small less then thresh_diff_update
-    seqregions2.data()[6].likelihood->data()[0] += thresh_diff_update;
-    seqregions2.data()[6].likelihood->data()[2] -= thresh_diff_update;
+    seqregions2->data()[6].likelihood->data()[0] += thresh_diff_update;
+    seqregions2->data()[6].likelihood->data()[2] -= thresh_diff_update;
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
-    seqregions2.data()[6].likelihood->data()[0] = thresh_diff_update; // reset lh so that all pairs of lh between seqregions1 and seqregions2 equal to each other
-    seqregions2.data()[6].likelihood->data()[2] += seqregions2.data()[6].likelihood->data()[0];
-    seqregions1.data()[6].likelihood->data()[0] = seqregions2.data()[6].likelihood->data()[0];
-    seqregions1.data()[6].likelihood->data()[2] = seqregions2.data()[6].likelihood->data()[2];
+    seqregions2->data()[6].likelihood->data()[0] = thresh_diff_update; // reset lh so that all pairs of lh between seqregions1 and seqregions2 equal to each other
+    seqregions2->data()[6].likelihood->data()[2] += seqregions2->data()[6].likelihood->data()[0];
+    seqregions1.data()[6].likelihood->data()[0] = seqregions2->data()[6].likelihood->data()[0];
+    seqregions1.data()[6].likelihood->data()[2] = seqregions2->data()[6].likelihood->data()[2];
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), false);
     
-    seqregions2.data()[6].likelihood->data()[2] += seqregions2.data()[6].likelihood->data()[0];
-    seqregions2.data()[6].likelihood->data()[0] = 0; // one lh = 0 but diff != 0
+    seqregions2->data()[6].likelihood->data()[2] += seqregions2->data()[6].likelihood->data()[0];
+    seqregions2->data()[6].likelihood->data()[0] = 0; // one lh = 0 but diff != 0
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     
-    seqregions2.data()[6].likelihood->data()[2] -= thresh_diff_update / 10;
-    seqregions2.data()[6].likelihood->data()[0] = thresh_diff_update / 10;
+    seqregions2->data()[6].likelihood->data()[2] -= thresh_diff_update / 10;
+    seqregions2->data()[6].likelihood->data()[0] = thresh_diff_update / 10;
     EXPECT_EQ(seqregions1.areDiffFrom(seqregions2, seq_length, 4, *params), true);
     // ---- other tests -----
 }

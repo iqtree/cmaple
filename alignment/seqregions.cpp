@@ -185,15 +185,15 @@ int cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2, PositionT
     return 0;
 }
 
-bool cmaple::SeqRegions::areDiffFrom(const SeqRegions& regions2, PositionType seq_length, StateType num_states, const Params& params) const
+bool cmaple::SeqRegions::areDiffFrom(const std::unique_ptr<SeqRegions>& regions2, PositionType seq_length, StateType num_states, const Params& params) const
 {
-    if (regions2.empty())
+    if (!regions2)
         return true;
     
     // init variables
     PositionType pos = 0;
     const SeqRegions& seq1_regions = *this;
-    const SeqRegions& seq2_regions = regions2;
+    const SeqRegions& seq2_regions = *regions2;
     size_t iseq1 = 0;
     size_t iseq2 = 0;
     
