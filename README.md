@@ -23,7 +23,7 @@ In the release package, we provide two excutables `cmaple` and `cmaple-aa` for a
 
 As a command-line program, CMAPLE can be run by executing `cmaple ...` from a terminal/console (or a command prompt under Windows). 
 
-### Infer a phylogenetic tree from an alignment
+### 1. Infer a phylogenetic tree from an alignment
 
 Together with the executables, there is an example alignment (`example.maple` in the `example` directory) in the release package. Once can reconstruct a phylogenetic tree from that alignment (assuming that you are now in the same folder with `example.maple`).
 
@@ -40,13 +40,13 @@ CMAPLE uses the default model, which is [General Time Reversible]([Tavare, 1986]
 * `example.maple.log`: log file captures all messages printed on the screen during the run. To report bugs, please send this log file and the input alignment (if possible) to the authors.
 
 
-### Specify a substitution model
+### 2. Specify a substitution model
 
 CMAPLE supports various common DNA and empirical amino-acid models (replicated from the [IQ-TREE]([IQ_TREE]) software) as shown in [Supported substitution models](#supported-substitution-models). One can specify the [Jukes Cantor]([Jukes and Cantor, 1969]) model for the inference with the `-m` option.
 
     cmaple -aln example.maple -m JC
 
-### Specify an input tree
+### 3. Specify an input tree
 One can specify an input tree (e.g., `tree.nwk`) in a NEWICK format for the tree search using the `-t` option. 
 
 	    cmaple -aln example.maple -t tree.nwk
@@ -65,7 +65,7 @@ To use the input (complete/incomplete) tree as a starting tree to perform placem
 
         cmaple -aln example.maple -t tree.nwk -tree-search MORE_ACCURATE
         
-### Set the tree search type
+### 4. Set the tree search type
 
 We implemented three types of tree search:
 
@@ -86,8 +86,34 @@ By default, CMAPLE applies the `NORMAL_TREE_SEARCH`. One can change it by using 
     cmaple -aln example.maple -t tree.nwk -tree-search FAST_TREE_SEARCH
 
     
+### 5. Assess branch supports with aLRT-SH
+
+CMAPLE implemented the SH-like approximate likelihood ratio test ([Guindon et al., 2010]). To perform this test, one can run:
+
+    cmaple -aln example.maple -branch-support
+    
+To speed up the assessment, one can employ multithreading by adding `-nt` option
+
+    cmaple -aln example.maple -branch-support -nt 8
+    
+In the above example, CMAPLE uses 8 threads for computing branch supports. One can use `-nt AUTO` to employ all CPU cores available on the current machine.
+
+One can specify the number of replicates (default, 1000) and the epsilon value (default, 0.1) (see [Guindon et al., 2010]) by using `--replicates` and `-eps` options
+
+    cmaple -aln example.maple -branch-support --replicates 5000 -eps 0.05
+
+### 6. Convert an alignment to a different format
+
+One can use the `-out-aln` option to write an input alignment to a file in a specific format such as PHYLIP, FASTA, or [MAPLE]([MAPLE_FORMAT]) format. For example, the following command
+
+    cmaple -aln example.maple -out-aln aln.phy,PHYLIP
+   
+writes the input alignment to `aln.phy` file in a PHYLIP format.
+
+    
 ## Supported substitution models
 
+All the supported substitution models in CMAPLE are listed in the following.
 
 **DNA models**
 
@@ -236,3 +262,4 @@ All the options available in CMAPLE are shown below:
 [Yang, 1995]: http://www.genetics.org/content/139/2/993.abstract
 [Yang et al., 1998]: http://mbe.oxfordjournals.org/content/15/12/1600.abstract
 [Zharkikh, 1994]: https://doi.org/10.1007/BF00160155
+[Guindon et al., 2010]: https://doi.org/10.1093/sysbio/syq010
