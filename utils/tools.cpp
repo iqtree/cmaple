@@ -705,11 +705,11 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--prefix") == 0 || strcmp(argv[cnt], "-prf") == 0) {
+            if (strcmp(argv[cnt], "--prefix") == 0 || strcmp(argv[cnt], "-pre") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -prf <OUTPUT_PREFIX>");
+                    outError("Use -pre <OUTPUT_PREFIX>");
                 
                 params.output_prefix = argv[cnt];
 
@@ -719,7 +719,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> could be MAPLE, PHYLIP, FASTA, or AUTO");
+                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> could be MAPLE, PHYLIP, or FASTA");
                 
                 // parse inputs
                 std::string inputs = argv[cnt];
@@ -747,7 +747,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
                 
                 continue;
             }
-            if (strcmp(argv[cnt], "-verbose") == 0 || strcmp(argv[cnt], "--verbose-mode") == 0) {
+            if (strcmp(argv[cnt], "-v") == 0 || strcmp(argv[cnt], "--verbose-mode") == 0) {
                 cnt++;
                 if (cnt >= argc)
                     outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
@@ -973,7 +973,7 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--branch-support") == 0 || strcmp(argv[cnt], "-br-supp") == 0) {
+            if (strcmp(argv[cnt], "--branch-support") == 0 || strcmp(argv[cnt], "-branch-support") == 0) {
                 
                 params.compute_aLRT_SH = true;
 
