@@ -15,11 +15,11 @@ Introduction to CMAPLE...
 
 ## Installation
 
-CMAPLE executables for different platforms such as Linux, OSX, and Windows are available at [CMAPLE-RELEASES]([CMAPLE_RELEASES]). 
+CMAPLE executables for different platforms such as Linux, OSX, and Windows are available at [CMAPLE-RELEASES][CMAPLE_RELEASES]. 
+
+In the release package, we provide two excutables `cmaple` and `cmaple-aa` for analysing DNA and amino acid data, respectively. For simplicity, we use `cmaple` in the following examples.
 
 ## Usage examples
-
-In the release package, we provide two excutables `cmaple` and `cmaple-aa` for analysing DNA and amino acid data, respectively. For simplicity, we use `cmaple` in the following examples. 
 
 As a command-line program, CMAPLE can be run by executing `cmaple ...` from a terminal/console (or a command prompt under Windows). 
 
@@ -31,9 +31,9 @@ Together with the executables, there is an example alignment (`example.maple` in
     
 In the above command,
 
-* `-aln` is to specify an input alignment, which could be in FASTA, PHYLIP, or [MAPLE]([MAPLE_FORMAT]) format.
+* `-aln` is to specify an input alignment, which could be in FASTA, PHYLIP, or [MAPLE][MAPLE_FORMAT] format.
 
-CMAPLE uses the default model, which is [General Time Reversible]([Tavare, 1986]) model for the DNA data in this example. At the end of the run, CMAPLE outputs the following files.
+CMAPLE uses the default model, which is [General Time Reversible][Tavare, 1986] model for the DNA data in this example. At the end of the run, CMAPLE outputs the following files.
 
 * `example.maple.treefile`: the inferred phylogenetic tree, which can be visualized by many tree viewer programs (e.g., FigTree).
 
@@ -42,28 +42,28 @@ CMAPLE uses the default model, which is [General Time Reversible]([Tavare, 1986]
 
 ### 2. Specify a substitution model
 
-CMAPLE supports various common DNA and empirical amino-acid models (replicated from the [IQ-TREE]([IQ_TREE]) software) as shown in [Supported substitution models](#supported-substitution-models). One can specify the [Jukes Cantor]([Jukes and Cantor, 1969]) model for the inference with the `-m` option.
+CMAPLE supports various common DNA and empirical amino-acid models (replicated from the [IQ-TREE][IQ_TREE] software) as shown in [Supported substitution models](#supported-substitution-models). For example, one can specify the [Jukes Cantor][Jukes and Cantor, 1969] model for the inference with the `-m` option.
 
     cmaple -aln example.maple -m JC
 
 ### 3. Specify an input tree
-One can specify an input tree (e.g., `tree.nwk`) in a NEWICK format for the tree search using the `-t` option. 
+One can specify an input tree (e.g., `tree.nwk`) in the NEWICK format for the tree search using the `-t` option. 
 
 	    cmaple -aln example.maple -t tree.nwk
 
 **If the input tree is incomplete** (which doesn't contain all the taxa in the alignment), CMAPLE will:
 
-* Performs placement (i.e., adding missing taxa from the alignment to the tree);
-* Applies a NORMAL tree search (which does SPR moves only on newly-added nodes);
-* Optimizes all branch lengths.
+* Firstly, perform placements (i.e., adding missing taxa from the alignment to the tree);
+* Secondly, applie a [NORMAL](#4.-set-the-tree-search-type) tree search (which does SPR moves only on newly-added nodes);
+* Finally, optimize all branch lengths.
 
-**If the input tree is complete** (which contains all the taxa in the alignment), CMAPLE will, by default, does neither placment nor tree search, but it optimizes all branch lengths.To keep the branch lengths fixed, one can add `-blfix` to the command.
+**If the input tree is complete** (which contains all the taxa in the alignment), CMAPLE will, by default, do neither placment nor tree search, but it optimizes all branch lengths. To keep the branch lengths fixed, one can add `-blfix` to the command.
 
-        cmaple -aln example.maple -t tree.nwk -blfix
+	    cmaple -aln example.maple -t tree.nwk -blfix
 
-To use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, one can add `-tree-search MORE_ACCURATE` to the command.
+To use the input (complete/incomplete) tree as a starting tree to perform placements (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, one can add `-tree-search MORE_ACCURATE` to the command.
 
-        cmaple -aln example.maple -t tree.nwk -tree-search MORE_ACCURATE
+	    cmaple -aln example.maple -t tree.nwk -tree-search MORE_ACCURATE
         
 ### 4. Set the tree search type
 
@@ -71,19 +71,19 @@ We implemented three types of tree search:
 
  Tree search type        | Explanation |
 |------------------------|---------------------------------------------------------------|
-| FAST\_TREE\_SEARCH       | No tree search (placement only) |
-| NORMAL\_TREE\_SEARCH     | Only consider pruning branches at newly-added nodes when seeking SPR moves |
-| MORE\_ACCURATE\_TREE\_SEARCH| Consider all nodes when seeking SPR moves |
+| FAST      | No tree search (placement only) |
+| NORMAL    | Only consider pruning branches at newly-added nodes when seeking SPR moves |
+| MORE\_ACCURATE | Consider all nodes when seeking SPR moves |
 
-If users don't specify an input tree, `NORMAL_TREE_SEARCH` and `MORE_ACCURATE_TREE_SEARCH` perform the same behaviors since all taxa from the alignment are first added to the tree then SPR moves are considered at all those (newly-added) nodes during the tree search.
+If users don't specify an input tree, `NORMAL` and `MORE_ACCURATE` perform the same behaviors since all taxa from the alignment are first added to the tree then SPR moves are considered at all those (newly-added) nodes during the tree search.
 
-If users specify an input complete tree, both `FAST_TREE_SEARCH` and `NORMAL_TREE_SEARCH` do nothing since no new taxa is added to the tree.
+If users specify an input complete tree, both `FAST` and `NORMAL` do nothing since no new taxa is added to the tree.
 
 If users specify an input incomplete tree, those tree search types have completely different behaviors as described in the above table. The runtime and the accuracy increase, in general, when changing the tree search type from the top to the bottom ones. 
 
-By default, CMAPLE applies the `NORMAL_TREE_SEARCH`. One can change it by using the `-tree-search` option.
+By default, CMAPLE applies the `NORMAL` tree search. One can change it to, e.g, the `FAST` tree search by using the `-tree-search` option.
 
-    cmaple -aln example.maple -t tree.nwk -tree-search FAST_TREE_SEARCH
+    cmaple -aln example.maple -t tree.nwk -tree-search FAST
 
     
 ### 5. Assess branch supports with aLRT-SH
@@ -98,17 +98,17 @@ To speed up the assessment, one can employ multithreading by adding `-nt` option
     
 In the above example, CMAPLE uses 8 threads for computing branch supports. One can use `-nt AUTO` to employ all CPU cores available on the current machine.
 
-One can specify the number of replicates (default, 1000) and the epsilon value (default, 0.1) (see [Guindon et al., 2010]) by using `--replicates` and `-eps` options
+Additionally, one can specify the number of replicates (default, 1000) and the epsilon value (default, 0.1) (see [Guindon et al., 2010]) by using `--replicates` and `-eps` options.
 
     cmaple -aln example.maple -branch-support --replicates 5000 -eps 0.05
 
 ### 6. Convert an alignment to a different format
 
-One can use the `-out-aln` option to write an input alignment to a file in a specific format such as PHYLIP, FASTA, or [MAPLE]([MAPLE_FORMAT]) format. For example, the following command
+One can use the `-out-aln` option to write an input alignment to a file in a specific format such as PHYLIP, FASTA, or [MAPLE][MAPLE_FORMAT] format. For example, the following command
 
     cmaple -aln example.maple -out-aln aln.phy,PHYLIP
    
-writes the input alignment to `aln.phy` file in a PHYLIP format.
+writes the input alignment to `aln.phy` file in the PHYLIP format.
 
     
 ## Supported substitution models
@@ -178,13 +178,13 @@ All the options available in CMAPLE are shown below:
 | Option | Usage and meaning |
 |--------------|------------------------------------------------------------------------------|
 |`-h` or `-?`| Print help usage. |
-|`-aln <ALIGNMENT>`| Specify an input alignment file in PHYLIP, FASTA, or [MAPLE]([MAPLE_FORMAT]) format. |
-| `-m <MODEL>`   | Specify a model name. See [DNA Models]([DNA_MODELS]) and [Protein Models]([AA_MODELS]) for the list of supported models. *DEFAULT: GTR for DNA and LG for Protein data* |
+|`-aln <ALIGNMENT>`| Specify an input alignment file in PHYLIP, FASTA, or [MAPLE][MAPLE_FORMAT] format. |
+| `-m <MODEL>`   | Specify a model name. See [DNA Models][DNA_MODELS] and [Protein Models][AA_MODELS] for the list of supported models. *DEFAULT: GTR for DNA and LG for Protein data* |
 | `-st <SEQ_TYPE>`  | Specify a sequence type as either of `DNA` or `AA` for DNA or amino-acid sequences. *DEFAULT: auto-detect from the alignment or model* |
-| `-format <FORMAT>`  | Set the alignment format as either of PHYLIP, FASTA, [MAPLE]([MAPLE_FORMAT]), or AUTO. *DEFAULT: auto-detect from the alignment* |
+| `-format <FORMAT>`  | Set the alignment format as either of PHYLIP, FASTA, [MAPLE][MAPLE_FORMAT], or AUTO. *DEFAULT: auto-detect from the alignment* |
 | `-t <TREE_FILE>`   | Specify a file containing a starting tree for tree search. Note: the starting tree is not mandatory to consist all taxa in the input alignment. |
 | `-blfix`   | Keep the branch lengths of the input tree unchanged (only applicable if the input tree consists all the taxa in the alignment). |
-| `-tree-search <TYPE>`   | Specify a [tree search type]([TREE_SEARCH]) as either of `FAST`, `NORMAL`, or `MORE_ACCURATE`. *DEFAULT: `NORMAL`* |
+| `-tree-search <TYPE>`   | Specify a [tree search type][TREE_SEARCH] as either of `FAST`, `NORMAL`, or `MORE_ACCURATE`. *DEFAULT: `NORMAL`* |
 | `-shallow-search`   | Enable a shallow tree search before a deeper tree search. *DEFAULT: No shallow search* |
 | `-branch-support`   | Compute branch supports (aLRT-SH) of the tree. |
 | `--replicates <NUM>`   | Set the number of replicates for computing branch supports (aLRT-SH). *DEFAULT: 1000* |
@@ -195,7 +195,7 @@ All the options available in CMAPLE are shown below:
 | `-out-mul-tree` | Output the tree in multifurcating format. *DEFAULT: bifurcating tree* |
 | `-overwrite` | Overwrite output files if existing. |
 | `-ref <FILENAME>,<SEQNAME>` | Specify the reference genome by a sequence named `<SEQNAME>` from an alignment file `<FILENAME>`. |
-| `-out-aln <NAME>,<FORMAT>` | Write the input alignment to a file named `<NAME>` in a specific format `<FORMAT>` which could be PHYLIP, FASTA, or [MAPLE]([MAPLE_FORMAT]). |
+| `-out-aln <NAME>,<FORMAT>` | Write the input alignment to a file named `<NAME>` in a specific format `<FORMAT>` which could be PHYLIP, FASTA, or [MAPLE][MAPLE_FORMAT]. |
 | `--min-blength <NUM>` | Set the minimum branch length. *DEFAULT: 0.2 x \<one mutation per site\>* |
 | `--threshold-prob <NUM>` | Specify a relative probability threshold, which is used to ignore possible states with very low probabilities. *DEFAULT: 1e-8* |
 | `-mut-update <NUM>` | Specify the period (in term of the number of sample placements) to update the substitution rate matrix. *DEFAULT: 25* |
