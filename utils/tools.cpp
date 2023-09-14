@@ -1074,18 +1074,32 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
 
     }
     
-    // validate options
-    if (!params.aln_path.length())
-        outError("Please supply an alignment file via -aln <ALN_FILENAME>");
-    
     if (argc <= 1) {
         quickStartGuide();
     }
+    
+    // validate options
+    if (!params.aln_path.length())
+        outError("Please supply an alignment file via -aln <ALN_FILENAME>");
 }
 
 void cmaple::quickStartGuide() {
     cmaple::printCopyright(cout);
-    cout << "Quick Start Guide" << endl;
+    printCopyright(cout);
+    cout << "Command-line examples (replace 'cmaple ...' by the actual path to executable):" << endl << endl
+         << "1. Infer a phylogenetic tree from an alignment (e.g., example.maple):" << endl
+         << "     cmaple -aln example.maple" << endl << endl
+         << "2. Specify a substitution model (e.g., Jukes Cantor model):" << endl
+         << "     cmaple -aln example.maple -m JC" << endl << endl
+         << "3. Specify an input tree (e.g., tree.nwk):" << endl
+         << "     cmaple -aln example.maple -t tree.nwk" << endl << endl
+         << "4. Assess branch supports with aLRT-SH (with, e.g., 4 threads):" << endl
+         << "     cmaple -aln example.maple -branch-support -nt 4" << endl << endl
+         << "5. Convert an alignment (example.maple) to a different format (e.g., PHYLIP format):" << endl
+         << "     cmaple -aln example.maple -out-aln aln.phy,PHYLIP" << endl << endl
+         << "To show all available options: run 'cmaple -h'" << endl << endl
+         << "For more information, please have a look at user manual" << endl
+         << "     https://github.com/trongnhanuit/cmaple" << endl << endl;
     exit(0);
 }
 
