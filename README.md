@@ -54,7 +54,7 @@ One can specify an input tree (e.g., `tree.nwk`) in the NEWICK format for the tr
 **If the input tree is incomplete** (which doesn't contain all the taxa in the alignment), CMAPLE will:
 
 * Firstly, perform placements (i.e., adding missing taxa from the alignment to the tree);
-* Secondly, applie a [NORMAL](#4.-set-the-tree-search-type) tree search (which does SPR moves only on newly-added nodes);
+* Secondly, applie a [NORMAL](#4-set-the-tree-search-type) tree search (which does SPR moves only on newly-added nodes);
 * Finally, optimize all branch lengths.
 
 **If the input tree is complete** (which contains all the taxa in the alignment), CMAPLE will, by default, do neither placment nor tree search, but it optimizes all branch lengths. To keep the branch lengths fixed, one can add `-blfix` to the command.
@@ -115,7 +115,7 @@ writes the input alignment to `aln.phy` file in the PHYLIP format.
 
 All the supported substitution models in CMAPLE are listed in the following.
 
-**DNA models**
+### **DNA models**
 
 | Model        | Explanation |
 |--------------|---------------------------------------------------------------|
@@ -123,7 +123,7 @@ All the supported substitution models in CMAPLE are listed in the following.
 | GTR          | General time reversible model with unequal rates and unequal base freq. ([Tavare, 1986]). |
 | UNREST       | Unrestricted model with non-reversible, unequal rates and unequal base freq. |
 
-**Amino-acid models**
+### **Amino-acid models**
 
 | Model | Region | Explanation |
 |-------|--------|---------------------------------------------------------------|
@@ -204,13 +204,12 @@ All the options available in CMAPLE are shown below:
 
 [CMAPLE_RELEASES]: https://github.com/trongnhanuit/cmaple/releases
 [Gaston et al. 2011]: https://doi.org/10.1093/bioinformatics/btr470
-[MAPLE_FORMAT]: #
-[DNA_MODELS]: #
-[AA_MODELS]: #
-[TREE_SEARCH]: #
+[MAPLE_FORMAT]: https://www.nature.com/articles/s41588-023-01368-0
+[DNA_MODELS]: #dna-models
+[AA_MODELS]: #amino-acid-models
+[TREE_SEARCH]: #4-set-the-tree-search-type
 [Guindon et al., 2010]: https://academic.oup.com/sysbio/article/59/3/307/1702850
 [IQ_TREE]: http://www.iqtree.org/
-
 [Abascal et al., 2007]: https://doi.org/10.1093/molbev/msl136
 [Adachi and Hasegawa, 1996]: https://doi.org/10.1007/BF02498640
 [Adachi et al., 2000]: https://doi.org/10.1007/s002399910038
