@@ -5096,8 +5096,8 @@ void cmaple::Tree::computeLhContribution(RealNumType& total_lh, std::unique_ptr<
     if (!new_lower_lh)
         throw std::logic_error("Strange, inconsistent lower genome list creation in calculateTreeLh(); old list, and children lists");
     // otherwise, everything is good -> update the lower lh of the current node
-    else if (new_lower_lh->areDiffFrom(node.getPartialLh(TOP), seq_length, num_states, *params))
-        throw std::logic_error("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
+    else if (cmaple::verbose_mode >= cmaple::VB_DEBUG && new_lower_lh->areDiffFrom(node.getPartialLh(TOP), seq_length, num_states, *params))
+        outWarning("Strange, while calculating tree likelihood encountered non-updated lower likelihood!");
 }
 
 template <void(cmaple::Tree::*task)(RealNumType&, std::unique_ptr<SeqRegions>&, PhyloNode&, const std::unique_ptr<SeqRegions>&, const std::unique_ptr<SeqRegions>&, const Index, PhyloNode&, const Index, PhyloNode&, const PositionType&)>
