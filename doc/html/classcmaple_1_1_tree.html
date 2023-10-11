@@ -681,12 +681,8 @@ Public Member Functions</h2></td></tr>
 <li>optimizes all branch lengths</li>
 </ul>
 </li>
-<li>If users already supplied a complete tree, this function:<ul>
-<li>by default, does neither placment nor tree search, but it optimizes all branch lengths.</li>
-<li>If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
-<li>If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree_search_type = MORE_ACCURATE</li>
-</ul>
-</li>
+<li>If users already supplied a complete tree, this function, by default, does neither placment nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
+<li>If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they should set tree_search_type = MORE_ACCURATE</li>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

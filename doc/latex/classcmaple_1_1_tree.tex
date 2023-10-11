@@ -401,12 +401,8 @@ Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a22c01b063
 \item applies a NORMAL tree search (which does SPR moves only on newly-\/added nodes)
 \item optimizes all branch lengths
 \end{DoxyItemize}
-\item If users already supplied a complete tree, this function\+:
-\begin{DoxyItemize}
-\item by default, does neither placment nor tree search, but it optimizes all branch lengths.
-\item If users want to keep the branch lengths fixed, they should set fixed\+\_\+blengths = true when initializing the tree (by Tree() constructor);
-\item If users want to use the input tree as a starting tree (then performs SPR moves and optimizes branch lengths), they should set tree\+\_\+search\+\_\+type = MORE\+\_\+\+ACCURATE
-\end{DoxyItemize}
+\item If users already supplied a complete tree, this function, by default, does neither placment nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed\+\_\+blengths = true when initializing the tree (by Tree() constructor);
+\item If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they should set tree\+\_\+search\+\_\+type = MORE\+\_\+\+ACCURATE
 \end{DoxyItemize}
 
 

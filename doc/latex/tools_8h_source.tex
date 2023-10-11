@@ -550,57 +550,59 @@
 \DoxyCodeLine{01082\ }
 \DoxyCodeLine{01086\ \ \ \ \ \textcolor{keywordtype}{void}\ quickStartGuide();}
 \DoxyCodeLine{01087\ }
-\DoxyCodeLine{01092\ \ \ \ \ \textcolor{keywordtype}{void}\ trimString(std::string\ \&str);}
-\DoxyCodeLine{01093\ }
-\DoxyCodeLine{01097\ \ \ \ \ \textcolor{keywordtype}{int}\ countPhysicalCPUCores();}
+\DoxyCodeLine{01091\ \ \ \ \ \textcolor{keywordtype}{void}\ usage\_cmaple();}
+\DoxyCodeLine{01092\ }
+\DoxyCodeLine{01097\ \ \ \ \ \textcolor{keywordtype}{void}\ trimString(std::string\ \&str);}
 \DoxyCodeLine{01098\ }
-\DoxyCodeLine{01106\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T1,\ \textcolor{keyword}{class}\ T2>}
-\DoxyCodeLine{01107\ \ \ \ \ \textcolor{keywordtype}{void}\ quicksort(T1*\ arr,\ \textcolor{keywordtype}{int}\ left,\ \textcolor{keywordtype}{int}\ right,\ T2*\ arr2\ =\ NULL)\ \{}
-\DoxyCodeLine{01108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (left\ >\ right)\ \textcolor{keywordflow}{return};}
-\DoxyCodeLine{01109\ \ \ \ \ \ \ \ \ ASSERT(left\ <=\ right);}
-\DoxyCodeLine{01110\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ i\ =\ left,\ j\ =\ right;}
-\DoxyCodeLine{01111\ \ \ \ \ \ \ \ \ \ \ T1\ pivot\ =\ arr[(left\ +\ right)\ /\ 2];}
-\DoxyCodeLine{01112\ }
-\DoxyCodeLine{01113\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ partition\ */}}
-\DoxyCodeLine{01114\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (i\ <=\ j)\ \{}
-\DoxyCodeLine{01115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (arr[i]\ <\ pivot)}
-\DoxyCodeLine{01116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++i;}
-\DoxyCodeLine{01117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (arr[j]\ >\ pivot)}
-\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/j;}
-\DoxyCodeLine{01119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ <=\ j)\ \{}
-\DoxyCodeLine{01120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T1\ tmp\ =\ arr[i];}
-\DoxyCodeLine{01121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr[i]\ =\ arr[j];}
-\DoxyCodeLine{01122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr[j]\ =\ tmp;}
-\DoxyCodeLine{01123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (arr2)\ \{}
-\DoxyCodeLine{01124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T2\ tmp2\ =\ arr2[i];}
-\DoxyCodeLine{01125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr2[i]\ =\ arr2[j];}
-\DoxyCodeLine{01126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr2[j]\ =\ tmp2;}
-\DoxyCodeLine{01127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
-\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++i;}
-\DoxyCodeLine{01129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/j;}
-\DoxyCodeLine{01130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
-\DoxyCodeLine{01131\ \ \ \ \ \ \ \ \ \ \ \};}
-\DoxyCodeLine{01132\ }
-\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ recursion\ */}}
-\DoxyCodeLine{01134\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (left\ <\ j)}
-\DoxyCodeLine{01135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quicksort(arr,\ left,\ j,\ arr2);}
-\DoxyCodeLine{01136\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ <\ right)}
-\DoxyCodeLine{01137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quicksort(arr,\ i,\ right,\ arr2);}
-\DoxyCodeLine{01138\ \ \ \ \ \}}
-\DoxyCodeLine{01139\ }
-\DoxyCodeLine{01145\ \ \ \ \ \textcolor{keywordtype}{void}\ usage\_cmaple(\textcolor{keywordtype}{char}*\ argv[],\ \textcolor{keywordtype}{bool}\ full\_command);}
-\DoxyCodeLine{01146\ }
-\DoxyCodeLine{01150\ \ \ \ \ \textcolor{keywordtype}{void}\ printCopyright(std::ostream\ \&out);}
+\DoxyCodeLine{01102\ \ \ \ \ \textcolor{keywordtype}{int}\ countPhysicalCPUCores();}
+\DoxyCodeLine{01103\ }
+\DoxyCodeLine{01111\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T1,\ \textcolor{keyword}{class}\ T2>}
+\DoxyCodeLine{01112\ \ \ \ \ \textcolor{keywordtype}{void}\ quicksort(T1*\ arr,\ \textcolor{keywordtype}{int}\ left,\ \textcolor{keywordtype}{int}\ right,\ T2*\ arr2\ =\ NULL)\ \{}
+\DoxyCodeLine{01113\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (left\ >\ right)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01114\ \ \ \ \ \ \ \ \ ASSERT(left\ <=\ right);}
+\DoxyCodeLine{01115\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ i\ =\ left,\ j\ =\ right;}
+\DoxyCodeLine{01116\ \ \ \ \ \ \ \ \ \ \ T1\ pivot\ =\ arr[(left\ +\ right)\ /\ 2];}
+\DoxyCodeLine{01117\ }
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ partition\ */}}
+\DoxyCodeLine{01119\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (i\ <=\ j)\ \{}
+\DoxyCodeLine{01120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (arr[i]\ <\ pivot)}
+\DoxyCodeLine{01121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++i;}
+\DoxyCodeLine{01122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (arr[j]\ >\ pivot)}
+\DoxyCodeLine{01123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/j;}
+\DoxyCodeLine{01124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ <=\ j)\ \{}
+\DoxyCodeLine{01125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T1\ tmp\ =\ arr[i];}
+\DoxyCodeLine{01126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr[i]\ =\ arr[j];}
+\DoxyCodeLine{01127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr[j]\ =\ tmp;}
+\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (arr2)\ \{}
+\DoxyCodeLine{01129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T2\ tmp2\ =\ arr2[i];}
+\DoxyCodeLine{01130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr2[i]\ =\ arr2[j];}
+\DoxyCodeLine{01131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ arr2[j]\ =\ tmp2;}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++i;}
+\DoxyCodeLine{01134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/j;}
+\DoxyCodeLine{01135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01136\ \ \ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{01137\ }
+\DoxyCodeLine{01138\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ recursion\ */}}
+\DoxyCodeLine{01139\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (left\ <\ j)}
+\DoxyCodeLine{01140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quicksort(arr,\ left,\ j,\ arr2);}
+\DoxyCodeLine{01141\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ <\ right)}
+\DoxyCodeLine{01142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quicksort(arr,\ i,\ right,\ arr2);}
+\DoxyCodeLine{01143\ \ \ \ \ \}}
+\DoxyCodeLine{01144\ }
+\DoxyCodeLine{01150\ \ \ \ \ \textcolor{keywordtype}{void}\ usage\_cmaple(\textcolor{keywordtype}{char}*\ argv[],\ \textcolor{keywordtype}{bool}\ full\_command);}
 \DoxyCodeLine{01151\ }
-\DoxyCodeLine{01157\ \ \ \ \ \textcolor{keywordtype}{void}\ setNumThreads(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ num\_threads);}
-\DoxyCodeLine{01158\ }
-\DoxyCodeLine{01162\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}...\ Args>}
-\DoxyCodeLine{01163\ \ \ \ \ std::unique\_ptr<T>\ make\_unique(Args\&\&...\ args)}
-\DoxyCodeLine{01164\ \ \ \ \ \{}
-\DoxyCodeLine{01165\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::unique\_ptr<T>(\textcolor{keyword}{new}\ T(std::forward<Args>(args)...));}
-\DoxyCodeLine{01166\ \ \ \ \ \}}
-\DoxyCodeLine{01167\ }
-\DoxyCodeLine{01172\ \ \ \ \ \textcolor{keywordtype}{void}\ resetStream(std::istream\&\ instream);}
-\DoxyCodeLine{01173\ \}}
+\DoxyCodeLine{01155\ \ \ \ \ \textcolor{keywordtype}{void}\ printCopyright(std::ostream\ \&out);}
+\DoxyCodeLine{01156\ }
+\DoxyCodeLine{01162\ \ \ \ \ \textcolor{keywordtype}{void}\ setNumThreads(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ num\_threads);}
+\DoxyCodeLine{01163\ }
+\DoxyCodeLine{01167\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{01168\ \ \ \ \ std::unique\_ptr<T>\ make\_unique(Args\&\&...\ args)}
+\DoxyCodeLine{01169\ \ \ \ \ \{}
+\DoxyCodeLine{01170\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::unique\_ptr<T>(\textcolor{keyword}{new}\ T(std::forward<Args>(args)...));}
+\DoxyCodeLine{01171\ \ \ \ \ \}}
+\DoxyCodeLine{01172\ }
+\DoxyCodeLine{01177\ \ \ \ \ \textcolor{keywordtype}{void}\ resetStream(std::istream\&\ instream);}
+\DoxyCodeLine{01178\ \}}
 
 \end{DoxyCode}
