@@ -113,6 +113,11 @@ void cmaple::runCMaple(cmaple::Params &params)
         if (cmaple::verbose_mode >= cmaple::VB_MED)
             std::cout << redirected_msgs << std::endl;
         
+        // Write the normal tree file
+        ofstream out = ofstream(output_treefile);
+        out << tree.exportNewick(tree_format);
+        out.close();
+        
         // Compute branch supports (if users want to do so)
         if (params.compute_aLRT_SH)
         {
@@ -134,16 +139,18 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // If needed, apply some minor changes (collapsing zero-branch leaves into less-info sequences, re-estimating model parameters) to make the processes of outputting then re-inputting a tree result in a consistent tree
         if (params.make_consistent)
+        {
             tree.makeTreeInOutConsistent();
+            
+            // Overwrite the normal tree file
+            ofstream out = ofstream(output_treefile);
+            out << tree.exportNewick(tree_format);
+            out.close();
+        }
         
         // output log-likelihood of the tree
         if (cmaple::verbose_mode > cmaple::VB_QUIET)
             std::cout << std::setprecision(10) << "Tree log likelihood: " << tree.computeLh() << std::endl;
-        
-        // Write the normal tree file
-        ofstream out = ofstream(output_treefile);
-        out << tree.exportNewick(tree_format);
-        out.close();
             
         // Show model parameters
         if (cmaple::verbose_mode > cmaple::VB_QUIET)
