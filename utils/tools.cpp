@@ -31,13 +31,14 @@
 //#include <filesystem>
 
 using namespace std;
+using namespace cmaple;
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
 
-VerboseMode verbose_mode;
+VerboseMode cmaple::verbose_mode = VB_MED;
 
-void printCopyright(ostream &out) {
+void cmaple::printCopyright(ostream &out) {
     out << "CMAPLE version ";
     out << cmaple_VERSION_MAJOR << "." << cmaple_VERSION_MINOR << cmaple_VERSION_PATCH;
     out << " for " << getOSName();
@@ -50,7 +51,7 @@ void printCopyright(ostream &out) {
         Output an error to screen, then exit program
         @param error error message
  */
-void outError(const char *error, bool quit) {
+void cmaple::outError(const char *error, bool quit) {
 	if (error == ERR_NO_MEMORY) {
         //print_stacktrace(cerr);
 	}
@@ -63,17 +64,17 @@ void outError(const char *error, bool quit) {
         Output an error to screen, then exit program
         @param error error message
  */
-void outError(const string &error, bool quit) {
+void cmaple::outError(const string &error, bool quit) {
     outError(error.c_str(), quit);
 }
 
-void outError(const char *error, const char *msg, bool quit) {
+void cmaple::outError(const char *error, const char *msg, bool quit) {
     string str = error;
     str += msg;
     outError(str, quit);
 }
 
-void outError(const char *error, const string &msg, bool quit) {
+void cmaple::outError(const char *error, const string &msg, bool quit) {
     string str = error;
     str += msg;
     outError(str, quit);
@@ -83,15 +84,15 @@ void outError(const char *error, const string &msg, bool quit) {
         Output a warning message to screen
         @param error warning message
  */
-void outWarning(const char *warn) {
+void cmaple::outWarning(const char *warn) {
     cout << "WARNING: " << warn << endl;
 }
 
-void outWarning(const string &warn) {
+void cmaple::outWarning(const string &warn) {
     outWarning(warn.c_str());
 }
 
-std::istream& safeGetline(std::istream& is, std::string& t)
+std::istream& cmaple::safeGetline(std::istream& is, std::string& t)
 {
     t.clear();
 
@@ -125,38 +126,38 @@ std::istream& safeGetline(std::istream& is, std::string& t)
 }
 
 //From Tung
-string convertPosTypeToString(PositionType number) {
+string cmaple::convertPosTypeToString(PositionType number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-string convertIntToString(int number) {
+string cmaple::convertIntToString(int number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-string convertInt64ToString(int64_t number) {
+string cmaple::convertInt64ToString(int64_t number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-string convertDoubleToString(RealNumType number) {
+string cmaple::convertDoubleToString(RealNumType number) {
     stringstream ss; //create a stringstream
     ss << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-std::string convertDoubleToString(RealNumType number, uint8_t precision)
+std::string cmaple::convertDoubleToString(RealNumType number, uint8_t precision)
 {
     stringstream ss; //create a stringstream
     ss << std::setprecision(precision) << number; //add number to the stream
     return ss.str(); //return a string with the contents of the stream
 }
 
-bool iEquals(const string &a, const string &b)
+bool cmaple::iEquals(const string &a, const string &b)
 {
     unsigned int sz = a.size();
     if (b.size() != sz)
@@ -169,7 +170,7 @@ bool iEquals(const string &a, const string &b)
 
 //From Tung
 
-bool copyFile(const char SRC[], const char DEST[]) {
+bool cmaple::copyFile(const char SRC[], const char DEST[]) {
     std::ifstream src; // the source file
     std::ofstream dest; // the destination file
 
@@ -185,7 +186,7 @@ bool copyFile(const char SRC[], const char DEST[]) {
     return true; // file copied successfully
 }
 
-bool fileExists(const string &strFilename) {
+bool cmaple::fileExists(const string &strFilename) {
     struct stat stFileInfo;
     bool blnReturn;
     int intStat;
@@ -216,7 +217,7 @@ int isFile(const char *path) {
   return std::filesystem::is_regular_file(path);
 }*/
 
-int convert_int(const char *str, int &end_pos) {
+int cmaple::convert_int(const char *str, int &end_pos) {
 	char *endptr;
 	int i = strtol(str, &endptr, 10);
 
@@ -224,13 +225,13 @@ int convert_int(const char *str, int &end_pos) {
 		string err = "Expecting integer, but found \"";
 		err += str;
 		err += "\" instead";
-		outError(err);
+		throw std::invalid_argument(err);
 	}
 	end_pos = endptr - str;
 	return i;
 }
 
-int convert_int(const char *str) {
+int cmaple::convert_int(const char *str) {
     char *endptr;
     int i = strtol(str, &endptr, 10);
 
@@ -238,13 +239,13 @@ int convert_int(const char *str) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     return i;
 }
 
-PositionType convert_positiontype(const char *str) {
+PositionType cmaple::convert_positiontype(const char *str) {
     char *endptr;
     PositionType i = (PositionType) strtol(str, &endptr, 10);
 
@@ -252,13 +253,13 @@ PositionType convert_positiontype(const char *str) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     return i;
 }
 
-void convert_int_vec(const char *str, IntVector &vec) {
+void cmaple::convert_int_vec(const char *str, IntVector &vec) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
     do {
@@ -268,7 +269,7 @@ void convert_int_vec(const char *str, IntVector &vec) {
 			string err = "Expecting integer, but found \"";
 			err += beginptr;
 			err += "\" instead";
-            outError(err);
+            throw std::invalid_argument(err);
 		}
 		vec.push_back(i);
 		if (*endptr == ',') endptr++;
@@ -277,7 +278,7 @@ void convert_int_vec(const char *str, IntVector &vec) {
 }
 
 
-int64_t convert_int64(const char *str) {
+int64_t cmaple::convert_int64(const char *str) {
     char *endptr;
     int64_t i = (int64_t)strtoll(str, &endptr, 10); // casted because 'long long' may be larger than int64_t
 
@@ -285,13 +286,13 @@ int64_t convert_int64(const char *str) {
         string err = "Expecting large integer , but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     return i;
 }
 
-int64_t convert_int64(const char *str, int &end_pos) {
+int64_t cmaple::convert_int64(const char *str, int &end_pos) {
 	char *endptr;
 	int64_t i = (int64_t)strtoll(str, &endptr, 10); // casted because 'long long' may be larger than int64_t
 
@@ -299,39 +300,39 @@ int64_t convert_int64(const char *str, int &end_pos) {
 		string err = "Expecting large integer, but found \"";
 		err += str;
 		err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
 	}
 	end_pos = endptr - str;
 	return i;
 }
 
 
-RealNumType convert_real_number(const char *str) {
+RealNumType cmaple::convert_real_number(const char *str) {
     char *endptr;
     RealNumType d = strtod(str, &endptr);
     if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF || *endptr != 0) {
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     return d;
 }
 
-RealNumType convert_real_number(const char *str, int &end_pos) {
+RealNumType cmaple::convert_real_number(const char *str, int &end_pos) {
 	char *endptr;
 	RealNumType d = strtod(str, &endptr);
 	if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF) {
 		string err = "Expecting floating-point number, but found \"";
 		err += str;
 		err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
 	}
 	end_pos = endptr - str;
 	return d;
 }
 
-void convert_real_numbers(RealNumType* &arr, string input_str)
+void cmaple::convert_real_numbers(RealNumType* &arr, string input_str)
 {
     // count the number of input real_numbers
     int number_count = count(input_str.begin(), input_str.end(), ' ') + 1;
@@ -349,7 +350,7 @@ void convert_real_numbers(RealNumType* &arr, string input_str)
     }
 }
 
-void convert_real_number_vec(const char *str, RealNumberVector &vec, char separator) {
+void cmaple::convert_real_number_vec(const char *str, RealNumberVector &vec, char separator) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
     do {
@@ -359,7 +360,7 @@ void convert_real_number_vec(const char *str, RealNumberVector &vec, char separa
 			string err = "Expecting floating-point number, but found \"";
 			err += beginptr;
 			err += "\" instead";
-            outError(err);
+            throw std::invalid_argument(err);
 		}
 		vec.push_back(d);
 		if (*endptr == separator) endptr++;
@@ -367,7 +368,7 @@ void convert_real_number_vec(const char *str, RealNumberVector &vec, char separa
     } while (*endptr != 0);
 }
 
-string convert_time(const RealNumType sec) {
+string cmaple::convert_time(const RealNumType sec) {
     int sec_int = (int) floor(sec);
     int secs = sec_int % 60;
     int mins = (sec_int % 3600) / 60;
@@ -377,7 +378,7 @@ string convert_time(const RealNumType sec) {
     return ss.str();
 }
 
-void convert_range(const char *str, int &lower, int &upper, int &step_size) {
+void cmaple::convert_range(const char *str, int &lower, int &upper, int &step_size) {
     char *endptr;
 
     // parse the lower bound of the range
@@ -386,7 +387,7 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     //lower = d;
     int d_save = d;
@@ -401,7 +402,7 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     lower = d_save;
@@ -415,12 +416,12 @@ void convert_range(const char *str, int &lower, int &upper, int &step_size) {
         string err = "Expecting integer, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     step_size = d;
 }
 
-void convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size) {
+void cmaple::convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size) {
     char *endptr;
 
     // parse the lower bound of the range
@@ -429,7 +430,7 @@ void convert_range(const char *str, RealNumType &lower, RealNumType &upper, Real
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     //lower = d;
     RealNumType d_save = d;
@@ -444,7 +445,7 @@ void convert_range(const char *str, RealNumType &lower, RealNumType &upper, Real
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
 
     lower = d_save;
@@ -458,12 +459,12 @@ void convert_range(const char *str, RealNumType &lower, RealNumType &upper, Real
         string err = "Expecting floating-point number, but found \"";
         err += str;
         err += "\" instead";
-        outError(err);
+        throw std::invalid_argument(err);
     }
     step_size = d;
 }
 
-void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool set_zero)
+void cmaple::reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool set_zero)
 {
     // delete the current array
     if (delete_first && arr)
@@ -476,7 +477,7 @@ void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first, bool 
             arr[i] = 0;
 }
 
-void convert_string_vec(const char *str, StrVector &vec, char separator) {
+void cmaple::convert_string_vec(const char *str, StrVector &vec, char separator) {
     char *beginptr = (char*)str, *endptr;
     vec.clear();
     string elem;
@@ -494,7 +495,7 @@ void convert_string_vec(const char *str, StrVector &vec, char separator) {
 
 }
 
-void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index)
+void cmaple::normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index)
 {
     ASSERT(num_states > 0);
     // calculate the total_freqs
@@ -504,131 +505,280 @@ void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int st
     
     // normalize the freqs
     if (fabs(total_freqs) < 1e-5)
-        outError("Sum of state frequencies must be greater than zero!");
+        throw std::logic_error("Sum of state frequencies must be greater than zero!");
     total_freqs = 1.0 / total_freqs;
     for (int i = starting_index; i < starting_index+num_states; ++i)
         freqs[i] *= total_freqs;
 }
 
-bool is_number(const std::string& s)
+bool cmaple::is_number(const std::string& s)
 {
     char* end = nullptr;
     double val = strtod(s.c_str(), &end);
     return end != s.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
-void quickStartGuide();
-
-void initDefaultValue(Params &params)
+cmaple::Params::Params()
 {
-    params.aln_path = NULL;
-    params.diff_path = NULL;
-    params.ref_path = NULL;
-    params.only_extract_diff = false;
-    params.hamming_weight = 1000;
-    params.model_name = "GTR";
-    params.redo_inference = false;
-    params.threshold_prob = 1e-8;
-    params.mutation_update_period = 25;
-    params.failure_limit_sample = 5;
-    params.failure_limit_subtree = 4;
-    params.failure_limit_subtree_short_search = 1;
-    params.strict_stop_seeking_placement_sample = false;
-    params.strict_stop_seeking_placement_subtree = false;
-    params.strict_stop_seeking_placement_subtree_short_search = true;
-    params.thresh_log_lh_sample = 200;
-    params.thresh_log_lh_subtree = 160;
-    params.thresh_log_lh_subtree_short_search = 40;
-    params.thresh_log_lh_failure = 0.01;
-    params.min_blength_factor = 0.2;
-    params.min_blength_mid_factor = 4.1;
-    params.max_blength_factor = 40;
-    params.thresh_diff_update = 1e-7;
-    params.thresh_diff_fold_update = 1.001;
-    params.output_aln = NULL;
-    params.num_tree_improvement = 1;
-    params.thresh_entire_tree_improvement = 1;
-    params.thresh_placement_cost = -1e-5;
-    params.thresh_placement_cost_short_search = -1;
-    params.export_binary_tree = true;
-    params.optimize_branch_length = true;
-    params.short_range_topo_search = false;
-    params.output_testing = NULL;
-    params.compute_aLRT_SH = false;
-    params.aLRT_SH_replicates = 1000;
-    params.aLRT_SH_epsilon = 0.05;
-    params.num_threads = 1;
-    params.input_treefile = NULL;
-    params.output_prefix = NULL;
-    params.allow_replace_input_tree = false;
-    params.fixed_min_blength = -1;
-    params.seq_type = SEQ_UNKNOWN;
+    aln_path = "";
+    aln_format_str = "AUTO";
+    ref_path = "";
+    ref_seqname = "";
+    sub_model_str = "DEFAULT";
+    fixed_blengths = false;
+    overwrite_output = false;
+    threshold_prob = 1e-8;
+    mutation_update_period = 25;
+    failure_limit_sample = 5;
+    failure_limit_subtree = 4;
+    failure_limit_subtree_short_search = 1;
+    strict_stop_seeking_placement_sample = false;
+    strict_stop_seeking_placement_subtree = false;
+    strict_stop_seeking_placement_subtree_short_search = true;
+    thresh_log_lh_sample = 200;
+    thresh_log_lh_subtree = 160;
+    thresh_log_lh_subtree_short_search = 40;
+    thresh_log_lh_failure = 0.01;
+    min_blength_factor = 0.2;
+    min_blength_mid_factor = 4.1;
+    max_blength_factor = 40;
+    thresh_diff_update = 1e-7;
+    thresh_diff_fold_update = 1.001;
+    output_aln = "";
+    output_aln_format_str = "MAPLE";
+    num_tree_improvement = 1;
+    thresh_entire_tree_improvement = 1;
+    thresh_placement_cost = -1e-5;
+    thresh_placement_cost_short_search = -1;
+    tree_format_str = "BIN";
+    shallow_tree_search = false;
+    output_testing = NULL;
+    compute_aLRT_SH = false;
+    aLRT_SH_replicates = 1000;
+    aLRT_SH_half_epsilon = 0.05;
+    num_threads = 1;
+    input_treefile = "";
+    output_prefix = "";
+    allow_replace_input_tree = false;
+    fixed_min_blength = -1;
+    seq_type_str = "AUTO";
+    tree_search_type_str = "NORMAL";
+    make_consistent = false;
     
     // initialize random seed based on current time
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    //params.ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
-    params.ran_seed = (tv.tv_usec);
+    //ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
+    ran_seed = (tv.tv_usec);
 }
 
-void parseArg(int argc, char *argv[], Params &params) {
-    // init parameters
-    initDefaultValue(params);
+cmaple::ParamsBuilder::ParamsBuilder(): params_ptr(new Params())
+{
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withRandomSeed(const uint64_t& seed)
+{
+    if (seed >= 0)
+        params_ptr->ran_seed = seed;
+    else
+        throw std::invalid_argument("Random seed number must be non-negative");
     
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withThreshProb(const double& n_thresh_prob)
+{
+    if (n_thresh_prob > 0)
+        params_ptr->threshold_prob = n_thresh_prob;
+    else
+        throw std::invalid_argument("threshold_prob must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMinBlengthFactor(const double& n_min_blength_factor)
+{
+    if (n_min_blength_factor > 0)
+        params_ptr->min_blength_factor = n_min_blength_factor;
+    else
+        throw std::invalid_argument("min_blength_factor must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMaxBlengthFactor(const double& n_max_blength_factor)
+{
+    if (n_max_blength_factor > 0)
+        params_ptr->max_blength_factor = n_max_blength_factor;
+    else
+        throw std::invalid_argument("max_blength_factor must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withFixedMinBlength(const double& n_fixed_min_blength)
+{
+    if (n_fixed_min_blength > 0)
+        params_ptr->fixed_min_blength = n_fixed_min_blength;
+    else
+        throw std::invalid_argument("fixed_min_blength must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMutationUpdatePeriod(const int32_t& n_mutation_update_period)
+{
+    if (n_mutation_update_period > 0)
+        params_ptr->mutation_update_period = n_mutation_update_period;
+    else
+        throw std::invalid_argument("mutation_update_period must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withNumTreeTraversal(const int32_t& num_tree_traversal)
+{
+    if (num_tree_traversal > 0)
+        params_ptr->num_tree_improvement = num_tree_traversal;
+    else
+        throw std::invalid_argument("num_tree_traversal must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withSPRThresh(const double& SPR_thresh)
+{
+    if (SPR_thresh > 0)
+        params_ptr->thresh_placement_cost = SPR_thresh;
+    else
+        throw std::invalid_argument("SPR_thresh must be positive");
+    
+    // return
+    return *this;
+}
+
+cmaple::ParamsBuilder& cmaple::ParamsBuilder::withStopTreeSearchThresh(const double& stop_search_thresh)
+{
+    if (stop_search_thresh > 0)
+        params_ptr->thresh_entire_tree_improvement = stop_search_thresh;
+    else
+        throw std::invalid_argument("stop_search_thresh must be positive");
+    
+    // return
+    return *this;
+}
+
+std::unique_ptr<cmaple::Params> cmaple::ParamsBuilder::build()
+{
+    return std::move(params_ptr);
+}
+
+void cmaple::parseArg(int argc, char *argv[], Params &params) {
     for (int cnt = 1; cnt < argc; ++cnt) {
         try {
-            if (strcmp(argv[cnt], "--aln") == 0) {
+            if (strcmp(argv[cnt], "--help") == 0 || strcmp(argv[cnt], "-h") == 0 || strcmp(argv[cnt], "-?") == 0) {
+                
+                usage_cmaple();
+
+                continue;
+            }
+            if (strcmp(argv[cnt], "--alignment") == 0 || strcmp(argv[cnt], "-aln") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --aln <ALIGNMENT_PATH>");
+                    outError("Use -aln <ALN_FILENAME>");
                 
                 params.aln_path = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--diff") == 0) {
+            // "--diff" should be removed, I temporarily keep it for compatibility purpose
+            if (strcmp(argv[cnt], "--diff") == 0 || strcmp(argv[cnt], "-diff") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --diff <DIFF_PATH>");
+                    outError("Use -diff <ALN_FILENAME>");
                 
-                params.diff_path = argv[cnt];
+                params.aln_path = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--prefix") == 0) {
+            if (strcmp(argv[cnt], "--prefix") == 0 || strcmp(argv[cnt], "-pre") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --prefix <OUTPUT_PREFIX>");
+                    outError("Use -pre <OUTPUT_PREFIX>");
                 
                 params.output_prefix = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--output-aln") == 0) {
+            if (strcmp(argv[cnt], "--output-aln") == 0 || strcmp(argv[cnt], "-out-aln") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --output-aln <ALIGNMENT_PATH>");
+                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> could be MAPLE, PHYLIP, or FASTA");
                 
-                params.output_aln = argv[cnt];
+                // parse inputs
+                std::string inputs = argv[cnt];
+                std::string delimiter = ",";
+                size_t pos = inputs.find(delimiter);
+                if (pos != std::string::npos)
+                {
+                    params.output_aln = inputs.substr(0, pos);
+                    // validate output_aln
+                    if (!params.output_aln.length())
+                        outError("<ALN_FILENAME> is empty!");
+                    inputs.erase(0, pos + delimiter.length());
+                    params.output_aln_format_str = inputs;
+                }
+                else
+                    outError("Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> could be MAPLE, PHYLIP, FASTA, or AUTO");
 
                 continue;
             }
             if (strcmp(argv[cnt], "-st") == 0 || strcmp(argv[cnt], "--seqtype") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    throw "Use -st BIN or -st DNA or -st AA or -st CODON";
-                string arg = argv[cnt];
-                if (arg == "DNA")
-                    params.seq_type = SEQ_DNA;
-                else  if (arg == "AA")
-                    params.seq_type = SEQ_PROTEIN;
+                    outError("Use -st DNA or -st AA or -st AUTO");
+                params.seq_type_str = argv[cnt];
+                
+                continue;
+            }
+            if (strcmp(argv[cnt], "-v") == 0 || strcmp(argv[cnt], "--verbose-mode") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
+                // parse verbose
+                std::string verbose = argv[cnt];
+                transform(verbose.begin(), verbose.end(), verbose.begin(), ::toupper);
+                if (verbose == "QUIET")
+                    verbose_mode = VB_QUIET;
+                else if (verbose == "MIN")
+                    verbose_mode = VB_MIN;
+                else if (verbose == "MED")
+                    verbose_mode = VB_MED;
+                else if (verbose == "MAX")
+                    verbose_mode = VB_MAX;
+                else if (verbose == "DEBUG")
+                    verbose_mode = VB_DEBUG;
                 else
-                    throw "Sorry! Currently CMaple supports only DNA and Protein data.";
+                    outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
+                continue;
+            }
+            if (strcmp(argv[cnt], "-format") == 0 || strcmp(argv[cnt], "--aln-format") == 0) {
+                cnt++;
+                if (cnt >= argc)
+                    outError("Use -format MAPLE, PHYLIP, FASTA, or AUTO");
+                params.aln_format_str = argv[cnt];
                 
                 continue;
             }
@@ -642,195 +792,262 @@ void parseArg(int argc, char *argv[], Params &params) {
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--ref") == 0) {
+            if (strcmp(argv[cnt], "--reference") == 0 || strcmp(argv[cnt], "-ref") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --ref <REF_PATH>");
+                    outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
                 
-                params.ref_path = argv[cnt];
-
+                // parse inputs
+                std::string inputs = argv[cnt];
+                std::string delimiter = ",";
+                size_t pos = inputs.find(delimiter);
+                if (pos != std::string::npos)
+                {
+                    params.ref_path = inputs.substr(0, pos);
+                    // validate ref_path
+                    if (!params.ref_path.length())
+                        outError("<REF_FILENAME> is empty!");
+                    inputs.erase(0, pos + delimiter.length());
+                    params.ref_seqname = inputs;
+                    // validate ref_seqname
+                    if (!params.ref_seqname.length())
+                        outError("<REF_SEQNAME> is empty!");
+                }
+                else
+                    outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
+            
                 continue;
             }
-            if (strcmp(argv[cnt], "--extract-diff") == 0) {
-                
-                params.only_extract_diff = true;
-
-                continue;
-            }
-            if (strcmp(argv[cnt], "--hamming-weight") == 0) {
+            if (strcmp(argv[cnt], "--min-blength") == 0 || strcmp(argv[cnt], "-min-bl") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --hamming-weight <WEIGHT>");
-                
-                params.hamming_weight = convert_real_number(argv[cnt]);
-                
-                if (params.hamming_weight < 0)
-                    outError("<WEIGHT> must not be negative!");
-
-                continue;
-            }
-            if (strcmp(argv[cnt], "--min-blength") == 0) {
-                
-                ++cnt;
-                if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --min-blength <NUMBER>");
-                
-                params.fixed_min_blength = convert_real_number(argv[cnt]);
+                    outError("Use -min-bl <NUMBER>");
+                try
+                {
+                    params.fixed_min_blength = convert_real_number(argv[cnt]);
+                } catch (std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.fixed_min_blength <= 0)
-                    outError("<NUMBER> following --min-blength must be positive!");
+                    outError("<NUMBER> following -min-bl must be positive!");
 
                 continue;
             }
             if (strcmp(argv[cnt], "--model") == 0 || strcmp(argv[cnt], "-m") == 0) {
                 ++cnt;
                 if (cnt >= argc)
-                    outError("Use --model <model_name>");
+                    outError("Use -m <model_name>");
                 
-                params.model_name = argv[cnt];
+                params.sub_model_str = argv[cnt];
                 continue;
             }
-            if (strcmp(argv[cnt], "-redo") == 0 || strcmp(argv[cnt], "--redo") == 0) {
-                params.redo_inference = true;
+            if (strcmp(argv[cnt], "--tree-search") == 0 || strcmp(argv[cnt], "-tree-search") == 0) {
+                ++cnt;
+                if (cnt >= argc || argv[cnt][0] == '-')
+                    outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
+                
+                params.tree_search_type_str = argv[cnt];
                 continue;
             }
-            if (strcmp(argv[cnt], "--replace-input-tree") == 0) {
+            if (strcmp(argv[cnt], "-blfix") == 0 || strcmp(argv[cnt], "-fixbr") == 0 || strcmp(argv[cnt], "--fixed-blength") == 0) {
+                params.fixed_blengths = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--overwrite") == 0 || strcmp(argv[cnt], "-overwrite") == 0) {
+                params.overwrite_output = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--make-consistent") == 0 || strcmp(argv[cnt], "-consistent") == 0) {
+                params.make_consistent = true;
+                continue;
+            }
+            if (strcmp(argv[cnt], "--replace-input-tree") == 0 || strcmp(argv[cnt], "-rep-tree") == 0) {
                 params.allow_replace_input_tree = true;
                 continue;
             }
-            if (strcmp(argv[cnt], "--thresh-prob") == 0) {
+            if (strcmp(argv[cnt], "--threshold-prob") == 0 || strcmp(argv[cnt], "-thresh-prob") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --thresh-prob <PROB_THRESH>");
+                    outError("Use -thresh-prob <PROB_THRESH>");
                 
-                params.threshold_prob = convert_real_number(argv[cnt]);
+                try
+                {
+                    params.threshold_prob = convert_real_number(argv[cnt]);
+                } catch (std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.threshold_prob <= 0)
                     outError("<PROB_THRESH> must be positive!");
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--mutation-update") == 0) {
+            if (strcmp(argv[cnt], "--mutation-update") == 0 || strcmp(argv[cnt], "-mut-update") == 0) {
                 
                 ++cnt;
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --mutation-update <NUMBER>");
+                    outError("Use -mut-update <NUMBER>");
                 
-                params.mutation_update_period = convert_int(argv[cnt]);
+                try
+                {
+                    params.mutation_update_period = convert_int(argv[cnt]);
+                }
+                catch(std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.mutation_update_period <= 0)
                     outError("<NUMBER> must be positive!");
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--failure-limit") == 0) {
+            if (strcmp(argv[cnt], "--failure-limit") == 0 || strcmp(argv[cnt], "-fail-limit") == 0) {
                 
                 ++cnt;
                 
-                params.failure_limit_sample = convert_int(argv[cnt]);
+                try
+                {
+                    params.failure_limit_sample = convert_int(argv[cnt]);
+                }
+                catch(std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.failure_limit_sample <= 0)
                     outError("<NUMBER> must be positive!");
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--failure-limit-subtree") == 0) {
+            if (strcmp(argv[cnt], "--failure-limit-subtree") == 0 || strcmp(argv[cnt], "-fail-limit-stree") == 0) {
                 
                 ++cnt;
                 
-                params.failure_limit_subtree = convert_int(argv[cnt]);
+                try
+                {
+                    params.failure_limit_subtree = convert_int(argv[cnt]);
+                }
+                catch(std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.failure_limit_subtree <= 0)
                     outError("<NUMBER> must be positive!");
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--strict-stop-init") == 0) {
+            if (strcmp(argv[cnt], "--strict-stop-init") == 0 || strcmp(argv[cnt], "-strict-stop-init") == 0) {
                 
                 params.strict_stop_seeking_placement_sample = true;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--unstrict-stop-subtree") == 0) {
+            if (strcmp(argv[cnt], "--unstrict-stop-subtree") == 0 || strcmp(argv[cnt], "-unstrict-stop-stree") == 0) {
                 
                 params.strict_stop_seeking_placement_subtree = false;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--multifurcating-tree") == 0) {
+            if (strcmp(argv[cnt], "--output-multifurcating-tree") == 0 || strcmp(argv[cnt], "-out-mul-tree") == 0) {
                 
-                params.export_binary_tree = false;
+                params.tree_format_str = "MUL";
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--no-optimize-blength") == 0) {
+            if (strcmp(argv[cnt], "--shallow-tree-search") == 0 || strcmp(argv[cnt], "-shallow-search") == 0) {
                 
-                params.optimize_branch_length = false;
+                params.shallow_tree_search = true;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--short-topo-search") == 0) {
-                
-                params.short_range_topo_search = true;
-
-                continue;
-            }
-            if (strcmp(argv[cnt], "--output-testing") == 0) {
+            if (strcmp(argv[cnt], "--output-testing") == 0 || strcmp(argv[cnt], "-out-test") == 0) {
                 
                 ++cnt;
                 
                 if (cnt >= argc || argv[cnt][0] == '-')
-                    outError("Use --output-testing <FILE_PATH>");
+                    outError("Use -out-test <FILE_PATH>");
                 
                 params.output_testing = argv[cnt];
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--branch-support") == 0) {
+            if (strcmp(argv[cnt], "--branch-support") == 0 || strcmp(argv[cnt], "-branch-support") == 0) {
                 
                 params.compute_aLRT_SH = true;
 
                 continue;
             }
-            if (strcmp(argv[cnt], "--replicates") == 0) {
+            if (strcmp(argv[cnt], "--replicates") == 0 || strcmp(argv[cnt], "-rep") == 0) {
                 ++cnt;
                 if (cnt >= argc)
                     outError("Use --replicates <NUM_REPLICATES>");
                 
-                params.aLRT_SH_replicates = convert_int(argv[cnt]);
+                try
+                {
+                    params.aLRT_SH_replicates = convert_int(argv[cnt]);
+                }
+                catch(std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 
                 if (params.aLRT_SH_replicates <= 0)
                     outError("<NUM_REPLICATES> must be positive!");
                 continue;
             }
-            if (strcmp(argv[cnt], "--epsilon") == 0) {
+            if (strcmp(argv[cnt], "--epsilon") == 0 || strcmp(argv[cnt], "-eps") == 0) {
                 ++cnt;
                 if (cnt >= argc)
                     outError("Use --epsilon <FLOATING_NUM>");
-                
-                params.aLRT_SH_epsilon = convert_real_number(argv[cnt]);
+                try
+                {
+                    params.aLRT_SH_half_epsilon = convert_real_number(argv[cnt]) * 0.5;
+                } catch (std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 
                 continue;
             }
             if (strcmp(argv[cnt], "-seed") == 0 || strcmp(argv[cnt], "--seed") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                    throw "Use -seed <random_seed>";
-                params.ran_seed = abs(convert_int(argv[cnt]));
+                    outError("Use -seed <random_seed>");
+                
+                try
+                {
+                    params.ran_seed = abs(convert_int(argv[cnt]));
+                }
+                catch(std::invalid_argument e)
+                {
+                    outError(e.what());
+                }
                 continue;
             }
             if (strcmp(argv[cnt], "-nt") == 0 || strcmp(argv[cnt], "-c") == 0 ||
                 strcmp(argv[cnt], "-T") == 0  || strcmp(argv[cnt], "--threads") == 0) {
                 cnt++;
                 if (cnt >= argc)
-                throw "Use -nt <num_threads|AUTO>";
+                    outError("Use -nt <num_threads|AUTO>");
                 if (iEquals(argv[cnt], "AUTO"))
                     params.num_threads = 0;
                 else {
-                    params.num_threads = convert_int(argv[cnt]);
+                    try
+                    {
+                        params.num_threads = convert_int(argv[cnt]);
+                    }
+                    catch(std::invalid_argument e)
+                    {
+                        outError(e.what());
+                    }
                     if (params.num_threads < 1)
                       outError("At least 1 thread please");
                 }
@@ -857,84 +1074,85 @@ void parseArg(int argc, char *argv[], Params &params) {
 
     }
     
-    // validate options
-    if (!params.diff_path && !params.aln_path)
-        outError("Please supply either an alignment or a Diff file to start!");
-        
-    if (params.only_extract_diff && !params.aln_path)
-        outError("Please supply an input alignment via --aln <ALIGNMENT_PATH>");
-    
     if (argc <= 1) {
         quickStartGuide();
     }
+    
+    // validate options
+    if (!params.aln_path.length())
+        outError("Please supply an alignment file via -aln <ALN_FILENAME>");
 }
 
-void quickStartGuide() {
+void cmaple::quickStartGuide() {
+    cmaple::printCopyright(cout);
     printCopyright(cout);
-    cout << "Quick Start Guide" << endl;
+    cout << "Command-line examples (replace 'cmaple ...' by the actual path to executable):" << endl << endl
+         << "1. Infer a phylogenetic tree from an alignment (e.g., example.maple):" << endl
+         << "     cmaple -aln example.maple" << endl << endl
+         << "2. Specify a substitution model (e.g., Jukes Cantor model):" << endl
+         << "     cmaple -aln example.maple -m JC" << endl << endl
+         << "3. Specify an input tree (e.g., tree.nwk):" << endl
+         << "     cmaple -aln example.maple -t tree.nwk" << endl << endl
+         << "4. Assess branch supports with aLRT-SH (with, e.g., 4 threads):" << endl
+         << "     cmaple -aln example.maple -branch-support -nt 4" << endl << endl
+         << "5. Convert an alignment (example.maple) to a different format (e.g., PHYLIP format):" << endl
+         << "     cmaple -aln example.maple -out-aln aln.phy,PHYLIP" << endl << endl
+         << "To show all available options: run 'cmaple -h'" << endl << endl
+         << "For more information, please have a look at user manual" << endl
+         << "     https://github.com/trongnhanuit/cmaple" << endl << endl;
     exit(0);
 }
 
-InputType detectInputFile(const char *input_file) {
-
-    if (!fileExists(input_file))
-        outError("File not found ", input_file);
-
-    try {
-        ifstream in;
-        in.exceptions(ios::failbit | ios::badbit);
-        in.open(input_file);
-
-        unsigned char ch = ' ';
-        unsigned char ch2 = ' ';
-        int count = 0;
-        do {
-            in >> ch;
-        } while (ch <= 32 && !in.eof() && count++ < 20);
-        in >> ch2;
-        in.close();
-        switch (ch) {
-            case '#': return IN_NEXUS;
-            case '(': return IN_NEWICK;
-            case '[': return IN_NEWICK;
-            case '>': return IN_FASTA;
-            case 'C': if (ch2 == 'L') return IN_CLUSTAL;
-                      else if (ch2 == 'O') return IN_COUNTS;
-                      else return IN_OTHER;
-            case '!': if (ch2 == '!') return IN_MSF; else return IN_OTHER;
-            default:
-                if (isdigit(ch)) return IN_PHYLIP;
-                return IN_OTHER;
-        }
-    } catch (ios::failure const&) {
-        outError("Cannot read file ", input_file);
-    } catch (...) {
-        outError("Cannot read file ", input_file);
-    }
-    return IN_OTHER;
+void cmaple::usage_cmaple()
+{
+    cmaple::printCopyright(cout);
+    
+    cout << "Usage: cmaple -aln <ALIGNMENT> [-m <MODEL>] [-t <TREE>] ..." << endl << endl;
+    
+    cout << "GENERAL OPTIONS:" << endl
+    << "  -h, --help           Print help usages." << endl
+    << "  -aln <ALIGNMENT>     Specify an input alignment file in PHYLIP, FASTA," << endl
+    << "                       or MAPLE format." << endl
+    << "  -m <MODEL>           Specify a model name." << endl
+    << "  -st <SEQ_TYPE>       Specify a sequence type (DNA/AA)." << endl
+    << "  -format <FORMAT>     Set the alignment format (PHYLIP/FASTA/MAPLE)." << endl
+    << "  -t <TREE_FILE>       Specify a starting tree for tree search." << endl
+    << "  -blfix               Keep branch lengths unchanged. " << endl
+    << "  -tree-search <TYPE>  Set tree search type (FAST/NORMAL/MORE_ACCURATE)." << endl
+    << "  -shallow-search      Perform a shallow tree search" << endl
+    << "                       before a deeper tree search." << endl
+    << "  -branch-support      Compute branch supports (aLRT-SH)." << endl
+    << "  --replicates <NUM>   Set the number of replicates for computing" << endl
+    << "                       branch supports (aLRT-SH)." << endl
+    << "  -eps <NUM>           Set the epsilon value for computing" << endl
+    << "                       branch supports (aLRT-SH)." << endl
+    << "  -nt <NUM_THREADS>    Set the number of threads for computing" << endl
+    << "                       branch supports. Use `-nt AUTO` " << endl
+    << "                       to employ all available CPU cores." << endl
+    << "  -pre <PREFIX>        Specify a prefix for all output files." << endl
+    << "  -rep-tree            Allow CMAPLE to replace the input tree" << endl
+    << "                       when computing branch supports." << endl
+    << "  -out-mul-tree        Output the tree in multifurcating format." << endl
+    << "  -overwrite           Overwrite output files if existing." << endl
+    << "  -ref <FILE>,<SEQ>    Specify the reference genome." << endl
+    << "  -out-aln <FILE>,<FORMAT> Write the input alignment to a file in a" << endl
+    << "                       specific format (PHYLIP/FASTA/MAPLE)." << endl
+    << "  --min-blength <NUM>  Set the minimum branch length." << endl
+    << "  --threshold-prob <NUM> Specify a parameter for approximations." << endl
+    << "  -mut-update <NUM>    Set the period to update the substitution rates." << endl
+    << "  -seed <NUM>          Set a seed number for random generators." << endl
+    << "  -v <MODE>            Set the verbose mode (QUIET/MIN/MED/MAX/DEBUG)." << endl
+    << endl;
+    
+    exit(0);
 }
 
-bool overwriteFile(char *filename) {
-    ifstream infile(filename);
-    if (infile.is_open()) {
-        cout << "Overwrite " << filename << " (y/n)? ";
-        char ch;
-        cin >> ch;
-        if (ch != 'Y' && ch != 'y') {
-            infile.close();
-            return false;
-        }
-    }
-    infile.close();
-    return true;
-}
-
-void trimString(string &str) {
+void cmaple::trimString(string &str) {
     str.erase(0, str.find_first_not_of(" \n\r\t"));
     str.erase(str.find_last_not_of(" \n\r\t")+1);
 }
 
-bool renameString(string& name) {
+bool cmaple::renameString(string& name) {
     bool renamed = false;
     for (string::iterator i = name.begin(); i != name.end(); i++) {
         if (!isalnum(*i) && (*i) != '_' && (*i) != '-' && (*i) != '.' && (*i) != '|' && (*i) != '/') {
@@ -945,7 +1163,7 @@ bool renameString(string& name) {
     return renamed;
 }
 
-int countPhysicalCPUCores() {
+int cmaple::countPhysicalCPUCores() {
     #ifdef _OPENMP
     return omp_get_num_procs();
     #else
@@ -953,7 +1171,39 @@ int countPhysicalCPUCores() {
     #endif
 }
 
-Params& Params::getInstance() {
-    static Params instance;
-    return instance;
+void cmaple::setNumThreads(const int num_threads)
+{
+    std::string msg = "";
+    // setup the number of threads for openmp
+#ifdef _OPENMP
+    int max_procs = countPhysicalCPUCores();
+    msg += "OpenMP: ";
+    if (num_threads >= 1) {
+        omp_set_num_threads(num_threads);
+        msg += convertIntToString(num_threads) + " threads";
+    }
+    else // num_threads == 0
+    {   // not calling 'omp_set_num_threads' uses all cores automatically
+        msg += "auto-detect threads";
+    }
+    msg += " (" + convertIntToString(max_procs) + " CPU cores detected)";
+    if (num_threads  > max_procs) {
+        throw std::invalid_argument("\nYou have specified more threads than CPU cores available!");
+    }
+    #ifndef WIN32  // not supported on Windows (only <=OpenMP2.0)
+    omp_set_max_active_levels(1);
+    #endif
+#else
+    if (num_threads != 1) {
+        throw std::invalid_argument("\n\nNumber of threads must be 1 for sequential version.");
+    }
+#endif
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        std::cout << msg << std::endl;
+}
+
+void cmaple::resetStream(std::istream& instream)
+{
+    instream.clear();
+    instream.seekg(0, ios::beg);
 }
