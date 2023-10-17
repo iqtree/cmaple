@@ -41,7 +41,7 @@ In your project directory, run \begin{DoxyVerb}    git submodule add https://git
     cmaple::Alignment aln("alignment.maple");
 
     // Check if the input alignment is suitable for using [C]Maple method
-    if (checkMapleSuitability(aln))
+    if (cmaple::checkMapleSuitability(aln))
     {
         // Create a default model according to the data type from the alignment (i.e., GTR for DNA, and LG for protein data)
         Model model(cmaple::ModelBase::DEFAULT, aln.getSeqType());
@@ -62,7 +62,9 @@ In your project directory, run \begin{DoxyVerb}    git submodule add https://git
         cout << "- Tree: " << tree.exportNewick("cmaple::Tree::BIN_TREE, true) << endl;
     }
     else
-        std::cout << "The input sequences are too divergent, which are inappropriate for [C]Maple method. We highly recommend users to use other methods (e.g., IQ-TREE, RAXML) to analyse this alignment!" << std::endl;
+    {
+        // Execute existing methods (e.g., IQ-TREE, RAXML, PHYML) to analyse this alignment
+    }
 \end{DoxyVerb}
  \hypertarget{index_autotoc_md5}{}\doxysubsubsection{\texorpdfstring{Tips for Debugging}{Tips for Debugging}}\label{index_autotoc_md5}
 CMaple outputs debugging messages to the standard output {\ttfamily std\+::cout}. One could control the amount of those messages via setting {\ttfamily cmaple\+::verbose\+\_\+mode} to one of the following values. ~\newline

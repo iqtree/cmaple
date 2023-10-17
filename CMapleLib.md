@@ -48,7 +48,7 @@ In your project directory, run
     	cmaple::Alignment aln("alignment.maple");
     	
     	// Check if the input alignment is suitable for using [C]Maple method
-    	if (checkMapleSuitability(aln))
+    	if (cmaple::checkMapleSuitability(aln))
     	{
     		// Create a default model according to the data type from the alignment (i.e., GTR for DNA, and LG for protein data)
     		Model model(cmaple::ModelBase::DEFAULT, aln.getSeqType());
@@ -69,7 +69,9 @@ In your project directory, run
     		cout << "- Tree: " << tree.exportNewick("cmaple::Tree::BIN_TREE, true) << endl;
     	}
     	else
-    		std::cout << "The input sequences are too divergent, which are inappropriate for [C]Maple method. We highly recommend users to use other methods (e.g., IQ-TREE, RAXML) to analyse this alignment!" << std::endl;
+    	{
+    		// Execute existing methods (e.g., IQ-TREE, RAXML, PHYML) to analyse this alignment
+    	}
 
 ### Tips for Debugging
 CMaple outputs debugging messages to the standard output `std::cout`. One could control the amount of those messages via setting `cmaple::verbose_mode` to one of the following values.
