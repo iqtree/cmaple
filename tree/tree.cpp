@@ -2571,6 +2571,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(const Index selected_node_index, P
         else
         {
             // now try to place on the current branch below the best node, at an height above or equal to the mid-branch.
+            RealNumType tmp_best_lh_diff = MIN_NEGATIVE;
             std::unique_ptr<SeqRegions> mid_branch_regions = nullptr; // std::make_unique<SeqRegions>(SeqRegions(node.getMidBranchLh())); // new SeqRegions(node->mid_branch_lh);
             const std::unique_ptr<SeqRegions>& parent_upper_lr_regions = getPartialLhAtNode(node.getNeighborIndex(TOP)); // node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
             const std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP); // node->getPartialLhAtNode(aln, model, threshold_prob);
@@ -2580,16 +2581,22 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(const Index selected_node_index, P
             while (true)
             {
                 // if better placement found -> record it
-                if (tmp_lh_diff > best_down_lh_diff)
+                if (tmp_lh_diff > tmp_best_lh_diff)
                 {
-                    best_down_lh_diff = tmp_lh_diff;
-                    best_child_index = node_index;
-                    best_child_blength_split = new_branch_length_split;
-                    new_branch_length_split *= 0.5;
+                    tmp_best_lh_diff = tmp_lh_diff;
                     
-                    // replacePartialLH(best_child_regions, mid_branch_regions);
-                    // Delay cloning SeqRegions
-                    best_child_regions = mid_branch_regions ? std::move(mid_branch_regions) : std::make_unique<SeqRegions>(SeqRegions(node.getMidBranchLh()));
+                    if (tmp_lh_diff > best_down_lh_diff)
+                    {
+                        best_down_lh_diff = tmp_lh_diff;
+                        best_child_index = node_index;
+                        best_child_blength_split = new_branch_length_split;
+                        
+                        // replacePartialLH(best_child_regions, mid_branch_regions);
+                        // Delay cloning SeqRegions
+                        best_child_regions = mid_branch_regions ? std::move(mid_branch_regions) : std::make_unique<SeqRegions>(SeqRegions(node.getMidBranchLh()));
+                    }
+                    
+                    new_branch_length_split *= 0.5;
                     
                     if (new_branch_length_split <= half_min_blength_mid)
                         break;
