@@ -2177,7 +2177,7 @@ template <const StateType num_states>
 void cmaple::Tree::applyOneSPR(const Index subtree_index, PhyloNode& subtree, const Index best_node_index, const bool is_mid_branch, const RealNumType branch_length, const RealNumType best_lh_diff)
 {
     // record the SPR applied at this subtree
-    subtree.setSPRApplied(true);
+    subtree.setSPRCount(subtree.getSPRCount() + 1);
     // remove subtree from the tree
     const Index parent_index = subtree.getNeighborIndex(TOP);
     PhyloNode& parent_subtree = nodes[parent_index.getVectorIndex()]; // subtree->neighbor->getTopNode();
@@ -3678,7 +3678,7 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search)
         }
         
         // only process outdated node to avoid traversing the same part of the tree multiple times
-        if (node.isOutdated() && !node.isSPRApplied())
+        if (node.isOutdated() && node.getSPRCount() <= 5)
         {
             node.setOutdated(false);
             
@@ -7215,7 +7215,7 @@ void cmaple::Tree::resetSPRFlags(const bool n_SPR_applied, const bool update_out
         PhyloNode& node = nodes[i];
         
         // update SPR_applied
-        node.setSPRApplied(n_SPR_applied);
+        node.setSPRCount(0);
         
         // update outdated if necessary
         if (update_outdated)

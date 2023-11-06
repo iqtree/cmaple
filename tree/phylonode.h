@@ -60,8 +60,8 @@ namespace cmaple
         /// TRUE if the likelihoods were updated due to some SPR moves
         bool outdated_;
         
-        // TRUE if we applied SPR move on the upper branch of this node
-        bool spr_applied_;
+        // Count the number of SPR moves applied at the upper branch of this node
+        uint8_t spr_count_ = 0;
         
         // branch length
         float length_ = 0; // using float allows it to fit into the 6 bytes padding after the two bools.
@@ -78,14 +78,14 @@ namespace cmaple
         PhyloNode() = delete;
         
         /** constructor */
-        PhyloNode(LeafNode&& leaf): is_internal_{false}, outdated_{true}, spr_applied_{false}, data_(std::move(leaf)) {};
+        PhyloNode(LeafNode&& leaf): is_internal_{false}, outdated_{true}, spr_count_{0}, data_(std::move(leaf)) {};
         
         /** constructor */
-        PhyloNode(InternalNode&& internal) noexcept: is_internal_{true}, outdated_{true}, spr_applied_{false}, data_(std::move(internal)) {};
+        PhyloNode(InternalNode&& internal) noexcept: is_internal_{true}, outdated_{true}, spr_count_{0}, data_(std::move(internal)) {};
         
         /** move constructor */
         PhyloNode(PhyloNode&& node) noexcept : is_internal_{node.is_internal_}, data_(std::move(node.data_), node.is_internal_),
-        other_lh_(std::move(node.other_lh_)), outdated_(node.outdated_), spr_applied_(node.spr_applied_), length_(node.length_) {};
+        other_lh_(std::move(node.other_lh_)), outdated_(node.outdated_), spr_count_(node.spr_count_), length_(node.length_) {};
         
         /** destructor */
         ~PhyloNode()
@@ -140,14 +140,14 @@ namespace cmaple
         void setOutdated(bool new_outdated);
         
         /**
-         Get spr_applied_
+         Get spr_count_
          */
-        const bool isSPRApplied() const;
+        const uint8_t getSPRCount() const;
         
         /**
-         Set spr_applied_
+         Set spr_count_
          */
-        void setSPRApplied(bool spr_applied);
+        void setSPRCount(uint8_t spr_count);
         
         /**
          Get length of the upper branch

@@ -55,14 +55,14 @@ void cmaple::PhyloNode::setOutdated(bool new_outdated)
     outdated_ = new_outdated;
 }
 
-const bool cmaple::PhyloNode::isSPRApplied() const
+const uint8_t cmaple::PhyloNode::getSPRCount() const
 {
-    return spr_applied_;
+    return spr_count_;
 }
 
-void cmaple::PhyloNode::setSPRApplied(bool spr_applied)
+void cmaple::PhyloNode::setSPRCount(uint8_t spr_count)
 {
-    spr_applied_ = spr_applied;
+    spr_count_ = spr_count;
 }
 
 RealNumType cmaple::PhyloNode::getUpperLength() const
