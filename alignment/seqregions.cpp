@@ -814,7 +814,7 @@ bool cmaple::merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region, const SeqReg
     
     if (total_blength_1 > 0)
     {
-      sum_lh = updateLHwithMat<num_states>(model->mutation_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
+      updateLHwithMat<num_states>(model->mutation_mat, *(seq1_region.likelihood), *new_lh, total_blength_1);
     }
     // otherwise, clone the partial likelihood from seq1
     else
