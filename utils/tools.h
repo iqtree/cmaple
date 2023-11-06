@@ -29,22 +29,23 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
 #include <random>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <stack>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
 #include <string>
 #include <sys/stat.h>
 #include <thread>
 #include <vector>
-#include <regex>
 #include "operatingsystem.h"
 #ifdef _OPENMP
 #include <omp.h> /* OpenMP */
@@ -815,48 +816,10 @@ private:
     const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
     const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
 
-    /**
-     * initialize the random number generator
-     * @param seed seed for generator
-     * @param write_info true to write information, false otherwise (default)
-     */
-    int init_random(int seed, bool write_info = false, int** rstream = NULL);
-
-    /**
-     * finalize random number generator (e.g. free memory
-     */
-    int finish_random(int *rstream = NULL);
-
-    /**
-     * returns a random integer in the range [0; n - 1]
-     * @param n upper-bound of random number
-     */
-    int random_int(int n, int *rstream = NULL);
-
-    /**
-     *  return a random integer in the range [a,b]
-     */
-    //int randint(int a, int b);
-
-    /**
-     * returns a random integer in the range [0; RAND_MAX - 1]
-     * = random_int(RAND_MAX)
-     */
-    //int random_int(int *rstream = NULL);
-
-    /**
-     * returns a random floating-point nuber in the range [0; 1)
-     */
-    double random_double(int *rstream = NULL);
 
     /*--------------------------------------------------------------*/
     /*--------------------------------------------------------------*/
 
-    /**
-     * Convert int to string
-     * @param int
-     * @return string
-     */
     std::string convertPosTypeToString(PositionType number);
     std::string convertIntToString(int number);
     std::string convertInt64ToString(int64_t number);
@@ -882,7 +845,7 @@ private:
     /**
      * Check if the file exists
      * @param strFilename
-     * @return
+     * @return If file exists
      */
     bool fileExists(const std::string &strFilename);
 
@@ -960,7 +923,8 @@ private:
 
     /**
         Parse an array of real numbers from a tring
-        @param input_str: a string of  real_numbers; arr: the output array of real_numbers
+        @param arr the output array of real_numbers
+        @param input_str A string of  real_numbers
         @throw std::invalid\_argument if the input str is invalid
      */
     void convert_real_numbers(RealNumType* &arr, std::string input_str);
@@ -977,8 +941,8 @@ private:
     /**
         Normalize state frequencies so that sum of them is equal to 1
         @param freqs original state frequencies
-        @param num_states the number of states
-        @param total_freq sum of all original state frequencies
+        @param num_states the number of states, i.e. number of indices to normalize
+        @param starting_index Start at certain index of @p freqs (but still normalize @p num_states)
         @throw std::logic\_error if sum of freqs is zero
      */
     void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index);
@@ -1017,7 +981,7 @@ private:
     }
     /**
      * Convert seconds to hour, minute, second
-     * @param sec
+     * @param sec Seconds to convert from
      * @return string represent hour, minute, second
      */
     std::string convert_time(const RealNumType sec);
@@ -1109,7 +1073,7 @@ private:
         @param right the right index
     */
     template<class T1, class T2>
-    void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
+    void quicksort(T1* arr, int left, int right, T2* arr2 = nullptr) {
         if (left > right) return;
         ASSERT(left <= right);
           int i = left, j = right;
@@ -1133,7 +1097,7 @@ private:
                       ++i;
                       --j;
                 }
-          };
+          }
 
           /* recursion */
           if (left < j)
@@ -1144,7 +1108,7 @@ private:
 
     /**
      * Print usage for CMaple
-     * @param program arguments list
+     * @param argv arguments list
      * @param full_command TRUE to print all available commands, FALSE to print normal usage dialog
      */
     void usage_cmaple(char* argv[], bool full_command);

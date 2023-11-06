@@ -964,7 +964,7 @@ namespace cmaple
         
         /**
          Read an input tree from a stream
-         @Return TRUE if the tree contains any branch without a length
+         @return TRUE if the tree contains any branch without a length
          @throw std::invalid\_argument if the tree in an incorrect format
          @throw std::logic\_error if any of the following situations occur.
          - any taxa in the tree is not found in the alignment
@@ -976,7 +976,7 @@ namespace cmaple
         
         /**
          Check if the current tree is complete (i.e., containing all sequences from the alignment)
-         @Return TRUE if the tree is complete
+         @return TRUE if the tree is complete
          */
         bool isComplete();
         

@@ -478,7 +478,7 @@ void cmaple::reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_firs
 }
 
 void cmaple::convert_string_vec(const char *str, StrVector &vec, char separator) {
-    char *beginptr = (char*)str, *endptr;
+    const char *beginptr = str, *endptr;
     vec.clear();
     string elem;
     do {
@@ -552,7 +552,7 @@ cmaple::Params::Params()
     thresh_placement_cost_short_search = -1;
     tree_format_str = "BIN";
     shallow_tree_search = false;
-    output_testing = NULL;
+    output_testing = nullptr;
     compute_aLRT_SH = false;
     aLRT_SH_replicates = 1000;
     aLRT_SH_half_epsilon = 0.05;
@@ -579,10 +579,7 @@ cmaple::ParamsBuilder::ParamsBuilder(): params_ptr(new Params())
 
 cmaple::ParamsBuilder& cmaple::ParamsBuilder::withRandomSeed(const uint64_t& seed)
 {
-    if (seed >= 0)
-        params_ptr->ran_seed = seed;
-    else
-        throw std::invalid_argument("Random seed number must be non-negative");
+    params_ptr->ran_seed = seed;
     
     // return
     return *this;
@@ -1061,9 +1058,9 @@ void cmaple::parseArg(int argc, char *argv[], Params &params) {
             outError(err);
         }
         // try
-        catch (const char *str) {
+        catch (const char /* *str */) {
                 exit(EXIT_SUCCESS);
-        } catch (string str) {
+        } catch (string& /* str */) {
                 exit(EXIT_SUCCESS);
         } catch (...) {
             string err = "Unknown argument \"";
