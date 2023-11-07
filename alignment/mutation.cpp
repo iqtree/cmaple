@@ -27,9 +27,4 @@ cmaple::Mutation::Mutation(StateType n_type, PositionType n_position, LengthType
       throw std::invalid_argument("Invalid mutation. Length is larger than 2^15. Recompile with larger 'LengthType' at the cost of higher memory consumption.");
 }
 
-LengthType cmaple::Mutation::getLength() const
-{
-    return length_;
-}
-
-
+auto cmaple::Mutation::getLength() const -> LengthType { return length_; }

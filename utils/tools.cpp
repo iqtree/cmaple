@@ -58,8 +58,9 @@ void cmaple::outError(const char* error, bool quit) {
     // print_stacktrace(cerr);
   }
   cerr << error << endl;
-  if (quit)
+  if (quit) {
     exit(2);
+  }
 }
 
 /**
@@ -112,8 +113,9 @@ std::istream& cmaple::safeGetline(std::istream& is, std::string& t) {
       case '\n':
         return is;
       case '\r':
-        if (sb->sgetc() == '\n')
+        if (sb->sgetc() == '\n') {
           sb->sbumpc();
+        }
         return is;
       case EOF:
         // Also handle the case when the last line has no line ending
@@ -127,25 +129,25 @@ std::istream& cmaple::safeGetline(std::istream& is, std::string& t) {
 }
 
 // From Tung
-string cmaple::convertPosTypeToString(PositionType number) {
+auto cmaple::convertPosTypeToString(PositionType number) -> string {
   stringstream ss;  // create a stringstream
   ss << number;     // add number to the stream
   return ss.str();  // return a string with the contents of the stream
 }
 
-string cmaple::convertIntToString(int number) {
+auto cmaple::convertIntToString(int number) -> string {
   stringstream ss;  // create a stringstream
   ss << number;     // add number to the stream
   return ss.str();  // return a string with the contents of the stream
 }
 
-string cmaple::convertInt64ToString(int64_t number) {
+auto cmaple::convertInt64ToString(int64_t number) -> string {
   stringstream ss;  // create a stringstream
   ss << number;     // add number to the stream
   return ss.str();  // return a string with the contents of the stream
 }
 
-string cmaple::convertDoubleToString(RealNumType number) {
+auto cmaple::convertDoubleToString(RealNumType number) -> string {
   stringstream ss;  // create a stringstream
   ss << number;     // add number to the stream
   return ss.str();  // return a string with the contents of the stream
@@ -158,27 +160,31 @@ std::string cmaple::convertDoubleToString(RealNumType number,
   return ss.str();  // return a string with the contents of the stream
 }
 
-bool cmaple::iEquals(const string& a, const string& b) {
+auto cmaple::iEquals(const string& a, const string& b) -> bool {
   unsigned int sz = a.size();
-  if (b.size() != sz)
+  if (b.size() != sz) {
     return false;
-  for (unsigned int i = 0; i < sz; ++i)
-    if (tolower(a[i]) != tolower(b[i]))
+  }
+  for (unsigned int i = 0; i < sz; ++i) {
+    if (tolower(a[i]) != tolower(b[i])) {
       return false;
+    }
+  }
   return true;
 }
 
 // From Tung
 
-bool cmaple::copyFile(const char SRC[], const char DEST[]) {
+auto cmaple::copyFile(const char SRC[], const char DEST[]) -> bool {
   std::ifstream src;   // the source file
   std::ofstream dest;  // the destination file
 
   src.open(SRC, std::ios::binary);    // open in binary to prevent jargon at the
                                       // end of the buffer
   dest.open(DEST, std::ios::binary);  // same again, binary
-  if (!src.is_open() || !dest.is_open())
+  if (!src.is_open() || !dest.is_open()) {
     return false;  // could not be copied
+  }
 
   dest << src.rdbuf();  // copy the content
   dest.close();         // close destination file
@@ -187,7 +193,7 @@ bool cmaple::copyFile(const char SRC[], const char DEST[]) {
   return true;  // file copied successfully
 }
 
-bool cmaple::fileExists(const string& strFilename) {
+auto cmaple::fileExists(const string& strFilename) -> bool {
   struct stat stFileInfo;
   bool blnReturn;
   int intStat;
@@ -210,7 +216,7 @@ bool cmaple::fileExists(const string& strFilename) {
   return (blnReturn);
 }
 
-int cmaple::convert_int(const char* str, int& end_pos) {
+auto cmaple::convert_int(const char* str, int& end_pos) -> int {
   char* endptr;
   int i = strtol(str, &endptr, 10);
 
@@ -224,7 +230,7 @@ int cmaple::convert_int(const char* str, int& end_pos) {
   return i;
 }
 
-int cmaple::convert_int(const char* str) {
+auto cmaple::convert_int(const char* str) -> int {
   char* endptr;
   int i = strtol(str, &endptr, 10);
 
@@ -238,9 +244,9 @@ int cmaple::convert_int(const char* str) {
   return i;
 }
 
-PositionType cmaple::convert_positiontype(const char* str) {
+auto cmaple::convert_positiontype(const char* str) -> PositionType {
   char* endptr;
-  PositionType i = (PositionType)strtol(str, &endptr, 10);
+  auto i = (PositionType)strtol(str, &endptr, 10);
 
   if ((i == 0 && endptr == str) || i == HUGE_VALL || *endptr != 0) {
     string err = "Expecting integer, but found \"";
@@ -265,15 +271,16 @@ void cmaple::convert_int_vec(const char* str, IntVector& vec) {
       throw std::invalid_argument(err);
     }
     vec.push_back(i);
-    if (*endptr == ',')
+    if (*endptr == ',') {
       endptr++;
+    }
     beginptr = endptr;
   } while (*endptr != 0);
 }
 
-int64_t cmaple::convert_int64(const char* str) {
+auto cmaple::convert_int64(const char* str) -> int64_t {
   char* endptr;
-  int64_t i = (int64_t)strtoll(
+  auto i = (int64_t)strtoll(
       str, &endptr,
       10);  // casted because 'long long' may be larger than int64_t
 
@@ -287,9 +294,9 @@ int64_t cmaple::convert_int64(const char* str) {
   return i;
 }
 
-int64_t cmaple::convert_int64(const char* str, int& end_pos) {
+auto cmaple::convert_int64(const char* str, int& end_pos) -> int64_t {
   char* endptr;
-  int64_t i = (int64_t)strtoll(
+  auto i = (int64_t)strtoll(
       str, &endptr,
       10);  // casted because 'long long' may be larger than int64_t
 
@@ -303,7 +310,7 @@ int64_t cmaple::convert_int64(const char* str, int& end_pos) {
   return i;
 }
 
-RealNumType cmaple::convert_real_number(const char* str) {
+auto cmaple::convert_real_number(const char* str) -> RealNumType {
   char* endptr;
   RealNumType d = strtod(str, &endptr);
   if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF || *endptr != 0) {
@@ -315,7 +322,7 @@ RealNumType cmaple::convert_real_number(const char* str) {
   return d;
 }
 
-RealNumType cmaple::convert_real_number(const char* str, int& end_pos) {
+auto cmaple::convert_real_number(const char* str, int& end_pos) -> RealNumType {
   char* endptr;
   RealNumType d = strtod(str, &endptr);
   if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF) {
@@ -359,13 +366,14 @@ void cmaple::convert_real_number_vec(const char* str,
       throw std::invalid_argument(err);
     }
     vec.push_back(d);
-    if (*endptr == separator)
+    if (*endptr == separator) {
       endptr++;
+    }
     beginptr = endptr;
   } while (*endptr != 0);
 }
 
-string cmaple::convert_time(const RealNumType sec) {
+auto cmaple::convert_time(const RealNumType sec) -> string {
   int sec_int = (int)floor(sec);
   int secs = sec_int % 60;
   int mins = (sec_int % 3600) / 60;
@@ -393,8 +401,9 @@ void cmaple::convert_range(const char* str,
   // lower = d;
   int d_save = d;
   upper = d;
-  if (*endptr == 0)
+  if (*endptr == 0) {
     return;
+  }
 
   // parse the upper bound of the range
   str = endptr + 1;
@@ -409,8 +418,9 @@ void cmaple::convert_range(const char* str,
 
   lower = d_save;
   upper = d;
-  if (*endptr == 0)
+  if (*endptr == 0) {
     return;
+  }
 
   // parse the step size of the range
   str = endptr + 1;
@@ -442,8 +452,9 @@ void cmaple::convert_range(const char* str,
   // lower = d;
   RealNumType d_save = d;
   upper = d;
-  if (*endptr == 0)
+  if (*endptr == 0) {
     return;
+  }
 
   // parse the upper bound of the range
   str = endptr + 1;
@@ -458,8 +469,9 @@ void cmaple::convert_range(const char* str,
 
   lower = d_save;
   upper = d;
-  if (*endptr == 0)
+  if (*endptr == 0) {
     return;
+  }
 
   // parse the step size of the range
   str = endptr + 1;
@@ -478,14 +490,17 @@ void cmaple::reinitDoubleArr(RealNumType*& arr,
                              bool delete_first,
                              bool set_zero) {
   // delete the current array
-  if (delete_first && arr)
+  if (delete_first && arr) {
     delete[] arr;
+  }
 
   // request memory allocation for the new array
   arr = new RealNumType[size];
-  if (set_zero)
-    for (StateType i = 0; i < size; ++i)
+  if (set_zero) {
+    for (StateType i = 0; i < size; ++i) {
       arr[i] = 0;
+    }
+  }
 }
 
 void cmaple::convert_string_vec(const char* str,
@@ -513,19 +528,21 @@ void cmaple::normalize_frequencies_from_index(RealNumType* freqs,
   ASSERT(num_states > 0);
   // calculate the total_freqs
   RealNumType total_freqs = 0;
-  for (int i = starting_index; i < starting_index + num_states; ++i)
+  for (int i = starting_index; i < starting_index + num_states; ++i) {
     total_freqs += freqs[i];
+  }
 
   // normalize the freqs
   if (fabs(total_freqs) < 1e-5)
     throw std::logic_error(
         "Sum of state frequencies must be greater than zero!");
   total_freqs = 1.0 / total_freqs;
-  for (int i = starting_index; i < starting_index + num_states; ++i)
+  for (int i = starting_index; i < starting_index + num_states; ++i) {
     freqs[i] *= total_freqs;
+  }
 }
 
-bool cmaple::is_number(const std::string& s) {
+auto cmaple::is_number(const std::string& s) -> bool {
   char* end = nullptr;
   double val = strtod(s.c_str(), &end);
   return end != s.c_str() && *end == '\0' && val != HUGE_VAL;
@@ -587,16 +604,16 @@ cmaple::Params::Params() {
 
 cmaple::ParamsBuilder::ParamsBuilder() : params_ptr(new Params()) {}
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withRandomSeed(
-    const uint64_t& seed) {
+auto cmaple::ParamsBuilder::withRandomSeed(const uint64_t& seed)
+    -> cmaple::ParamsBuilder& {
   params_ptr->ran_seed = seed;
 
   // return
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withThreshProb(
-    const double& n_thresh_prob) {
+auto cmaple::ParamsBuilder::withThreshProb(const double& n_thresh_prob)
+    -> cmaple::ParamsBuilder& {
   if (n_thresh_prob > 0)
     params_ptr->threshold_prob = n_thresh_prob;
   else
@@ -606,8 +623,8 @@ cmaple::ParamsBuilder& cmaple::ParamsBuilder::withThreshProb(
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMinBlengthFactor(
-    const double& n_min_blength_factor) {
+auto cmaple::ParamsBuilder::withMinBlengthFactor(
+    const double& n_min_blength_factor) -> cmaple::ParamsBuilder& {
   if (n_min_blength_factor > 0)
     params_ptr->min_blength_factor = n_min_blength_factor;
   else
@@ -617,8 +634,8 @@ cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMinBlengthFactor(
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMaxBlengthFactor(
-    const double& n_max_blength_factor) {
+auto cmaple::ParamsBuilder::withMaxBlengthFactor(
+    const double& n_max_blength_factor) -> cmaple::ParamsBuilder& {
   if (n_max_blength_factor > 0)
     params_ptr->max_blength_factor = n_max_blength_factor;
   else
@@ -628,8 +645,8 @@ cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMaxBlengthFactor(
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withFixedMinBlength(
-    const double& n_fixed_min_blength) {
+auto cmaple::ParamsBuilder::withFixedMinBlength(
+    const double& n_fixed_min_blength) -> cmaple::ParamsBuilder& {
   if (n_fixed_min_blength > 0)
     params_ptr->fixed_min_blength = n_fixed_min_blength;
   else
@@ -639,8 +656,8 @@ cmaple::ParamsBuilder& cmaple::ParamsBuilder::withFixedMinBlength(
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMutationUpdatePeriod(
-    const int32_t& n_mutation_update_period) {
+auto cmaple::ParamsBuilder::withMutationUpdatePeriod(
+    const int32_t& n_mutation_update_period) -> cmaple::ParamsBuilder& {
   if (n_mutation_update_period > 0)
     params_ptr->mutation_update_period = n_mutation_update_period;
   else
@@ -650,8 +667,8 @@ cmaple::ParamsBuilder& cmaple::ParamsBuilder::withMutationUpdatePeriod(
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withNumTreeTraversal(
-    const int32_t& num_tree_traversal) {
+auto cmaple::ParamsBuilder::withNumTreeTraversal(
+    const int32_t& num_tree_traversal) -> cmaple::ParamsBuilder& {
   if (num_tree_traversal > 0)
     params_ptr->num_tree_improvement = num_tree_traversal;
   else
@@ -661,8 +678,8 @@ cmaple::ParamsBuilder& cmaple::ParamsBuilder::withNumTreeTraversal(
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withSPRThresh(
-    const double& SPR_thresh) {
+auto cmaple::ParamsBuilder::withSPRThresh(const double& SPR_thresh)
+    -> cmaple::ParamsBuilder& {
   if (SPR_thresh > 0)
     params_ptr->thresh_placement_cost = SPR_thresh;
   else
@@ -672,8 +689,8 @@ cmaple::ParamsBuilder& cmaple::ParamsBuilder::withSPRThresh(
   return *this;
 }
 
-cmaple::ParamsBuilder& cmaple::ParamsBuilder::withStopTreeSearchThresh(
-    const double& stop_search_thresh) {
+auto cmaple::ParamsBuilder::withStopTreeSearchThresh(
+    const double& stop_search_thresh) -> cmaple::ParamsBuilder& {
   if (stop_search_thresh > 0)
     params_ptr->thresh_entire_tree_improvement = stop_search_thresh;
   else
@@ -699,8 +716,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--alignment") == 0 ||
           strcmp(argv[cnt], "-aln") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -aln <ALN_FILENAME>");
+        }
 
         params.aln_path = argv[cnt];
 
@@ -710,8 +728,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       // purpose
       if (strcmp(argv[cnt], "--diff") == 0 || strcmp(argv[cnt], "-diff") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -diff <ALN_FILENAME>");
+        }
 
         params.aln_path = argv[cnt];
 
@@ -720,8 +739,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--prefix") == 0 ||
           strcmp(argv[cnt], "-pre") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -pre <OUTPUT_PREFIX>");
+        }
 
         params.output_prefix = argv[cnt];
 
@@ -730,10 +750,11 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--output-aln") == 0 ||
           strcmp(argv[cnt], "-out-aln") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError(
               "Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> "
               "could be MAPLE, PHYLIP, or FASTA");
+        }
 
         // parse inputs
         std::string inputs = argv[cnt];
@@ -742,22 +763,25 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         if (pos != std::string::npos) {
           params.output_aln = inputs.substr(0, pos);
           // validate output_aln
-          if (!params.output_aln.length())
+          if (!params.output_aln.length()) {
             outError("<ALN_FILENAME> is empty!");
+          }
           inputs.erase(0, pos + delimiter.length());
           params.output_aln_format_str = inputs;
-        } else
+        } else {
           outError(
               "Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> "
               "could be MAPLE, PHYLIP, FASTA, or AUTO");
+        }
 
         continue;
       }
       if (strcmp(argv[cnt], "-st") == 0 ||
           strcmp(argv[cnt], "--seqtype") == 0) {
         cnt++;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use -st DNA or -st AA or -st AUTO");
+        }
         params.seq_type_str = argv[cnt];
 
         continue;
@@ -765,38 +789,42 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "-v") == 0 ||
           strcmp(argv[cnt], "--verbose-mode") == 0) {
         cnt++;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
+        }
         // parse verbose
         std::string verbose = argv[cnt];
         transform(verbose.begin(), verbose.end(), verbose.begin(), ::toupper);
-        if (verbose == "QUIET")
+        if (verbose == "QUIET") {
           verbose_mode = VB_QUIET;
-        else if (verbose == "MIN")
+        } else if (verbose == "MIN") {
           verbose_mode = VB_MIN;
-        else if (verbose == "MED")
+        } else if (verbose == "MED") {
           verbose_mode = VB_MED;
-        else if (verbose == "MAX")
+        } else if (verbose == "MAX") {
           verbose_mode = VB_MAX;
-        else if (verbose == "DEBUG")
+        } else if (verbose == "DEBUG") {
           verbose_mode = VB_DEBUG;
-        else
+        } else {
           outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
+        }
         continue;
       }
       if (strcmp(argv[cnt], "-format") == 0 ||
           strcmp(argv[cnt], "--aln-format") == 0) {
         cnt++;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use -format MAPLE, PHYLIP, FASTA, or AUTO");
+        }
         params.aln_format_str = argv[cnt];
 
         continue;
       }
       if (strcmp(argv[cnt], "--tree") == 0 || strcmp(argv[cnt], "-t") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -t <INPUT_TREEFILE>");
+        }
 
         params.input_treefile = argv[cnt];
 
@@ -805,8 +833,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--reference") == 0 ||
           strcmp(argv[cnt], "-ref") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
+        }
 
         // parse inputs
         std::string inputs = argv[cnt];
@@ -815,38 +844,44 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         if (pos != std::string::npos) {
           params.ref_path = inputs.substr(0, pos);
           // validate ref_path
-          if (!params.ref_path.length())
+          if (!params.ref_path.length()) {
             outError("<REF_FILENAME> is empty!");
+          }
           inputs.erase(0, pos + delimiter.length());
           params.ref_seqname = inputs;
           // validate ref_seqname
-          if (!params.ref_seqname.length())
+          if (!params.ref_seqname.length()) {
             outError("<REF_SEQNAME> is empty!");
-        } else
+          }
+        } else {
           outError("Use -ref <REF_FILENAME>,<REF_SEQNAME>");
+        }
 
         continue;
       }
       if (strcmp(argv[cnt], "--min-blength") == 0 ||
           strcmp(argv[cnt], "-min-bl") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -min-bl <NUMBER>");
+        }
         try {
           params.fixed_min_blength = convert_real_number(argv[cnt]);
         } catch (std::invalid_argument e) {
           outError(e.what());
         }
 
-        if (params.fixed_min_blength <= 0)
+        if (params.fixed_min_blength <= 0) {
           outError("<NUMBER> following -min-bl must be positive!");
+        }
 
         continue;
       }
       if (strcmp(argv[cnt], "--model") == 0 || strcmp(argv[cnt], "-m") == 0) {
         ++cnt;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use -m <model_name>");
+        }
 
         params.sub_model_str = argv[cnt];
         continue;
@@ -854,8 +889,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--tree-search") == 0 ||
           strcmp(argv[cnt], "-tree-search") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -tree-search <FAST|NORMAL|MORE_ACCURATE>");
+        }
 
         params.tree_search_type_str = argv[cnt];
         continue;
@@ -884,8 +920,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--threshold-prob") == 0 ||
           strcmp(argv[cnt], "-thresh-prob") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -thresh-prob <PROB_THRESH>");
+        }
 
         try {
           params.threshold_prob = convert_real_number(argv[cnt]);
@@ -893,16 +930,18 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           outError(e.what());
         }
 
-        if (params.threshold_prob <= 0)
+        if (params.threshold_prob <= 0) {
           outError("<PROB_THRESH> must be positive!");
+        }
 
         continue;
       }
       if (strcmp(argv[cnt], "--mutation-update") == 0 ||
           strcmp(argv[cnt], "-mut-update") == 0) {
         ++cnt;
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -mut-update <NUMBER>");
+        }
 
         try {
           params.mutation_update_period = convert_int(argv[cnt]);
@@ -910,8 +949,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           outError(e.what());
         }
 
-        if (params.mutation_update_period <= 0)
+        if (params.mutation_update_period <= 0) {
           outError("<NUMBER> must be positive!");
+        }
 
         continue;
       }
@@ -925,8 +965,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           outError(e.what());
         }
 
-        if (params.failure_limit_sample <= 0)
+        if (params.failure_limit_sample <= 0) {
           outError("<NUMBER> must be positive!");
+        }
 
         continue;
       }
@@ -940,8 +981,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           outError(e.what());
         }
 
-        if (params.failure_limit_subtree <= 0)
+        if (params.failure_limit_subtree <= 0) {
           outError("<NUMBER> must be positive!");
+        }
 
         continue;
       }
@@ -973,8 +1015,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           strcmp(argv[cnt], "-out-test") == 0) {
         ++cnt;
 
-        if (cnt >= argc || argv[cnt][0] == '-')
+        if (cnt >= argc || argv[cnt][0] == '-') {
           outError("Use -out-test <FILE_PATH>");
+        }
 
         params.output_testing = argv[cnt];
 
@@ -989,8 +1032,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--replicates") == 0 ||
           strcmp(argv[cnt], "-rep") == 0) {
         ++cnt;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use --replicates <NUM_REPLICATES>");
+        }
 
         try {
           params.aLRT_SH_replicates = convert_int(argv[cnt]);
@@ -998,15 +1042,17 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           outError(e.what());
         }
 
-        if (params.aLRT_SH_replicates <= 0)
+        if (params.aLRT_SH_replicates <= 0) {
           outError("<NUM_REPLICATES> must be positive!");
+        }
         continue;
       }
       if (strcmp(argv[cnt], "--epsilon") == 0 ||
           strcmp(argv[cnt], "-eps") == 0) {
         ++cnt;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use --epsilon <FLOATING_NUM>");
+        }
         try {
           params.aLRT_SH_half_epsilon = convert_real_number(argv[cnt]) * 0.5;
         } catch (std::invalid_argument e) {
@@ -1017,8 +1063,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       }
       if (strcmp(argv[cnt], "-seed") == 0 || strcmp(argv[cnt], "--seed") == 0) {
         cnt++;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use -seed <random_seed>");
+        }
 
         try {
           params.ran_seed = abs(convert_int(argv[cnt]));
@@ -1030,18 +1077,20 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "-nt") == 0 || strcmp(argv[cnt], "-c") == 0 ||
           strcmp(argv[cnt], "-T") == 0 || strcmp(argv[cnt], "--threads") == 0) {
         cnt++;
-        if (cnt >= argc)
+        if (cnt >= argc) {
           outError("Use -nt <num_threads|AUTO>");
-        if (iEquals(argv[cnt], "AUTO"))
+        }
+        if (iEquals(argv[cnt], "AUTO")) {
           params.num_threads = 0;
-        else {
+        } else {
           try {
             params.num_threads = convert_int(argv[cnt]);
           } catch (std::invalid_argument e) {
             outError(e.what());
           }
-          if (params.num_threads < 1)
+          if (params.num_threads < 1) {
             outError("At least 1 thread please");
+          }
         }
         continue;
       }
@@ -1070,8 +1119,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
   }
 
   // validate options
-  if (!params.aln_path.length())
+  if (!params.aln_path.length()) {
     outError("Please supply an alignment file via -aln <ALN_FILENAME>");
+  }
 }
 
 void cmaple::quickStartGuide() {
@@ -1175,7 +1225,7 @@ void cmaple::trimString(string& str) {
   str.erase(str.find_last_not_of(" \n\r\t") + 1);
 }
 
-bool cmaple::renameString(string& name) {
+auto cmaple::renameString(string& name) -> bool {
   bool renamed = false;
   for (string::iterator i = name.begin(); i != name.end(); i++) {
     if (!isalnum(*i) && (*i) != '_' && (*i) != '-' && (*i) != '.' &&
@@ -1187,7 +1237,7 @@ bool cmaple::renameString(string& name) {
   return renamed;
 }
 
-int cmaple::countPhysicalCPUCores() {
+auto cmaple::countPhysicalCPUCores() -> int {
 #ifdef _OPENMP
   return omp_get_num_procs();
 #else

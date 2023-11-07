@@ -61,9 +61,10 @@ void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_sta
 void cmaple::SeqRegion::convertAmbiguiousStateAA(int max_num_states)
 {
     // do nothing if it is not an ambiguious state
-    if (type < max_num_states || type == TYPE_N || type == TYPE_R)
-        return;
-    
+    if (type < max_num_states || type == TYPE_N || type == TYPE_R) {
+      return;
+    }
+
     switch (type) {
         case TYPE_DEL: // convert '-' into type_N
             type = TYPE_N;
@@ -76,9 +77,10 @@ void cmaple::SeqRegion::convertAmbiguiousStateAA(int max_num_states)
 void cmaple::SeqRegion::convertAmbiguiousStateDNA(int max_num_states)
 {
     // do nothing if it is not an ambiguious state
-    if (type < max_num_states || type == TYPE_N || type == TYPE_R)
-        return;
-    
+    if (type < max_num_states || type == TYPE_N || type == TYPE_R) {
+      return;
+    }
+
     switch (type) {
         case TYPE_DEL: // convert '-' into type_N
             type = TYPE_N;
@@ -173,40 +175,47 @@ void cmaple::SeqRegion::writeConstructionCodes(const std::string regions_name, s
     out << regions_name << "->emplace_back(" << convertIntToString(type) << "," << position << "," << std::setprecision(50) << plength_observation2node << "," << std::setprecision(50) << plength_observation2root << lh_str << ");" << std::endl;
 }
 
-bool cmaple::SeqRegion::operator==(const SeqRegion& seqregion_1) const
-{
-    if (type != seqregion_1.type
-        || position != seqregion_1.position
-        || fabs(plength_observation2node - seqregion_1.plength_observation2node) > 1e-50
-        || fabs (plength_observation2root - seqregion_1.plength_observation2root) > 1e-50)
+auto cmaple::SeqRegion::operator==(const SeqRegion &seqregion_1) const -> bool {
+  if (type != seqregion_1.type || position != seqregion_1.position ||
+      fabs(plength_observation2node - seqregion_1.plength_observation2node) >
+          1e-50 ||
+      fabs(plength_observation2root - seqregion_1.plength_observation2root) >
+          1e-50) {
+    return false;
+  }
+
+  if ((likelihood && !seqregion_1.likelihood) ||
+      (!likelihood && seqregion_1.likelihood)) {
+    return false;
+  }
+
+  if (likelihood && seqregion_1.likelihood) {
+    for (StateType i = 0; i < seqregion_1.likelihood->size(); i++) {
+      if (fabs(likelihood->at(i) - seqregion_1.likelihood->at(i)) > 1e-50) {
         return false;
-    
-    if ((likelihood && !seqregion_1.likelihood)
-        || (!likelihood && seqregion_1.likelihood))
-        return false;
-    
-    if (likelihood && seqregion_1.likelihood)
-    {
-        for (StateType i = 0; i < seqregion_1.likelihood->size(); i++)
-            if (fabs(likelihood->at(i) - seqregion_1.likelihood->at(i)) > 1e-50)
-                return false;
+      }
     }
-    
-    return true;
+  }
+
+  return true;
 }
 
-cmaple::SeqRegion::SeqType cmaple::SeqRegion::parseSeqType(const std::string& n_seqtype_str)
-{
-    // transform to uppercase
-    std::string seqtype_str(n_seqtype_str);
-    transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(), ::toupper);
-    if (seqtype_str == "DNA")
-        return cmaple::SeqRegion::SEQ_DNA;
-    if (seqtype_str == "AA")
-        return cmaple::SeqRegion::SEQ_PROTEIN;
-    if (seqtype_str == "AUTO")
-        return cmaple::SeqRegion::SEQ_AUTO;
-    
-    // default
-    return cmaple::SeqRegion::SEQ_UNKNOWN;
+auto cmaple::SeqRegion::parseSeqType(const std::string &n_seqtype_str)
+    -> cmaple::SeqRegion::SeqType {
+  // transform to uppercase
+  std::string seqtype_str(n_seqtype_str);
+  transform(seqtype_str.begin(), seqtype_str.end(), seqtype_str.begin(),
+            ::toupper);
+  if (seqtype_str == "DNA") {
+    return cmaple::SeqRegion::SEQ_DNA;
+  }
+  if (seqtype_str == "AA") {
+    return cmaple::SeqRegion::SEQ_PROTEIN;
+  }
+  if (seqtype_str == "AUTO") {
+    return cmaple::SeqRegion::SEQ_AUTO;
+  }
+
+  // default
+  return cmaple::SeqRegion::SEQ_UNKNOWN;
 }

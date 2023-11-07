@@ -36,8 +36,8 @@
 #include "../maple/cmaple.h"
 #include "../tree/tree.h"
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include <csignal>
 
@@ -75,17 +75,17 @@ void funcAbort(int signal_number)
 }
 /** ############## Redirect output to a log file ############## **/
 
-int main(int argc, char *argv[]) {
-    std::unique_ptr<cmaple::Params> params = cmaple::ParamsBuilder().build();
-    parseArg(argc, argv, *params);
-    
-    // Config log file
-    // atexit(logstream.funcExit);
-    logstream.startLogFile(*params);
-    signal(SIGABRT, &funcAbort);
-    signal(SIGFPE, &funcAbort);
-    signal(SIGILL, &funcAbort);
-    signal(SIGSEGV, &funcAbort);
+auto main(int argc, char *argv[]) -> int {
+  std::unique_ptr<cmaple::Params> params = cmaple::ParamsBuilder().build();
+  parseArg(argc, argv, *params);
+
+  // Config log file
+  // atexit(logstream.funcExit);
+  logstream.startLogFile(*params);
+  signal(SIGABRT, &funcAbort);
+  signal(SIGFPE, &funcAbort);
+  signal(SIGILL, &funcAbort);
+  signal(SIGSEGV, &funcAbort);
 #if !defined WIN32 && !defined _WIN32 && !defined __WIN32__ && !defined WIN64
     signal(SIGBUS, &funcAbort);
 #endif
@@ -97,8 +97,9 @@ int main(int argc, char *argv[]) {
         
         // show general information
         cout << "Command:";
-        for (int i = 0; i < argc; i++)
-            cout << " " << argv[i];
+        for (int i = 0; i < argc; i++) {
+          cout << " " << argv[i];
+        }
         cout << endl;
         
         // Show the random seed number
@@ -113,8 +114,9 @@ int main(int argc, char *argv[]) {
     // cmaple::testing(*params);
     
     time(&start_time);
-    if (cmaple::verbose_mode > cmaple::VB_QUIET)
-        cout << "Date and Time: " << ctime(&start_time);
-    
+    if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+      cout << "Date and Time: " << ctime(&start_time);
+    }
+
     return EXIT_SUCCESS;
 }

@@ -1,7 +1,8 @@
 #include "logstream.h"
 using namespace std;
 
-outstreambuf* outstreambuf::open(const char* name, ios::openmode mode) {
+auto outstreambuf::open(const char *name, ios::openmode mode)
+    -> outstreambuf * {
   // if (!(Params::getInstance().suppress_output_flags & OUT_LOG) &&
   // MPIHelper::getInstance().isMaster()) {
   fout.open(name, mode);
@@ -18,11 +19,9 @@ outstreambuf* outstreambuf::open(const char* name, ios::openmode mode) {
   return this;
 }
 
-bool outstreambuf::is_open() {
-  return fout.is_open();
-}
+auto outstreambuf::is_open() -> bool { return fout.is_open(); }
 
-outstreambuf* outstreambuf::close() {
+auto outstreambuf::close() -> outstreambuf * {
   cout.rdbuf(cout_buf);
   if (fout.is_open()) {
     sync();
@@ -32,20 +31,22 @@ outstreambuf* outstreambuf::close() {
   return NULL;
 }
 
-int outstreambuf::overflow(int c) {  // used for output buffer only
+auto outstreambuf::overflow(int c) -> int { // used for output buffer only
   /*if ((verbose_mode >= VB_MIN && MPIHelper::getInstance().isMaster()) ||
   verbose_mode >= VB_MED) if (cout_buf->sputc(c) == EOF) return EOF; if
   (Params::getInstance().suppress_output_flags & OUT_LOG) return c; if
   (!MPIHelper::getInstance().isMaster()) return c; if (fout_buf->sputc(c) ==
   EOF) return EOF; return c;*/
-  if (cout_buf->sputc(c) == EOF)
+  if (cout_buf->sputc(c) == EOF) {
     return EOF;
-  if (fout_buf->sputc(c) == EOF)
+  }
+  if (fout_buf->sputc(c) == EOF) {
     return EOF;
+  }
   return c;
 }
 
-int outstreambuf::sync() {  // used for output buffer only
+auto outstreambuf::sync() -> int { // used for output buffer only
   /*if ((verbose_mode >= VB_MIN && MPIHelper::getInstance().isMaster()) ||
   verbose_mode >= VB_MED) cout_buf->pubsync(); if
   ((Params::getInstance().suppress_output_flags & OUT_LOG) ||
@@ -74,7 +75,7 @@ void LogStream::endLogFile() {
     _out_buf.close();
 }
 
-void LogStream::funcExit(void) {
+void LogStream::funcExit() {
   /*if(_exit_wait_optn) {
       printf("\npress [return] to finish: ");
       fflush(stdout);
@@ -85,6 +86,4 @@ void LogStream::funcExit(void) {
   // MPIHelper::getInstance().finalize();
 }
 
-string LogStream::getLogFilePath() {
-  return log_file_;
-}
+auto LogStream::getLogFilePath() -> string { return log_file_; }

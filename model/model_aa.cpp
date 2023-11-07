@@ -4,10 +4,10 @@ using namespace cmaple;
 
 /*
     following are definitions for various protein models encoded in a string.
-    This string contains the lower triangle of the rate matrix and the state frequencies at the end.
-    It should follow the amino acid order:
-    A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V
-    Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
+    This string contains the lower triangle of the rate matrix and the state
+   frequencies at the end. It should follow the amino acid order: A   R   N   D
+   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V Ala Arg Asn Asp
+   Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
 */
 const char* cmaple::builtin_prot_models = R"(
 #nexus;
@@ -221,7 +221,7 @@ model VT=
 4.6501894691803214 0.7807017855806767 0.4586061981719967 0.4594535241660911 2.2627456996290891 0.6366932501396869 0.8940572875547330 0.6193321034173915 0.5333220944030346 14.8729334615190609 3.5458093276667237 0.7801080335991272 4.0584577156753401 1.7039730522675411 0.5985498912985666 0.9305232113028208 3.4242218450865543 0.5658969249032649 1.0000000000000000
 0.0770764620135024 0.0500819370772208 0.0462377395993731 0.0537929860758246 0.0144533387583345 0.0408923608974345 0.0633579339160905 0.0655672355884439 0.0218802687005936 0.0591969699027449 0.0976461276528445 0.0592079410822730 0.0220695876653368 0.0413508521834260 0.0476871596856874 0.0707295165111524 0.0567759161524817 0.0127019797647213 0.0323746050281867 0.0669190817443274;
 )"
-R"(
+                                          R"(
 model BLOSUM62=
 0.735790389698
 0.485391055466 1.297446705134
@@ -404,7 +404,7 @@ model HIVW=
 24.8094000 0.2794250 0.0744808 2.9178600 0.0050000 0.0050000 2.1995200 2.7962200 0.8274790 24.8231000 2.9534400 0.1280650 14.7683000 2.2800000 0.0050000 0.8626370 0.0050000 0.0050000 1.3548200
 0.0377494 0.0573210 0.0891129 0.0342034 0.0240105 0.0437824 0.0618606 0.0838496 0.0156076 0.0983641 0.0577867 0.0641682 0.0158419 0.0422741 0.0458601 0.0550846 0.0813774 0.0195970 0.0205847 0.0515638;
 )"
-R"(
+                                          R"(
 model JTTDCMUT=
 0.531678
 0.557967 0.451095
@@ -518,7 +518,7 @@ model MTINV=
 2.751362222454670 0.072153227138698 0.065420927831618 0.088077392769029 1.555396905840990 0.065221940911213 0.231186486525368 0.396428077428706 0.008043434782625 8.542589373962890 1.075872855650690 0.056252073499162 1.509852171058890 0.534676724129225 0.162975872809625 0.377288666084473 1.885338569864270 0.128598566560553 0.080346083861554
 0.031742312696925 0.010900704360282 0.061579224631690 0.016149206459683 0.013570105428042 0.014644105857642 0.022311208924484 0.047847519139008 0.011641804656722 0.094322337728935 0.149407059762824 0.044438717775487 0.077262530905012 0.102287040914816 0.026290210516084 0.105939042375617 0.042869117147647 0.020701008280403 0.046556718622687 0.059540023816010;
 )"
-R"(
+                                          R"(
 model Q.PFAM=
 0.531344742
 0.266631781 0.610524242
@@ -651,7 +651,7 @@ model Q.MAMMAL=
 4.300445029 0.107177686 0.082093349 0.228482448 0.278600785 0.094238794 0.325642029 0.868890049 0.081513165 12.950251994 1.879650916 0.097391390 7.158497660 0.733119107 0.145626117 0.152049202 0.573328824 0.113423271 0.125003102
 0.067997000 0.055503000 0.036288000 0.046867000 0.021435000 0.050281000 0.068935000 0.055323000 0.026410000 0.041953000 0.101191000 0.060037000 0.019662000 0.036237000 0.055146000 0.096864000 0.057136000 0.011785000 0.024730000 0.066223000;
 )"
-R"(
+                                          R"(
 model Q.PLANT=
 0.061995451
 0.071787018 0.324146307
@@ -742,7 +742,7 @@ model NQ.BIRD=
 0.353020 0.003671 0.001550 0.011216 0.004391 0.002838 0.025621 0.063330 0.001568 0.600920 0.192704 0.003462 0.154474 0.028747 0.004789 0.007272 0.022534 0.001180 0.000311 -1.483598
 0.066333 0.053982 0.037723 0.047442 0.022723 0.049236 0.071640 0.058487 0.025459 0.045195 0.100085 0.061369 0.020983 0.038111 0.053610 0.089423 0.053556 0.012287 0.027118 0.065238;
 )"
-R"(
+                                          R"(
 model NQ.INSECT=
 -1.158307 0.010073 0.016374 0.018148 0.024562 0.031278 0.050686 0.115871 0.007708 0.016759 0.030487 0.021161 0.017635 0.007697 0.047195 0.387388 0.180867 0.001003 0.005193 0.168222
 0.016988 -0.864366 0.028327 0.009011 0.016427 0.091271 0.017198 0.023080 0.063484 0.009987 0.026047 0.441579 0.010386 0.003027 0.013118 0.047581 0.024505 0.004420 0.007183 0.010747
@@ -835,7 +835,7 @@ model NQ.YEAST=
 0.198675 0.005913 0.007857 0.004763 0.020689 0.009495 0.019917 0.008777 0.004253 0.727245 0.155452 0.012278 0.043536 0.027573 0.012496 0.016617 0.125934 0.001048 0.008587 -1.411103
 0.062250 0.044391 0.048928 0.052085 0.009471 0.039753 0.068567 0.039996 0.018745 0.069961 0.114036 0.081245 0.018619 0.047434 0.030178 0.090883 0.054691 0.008448 0.033789 0.066530;
 )"
-R"(
+                                          R"(
 model FLAVI=
 0.077462
 0.078037 0.000020
@@ -861,249 +861,260 @@ model FLAVI=
 end;
 )";
 
-cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
-{
-    try
-    {
-        num_states_ = 20;
-        init();
-    } catch (std::logic_error e)
-    {
-        throw std::invalid_argument(e.what());
-    }
+cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model)
+    : ModelBase(sub_model) {
+  try {
+    num_states_ = 20;
+    init();
+  } catch (std::logic_error e) {
+    throw std::invalid_argument(e.what());
+  }
 }
 
-cmaple::ModelAA::~ModelAA()
-{
-    if (model_block)
-        delete model_block;
+cmaple::ModelAA::~ModelAA() {
+  if (model_block) {
+    delete model_block;
+  }
 }
 
-void cmaple::ModelAA::initMutationMat()
-{
-    // init variable pointers
-    initPointers();
-    
-    // Get the model_name
-    string name_upper = getModelName();
-    
-    // read model params from string/file
-    bool reversible;
-    ASSERT(num_states_ == 20);
-    model_block = readModelsDefinition(builtin_prot_models);
-    if(!model_block)
-        throw std::logic_error("model_block uninitialized");
-    NxsModel *nxs_model = model_block->findModel(name_upper);
-    if (nxs_model) {
-        if (nxs_model->flag != NM_ATOMIC)
-            throw std::logic_error("Invalid protein model name " + name_upper);
+void cmaple::ModelAA::initMutationMat() {
+  // init variable pointers
+  initPointers();
 
-        reversible = readParametersString(nxs_model->description);
-        
-        // compute root_log_freqs and inverse_root_freqs
-        for (StateType i = 0; i < num_states_; ++i)
-        {
-            inverse_root_freqs[i] = 1.0 / root_freqs[i];
-            root_log_freqs[i] = log(root_freqs[i]);
-        }
-        
-        // reversible models
-        if (reversible)
-        {
-            // rescale the lower diagonal rates
-            rescaleLowerDiagonalRates();
-            
-            // refill the upper diagonal entries by the lower ones
-            RealNumType* mutation_mat_ptr = mutation_mat;
-            StateType inverse_index = num_states_;
-            for (StateType row = 0; row < num_states_; ++row, mutation_mat_ptr += num_states_, inverse_index += num_states_)
-            {
-                StateType tmp_index = inverse_index + row;
-                for (StateType column = row + 1; column < num_states_; ++column, tmp_index += num_states_)
-                    mutation_mat_ptr[column] = mutation_mat[tmp_index];
-            }
-            
-            // compute the diagonal entries
-            RealNumType* mutation_mat_row = mutation_mat;
-            for (StateType i = 0; i <  num_states_; ++i, mutation_mat_row += num_states_)
-            {
-                RealNumType sum = 0;
-                mutation_mat_row[i] = 0;
-                for (StateType j = 0; j <  num_states_; ++j)
-                    sum += mutation_mat_row[j];
-                mutation_mat_row[i] = -sum;
-            }
-        }
-        // non-reversible models
-        // do nothing
+  // Get the model_name
+  string name_upper = getModelName();
 
-        // normalize the QMatrix so that the expected number of substitutions per site is 1
-        normalizeQMatrix();
-        
-        // initialize transposed_mut_mat, diagonal_mut_mat, and freqi_freqj_qij
-        RealNumType* mutation_mat_row = mutation_mat;
-        RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
-        for (StateType i = 0; i <  num_states_; ++i, mutation_mat_row += num_states_, freqi_freqj_qij_row += num_states_)
-        {
-            for (StateType j = 0; j <  num_states_; ++j)
-            {
-                // update freqi_freqj_qij
-                if (i != j)
-                    freqi_freqj_qij_row[j] = root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
-                else
-                    freqi_freqj_qij_row[j] = mutation_mat_row[j];
-                
-                // update the transposed mutation matrix
-                transposed_mut_mat[row_index[j] + i] = mutation_mat_row[j];
-            }
-            
-            // update diagonal
-            diagonal_mut_mat[i] = mutation_mat_row[i];
+  // read model params from string/file
+  bool reversible;
+  ASSERT(num_states_ == 20);
+  model_block = readModelsDefinition(builtin_prot_models);
+  if (!model_block)
+    throw std::logic_error("model_block uninitialized");
+  NxsModel* nxs_model = model_block->findModel(name_upper);
+  if (nxs_model) {
+    if (nxs_model->flag != NM_ATOMIC)
+      throw std::logic_error("Invalid protein model name " + name_upper);
+
+    reversible = readParametersString(nxs_model->description);
+
+    // compute root_log_freqs and inverse_root_freqs
+    for (StateType i = 0; i < num_states_; ++i) {
+      inverse_root_freqs[i] = 1.0 / root_freqs[i];
+      root_log_freqs[i] = log(root_freqs[i]);
+    }
+
+    // reversible models
+    if (reversible) {
+      // rescale the lower diagonal rates
+      rescaleLowerDiagonalRates();
+
+      // refill the upper diagonal entries by the lower ones
+      RealNumType* mutation_mat_ptr = mutation_mat;
+      StateType inverse_index = num_states_;
+      for (StateType row = 0; row < num_states_; ++row,
+                     mutation_mat_ptr += num_states_,
+                     inverse_index += num_states_) {
+        StateType tmp_index = inverse_index + row;
+        for (StateType column = row + 1; column < num_states_;
+             ++column, tmp_index += num_states_) {
+          mutation_mat_ptr[column] = mutation_mat[tmp_index];
         }
-        
-        // pre-compute freq_j_transposed_ij_row matrix to speedup
-        RealNumType* transposed_mut_mat_row = transposed_mut_mat;
-        RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
-        
-        for (StateType i = 0; i < num_states_; ++i, transposed_mut_mat_row += num_states_, freq_j_transposed_ij_row += num_states_)
-            setVecByProduct<20>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
+      }
+
+      // compute the diagonal entries
+      RealNumType* mutation_mat_row = mutation_mat;
+      for (StateType i = 0; i < num_states_;
+           ++i, mutation_mat_row += num_states_) {
+        RealNumType sum = 0;
+        mutation_mat_row[i] = 0;
+        for (StateType j = 0; j < num_states_; ++j) {
+          sum += mutation_mat_row[j];
+        }
+        mutation_mat_row[i] = -sum;
+      }
     }
-    // GTR20 or NONREV
-    else if (name_upper.compare("NONREV") == 0 || name_upper.compare("GTR20") == 0)
-    {
-        // init pseu_mutation_counts
-        string model_rates = "1.0";
-        for (StateType i = 0; i < row_index[num_states_] - 1; ++i)
-            model_rates += " 1.0";
-        convert_real_numbers(pseu_mutation_count, model_rates);
-        
-        updateMutationMat<20>();
+    // non-reversible models
+    // do nothing
+
+    // normalize the QMatrix so that the expected number of substitutions per
+    // site is 1
+    normalizeQMatrix();
+
+    // initialize transposed_mut_mat, diagonal_mut_mat, and freqi_freqj_qij
+    RealNumType* mutation_mat_row = mutation_mat;
+    RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
+    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_,
+                   freqi_freqj_qij_row += num_states_) {
+      for (StateType j = 0; j < num_states_; ++j) {
+        // update freqi_freqj_qij
+        if (i != j) {
+          freqi_freqj_qij_row[j] =
+              root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
+        } else {
+          freqi_freqj_qij_row[j] = mutation_mat_row[j];
+        }
+
+        // update the transposed mutation matrix
+        transposed_mut_mat[row_index[j] + i] = mutation_mat_row[j];
+      }
+
+      // update diagonal
+      diagonal_mut_mat[i] = mutation_mat_row[i];
     }
-    else
-        throw std::logic_error("Model not found: " + name_upper);
+
+    // pre-compute freq_j_transposed_ij_row matrix to speedup
+    RealNumType* transposed_mut_mat_row = transposed_mut_mat;
+    RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
+
+    for (StateType i = 0; i < num_states_; ++i,
+                   transposed_mut_mat_row += num_states_,
+                   freq_j_transposed_ij_row += num_states_) {
+      setVecByProduct<20>(freq_j_transposed_ij_row, root_freqs,
+                          transposed_mut_mat_row);
+    }
+  }
+  // GTR20 or NONREV
+  else if (name_upper.compare("NONREV") == 0 ||
+           name_upper.compare("GTR20") == 0) {
+    // init pseu_mutation_counts
+    string model_rates = "1.0";
+    for (StateType i = 0; i < row_index[num_states_] - 1; ++i) {
+      model_rates += " 1.0";
+    }
+    convert_real_numbers(pseu_mutation_count, model_rates);
+
+    updateMutationMat<20>();
+  } else {
+    throw std::logic_error("Model not found: " + name_upper);
+  }
 }
 
-void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
-{
-    StateType row = 1, col = 0;
-    StateType row_index = num_states_;
-    if (is_reversible) {
-        const StateType nrates = 190;
-        // since states for protein is stored in lower-triangle, special treatment is needed
-        for (StateType i = 0; i < nrates; i++, col++) {
-            if (col == row) {
-                row++; col = 0; row_index += num_states_;
-            }
-            // switch col and row
-            // int id = col * (2 * num_states - col - 1) / 2 + (row - col - 1);
-            
-            // don't switch the row and col
-            int id = row_index + col;
-            /*if (id >= nrates) {
-                cout << row << " " << col << endl;
-            }
-            ASSERT(id < nrates && id >= 0); // make sure that the conversion is correct*/
-            
-            string tmp_value;
-            in >> tmp_value;
-            if (!tmp_value.length())
-                throw getModelName() + ": Rate entries could not be read";
-            mutation_mat[id] = convert_real_number(tmp_value.c_str());
+void cmaple::ModelAA::readRates(istream& in, const bool is_reversible) {
+  StateType row = 1, col = 0;
+  StateType row_index = num_states_;
+  if (is_reversible) {
+    const StateType nrates = 190;
+    // since states for protein is stored in lower-triangle, special treatment
+    // is needed
+    for (StateType i = 0; i < nrates; i++, col++) {
+      if (col == row) {
+        row++;
+        col = 0;
+        row_index += num_states_;
+      }
+      // switch col and row
+      // int id = col * (2 * num_states - col - 1) / 2 + (row - col - 1);
 
-            if (mutation_mat[id] < 0.0)
-                throw "Negative rates found";
-        }
-    } else {
-        // non-reversible model, read the whole rate matrix
-        RealNumType* mutation_mat_ptr = mutation_mat;
-        for (row = 0; row < num_states_; row++) {
-            RealNumType row_sum = 0.0;
-            for (col = 0; col < num_states_; col++, ++mutation_mat_ptr)
-            {
-                string tmp_value;
-                in >> tmp_value;
-                if (!tmp_value.length())
-                    throw getModelName() + ": Rate entries could not be read";
-                mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
-                
-                if (mutation_mat_ptr[0] < 0.0 && row != col)
-                    throw "Negative rates found";
-                row_sum += mutation_mat_ptr[0];
-            }
-            if (fabs(row_sum) > 1e-3)
-                throw "Row " + convertIntToString(row) + " does not sum to 0";
-        }
+      // don't switch the row and col
+      int id = row_index + col;
+      /*if (id >= nrates) {
+          cout << row << " " << col << endl;
+      }
+      ASSERT(id < nrates && id >= 0); // make sure that the conversion is
+      correct*/
+
+      string tmp_value;
+      in >> tmp_value;
+      if (!tmp_value.length())
+        throw getModelName() + ": Rate entries could not be read";
+      mutation_mat[id] = convert_real_number(tmp_value.c_str());
+
+      if (mutation_mat[id] < 0.0) {
+        throw "Negative rates found";
+      }
     }
-    
-    
+  } else {
+    // non-reversible model, read the whole rate matrix
+    RealNumType* mutation_mat_ptr = mutation_mat;
+    for (row = 0; row < num_states_; row++) {
+      RealNumType row_sum = 0.0;
+      for (col = 0; col < num_states_; col++, ++mutation_mat_ptr) {
+        string tmp_value;
+        in >> tmp_value;
+        if (!tmp_value.length())
+          throw getModelName() + ": Rate entries could not be read";
+        mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
+
+        if (mutation_mat_ptr[0] < 0.0 && row != col) {
+          throw "Negative rates found";
+        }
+        row_sum += mutation_mat_ptr[0];
+      }
+      if (fabs(row_sum) > 1e-3)
+        throw "Row " + convertIntToString(row) + " does not sum to 0";
+    }
+  }
 }
 
 void cmaple::ModelAA::rescaleLowerDiagonalRates() {
-    RealNumType max_rate = 0.0;
+  RealNumType max_rate = 0.0;
 
-    RealNumType* mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
-    {
-        for (StateType j = 0; j < i; ++j)
-            max_rate = max_rate > mutation_mat_row[j] ? max_rate : mutation_mat_row[j];
+  RealNumType* mutation_mat_row = mutation_mat;
+  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
+    for (StateType j = 0; j < i; ++j) {
+      max_rate =
+          max_rate > mutation_mat_row[j] ? max_rate : mutation_mat_row[j];
     }
+  }
 
-    const RealNumType AA_SCALE = 10.0;
-    RealNumType scaler = AA_SCALE / max_rate;
+  const RealNumType AA_SCALE = 10.0;
+  RealNumType scaler = AA_SCALE / max_rate;
 
-    /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
+  /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
 
-    mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
-    {
-        for (StateType j = 0; j < i; ++j)
-            mutation_mat_row[j] *= scaler;
+  mutation_mat_row = mutation_mat;
+  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
+    for (StateType j = 0; j < i; ++j) {
+      mutation_mat_row[j] *= scaler;
     }
+  }
 }
 
-void cmaple::ModelAA::rescaleAllRates()
-{
-    RealNumType max_rate = 0.0;
+void cmaple::ModelAA::rescaleAllRates() {
+  RealNumType max_rate = 0.0;
 
-    RealNumType* mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
-    {
-        for (StateType j = 0; j < num_states_; ++j)
-            max_rate = max_rate > mutation_mat_row[j] ? max_rate : mutation_mat_row[j];
+  RealNumType* mutation_mat_row = mutation_mat;
+  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
+    for (StateType j = 0; j < num_states_; ++j) {
+      max_rate =
+          max_rate > mutation_mat_row[j] ? max_rate : mutation_mat_row[j];
     }
+  }
 
-    const RealNumType AA_SCALE = 10.0;
-    RealNumType scaler = AA_SCALE / max_rate;
+  const RealNumType AA_SCALE = 10.0;
+  RealNumType scaler = AA_SCALE / max_rate;
 
-    /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
-    mutation_mat_row = mutation_mat;
-    for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
-    {
-        for (StateType j = 0; j < num_states_; ++j)
-            mutation_mat_row[j] *= scaler;
+  /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
+  mutation_mat_row = mutation_mat;
+  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
+    for (StateType j = 0; j < num_states_; ++j) {
+      mutation_mat_row[j] *= scaler;
     }
+  }
 }
 
-bool cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln)
-{
-    // only handle GTR20 or NONREV
-    if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV))
-        return updateMutationMatEmpiricalTemplate<20>(aln);
-    
-    // no update -> return false;
-    return false;
+auto cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln) -> bool {
+  // only handle GTR20 or NONREV
+  if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV)) {
+    return updateMutationMatEmpiricalTemplate<20>(aln);
+  }
+
+  // no update -> return false;
+  return false;
 }
 
-void cmaple::ModelAA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
-{
-    // only handle GTR20 or NONREV
-    if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV))
-        ModelBase::updatePesudoCount(aln, regions1, regions2);
+void cmaple::ModelAA::updatePesudoCount(const Alignment* aln,
+                                        const SeqRegions& regions1,
+                                        const SeqRegions& regions2) {
+  // only handle GTR20 or NONREV
+  if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV)) {
+    ModelBase::updatePesudoCount(aln, regions1, regions2);
+  }
 }
 
-void cmaple::ModelAA::extractRootFreqs(const Alignment* aln)
-{
-    // only extract root freqs for GTR20 or NONREV
-    if (sub_model == GTR20 || sub_model == NONREV)
-        ModelBase::extractRootFreqs(aln);
+void cmaple::ModelAA::extractRootFreqs(const Alignment* aln) {
+  // only extract root freqs for GTR20 or NONREV
+  if (sub_model == GTR20 || sub_model == NONREV) {
+    ModelBase::extractRootFreqs(aln);
+  }
 }

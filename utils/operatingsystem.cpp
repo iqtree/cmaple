@@ -14,7 +14,7 @@
 #include <unistd.h>  //for isatty
 #endif
 
-std::string getOSName() {
+auto getOSName() -> std::string {
   std::stringstream out;
 #if defined _WIN32 || defined WIN32 || defined WIN64
   out << "Windows";
@@ -31,7 +31,7 @@ std::string getOSName() {
   return out.str();
 }
 
-bool isStandardOutputATerminal() {
+auto isStandardOutputATerminal() -> bool {
 #if defined(WIN32) || defined(WIN64)
   return _isatty(fileno(stdout));
 #else

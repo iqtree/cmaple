@@ -26,6 +26,7 @@
 #pragma once
 
 #include <cmaple_config.h>
+#include <sys/stat.h>
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
@@ -43,7 +44,6 @@
 #include <sstream>
 #include <stack>
 #include <string>
-#include <sys/stat.h>
 #include <thread>
 #include <vector>
 #include "operatingsystem.h"
@@ -54,20 +54,26 @@
 #ifdef NDEBUG
 #define ASSERT(EXPRESSION) ((void)0)
 #else
-    #if defined(__GNUC__) || defined(__clang__)
-        #define ASSERT(EXPRESSION) ((EXPRESSION) ? (void)0 : cmaple::_my_assert(#EXPRESSION, __PRETTY_FUNCTION__, __FILE__, __LINE__))
-    #else
-        #define ASSERT(EXPRESSION) ((EXPRESSION) ? (void)0 : cmaple::_my_assert(#EXPRESSION, __func__, __FILE__, __LINE__))
-    #endif
+#if defined(__GNUC__) || defined(__clang__)
+#define ASSERT(EXPRESSION)                                             \
+  ((EXPRESSION) ? (void)0                                              \
+                : cmaple::_my_assert(#EXPRESSION, __PRETTY_FUNCTION__, \
+                                     __FILE__, __LINE__))
+#else
+#define ASSERT(EXPRESSION) \
+  ((EXPRESSION)            \
+       ? (void)0           \
+       : cmaple::_my_assert(#EXPRESSION, __func__, __FILE__, __LINE__))
 #endif
-
+#endif
 
 #define USE_HASH_MAP
 
 #if defined(__GNUC__) && !defined(GCC_VERSION)
-#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-//#else
-//#define GCC_VERSION 0
+#define GCC_VERSION \
+  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+// #else
+// #define GCC_VERSION 0
 #endif
 
 // for MSVC
@@ -79,51 +85,54 @@
 //    #include <unordered_map>
 //    #include <unordered_set>
 
-    #if defined(_MSC_VER)
-        #include <unordered_map>
-        #include <unordered_set>
-    #elif defined(__clang__)
-        // libc++ detected:     _LIBCPP_VERSION
-        // libstdc++ detected:  __GLIBCXX__
-        #if __has_include(<unordered_map>) // defines _LIBCPP_VERSION
-            #include <unordered_map>
-            #include <unordered_set>
-        #else
-            #include <tr1/unordered_map>
-            #include <tr1/unordered_set>
-            using namespace std::tr1;
-        #endif
-    #elif !defined(__GNUC__)
-        #include <hash_map>
-        #include <hash_set>
-        using namespace stdext;
-    #elif GCC_VERSION < 40300
-        #include <ext/hash_map>
-        #include <ext/hash_set>
-        using namespace __gnu_cxx;
-        #define unordered_map hash_map
-        #define unordered_set hash_set
-    /*
-    NHANLT: resolve ambiguous reference
-    std::tr1 is Technical Report 1, a proposal of extensions for C++0X when waiting for C++11 to get approved.
-    Most of features (including std::tr1::unordered_map/set) in Technical Report 1 had been merged into C++11.
-    C++11 had been fully implemented since GCC 4.8.1 -> we only need to use std::tr1 in GCC older than 4.8.1
-    */
-    #elif GCC_VERSION < 40800
-        #include <tr1/unordered_map>
-        #include <tr1/unordered_set>
-        using namespace std::tr1;
-     #else
-        #include <unordered_map>
-        #include <unordered_set>
-    #endif
-
+#if defined(_MSC_VER)
+#include <unordered_map>
+#include <unordered_set>
+#elif defined(__clang__)
+// libc++ detected:     _LIBCPP_VERSION
+// libstdc++ detected:  __GLIBCXX__
+#if __has_include(<unordered_map>)  // defines _LIBCPP_VERSION
+#include <unordered_map>
+#include <unordered_set>
 #else
-    #include <map>
-    #include <set>
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
+using namespace std::tr1;
+#endif
+#elif !defined(__GNUC__)
+#include <hash_map>
+#include <hash_set>
+using namespace stdext;
+#elif GCC_VERSION < 40300
+#include <ext/hash_map>
+#include <ext/hash_set>
+using namespace __gnu_cxx;
+#define unordered_map hash_map
+#define unordered_set hash_set
+/*
+NHANLT: resolve ambiguous reference
+std::tr1 is Technical Report 1, a proposal of extensions for C++0X when waiting
+for C++11 to get approved. Most of features (including
+std::tr1::unordered_map/set) in Technical Report 1 had been merged into C++11.
+C++11 had been fully implemented since GCC 4.8.1 -> we only need to use std::tr1
+in GCC older than 4.8.1
+*/
+#elif GCC_VERSION < 40800
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
+using namespace std::tr1;
+#else
+#include <unordered_map>
+#include <unordered_set>
 #endif
 
-#if    defined(USE_HASH_MAP) && GCC_VERSION < 40300 && !defined(_MSC_VER) && !defined(__clang__)
+#else
+#include <map>
+#include <set>
+#endif
+
+#if defined(USE_HASH_MAP) && GCC_VERSION < 40300 && !defined(_MSC_VER) && \
+    !defined(__clang__)
 /*
         Define the hash function of Split
  */
@@ -133,1010 +142,1056 @@ namespace stdext
 namespace __gnu_cxx
 #endif
 {
-    template<>
-    struct hash<string> {
+template <>
+struct hash<string> {
+  size_t operator()(string str) const {
+    hash<const char*> hash_str;
+    return hash_str(str.c_str());
+  }
+};
+}  // namespace stdext
+#endif  // USE_HASH_MAP
 
-        size_t operator()(string str) const {
-            hash<const char*> hash_str;
-            return hash_str(str.c_str());
-        }
-    };
-} // namespace
-#endif // USE_HASH_MAP
-
-namespace cmaple
-{
-    // redefine assertion
-    inline void _my_assert(const char* expression, const char *func, const char* file, int line)
-    {
-        char *sfile = (char*)strrchr(file, '/');
-        if (!sfile) sfile = (char*)file; else sfile++;
-        std::cerr << sfile << ":" << line << ": " << func << ": Assertion `" << expression << "' failed." << std::endl;
-        abort();
-    }
-
-    /**
-        Type of site states
-     */
-    typedef uint16_t StateType;
-
-    /**
-        Type of site positions
-     */
-    typedef int32_t PositionType;
-
-    /**
-        Type of the number of sequences
-     */
-    typedef uint32_t NumSeqsType;
-
-    /**
-        Type of segment lengths
-     */
-    typedef int16_t LengthType;
-    /**
-        Type of segment lengths (to check if 16 bit is sufficient)
-     */
-    typedef int32_t LengthTypeLarge;
-
-    /**
-        Type of real numbers
-     */
-    typedef double RealNumType;
-
-    /**
-        vector of real number number
-     */
-    typedef std::vector<RealNumType> RealNumberVector;
-
-    /**
-        vector of int
-     */
-    typedef std::vector<int> IntList;
-
-
-    /**
-        vector of int
-     */
-    typedef std::vector<int> IntVector;
-
-    /**
-        vector of bool
-     */
-    typedef std::vector<bool> BoolVector;
-
-
-    /**
-        vector of char
-     */
-    typedef std::vector<char> CharVector;
-
-    /**
-        vector of string
-     */
-    typedef std::vector<std::string> StrVector;
-
-    /**
-        Unsigned integers
-     */
-    typedef unsigned int UINT;
-
-    /**
-     *  Types of sequence regions
-     */
-    enum RegionType : StateType {
-        TYPE_R = 250,
-        TYPE_O,
-        TYPE_N,
-        TYPE_DEL,
-        TYPE_INVALID
-    };
-
-    /**
-        verbose mode, determine how verbose should the screen be printed.
-     */
-    enum VerboseMode {
-        VB_QUIET, VB_MIN, VB_MED, VB_MAX, VB_DEBUG
-    };
-
-    /**
-        verbose level on the screen
-     */
-    extern VerboseMode verbose_mode;
-
-    /**
-     @private
-     Index for a mininode of a phylonode
-     */
-    enum MiniIndex : NumSeqsType
-    {
-        TOP,
-        LEFT,
-        RIGHT,
-        UNDEFINED // to handle case return node = null
-    };
-
-    /*--------------------------- NODE's INDEX -----------------------------------*/
-    /**
-     @private
-     Holds a space efficient index into a vector<PhyloNode> and subindex for the MiniNode inside the Phylonode
-     */
-    struct Index
-    {
-        /**
-            constructor
-            it's required by the constructor of LeafNode
-         */
-        Index(): vector_index_(0), mini_index_(UNDEFINED) {};
-        
-        /**
-            constructor
-         */
-        Index(NumSeqsType vec_index, MiniIndex mini_index): vector_index_(vec_index), mini_index_(mini_index) {};
-
-        /**
-            return the mini-index
-         */
-        const MiniIndex getMiniIndex() const
-        {
-            return mini_index_;
-        }
-        
-        /**
-            return the mini-index of the other next node (i.e., getFlipMiniIndex(LEFT) = RIGHT; getFlipMiniIndex(RIGHT) = LEFT)
-         */
-        const MiniIndex getFlipMiniIndex() const
-        {
-            return MiniIndex(3 - mini_index_);
-        }
-        
-        /**
-            set the mini-index
-         */
-        void setMiniIndex(MiniIndex mini_index)
-        {
-            mini_index_ = mini_index;
-        }
-
-        /**
-            return the index of a phylonode
-         */
-        const NumSeqsType getVectorIndex() const
-        {
-            return vector_index_;
-        }
-        
-        /**
-            set the index of a phylonode
-         */
-        void setVectorIndex(NumSeqsType vec_index)
-        {
-            vector_index_ = vec_index;
-        }
-        
-        /**
-            Check two indexes are equally
-         */
-        bool operator==(Index &rhs) const
-        {
-            return (vector_index_ == rhs.getVectorIndex() && mini_index_ == rhs.getMiniIndex());
-        }
-        
-    private:
-        NumSeqsType vector_index_ : 30 {0};
-        MiniIndex mini_index_ : 2 {UNDEFINED};
-    };
-    /*--------------------------- NODE's INDEX -----------------------------------*/
-
-
-    /*--------------------------------------------------------------*/
-    /*--------------------------------------------------------------*/
-    const char REF_NAME[] = "REF";
-    const int MIN_NUM_TAXA = 3;
-    const RealNumType MIN_NEGATIVE = std::numeric_limits<RealNumType>::lowest();// -FLT_MAX;
-    const RealNumType MIN_POSITIVE = (std::numeric_limits<RealNumType>::min)();// FLT_MIN;
-    //const RealNumType INVERSE_MIN_POSITIVE = 1.0 / MIN_POSITIVE;
-    //const RealNumType LOG_MIN_POSITIVE = log(MIN_POSITIVE);
-    const RealNumType MAX_POSITIVE = (std::numeric_limits<RealNumType>::max)();
-    const RealNumType LOG_MAX_POSITIVE = log(MAX_POSITIVE);
-
-    template <class T> constexpr T getMinCarryOver();
-    template<> constexpr double getMinCarryOver<double>() { return 1e-250; }; // of -308
-    template<> constexpr float getMinCarryOver<float>() { return 1e-36f; };    // of -38
-
-    const RealNumType MIN_CARRY_OVER = getMinCarryOver<RealNumType>();
-    const RealNumType MEAN_SUBS_PER_SITE = 0.02;
-    const RealNumType MAX_SUBS_PER_SITE = 0.067;
-
-
-
-
-    /*--------------------------------------------------------------*/
-    /*--------------------------------------------------------------*/
-
-    /**
-     @private
-     Program parameters, everything is specified here */
-    class Params {
-    private:
-        /*! \brief Default constructor - Initializing all program parameters using the default values.
-         */
-        Params();
-        
-        // declare ParamsBuilder as a friend class to allow it access to the default contructor Params();
-        friend class ParamsBuilder;
-        
-    public:
-        
-        /**
-         * @private
-         *  Path to input sequences
-         */
-        std::string aln_path;
-        
-        /**
-         * @private
-         *  Name of an alignment that contains the reference sequence
-         */
-        std::string ref_path;
-        
-        /**
-         * @private
-         *  Name of the reference sequence
-         */
-        std::string ref_seqname;
-        
-        /**
-         * @private
-         *  Alignment format
-         */
-        std::string aln_format_str;
-        
-        /**
-         * @private
-         * Substitution model (e.g., HKY, GTR, JC, etc.)
-         */
-        std::string sub_model_str;
-        
-        /**
-         @private
-            TRUE to override the output files
-         */
-        bool overwrite_output;
-        
-        /**
-         @private
-            TRUE to fixed the branch lengths in the input tree
-         */
-        bool fixed_blengths;
-        
-        /**
-         * @private
-         * A relative probability threshold, which is used to ignore possible states with very low probabilities. Default: 1e-8
-         */
-        RealNumType threshold_prob;
-        
-        /**
-         * @private
-         * threshold_prob ^ 2
-         */
-        RealNumType threshold_prob2;
-        
-        /**
-         * @private
-         *      The number to limit the attempts of seeking a placement for a sample
-         */
-        int failure_limit_sample;
-        
-        /**
-         @private
-        *      The number to limit the attempts of seeking a placement for a subtree
-        */
-        int failure_limit_subtree;
-        
-        /**
-         @private
-        *      The number to limit the attempts of seeking a placement for a subtree (short range search
-        */
-        int failure_limit_subtree_short_search;
-        
-        /**
-         @private
-        *       TRUE to apply strict stop rules when seeking placement for a new sample
-         */
-        bool strict_stop_seeking_placement_sample;
-        
-        /**
-         @private
-        *       TRUE to apply strict stop rules when seeking placement for a subtree
-         */
-        bool strict_stop_seeking_placement_subtree;
-        
-        /**
-         @private
-        *       TRUE to apply strict stop rules when seeking placement for a subtree (short range search)
-         */
-        bool strict_stop_seeking_placement_subtree_short_search;
-        
-        /**
-         @private
-        *  Threshold of loglh to continue explore the subtree to seek a placement for a sample
-        */
-        RealNumType thresh_log_lh_sample;
-        
-        /**
-         @private
-        *  Threshold of loglh to continue explore the subtree to seek a placement for a subtree
-        */
-        RealNumType thresh_log_lh_subtree;
-        
-        /**
-         @private
-        *  Threshold of loglh to continue explore the subtree to seek a placement for a subtree (short range search)
-        */
-        RealNumType thresh_log_lh_subtree_short_search;
-        
-        /**
-         @private
-        *  Threshold of loglh to count failure
-        */
-        RealNumType thresh_log_lh_failure;
-        
-        /**
-         * @private
-         * A minimum value of the branch lengths. Default: -1 (UNSPECIFIED), the minimum branch length is computed from 'min_blength_factor'
-         */
-        RealNumType fixed_min_blength;
-        
-        /**
-         * @private
-        *  A factor to compute the minimum branch length (if fixed_min_blength is specified, this factor is ignored). Default: 0.2
-        * <br>\<Minimum branch length> = \<min_blength_factor> * \<default branch length>
-        * <br> where \<default branch length> is one mutation per site.
-        */
-        RealNumType min_blength_factor;
-        
-        /**
-         * @private
-        * A factor to compute the maximum branch length. Default: 40
-        * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch length>
-        * <br> where \<default branch length> is one mutation per site.
-        */
-        RealNumType max_blength_factor;
-        
-        /**
-         @private
-        *  The minium branch length (for mid-branch point) to try for placement
-        */
-        RealNumType min_blength_mid_factor;
-        
-        /**
-         @private
-        *  Threshold to determine whether a changed partial is different from its former value
-        */
-        RealNumType thresh_diff_update;
-        
-        /**
-         @private
-        *  Threshold to determine whether a changed partial is different from its former value by folds
-        */
-        RealNumType thresh_diff_fold_update;
-        
-        /**
-         * @private
-         * The period (in term of the number of sample placements) to update the substitution rate matrix. Default: 25
-         */
-        PositionType mutation_update_period;
-        
-        /**
-         @private
-        *  Name of the output alignment
-        */
-        std::string output_aln;
-        
-        /**
-         @private
-        *  Format of the output alignment
-        */
-        std::string output_aln_format_str;
-        
-        /**
-         @private
-        *  Path to an input tree
-        */
-        std::string input_treefile;
-        
-        /**
-         * @private
-         * The number of times we traverse the tree looking for topological improvements (applying SPR moves). Default: 1
-         */
-        int32_t num_tree_improvement;
-        
-        /**
-         * @private
-         *  Do not try to apply SPR moves on nodes that have the placement cost (i.e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default: -1e-5
-         */
-        RealNumType thresh_placement_cost;
-        
-        /**
-         * @private
-         *  Threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default: 1
-         */
-        RealNumType thresh_entire_tree_improvement;
-        
-        /**
-         @private
-        *  Don't try to re-place nodes (during short range topology search) that have the placement cost exceeds this threshold
-        */
-        RealNumType thresh_placement_cost_short_search;
-        
-        /**
-         @private
-        *  format of the output tree
-        */
-        std::string tree_format_str;
-        
-        /**
-         @private
-        *  TRUE to run an additional short range search for tree topology improvement
-        */
-        bool shallow_tree_search;
-        
-        /**
-         @private
-        *  path to output testing codes
-        */
-        char* output_testing;
-        
-        /**
-         @private
-        * TRUE to compute aLRT-SH
-        */
-        bool compute_aLRT_SH;
-        
-        /**
-         @private
-        * Number of replicates to compute aLRT-SH
-        */
-        PositionType aLRT_SH_replicates;
-        
-        /**
-         @private
-        * (Half) epsilon value when computing aLRT-SH
-        */
-        RealNumType aLRT_SH_half_epsilon;
-        
-        /**
-         @private
-        * number of threads
-        */
-        uint32_t num_threads;
-        
-        /**
-         @private
-        * A seed number for random generators. Default: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number.
-        */
-        uint64_t ran_seed;
-        
-        /**
-         @private
-        *  prefix output
-        */
-        std::string output_prefix;
-        
-        /**
-         @private
-        *  TRUE to allow replace the input tree by its NNI neighbor (with a higher lh) when computing aLRT-SH
-        */
-        bool allow_replace_input_tree;
-        
-        /**
-         @private
-        *  type of sequences
-        */
-        std::string seq_type_str;
-        
-        /**
-         @private
-        *  type of tree search
-        */
-        std::string tree_search_type_str;
-        
-        /**
-         * @private
-         * TRUE to make the processes of outputting->re-inputting a tree consistent
-         */
-        bool make_consistent;
-        
-        /*
-            TRUE to log debugging
-         */
-        // bool debug = false;
-    };
+namespace cmaple {
+// redefine assertion
+inline void _my_assert(const char* expression,
+                       const char* func,
+                       const char* file,
+                       int line) {
+  char* sfile = (char*)strrchr(file, '/');
+  if (!sfile)
+    sfile = (char*)file;
+  else
+    sfile++;
+  std::cerr << sfile << ":" << line << ": " << func << ": Assertion `"
+            << expression << "' failed." << std::endl;
+  abort();
+}
 
 /**
- A PatternBuilder to build an instance of Params which stores all program parameters.
- <br> One can build an instance of Params and specify several parameters by: ParamsBuilder().withRandomSeed().withFixedMinBlength().with<...>().build();
+    Type of site states
  */
-class ParamsBuilder {
-public:
-    
-    /*! \brief Default constructor - Initializing a builder using the default values.
-     */
-    ParamsBuilder();
-    
-    /*! \brief Specify a seed number for random generators. Default: the clock of the PC. Be careful! To make the results reproducible, users should specify the seed number.
-     * @param[in] seed A non-negative number
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if seed is negative
-     */
-    ParamsBuilder& withRandomSeed(const uint64_t& seed);
-    
-    /*! \brief Specify a relative probability threshold, which is used to ignore possible states with very low probabilities. Default: 1e-8
-     * @param[in] thresh_prob A positive relative probability threshold
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if thresh\_prob is non-positive
-     */
-    ParamsBuilder& withThreshProb(const double& thresh_prob);
-    
-    /*! \brief Specify a factor to compute the minimum branch length (if fixed\_min\_blength is specified, this factor is ignored). Default: 0.2
-     * <br>\<Minimum branch length> = \<min_blength_factor> * \<default branch length>
-     * <br> where \<default branch length> is one mutation per site.
-     *
-     * @param[in] min_blength_factor A positive factor to compute the minimum branch length
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if min\_blength\_factor is non-positive
-     */
-    ParamsBuilder& withMinBlengthFactor(const double& min_blength_factor);
-    
-    /*! \brief Specify a factor to compute the maximum branch length. Default: 40
-     * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch length>
-     * <br> where \<default branch length> is one mutation per site.
-     *
-     * @param[in] max_blength_factor A positive factor to compute the maximum branch length
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if max\_blength\_factor is non-positive
-     */
-    ParamsBuilder& withMaxBlengthFactor(const double& max_blength_factor);
-    
-    /*! \brief Specify a minimum value of the branch lengths. Default: the minimum branch length is computed from 'min\_blength\_factor'
-     * @param[in] fixed_min_blength A positive value for the minimum branch lengths
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if fixed\_min\_blength is non-positive
-     */
-    ParamsBuilder& withFixedMinBlength(const double& fixed_min_blength);
-    
-    /*! \brief Specify the period (in term of the number of sample placements) to update the substitution rate matrix. Default: 25
-     * @param[in] mutation_update_period A positive value for the period (in term of the number of sample placements)
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if mutation\_update\_period is non-positive
-     */
-    ParamsBuilder& withMutationUpdatePeriod(const int32_t& mutation_update_period);
-    
-    /*! \brief Specify the number of times we traverse the tree looking for topological improvements (applying SPR moves). Default: 1
-     * @param[in] num_tree_traversal A positive number of tree traversals
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if num\_tree\_traversal is non-positive
-     */
-    ParamsBuilder& withNumTreeTraversal(const int32_t& num_tree_traversal);
-    
-    /*! \brief Specify a threshold that avoids CMaple trying to apply SPR moves on nodes that have the placement cost (i.e. the likelihood contribution by placing a node on the tree) exceeds this threshold. Default: -1e-5
-     * @param[in] SPR_thresh A positive threshold to consider applying SPR moves at nodes
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if SPR\_thresh is non-positive
-     */
-    ParamsBuilder& withSPRThresh(const double& SPR_thresh);
-    
-    /*! \brief Specify a threshold to stop the tree search. If the total log likelihood improvement obtained by an iteration of tree search is lower than this threshold, CMaple stops doing tree search . Default: 1
-     * @param[in] stop_search_thresh A positive value for the threshold to stop the tree search
-     * @return A reference to the ParamsBuilder instance
-     * @throw std::invalid\_argument if stop\_search\_thresh is non-positive
-     */
-    ParamsBuilder& withStopTreeSearchThresh(const double& stop_search_thresh);
-    
-    /*! \brief Build the Params object after initializing parameters
-     * @return a unique pointer to an instance of Params
-     */
-    std::unique_ptr<cmaple::Params> build();
-    
-private:
-    
-    /**
-     * @private
-     * Pointer to a Params object
-     */
-    std::unique_ptr<Params> params_ptr{};
+typedef uint16_t StateType;
+
+/**
+    Type of site positions
+ */
+typedef int32_t PositionType;
+
+/**
+    Type of the number of sequences
+ */
+typedef uint32_t NumSeqsType;
+
+/**
+    Type of segment lengths
+ */
+typedef int16_t LengthType;
+/**
+    Type of segment lengths (to check if 16 bit is sufficient)
+ */
+typedef int32_t LengthTypeLarge;
+
+/**
+    Type of real numbers
+ */
+typedef double RealNumType;
+
+/**
+    vector of real number number
+ */
+typedef std::vector<RealNumType> RealNumberVector;
+
+/**
+    vector of int
+ */
+typedef std::vector<int> IntList;
+
+/**
+    vector of int
+ */
+typedef std::vector<int> IntVector;
+
+/**
+    vector of bool
+ */
+typedef std::vector<bool> BoolVector;
+
+/**
+    vector of char
+ */
+typedef std::vector<char> CharVector;
+
+/**
+    vector of string
+ */
+typedef std::vector<std::string> StrVector;
+
+/**
+    Unsigned integers
+ */
+typedef unsigned int UINT;
+
+/**
+ *  Types of sequence regions
+ */
+enum RegionType : StateType {
+  TYPE_R = 250,
+  TYPE_O,
+  TYPE_N,
+  TYPE_DEL,
+  TYPE_INVALID
 };
 
-    /*--------------------------------------------------------------*/
-    /*--------------------------------------------------------------*/
+/**
+    verbose mode, determine how verbose should the screen be printed.
+ */
+enum VerboseMode { VB_QUIET, VB_MIN, VB_MED, VB_MAX, VB_DEBUG };
 
-    /**
-        Print error message then exit program
-     */
-    void outError(const char *error, bool quit = true);
+/**
+    verbose level on the screen
+ */
+extern VerboseMode verbose_mode;
 
-    /**
-        Print error message then exit program
-     */
-    void outError(const std::string &error, bool quit = true);
+/**
+ @private
+ Index for a mininode of a phylonode
+ */
+enum MiniIndex : NumSeqsType {
+  TOP,
+  LEFT,
+  RIGHT,
+  UNDEFINED  // to handle case return node = null
+};
 
+/*--------------------------- NODE's INDEX -----------------------------------*/
+/**
+ @private
+ Holds a space efficient index into a vector<PhyloNode> and subindex for the
+ MiniNode inside the Phylonode
+ */
+struct Index {
+  /**
+      constructor
+      it's required by the constructor of LeafNode
+   */
+  Index() : vector_index_(0), mini_index_(UNDEFINED){};
 
-    /*--------------------------------------------------------------*/
-    /*--------------------------------------------------------------*/
+  /**
+      constructor
+   */
+  Index(NumSeqsType vec_index, MiniIndex mini_index)
+      : vector_index_(vec_index), mini_index_(mini_index){};
 
-    /**
-        Print error messages then exit program
-     */
-    void outError(const char *error, const char *msg, bool quit = true);
+  /**
+      return the mini-index
+   */
+  const MiniIndex getMiniIndex() const { return mini_index_; }
 
-    /**
-        Print error messages then exit program
-     */
-    void outError(const char *error, const std::string &msg, bool quit = true);
+  /**
+      return the mini-index of the other next node (i.e., getFlipMiniIndex(LEFT)
+     = RIGHT; getFlipMiniIndex(RIGHT) = LEFT)
+   */
+  const MiniIndex getFlipMiniIndex() const {
+    return MiniIndex(3 - mini_index_);
+  }
 
-    /**
-        Output a warning message to screen
-        @param error warning message
-     */
-    void outWarning(const char *warn);
-    void outWarning(const std::string &warn);
+  /**
+      set the mini-index
+   */
+  void setMiniIndex(MiniIndex mini_index) { mini_index_ = mini_index; }
 
+  /**
+      return the index of a phylonode
+   */
+  const NumSeqsType getVectorIndex() const { return vector_index_; }
 
-    /** safe version of std::getline to deal with files from different platforms */
-    std::istream& safeGetline(std::istream& is, std::string& t);
+  /**
+      set the index of a phylonode
+   */
+  void setVectorIndex(NumSeqsType vec_index) { vector_index_ = vec_index; }
 
-    /**
-            @return TRUE of ch is a control character (ascii <= 32)
-     */
-    inline bool controlchar(char& ch) {
-        return ch <= 32;
-    }
+  /**
+      Check if two indices are equal
+   */
+  bool operator==(const Index& rhs) const {
+    return (vector_index_ == rhs.getVectorIndex() &&
+            mini_index_ == rhs.getMiniIndex());
+  }
 
-    inline bool is_newick_token(char& ch) {
-        return ch == ':' || ch == ';' || ch == ',' || ch == ')' || ch == '(' || ch == '[' || ch == ']';
-    }
+ private:
+  NumSeqsType vector_index_ : 30 {0};
+  MiniIndex mini_index_ : 2 {UNDEFINED};
+};
+/*--------------------------- NODE's INDEX -----------------------------------*/
 
-    /**
-        change unusual character in names into underscore (_)
-        @param[in/out] name string name
-        @return true if renamed, false otherwise
-     */
-    bool renameString(std::string& name);
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+const char REF_NAME[] = "REF";
+const int MIN_NUM_TAXA = 3;
+const RealNumType MIN_NEGATIVE =
+    std::numeric_limits<RealNumType>::lowest();  // -FLT_MAX;
+const RealNumType MIN_POSITIVE =
+    (std::numeric_limits<RealNumType>::min)();  // FLT_MIN;
+// const RealNumType INVERSE_MIN_POSITIVE = 1.0 / MIN_POSITIVE;
+// const RealNumType LOG_MIN_POSITIVE = log(MIN_POSITIVE);
+const RealNumType MAX_POSITIVE = (std::numeric_limits<RealNumType>::max)();
+const RealNumType LOG_MAX_POSITIVE = log(MAX_POSITIVE);
 
-    /*--------------------------------------------------------------*/
-    /*--------------------------------------------------------------*/
-    /*
-            Error messages
-     */
-    const char ERR_NO_TAXON[] = "Find no taxon with name ";
-    const char ERR_NO_AREA[] = "Find no area with name ";
-    const char ERR_NO_MEMORY[] = "Not enough memory!";
-    const char ERR_NEG_BRANCH[] = "Negative branch length not allowed.";
-    const char ERR_READ_INPUT[] = "File not found or incorrect input, pls check it again.";
-    const char ERR_READ_ANY[] = "Unidentified error while reading file, pls check it carefully again.";
+template <class T>
+constexpr T getMinCarryOver();
+template <>
+constexpr double getMinCarryOver<double>() {
+  return 1e-250;
+};  // of -308
+template <>
+constexpr float getMinCarryOver<float>() {
+  return 1e-36f;
+};  // of -38
 
+const RealNumType MIN_CARRY_OVER = getMinCarryOver<RealNumType>();
+const RealNumType MEAN_SUBS_PER_SITE = 0.02;
+const RealNumType MAX_SUBS_PER_SITE = 0.067;
 
-    /*--------------------------------------------------------------*/
-    /*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
 
-    std::string convertPosTypeToString(PositionType number);
-    std::string convertIntToString(int number);
-    std::string convertInt64ToString(int64_t number);
+/**
+ @private
+ Program parameters, everything is specified here */
+class Params {
+ private:
+  /*! \brief Default constructor - Initializing all program parameters using the
+   * default values.
+   */
+  Params();
 
-    std::string convertDoubleToString(RealNumType number);
+  // declare ParamsBuilder as a friend class to allow it access to the default
+  // contructor Params();
+  friend class ParamsBuilder;
 
-    std::string convertDoubleToString(RealNumType number, uint8_t precision);
+ public:
+  /**
+   * @private
+   *  Path to input sequences
+   */
+  std::string aln_path;
 
-    /**
-     Case-insensitive comparison between two strings
-     @return true if two strings are equal.
-     */
-    bool iEquals(const std::string &a, const std::string &b);
-        
-    /**
-     *
-     * @param SRC
-     * @param DEST
-     * @return bool
-     */
-    bool copyFile(const char SRC[], const char DEST[]);
+  /**
+   * @private
+   *  Name of an alignment that contains the reference sequence
+   */
+  std::string ref_path;
 
-    /**
-     * Check if the file exists
-     * @param strFilename
-     * @return If file exists
-     */
-    bool fileExists(const std::string &strFilename);
+  /**
+   * @private
+   *  Name of the reference sequence
+   */
+  std::string ref_seqname;
 
-    /**
-        Check that path is a directory
-     */
-    int isDirectory(const char *path);
+  /**
+   * @private
+   *  Alignment format
+   */
+  std::string aln_format_str;
 
-    /**
-        Convert string to int, with error checking
-        @param str original string
-        @return the number
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    int convert_int(const char *str);
+  /**
+   * @private
+   * Substitution model (e.g., HKY, GTR, JC, etc.)
+   */
+  std::string sub_model_str;
 
-    /**
-        Convert string to int64, with error checking
-        @param str original string
-        @return the number
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    int64_t convert_int64(const char *str);
+  /**
+   @private
+      TRUE to override the output files
+   */
+  bool overwrite_output;
 
-    /**
-        Convert string to int, with error checking
-        @param str original string
-        @param end_pos end position
-        @return the number
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    int convert_int(const char *str, int &end_pos);
+  /**
+   @private
+      TRUE to fixed the branch lengths in the input tree
+   */
+  bool fixed_blengths;
 
-    /**
-        Convert comma-separated string to integer vector, with error checking
-        @param str original string with integers separated by comma
-        @param vec (OUT) integer vector
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    void convert_int_vec(const char *str, IntVector &vec);
+  /**
+   * @private
+   * A relative probability threshold, which is used to ignore possible states
+   * with very low probabilities. Default: 1e-8
+   */
+  RealNumType threshold_prob;
 
-    /**
-        Convert string to int64_t, with error checking
-        @param str original string
-        @return the number
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    int64_t convert_int64(const char *str);
+  /**
+   * @private
+   * threshold_prob ^ 2
+   */
+  RealNumType threshold_prob2;
 
-    /**
-        Convert string to int64_t, with error checking
-        @param str original string
-        @param end_pos end position
-        @return the number
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    int64_t convert_int64(const char *str, int &end_pos);
+  /**
+   * @private
+   *      The number to limit the attempts of seeking a placement for a sample
+   */
+  int failure_limit_sample;
 
-    /**
-        Convert string to a real number, with error checking
-        @param str original string
-        @return the RealNumType
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    RealNumType convert_real_number(const char *str);
+  /**
+   @private
+  *      The number to limit the attempts of seeking a placement for a subtree
+  */
+  int failure_limit_subtree;
 
-    /**
-        Convert string to real number, with error checking
-        @param str original string
-        @param end_pos end position
-        @return the RealNumType
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    RealNumType convert_real_number(const char *str, int &end_pos);
+  /**
+   @private
+  *      The number to limit the attempts of seeking a placement for a subtree
+  (short range search
+  */
+  int failure_limit_subtree_short_search;
 
-    /**
-        Parse an array of real numbers from a tring
-        @param arr the output array of real_numbers
-        @param input_str A string of  real_numbers
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    void convert_real_numbers(RealNumType* &arr, std::string input_str);
+  /**
+   @private
+  *       TRUE to apply strict stop rules when seeking placement for a new
+  sample
+   */
+  bool strict_stop_seeking_placement_sample;
 
-    /**
-        Convert comma-separated string to integer vector, with error checking
-        @param str original string with integers separated by comma
-        @param vec (OUT) integer vector
-        @param separator char separating elements
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    void convert_real_number_vec(const char *str, RealNumberVector &vec, char separator = ',');
+  /**
+   @private
+  *       TRUE to apply strict stop rules when seeking placement for a subtree
+   */
+  bool strict_stop_seeking_placement_subtree;
 
-    /**
-        Normalize state frequencies so that sum of them is equal to 1
-        @param freqs original state frequencies
-        @param num_states the number of states, i.e. number of indices to normalize
-        @param starting_index Start at certain index of @p freqs (but still normalize @p num_states)
-        @throw std::logic\_error if sum of freqs is zero
-     */
-    void normalize_frequencies_from_index(RealNumType* freqs, int num_states, int starting_index);
+  /**
+   @private
+  *       TRUE to apply strict stop rules when seeking placement for a subtree
+  (short range search)
+   */
+  bool strict_stop_seeking_placement_subtree_short_search;
 
-    /**
-        Normalize entries so that sum of them is equal to 1
-        @param entries original entries
-        @param num_entries the number of entries
-        @param sum_entries Precomputed sum of all original state frequencies
-     */
-    inline void normalize_arr(RealNumType* const entries, const int num_entries, RealNumType sum_entries)
-    {
-      ASSERT(num_entries > 0);
+  /**
+   @private
+  *  Threshold of loglh to continue explore the subtree to seek a placement for
+  a sample
+  */
+  RealNumType thresh_log_lh_sample;
 
-    #ifndef NDEBUG
-      //if (fabs(sum_entries) < 1e-5)
-      //  outError("Sum of entries must be greater than zero!");
-    #endif
+  /**
+   @private
+  *  Threshold of loglh to continue explore the subtree to seek a placement for
+  a subtree
+  */
+  RealNumType thresh_log_lh_subtree;
 
-      sum_entries = 1.0 / sum_entries;
-      for (int i = 0; i < num_entries; ++i)
-        entries[i] *= sum_entries;
-    }
+  /**
+   @private
+  *  Threshold of loglh to continue explore the subtree to seek a placement for
+  a subtree (short range search)
+  */
+  RealNumType thresh_log_lh_subtree_short_search;
 
-    /**
-        Normalize entries so that sum of them is equal to 1
-        @param entries original entries
-        @param num_entries the number of entries
-     */
-    inline void normalize_arr(RealNumType* const entries, const int num_entries)
-    {
-      RealNumType sum_entries = 0;
-      for (int i = 0; i < num_entries; ++i)
-        sum_entries += entries[i];
-      normalize_arr(entries, num_entries, sum_entries);
-    }
-    /**
-     * Convert seconds to hour, minute, second
-     * @param sec Seconds to convert from
-     * @return string represent hour, minute, second
-     */
-    std::string convert_time(const RealNumType sec);
+  /**
+   @private
+  *  Threshold of loglh to count failure
+  */
+  RealNumType thresh_log_lh_failure;
 
+  /**
+   * @private
+   * A minimum value of the branch lengths. Default: -1 (UNSPECIFIED), the
+   * minimum branch length is computed from 'min_blength_factor'
+   */
+  RealNumType fixed_min_blength;
 
-    /**
-        Convert a string to to range lower:upper:step_size with error checking
-        @param str original string
-        @param lower (OUT) lower bound of the range
-        @param upper (OUT) upper bound of the range
-        @param step_size (OUT) step size of the range
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    void convert_range(const char *str, int &lower, int &upper, int &step_size);
+  /**
+   * @private
+   *  A factor to compute the minimum branch length (if fixed_min_blength is
+   * specified, this factor is ignored). Default: 0.2 <br>\<Minimum branch
+   * length> = \<min_blength_factor> * \<default branch length> <br> where
+   * \<default branch length> is one mutation per site.
+   */
+  RealNumType min_blength_factor;
 
-    /**
-        Convert a string to to range lower:upper:step_size with error checking
-        @param str original string
-        @param lower (OUT) lower bound of the range
-        @param upper (OUT) upper bound of the range
-        @param step_size (OUT) step size of the range
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    void convert_range(const char *str, RealNumType &lower, RealNumType &upper, RealNumType &step_size);
+  /**
+   * @private
+   * A factor to compute the maximum branch length. Default: 40
+   * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch
+   * length> <br> where \<default branch length> is one mutation per site.
+   */
+  RealNumType max_blength_factor;
 
-    /**
-        Reinitialize an array of real number (RealNumType*)
-        @param arr the input RealNumType*
-        @param size the size of the input array
-        @param delete_first TRUE to delete the current array before reinitializing
-        @param set_zero TRUE to initialize all new items at 0
-     */
-    void reinitDoubleArr(RealNumType* &arr, StateType size, bool delete_first = true, bool set_zero = true);
+  /**
+   @private
+  *  The minium branch length (for mid-branch point) to try for placement
+  */
+  RealNumType min_blength_mid_factor;
 
-    /**
-        Convert char* into vector of strings separated by separator
-     */
-    void convert_string_vec(const char *str, StrVector &str_vec, char separator = ',');
+  /**
+   @private
+  *  Threshold to determine whether a changed partial is different from its
+  former value
+  */
+  RealNumType thresh_diff_update;
 
-    /**
-        Convert string to PositionType, with error checking
-        @param str original string
-        @return the number
-        @throw std::invalid\_argument if the input str is invalid
-     */
-    PositionType convert_positiontype(const char *str);
+  /**
+   @private
+  *  Threshold to determine whether a changed partial is different from its
+  former value by folds
+  */
+  RealNumType thresh_diff_fold_update;
 
-    /**
-        Check whether a string is a number
-        @param s storing a string
-     */
-    bool is_number(const std::string& s);
+  /**
+   * @private
+   * The period (in term of the number of sample placements) to update the
+   * substitution rate matrix. Default: 25
+   */
+  PositionType mutation_update_period;
 
+  /**
+   @private
+  *  Name of the output alignment
+  */
+  std::string output_aln;
 
-    /**
-        Parse program argument into params
-        @param argc number of arguments
-        @param argv list of arguments
-        @param params (OUT) program parameters
-     */
-    void parseArg(int argc, char *argv[], Params &params);
+  /**
+   @private
+  *  Format of the output alignment
+  */
+  std::string output_aln_format_str;
 
-    /**
-        Show quick start guide
-     */
-    void quickStartGuide();
+  /**
+   @private
+  *  Path to an input tree
+  */
+  std::string input_treefile;
 
-    /**
-        Show help
-     */
-    void usage_cmaple();
+  /**
+   * @private
+   * The number of times we traverse the tree looking for topological
+   * improvements (applying SPR moves). Default: 1
+   */
+  int32_t num_tree_improvement;
 
-    /**
-        Remove white space at the beginning and end of the string
-        @param str (IN/OUT) string to be trimmed
-    */
-    void trimString(std::string &str);
+  /**
+   * @private
+   *  Do not try to apply SPR moves on nodes that have the placement cost (i.e.
+   * the likelihood contribution by placing a node on the tree) exceeds this
+   * threshold. Default: -1e-5
+   */
+  RealNumType thresh_placement_cost;
 
-    /**
-        get number of processor cores
-    */
-    int countPhysicalCPUCores();
+  /**
+   * @private
+   *  Threshold to stop the tree search. If the total log likelihood improvement
+   * obtained by an iteration of tree search is lower than this threshold,
+   * CMaple stops doing tree search . Default: 1
+   */
+  RealNumType thresh_entire_tree_improvement;
 
-    /**
-        Sort an array by quicksort
-        @param arr array for comparison
-        @param arr2 array for sorting
-        @param left the left index
-        @param right the right index
-    */
-    template<class T1, class T2>
-    void quicksort(T1* arr, int left, int right, T2* arr2 = nullptr) {
-        if (left > right) return;
-        ASSERT(left <= right);
-          int i = left, j = right;
-          T1 pivot = arr[(left + right) / 2];
+  /**
+   @private
+  *  Don't try to re-place nodes (during short range topology search) that have
+  the placement cost exceeds this threshold
+  */
+  RealNumType thresh_placement_cost_short_search;
 
-          /* partition */
-          while (i <= j) {
-                while (arr[i] < pivot)
-                      ++i;
-                while (arr[j] > pivot)
-                      --j;
-                if (i <= j) {
-                      T1 tmp = arr[i];
-                      arr[i] = arr[j];
-                      arr[j] = tmp;
-                      if (arr2) {
-                          T2 tmp2 = arr2[i];
-                          arr2[i] = arr2[j];
-                          arr2[j] = tmp2;
-                      }
-                      ++i;
-                      --j;
-                }
-          }
+  /**
+   @private
+  *  format of the output tree
+  */
+  std::string tree_format_str;
 
-          /* recursion */
-          if (left < j)
-                quicksort(arr, left, j, arr2);
-          if (i < right)
-                quicksort(arr, i, right, arr2);
-    }
+  /**
+   @private
+  *  TRUE to run an additional short range search for tree topology improvement
+  */
+  bool shallow_tree_search;
 
-    /**
-     * Print usage for CMaple
-     * @param argv arguments list
-     * @param full_command TRUE to print all available commands, FALSE to print normal usage dialog
-     */
-    void usage_cmaple(char* argv[], bool full_command);
+  /**
+   @private
+  *  path to output testing codes
+  */
+  char* output_testing;
 
-    /**
-     * Print copyright
-     */
-    void printCopyright(std::ostream &out);
+  /**
+   @private
+  * TRUE to compute aLRT-SH
+  */
+  bool compute_aLRT_SH;
 
-    /**
-     * Set number of threads
-     * @param num_threads the number of OpenMP threads
-     * @throw std::invalid\_argument if num\_threads > the number of CPU cores
-     */
-    void setNumThreads(const int num_threads);
+  /**
+   @private
+  * Number of replicates to compute aLRT-SH
+  */
+  PositionType aLRT_SH_replicates;
 
-    /**
-     * make unique pointer, an implementation to make it compatible to c++11
-     */
-    template<typename T, typename... Args>
-    std::unique_ptr<T> make_unique(Args&&... args)
-    {
-        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-    }
+  /**
+   @private
+  * (Half) epsilon value when computing aLRT-SH
+  */
+  RealNumType aLRT_SH_half_epsilon;
 
-    /**
-     * Reset a stream (to the beginning)
-     * @param instream the input stream
-     */
-    void resetStream(std::istream& instream);
+  /**
+   @private
+  * number of threads
+  */
+  uint32_t num_threads;
+
+  /**
+   @private
+  * A seed number for random generators. Default: the clock of the PC. Be
+  careful! To make the results reproducible, users should specify the seed
+  number.
+  */
+  uint64_t ran_seed;
+
+  /**
+   @private
+  *  prefix output
+  */
+  std::string output_prefix;
+
+  /**
+   @private
+  *  TRUE to allow replace the input tree by its NNI neighbor (with a higher lh)
+  when computing aLRT-SH
+  */
+  bool allow_replace_input_tree;
+
+  /**
+   @private
+  *  type of sequences
+  */
+  std::string seq_type_str;
+
+  /**
+   @private
+  *  type of tree search
+  */
+  std::string tree_search_type_str;
+
+  /**
+   * @private
+   * TRUE to make the processes of outputting->re-inputting a tree consistent
+   */
+  bool make_consistent;
+
+  /*
+      TRUE to log debugging
+   */
+  // bool debug = false;
+};
+
+/**
+ A PatternBuilder to build an instance of Params which stores all program
+ parameters. <br> One can build an instance of Params and specify several
+ parameters by:
+ ParamsBuilder().withRandomSeed().withFixedMinBlength().with<...>().build();
+ */
+class ParamsBuilder {
+ public:
+  /*! \brief Default constructor - Initializing a builder using the default
+   * values.
+   */
+  ParamsBuilder();
+
+  /*! \brief Specify a seed number for random generators. Default: the clock of
+   * the PC. Be careful! To make the results reproducible, users should specify
+   * the seed number.
+   * @param[in] seed A non-negative number
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if seed is negative
+   */
+  ParamsBuilder& withRandomSeed(const uint64_t& seed);
+
+  /*! \brief Specify a relative probability threshold, which is used to ignore
+   * possible states with very low probabilities. Default: 1e-8
+   * @param[in] thresh_prob A positive relative probability threshold
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if thresh\_prob is non-positive
+   */
+  ParamsBuilder& withThreshProb(const double& thresh_prob);
+
+  /*! \brief Specify a factor to compute the minimum branch length (if
+   * fixed\_min\_blength is specified, this factor is ignored). Default: 0.2
+   * <br>\<Minimum branch length> = \<min_blength_factor> * \<default branch
+   * length> <br> where \<default branch length> is one mutation per site.
+   *
+   * @param[in] min_blength_factor A positive factor to compute the minimum
+   * branch length
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if min\_blength\_factor is non-positive
+   */
+  ParamsBuilder& withMinBlengthFactor(const double& min_blength_factor);
+
+  /*! \brief Specify a factor to compute the maximum branch length. Default: 40
+   * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch
+   * length> <br> where \<default branch length> is one mutation per site.
+   *
+   * @param[in] max_blength_factor A positive factor to compute the maximum
+   * branch length
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if max\_blength\_factor is non-positive
+   */
+  ParamsBuilder& withMaxBlengthFactor(const double& max_blength_factor);
+
+  /*! \brief Specify a minimum value of the branch lengths. Default: the minimum
+   * branch length is computed from 'min\_blength\_factor'
+   * @param[in] fixed_min_blength A positive value for the minimum branch
+   * lengths
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if fixed\_min\_blength is non-positive
+   */
+  ParamsBuilder& withFixedMinBlength(const double& fixed_min_blength);
+
+  /*! \brief Specify the period (in term of the number of sample placements) to
+   * update the substitution rate matrix. Default: 25
+   * @param[in] mutation_update_period A positive value for the period (in term
+   * of the number of sample placements)
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if mutation\_update\_period is non-positive
+   */
+  ParamsBuilder& withMutationUpdatePeriod(
+      const int32_t& mutation_update_period);
+
+  /*! \brief Specify the number of times we traverse the tree looking for
+   * topological improvements (applying SPR moves). Default: 1
+   * @param[in] num_tree_traversal A positive number of tree traversals
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if num\_tree\_traversal is non-positive
+   */
+  ParamsBuilder& withNumTreeTraversal(const int32_t& num_tree_traversal);
+
+  /*! \brief Specify a threshold that avoids CMaple trying to apply SPR moves on
+   * nodes that have the placement cost (i.e. the likelihood contribution by
+   * placing a node on the tree) exceeds this threshold. Default: -1e-5
+   * @param[in] SPR_thresh A positive threshold to consider applying SPR moves
+   * at nodes
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if SPR\_thresh is non-positive
+   */
+  ParamsBuilder& withSPRThresh(const double& SPR_thresh);
+
+  /*! \brief Specify a threshold to stop the tree search. If the total log
+   * likelihood improvement obtained by an iteration of tree search is lower
+   * than this threshold, CMaple stops doing tree search . Default: 1
+   * @param[in] stop_search_thresh A positive value for the threshold to stop
+   * the tree search
+   * @return A reference to the ParamsBuilder instance
+   * @throw std::invalid\_argument if stop\_search\_thresh is non-positive
+   */
+  ParamsBuilder& withStopTreeSearchThresh(const double& stop_search_thresh);
+
+  /*! \brief Build the Params object after initializing parameters
+   * @return a unique pointer to an instance of Params
+   */
+  std::unique_ptr<cmaple::Params> build();
+
+ private:
+  /**
+   * @private
+   * Pointer to a Params object
+   */
+  std::unique_ptr<Params> params_ptr{};
+};
+
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+
+/**
+    Print error message then exit program
+ */
+void outError(const char* error, bool quit = true);
+
+/**
+    Print error message then exit program
+ */
+void outError(const std::string& error, bool quit = true);
+
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+
+/**
+    Print error messages then exit program
+ */
+void outError(const char* error, const char* msg, bool quit = true);
+
+/**
+    Print error messages then exit program
+ */
+void outError(const char* error, const std::string& msg, bool quit = true);
+
+/**
+    Output a warning message to screen
+    @param error warning message
+ */
+void outWarning(const char* warn);
+void outWarning(const std::string& warn);
+
+/** safe version of std::getline to deal with files from different platforms */
+std::istream& safeGetline(std::istream& is, std::string& t);
+
+/**
+        @return TRUE of ch is a control character (ascii <= 32)
+ */
+inline bool controlchar(char& ch) {
+  return ch <= 32;
 }
+
+inline bool is_newick_token(char& ch) {
+  return ch == ':' || ch == ';' || ch == ',' || ch == ')' || ch == '(' ||
+         ch == '[' || ch == ']';
+}
+
+/**
+    change unusual character in names into underscore (_)
+    @param[in/out] name string name
+    @return true if renamed, false otherwise
+ */
+bool renameString(std::string& name);
+
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+/*
+        Error messages
+ */
+const char ERR_NO_TAXON[] = "Find no taxon with name ";
+const char ERR_NO_AREA[] = "Find no area with name ";
+const char ERR_NO_MEMORY[] = "Not enough memory!";
+const char ERR_NEG_BRANCH[] = "Negative branch length not allowed.";
+const char ERR_READ_INPUT[] =
+    "File not found or incorrect input, pls check it again.";
+const char ERR_READ_ANY[] =
+    "Unidentified error while reading file, pls check it carefully again.";
+
+/*--------------------------------------------------------------*/
+/*--------------------------------------------------------------*/
+
+std::string convertPosTypeToString(PositionType number);
+std::string convertIntToString(int number);
+std::string convertInt64ToString(int64_t number);
+
+std::string convertDoubleToString(RealNumType number);
+
+std::string convertDoubleToString(RealNumType number, uint8_t precision);
+
+/**
+ Case-insensitive comparison between two strings
+ @return true if two strings are equal.
+ */
+bool iEquals(const std::string& a, const std::string& b);
+
+/**
+ *
+ * @param SRC
+ * @param DEST
+ * @return bool
+ */
+bool copyFile(const char SRC[], const char DEST[]);
+
+/**
+ * Check if the file exists
+ * @param strFilename
+ * @return If file exists
+ */
+bool fileExists(const std::string& strFilename);
+
+/**
+    Check that path is a directory
+ */
+int isDirectory(const char* path);
+
+/**
+    Convert string to int, with error checking
+    @param str original string
+    @return the number
+    @throw std::invalid\_argument if the input str is invalid
+ */
+int convert_int(const char* str);
+
+/**
+    Convert string to int64, with error checking
+    @param str original string
+    @return the number
+    @throw std::invalid\_argument if the input str is invalid
+ */
+int64_t convert_int64(const char* str);
+
+/**
+    Convert string to int, with error checking
+    @param str original string
+    @param end_pos end position
+    @return the number
+    @throw std::invalid\_argument if the input str is invalid
+ */
+int convert_int(const char* str, int& end_pos);
+
+/**
+    Convert comma-separated string to integer vector, with error checking
+    @param str original string with integers separated by comma
+    @param vec (OUT) integer vector
+    @throw std::invalid\_argument if the input str is invalid
+ */
+void convert_int_vec(const char* str, IntVector& vec);
+
+/**
+    Convert string to int64_t, with error checking
+    @param str original string
+    @return the number
+    @throw std::invalid\_argument if the input str is invalid
+ */
+int64_t convert_int64(const char* str);
+
+/**
+    Convert string to int64_t, with error checking
+    @param str original string
+    @param end_pos end position
+    @return the number
+    @throw std::invalid\_argument if the input str is invalid
+ */
+int64_t convert_int64(const char* str, int& end_pos);
+
+/**
+    Convert string to a real number, with error checking
+    @param str original string
+    @return the RealNumType
+    @throw std::invalid\_argument if the input str is invalid
+ */
+RealNumType convert_real_number(const char* str);
+
+/**
+    Convert string to real number, with error checking
+    @param str original string
+    @param end_pos end position
+    @return the RealNumType
+    @throw std::invalid\_argument if the input str is invalid
+ */
+RealNumType convert_real_number(const char* str, int& end_pos);
+
+/**
+    Parse an array of real numbers from a tring
+    @param arr the output array of real_numbers
+    @param input_str A string of  real_numbers
+    @throw std::invalid\_argument if the input str is invalid
+ */
+void convert_real_numbers(RealNumType*& arr, std::string input_str);
+
+/**
+    Convert comma-separated string to integer vector, with error checking
+    @param str original string with integers separated by comma
+    @param vec (OUT) integer vector
+    @param separator char separating elements
+    @throw std::invalid\_argument if the input str is invalid
+ */
+void convert_real_number_vec(const char* str,
+                             RealNumberVector& vec,
+                             char separator = ',');
+
+/**
+    Normalize state frequencies so that sum of them is equal to 1
+    @param freqs original state frequencies
+    @param num_states the number of states, i.e. number of indices to normalize
+    @param starting_index Start at certain index of @p freqs (but still
+   normalize @p num_states)
+    @throw std::logic\_error if sum of freqs is zero
+ */
+void normalize_frequencies_from_index(RealNumType* freqs,
+                                      int num_states,
+                                      int starting_index);
+
+/**
+    Normalize entries so that sum of them is equal to 1
+    @param entries original entries
+    @param num_entries the number of entries
+    @param sum_entries Precomputed sum of all original state frequencies
+ */
+inline void normalize_arr(RealNumType* const entries,
+                          const int num_entries,
+                          RealNumType sum_entries) {
+  ASSERT(num_entries > 0);
+
+#ifndef NDEBUG
+  // if (fabs(sum_entries) < 1e-5)
+  //   outError("Sum of entries must be greater than zero!");
+#endif
+
+  sum_entries = 1.0 / sum_entries;
+  for (int i = 0; i < num_entries; ++i)
+    entries[i] *= sum_entries;
+}
+
+/**
+    Normalize entries so that sum of them is equal to 1
+    @param entries original entries
+    @param num_entries the number of entries
+ */
+inline void normalize_arr(RealNumType* const entries, const int num_entries) {
+  RealNumType sum_entries = 0;
+  for (int i = 0; i < num_entries; ++i)
+    sum_entries += entries[i];
+  normalize_arr(entries, num_entries, sum_entries);
+}
+/**
+ * Convert seconds to hour, minute, second
+ * @param sec Seconds to convert from
+ * @return string represent hour, minute, second
+ */
+std::string convert_time(const RealNumType sec);
+
+/**
+    Convert a string to to range lower:upper:step_size with error checking
+    @param str original string
+    @param lower (OUT) lower bound of the range
+    @param upper (OUT) upper bound of the range
+    @param step_size (OUT) step size of the range
+    @throw std::invalid\_argument if the input str is invalid
+ */
+void convert_range(const char* str, int& lower, int& upper, int& step_size);
+
+/**
+    Convert a string to to range lower:upper:step_size with error checking
+    @param str original string
+    @param lower (OUT) lower bound of the range
+    @param upper (OUT) upper bound of the range
+    @param step_size (OUT) step size of the range
+    @throw std::invalid\_argument if the input str is invalid
+ */
+void convert_range(const char* str,
+                   RealNumType& lower,
+                   RealNumType& upper,
+                   RealNumType& step_size);
+
+/**
+    Reinitialize an array of real number (RealNumType*)
+    @param arr the input RealNumType*
+    @param size the size of the input array
+    @param delete_first TRUE to delete the current array before reinitializing
+    @param set_zero TRUE to initialize all new items at 0
+ */
+void reinitDoubleArr(RealNumType*& arr,
+                     StateType size,
+                     bool delete_first = true,
+                     bool set_zero = true);
+
+/**
+    Convert char* into vector of strings separated by separator
+ */
+void convert_string_vec(const char* str,
+                        StrVector& str_vec,
+                        char separator = ',');
+
+/**
+    Convert string to PositionType, with error checking
+    @param str original string
+    @return the number
+    @throw std::invalid\_argument if the input str is invalid
+ */
+PositionType convert_positiontype(const char* str);
+
+/**
+    Check whether a string is a number
+    @param s storing a string
+ */
+bool is_number(const std::string& s);
+
+/**
+    Parse program argument into params
+    @param argc number of arguments
+    @param argv list of arguments
+    @param params (OUT) program parameters
+ */
+void parseArg(int argc, char* argv[], Params& params);
+
+/**
+    Show quick start guide
+ */
+void quickStartGuide();
+
+/**
+    Show help
+ */
+void usage_cmaple();
+
+/**
+    Remove white space at the beginning and end of the string
+    @param str (IN/OUT) string to be trimmed
+*/
+void trimString(std::string& str);
+
+/**
+    get number of processor cores
+*/
+int countPhysicalCPUCores();
+
+/**
+    Sort an array by quicksort
+    @param arr array for comparison
+    @param arr2 array for sorting
+    @param left the left index
+    @param right the right index
+*/
+template <class T1, class T2>
+void quicksort(T1* arr, int left, int right, T2* arr2 = nullptr) {
+  if (left > right)
+    return;
+  ASSERT(left <= right);
+  int i = left, j = right;
+  T1 pivot = arr[(left + right) / 2];
+
+  /* partition */
+  while (i <= j) {
+    while (arr[i] < pivot)
+      ++i;
+    while (arr[j] > pivot)
+      --j;
+    if (i <= j) {
+      T1 tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+      if (arr2) {
+        T2 tmp2 = arr2[i];
+        arr2[i] = arr2[j];
+        arr2[j] = tmp2;
+      }
+      ++i;
+      --j;
+    }
+  }
+
+  /* recursion */
+  if (left < j)
+    quicksort(arr, left, j, arr2);
+  if (i < right)
+    quicksort(arr, i, right, arr2);
+}
+
+/**
+ * Print usage for CMaple
+ * @param argv arguments list
+ * @param full_command TRUE to print all available commands, FALSE to print
+ * normal usage dialog
+ */
+void usage_cmaple(char* argv[], bool full_command);
+
+/**
+ * Print copyright
+ */
+void printCopyright(std::ostream& out);
+
+/**
+ * Set number of threads
+ * @param num_threads the number of OpenMP threads
+ * @throw std::invalid\_argument if num\_threads > the number of CPU cores
+ */
+void setNumThreads(const int num_threads);
+
+/**
+ * make unique pointer, an implementation to make it compatible to c++11
+ */
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+/**
+ * Reset a stream (to the beginning)
+ * @param instream the input stream
+ */
+void resetStream(std::istream& instream);
+}  // namespace cmaple

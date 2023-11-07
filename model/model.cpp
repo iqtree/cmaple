@@ -42,9 +42,11 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model, const cmaple::
     }
         
     // If sequence type is not specified -> detect it from sub_model
-    if (n_seqtype == cmaple::SeqRegion::SEQ_AUTO || n_seqtype == cmaple::SeqRegion::SEQ_UNKNOWN)
-        n_seqtype = ModelBase::detectSeqType(n_sub_model);
-    
+    if (n_seqtype == cmaple::SeqRegion::SEQ_AUTO ||
+        n_seqtype == cmaple::SeqRegion::SEQ_UNKNOWN) {
+      n_seqtype = ModelBase::detectSeqType(n_sub_model);
+    }
+
     // Init model from the corresponding seqtype and sub_model
     switch (n_seqtype) {
         case cmaple::SeqRegion::SEQ_PROTEIN:
@@ -76,27 +78,27 @@ cmaple::Model::~Model()
 
 void cmaple::Model::fixParameters(const bool& n_fixed_model_params)
 {
-    if (model_base)
-        model_base->fixed_params = n_fixed_model_params;
+  if (model_base) {
+    model_base->fixed_params = n_fixed_model_params;
+  }
 }
 
-cmaple::Model::ModelParams cmaple::Model::getParams()
-{
-    // Init an empty ModelParams
-    ModelParams model_params = {"", "", ""};
-    
-    // Handle cases when model is not yet initialized
-    if (model_base)
-    {
-        // model_name
-        model_params.model_name = model_base->getModelName();
-        
-        // root frequencies
-        model_params.state_freqs = model_base->exportRootFrequenciesStr();
-        
-        // Q matrix
-        model_params.mut_rates = model_base->exportQMatrixStr();
-    }
-    
-    return model_params;;
+auto cmaple::Model::getParams() -> cmaple::Model::ModelParams {
+  // Init an empty ModelParams
+  ModelParams model_params = {"", "", ""};
+
+  // Handle cases when model is not yet initialized
+  if (model_base) {
+    // model_name
+    model_params.model_name = model_base->getModelName();
+
+    // root frequencies
+    model_params.state_freqs = model_base->exportRootFrequenciesStr();
+
+    // Q matrix
+    model_params.mut_rates = model_base->exportQMatrixStr();
+  }
+
+  return model_params;
+  ;
 }

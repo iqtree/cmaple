@@ -12,37 +12,38 @@ std::string cmaple::getCitations()
     return "[Citations]";
 }
 
-bool cmaple::checkMapleSuitability(const Alignment& aln)
-{
-    // validate the input
-    const auto seq_length = aln.ref_seq.size();
-    const auto num_seqs = aln.data.size();
-    if (!seq_length)
-        throw std::invalid_argument("Empty reference genome!");
-    if (num_seqs < 3)
-        throw std::invalid_argument("Empty alignment or the number of sequences is less than 3!");
-    
-    // Get the sequence length
-    const auto max_mutations = seq_length * MAX_SUBS_PER_SITE;
-    auto max_sum_mutations = seq_length * MEAN_SUBS_PER_SITE * num_seqs;
-    
-    // check the thresholds:
-    // (1) The number of mutations per sequence is no greater then <max_mutations>
-    // (2) The mean number of mutations per sequence is no greater than <seq_length * MEAN_SUBS_PER_SITE>, which means the total mutations (of all sequences) is no greater than max_sum_mutations
-    for (const Sequence& sequence: aln.data)
-    {
-        // check the first (1) threshold
-        if (sequence.size() > max_mutations)
-            return false;
-        
-        // check the second (2) threshold
-        max_sum_mutations -= sequence.size();
-        if (max_sum_mutations < 0)
-            return false;
-    }
-    
-    // return TRUE (if the thresholds were not exceeded)
-    return true;
+auto cmaple::checkMapleSuitability(const Alignment &aln) -> bool {
+  // validate the input
+  const auto seq_length = aln.ref_seq.size();
+  const auto num_seqs = aln.data.size();
+  if (!seq_length)
+    throw std::invalid_argument("Empty reference genome!");
+  if (num_seqs < 3)
+    throw std::invalid_argument(
+        "Empty alignment or the number of sequences is less than 3!");
+
+  // Get the sequence length
+  const auto max_mutations = seq_length * MAX_SUBS_PER_SITE;
+  auto max_sum_mutations = seq_length * MEAN_SUBS_PER_SITE * num_seqs;
+
+  // check the thresholds:
+  // (1) The number of mutations per sequence is no greater then <max_mutations>
+  // (2) The mean number of mutations per sequence is no greater than
+  // <seq_length * MEAN_SUBS_PER_SITE>, which means the total mutations (of all
+  // sequences) is no greater than max_sum_mutations
+  for (const Sequence &sequence : aln.data) {
+    // check the first (1) threshold
+    if (sequence.size() > max_mutations)
+      return false;
+
+    // check the second (2) threshold
+    max_sum_mutations -= sequence.size();
+    if (max_sum_mutations < 0)
+      return false;
+  }
+
+  // return TRUE (if the thresholds were not exceeded)
+  return true;
 }
 
 void cmaple::runCMaple(cmaple::Params &params)
@@ -56,9 +57,12 @@ void cmaple::runCMaple(cmaple::Params &params)
         const std::string prefix = (params.output_prefix.length() ? params.output_prefix :  params.aln_path);
         const std::string output_treefile = prefix + ".treefile";
         // check whether output file is already exists
-        if (!params.overwrite_output && fileExists(output_treefile))
-            outError("File " + output_treefile + " already exists. Use `--overwrite` option if you really want to overwrite it.\n");
-        
+        if (!params.overwrite_output && fileExists(output_treefile)) {
+          outError("File " + output_treefile +
+                   " already exists. Use `--overwrite` option if you really "
+                   "want to overwrite it.\n");
+        }
+
         // Dummy variables
         const cmaple::Tree::TreeType tree_format = cmaple::Tree::parseTreeType(params.tree_format_str);
         const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
@@ -81,9 +85,13 @@ void cmaple::runCMaple(cmaple::Params &params)
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
         // check if CMaple is suitable for the input alignment
-        if (!checkMapleSuitability(aln))
-            outWarning("Look like the input sequences are too divergent from each other, which makes CMaple very slow. We highly recommend users to use other methods (e.g., IQ-TREE) to analyse this alignment!");
-        
+        if (!checkMapleSuitability(aln)) {
+          outWarning("Look like the input sequences are too divergent from "
+                     "each other, which makes CMaple very slow. We highly "
+                     "recommend users to use other methods (e.g., IQ-TREE) to "
+                     "analyse this alignment!");
+        }
+
         // Initialize a Model
         const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
         // Validate the sub_model
@@ -124,9 +132,10 @@ void cmaple::runCMaple(cmaple::Params &params)
             // if users don't input a tree file, always allow CMaple to replace the ML tree by a higher-likelihood tree (if found)
             bool allow_replacing_ML_tree = true;
             // if users input a tree -> depend on the setting in params (false ~ don't allow replacing (by default)
-            if (params.input_treefile.length())
-                allow_replacing_ML_tree = params.allow_replace_input_tree;
-            
+            if (params.input_treefile.length()) {
+              allow_replacing_ML_tree = params.allow_replace_input_tree;
+            }
+
             redirected_msgs = tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree);
             if (cmaple::verbose_mode >= cmaple::VB_MED)
                 std::cout << redirected_msgs << std::endl;
@@ -172,8 +181,9 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // show runtime
         auto end = getRealTime();
-        if (cmaple::verbose_mode > cmaple::VB_QUIET)
-            cout << "Runtime: " << end - start << "s" << endl;
+        if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+          cout << "Runtime: " << end - start << "s" << endl;
+        }
     }
     catch (std::invalid_argument e)
     {
