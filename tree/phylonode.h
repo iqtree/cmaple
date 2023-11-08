@@ -64,7 +64,7 @@ namespace cmaple
         uint8_t spr_count_ = 0;
         
         // branch length
-        float length_ = 0; // using float allows it to fit into the 6 bytes padding after the two bools.
+        double length_ = 0; // using float allows it to fit into the 6 bytes padding after the two bools.
         // .. using a double would make PyhloNode 8 bytes larger
         
         // NOTES: we still have 2-byte gap here
