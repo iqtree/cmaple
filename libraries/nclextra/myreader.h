@@ -18,10 +18,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#ifndef MYREADER_H
+#define MYREADER_H
+
 #include <iostream>
 #include <fstream>
 //#include "node.h"
-#include "libraries/ncl/ncl.h"
+#include "../../libraries/ncl/ncl.h"
 
 /**
 	MyReader class to make more informative message
@@ -38,12 +41,13 @@ public:
 	/**
 		constructor
 		@param infname input file name
+        @throw ios::failure if failing to open infname
 	*/
 	MyReader(char *infname) : NxsReader()
 	{
 		inf.open(infname, ios::binary);
 		if (!inf.is_open())
-			outError(ERR_READ_INPUT);
+            throw ios::failure(cmaple::ERR_READ_INPUT);
 	}
 
 	/**
@@ -70,7 +74,7 @@ public:
 	*/
 	virtual bool EnteringBlock(NxsString blockName)
 	{
-		if (verbose_mode >= VB_MED)
+		if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
 			cout << "Reading \"" << blockName << "\" block..." << endl;
 
 		// Returning true means it is ok to delete any data associated with
@@ -85,7 +89,8 @@ public:
 	*/
 	virtual void SkippingBlock(NxsString blockName)
 	{
-		cout << "Skipping unknown block (" << blockName << ")..." << endl;
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            cout << "Skipping unknown block (" << blockName << ")..." << endl;
 	}
 
 	//virtual void SkippingDisabledBlock(NxsString blockName) {}
@@ -142,3 +147,5 @@ public:
 
 
 };
+
+#endif

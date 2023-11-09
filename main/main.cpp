@@ -29,11 +29,12 @@
 
 #include <cmaple_config.h>
 
-#include "utils/timeutil.h"
-#include "utils/tools.h"
-#include "utils/operatingsystem.h" //for getOSName()
-#include <utils/logstream.h>
-#include "maple/cmaple.h"
+#include "../utils/timeutil.h"
+#include "../utils/tools.h"
+#include "../utils/operatingsystem.h" //for getOSName()
+#include "../utils/logstream.h"
+#include "../maple/cmaple.h"
+#include "../tree/tree.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,6 +42,7 @@
 #include <csignal>
 
 using namespace std;
+using namespace cmaple;
 
 /** ############## Redirect output to a log file ############## **/
 LogStream logstream;
@@ -74,12 +76,12 @@ void funcAbort(int signal_number)
 /** ############## Redirect output to a log file ############## **/
 
 int main(int argc, char *argv[]) {
-    parseArg(argc, argv, Params::getInstance());
+    std::unique_ptr<cmaple::Params> params = cmaple::ParamsBuilder().build();
+    parseArg(argc, argv, *params);
     
     // Config log file
-    Params& params = Params::getInstance();
     // atexit(logstream.funcExit);
-    logstream.startLogFile(params);
+    logstream.startLogFile(*params);
     signal(SIGABRT, &funcAbort);
     signal(SIGFPE, &funcAbort);
     signal(SIGILL, &funcAbort);
@@ -89,53 +91,30 @@ int main(int argc, char *argv[]) {
 #endif
     
     // print copyright
-    printCopyright(cout);
-    
-    // show general information
-    cout << "Command:";
-    for (int i = 0; i < argc; i++)
-        cout << " " << argv[i];
-    cout << endl;
-    
-    // Show info
-    cout << "Seed:    " << Params::getInstance().ran_seed <<  " ";
-    
-    // setup the number of threads for openmp
-#ifdef _OPENMP
-    int max_procs = countPhysicalCPUCores();
-    cout << "OpenMP: ";
-    if (Params::getInstance().num_threads >= 1) {
-        omp_set_num_threads(Params::getInstance().num_threads);
-        cout << Params::getInstance().num_threads << " threads";
-    }
-    else // num_threads == 0
-    {   // not calling 'omp_set_num_threads' uses all cores automatically
-        cout << "auto-detect threads";
-    }
-    cout << " (" << max_procs << " CPU cores detected) \n";
-    if (Params::getInstance().num_threads  > max_procs) {
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        printCopyright(cout);
+        
+        // show general information
+        cout << "Command:";
+        for (int i = 0; i < argc; i++)
+            cout << " " << argv[i];
         cout << endl;
-        outError("You have specified more threads than CPU cores available");
+        
+        // Show the random seed number
+        cout << "Seed:    " << params->ran_seed <<  " " << std::endl << std::endl;
     }
-    #ifndef WIN32  // not supported on Windows (only <=OpenMP2.0)
-    omp_set_max_active_levels(1);
-    #endif
-#else
-    if (Params::getInstance().num_threads != 1) {
-        cout << endl << endl;
-        outError("Number of threads must be 1 for sequential version.");
-    }
-#endif
-    std::cout << std::endl;
     
     // Measure runtime
     time_t start_time;
     
     // call the main function
-    runCMaple(Params::getInstance());
+    cmaple::runCMaple(*params);
+    // cmaple::testing(*params);
     
     time(&start_time);
-    cout << "Date and Time: " << ctime(&start_time);
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        cout << "Date and Time: " << ctime(&start_time);
     
     return EXIT_SUCCESS;
 }

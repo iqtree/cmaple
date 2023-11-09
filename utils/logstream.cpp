@@ -58,29 +58,10 @@ int outstreambuf::sync() { // used for output buffer only
 
 /**##################################################**/
 
-void LogStream::startLogFile(Params& params) {
-    // use diff_path as the output prefix if users didn't specify it
-    if (!params.output_prefix)
-    {
-        // if users didn't input a diff file -> generate the path to diff file from the input alignment
-        if (!params.diff_path)
-        {
-            string aln_path_str(params.aln_path);
-            aln_path_str += ".diff";
-            log_file_ = aln_path_str + ".log";
-        }
-        else
-        {
-            string diff_path_str(params.diff_path);
-            log_file_ = diff_path_str + ".log";
-        }
-    }
-    // if users specify the output prefix
-    else
-    {
-        string output_prefix_str(params.output_prefix);
-        log_file_ = output_prefix_str + ".log";
-    }
+void LogStream::startLogFile(cmaple::Params& params) {
+    // Initialize the name of the log file -> use aln_ as the output prefix if users didn't specify it
+    const std::string prefix = (params.output_prefix.length() ? params.output_prefix :  params.aln_path);
+    log_file_ = prefix + ".log";
     
     _out_buf.open(log_file_.c_str());
     _err_buf.init(_out_buf.get_fout_buf());

@@ -1,7 +1,20 @@
 #include "model_dna.h"
 using namespace std;
+using namespace cmaple;
 
-void ModelDNA::initMutationMatJC()
+cmaple::ModelDNA::ModelDNA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
+{
+    try
+    {
+        num_states_ = 4;
+        init();
+    } catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
+}
+
+void cmaple::ModelDNA::initMutationMatJC()
 {
     // update root_freqs
     const RealNumType log_freq = log(0.25);
@@ -49,21 +62,20 @@ void ModelDNA::initMutationMatJC()
     }
 }
 
-void ModelDNA::initMutationMat()
+void cmaple::ModelDNA::initMutationMat()
 {
     // init variable pointers
     initPointers();
     
     // for JC model
-    if (model_name.compare("JC") == 0 || model_name.compare("jc") == 0)
+    if (sub_model == JC)
         initMutationMatJC();
     // for other models
     else
     {
-        // convert model name to uppercase
-        transform(model_name.begin(), model_name.end(), model_name.begin(), ::toupper);
-        if (model_name.compare("UNREST") != 0 && model_name.compare("GTR") != 0)
-            outError("Invalid or unsupported DNA model: " + model_name + ". Please check and try again!");
+        // validate model
+        if (ModelBase::detectSeqType(sub_model) != cmaple::SeqRegion::SEQ_DNA)
+            throw std::logic_error("Invalid or unsupported DNA model: " + getModelName());
             
         // init pseu_mutation_counts
         string model_rates = "0.0 1.0 5.0 2.0 2.0 0.0 1.0 40.0 5.0 2.0 0.0 20.0 2.0 3.0 1.0 0.0";
@@ -73,16 +85,25 @@ void ModelDNA::initMutationMat()
     }
 }
 
-void ModelDNA::updateMutationMatEmpirical(const Alignment& aln)
+void cmaple::ModelDNA::extractRootFreqs(const Alignment* aln)
 {
-    // don't update JC model parameters
-    if (model_name == "JC" || model_name == "jc") return;
-    
-    updateMutationMatEmpiricalTemplate<4>(aln);
+    // Keep state freqs equally for some models (e.g., JC)
+    if (sub_model != JC)
+        ModelBase::extractRootFreqs(aln);
 }
 
-void ModelDNA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+bool cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment* aln)
 {
-    if (model_name != "JC" && model_name != "jc")
-        Model::updatePesudoCount(aln, regions1, regions2);
+    // don't update JC model parameters
+    if (!fixed_params && sub_model != JC)
+        return updateMutationMatEmpiricalTemplate<4>(aln);
+    
+    // no update -> return false;
+    return false;
+}
+
+void cmaple::ModelDNA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
+{
+    if (!fixed_params && sub_model != JC)
+        ModelBase::updatePesudoCount(aln, regions1, regions2);
 }

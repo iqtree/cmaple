@@ -1,5 +1,6 @@
 #include "model_aa.h"
 using namespace std;
+using namespace cmaple;
 
 /*
     following are definitions for various protein models encoded in a string.
@@ -8,7 +9,7 @@ using namespace std;
     A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V
     Ala Arg Asn Asp Cys Gln Glu Gly His Ile Leu Lys Met Phe Pro Ser Thr Trp Tyr Val
 */
-const char* builtin_prot_models = R"(
+const char* cmaple::builtin_prot_models = R"(
 #nexus;
 
 begin models;
@@ -860,31 +861,42 @@ model FLAVI=
 end;
 )";
 
-ModelAA::~ModelAA()
+cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
+{
+    try
+    {
+        num_states_ = 20;
+        init();
+    } catch (std::logic_error e)
+    {
+        throw std::invalid_argument(e.what());
+    }
+}
+
+cmaple::ModelAA::~ModelAA()
 {
     if (model_block)
         delete model_block;
 }
 
-void ModelAA::initMutationMat()
+void cmaple::ModelAA::initMutationMat()
 {
     // init variable pointers
     initPointers();
     
-    // convert model_name to upper_case
-    string name_upper = model_name;
-    for (string::iterator it = name_upper.begin(); it != name_upper.end(); it++)
-        (*it) = toupper(*it);
+    // Get the model_name
+    string name_upper = getModelName();
     
     // read model params from string/file
     bool reversible;
     ASSERT(num_states_ == 20);
     model_block = readModelsDefinition(builtin_prot_models);
-    ASSERT(model_block && "model_block uninitialized");
+    if(!model_block)
+        throw std::logic_error("model_block uninitialized");
     NxsModel *nxs_model = model_block->findModel(name_upper);
     if (nxs_model) {
         if (nxs_model->flag != NM_ATOMIC)
-            outError("Invalid protein model name ", model_name);
+            throw std::logic_error("Invalid protein model name " + name_upper);
 
         reversible = readParametersString(nxs_model->description);
         
@@ -957,7 +969,7 @@ void ModelAA::initMutationMat()
             setVecByProduct<20>(freq_j_transposed_ij_row, root_freqs, transposed_mut_mat_row);
     }
     // GTR20 or NONREV
-    else if (name_upper.compare("NONREV") == 0 || name_upper.compare("GTR") == 0)
+    else if (name_upper.compare("NONREV") == 0 || name_upper.compare("GTR20") == 0)
     {
         // init pseu_mutation_counts
         string model_rates = "1.0";
@@ -968,10 +980,10 @@ void ModelAA::initMutationMat()
         updateMutationMat<20>();
     }
     else
-        outError("Model not found: ", model_name);
+        throw std::logic_error("Model not found: " + name_upper);
 }
 
-void ModelAA::readRates(istream &in, const bool is_reversible)
+void cmaple::ModelAA::readRates(istream &in, const bool is_reversible)
 {
     StateType row = 1, col = 0;
     StateType row_index = num_states_;
@@ -994,8 +1006,8 @@ void ModelAA::readRates(istream &in, const bool is_reversible)
             
             string tmp_value;
             in >> tmp_value;
-            if (tmp_value.length() == 0)
-                outError(model_name + ": Rate entries could not be read");
+            if (!tmp_value.length())
+                throw getModelName() + ": Rate entries could not be read";
             mutation_mat[id] = convert_real_number(tmp_value.c_str());
 
             if (mutation_mat[id] < 0.0)
@@ -1010,8 +1022,8 @@ void ModelAA::readRates(istream &in, const bool is_reversible)
             {
                 string tmp_value;
                 in >> tmp_value;
-                if (tmp_value.length() == 0)
-                    outError(model_name + ": Rate entries could not be read");
+                if (!tmp_value.length())
+                    throw getModelName() + ": Rate entries could not be read";
                 mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
                 
                 if (mutation_mat_ptr[0] < 0.0 && row != col)
@@ -1026,7 +1038,7 @@ void ModelAA::readRates(istream &in, const bool is_reversible)
     
 }
 
-void ModelAA::rescaleLowerDiagonalRates() {
+void cmaple::ModelAA::rescaleLowerDiagonalRates() {
     RealNumType max_rate = 0.0;
 
     RealNumType* mutation_mat_row = mutation_mat;
@@ -1049,7 +1061,7 @@ void ModelAA::rescaleLowerDiagonalRates() {
     }
 }
 
-void ModelAA::rescaleAllRates()
+void cmaple::ModelAA::rescaleAllRates()
 {
     RealNumType max_rate = 0.0;
 
@@ -1072,25 +1084,26 @@ void ModelAA::rescaleAllRates()
     }
 }
 
-void ModelAA::updateMutationMatEmpirical(const Alignment& aln)
+bool cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln)
 {
-    // don't update parameters other model except GTR or NONREV
-    if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
+    // only handle GTR20 or NONREV
+    if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV))
+        return updateMutationMatEmpiricalTemplate<20>(aln);
     
-    updateMutationMatEmpiricalTemplate<20>(aln);
+    // no update -> return false;
+    return false;
 }
 
-void ModelAA::updatePesudoCount(const Alignment& aln, const SeqRegions& regions1, const SeqRegions& regions2)
+void cmaple::ModelAA::updatePesudoCount(const Alignment* aln, const SeqRegions& regions1, const SeqRegions& regions2)
 {
-    // only handle GTR or NONREV
-    if (model_name == "GTR" || model_name == "gtr" || model_name == "NONREV" || model_name == "nonrev")
-        Model::updatePesudoCount(aln, regions1, regions2);
+    // only handle GTR20 or NONREV
+    if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV))
+        ModelBase::updatePesudoCount(aln, regions1, regions2);
 }
 
-void ModelAA::extractRootFreqs(const Alignment& aln)
+void cmaple::ModelAA::extractRootFreqs(const Alignment* aln)
 {
-    // only extract root freqs for GTR or NONREV
-    if (model_name != "GTR" && model_name != "gtr" && model_name != "NONREV" && model_name != "nonrev") return;
-    
-    Model::extractRootFreqs(aln);
+    // only extract root freqs for GTR20 or NONREV
+    if (sub_model == GTR20 || sub_model == NONREV)
+        ModelBase::extractRootFreqs(aln);
 }
