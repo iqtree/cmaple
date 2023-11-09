@@ -613,6 +613,16 @@ std::string cmaple::Tree::doPlacementTemplate()
     if (cmaple::verbose_mode >= cmaple::VB_MAX)
         cout << " - Time spent on building an initial tree: " << std::setprecision(3) << end - start << endl;
     
+    // Output the initial tree for debugging
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    {
+        const std::string prefix = params ? (params->output_prefix.length() ? params->output_prefix :  params->aln_path) : "debug";
+        
+        ofstream out = ofstream(prefix + "_init.treefile");
+        out << exportNewick(BIN_TREE);
+        out.close();
+    }
+    
     // Restore the source cout
     cout.rdbuf(src_cout);
 
@@ -669,6 +679,16 @@ std::string cmaple::Tree::applySPRTemplate(const TreeSearchType n_tree_search_ty
         
         // reset the SPR flags so that we can start a deeper SPR search later
         resetSPRFlags(false, true, true);
+        
+        // Output the tree after the shallow-search for debugging
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+        {
+            const std::string prefix = params ? (params->output_prefix.length() ? params->output_prefix :  params->aln_path) : "debug";
+            
+            ofstream out = ofstream(prefix + "_shallow_search.treefile");
+            out << exportNewick(BIN_TREE);
+            out.close();
+        }
     }
     
     // output log-likelihood of the tree
@@ -696,6 +716,16 @@ std::string cmaple::Tree::applySPRTemplate(const TreeSearchType n_tree_search_ty
     if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
         std::cout << std::setprecision(10) << "Tree log likelihood (after the deeper tree search (if any)): " << computeLh() << std::endl;
     
+    // Output the tree after the tree-search for debugging
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    {
+        const std::string prefix = params ? (params->output_prefix.length() ? params->output_prefix :  params->aln_path) : "debug";
+        
+        ofstream out = ofstream(prefix + "_topo.treefile");
+        out << exportNewick(BIN_TREE);
+        out.close();
+    }
+
     // Restore the source cout
     cout.rdbuf(src_cout);
 
@@ -845,6 +875,16 @@ std::string cmaple::Tree::optimizeBranchTemplate()
     auto end = getRealTime();
     if (cmaple::verbose_mode >= cmaple::VB_MAX)
         cout << " - Time spent on optimizing the branch lengths: " << std::setprecision(3) << end - start << endl;
+    
+    // Output the tree after optimizing blengths for debugging
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    {
+        const std::string prefix = params ? (params->output_prefix.length() ? params->output_prefix :  params->aln_path) : "debug";
+        
+        ofstream out = ofstream(prefix + "_opt_blengths.treefile");
+        out << exportNewick(BIN_TREE);
+        out.close();
+    }
     
     // Restore the source cout
     cout.rdbuf(src_cout);
