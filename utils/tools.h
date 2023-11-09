@@ -25,10 +25,14 @@
 
 #pragma once
 
-#include <cmaple_config.h>
 #include <algorithm>
 #include <cfloat>
+#include <cmaple_config.h>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -37,9 +41,6 @@
 #include <set>
 #include <sstream>
 #include <stack>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
 #include <string>
 #include <sys/stat.h>
 #include <thread>
@@ -316,7 +317,7 @@ namespace cmaple
         /**
             Check two indexes are equally
          */
-        bool operator==(Index &rhs) const
+        bool operator==(const Index &rhs) const
         {
             return (vector_index_ == rhs.getVectorIndex() && mini_index_ == rhs.getMiniIndex());
         }
