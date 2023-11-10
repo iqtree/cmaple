@@ -45,8 +45,9 @@ void cmaple::Alignment::read(std::istream& aln_stream,
                              const std::string& ref_seq,
                              const InputType format,
                              const cmaple::SeqRegion::SeqType seqtype) {
-  if (cmaple::verbose_mode >= cmaple::VB_MED)
+  if (cmaple::verbose_mode >= cmaple::VB_MED) {
     std::cout << "Reading an alignment" << std::endl;
+  }
 
   // Reset aln_base
   reset();
@@ -59,9 +60,10 @@ void cmaple::Alignment::read(std::istream& aln_stream,
     aln_format = detectInputFile(aln_stream);
 
     // validate the format
-    if (aln_format == IN_UNKNOWN)
+    if (aln_format == IN_UNKNOWN) {
       throw std::invalid_argument(
           "Failed to detect the format from the alignment!");
+    }
   }
 
   // Set seqtype. If it's auto (not specified), we'll dectect it later when
@@ -91,11 +93,12 @@ void cmaple::Alignment::read(std::istream& aln_stream,
     sortSeqsByDistances();
 
     // avoid using DNA build for protein data
-    if (NUM_STATES < num_states)
+    if (NUM_STATES < num_states) {
       throw std::invalid_argument(
           "Look like you're using the wrong (DNA) compilation version for "
           "Protein data. Please use the version for Protein data (*-aa) "
           "instead.");
+    }
   } catch (std::logic_error e) {
     throw std::invalid_argument(e.what());
   }
@@ -105,8 +108,9 @@ void cmaple::Alignment::read(const std::string& aln_filename,
                              const std::string& ref_seq,
                              const InputType format,
                              const cmaple::SeqRegion::SeqType seqtype) {
-  if (!aln_filename.length())
+  if (!aln_filename.length()) {
     throw std::invalid_argument("Please specify an alignnment file");
+  }
 
   // Create a stream from the input alignment
   ifstream aln_stream;
@@ -128,8 +132,9 @@ void cmaple::Alignment::read(const std::string& aln_filename,
 void cmaple::Alignment::write(std::ostream& aln_stream,
                               const InputType& format) {
   // Handle empty alignment
-  if (!data.size())
+  if (!data.size()) {
     throw std::logic_error("Alignment is empty. Please call read(...) first!");
+  }
 
   switch (format) {
     case IN_MAPLE:
@@ -152,15 +157,17 @@ void cmaple::Alignment::write(const std::string& aln_filename,
                               const InputType& format,
                               const bool overwrite) {
   // Validate the input
-  if (!aln_filename.length())
+  if (!aln_filename.length()) {
     throw std::invalid_argument(
         "Please specify a filename to output the alignment");
+  }
 
   // Check whether the output file already exists
-  if (!overwrite && fileExists(aln_filename))
+  if (!overwrite && fileExists(aln_filename)) {
     throw ios::failure(
         "File " + aln_filename +
         " already exists. Please set overwrite = true to overwrite it.");
+  }
 
   // Open a stream to write the output
   std::ofstream aln_stream = ofstream(aln_filename);
@@ -217,9 +224,10 @@ void cmaple::Alignment::processSeq(string& sequence,
       while (*it != ')' && *it != '}' && it != line.end()) {
         ++it;
       }
-      if (it == line.end())
+      if (it == line.end()) {
         throw std::logic_error("Line " + convertIntToString(line_num) +
                                ": No matching close-bracket ) or } found");
+      }
       sequence.append(1, '?');
       if (cmaple::verbose_mode > cmaple::VB_QUIET) {
         cout << "NOTE: Line " << line_num << ": "
@@ -262,9 +270,10 @@ void cmaple::Alignment::readFasta(std::istream& in,
       }
 
       // read sequence contents
-      if (sequences.empty())
+      if (sequences.empty()) {
         throw std::logic_error(
             "First line must begin with '>' to define sequence name");
+      }
 
       processSeq(sequences.back(), line, line_num);
     }
@@ -275,9 +284,10 @@ void cmaple::Alignment::readFasta(std::istream& in,
   // reset the stream
   resetStream(in);
 
-  if (sequences.size() < MIN_NUM_TAXA && check_min_seqs)
+  if (sequences.size() < MIN_NUM_TAXA && check_min_seqs) {
     throw std::logic_error("There must be at least " +
                            convertIntToString(MIN_NUM_TAXA) + " sequences");
+  }
 
   // now try to cut down sequence name if possible
   PositionType i, step = 0;
@@ -352,16 +362,19 @@ void cmaple::Alignment::readPhylip(std::istream& in,
 
     if (nseq == 0) {  // read number of sequences and sites
       istringstream line_in(line);
-      if (!(line_in >> nseq >> nsite))
+      if (!(line_in >> nseq >> nsite)) {
         throw std::logic_error(
             "Invalid PHYLIP format. First line must contain number of "
             "sequences and sites");
+      }
 
-      if (nseq < MIN_NUM_TAXA && check_min_seqs)
+      if (nseq < MIN_NUM_TAXA && check_min_seqs) {
         throw std::logic_error("There must be at least " +
                                convertIntToString(MIN_NUM_TAXA) + " sequences");
-      if (nsite < 1)
+      }
+      if (nsite < 1) {
         throw std::logic_error("No alignment columns");
+      }
 
       seq_names.resize(nseq, "");
       sequences.resize(nseq, "");
@@ -395,11 +408,12 @@ void cmaple::Alignment::readPhylip(std::istream& in,
   }
 
   // validate the number of seqs
-  if (seq_id)
+  if (seq_id) {
     throw logic_error(
         "Number of sequences " + convertIntToString(nseq) +
         " (in the header) is different from the actual number of sequences " +
         convertIntToString(seq_id));
+  }
 
   // set the failbit again
   in.exceptions(ios::failbit | ios::badbit);
@@ -414,12 +428,14 @@ void cmaple::Alignment::readSequences(std::istream& aln_stream,
                                       InputType n_aln_format,
                                       bool check_min_seqs) {
   // detect the input file format
-  if (n_aln_format == IN_AUTO || n_aln_format == IN_UNKNOWN)
+  if (n_aln_format == IN_AUTO || n_aln_format == IN_UNKNOWN) {
     n_aln_format = detectInputFile(aln_stream);
+  }
 
   // read the input file
-  if (cmaple::verbose_mode >= cmaple::VB_MAX)
+  if (cmaple::verbose_mode >= cmaple::VB_MAX) {
     std::cout << "Reading alignment from a stream..." << std::endl;
+  }
   switch (n_aln_format) {
     case IN_FASTA:
       readFasta(aln_stream, sequences, seq_names, check_min_seqs);
@@ -438,8 +454,9 @@ void cmaple::Alignment::readSequences(std::istream& aln_stream,
 
 auto cmaple::Alignment::generateRef(StrVector& sequences) -> string {
   // validate the input sequences
-  if (!sequences.size() || !sequences[0].length())
+  if (!sequences.size() || !sequences[0].length()) {
     throw std::logic_error("Empty input sequences. Please check & try again!");
+  }
 
   if (cmaple::verbose_mode >= cmaple::VB_MAX) {
     cout << "Generating a reference sequence from the input alignment..."
@@ -474,11 +491,13 @@ auto cmaple::Alignment::generateRef(StrVector& sequences) -> string {
     // manually determine the most popular charater for the current site (if no
     // character dominates all the others)
     if (ref_str[i] == NULL_CHAR) {
-      for (const std::pair<const char, PositionType>& character : num_appear)
+      for (const std::pair<const char, PositionType> &character : num_appear) {
         if (character.first != GAP &&
             (ref_str[i] == NULL_CHAR ||
-             character.second > num_appear[ref_str[i]]))
+             character.second > num_appear[ref_str[i]])) {
           ref_str[i] = character.first;
+        }
+      }
     }
 
     // if not found -> all characters in this site are gaps -> choose the
@@ -494,11 +513,13 @@ auto cmaple::Alignment::generateRef(StrVector& sequences) -> string {
 
 auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
                                    const std::string& ref_name) -> string {
-  if (!fileExists(ref_filename))
+  if (!fileExists(ref_filename)) {
     throw ios::failure("File not found " + ref_filename);
-  if (!ref_name.length())
+  }
+  if (!ref_name.length()) {
     throw std::invalid_argument(
         "Please specify the name of the reference sequence!");
+  }
 
   // convert ref_name to uppercase
   std::string ref_name_upcase(ref_name);
@@ -528,8 +549,9 @@ auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
   ref_stream.close();
 
   // validate the input sequence(s)
-  if (!str_sequences.size() || !str_sequences[0].length())
+  if (!str_sequences.size() || !str_sequences[0].length()) {
     throw std::logic_error("No sequence found for the reference!");
+  }
 
   // extract the ref_sequence
   string ref_str = "";
@@ -543,9 +565,10 @@ auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
   }
 
   // Validate the output
-  if (!ref_str.length())
+  if (!ref_str.length()) {
     throw std::logic_error("The reference sequence named " + ref_name +
                            " is not found or empty");
+  }
 
   return ref_str;
 }
@@ -567,23 +590,25 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
                                          const string& ref_sequence) {
   // Validate the inputs
   ASSERT(str_sequences.size() == seq_names.size());
-  if (!str_sequences.size())
+  if (!str_sequences.size()) {
     throw std::invalid_argument("The vector of sequences is empty");
+  }
 
   data.clear();
-  Sequence *sequence = nullptr;
+  Sequence* sequence = nullptr;
   PositionType seq_length = ref_sequence.length();
 
   // extract mutations of sequences one by one
   for (PositionType i = 0; i < (PositionType)str_sequences.size(); ++i) {
     // validate the sequence length
     string str_sequence = str_sequences[i];
-    if (seq_length != (PositionType)str_sequence.length())
+    if (seq_length != (PositionType)str_sequence.length()) {
       throw std::logic_error(
           "The sequence length of " + seq_names[i] + " (" +
           convertIntToString(str_sequence.length()) +
           ") is different from that of the reference sequence (" +
           convertIntToString(ref_sequence.length()) + ")!");
+    }
 
     // init new sequence instance for the inference process afterwards
     data.emplace_back(seq_names[i]);
@@ -689,10 +714,11 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence) {
     // validate the ref state
     if (ref_seq[i] >= num_states) {
       ref_sequence[i] = DEFAULT_CHAR;
-      if (cmaple::verbose_mode > cmaple::VB_QUIET)
+      if (cmaple::verbose_mode > cmaple::VB_QUIET) {
         outWarning("Invalid reference state found at site " +
                    convertPosTypeToString(i) +
                    " was replaced by a default state " + DEFAULT_CHAR);
+      }
       ref_seq[i] = 0;
     }
   }
@@ -729,16 +755,18 @@ void cmaple::Alignment::readMaple(std::istream& in) {
       // transform seq_name to upper case
       transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
 
-      if (seq_name != REF_NAME && seq_name != "REFERENCE")
+      if (seq_name != REF_NAME && seq_name != "REFERENCE") {
         throw std::logic_error(
             "MAPLE file must start by >REF. Please check and try again!");
+      }
     }
     // read the reference sequence
     else {
       // make sure the first line was found
-      if (seq_name != REF_NAME && seq_name != "REFERENCE")
+      if (seq_name != REF_NAME && seq_name != "REFERENCE") {
         throw std::logic_error(
             "MAPLE file must start by >REF. Please check and try again!");
+      }
 
       // transform ref_sequence to uppercase
       transform(line.begin(), line.end(), line.begin(), ::toupper);
@@ -784,20 +812,22 @@ void cmaple::Alignment::readMaple(std::istream& in) {
       // Read new sequence name
       string::size_type pos = line.find_first_of("\n\r");
       seq_name = line.substr(1, pos - 1);
-      if (!seq_name.length())
+      if (!seq_name.length()) {
         throw std::logic_error("Empty sequence name found at line " +
                                convertIntToString(line_num) +
                                ". Please check and try again!");
+      }
     }
     // Read a Mutation
     else {
       // validate the input
       char separator = '\t';
       size_t num_items = std::count(line.begin(), line.end(), separator) + 1;
-      if (num_items < 2 || num_items > 3)
+      if (num_items < 2 || num_items > 3) {
         throw std::logic_error(
             "Invalid input. Each difference must be presented be <Type>    "
             "<Position>  [<Length>]. Please check and try again!");
+      }
 
       // extract mutation info
       stringstream ssin(line);
@@ -810,11 +840,12 @@ void cmaple::Alignment::readMaple(std::istream& in) {
       // extract <Position>
       ssin >> tmp;
       PositionType pos = convert_positiontype(tmp.c_str());
-      if (pos <= 0 || pos > (PositionType)ref_seq.size())
+      if (pos <= 0 || pos > (PositionType)ref_seq.size()) {
         throw std::logic_error(
             "<Position> must be greater than 0 and less than the reference "
             "sequence length (" +
             convertPosTypeToString(ref_seq.size()) + ")!");
+      }
 
       // extract <Length>
       PositionType length = 1;
@@ -822,13 +853,15 @@ void cmaple::Alignment::readMaple(std::istream& in) {
         ssin >> tmp;
         if (state == TYPE_N || state == TYPE_DEL) {
           length = convert_positiontype(tmp.c_str());
-          if (length <= 0)
+          if (length <= 0) {
             throw std::logic_error("<Length> must be greater than 0!");
-          if (length + pos - 1 > (PositionType)ref_seq.size())
+          }
+          if (length + pos - 1 > (PositionType)ref_seq.size()) {
             throw std::logic_error(
                 "<Length> + <Position> must be less than the reference "
                 "sequence length (" +
                 convertPosTypeToString(ref_seq.size()) + ")!");
+          }
         } else if (cmaple::verbose_mode >= cmaple::VB_MED) {
           outWarning("Ignoring <Length> of " + tmp +
                      ". <Length> is only appliable for 'N' or '-'.");
@@ -845,15 +878,18 @@ void cmaple::Alignment::readMaple(std::istream& in) {
   }
 
   // Record the sequence of  the last taxon
-  if (seq_name.length())
+  if (seq_name.length()) {
     data.emplace_back(seq_name, mutations);
+  }
 
   // validate the input
-  if (ref_seq.size() == 0)
+  if (ref_seq.size() == 0) {
     throw std::logic_error("Reference sequence is not found!");
-  if (data.size() < MIN_NUM_TAXA)
+  }
+  if (data.size() < MIN_NUM_TAXA) {
     throw std::logic_error("The number of taxa must be at least " +
                            convertIntToString(MIN_NUM_TAXA));
+  }
 
   // reset stream
   resetStream(in);
@@ -1092,9 +1128,9 @@ auto cmaple::Alignment::computeSeqDistance(Sequence& sequence,
         break;
       default:
         // handle normal character
-        if (mutation.type < num_states)
+        if (mutation.type < num_states) {
           ++num_diffs;
-        else {
+        } else {
           ++num_diffs;
           ++num_ambiguities;
         }
@@ -1131,10 +1167,11 @@ void cmaple::Alignment::sortSeqsByDistances() {
   quicksort(distances, 0, num_seqs - 1, sequence_indexes);
 
   // re-order sequences by distances
-  vector<Sequence> tmp_sequences(move(data));
+  vector<Sequence> tmp_sequences(std::move(data));
   data.reserve(num_seqs);
-  for (PositionType i = 0; i < num_seqs; ++i)
-    data.push_back(move(tmp_sequences[sequence_indexes[i]]));
+  for (PositionType i = 0; i < num_seqs; ++i) {
+    data.push_back(std::move(tmp_sequences[sequence_indexes[i]]));
+  }
 
   // delete distances, sequence_indexes
   delete[] distances;
@@ -1144,9 +1181,10 @@ void cmaple::Alignment::sortSeqsByDistances() {
 std::string cmaple::Alignment::getRefSeqStr() {
   const PositionType seq_length = ref_seq.size();
   std::string ref_sequence(seq_length, ' ');
-  for (auto i = 0; i < seq_length; ++i)
+  for (auto i = 0; i < seq_length; ++i) {
     ref_sequence[i] =
         cmaple::Alignment::convertState2Char(ref_seq[i], seq_type_);
+  }
   return ref_sequence;
 }
 
@@ -1249,23 +1287,26 @@ void cmaple::Alignment::writePHYLIP(std::ostream& out) {
 void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream,
                                           const std::string& ref_seq) {
   // read input sequences
-  if (aln_format == IN_UNKNOWN)
+  if (aln_format == IN_UNKNOWN) {
     throw std::logic_error("Unknown alignment format");
+  }
   StrVector sequences;
   StrVector seq_names;
   readSequences(aln_stream, sequences, seq_names, aln_format);
 
   // validate the input sequences
-  if (sequences.size() == 0)
+  if (sequences.size() == 0) {
     throw std::logic_error(
         "Empty input sequences. Please check and try again!");
+  }
   // make sure all sequences have the same length
   if (aln_format == IN_FASTA) {
     for (PositionType i = 0; i < (PositionType)sequences.size(); ++i) {
-      if (sequences[i].length() != sequences[0].length())
+      if (sequences[i].length() != sequences[0].length()) {
         throw std::logic_error(
             "Sequence " + seq_names[i] +
             " has a different length compared to the first sequence.");
+      }
     }
   }
 
@@ -1337,8 +1378,9 @@ auto cmaple::Alignment::detectSequenceType(StrVector& sequences)
          << " seconds." << endl;
   }
   if (((double)num_nuc) / num_ungap > 0.9) {
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
       std::cout << "DNA data detected." << std::endl;
+    }
     return cmaple::SeqRegion::SEQ_DNA;
   }
   /*if (((double)num_bin) / num_ungap > 0.9)
@@ -1348,8 +1390,9 @@ auto cmaple::Alignment::detectSequenceType(StrVector& sequences)
       return SEQ_BINARY;
   }*/
   if (((double)num_alpha + num_nuc) / num_ungap > 0.9) {
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
       std::cout << "Protein data detected." << std::endl;
+    }
     return cmaple::SeqRegion::SEQ_PROTEIN;
   }
   /*if (((double)(num_alpha + num_digit + num_nuc)) / num_ungap > 0.9)
