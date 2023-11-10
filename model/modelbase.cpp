@@ -436,25 +436,29 @@ bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
     if (!fixed_params)
     {
         // clone the current mutation matrix
-        RealNumType* tmp_diagonal_mut_mat = new RealNumType[num_states_];
-        memcpy(tmp_diagonal_mut_mat, diagonal_mut_mat, num_states_ * sizeof(RealNumType));
+        RealNumType* tmp_mut_mat = new RealNumType[row_index[num_states_]];
+        memcpy(tmp_mut_mat, mutation_mat, row_index[num_states_] * sizeof(RealNumType));
         
         // update the mutation matrix regarding the pseu_mutation_count
         updateMutationMat<num_states>();
         
         // set update = true if the mutation matrix changes more than a threshold
-        RealNumType change_thresh = 1e-3;
-        for (StateType j = 0; j < num_states_; ++j)
+        const RealNumType change_thresh = 1e-3;
+        RealNumType sum_change = 0;
+        RealNumType* tmp_mut_mat_ptr = tmp_mut_mat;
+        RealNumType* mutation_mat_ptr = mutation_mat;
+        for (StateType i = 0; i < num_states_; ++i, tmp_mut_mat_ptr += num_states_, mutation_mat_ptr += num_states_)
         {
-            if (fabs(tmp_diagonal_mut_mat[j] - diagonal_mut_mat[j]) > change_thresh)
-            {
-                update = true;
-                break;
-            }
+            for (StateType j = 0; j < num_states_; ++j)
+                sum_change += fabs(tmp_mut_mat_ptr[j] - mutation_mat_ptr[j]);
+            
+            sum_change -= fabs(tmp_mut_mat_ptr[i] - mutation_mat_ptr[i]);
         }
         
+        update = sum_change > change_thresh;
+        
         // delete tmp_diagonal_mutation_mat
-        delete[] tmp_diagonal_mut_mat;
+        delete[] tmp_mut_mat;
     }
     
     // return update
