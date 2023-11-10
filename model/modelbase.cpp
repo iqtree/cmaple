@@ -162,8 +162,9 @@ void cmaple::ModelBase::extractRefInfo(const Alignment* aln) {
 void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
   // init variables
   const vector<StateType>& ref_seq = aln->ref_seq;
-  if (!ref_seq.size())
+  if (!ref_seq.size()) {
     throw std::logic_error("The reference genome is empty!");
+  }
   const PositionType seq_length = ref_seq.size();
 
   // init root_freqs
@@ -236,8 +237,9 @@ std::string cmaple::ModelBase::exportQMatrixStr() {
     output += cmaple::Alignment::convertState2Char(i, seqtype);
     output += "\t";
 
-    for (StateType j = 0; j < num_states_; ++j)
+    for (StateType j = 0; j < num_states_; ++j) {
       output += convertDoubleToString(mut_mat_row[j]) + "\t";
+    }
 
     output += "\n";
   }
@@ -327,8 +329,9 @@ void cmaple::ModelBase::normalizeQMatrix() {
     sum -= mutation_mat_row[i] * root_freqs[i];
   }
 
-  if (sum == 0.0)
+  if (sum == 0.0) {
     throw std::logic_error("Empty Q matrix");
+  }
 
   double delta = 1.0 / sum;
 
@@ -561,14 +564,18 @@ auto cmaple::ModelBase::getSeqType() -> cmaple::SeqRegion::SeqType {
 auto cmaple::ModelBase::detectSeqType(
     const cmaple::ModelBase::SubModel sub_model) -> cmaple::SeqRegion::SeqType {
   // search in the list of dna models
-  for (auto& it : dna_models_mapping)
-    if (it.second == sub_model)
+  for (auto& it : dna_models_mapping) {
+    if (it.second == sub_model) {
       return cmaple::SeqRegion::SEQ_DNA;
+    }
+  }
 
   // search in the list of protein models
-  for (auto& it : aa_models_mapping)
-    if (it.second == sub_model)
+  for (auto& it : aa_models_mapping) {
+    if (it.second == sub_model) {
       return cmaple::SeqRegion::SEQ_PROTEIN;
+    }
+  }
 
   // not found
   return cmaple::SeqRegion::SEQ_UNKNOWN;
@@ -603,14 +610,18 @@ auto cmaple::ModelBase::parseModel(const std::string& n_model_name)
 
 std::string cmaple::ModelBase::getModelName() const {
   // Look for the model name from the list of DNA models
-  for (auto& it : dna_models_mapping)
-    if (it.second == sub_model)
+  for (auto& it : dna_models_mapping) {
+    if (it.second == sub_model) {
       return it.first;
+    }
+  }
 
   // Look for the model name from the list of Protein models
-  for (auto& it : aa_models_mapping)
-    if (it.second == sub_model)
+  for (auto& it : aa_models_mapping) {
+    if (it.second == sub_model) {
       return it.first;
+    }
+  }
 
   // if not found -> return ""
   return "";
