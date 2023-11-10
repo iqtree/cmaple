@@ -26,7 +26,12 @@ namespace cmaple
         /**
          Constructor
          */
-        TraversingNode(const cmaple::Index node_index, const short int n_failure_count, const cmaple::RealNumType n_lh_diff):node_index_(node_index), failure_count_(n_failure_count), likelihood_diff_(n_lh_diff) {};
+        TraversingNode(const cmaple::Index node_index, 
+                       const short int n_failure_count, 
+                       const cmaple::RealNumType n_lh_diff)
+          : node_index_(node_index), 
+            failure_count_(n_failure_count), 
+            likelihood_diff_(n_lh_diff) {};
         
         /**
          Get node's index

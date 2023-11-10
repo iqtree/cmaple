@@ -1,5 +1,5 @@
-#include "sequence.h"
 #include "../utils/timeutil.h"
+#include "sequence.h"
 
 #ifndef CMAPLE_ALIGNMENT_H
 #define CMAPLE_ALIGNMENT_H
@@ -51,12 +51,13 @@ class Alignment {
    * [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
    * @param[in] aln_filename Name of an alignment file
    * @param[in] ref_seq A reference sequence (optional). If not specified, it
-   *            will be read from the alignment (in MAPLE format) or automatically
-   *            generated from the alignment (in FASTA or PHYLIP format)
+   *            will be read from the alignment (in MAPLE format) or
+   * automatically generated from the alignment (in FASTA or PHYLIP format)
    * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA,
    *            IN_PHYLIP, or IN_AUTO (auto detection)
    * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide
-   *            data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
+   *            data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto
+   * detection)
    * @throw std::invalid\_argument if any of the following situations occur.
    * - the alignment is empty or in an incorrect format
    * - the sequences contains invalid states
@@ -150,7 +151,9 @@ class Alignment {
    * @private
    * Get seq_type
    */
-  inline cmaple::SeqRegion::SeqType getSeqType() const { return seq_type_; };
+  inline cmaple::SeqRegion::SeqType getSeqType() const { 
+    return seq_type_; 
+  };
 
   /**
    * @private

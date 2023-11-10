@@ -666,7 +666,7 @@ std::string cmaple::Tree::doPlacementTemplate() {
       if (is_mid_branch) {
         placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions,
                                             i, best_lh_diff);
-      // otherwise, best lk so far is for appending directly to existing node
+        // otherwise, best lk so far is for appending directly to existing node
       } else {
         placeNewSampleAtNode<num_states>(selected_node_index, lower_regions, i,
                                          best_lh_diff, best_up_lh_diff,
@@ -1809,7 +1809,6 @@ void cmaple::Tree::seekSamplePlacement(
   // branches.
   best_down_lh_diff = MIN_NEGATIVE;
   best_child_index = Index();
-  ;
 
   // if best position so far is the descendant of a node -> explore further at
   // its children
@@ -3132,8 +3131,8 @@ void cmaple::Tree::connectSubTree2Branch(
       internal.getTotalLh(), nodes[parent_vec], aln, model, threshold_prob,
       root_vector_index == internal_vec);
 
-  if (!internal.getTotalLh()) { //->total_lh ||
-                                // new_internal_node->total_lh->size() == 0)
+  if (!internal.getTotalLh()) {  //->total_lh ||
+                                 // new_internal_node->total_lh->size() == 0)
     throw std::logic_error(
         "Problem, None vector when re-placing sample, placing subtree at "
         "mid-branch point");
@@ -3410,7 +3409,6 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
           0.5 * node.getUpperLength();  // node->length;
       RealNumType tmp_lh_diff = calculateSubTreePlacementCost<num_states>(
           node.getMidBranchLh(), subtree_regions, new_branch_length);
-      ;
 
       while (true) {
         // if better placement found -> record it
@@ -6817,7 +6815,6 @@ void cmaple::Tree::calculate_aRLT(const bool allow_replacing_ML_tree) {
   RealNumType tree_total_lh =
       lh_at_root +
       performDFS<&cmaple::Tree::computeLhContribution<num_states>>();
-  ;
 
   // traverse tree to calculate aLRT-SH for each internal branch
   PhyloNode& root = nodes[root_vector_index];
@@ -7358,8 +7355,8 @@ void cmaple::Tree::calSiteLhDiff(std::vector<RealNumType>& site_lh_diff,
                                   parent_new_lower_lh, child_2_new_blength,
                                   current_node, child_1, child_2, sibling,
                                   parent, parent_index);
-  // otherwise, the (old) parent node is non-root
-  // for more information, pls see https://tinyurl.com/ymr49jy8
+    // otherwise, the (old) parent node is non-root
+    // for more information, pls see https://tinyurl.com/ymr49jy8
   } else {
     calSiteLhDiffNonRoot<num_states>(site_lh_diff, site_lh_root_diff,
                                      site_lh_root, parent_new_lower_lh,
@@ -8691,8 +8688,8 @@ RealNumType cmaple::Tree::calculateSiteLhs(
           throw std::logic_error(
               "Strange, inconsistent lower genome list creation in "
               "calculateTreeLh(); old list, and children lists");
-        // otherwise, everything is good -> update the lower lh of the current
-        // node
+          // otherwise, everything is good -> update the lower lh of the current
+          // node
         } else if (new_lower_lh->areDiffFrom(node.getPartialLh(TOP), seq_length,
                                              num_states, *params)) {
           // ("Strange, while calculating tree likelihood encountered
