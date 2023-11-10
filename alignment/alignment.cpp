@@ -491,7 +491,7 @@ auto cmaple::Alignment::generateRef(StrVector& sequences) -> string {
     // manually determine the most popular charater for the current site (if no
     // character dominates all the others)
     if (ref_str[i] == NULL_CHAR) {
-      for (const std::pair<const char, PositionType> &character : num_appear) {
+      for (const std::pair<const char, PositionType>& character : num_appear) {
         if (character.first != GAP &&
             (ref_str[i] == NULL_CHAR ||
              character.second > num_appear[ref_str[i]])) {
@@ -611,7 +611,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
     }
 
     // init new sequence instance for the inference process afterwards
-    data.emplace_back(seq_names[i]);
+    data.push_back(string(seq_names[i]));
     sequence = &data.back();
 
     // init dummy variables
@@ -726,7 +726,7 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence) {
 
 void cmaple::Alignment::readMaple(std::istream& in) {
   // init dummy variables
-  string seq_name = "";
+  string seq_name;
   vector<Mutation> mutations;
   PositionType line_num = 1;
   string line;
@@ -802,10 +802,10 @@ void cmaple::Alignment::readMaple(std::istream& in) {
     if (line[0] == '>') {
       // record the sequence of the previous taxon
       if (seq_name.length()) {
-        data.emplace_back(seq_name, mutations);
+        data.emplace_back(std::move(seq_name), std::move(mutations));
 
         // reset dummy variables
-        seq_name = "";
+        seq_name.clear();
         mutations.clear();
       }
 
@@ -879,7 +879,7 @@ void cmaple::Alignment::readMaple(std::istream& in) {
 
   // Record the sequence of  the last taxon
   if (seq_name.length()) {
-    data.emplace_back(seq_name, mutations);
+    data.emplace_back(std::move(seq_name), std::move(mutations));
   }
 
   // validate the input
@@ -891,7 +891,6 @@ void cmaple::Alignment::readMaple(std::istream& in) {
                            convertIntToString(MIN_NUM_TAXA));
   }
 
-  // reset stream
   resetStream(in);
 }
 

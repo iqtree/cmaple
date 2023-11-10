@@ -1,9 +1,9 @@
 #pragma once
 
-#include <algorithm>
-#include "../model/modelbase.h"
-#include "alignment.h"
 #include "seqregion.h"
+#include "alignment.h"
+#include "../model/modelbase.h"
+#include <algorithm>
 
 namespace cmaple {
 class Alignment;

@@ -1,5 +1,5 @@
-#include "../utils/timeutil.h"
 #include "sequence.h"
+#include "../utils/timeutil.h"
 
 #ifndef CMAPLE_ALIGNMENT_H
 #define CMAPLE_ALIGNMENT_H
