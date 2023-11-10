@@ -1031,8 +1031,9 @@ auto cmaple::merge_O_RACGT_TwoLowers(
     cmaple::SeqRegions::addNonConsecutiveRRegion(
         *merged_regions, seq2_region.type, -1, -1, end_pos, threshold_prob);
 
-    if (return_log_lh)
+    if (return_log_lh) {
       log_lh += log(new_lh[seq2_state]);
+    }
   }
 
   // no error
@@ -1151,8 +1152,9 @@ auto cmaple::merge_RACGT_RACGT_TwoLowers(
     cmaple::SeqRegions::addNonConsecutiveRRegion(
         *merged_regions, seq2_region.type, -1, -1, end_pos, threshold_prob);
 
-    if (return_log_lh)
+    if (return_log_lh) {
       log_lh += log(new_lh[seq2_state]);
+    }
   }
 
   // no error

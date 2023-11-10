@@ -483,8 +483,9 @@ auto cmaple::Alignment::generateRef(StrVector& sequences) -> string {
 
     // if not found -> all characters in this site are gaps -> choose the
     // default state
-    if (ref_str[i] == NULL_CHAR)
+    if (ref_str[i] == NULL_CHAR) {
       ref_str[i] = DEFAULT_CHAR;
+    }
   }
 
   // return the reference genome
@@ -570,7 +571,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
     throw std::invalid_argument("The vector of sequences is empty");
 
   data.clear();
-  Sequence* sequence = NULL;
+  Sequence *sequence = nullptr;
   PositionType seq_length = ref_sequence.length();
 
   // extract mutations of sequences one by one

@@ -181,14 +181,11 @@ auto gzstreambuf::sync() -> int {
   return 0;
 }
 
-size_t gzstreambuf::getCompressedLength() {
-    return compressed_length;
-}
+auto gzstreambuf::getCompressedLength() -> size_t { return compressed_length; }
 
-size_t gzstreambuf::getCompressedPosition() {
-    return compressed_position;
+auto gzstreambuf::getCompressedPosition() -> size_t {
+  return compressed_position;
 }
-
 
 // --------------------------------------
 // class gzstreambase:

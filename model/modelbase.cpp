@@ -67,52 +67,52 @@ cmaple::ModelBase::ModelBase(const cmaple::ModelBase::SubModel n_sub_model)
 cmaple::ModelBase::~ModelBase() {
   if (mutation_mat) {
     delete[] mutation_mat;
-    mutation_mat = NULL;
+    mutation_mat = nullptr;
   }
 
   if (diagonal_mut_mat) {
     delete[] diagonal_mut_mat;
-    diagonal_mut_mat = NULL;
+    diagonal_mut_mat = nullptr;
   }
 
   if (transposed_mut_mat) {
     delete[] transposed_mut_mat;
-    transposed_mut_mat = NULL;
+    transposed_mut_mat = nullptr;
   }
 
   if (freqi_freqj_qij) {
     delete[] freqi_freqj_qij;
-    freqi_freqj_qij = NULL;
+    freqi_freqj_qij = nullptr;
   }
 
   if (freq_j_transposed_ij) {
     delete[] freq_j_transposed_ij;
-    freq_j_transposed_ij = NULL;
+    freq_j_transposed_ij = nullptr;
   }
 
   if (root_freqs) {
     delete[] root_freqs;
-    root_freqs = NULL;
+    root_freqs = nullptr;
   }
 
   if (root_log_freqs) {
     delete[] root_log_freqs;
-    root_log_freqs = NULL;
+    root_log_freqs = nullptr;
   }
 
   if (inverse_root_freqs) {
     delete[] inverse_root_freqs;
-    inverse_root_freqs = NULL;
+    inverse_root_freqs = nullptr;
   }
 
   if (row_index) {
     delete[] row_index;
-    row_index = NULL;
+    row_index = nullptr;
   }
 
   if (pseu_mutation_count) {
     delete[] pseu_mutation_count;
-    pseu_mutation_count = NULL;
+    pseu_mutation_count = nullptr;
   }
 }
 
