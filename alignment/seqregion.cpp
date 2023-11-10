@@ -14,7 +14,9 @@ cmaple::SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumT
     plength_observation2node(n_plength_observation),
     plength_observation2root(n_plength_from_root)
 {
-    if (n_likelihood) likelihood = std::move(n_likelihood);
+  if (n_likelihood) {
+    likelihood = std::move(n_likelihood);
+  }
 }
 
 cmaple::SeqRegion::SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, const LHType& n_likelihood)
@@ -41,9 +43,10 @@ cmaple::SeqRegion::SeqRegion(Mutation* n_mutation, SeqType seq_type, int max_num
 
 void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type, int max_num_states)
 {
-    if (type < 0 || type >= TYPE_INVALID)
-        throw std::logic_error("Invalid type of seqregion");
-        
+  if (type < 0 || type >= TYPE_INVALID) {
+    throw std::logic_error("Invalid type of seqregion");
+  }
+
     switch (seq_type) {
         case cmaple::SeqRegion::SEQ_DNA:
             convertAmbiguiousStateDNA(max_num_states);
@@ -154,7 +157,9 @@ void cmaple::SeqRegion::computeLhAmbiguity(const LHType &entries)
 {
     // change type to 'O'
     type = TYPE_O;
-    if (!likelihood) likelihood = std::make_unique<LHType>();
+    if (!likelihood) {
+      likelihood = std::make_unique<LHType>();
+    }
     (*likelihood) = entries;
 }
 
@@ -166,9 +171,12 @@ void cmaple::SeqRegion::writeConstructionCodes(const std::string regions_name, s
     {
         out << "auto " << regions_name << "_new_lh" << position << " = std::make_unique<cmaple::SeqRegion::LHType>();" << std::endl;
         out << "auto& " << regions_name << "_new_lh_value" << position << " = *" << regions_name << "_new_lh" << position << ";" << std::endl;
-        for (StateType i = 0; i < num_states; ++i)
-            out << regions_name << "_new_lh_value" << position << "[" << convertIntToString(i) << "] = " << std::setprecision(50) << (*likelihood)[i] << ";" << std::endl;
-        
+        for (StateType i = 0; i < num_states; ++i) {
+          out << regions_name << "_new_lh_value" << position << "["
+              << convertIntToString(i) << "] = " << std::setprecision(50)
+              << (*likelihood)[i] << ";" << std::endl;
+        }
+
         lh_str = ",std::move(" + regions_name + "_new_lh" + convertPosTypeToString(position) + ")";
     }
     

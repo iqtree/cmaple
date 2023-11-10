@@ -16,11 +16,13 @@ auto cmaple::checkMapleSuitability(const Alignment &aln) -> bool {
   // validate the input
   const auto seq_length = aln.ref_seq.size();
   const auto num_seqs = aln.data.size();
-  if (!seq_length)
+  if (!seq_length) {
     throw std::invalid_argument("Empty reference genome!");
-  if (num_seqs < 3)
+  }
+  if (num_seqs < 3) {
     throw std::invalid_argument(
         "Empty alignment or the number of sequences is less than 3!");
+  }
 
   // Get the sequence length
   const auto max_mutations = seq_length * MAX_SUBS_PER_SITE;
@@ -33,13 +35,15 @@ auto cmaple::checkMapleSuitability(const Alignment &aln) -> bool {
   // sequences) is no greater than max_sum_mutations
   for (const Sequence &sequence : aln.data) {
     // check the first (1) threshold
-    if (sequence.size() > max_mutations)
+    if (sequence.size() > max_mutations) {
       return false;
+    }
 
     // check the second (2) threshold
     max_sum_mutations -= sequence.size();
-    if (max_sum_mutations < 0)
+    if (max_sum_mutations < 0) {
       return false;
+    }
   }
 
   // return TRUE (if the thresholds were not exceeded)
@@ -67,9 +71,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         const cmaple::Tree::TreeType tree_format = cmaple::Tree::parseTreeType(params.tree_format_str);
         const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
         // Validate the seq_type
-        if (seq_type == cmaple::SeqRegion::SEQ_UNKNOWN)
-            throw std::invalid_argument("Unknown SeqType " + params.seq_type_str);
-        
+        if (seq_type == cmaple::SeqRegion::SEQ_UNKNOWN) {
+          throw std::invalid_argument("Unknown SeqType " + params.seq_type_str);
+        }
+
         // Initializa an Alignment
         // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
         std::string ref_seq = "";
@@ -80,8 +85,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         }
         const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
         // Validate the aln_format
-        if (aln_format == cmaple::Alignment::IN_UNKNOWN)
-            throw std::invalid_argument("Unknown alignment format " + params.aln_format_str);
+        if (aln_format == cmaple::Alignment::IN_UNKNOWN) {
+          throw std::invalid_argument("Unknown alignment format " +
+                                      params.aln_format_str);
+        }
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
         // check if CMaple is suitable for the input alignment
@@ -95,19 +102,24 @@ void cmaple::runCMaple(cmaple::Params &params)
         // Initialize a Model
         const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
         // Validate the sub_model
-        if (sub_model == cmaple::ModelBase::UNKNOWN)
-            throw std::invalid_argument("Unknown Model " + params.sub_model_str);
+        if (sub_model == cmaple::ModelBase::UNKNOWN) {
+          throw std::invalid_argument("Unknown Model " + params.sub_model_str);
+        }
         Model model(sub_model, aln.getSeqType());
         
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())
         {
-            if (cmaple::verbose_mode > cmaple::VB_QUIET)
-                std::cout << "Write the alignment to " + params.output_aln << std::endl;
+          if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+            std::cout << "Write the alignment to " + params.output_aln
+                      << std::endl;
+          }
             const Alignment::InputType output_aln_format = Alignment::parseAlnFormat(params.output_aln_format_str);
             // Validate the aln_format
-            if (output_aln_format == cmaple::Alignment::IN_UNKNOWN)
-                throw std::invalid_argument("Unknown alignment format " + params.output_aln_format_str);
+            if (output_aln_format == cmaple::Alignment::IN_UNKNOWN) {
+              throw std::invalid_argument("Unknown alignment format " +
+                                          params.output_aln_format_str);
+            }
             aln.write(params.output_aln, output_aln_format, params.overwrite_output);
             return;
         }
@@ -118,9 +130,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         // Infer a phylogenetic tree
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
         std::string redirected_msgs = tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
-        if (cmaple::verbose_mode >= cmaple::VB_MED)
-            std::cout << redirected_msgs << std::endl;
-        
+        if (cmaple::verbose_mode >= cmaple::VB_MED) {
+          std::cout << redirected_msgs << std::endl;
+        }
+
         // Write the normal tree file
         ofstream out = ofstream(output_treefile);
         out << tree.exportNewick(tree_format);
@@ -137,9 +150,10 @@ void cmaple::runCMaple(cmaple::Params &params)
             }
 
             redirected_msgs = tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree);
-            if (cmaple::verbose_mode >= cmaple::VB_MED)
-                std::cout << redirected_msgs << std::endl;
-            
+            if (cmaple::verbose_mode >= cmaple::VB_MED) {
+              std::cout << redirected_msgs << std::endl;
+            }
+
             // write the tree file with branch supports
             ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
             out_tree_branch_supports << tree.exportNewick(tree_format, true);
@@ -158,9 +172,11 @@ void cmaple::runCMaple(cmaple::Params &params)
         }
         
         // output log-likelihood of the tree
-        if (cmaple::verbose_mode > cmaple::VB_QUIET)
-            std::cout << std::setprecision(10) << "Tree log likelihood: " << tree.computeLh() << std::endl;
-            
+        if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+          std::cout << std::setprecision(10)
+                    << "Tree log likelihood: " << tree.computeLh() << std::endl;
+        }
+
         // Show model parameters
         if (cmaple::verbose_mode > cmaple::VB_QUIET)
         {
@@ -175,8 +191,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         // Show information about output files
         std::cout << "Analysis results written to:" << std::endl;
         std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
-        if (params.compute_aLRT_SH)
-            std::cout << "Tree with aLRT-SH values:      " << prefix + ".aLRT_SH.treefile" << std::endl;
+        if (params.compute_aLRT_SH) {
+          std::cout << "Tree with aLRT-SH values:      "
+                    << prefix + ".aLRT_SH.treefile" << std::endl;
+        }
         std::cout << "Screen log file:               " << prefix + ".log" << std::endl << std::endl;
         
         // show runtime

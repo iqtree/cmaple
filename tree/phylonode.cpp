@@ -249,11 +249,11 @@ void cmaple::PhyloNode::computeTotalLhAtNode(
     const bool is_root,
     const RealNumType blength) {
   // if node is root
-  if (is_root)
+  if (is_root) {
     getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(total_lh, model,
                                                         blength);
   // if not is normal nodes
-  else {
+  } else {
     std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
     neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())
         ->mergeUpperLower<num_states>(total_lh, getUpperLength(),
@@ -294,8 +294,9 @@ const std::string cmaple::PhyloNode::exportString(
       }
       // export less informative sequences in mutifurcating tree format
       else {
-        for (auto minor_seq_name_index : less_info_seqs)
+        for (auto minor_seq_name_index : less_info_seqs) {
           output += "," + seq_names[minor_seq_name_index] + ":0";
+        }
       }
       output += ")" + branch_support + ":" + length_str;
       return output;

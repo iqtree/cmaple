@@ -203,8 +203,9 @@ cmaple::SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions) {
   }
   // clone regions one by one
   reserve(n_regions->size());
-  for (const auto& region : *n_regions)
+  for (const auto &region : *n_regions) {
     push_back(SeqRegion::clone(region));
+  }
 }
 
 auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
@@ -596,8 +597,9 @@ void cmaple::merge_O_ORACGT(const SeqRegion& seq1_region,
   }
 
   // normalize the new partial lh
-  if (sum_new_lh == 0)
+  if (sum_new_lh == 0) {
     throw std::logic_error("Sum of new partital lh is zero.");
+  }
 
   // normalize the new partial likelihood
   normalize_arr(new_lh->data(), num_states, sum_new_lh);
@@ -704,8 +706,9 @@ void cmaple::merge_RACGT_ORACGT(const SeqRegion& seq1_region,
       setVecWithState<num_states>(new_lh_value.data(), seq1_state,
                                   mutation_mat_row, total_blength_1);
     } else {
-      for (auto& v : new_lh_value)
+      for (auto &v : new_lh_value) {
         v = 0;
+      }
       new_lh_value[seq1_state] = 1;
     }
   }
@@ -747,10 +750,11 @@ void cmaple::SeqRegions::mergeUpperLower(
   const PositionType seq_length = aln->ref_seq.size();
 
   // init merged_regions
-  if (merged_regions)
+  if (merged_regions) {
     merged_regions->clear();
-  else
+  } else {
     merged_regions = std::make_unique<SeqRegions>();
+  }
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
@@ -772,11 +776,11 @@ void cmaple::SeqRegions::mergeUpperLower(
 
     // seq1_entry = 'N'
     // seq1_entry = 'N' and seq2_entry = 'N'
-    if (s1s2 == NN)
+    if (s1s2 == NN) {
       merged_regions->emplace_back(TYPE_N, end_pos);
     // seq1_entry = 'N' and seq2_entry = O/R/ACGT
     // seq1_entry = 'N' and seq2_entry = O
-    else if (s1s2 == NO) {
+    } else if (s1s2 == NO) {
       merge_N_O<num_states>(lower_plength, *seq2_region, model, end_pos,
                             *merged_regions);
     }
@@ -809,27 +813,31 @@ void cmaple::SeqRegions::mergeUpperLower(
       RealNumType total_blength_1 = upper_plength;
       if (seq1_region->plength_observation2node >= 0) {
         total_blength_1 = seq1_region->plength_observation2node;
-        if (upper_plength > 0)
+        if (upper_plength > 0) {
           total_blength_1 += upper_plength;
+        }
 
         if (seq1_region->type != TYPE_O &&
-            seq1_region->plength_observation2root >= 0)
+            seq1_region->plength_observation2root >= 0) {
           total_blength_1 += seq1_region->plength_observation2root;
+        }
       }
 
       RealNumType total_blength_2 = lower_plength;
       if (seq2_region->plength_observation2node >= 0) {
         total_blength_2 = seq2_region->plength_observation2node;
-        if (lower_plength > 0)
+        if (lower_plength > 0) {
           total_blength_2 += lower_plength;
+        }
       }
 
       // special cases when either total_blength_1 or total_blength_2 is zero
       if (merge_Zero_Distance(*seq1_region, *seq2_region, total_blength_1,
                               total_blength_2, end_pos, threshold_prob,
                               num_states, merged_regions)) {
-        if (!merged_regions)
+        if (!merged_regions) {
           return;
+        }
       }
       // seq1_entry = O and seq2_entry = O/R/ACGT
       else if (seq1_region->type == TYPE_O) {
@@ -1290,10 +1298,11 @@ RealNumType cmaple::SeqRegions::mergeTwoLowers(
   const PositionType seq_length = aln->ref_seq.size();
 
   // init merged_regions
-  if (merged_regions)
+  if (merged_regions) {
     merged_regions->clear();
-  else
+  } else {
     merged_regions = std::make_unique<SeqRegions>();
+  }
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
@@ -1315,11 +1324,11 @@ RealNumType cmaple::SeqRegions::mergeTwoLowers(
 
     // seq1_entry = 'N'
     // seq1_entry = 'N' and seq2_entry = 'N'
-    if (s1s2 == NN)
+    if (s1s2 == NN) {
       merged_regions->emplace_back(TYPE_N, end_pos);
     // seq1_entry = 'N' and seq2_entry = O/R/ACGT
     // seq1_entry = 'N' and seq2_entry = O
-    else if (s1s2 == NO) {
+    } else if (s1s2 == NO) {
       merge_N_O_TwoLowers(*seq2_region, end_pos, plength2, *merged_regions);
     }
     // seq1_entry = 'N' and seq2_entry = R/ACGT
@@ -1344,8 +1353,9 @@ RealNumType cmaple::SeqRegions::mergeTwoLowers(
       if (!merge_notN_notN_TwoLowers<num_states>(
               *seq1_region, *seq2_region, plength1, plength2, end_pos, pos, aln,
               model, cumulative_rate, threshold_prob, log_lh, merged_regions,
-              return_log_lh))
+              return_log_lh)) {
         return MIN_NEGATIVE;
+      }
     }
 
     // NHANLT: LOGS FOR DEBUGGING
@@ -1386,10 +1396,12 @@ void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions,
 
   // compute the (site) lh contributions
   // convert total_blength_1 and total_blength_2 to zero if they are -1
-  if (total_blength_1 < 0)
+  if (total_blength_1 < 0) {
     total_blength_1 = 0;
-  if (total_blength_2 < 0)
+  }
+  if (total_blength_2 < 0) {
     total_blength_2 = 0;
+  }
 
   RealNumType total_blength = total_blength_1 + total_blength_2;
   if (seq1_region.type == TYPE_R) {
@@ -1397,9 +1409,10 @@ void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions,
         total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
 
     // compute site lh contributions
-    for (PositionType i = pos; i < end_pos + 1; ++i)
+    for (PositionType i = pos; i < end_pos + 1; ++i) {
       site_lh_contributions[i] +=
           total_blength * (cumulative_rate[i + 1] - cumulative_rate[i]);
+    }
   } else {
     log_lh += model->diagonal_mut_mat[seq1_region.type] * total_blength;
 
@@ -1455,8 +1468,9 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions,
                         RealNumType& sum_lh,
                         std::unique_ptr<SeqRegions>& merged_regions) {
   StateType seq2_state = seq2_region.type;
-  if (seq2_state == TYPE_R)
+  if (seq2_state == TYPE_R) {
     seq2_state = aln->ref_seq[end_pos];
+  }
 
   if (total_blength_2 > 0) {
     RealNumType* transposed_mut_mat_row =
@@ -1510,12 +1524,13 @@ bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions,
       std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   RealNumType sum_lh = 0;
 
-  if (total_blength_1 > 0)
+  if (total_blength_1 > 0) {
     updateLHwithMat<num_states>(model->mutation_mat, *(seq1_region.likelihood),
                                 *new_lh, total_blength_1);
   // otherwise, clone the partial likelihood from seq1
-  else
+  } else {
     *new_lh = *seq1_region.likelihood;
+  }
 
   // seq1_entry = O and seq2_entry = O
   if (seq2_region.type == TYPE_O) {
@@ -1580,8 +1595,9 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions,
                             RealNumType& log_lh,
                             std::unique_ptr<SeqRegions>& merged_regions) {
   StateType seq2_state = seq2_region.type;
-  if (seq2_state == TYPE_R)
+  if (seq2_state == TYPE_R) {
     seq2_state = aln->ref_seq[end_pos];
+  }
 
   if (total_blength_2 > 0) {
     RealNumType* transposed_mut_mat_row =
@@ -1626,8 +1642,9 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions,
                              RealNumType& log_lh,
                              std::unique_ptr<SeqRegions>& merged_regions) {
   StateType seq1_state = seq1_region.type;
-  if (seq1_state == TYPE_R)
+  if (seq1_state == TYPE_R) {
     seq1_state = aln->ref_seq[end_pos];
+  }
 
   auto new_lh =
       std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
@@ -1639,14 +1656,16 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions,
         model->transposed_mut_mat + model->row_index[seq1_state];
     setVecWithState<num_states>(new_lh->data(), seq1_state,
                                 transposed_mut_mat_row, total_blength_1);
-  } else
+  } else {
     resetLhVecExceptState<num_states>(new_lh->data(), seq1_state, 1);
+  }
 
   // seq1_entry = R/ACGT and seq2_entry = O
-  if (seq2_region.type == TYPE_O)
+  if (seq2_region.type == TYPE_O) {
     return calSiteLhs_RACGT_O<num_states>(
         site_lh_contributions, seq2_region, total_blength_2, end_pos, aln,
         model, threshold_prob, *new_lh, log_lh, merged_regions);
+  }
 
   // otherwise, seq1_entry = R/ACGT and seq2_entry = R/ACGT
   return calSiteLhs_RACGT_RACGT<num_states>(
@@ -1671,15 +1690,17 @@ bool calSiteLhs_notN_notN(std::vector<RealNumType>& site_lh_contributions,
   RealNumType total_blength_1 = plength1;
   if (seq1_region.plength_observation2node >= 0) {
     total_blength_1 = seq1_region.plength_observation2node;
-    if (plength1 > 0)
+    if (plength1 > 0) {
       total_blength_1 += plength1;
+    }
   }
 
   RealNumType total_blength_2 = plength2;
   if (seq2_region.plength_observation2node >= 0) {
     total_blength_2 = seq2_region.plength_observation2node;
-    if (plength2 > 0)
+    if (plength2 > 0) {
       total_blength_2 += plength2;
+    }
   }
 
   // seq1_entry and seq2_entry are identical seq1_entry = R/ACGT
@@ -1738,10 +1759,11 @@ RealNumType cmaple::SeqRegions::calculateSiteLhContributions(
   ASSERT(site_lh_contributions.size() == seq_length);
 
   // init merged_regions
-  if (merged_regions)
+  if (merged_regions) {
     merged_regions->clear();
-  else
+  } else {
     merged_regions = std::make_unique<SeqRegions>();
+  }
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
@@ -1763,11 +1785,11 @@ RealNumType cmaple::SeqRegions::calculateSiteLhContributions(
 
     // seq1_entry = 'N'
     // seq1_entry = 'N' and seq2_entry = 'N'
-    if (s1s2 == NN)
+    if (s1s2 == NN) {
       merged_regions->emplace_back(TYPE_N, end_pos);
     // seq1_entry = 'N' and seq2_entry = O/R/ACGT
     // seq1_entry = 'N' and seq2_entry = O
-    else if (s1s2 == NO) {
+    } else if (s1s2 == NO) {
       merge_N_O_TwoLowers(*seq2_region, end_pos, plength2, *merged_regions);
     }
     // seq1_entry = 'N' and seq2_entry = R/ACGT
@@ -1793,8 +1815,9 @@ RealNumType cmaple::SeqRegions::calculateSiteLhContributions(
               site_lh_contributions, *seq1_region, *seq2_region, plength1,
               plength2, end_pos, pos, aln, model, cumulative_rate,
               threshold_prob, log_lh, merged_regions)) {
-        if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
           outWarning("calculateSiteLhContributions() returns MIN_NEGATIVE!");
+        }
         return MIN_NEGATIVE;
       }
     }
@@ -1835,16 +1858,17 @@ auto cmaple::SeqRegions::computeAbsoluteLhAtRoot(
   for (const SeqRegion& region : regions) {
     // type R
     if (region.type == TYPE_R) {
-      for (StateType i = 0; i < num_states; ++i)
+      for (StateType i = 0; i < num_states; ++i) {
         log_lh += model->root_log_freqs[i] *
                   (cumulative_base[region.position + 1][i] -
                    cumulative_base[start_pos][i]);
+      }
     }
     // type ACGT
-    else if (region.type < num_states)
+    else if (region.type < num_states) {
       log_lh += model->root_log_freqs[region.type];
     // type O
-    else if (region.type == TYPE_O) {
+    } else if (region.type == TYPE_O) {
       RealNumType tot = 0;
       tot +=
           dotProduct<num_states>(&(*region.likelihood)[0], model->root_freqs);
@@ -1888,17 +1912,19 @@ RealNumType cmaple::SeqRegions::computeSiteLhAtRoot(
   for (const SeqRegion& region : regions) {
     // type R
     if (region.type == TYPE_R) {
-      for (StateType i = 0; i < num_states; ++i)
+      for (StateType i = 0; i < num_states; ++i) {
         log_lh += model->root_log_freqs[i] *
                   (cumulative_base[region.position + 1][i] -
                    cumulative_base[start_pos][i]);
+      }
 
       // calculate site lhs
       for (PositionType pos = start_pos; pos < region.position + 1; ++pos) {
-        for (StateType i = 0; i < num_states; ++i)
+        for (StateType i = 0; i < num_states; ++i) {
           site_lh_contributions[pos] +=
               model->root_log_freqs[i] *
               (cumulative_base[pos + 1][i] - cumulative_base[pos][i]);
+        }
       }
     }
     // type ACGT
@@ -1947,10 +1973,11 @@ void cmaple::SeqRegions::computeTotalLhAtRoot(
     std::unique_ptr<SeqRegions>& total_lh,
     const ModelBase* model,
     RealNumType blength) const {
-  if (total_lh)
+  if (total_lh) {
     total_lh->clear();
-  else
+  } else {
     total_lh = std::make_unique<SeqRegions>();
+  }
 
   total_lh->reserve(size());  // avoid realloc of vector data
   for (const SeqRegion& elem : (*this)) {
@@ -1967,8 +1994,9 @@ void cmaple::SeqRegions::computeTotalLhAtRoot(
         RealNumType total_blength = blength;
         if (region->plength_observation2node >= 0) {
           total_blength = region->plength_observation2node;
-          if (blength > 0)
+          if (blength > 0) {
             total_blength += blength;
+          }
         }
 
         // init new likelihood
@@ -1994,8 +2022,9 @@ void cmaple::SeqRegions::computeTotalLhAtRoot(
             region->plength_observation2root);
 
         if (new_region.plength_observation2node >= 0) {
-          if (blength > 0)
+          if (blength > 0) {
             new_region.plength_observation2node += blength;
+          }
 
           new_region.plength_observation2root = 0;
         } else if (blength > 0) {
@@ -2029,8 +2058,9 @@ void cmaple::SeqRegions::writeConstructionCodes(
   const SeqRegions& regions = *this;
 
   // browse regions one by one to export the construction codes
-  for (const SeqRegion& region : regions)
+  for (const SeqRegion &region : regions) {
     region.writeConstructionCodes(regions_name, out, num_states);
+  }
 }
 
 void cmaple::SeqRegions::addNonConsecutiveRRegion(

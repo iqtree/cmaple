@@ -43,17 +43,19 @@ std::unique_ptr<SeqRegions> cmaple::Sequence::getLowerLhVector(const PositionTyp
     for (auto& mutation: (*this))
     {
         // insert Region of type R (if necessary)
-        if (mutation.position > pos)
-            regions->emplace_back(TYPE_R, mutation.position - 1);
-        
+        if (mutation.position > pos) {
+          regions->emplace_back(TYPE_R, mutation.position - 1);
+        }
+
         // convert the current mutation
         pos = mutation.position + mutation.getLength();
         regions->emplace_back(&mutation, seq_type, num_states);
     }
     
     // insert the last Region of type R (if necessary)
-    if (pos < sequence_length)
-        regions->emplace_back(TYPE_R, sequence_length - 1);
-    
+    if (pos < sequence_length) {
+      regions->emplace_back(TYPE_R, sequence_length - 1);
+    }
+
     return regions;
 }

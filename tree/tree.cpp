@@ -69,19 +69,22 @@ void cmaple::Tree::initTree(Alignment* n_aln,
                             Model* n_model,
                             std::unique_ptr<cmaple::Params>&& n_params) {
   // Validate input aln
-  if (!n_aln || !n_aln->data.size())
+  if (!n_aln || !n_aln->data.size()) {
     throw std::invalid_argument(
         "Alignment is empty. Please call read(...) first!");
+  }
 
   // Validate input model
-  if (!n_model)
+  if (!n_model) {
     throw std::invalid_argument("Model is null!");
+  }
 
   // Init variables of the tree
-  if (n_params)
+  if (n_params) {
     params = std::move(n_params);
-  else
+  } else {
     params = cmaple::ParamsBuilder().build();
+  }
   aln = nullptr;
   model = nullptr;
   cumulative_rate = nullptr;
@@ -142,8 +145,9 @@ void cmaple::Tree::load(std::istream& tree_stream, const bool fixed_blengths) {
 void cmaple::Tree::load(const std::string& tree_filename,
                         const bool fixed_blengths) {
   // Validate input
-  if (!tree_filename.length())
+  if (!tree_filename.length()) {
     throw std::invalid_argument("The tree file name is empty");
+  }
 
   // open the treefile
   std::ifstream tree_stream;
@@ -285,15 +289,18 @@ void cmaple::Tree::resetSeqAdded() {
 
 void cmaple::Tree::attachAlnModel(Alignment* n_aln, ModelBase* n_model) {
   // Validate inputs
-  if (!n_aln)
+  if (!n_aln) {
     throw std::invalid_argument("The alignment is null");
-  if (!n_model)
+  }
+  if (!n_model) {
     throw std::invalid_argument("The model is null");
+  }
 
   // Sequence type (~num_states) of model must match that of alignment
-  if (n_aln->num_states != n_model->num_states_)
+  if (n_aln->num_states != n_model->num_states_) {
     throw std::invalid_argument(
         "Sequence type (~num_states) of model must match that of alignment");
+  }
 
   // Attach aln
   aln = n_aln;
@@ -316,8 +323,9 @@ void cmaple::Tree::attachAlnModel(Alignment* n_aln, ModelBase* n_model) {
 
   // extract a backup vector of sequence names
   seq_names.resize(num_seqs);
-  for (auto i = 0; i < num_seqs; ++i)
+  for (auto i = 0; i < num_seqs; ++i) {
     seq_names[i] = aln->data[i].seq_name;
+  }
 
   // update model according to the data from the alignment
   try {
@@ -380,10 +388,11 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
 
   // If the tree contains any missing blengths -> re-estimate the blengths
   if (missing_blength) {
-    if (cmaple::verbose_mode >= cmaple::VB_MED)
+    if (cmaple::verbose_mode >= cmaple::VB_MED) {
       std::cout << "The input tree contains missing branch lengths. "
                    "Re-estimate all branch lengths."
                 << std::endl;
+    }
 
     // optimize blengths
     std::cout << optimizeBranch() << std::endl;
@@ -418,19 +427,22 @@ void cmaple::Tree::updateModelLhAfterLoading() {
 template <const cmaple::StateType num_states>
 void cmaple::Tree::changeAlnTemplate(Alignment* n_aln) {
   // Validate input aln
-  if (!n_aln || !n_aln->data.size())
+  if (!n_aln || !n_aln->data.size()) {
     throw std::invalid_argument(
         "Alignment is empty. Please call read(...) first!");
+  }
 
   // make sure both alignments have the same seqtype
-  if (aln->getSeqType() != n_aln->getSeqType())
+  if (aln->getSeqType() != n_aln->getSeqType()) {
     throw std::logic_error(
         "Sorry! we have yet supported changing to a new alignment with a "
         "sequence type different from the current one.");
+  }
 
   // show information
-  if (cmaple::verbose_mode >= cmaple::VB_MED)
+  if (cmaple::verbose_mode >= cmaple::VB_MED) {
     std::cout << "Changing the alignment" << std::endl;
+  }
 
   // change the alignment
   aln = n_aln;
@@ -444,8 +456,9 @@ void cmaple::Tree::changeAlnTemplate(Alignment* n_aln) {
 
   // extract a backup vector of sequence names
   seq_names.resize(aln->data.size());
-  for (auto i = 0; i < aln->data.size(); ++i)
+  for (auto i = 0; i < aln->data.size(); ++i) {
     seq_names[i] = aln->data[i].seq_name;
+  }
 
   // update model according to the data in the new alignment
   updateModelByAln();
@@ -470,8 +483,9 @@ template <const cmaple::StateType num_states>
 void cmaple::Tree::changeModelTemplate(Model* n_model) {
   ASSERT(model && aln);
   // Validate input model
-  if (!n_model || !n_model->model_base)
+  if (!n_model || !n_model->model_base) {
     throw std::invalid_argument("The new model is null!");
+  }
 
   // Make sure we use the updated alignment (in case users re-read the alignment
   // from a new file after attaching the alignment to the tree)
@@ -480,10 +494,11 @@ void cmaple::Tree::changeModelTemplate(Model* n_model) {
   }
 
   // make sure both models have the same seqtype
-  if (model->num_states_ != n_model->model_base->num_states_)
+  if (model->num_states_ != n_model->model_base->num_states_) {
     throw std::logic_error(
         "Sorry! we have yet supported changing to a new model with a sequence "
         "type different from the current one.");
+  }
 
   // do nothing if new model is the same as the current one
   if (model == n_model->model_base) {
@@ -491,8 +506,9 @@ void cmaple::Tree::changeModelTemplate(Model* n_model) {
   }
 
   // show information
-  if (cmaple::verbose_mode >= cmaple::VB_MED)
+  if (cmaple::verbose_mode >= cmaple::VB_MED) {
     std::cout << "Changing the model" << std::endl;
+  }
 
   // change the model
   model = n_model->model_base;
@@ -527,14 +543,16 @@ std::string cmaple::Tree::doInferenceTemplate(
   std::cout << applySPR(tree_search_type, shallow_tree_search);
 
   // 3. Optimize branch lengths (if needed)
-  if (!fixed_blengths)
+  if (!fixed_blengths) {
     std::cout << optimizeBranch();
+  }
 
   // output log-likelihood of the tree
-  if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+  if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
     std::cout << std::setprecision(10)
               << "Tree log likelihood (at the end of the inference): "
               << computeLh() << std::endl;
+  }
 
   // Restore the source cout
   cout.rdbuf(src_cout);
@@ -545,10 +563,11 @@ std::string cmaple::Tree::doInferenceTemplate(
 
 template <const StateType num_states>
 std::string cmaple::Tree::doPlacementTemplate() {
-  if (aln->data.size() < 3)
+  if (aln->data.size() < 3) {
     throw std::logic_error(
         "The number of input sequences must be at least 3! Please check and "
         "try again!");
+  }
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
@@ -562,8 +581,9 @@ std::string cmaple::Tree::doPlacementTemplate() {
   }
 
   // show information
-  if (cmaple::verbose_mode >= cmaple::VB_MED)
+  if (cmaple::verbose_mode >= cmaple::VB_MED) {
     std::cout << "Performing placement" << std::endl;
+  }
 
   // record the start time
   auto start = getRealTime();
@@ -576,8 +596,9 @@ std::string cmaple::Tree::doPlacementTemplate() {
   PositionType num_new_sequences = num_seqs;
   Sequence* sequence = &aln->data.front();
   // make sure we allocate enough space to store all nodes
-  if (nodes.capacity() < num_seqs + num_seqs)
+  if (nodes.capacity() < num_seqs + num_seqs) {
     nodes.reserve(num_seqs + num_seqs);
+  }
   NumSeqsType i = 0;
 
   // if users don't input a tree -> create the root from the first sequence
@@ -642,14 +663,15 @@ std::string cmaple::Tree::doPlacementTemplate() {
     // != NULL) -> place the new sample in the existing tree
     if (selected_node_index.getMiniIndex() != UNDEFINED) {
       // place new sample as a descendant of a mid-branch point
-      if (is_mid_branch)
+      if (is_mid_branch) {
         placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions,
                                             i, best_lh_diff);
       // otherwise, best lk so far is for appending directly to existing node
-      else
+      } else {
         placeNewSampleAtNode<num_states>(selected_node_index, lower_regions, i,
                                          best_lh_diff, best_up_lh_diff,
                                          best_down_lh_diff, best_child_index);
+      }
     }
 
     // NHANLT: debug
@@ -669,26 +691,29 @@ std::string cmaple::Tree::doPlacementTemplate() {
   // flag denotes whether there is any new nodes added
   // show the number of new sequences added to the tree
   if (num_new_sequences > 0) {
-    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    if (cmaple::verbose_mode > cmaple::VB_QUIET) {
       std::cout << num_new_sequences
                 << " sequences have been added to the tree." << std::endl;
+    }
 
     // traverse the intial tree from root to re-calculate all likelihoods
     // regarding the latest/final estimated model parameters
     refreshAllLhs<num_states>();
   } else {
-    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    if (cmaple::verbose_mode > cmaple::VB_QUIET) {
       std::cout
           << "All sequences were presented in the input tree. No new sequence "
              "has been added!"
           << std::endl;
+    }
   }
 
   // show the runtime for building an initial tree
   auto end = getRealTime();
-  if (cmaple::verbose_mode >= cmaple::VB_MAX)
+  if (cmaple::verbose_mode >= cmaple::VB_MAX) {
     cout << " - Time spent on building an initial tree: "
          << std::setprecision(3) << end - start << endl;
+  }
 
   // Restore the source cout
   cout.rdbuf(src_cout);
@@ -703,12 +728,14 @@ std::string cmaple::Tree::applySPRTemplate(
     const bool shallow_tree_search) {
   TreeSearchType tree_search_type = n_tree_search_type;
   // Validate tree search type
-  if (tree_search_type == UNKNOWN_TREE_SEARCH)
+  if (tree_search_type == UNKNOWN_TREE_SEARCH) {
     throw std::invalid_argument("Unknown tree search type!");
+  }
 
   // Make sure the tree is not empty
-  if (!nodes.size())
+  if (!nodes.size()) {
     throw std::logic_error("Tree is empty. Please build/infer a tree first!");
+  }
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
@@ -723,8 +750,9 @@ std::string cmaple::Tree::applySPRTemplate(
 
   // show information
   if (tree_search_type == FAST_TREE_SEARCH &&
-      cmaple::verbose_mode >= cmaple::VB_MED)
+      cmaple::verbose_mode >= cmaple::VB_MED) {
     std::cout << "No tree search is invoked." << std::endl;
+  }
   // tree.params->debug = true;
   // string output_file(params->output_prefix);
   // exportOutput(output_file + "_init.treefile");
@@ -733,8 +761,9 @@ std::string cmaple::Tree::applySPRTemplate(
   // neccessary) Don't apply shallow tree search if users chose no tree search
   if (shallow_tree_search && tree_search_type != FAST_TREE_SEARCH) {
     // show info
-    if (cmaple::verbose_mode >= cmaple::VB_MED)
+    if (cmaple::verbose_mode >= cmaple::VB_MED) {
       std::cout << "Applying a shallow tree search" << std::endl;
+    }
 
     // show a warning if applying a shallow tree search will follow by a full
     if (tree_search_type == NORMAL_TREE_SEARCH &&
@@ -754,10 +783,11 @@ std::string cmaple::Tree::applySPRTemplate(
   }
 
   // output log-likelihood of the tree
-  if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+  if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
     std::cout << std::setprecision(10)
               << "Tree log likelihood (before a deeper tree search): "
               << computeLh() << std::endl;
+  }
 
   // run a normal search for tree topology improvement
   if (tree_search_type != FAST_TREE_SEARCH) {
@@ -778,10 +808,11 @@ std::string cmaple::Tree::applySPRTemplate(
   refreshAllLhs<num_states>();
 
   // output log-likelihood of the tree
-  if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+  if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
     std::cout << std::setprecision(10)
               << "Tree log likelihood (after the deeper tree search (if any)): "
               << computeLh() << std::endl;
+  }
 
   // Restore the source cout
   cout.rdbuf(src_cout);
@@ -797,8 +828,9 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate() {
   ASSERT(model && "Null model");
 
   // Make sure the tree is not empty
-  if (!nodes.size())
+  if (!nodes.size()) {
     throw std::logic_error("Tree is empty. Please build/infer a tree first!");
+  }
 
   // Make writing and re-reading tree consistently
   // colapse zero branch lengths in leave
@@ -863,10 +895,11 @@ void cmaple::Tree::optimizeTreeTopology(bool short_range_search) {
       resetSPRFlags(false, false, true);
 
       improvement = improveEntireTree<num_states>(short_range_search);
-      if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+      if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
         cout << "Tree was improved by " + convertDoubleToString(improvement) +
                     " at subround " + convertIntToString(j + 1)
              << endl;
+      }
 
       // stop trying if the improvement is so small
       if (improvement < params->thresh_entire_tree_improvement) {
@@ -936,9 +969,10 @@ std::string cmaple::Tree::optimizeBranchTemplate() {
 
   // show the runtime for optimize the branch lengths
   auto end = getRealTime();
-  if (cmaple::verbose_mode >= cmaple::VB_MAX)
+  if (cmaple::verbose_mode >= cmaple::VB_MAX) {
     cout << " - Time spent on optimizing the branch lengths: "
          << std::setprecision(3) << end - start << endl;
+  }
 
   // Restore the source cout
   cout.rdbuf(src_cout);
@@ -1003,18 +1037,21 @@ std::string cmaple::Tree::computeBranchSupportTemplate(
   }
 
   // set num_threads
-  if (num_threads < 0)
+  if (num_threads < 0) {
     throw std::invalid_argument("Number of threads must be non-negative!");
+  }
   setNumThreads(num_threads);
 
   // set num_replicates
-  if (num_replicates <= 0)
+  if (num_replicates <= 0) {
     throw std::invalid_argument("Number of replicates must be positive!");
+  }
   params->aLRT_SH_replicates = num_replicates;
 
   // set epsilon
-  if (epsilon < 0)
+  if (epsilon < 0) {
     throw std::invalid_argument("Epsilon must be non-negative!");
+  }
   params->aLRT_SH_half_epsilon = epsilon * 0.5;
 
   // Redirect the original src_cout to the target_cout
@@ -1068,9 +1105,10 @@ std::string cmaple::Tree::computeBranchSupportTemplate(
 
   // show the runtime for calculating branch supports
   auto end = getRealTime();
-  if (cmaple::verbose_mode >= cmaple::VB_MAX)
+  if (cmaple::verbose_mode >= cmaple::VB_MAX) {
     cout << " - Time spent on calculating branch supports: "
          << std::setprecision(3) << end - start << endl;
+  }
 
   // Restore the source cout
   cout.rdbuf(src_cout);
@@ -1111,9 +1149,10 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
   string branch_support = "";
   if (show_branch_supports) {
     // Make sure Branch supports have been computed
-    if (!node.getNodelhIndex())
+    if (!node.getNodelhIndex()) {
       throw std::logic_error(
           "Branch supports is not available. Please compute them first!");
+    }
 
     branch_support =
         convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
@@ -1183,7 +1222,7 @@ std::unique_ptr<SeqRegions> cmaple::Tree::computeUpperLeftRightRegions(
       params->threshold_prob);
 
   // handle cases when new regions is null/empty
-  if (!upper_left_right_regions || upper_left_right_regions->size() == 0)
+  if (!upper_left_right_regions || upper_left_right_regions->size() == 0) {
     handleNullNewRegions<num_states>(
         node_index, node,
         (node.getUpperLength() <= 0 &&
@@ -1191,6 +1230,7 @@ std::unique_ptr<SeqRegions> cmaple::Tree::computeUpperLeftRightRegions(
         node_stack, update_blength,
         "Strange: None vector from non-zero distances in updatePartialLh() "
         "from parent direction.");
+  }
 
   return upper_left_right_regions;
 }
@@ -1245,10 +1285,11 @@ void cmaple::Tree::updatePartialLhFromParent(
           aln, model, params->threshold_prob,
           root_vector_index == index.getVectorIndex());
 
-      if (!node.getTotalLh() || node.getTotalLh()->size() == 0)
+      if (!node.getTotalLh() || node.getTotalLh()->size() == 0) {
         throw std::logic_error(
             "inside updatePartialLh(), from parent 2: should not have happened "
             "since node->length > 0");
+      }
     }
   }
 
@@ -1269,9 +1310,10 @@ void cmaple::Tree::updatePartialLhFromParent(
     std::unique_ptr<SeqRegions> upper_left_right_regions_2 = nullptr;
 
     // compute new upper left/right for next_node_1
-    if (!update_blength)
+    if (!update_blength) {
       upper_left_right_regions_2 = computeUpperLeftRightRegions<num_states>(
           index, node, LEFT, parent_upper_regions, node_stack, update_blength);
+    }
 
     if (!update_blength) {
       // update new partiallh for next_node_1
@@ -1414,17 +1456,18 @@ void cmaple::Tree::updatePartialLhFromChildren(
 
     // update likelihoods at sibling node
     std::unique_ptr<SeqRegions> new_upper_regions = nullptr;
-    if (is_non_root)
+    if (is_non_root) {
       parent_upper_regions->mergeUpperLower<num_states>(
           new_upper_regions, node.getUpperLength(), *this_node_lower_regions,
           this_node_distance, aln, model, params->threshold_prob);
-    else
+    } else {
       // new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model,
       // params->threshold_prob)->computeTotalLhAtRoot(aln->num_states, model,
       // this_node_distance);
       getPartialLhAtNode(neighbor_index)
           ->computeTotalLhAtRoot<num_states>(new_upper_regions, model,
                                              this_node_distance);
+    }
 
     if (!new_upper_regions || new_upper_regions->size() == 0) {
       // handleNullNewRegions(top_node, (top_node->length <= 0 &&
@@ -3089,11 +3132,12 @@ void cmaple::Tree::connectSubTree2Branch(
       internal.getTotalLh(), nodes[parent_vec], aln, model, threshold_prob,
       root_vector_index == internal_vec);
 
-  if (!internal.getTotalLh())  //->total_lh ||
-                               // new_internal_node->total_lh->size() == 0)
+  if (!internal.getTotalLh()) { //->total_lh ||
+                                // new_internal_node->total_lh->size() == 0)
     throw std::logic_error(
         "Problem, None vector when re-placing sample, placing subtree at "
         "mid-branch point");
+  }
 
   // if distTop>=2*min_blengthForMidNode:
   //  createFurtherMidNodes(newInternalNode,upper_left_right_regions)
@@ -3164,9 +3208,10 @@ void cmaple::Tree::placeSubTreeMidBranch(
   }
 
   // Delay cloning SeqRegions
-  if (!best_child_regions)
+  if (!best_child_regions) {
     best_child_regions = std::make_unique<SeqRegions>(
         SeqRegions(selected_node.getMidBranchLh()));
+  }
 
   // now try different lengths for the new branch
   RealNumType best_blength = new_branch_length;
@@ -3515,9 +3560,10 @@ void cmaple::Tree::placeSubTreeAtNode(
         best_parent_blength_split, new_branch_length, false);
 
     // Delay cloning SeqRegions
-    if (!best_parent_regions)
+    if (!best_parent_regions) {
       best_parent_regions = std::make_unique<SeqRegions>(
           SeqRegions(selected_node.getMidBranchLh()));
+    }
   }
 
   // if the best placement is below the selected_node => add an internal node
@@ -3566,13 +3612,14 @@ void cmaple::Tree::placeSubTreeAtNode(
       best_parent_regions = NULL;*/
       best_parent_regions = nullptr;
 
-      if (root_vector_index == selected_node_vec)
+      if (root_vector_index == selected_node_vec) {
         lower_regions->mergeTwoLowers<num_states>(
             best_parent_regions, -1, *subtree_regions, new_branch_length, aln,
             model, cumulative_rate, threshold_prob);
-      else
+      } else {
         best_parent_regions =
             std::make_unique<SeqRegions>(std::move(selected_node.getTotalLh()));
+      }
     }
 
     // add parent to the root
@@ -3669,16 +3716,17 @@ auto cmaple::Tree::tryShorterBranch(
 
   while (new_branch_length_split > min_blength) {
     // try on the first or second branch
-    if (try_first_branch)
+    if (try_first_branch) {
       upper_left_right_regions->mergeUpperLower<num_states>(
           new_parent_regions, new_branch_length_split, *lower_regions,
           current_blength - new_branch_length_split, aln, model,
           params->threshold_prob);
-    else
+    } else {
       upper_left_right_regions->mergeUpperLower<num_states>(
           new_parent_regions, current_blength - new_branch_length_split,
           *lower_regions, new_branch_length_split, aln, model,
           params->threshold_prob);
+    }
 
     // calculate placement_cost
     RealNumType placement_cost = (this->*calculatePlacementCost)(
@@ -3894,9 +3942,10 @@ void cmaple::Tree::connectNewSample2Branch(
       root_vector_index == internal_vec_index);
 
   // if (!internal.getTotalLh() || internal.getTotalLh()->empty())
-  if (!internal.getTotalLh())
+  if (!internal.getTotalLh()) {
     throw std::logic_error(
         "Problem, None vector when placing sample, below node");
+  }
 
   if (best_blength > 0) {
     // new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob,
@@ -3990,9 +4039,10 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
   }
 
   // Delay cloning SeqRegions
-  if (!best_child_regions)
+  if (!best_child_regions) {
     best_child_regions = std::make_unique<SeqRegions>(
         SeqRegions(selected_node.getMidBranchLh()));
+  }
 
   // now try different lengths for the new branch
   RealNumType best_blength = default_blength;
@@ -4375,9 +4425,10 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
         best_child_blength_split, default_blength, true);
 
     // Delay cloning SeqRegions
-    if (!best_child_regions)
+    if (!best_child_regions) {
       best_child_regions =
           std::make_unique<SeqRegions>(SeqRegions(best_child.getMidBranchLh()));
+    }
   }
 
   // if node is root, try to place as sibling of the current root.
@@ -4440,9 +4491,10 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
         best_parent_blength_split, default_blength, false);
 
     // Delay cloning SeqRegions
-    if (!best_parent_regions)
+    if (!best_parent_regions) {
       best_parent_regions = std::make_unique<SeqRegions>(
           SeqRegions(selected_node.getMidBranchLh()));
+    }
   }
 
   // if the best placement is below the selected_node => add an internal node
@@ -4655,9 +4707,10 @@ void cmaple::Tree::refreshNonLowerLhsFromParent(Index& node_index,
         node.getTotalLh(), parent_node, aln, model, threshold_prob,
         root_vector_index == node_index.getVectorIndex());
 
-    if (!node.getTotalLh())
+    if (!node.getTotalLh()) {
       throw std::logic_error(
           "Strange, inconsistent total lh creation in refreshAllNonLowerLhs()");
+    }
 
     // update mid_branch_lh
     computeMidBranchRegions<num_states>(node, node.getMidBranchLh(),
@@ -4866,9 +4919,10 @@ auto cmaple::Tree::improveEntireTree(bool short_range_search) -> RealNumType {
 
       // Show log every 1000 nodes
       num_nodes += 1;
-      if (cmaple::verbose_mode >= cmaple::VB_DEBUG && num_nodes % 1000 == 0)
+      if (cmaple::verbose_mode >= cmaple::VB_DEBUG && num_nodes % 1000 == 0) {
         cout << "Processed topology for " << convertIntToString(num_nodes)
              << " nodes." << endl;
+      }
     }
   }
 
@@ -5369,8 +5423,9 @@ auto cmaple::Tree::calculateDerivative(
     const RealNumType delta_t) -> RealNumType {
   RealNumType result = 0;
 
-  for (RealNumType coefficient : coefficient_vec)
+  for (RealNumType coefficient : coefficient_vec) {
     result += 1.0 / (coefficient + delta_t);
+  }
 
   return result;
 }
@@ -5449,8 +5504,9 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
   const NumSeqsType best_node_vec = best_node_index.getVectorIndex();
   PhyloNode& parent_node = nodes[parent_node_vec];
   if (best_node_vec == parent_node_vec) {
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
       std::cout << "Strange, re-placement is at same node" << std::endl;
+    }
   } else if ((best_node_vec ==
                   parent_node.getNeighborIndex(LEFT).getVectorIndex() ||
               best_node_vec ==
@@ -5459,8 +5515,9 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
                            // best_node == parent_node->next->next->neighbor) &&
                            // is_mid_node)
   {
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
       std::cout << "Re-placement is above sibling node" << std::endl;
+    }
   } else [[likely]] {
     // reach the top of a multifurcation, which is the only place in a
     // multifurcatio where placement is allowed.
@@ -5476,9 +5533,10 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
     }
 
     if (top_polytomy_vec != best_node_vec &&
-        cmaple::verbose_mode >= cmaple::VB_DEBUG)
+        cmaple::verbose_mode >= cmaple::VB_DEBUG) {
       std::cout << "Strange, placement node not at top of polytomy"
                 << std::endl;
+    }
 
     // reach the top of the multifurcation of the parent
     /*Node* parent_top_polytomy = parent_node;
@@ -5487,9 +5545,10 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
     NumSeqsType parent_top_polytomy_vec = parent_node_vec;
 
     while (nodes[parent_top_polytomy_vec].getUpperLength() <= 0 &&
-           root_vector_index != parent_top_polytomy_vec)
+           root_vector_index != parent_top_polytomy_vec) {
       parent_top_polytomy_vec =
           nodes[parent_top_polytomy_vec].getNeighborIndex(TOP).getVectorIndex();
+    }
 
     if (!(parent_top_polytomy_vec == top_polytomy_vec && !is_mid_node)) {
       total_improvement = best_lh_diff - best_lh;
@@ -5565,12 +5624,13 @@ auto cmaple::Tree::improveSubTree(const Index node_index,
           best_blength);  // , true, NULL);
 
       // validate the new placement cost
-      if (best_lh_diff > params->threshold_prob2)
+      if (best_lh_diff > params->threshold_prob2) {
         throw std::logic_error("Strange, lh cost is positive");
-      else if (best_lh_diff < -1e50)
+      } else if (best_lh_diff < -1e50) {
         throw std::logic_error(
             "Likelihood cost is very heavy, this might mean that the reference "
             "used is not the same used to generate the input MAPLE file");
+      }
 
       if (best_lh_diff + thresh_placement_cost > best_lh) {
         // check and apply SPR move
@@ -6572,11 +6632,12 @@ void cmaple::Tree::updateLowerLhAvoidUsingUpperLRLh(
   // if new_lower_lh is NULL -> we need to update the branch lengths connecting
   // the current node to its children
   if (!new_lower_lh) {
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
       std::cout << "Set a zero branch length to the minmimum branch length " +
                        convertDoubleToString(min_blength) +
                        " to avoid computation error."
                 << std::endl;
+    }
 
     // set zero-length to the min_blength
     if (neighbor_1.getUpperLength() <= 0) {  // next_node_1->length <= 0)
@@ -6971,12 +7032,14 @@ void cmaple::Tree::calSiteLhDiffRoot(
   new_parent_new_lower_lh->computeSiteLhAtRoot<num_states>(
       site_lh_root_diff, model, cumulative_base);
   // update site_lh_root_diff
-  for (PositionType j = 0; j < seq_length; ++j)
+  for (PositionType j = 0; j < seq_length; ++j) {
     site_lh_root_diff[j] -= site_lh_root[j];
+  }
 
   // calculate the site-lh differences between the new and the old ones
-  for (PositionType j = 0; j < seq_length; ++j)
+  for (PositionType j = 0; j < seq_length; ++j) {
     site_lh_diff[j] -= site_lh_diff_old[j];
+  }
 }
 
 template <const StateType num_states>
@@ -7051,14 +7114,16 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
         grand_parent_upper_lr, parent_new_lower_lh, best_parent_lh,
         best_parent_blength_split, child_1_blength, true);
 
-    if (found_new_split)
+    if (found_new_split) {
       best_parent_blength_split = parent_blength - best_parent_blength_split;
+    }
   }
 
   // Delay cloning SeqRegions
-  if (!best_parent_regions)
+  if (!best_parent_regions) {
     best_parent_regions =
         std::make_unique<SeqRegions>(SeqRegions(parent_new_mid_branch_lh));
+  }
 
   // 3. estimate new l5 ~ the length for the new branch re-connecting child_1 to
   // the tree
@@ -7232,8 +7297,9 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
                                                       cumulative_base);
 
         // update site_lh_root_diff
-        for (PositionType j = 0; j < seq_length; ++j)
+        for (PositionType j = 0; j < seq_length; ++j) {
           site_lh_root_diff[j] -= site_lh_root[j];
+        }
 
         // stop traversing further
         break;
@@ -7253,8 +7319,9 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
   }
 
   // calculate the site-lh differences between the new and the old ones
-  for (PositionType j = 0; j < seq_length; ++j)
+  for (PositionType j = 0; j < seq_length; ++j) {
     site_lh_diff[j] -= site_lh_diff_old[j];
+  }
 }
 
 template <const StateType num_states>
@@ -7273,10 +7340,12 @@ void cmaple::Tree::calSiteLhDiff(std::vector<RealNumType>& site_lh_diff,
   RealNumType child_2_new_blength = child_2.getUpperLength();
 
   if (child_2_new_blength > 0) {
-    if (current_node.getUpperLength() > 0)
+    if (current_node.getUpperLength() > 0) {
       child_2_new_blength += current_node.getUpperLength();
-  } else
+    }
+  } else {
     child_2_new_blength = current_node.getUpperLength();
+  }
   child_2.getPartialLh(TOP)->mergeTwoLowers<num_states>(
       parent_new_lower_lh, child_2_new_blength, *(sibling.getPartialLh(TOP)),
       sibling.getUpperLength(), aln, model, cumulative_rate,
@@ -7284,18 +7353,19 @@ void cmaple::Tree::calSiteLhDiff(std::vector<RealNumType>& site_lh_diff,
 
   // if the (old) parent is root
   // for more information, pls see https://tinyurl.com/5n8m5c8y
-  if (root_vector_index == parent_index.getVectorIndex())
+  if (root_vector_index == parent_index.getVectorIndex()) {
     calSiteLhDiffRoot<num_states>(site_lh_diff, site_lh_root_diff, site_lh_root,
                                   parent_new_lower_lh, child_2_new_blength,
                                   current_node, child_1, child_2, sibling,
                                   parent, parent_index);
   // otherwise, the (old) parent node is non-root
   // for more information, pls see https://tinyurl.com/ymr49jy8
-  else
+  } else {
     calSiteLhDiffNonRoot<num_states>(site_lh_diff, site_lh_root_diff,
                                      site_lh_root, parent_new_lower_lh,
                                      child_2_new_blength, current_node, child_1,
                                      child_2, sibling, parent, parent_index);
+  }
 }
 
 void findTwoLargest(const RealNumType a,
@@ -7394,8 +7464,9 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
       RealNumType LT1_star{0}, LT2_star{0}, LT3_star{0};
 
       // generate a vector of sampled sites
-      for (PositionType j = 0; j < seq_length; ++j)
+      for (PositionType j = 0; j < seq_length; ++j) {
         selected_sites[j] = rng_distrib(gen);
+      }
 
       // compute LT1*, LT2*, LT3*
       // NOTES: LT2*, LT3* are now the lh differences between the actual LT2*,
@@ -7432,8 +7503,9 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
       // epsilon) is satisfied
       // <=> half_aLRT > CS_first - CS_second + half_epsilon
       if (nodelh.getHalf_aLRT() >
-          (CS_first - CS_second + params->aLRT_SH_half_epsilon))
+          (CS_first - CS_second + params->aLRT_SH_half_epsilon)) {
         ++sh_count;
+      }
     }  // for aLRT_SH_replicates
   }    // omp parallel
 
@@ -7511,10 +7583,12 @@ bool cmaple::Tree::calculateNNILh(std::stack<Index>& node_stack_aLRT,
   RealNumType child_2_new_blength = child_2.getUpperLength();
 
   if (child_2_new_blength > 0) {
-    if (current_node.getUpperLength() > 0)
+    if (current_node.getUpperLength() > 0) {
       child_2_new_blength += current_node.getUpperLength();
-  } else
+    }
+  } else {
     child_2_new_blength = current_node.getUpperLength();
+  }
   child_2.getPartialLh(TOP)->mergeTwoLowers<num_states>(
       parent_new_lower_lh, child_2_new_blength, *(sibling.getPartialLh(TOP)),
       sibling.getUpperLength(), aln, model, cumulative_rate,
@@ -7672,11 +7746,12 @@ bool cmaple::Tree::calculateNNILhRoot(
   if (lh_diff > 0) {
     // Check if we could replace the ML tree
     if (allow_replacing_ML_tree) {
-      if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+      if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
         std::cout << std::setprecision(10)
                   << "Replace the ML tree by a newly found NNI neighbor tree "
                      "(root), improving tree loglh by: "
                   << lh_diff << std::endl;
+      }
       // std::cout << "Tree lh (before replacing): " << calculateTreeLh() <<
       // std::endl;
       replaceMLTreebyNNIRoot<num_states>(
@@ -7688,9 +7763,10 @@ bool cmaple::Tree::calculateNNILhRoot(
 
       // return false to let us know that we found a new ML tree
       return false;
-    } else if (cmaple::verbose_mode >= cmaple::VB_MED)
+    } else if (cmaple::verbose_mode >= cmaple::VB_MED) {
       outWarning("Found an NNI neighbor tree with a higher likelihood (by " +
                  convertDoubleToString(lh_diff) + ") than the current ML tree");
+    }
   }
 
   return true;
@@ -7831,14 +7907,16 @@ bool cmaple::Tree::calculateNNILhNonRoot(
         grand_parent_upper_lr, parent_new_lower_lh, best_parent_lh,
         best_parent_blength_split, child_1_blength, true);
 
-    if (found_new_split)
+    if (found_new_split) {
       best_parent_blength_split = parent_blength - best_parent_blength_split;
+    }
   }
 
   // Delay cloning SeqRegions
-  if (!best_parent_regions)
+  if (!best_parent_regions) {
     best_parent_regions =
         std::make_unique<SeqRegions>(SeqRegions(parent_new_mid_branch_lh));
+  }
 
   // 3. estimate new l5 ~ the length for the new branch re-connecting child_1 to
   // the tree
@@ -8016,8 +8094,9 @@ bool cmaple::Tree::calculateNNILhNonRoot(
       }
     }
     // otherwise, stop traversing further
-    else
+    else {
       break;
+    }
   }
 
   // if we found an NNI neighbor with higher lh => replace the ML tree
@@ -8026,10 +8105,11 @@ bool cmaple::Tree::calculateNNILhNonRoot(
     if (allow_replacing_ML_tree) {
       // NHANLT: Debug aLRT
       // log_current(node_stack_aLRT);
-      if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+      if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
         std::cout << "Replace the ML tree by a newly found NNI neighbor tree "
                      "(non-root), improving tree loglh by: "
                   << lh_diff << std::endl;
+      }
       // std::cout << "Tree lh (before replacing): " <<  std::setprecision(20)<<
       // calculateTreeLh() << std::endl;
       replaceMLTreebyNNINonRoot<num_states>(
@@ -8044,9 +8124,10 @@ bool cmaple::Tree::calculateNNILhNonRoot(
 
       // return false to let us know that we found a new ML tree
       return false;
-    } else if (cmaple::verbose_mode >= cmaple::VB_MED)
+    } else if (cmaple::verbose_mode >= cmaple::VB_MED) {
       outWarning("Found an NNI neighbor tree with a higher likelihood (by " +
                  convertDoubleToString(lh_diff) + ") than the current ML tree");
+    }
   }
 
   return true;
@@ -8427,8 +8508,9 @@ void cmaple::Tree::replaceMLTreebyNNINonRoot(
       }
     }
     // otherwise, stop traversing further
-    else
+    else {
       break;
+    }
   }
 
   // traverse downward to update the upper_left/right_region until the changes
@@ -8564,9 +8646,10 @@ RealNumType cmaple::Tree::calculateSiteLhs(
         node_index = node.getNeighborIndex(TOP);
       }
       // otherwise, keep traversing downward to find the deepest tip
-      else
+      else {
         // node = node->next->neighbor;
         node_index = node.getNeighborIndex(RIGHT);
+      }
     }
     // we reach the current node by an upward traversing from its children
     else {
@@ -8604,14 +8687,14 @@ RealNumType cmaple::Tree::calculateSiteLhs(
             cumulative_rate, threshold_prob);
 
         // if new_lower_lh is NULL
-        if (!new_lower_lh)
+        if (!new_lower_lh) {
           throw std::logic_error(
               "Strange, inconsistent lower genome list creation in "
               "calculateTreeLh(); old list, and children lists");
         // otherwise, everything is good -> update the lower lh of the current
         // node
-        else if (new_lower_lh->areDiffFrom(node.getPartialLh(TOP), seq_length,
-                                           num_states, *params)) {
+        } else if (new_lower_lh->areDiffFrom(node.getPartialLh(TOP), seq_length,
+                                             num_states, *params)) {
           // ("Strange, while calculating tree likelihood encountered
           // non-updated lower likelihood!"); non-updated lower likelihood may
           // be due to a replacement of ML tree by an NNI neighbor
@@ -8664,9 +8747,10 @@ auto cmaple::Tree::parseFile(
                     missing_blengths);
 
       if (child_mini == UNDEFINED) {
-        if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        if (cmaple::verbose_mode > cmaple::VB_QUIET) {
           std::cout << "Converting a mutifurcating to a bifurcating tree"
                     << std::endl;
+        }
 
         // create a new parent node
         createAnInternalNode();
@@ -8712,8 +8796,9 @@ auto cmaple::Tree::parseFile(
         throw err;
       }
     }
-    if (!infile.eof())
+    if (!infile.eof()) {
       ch = readNextChar(infile, in_line, in_column);
+    }
   }
 
   // now read the node name
@@ -8740,8 +8825,9 @@ auto cmaple::Tree::parseFile(
       break;
     }
   }
-  if ((controlchar(ch) || ch == '[' || ch == end_ch) && !infile.eof())
+  if ((controlchar(ch) || ch == '[' || ch == end_ch) && !infile.eof()) {
     ch = readNextChar(infile, in_line, in_column, ch);
+  }
   if (seqlen == maxlen) {
     throw "Too long name ( > 1000)";
   }
@@ -8794,8 +8880,9 @@ auto cmaple::Tree::parseFile(
       ch = infile.get();
       in_column++;
     }
-    if ((controlchar(ch) || ch == '[') && !infile.eof())
+    if ((controlchar(ch) || ch == '[') && !infile.eof()) {
       ch = readNextChar(infile, in_line, in_column, ch);
+    }
     if (seqlen == maxlen || infile.eof()) {
       throw "branch length format error.";
     }
@@ -8870,8 +8957,9 @@ auto cmaple::Tree::readNextChar(std::istream& in,
         in_column = 1;
       }
     }
-    if (in_comment.length() && cmaple::verbose_mode > cmaple::VB_QUIET)
+    if (in_comment.length() && cmaple::verbose_mode > cmaple::VB_QUIET) {
       std::cout << "Ignore [" + in_comment + "]" << std::endl;
+    }
   }
   return ch;
 }
@@ -8882,8 +8970,9 @@ std::map<std::string, NumSeqsType> cmaple::Tree::initMapSeqNameIndex() {
   // create the map
   std::map<std::string, NumSeqsType> map_seqname_index;
   const std::vector<Sequence>& sequences = aln->data;
-  for (NumSeqsType i = 0; i < sequences.size(); ++i)
+  for (NumSeqsType i = 0; i < sequences.size(); ++i) {
     map_seqname_index.emplace(sequences[i].seq_name, i);
+  }
 
   return map_seqname_index;
 }
@@ -8931,9 +9020,10 @@ void cmaple::Tree::remarkExistingSeqs() {
 
       // mark its less-info sequences
       std::vector<NumSeqsType>& less_info_seqs = node.getLessInfoSeqs();
-      for (auto j = 0; j < less_info_seqs.size(); ++j)
+      for (auto j = 0; j < less_info_seqs.size(); ++j) {
         less_info_seqs[j] =
             markAnExistingSeq(seq_names[less_info_seqs[j]], map_name_index);
+      }
     }
   }
 }
@@ -8945,8 +9035,9 @@ auto cmaple::Tree::readTree(std::istream& in) -> bool {
   // create a map between leave and sequences in the alignment
   std::map<std::string, NumSeqsType> map_seqname_index = initMapSeqNameIndex();
 
-  if (cmaple::verbose_mode >= cmaple::VB_MED)
+  if (cmaple::verbose_mode >= cmaple::VB_MED) {
     std::cout << "Reading a tree" << std::endl;
+  }
 
   // Read tree from the stream
   PositionType in_line = 1;
@@ -8970,11 +9061,12 @@ auto cmaple::Tree::readTree(std::istream& in) -> bool {
     if (nodes[tmp_node_vec].isInternal()) {
       root_vector_index = tmp_node_vec;
     } else {
-      for (NumSeqsType i = 0; i < nodes.size(); ++i)
+      for (NumSeqsType i = 0; i < nodes.size(); ++i) {
         if (nodes[i].isInternal()) {
           root_vector_index = i;
           break;
         }
+      }
     }
     // 2018-01-05: assuming rooted tree if root node has two children
     /*if (is_rooted || (branch_len != 0.0) || node->degree() == 2) {
@@ -9028,10 +9120,11 @@ auto cmaple::Tree::readTree(std::istream& in) -> bool {
                                 convertIntToString(in_column - 1) + ")");
   }
 
-  if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+  if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
     std::cout << "Collapsing zero-branch-length leaves into its sibling's "
                  "vector of less-info-seqs..."
               << std::endl;
+  }
   collapseAllZeroLeave();
 
   return missing_blengths;
@@ -9123,10 +9216,11 @@ void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node,
                                        PhyloNode& neighbor_1,
                                        const Index neighbor_1_index,
                                        PhyloNode& neighbor_2) {
-  if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+  if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
     std::cout << "Collapse " << seq_names[neighbor_2.getSeqNameIndex()]
               << " into the vector of less-info_seqs of "
               << seq_names[neighbor_1.getSeqNameIndex()] << std::endl;
+  }
 
   // add neighbor_2 and its less-info-seqs into that of neigbor_1
   neighbor_1.addLessInfoSeqs(neighbor_2.getSeqNameIndex());
@@ -9180,8 +9274,9 @@ void cmaple::Tree::updatePesudoCountModel(PhyloNode& node,
   std::unique_ptr<SeqRegions>& upper_lr_regions =
       getPartialLhAtNode(parent_index);
   std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
-  if (upper_lr_regions && lower_regions)
+  if (upper_lr_regions && lower_regions) {
     model->updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
+  }
 }
 
 template <const StateType num_states>
@@ -9199,10 +9294,11 @@ void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
   less_info_seqs.pop_back();
 
   // debug
-  if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+  if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
     std::cout << "Add less-info-seq " + seq_names[seq_name_index] +
                      " into the tree"
               << std::endl;
+  }
 
   // dummy variables
   std::unique_ptr<SeqRegions> lower_regions =
@@ -9282,9 +9378,10 @@ void cmaple::Tree::updateBlengthReplaceMLTree(
   node.setUpperLength(best_blength);
 
   if (!node.isInternal() && old_blength <= 0 && best_blength > 0 &&
-      !node.getLessInfoSeqs().empty())
+      !node.getLessInfoSeqs().empty()) {
     addLessInfoSeqReplacingMLTree<num_states>(
         node_stack_aLRT, lh_diff, node, node_index, node.getNeighborIndex(TOP));
+  }
 }
 
 template <const StateType num_states>
@@ -9329,8 +9426,9 @@ void cmaple::Tree::resetSPRFlags(const bool n_SPR_applied,
     node.setSPRCount(0);
 
     // update outdated if necessary
-    if (update_outdated)
+    if (update_outdated) {
       node.setOutdated(n_outdated);
+    }
   }
 }
 
@@ -9407,8 +9505,9 @@ void cmaple::Tree::computeCumulativeRate() {
   ASSERT(aln && model);
   const PositionType sequence_length = aln->ref_seq.size();
 
-  if (sequence_length <= 0)
+  if (sequence_length <= 0) {
     throw std::logic_error("Reference genome is empty");
+  }
 
   // init cumulative_rate
   if (!cumulative_rate) {

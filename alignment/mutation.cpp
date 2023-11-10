@@ -21,10 +21,15 @@ cmaple::Mutation::Mutation(StateType n_type, PositionType n_position, LengthType
    length_(n_length)
 {
   // validate the data
-  if (n_length > 1 && type != TYPE_N && type != TYPE_DEL && type != TYPE_R)
-    throw std::invalid_argument("Invalid mutation. Only mutation type N, -, or R can have length greater than 1.");
-  if (n_length > (std::numeric_limits<LengthType>::max)())
-      throw std::invalid_argument("Invalid mutation. Length is larger than 2^15. Recompile with larger 'LengthType' at the cost of higher memory consumption.");
+  if (n_length > 1 && type != TYPE_N && type != TYPE_DEL && type != TYPE_R) {
+    throw std::invalid_argument("Invalid mutation. Only mutation type N, -, or "
+                                "R can have length greater than 1.");
+  }
+  if (n_length > (std::numeric_limits<LengthType>::max)()) {
+    throw std::invalid_argument(
+        "Invalid mutation. Length is larger than 2^15. Recompile with larger "
+        "'LengthType' at the cost of higher memory consumption.");
+  }
 }
 
 auto cmaple::Mutation::getLength() const -> LengthType { return length_; }

@@ -5,8 +5,9 @@ using namespace cmaple;
 const std::unique_ptr<SeqRegions>& cmaple::UpdatingNode::getIncomingRegions()
     const {
   // return incoming_regions_ if it's not null
-  if (incoming_regions_)
+  if (incoming_regions_) {
     return incoming_regions_;
+  }
 
   // by deafult, return incoming_regions_ref_
   return incoming_regions_ref_;

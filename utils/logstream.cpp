@@ -71,8 +71,9 @@ void LogStream::startLogFile(cmaple::Params& params) {
 }
 
 void LogStream::endLogFile() {
-  if (_out_buf.is_open())
+  if (_out_buf.is_open()) {
     _out_buf.close();
+  }
 }
 
 void LogStream::funcExit() {
