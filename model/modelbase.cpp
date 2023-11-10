@@ -55,14 +55,9 @@ const std::map<std::string, cmaple::ModelBase::SubModel>
         {"NQ.PLANT", cmaple::ModelBase::NQ_PLANT},
         {"NQ.YEAST", cmaple::ModelBase::NQ_YEAST}};
 
-cmaple::ModelBase::ModelBase(const cmaple::ModelBase::SubModel n_sub_model)
-    : model_block(nullptr),
-      sub_model(n_sub_model),
-      diagonal_mut_mat(nullptr),
-      transposed_mut_mat(nullptr),
-      freqi_freqj_qij(nullptr),
-      freq_j_transposed_ij(nullptr),
-      row_index(nullptr) {}
+cmaple::ModelBase::ModelBase(const cmaple::ModelBase::SubModel n_sub_model,
+                             const cmaple::StateType num_states)
+    : num_states_(num_states), sub_model(n_sub_model) {}
 
 cmaple::ModelBase::~ModelBase() {
   if (mutation_mat) {
@@ -254,21 +249,8 @@ auto cmaple::ModelBase::readModelsDefinition(const char* builtin_models)
     -> ModelsBlock* {
   auto* models_block = new ModelsBlock;
 
-  /*try
-  {
-      // loading internal model definitions
-      stringstream in(builtin_mixmodels_definition);
-      ASSERT(in && "stringstream is OK");
-      NxsReader nexus;
-      nexus.Add(models_block);
-      MyToken token(in);
-      nexus.Execute(token);
-  } catch (...) {
-      ASSERT(0 && "predefined mixture models not initialized");
-  }*/
-
   try {
-    // loading internal protei model definitions
+    // loading internal protein model definitions
     stringstream in(builtin_models);
     ASSERT(in && "stringstream is OK");
     NxsReader nexus;

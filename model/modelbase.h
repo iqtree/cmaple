@@ -46,7 +46,7 @@ class ModelBase {
    @private
    Model definitions
    */
-  ModelsBlock* model_block;
+  ModelsBlock* model_block = nullptr;
 
   /**
    @private
@@ -176,6 +176,21 @@ class ModelBase {
   };
 
   /**
+   Constructor
+   */
+  ModelBase() = delete;
+
+  /**
+   Constructor
+   */
+  ModelBase(const SubModel sub_model, const cmaple::StateType num_states);
+
+  /**
+   Destructor
+   */
+  ~ModelBase();
+
+  /**
    * @private
    * mapping between DNA model names and their enums
    */
@@ -199,7 +214,7 @@ class ModelBase {
    @private
    Number of states
    */
-  cmaple::StateType num_states_;
+  const cmaple::StateType num_states_ = 0;
 
   /**
    @private
@@ -229,13 +244,13 @@ class ModelBase {
    @private
    diagonal of the mutation matrix
    */
-  cmaple::RealNumType* diagonal_mut_mat;
+  cmaple::RealNumType* diagonal_mut_mat = nullptr;
 
   /**
    @private
    the transposed matrix of the mutation matrix
    */
-  cmaple::RealNumType* transposed_mut_mat;
+  cmaple::RealNumType* transposed_mut_mat = nullptr;
 
   /**
    @private
@@ -247,43 +262,25 @@ class ModelBase {
    @private
    freq(i) / freq(j) * Qij
    */
-  cmaple::RealNumType* freqi_freqj_qij;
+  cmaple::RealNumType* freqi_freqj_qij = nullptr;
 
   /**
    @private
    freq[j] * transposed[i][j]
    */
-  cmaple::RealNumType* freq_j_transposed_ij;
+  cmaple::RealNumType* freq_j_transposed_ij = nullptr;
 
   /**
    @private
    the starting index of row i: i * num_states
    */
-  cmaple::StateType* row_index;
+  cmaple::StateType* row_index = nullptr;
 
   /**
    @private
    TRUE to keep the model parameters unchanged
    */
   bool fixed_params = false;
-
-  /**
-   @private
-   Constructor
-   */
-  ModelBase() = default;
-
-  /**
-   @private
-   Constructor
-   */
-  ModelBase(const SubModel sub_model);
-
-  /**
-   @private
-   Destructor
-   */
-  ~ModelBase();
 
   /**
    @private

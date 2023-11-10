@@ -2,14 +2,11 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::ModelDNA::ModelDNA(const cmaple::ModelBase::SubModel sub_model):ModelBase(sub_model)
-{
-    try
-    {
-        num_states_ = 4;
+cmaple::ModelDNA::ModelDNA(const cmaple::ModelBase::SubModel sub_model)
+    : ModelBase(sub_model, 4) {
+  try {
         init();
-    } catch (std::logic_error e)
-    {
+  } catch (std::logic_error e) {
         throw std::invalid_argument(e.what());
     }
 }
