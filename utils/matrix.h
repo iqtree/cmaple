@@ -24,26 +24,121 @@
  ***************************************************************************/
 
 #pragma once
+ //
+// Some math & matrix functions  (some using SSE/AVX/NEON for significantly better speed)
+//
+
+// let's include some x64 instrinsics from SIMDe; SIMDe will translate to Neon for ARM automatically
+#include <simde/x86/sse2.h>
+#include <simde/x86/sse4.1.h>
+#include <simde/x86/avx.h>
 
 #include "tools.h"
 
- //
-// Some math & matrix functions
-//
-// To be converted to SSE/AVX eventually
-//
+#include <assert.h>
+#include <vector>
 
-
-template <cmaple::StateType length>
-cmaple::RealNumType dotProduct(const cmaple::RealNumType* const vec1, const cmaple::RealNumType* const vec2)
+// Multiply 4 floats by another 4 floats.
+// inspired by https://stackoverflow.com/a/59495197
+template<int offsetRegs>
+inline simde__m128 mul4(const float* p1, const float* p2)
 {
-    cmaple::RealNumType result{0};
-    for (cmaple::StateType j = 0; j < length; ++j)
+  constexpr int lanes = offsetRegs * 4;
+  const simde__m128 a = simde_mm_loadu_ps(p1 + lanes);
+  const simde__m128 b = simde_mm_loadu_ps(p2 + lanes);
+  return simde_mm_mul_ps(a, b);
+}
+
+// Multiply 4 doubles by another 4 doubles.
+template<int offsetRegs>
+inline simde__m256d mul4(const double* p1, const double* p2)
+{
+  constexpr int lanes = offsetRegs * 4;
+  const simde__m256d a = simde_mm256_loadu_pd(p1 + lanes);
+  const simde__m256d b = simde_mm256_loadu_pd(p2 + lanes);
+  return simde_mm256_mul_pd(a, b);
+}
+
+// sum up 4 floats (SSE)
+// see https://stackoverflow.com/a/59495197
+inline float horiz_sum(simde__m128 v) {
+  // Add 4 values into 2
+  const simde__m128 r2 = simde_mm_add_ps(v, simde_mm_movehl_ps(v, v));
+  // Add 2 lower values into the final result
+  const simde__m128 r1 = simde_mm_add_ss(r2, simde_mm_movehdup_ps(r2));
+  // Return the lowest lane of the result vector.
+  // The intrinsic below compiles into noop, modern compilers return floats in the lowest lane of xmm0 register.
+  return simde_mm_cvtss_f32(r1);
+}
+
+// sum up 4 doubles (AVX)
+// see https://stackoverflow.com/a/49943540
+inline double horiz_sum(simde__m256d v) {
+  simde__m128d vlow = simde_mm256_castpd256_pd128(v);
+  simde__m128d vhigh = simde_mm256_extractf128_pd(v, 1); // high 128
+  vlow = simde_mm_add_pd(vlow, vhigh);     // reduce down to 128
+
+  simde__m128d high64 = simde_mm_unpackhi_pd(vlow, vlow);
+  return  simde_mm_cvtsd_f64(_mm_add_sd(vlow, high64));  // reduce to scalar
+}
+
+
+// Compute dot product of float vectors
+template <cmaple::StateType length, typename RealType>
+inline RealType dotProduct(const RealType* p1, const RealType* p2)
+{ // this is the default and 'fine' for DNA etc, when the number of operations is small. For AA's (length==20) there are specialized versions available.
+  RealType result{ 0 };
+  for (cmaple::StateType j = 0; j < length; ++j)
   {
-    result += vec1[j] * vec2[j];
+    result += p1[j] * p2[j];
   }
   return result;
 }
+
+template <>
+inline float dotProduct<20>(const float* p1, const float* p2)
+{
+  const int count = 20;
+  const float* const p1End = p1 + count;
+
+  // Process all 20 values. Nothing to add yet, just multiplying.
+  auto dot0 = mul4<0>(p1, p2);
+  auto dot1 = mul4<1>(p1, p2);
+  auto dot2 = mul4<2>(p1, p2);
+  auto dot3 = mul4<3>(p1, p2);
+  auto dot4 = mul4<4>(p1, p2);
+
+  // 20 to 4
+  const auto dot01 = simde_mm_add_ps(dot0, dot1);
+  const auto dot23 = simde_mm_add_ps(dot2, dot3);
+  const auto dot401 = simde_mm_add_ps(dot4, dot01);
+  const auto dot23401 = simde_mm_add_ps(dot23, dot401);
+
+  return horiz_sum(dot23401);
+}
+
+template <>
+inline double dotProduct<20>(const double* p1, const double* p2)
+{
+  const int count = 20;
+  const double* const p1End = p1 + count;
+
+  // Process all 20 values. Nothing to add yet, just multiplying.
+  auto dot0 = mul4<0>(p1, p2);
+  auto dot1 = mul4<1>(p1, p2);
+  auto dot2 = mul4<2>(p1, p2);
+  auto dot3 = mul4<3>(p1, p2);
+  auto dot4 = mul4<4>(p1, p2);
+
+  // 20 to 4
+  const auto dot01 = simde_mm256_add_pd(dot0, dot1);
+  const auto dot23 = simde_mm256_add_pd(dot2, dot3);
+  const auto dot401 = simde_mm256_add_pd(dot4, dot01);
+  const auto dot23401 = simde_mm256_add_pd(dot23, dot401);
+
+  return horiz_sum(dot23401);
+}
+
 
 template <cmaple::StateType length>
 cmaple::RealNumType sumMutationByLh(const cmaple::RealNumType* const vec1, const cmaple::RealNumType* const vec2)

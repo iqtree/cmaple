@@ -144,15 +144,12 @@ void cmaple::ModelBase::init() {
 void cmaple::ModelBase::extractRefInfo(const Alignment* aln) {
   if (!fixed_params) {
     // init variables
-    if (!root_freqs) {
+    if (!root_freqs)
       root_freqs = new RealNumType[num_states_];
-    }
-    if (!root_log_freqs) {
+    if (!root_log_freqs)
       root_log_freqs = new RealNumType[num_states_];
-    }
-    if (!inverse_root_freqs) {
+    if (!inverse_root_freqs)
       inverse_root_freqs = new RealNumType[num_states_];
-    }
 
     // extract root freqs from the ref_seq
     extractRootFreqs(aln);
@@ -162,9 +159,8 @@ void cmaple::ModelBase::extractRefInfo(const Alignment* aln) {
 void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
   // init variables
   const vector<StateType>& ref_seq = aln->ref_seq;
-  if (!ref_seq.size()) {
+  if (!ref_seq.size())
     throw std::logic_error("The reference genome is empty!");
-  }
   const PositionType seq_length = ref_seq.size();
 
   // init root_freqs
@@ -179,9 +175,8 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
   }
 
   // browse all sites in the ref one by one to count bases
-  for (PositionType i = 0; i < seq_length; ++i) {
+  for (PositionType i = 0; i < seq_length; ++i)
     ++root_freqs[ref_seq[i]];
-  }
 
   // update root_freqs and root_log_freqs
   RealNumType inverse_seq_length = 1.0 / seq_length;
@@ -194,9 +189,8 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
 
 std::string cmaple::ModelBase::exportRootFrequenciesStr() {
   // Handle cases when root_freqs is null
-  if (!root_freqs) {
+  if (!root_freqs)
     return "\n \n";
-  }
 
   string output{};
   string header{};
@@ -215,9 +209,8 @@ std::string cmaple::ModelBase::exportRootFrequenciesStr() {
 
 std::string cmaple::ModelBase::exportQMatrixStr() {
   // Handle cases when mutation_mat is null
-  if (!mutation_mat) {
+  if (!mutation_mat)
     return "\n";
-  }
 
   string output{};
 
@@ -237,9 +230,8 @@ std::string cmaple::ModelBase::exportQMatrixStr() {
     output += cmaple::Alignment::convertState2Char(i, seqtype);
     output += "\t";
 
-    for (StateType j = 0; j < num_states_; ++j) {
+    for (StateType j = 0; j < num_states_; ++j)
       output += convertDoubleToString(mut_mat_row[j]) + "\t";
-    }
 
     output += "\n";
   }
@@ -247,12 +239,25 @@ std::string cmaple::ModelBase::exportQMatrixStr() {
   return output;
 }
 
-auto cmaple::ModelBase::readModelsDefinition(const char* builtin_models)
-    -> ModelsBlock* {
-  auto* models_block = new ModelsBlock;
+ModelsBlock* cmaple::ModelBase::readModelsDefinition(
+    const char* builtin_models) {
+  ModelsBlock* models_block = new ModelsBlock;
+
+  /*try
+  {
+      // loading internal model definitions
+      stringstream in(builtin_mixmodels_definition);
+      ASSERT(in && "stringstream is OK");
+      NxsReader nexus;
+      nexus.Add(models_block);
+      MyToken token(in);
+      nexus.Execute(token);
+  } catch (...) {
+      ASSERT(0 && "predefined mixture models not initialized");
+  }*/
 
   try {
-    // loading internal protein model definitions
+    // loading internal protei model definitions
     stringstream in(builtin_models);
     ASSERT(in && "stringstream is OK");
     NxsReader nexus;
@@ -275,7 +280,7 @@ auto cmaple::ModelBase::readModelsDefinition(const char* builtin_models)
   return models_block;
 }
 
-auto cmaple::ModelBase::readParametersString(string& model_str) -> bool {
+bool cmaple::ModelBase::readParametersString(string& model_str) {
   // if detect if reading full matrix or half matrix by the first entry
   PositionType end_pos;
   RealNumType d = convert_real_number(model_str.c_str(), end_pos);
@@ -295,28 +300,23 @@ void cmaple::ModelBase::readStateFreq(istream& in) {
   for (i = 0; i < num_states_; i++) {
     string tmp_value;
     in >> tmp_value;
-    if (!tmp_value.length()) {
+    if (!tmp_value.length())
       throw "State frequencies could not be read";
-    }
     root_freqs[i] = convert_real_number(tmp_value.c_str());
-    if (root_freqs[i] < 0.0) {
+    if (root_freqs[i] < 0.0)
       throw "Negative state frequencies found";
-    }
   }
 
   RealNumType sum = 0.0;
-  for (i = 0; i < num_states_; i++) {
+  for (i = 0; i < num_states_; i++)
     sum += root_freqs[i];
-  }
   if (fabs(sum - 1.0) >= 1e-7) {
-    if (cmaple::verbose_mode >= cmaple::VB_MED) {
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
       outWarning(
           "Normalizing state frequencies so that sum of them equals to 1");
-    }
     sum = 1.0 / sum;
-    for (i = 0; i < num_states_; i++) {
+    for (i = 0; i < num_states_; i++)
       root_freqs[i] *= sum;
-    }
   }
 }
 
@@ -325,43 +325,35 @@ void cmaple::ModelBase::normalizeQMatrix() {
 
   RealNumType sum = 0.0;
   RealNumType* mutation_mat_row = mutation_mat;
-  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
+  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
     sum -= mutation_mat_row[i] * root_freqs[i];
-  }
 
-  if (sum == 0.0) {
+  if (sum == 0.0)
     throw std::logic_error("Empty Q matrix");
-  }
 
   double delta = 1.0 / sum;
 
   mutation_mat_row = mutation_mat;
-  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
-    for (StateType j = 0; j < num_states_; ++j) {
+  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_)
+    for (StateType j = 0; j < num_states_; ++j)
       mutation_mat_row[j] *= delta;
-    }
-  }
 }
 
 void cmaple::ModelBase::initPointers() {
   // init row_index
   row_index = new StateType[num_states_ + 1];
   uint16_t start_index = 0;
-  for (StateType i = 0; i < num_states_ + 1; i++, start_index += num_states_) {
+  for (StateType i = 0; i < num_states_ + 1; i++, start_index += num_states_)
     row_index[i] = start_index;
-  }
 
   // init root_freqs, root_log_freqs, inverse_root_freqs if they have not yet
   // been initialized
-  if (!root_freqs) {
+  if (!root_freqs)
     root_freqs = new RealNumType[num_states_];
-  }
-  if (!root_log_freqs) {
+  if (!root_log_freqs)
     root_log_freqs = new RealNumType[num_states_];
-  }
-  if (!inverse_root_freqs) {
+  if (!inverse_root_freqs)
     inverse_root_freqs = new RealNumType[num_states_];
-  }
 
   // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
   uint16_t mat_size = row_index[num_states_];
@@ -404,14 +396,13 @@ void cmaple::ModelBase::updateMutMatbyMutCount() {
                    mutation_mat_row += num_states_) {
       RealNumType sum_rate = 0;
 
-      for (StateType j = 0; j < num_states_; ++j) {
+      for (StateType j = 0; j < num_states_; ++j)
         if (i != j) {
           mutation_mat_row[j] = (pseu_mutation_count_row[j] +
                                  pseu_mutation_count[row_index[j] + i]) *
                                 inverse_root_freqs[i];
           sum_rate += mutation_mat_row[j];
         }
-      }
 
       // update the diagonal entry
       mutation_mat_row[i] = -sum_rate;
@@ -419,9 +410,8 @@ void cmaple::ModelBase::updateMutMatbyMutCount() {
     }
   }
   // handle other model names
-  else {
+  else
     throw std::logic_error("Unsupported model! Please check and try again!");
-  }
 }
 
 template <StateType num_states>
@@ -445,12 +435,11 @@ void cmaple::ModelBase::updateMutationMat() {
       mutation_mat_row[j] *= total_rate;
 
       // update freqi_freqj_qij
-      if (i != j) {
+      if (i != j)
         freqi_freqj_qij_row[j] =
             root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
-      } else {
+      else
         freqi_freqj_qij_row[j] = mutation_mat_row[j];
-      }
 
       // update the transposed mutation matrix
       transposed_mut_mat[row_index[j] + i] = mutation_mat_row[j];
@@ -469,7 +458,7 @@ void cmaple::ModelBase::updateMutationMat() {
                  freq_j_transposed_ij_row += num_states_) {
     setVecByProduct<num_states>(freq_j_transposed_ij_row, root_freqs,
                                 transposed_mut_mat_row);
-  }
+}
 }
 
 template <StateType num_states>
@@ -479,24 +468,30 @@ auto cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
 
   if (!fixed_params) {
     // clone the current mutation matrix
-    auto* tmp_diagonal_mut_mat = new RealNumType[num_states_];
-    memcpy(tmp_diagonal_mut_mat, diagonal_mut_mat,
-           num_states_ * sizeof(RealNumType));
+    RealNumType* tmp_mut_mat = new RealNumType[row_index[num_states_]];
+    memcpy(tmp_mut_mat, mutation_mat,
+           row_index[num_states_] * sizeof(RealNumType));
 
     // update the mutation matrix regarding the pseu_mutation_count
     updateMutationMat<num_states>();
 
     // set update = true if the mutation matrix changes more than a threshold
-    RealNumType change_thresh = 1e-3;
-    for (StateType j = 0; j < num_states_; ++j) {
-      if (fabs(tmp_diagonal_mut_mat[j] - diagonal_mut_mat[j]) > change_thresh) {
-        update = true;
-        break;
-      }
+    const RealNumType change_thresh = 1e-3;
+    RealNumType sum_change = 0;
+    RealNumType* tmp_mut_mat_ptr = tmp_mut_mat;
+    RealNumType* mutation_mat_ptr = mutation_mat;
+    for (StateType i = 0; i < num_states_;
+         ++i, tmp_mut_mat_ptr += num_states_, mutation_mat_ptr += num_states_) {
+      for (StateType j = 0; j < num_states_; ++j)
+        sum_change += fabs(tmp_mut_mat_ptr[j] - mutation_mat_ptr[j]);
+
+      sum_change -= fabs(tmp_mut_mat_ptr[i] - mutation_mat_ptr[i]);
     }
 
+    update = sum_change > change_thresh;
+
     // delete tmp_diagonal_mutation_mat
-    delete[] tmp_diagonal_mut_mat;
+    delete[] tmp_mut_mat;
   }
 
   // return update
@@ -528,16 +523,15 @@ void cmaple::ModelBase::updatePesudoCount(const Alignment* aln,
       if (seq1_region->type != seq2_region->type &&
           (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) &&
           (seq2_region->type < num_states_ || seq2_region->type == TYPE_R)) {
-        if (seq1_region->type == TYPE_R) {
+        if (seq1_region->type == TYPE_R)
           pseu_mutation_count[row_index[ref_seq[end_pos]] +
                               seq2_region->type] += 1;
-        } else if (seq2_region->type == TYPE_R) {
+        else if (seq2_region->type == TYPE_R)
           pseu_mutation_count[row_index[seq1_region->type] +
                               ref_seq[end_pos]] += 1;
-        } else {
+        else
           pseu_mutation_count[row_index[seq1_region->type] +
                               seq2_region->type] += 1;
-        }
       }
 
       // update pos
@@ -546,7 +540,7 @@ void cmaple::ModelBase::updatePesudoCount(const Alignment* aln,
   }
 }
 
-auto cmaple::ModelBase::getSeqType() -> cmaple::SeqRegion::SeqType {
+cmaple::SeqRegion::SeqType cmaple::ModelBase::getSeqType() {
   switch (num_states_) {
     case 20:
       return cmaple::SeqRegion::SEQ_PROTEIN;
@@ -561,28 +555,24 @@ auto cmaple::ModelBase::getSeqType() -> cmaple::SeqRegion::SeqType {
   }
 }
 
-auto cmaple::ModelBase::detectSeqType(
-    const cmaple::ModelBase::SubModel sub_model) -> cmaple::SeqRegion::SeqType {
+cmaple::SeqRegion::SeqType cmaple::ModelBase::detectSeqType(
+    const cmaple::ModelBase::SubModel sub_model) {
   // search in the list of dna models
-  for (auto& it : dna_models_mapping) {
-    if (it.second == sub_model) {
+  for (auto& it : dna_models_mapping)
+    if (it.second == sub_model)
       return cmaple::SeqRegion::SEQ_DNA;
-    }
-  }
 
   // search in the list of protein models
-  for (auto& it : aa_models_mapping) {
-    if (it.second == sub_model) {
+  for (auto& it : aa_models_mapping)
+    if (it.second == sub_model)
       return cmaple::SeqRegion::SEQ_PROTEIN;
-    }
-  }
 
   // not found
   return cmaple::SeqRegion::SEQ_UNKNOWN;
 }
 
-auto cmaple::ModelBase::parseModel(const std::string& n_model_name)
-    -> cmaple::ModelBase::SubModel {
+cmaple::ModelBase::SubModel cmaple::ModelBase::parseModel(
+    const std::string& n_model_name) {
   // transform to uppercase
   string model_name(n_model_name);
   transform(model_name.begin(), model_name.end(), model_name.begin(),
@@ -590,19 +580,16 @@ auto cmaple::ModelBase::parseModel(const std::string& n_model_name)
 
   // parse model
   // handle "DEFAULT"
-  if (n_model_name == "DEFAULT") {
+  if (n_model_name == "DEFAULT")
     return DEFAULT;
-  }
   // search in list of dna models
   auto it = dna_models_mapping.find(model_name);
-  if (it != dna_models_mapping.end()) {
+  if (it != dna_models_mapping.end())
     return it->second;
-  }
   // search in list of protein models
   it = aa_models_mapping.find(model_name);
-  if (it != aa_models_mapping.end()) {
+  if (it != aa_models_mapping.end())
     return it->second;
-  }
 
   // model not found
   return UNKNOWN;
@@ -610,18 +597,14 @@ auto cmaple::ModelBase::parseModel(const std::string& n_model_name)
 
 std::string cmaple::ModelBase::getModelName() const {
   // Look for the model name from the list of DNA models
-  for (auto& it : dna_models_mapping) {
-    if (it.second == sub_model) {
+  for (auto& it : dna_models_mapping)
+    if (it.second == sub_model)
       return it.first;
-    }
-  }
 
   // Look for the model name from the list of Protein models
-  for (auto& it : aa_models_mapping) {
-    if (it.second == sub_model) {
+  for (auto& it : aa_models_mapping)
+    if (it.second == sub_model)
       return it.first;
-    }
-  }
 
   // if not found -> return ""
   return "";

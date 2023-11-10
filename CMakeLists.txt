@@ -14,7 +14,7 @@
 # Linux example usages:
 #----------------------
 # cmake <source_dir>                           
-# cmake -DCMAPLE_FLAGS="m32" <source_dir>  (32-bit version)
+# cmake  -DCMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -march=native" <source_dir>   ## some custom compile flags
 #
 # To compile with CLANG on Linux:CMAPLE_
 # export CC=/usr/bin/clang
@@ -33,13 +33,6 @@
 #
 # To generate Xcode project without OpenMP:
 # cmake -G Xcode <source_dir>
-#
-# Compile 32-bit version: cmake -DCMAPLE_FLAGS=m32 ....
-# Compile static version: cmake -DCMAPLE_FLAGS=static ....
-#
-
-#NOTE: Static linking with clang windows: make a symlink libgcc_eh.a to libgcc.a (administrator required)
-# C:\TDM-GCC-64\lib\gcc\x86_64-w64-mingw32\5.1.0>mklink libgcc_eh.a libgcc.a
 #
 #
 
@@ -67,8 +60,6 @@ set (cmaple_VERSION_PATCH ".0")
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 
-message("CMAPLE flags : ${CMAPLE_FLAGS}")
-
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -84,23 +75,6 @@ endif()
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories(after system "/usr/local/include")
 
-set (__ARM_NEON "FALSE")
-set (NEON 0)
-if (APPLE)
-	execute_process(
-      COMMAND uname -m
-      RESULT_VARIABLE result
-      OUTPUT_VARIABLE OSX_NATIVE_ARCHITECTURE
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
-		message("APPLE SILICON (M1) DETECTED!")
-		set (__ARM_NEON "TRUE")
-		set (NEON 1)
-	endif()
-endif()
-
-
 ##################################################################
 # Setup compiler, currently supported GCC, CLANG, MSVC, and ICC
 ##################################################################
@@ -109,6 +83,20 @@ endif()
 ##################################################################
 # Setup compiler flags
 ##################################################################
+
+## enable 'SSE/AVX' on x86-64, 'neon' on arm to achive faster computations (mainly the Matrix::dotProduct())
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+    add_compile_options(-msse -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -mavx) # needed for simde instructions
+  elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+    add_compile_options(-neon)  
+  endif() 
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+    add_compile_options(/arch:AVX2) ## not really needed, but may be beneficial in other places when in Release mode (i.e. with optimizations turned on)
+  endif()
+endif()
+
 
 ##################################################################
 # check existence of a few basic functions
@@ -175,6 +163,8 @@ if (NOT TARGET nclextra)
 	add_subdirectory(libraries/nclextra)
 endif() 
 add_subdirectory(utils)
+add_subdirectory(libraries/SIMDe) 
+include_directories(${SIMDE_INCLUDE_DIRECTORY})
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
