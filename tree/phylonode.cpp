@@ -252,7 +252,7 @@ void cmaple::PhyloNode::computeTotalLhAtNode(
   if (is_root) {
     getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(total_lh, model,
                                                         blength);
-  // if not is normal nodes
+    // if not is normal nodes
   } else {
     std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
     neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())
