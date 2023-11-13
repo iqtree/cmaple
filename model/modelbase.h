@@ -43,26 +43,22 @@ class ModelBase {
  protected:
   // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
   /**
-   @private
    Model definitions
    */
   ModelsBlock* model_block = nullptr;
 
   /**
-   @private
    Initialize the model
    @throw std::logic\_error if the substitution model is unknown/unsupported
    */
   void init();
 
   /**
-   @private
    Read model definitions from string/file
    */
   ModelsBlock* readModelsDefinition(const char* builtin_models);
 
   /**
-   @private
    Read model parameters
    @return TRUE if the model is reversible
    @throw std::logic\_error if failing to read the parameters
@@ -70,7 +66,6 @@ class ModelBase {
   bool readParametersString(string& model_str);
 
   /**
-   @private
    Read model's rates from string/file
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
@@ -78,27 +73,23 @@ class ModelBase {
   virtual void readRates(istream& in, const bool is_reversible){};
 
   /**
-   @private
    Normalize the Q matrix so that the expected number of subtitution is 1
    @throw std::logic\_error if the Q matrix is empty
    */
   void normalizeQMatrix();
 
   /**
-   @private
    Extract root freqs from the reference sequence
    @throw std::logic\_error if the reference genome is empty
    */
   virtual void extractRootFreqs(const Alignment* aln);
 
   /**
-   @private
    Init pointers
    */
   void initPointers();
 
   /**
-   @private
    Update the mutation rate matrix
    @throw  std::logic\_error if the substitution model is unknown/unsupported
    */
@@ -106,7 +97,6 @@ class ModelBase {
   void updateMutationMat();
 
   /**
-   @private
    Update the mutation matrix periodically from the empirical count of mutations
    (template)
    @return TRUE if the mutation matrix is updated
@@ -191,13 +181,11 @@ class ModelBase {
   ~ModelBase();
 
   /**
-   * @private
    * mapping between DNA model names and their enums
    */
   const static std::map<std::string, SubModel> dna_models_mapping;
 
   /**
-   * @private
    * mapping between Protein model names and their enums
    */
   const static std::map<std::string, SubModel> aa_models_mapping;
@@ -205,103 +193,86 @@ class ModelBase {
   // NHANLT: we can change to use unique_ptr(s) instead of normal pointers in
   // the following
   /**
-   @private
    Substitution model
    */
   SubModel sub_model;
 
   /**
-   @private
    Number of states
    */
   const cmaple::StateType num_states_ = 0;
 
   /**
-   @private
    Pseudo mutation count
    */
   cmaple::RealNumType* pseu_mutation_count = nullptr;
 
   /**
-   @private
    State frequencies
    */
   cmaple::RealNumType* root_freqs = nullptr;
 
   /**
-   @private
    Mutation matrix
    */
   cmaple::RealNumType* mutation_mat = nullptr;
 
   /**
-   @private
    log of state frequencies
    */
   cmaple::RealNumType* root_log_freqs = nullptr;
 
   /**
-   @private
    diagonal of the mutation matrix
    */
   cmaple::RealNumType* diagonal_mut_mat = nullptr;
 
   /**
-   @private
    the transposed matrix of the mutation matrix
    */
   cmaple::RealNumType* transposed_mut_mat = nullptr;
 
   /**
-   @private
    the inversed values of state frequencies
    */
   cmaple::RealNumType* inverse_root_freqs = nullptr;
 
   /**
-   @private
    freq(i) / freq(j) * Qij
    */
   cmaple::RealNumType* freqi_freqj_qij = nullptr;
 
   /**
-   @private
    freq[j] * transposed[i][j]
    */
   cmaple::RealNumType* freq_j_transposed_ij = nullptr;
 
   /**
-   @private
    the starting index of row i: i * num_states
    */
   cmaple::StateType* row_index = nullptr;
 
   /**
-   @private
    TRUE to keep the model parameters unchanged
    */
   bool fixed_params = false;
 
   /**
-   @private
    Get the model name
    */
   std::string getModelName() const;
 
   /**
-   @private
    Export state frequencies at root
    */
   std::string exportRootFrequenciesStr();
 
   /**
-   @private
    Export Q matrix
    */
   std::string exportQMatrixStr();
 
   /**
-   @private
    Extract reference-related info (freqs, log_freqs)
 
    @throw std::logic\_error if the reference genome is empty
@@ -309,14 +280,12 @@ class ModelBase {
   void extractRefInfo(const Alignment* aln);
 
   /**
-   @private
    Init the mutation rate matrix from a model
    @throw std::logic\_error if the substitution model is unknown/unsupported
    */
   virtual void initMutationMat(){};
 
   /**
-   @private
    Update the mutation matrix periodically from the empirical count of mutations
    @return TRUE if the mutation matrix is updated
    @throw std::logic\_error if any of the following situations occur.
@@ -328,7 +297,6 @@ class ModelBase {
   }
 
   /**
-   @private
    Update pseudocounts from new sample to improve the estimate of the
    substitution rates
    @param node_regions the genome list at the node where the appending happens;
@@ -339,14 +307,12 @@ class ModelBase {
                                  const SeqRegions& sample_regions);
 
   /**
-   @private
    Detect SeqType from a SubModel enum
    @param[in] sub_model SubModel enum
    */
   static cmaple::SeqRegion::SeqType detectSeqType(const SubModel sub_model);
 
   /**
-   * @private
    * Parse model from its name in a string
    * @param n_seqtype_str a sequence type in string
    */

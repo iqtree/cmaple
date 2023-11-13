@@ -290,13 +290,11 @@ class Tree {
   // //
 
   /**
-   @private
    TRUE to keep the branch lengths fixed
    */
   bool fixed_blengths = false;
 
   /**
-   @private
    Branch length thresholds
    */
   cmaple::RealNumType default_blength, min_blength, max_blength,
@@ -304,56 +302,47 @@ class Tree {
       half_min_blength_mid, double_min_blength;
 
   /**
-   @private
    Program parameters
    */
   // std::optional<cmaple::Params> params;
   std::unique_ptr<cmaple::Params> params = nullptr;
 
   /**
-   @private
    Alignment
    */
   Alignment* aln = nullptr;
 
   /**
-   @private
    Evolutionary model
    */
   ModelBase* model = nullptr;
 
   /**
-   @private
    cumulative rates
    */
   cmaple::RealNumType* cumulative_rate = nullptr;
 
   /**
-   @private
    cumulative bases
    */
   std::vector<std::vector<cmaple::PositionType>> cumulative_base;
 
   /**
-   @private
    Vector of phylonodes
    */
   std::vector<PhyloNode> nodes;
 
   /**
-   @private
    Vector of likelihood contributions of internal nodes
    */
   std::vector<NodeLh> node_lhs;
 
   /**
-   @private
    (vector) Index of root in the vector of phylonodes
    */
   cmaple::NumSeqsType root_vector_index;
 
   /**
-   @private
    A backup of sequence names attached to the current tree, in cases that users
    re-read the alignment NHANLT: @TODO - avoid this redundant vector (sequence
    names are store in alignment and here)
@@ -361,14 +350,12 @@ class Tree {
   std::vector<std::string> seq_names;
 
   /**
-   @private
    a vector denote whether a sequence in the alignment is added to the tree or
    not
    */
   std::vector<bool> sequence_added;
 
   /*!
-   * @private
    * Apply some minor changes (collapsing zero-branch leaves into less-info
    * sequences, re-estimating model parameters) to make the processes of
    * outputting then re-inputting a tree result in a consistent tree
@@ -378,7 +365,6 @@ class Tree {
   void makeTreeInOutConsistent();
 
   /**
-   * @private
    * Parse type of tree search from a string
    * @param[in] tree_search_type Tree search type in string
    * @return a TreeSearchType
@@ -387,7 +373,6 @@ class Tree {
       const std::string& tree_search_type);
 
   /**
-   * @private
    * Get tree search type in string
    * @param[in] tree_search_type a type of tree search
    * @return a  type of tree search from a string
@@ -395,7 +380,6 @@ class Tree {
   static std::string getTreeSearchStr(const TreeSearchType tree_search_type);
 
   /**
-   * @private
    * Parse tree type from a string
    * @param tree_type_str a tree type in string
    * @return a TreeType
@@ -551,7 +535,6 @@ class Tree {
                 std::unique_ptr<cmaple::Params>&& params);
 
   /**
-   @private
    Compute cumulative rate of the ref genome
    @throw std::logic\_error if the reference genome is empty
    */
@@ -1616,7 +1599,6 @@ class Tree {
   void resetSeqAdded();
 
   /**
-   @private
    Attach alignment and model
    @throw std::invalid\_argument If the sequence type is unsupported (neither
    DNA (for nucleotide data) nor AA (for protein data))
@@ -1625,7 +1607,6 @@ class Tree {
   void attachAlnModel(Alignment* aln, ModelBase* model);
 
   /**
-   @private
    Export tree std::string in Newick format
    @throw std::invalid\_argument if show\_branch\_supports = true but branch
    support values have yet been computed
@@ -1633,7 +1614,6 @@ class Tree {
   std::string exportNewick(const bool binary, const bool show_branch_supports);
 
   /**
-   @private
    Increase the length of a 0-length branch (connecting this node to its parent)
    to resolve the inconsistency when updating regions in updatePartialLh()
    */
@@ -1643,7 +1623,6 @@ class Tree {
                          std::stack<cmaple::Index>& node_stack);
 
   /**
-   @private
    Iteratively update partial_lh starting from the nodes in node_stack
 
    @param node_stack stack of nodes;
@@ -1654,7 +1633,6 @@ class Tree {
   void updatePartialLh(std::stack<cmaple::Index>& node_stack);
 
   /**
-   @private
    Seek a position for a sample placement starting at the start_node
 
    @throw std::logic\_error if unexpected values/behaviors found during the
@@ -1672,7 +1650,6 @@ class Tree {
                            cmaple::Index& best_child_index);
 
   /**
-   @private
    Seek a position for placing a subtree/sample starting at the start_node
 
    @throw std::logic\_error if unexpected values/behaviors found during the
@@ -1693,7 +1670,6 @@ class Tree {
                              // SeqRegions* sample_regions = NULL);
 
   /**
-   @private
    Place a new sample at a mid-branch point
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
@@ -1705,7 +1681,6 @@ class Tree {
                                const cmaple::RealNumType best_lh_diff);
 
   /**
-   @private
    Place a new sample as a descendant of a node
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
@@ -1720,7 +1695,6 @@ class Tree {
                             const cmaple::Index best_child_index);
 
   /**
-   @private
    Apply a single SPR move
    pruning a subtree then regrafting it to a new position
    @throw std::logic\_error if unexpected values/behaviors found during the
@@ -1735,7 +1709,6 @@ class Tree {
                    const cmaple::RealNumType best_lh_diff);
 
   /**
-   @private
    Traverse the intial tree from root to re-calculate all likelihoods regarding
    the latest/final estimated model parameters
    @throw std::logic\_error if unexpected values/behaviors found during the
@@ -1745,7 +1718,6 @@ class Tree {
   void refreshAllLhs(bool avoid_using_upper_lr_lhs = false);
 
   /**
-   @private
    Reset the SPR flags
    @param n_SPR_applied the new value of SPR_applied
    @param update_outdated TRUE to update outdated
@@ -1756,7 +1728,6 @@ class Tree {
                      const bool n_outdated);
 
   /**
-   @private
    Try to improve the entire tree with SPR moves
    @return total improvement
    @throw std::logic\_error if unexpected values/behaviors found during the
@@ -1766,7 +1737,6 @@ class Tree {
   cmaple::RealNumType improveEntireTree(bool short_range_search);
 
   /**
-   @private
    Try to optimize branch lengths of the tree by one round of tree traversal
    @return num of improvements
    @throw std::logic\_error if unexpected values/behaviors found during the
@@ -1776,7 +1746,6 @@ class Tree {
   cmaple::PositionType optimizeBranchIter();
 
   /**
-   @private
    Estimate the length of a branch using the derivative of the likelihood cost
    function wrt the branch length
    */
@@ -1786,7 +1755,6 @@ class Tree {
       const std::unique_ptr<SeqRegions>& child_regions);
 
   /**
-   @private
    Estimate the length of a branch and check whether the new branch is different
    from the current one
    */
@@ -1797,7 +1765,6 @@ class Tree {
       const cmaple::RealNumType current_blength);
 
   /**
-   @private
    Calculate the placement cost of a sample
    @param child_regions: vector of regions of the new sample
    */
@@ -1808,7 +1775,6 @@ class Tree {
       const cmaple::RealNumType blength);
 
   /**
-   @private
    Calculate the placement cost of a subtree
    @param child_regions: vector of regions of the new sample
    */
@@ -1819,7 +1785,6 @@ class Tree {
       const cmaple::RealNumType blength);
 
   /**
-   @private
    Update lower lh of a node
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
@@ -1837,7 +1802,6 @@ class Tree {
                      const cmaple::PositionType& seq_length);
 
   /**
-   @private
    Update lower lh of a node but avoid using UpperLeft/Right lhs to update
    zero-blength This function is called after reading a tree from an input file,
    thus, UpperLeft/Right lhs have not yet been computed
@@ -1858,7 +1822,6 @@ class Tree {
       const cmaple::PositionType& seq_length);
 
   /**
-   @private
    compute the likelihood contribution of (the upper branch of) a node
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
@@ -1876,7 +1839,6 @@ class Tree {
                              const cmaple::PositionType& seq_length);
 
   /**
-   @private
    Employ Depth First Search to do a task at internal nodes
    */
   template <void (Tree::*task)(cmaple::RealNumType&,
@@ -1892,7 +1854,6 @@ class Tree {
   cmaple::RealNumType performDFS();
 
   /**
-   @private
    Update model parameters from an alignment and a tree
    @throw std::logic\_error if the reference genome is empty
    */
@@ -1900,7 +1861,6 @@ class Tree {
   void updateModelParams();
 
   /**
-   @private
    Employ Depth First Search to do a task at leaves
    */
   template <

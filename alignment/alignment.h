@@ -148,7 +148,6 @@ class Alignment {
   // //
 
   /**
-   * @private
    * Get seq_type
    */
   inline cmaple::SeqRegion::SeqType getSeqType() const { 
@@ -156,7 +155,6 @@ class Alignment {
   };
 
   /**
-   * @private
    * Set seq_type
    */
   inline void setSeqType(cmaple::SeqRegion::SeqType seq_type) {
@@ -165,7 +163,6 @@ class Alignment {
   };
 
   /**
-   @private
    Read a reference genome from an alignment file in FASTA or PHYLIP format
    @param ref_filename Name of an alignment file
    @param seq_name Name of the reference sequence
@@ -178,7 +175,6 @@ class Alignment {
                          const std::string& seq_name);
 
   /**
-   @private
    Convert a state ID, indexed from 0, to a raw character
    @param state ID input a state ID
    @param seqtype The sequence type
@@ -188,7 +184,6 @@ class Alignment {
                                 const cmaple::SeqRegion::SeqType& seqtype);
 
   /**
-   * @private
    * Parse  alignment format from a string
    * @param n_format a format in string
    * @return an InputType
@@ -196,32 +191,27 @@ class Alignment {
   static InputType parseAlnFormat(const std::string& n_format);
 
   /**
-   @private
    A vector stores all sequences
    */
   std::vector<Sequence>
       data;  // note: this is inefficient, but only used briefly
 
   /**
-   @private
    The reference sequence
    */
   std::vector<cmaple::StateType> ref_seq;
 
   /**
-   @private
    The number of states
    */
   cmaple::StateType num_states;
 
   /**
-   @private
    Alignment format
    */
   InputType aln_format = IN_AUTO;
 
   /**
-   @private
    A set of trees that this alignment attached to
    */
   std::unordered_set<void*> attached_trees;
@@ -233,19 +223,16 @@ class Alignment {
   cmaple::SeqRegion::SeqType seq_type_ = cmaple::SeqRegion::SEQ_AUTO;
 
   /**
-   @private
    Reset all members
    */
   void reset();
 
   /**
-   @private
    update num_states according to the seq_type
    */
   void updateNumStates();
 
   /**
-   @private
    detect the data type of the input sequences
    @param sequences vector of strings
    @return the data type of the input sequences
@@ -253,7 +240,6 @@ class Alignment {
   cmaple::SeqRegion::SeqType detectSequenceType(cmaple::StrVector& sequences);
 
   /**
-   @private
    Compute the distance between a sequence and the ref sequence
    distance = num_differents * hamming_weight + num_ambiguities
    @param hamming_weight weight to calculate the hamming distance
@@ -264,7 +250,6 @@ class Alignment {
                                           cmaple::RealNumType hamming_weight);
 
   /**
-   @private
    Sort sequences by their distances to the reference genome
    distance = num_differents * hamming_weight + num_ambiguities
 
@@ -273,7 +258,6 @@ class Alignment {
   void sortSeqsByDistances();
 
   /**
-   @private
    Convert a raw character state into ID, indexed from 0
    @param state input raw state
    @return state ID
@@ -282,7 +266,6 @@ class Alignment {
   cmaple::StateType convertChar2State(char state);
 
   /**
-   @private
    Extract Mutation from sequences regarding the reference sequence
    @param sequences a vector of sequences
    @param seq_names a vector of sequence names
@@ -296,7 +279,6 @@ class Alignment {
                         const std::string& ref_sequence);
 
   /**
-   @private
    Read an alignment in MAPLE format from a stream
    @param aln_stream A stream of an alignment file
    @throw std::logic\_error if any of the following situations occur.
@@ -307,7 +289,6 @@ class Alignment {
   void readMaple(std::istream& aln_stream);
 
   /**
-   @private
    Read an alignment in FASTA or PHYLIP format from a stream
    @param aln_stream A stream of an alignment file
    @param[in] ref_seq The reference sequence
@@ -319,7 +300,6 @@ class Alignment {
                          const std::string& ref_seq = "");
 
   /**
-   @private
    Parse the reference sequence into vector of state
    @param ref_sequence reference genome in string
    @throw std::logic\_error if ref\_sequence contains invalid states
@@ -327,7 +307,6 @@ class Alignment {
   void parseRefSeq(std::string& ref_sequence);
 
   /**
-   @private
    Read alignment file in FASTA format
    @param aln_stream A stream of the alignment;
    @param check_min_seqs check the minimum number of input sequences
@@ -341,7 +320,6 @@ class Alignment {
                  bool check_min_seqs = true);
 
   /**
-   @private
    Read alignment file in PHYLIP format
    @param aln_stream A stream of the alignment;
    @param check_min_seqs: check the minimum number of input sequences
@@ -355,7 +333,6 @@ class Alignment {
                   bool check_min_seqs = true);
 
   /**
-   @private
    Read alignment file
    @param aln_stream A stream of the alignment;
    @param[in,out] aln_format the format of the alignment
@@ -371,7 +348,6 @@ class Alignment {
                      bool check_min_seqs = true);
 
   /**
-   @private
    Generate a reference genome from input_sequences
    @param sequences the input sequences; only_extract_diff: TRUE to only extract
    MAPLE file without running inference

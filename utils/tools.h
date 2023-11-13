@@ -254,7 +254,6 @@ enum VerboseMode { VB_QUIET, VB_MIN, VB_MED, VB_MAX, VB_DEBUG };
 extern VerboseMode verbose_mode;
 
 /**
- @private
  Index for a mininode of a phylonode
  */
 enum MiniIndex : NumSeqsType {
@@ -266,7 +265,6 @@ enum MiniIndex : NumSeqsType {
 
 /*--------------------------- NODE's INDEX -----------------------------------*/
 /**
- @private
  Holds a space efficient index into a vector<PhyloNode> and subindex for the
  MiniNode inside the Phylonode
  */
@@ -355,7 +353,6 @@ const RealNumType MAX_SUBS_PER_SITE = 0.067;
 /*--------------------------------------------------------------*/
 
 /**
- @private
  Program parameters, everything is specified here */
 class Params {
  private:
@@ -432,61 +429,52 @@ class Params {
   int failure_limit_subtree_short_search;
 
   /**
-   @private
   *       TRUE to apply strict stop rules when seeking placement for a new
   sample
    */
   bool strict_stop_seeking_placement_sample;
 
   /**
-   @private
   *       TRUE to apply strict stop rules when seeking placement for a subtree
    */
   bool strict_stop_seeking_placement_subtree;
 
   /**
-   @private
   *       TRUE to apply strict stop rules when seeking placement for a subtree
   (short range search)
    */
   bool strict_stop_seeking_placement_subtree_short_search;
 
   /**
-   @private
   *  Threshold of loglh to continue explore the subtree to seek a placement for
   a sample
   */
   RealNumType thresh_log_lh_sample;
 
   /**
-   @private
   *  Threshold of loglh to continue explore the subtree to seek a placement for
   a subtree
   */
   RealNumType thresh_log_lh_subtree;
 
   /**
-   @private
   *  Threshold of loglh to continue explore the subtree to seek a placement for
   a subtree (short range search)
   */
   RealNumType thresh_log_lh_subtree_short_search;
 
   /**
-   @private
   *  Threshold of loglh to count failure
   */
   RealNumType thresh_log_lh_failure;
 
   /**
-   * @private
    * A minimum value of the branch lengths. Default: -1 (UNSPECIFIED), the
    * minimum branch length is computed from 'min_blength_factor'
    */
   RealNumType fixed_min_blength;
 
   /**
-   * @private
    *  A factor to compute the minimum branch length (if fixed_min_blength is
    * specified, this factor is ignored). Default: 0.2 <br>\<Minimum branch
    * length> = \<min_blength_factor> * \<default branch length> <br> where
@@ -495,7 +483,6 @@ class Params {
   RealNumType min_blength_factor;
 
   /**
-   * @private
    * A factor to compute the maximum branch length. Default: 40
    * <br> \<Maximum branch length> = \<max_blength_factor> * \<default branch
    * length> <br> where \<default branch length> is one mutation per site.
@@ -503,59 +490,50 @@ class Params {
   RealNumType max_blength_factor;
 
   /**
-   @private
   *  The minium branch length (for mid-branch point) to try for placement
   */
   RealNumType min_blength_mid_factor;
 
   /**
-   @private
   *  Threshold to determine whether a changed partial is different from its
   former value
   */
   RealNumType thresh_diff_update;
 
   /**
-   @private
   *  Threshold to determine whether a changed partial is different from its
   former value by folds
   */
   RealNumType thresh_diff_fold_update;
 
   /**
-   * @private
    * The period (in term of the number of sample placements) to update the
    * substitution rate matrix. Default: 25
    */
   PositionType mutation_update_period;
 
   /**
-   @private
   *  Name of the output alignment
   */
   std::string output_aln;
 
   /**
-   @private
   *  Format of the output alignment
   */
   std::string output_aln_format_str;
 
   /**
-   @private
   *  Path to an input tree
   */
   std::string input_treefile;
 
   /**
-   * @private
    * The number of times we traverse the tree looking for topological
    * improvements (applying SPR moves). Default: 1
    */
   int32_t num_tree_improvement;
 
   /**
-   * @private
    *  Do not try to apply SPR moves on nodes that have the placement cost (i.e.
    * the likelihood contribution by placing a node on the tree) exceeds this
    * threshold. Default: -1e-5
@@ -563,7 +541,6 @@ class Params {
   RealNumType thresh_placement_cost;
 
   /**
-   * @private
    *  Threshold to stop the tree search. If the total log likelihood improvement
    * obtained by an iteration of tree search is lower than this threshold,
    * CMaple stops doing tree search . Default: 1
@@ -571,56 +548,47 @@ class Params {
   RealNumType thresh_entire_tree_improvement;
 
   /**
-   @private
   *  Don't try to re-place nodes (during short range topology search) that have
   the placement cost exceeds this threshold
   */
   RealNumType thresh_placement_cost_short_search;
 
   /**
-   @private
   *  format of the output tree
   */
   std::string tree_format_str;
 
   /**
-   @private
   *  TRUE to run an additional short range search for tree topology improvement
   */
   bool shallow_tree_search;
 
   /**
-   @private
   *  path to output testing codes
   */
   char* output_testing;
 
   /**
-   @private
   * TRUE to compute aLRT-SH
   */
   bool compute_aLRT_SH;
 
   /**
-   @private
   * Number of replicates to compute aLRT-SH
   */
   PositionType aLRT_SH_replicates;
 
   /**
-   @private
   * (Half) epsilon value when computing aLRT-SH
   */
   RealNumType aLRT_SH_half_epsilon;
 
   /**
-   @private
   * number of threads
   */
   uint32_t num_threads;
 
   /**
-   @private
   * A seed number for random generators. Default: the clock of the PC. Be
   careful! To make the results reproducible, users should specify the seed
   number.
@@ -628,32 +596,27 @@ class Params {
   uint64_t ran_seed;
 
   /**
-   @private
   *  prefix output
   */
   std::string output_prefix;
 
   /**
-   @private
   *  TRUE to allow replace the input tree by its NNI neighbor (with a higher lh)
   when computing aLRT-SH
   */
   bool allow_replace_input_tree;
 
   /**
-   @private
   *  type of sequences
   */
   std::string seq_type_str;
 
   /**
-   @private
   *  type of tree search
   */
   std::string tree_search_type_str;
 
   /**
-   * @private
    * TRUE to make the processes of outputting->re-inputting a tree consistent
    */
   bool make_consistent;
@@ -771,7 +734,6 @@ class ParamsBuilder {
 
  private:
   /**
-   * @private
    * Pointer to a Params object
    */
   std::unique_ptr<Params> params_ptr{};

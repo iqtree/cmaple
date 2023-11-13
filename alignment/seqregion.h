@@ -9,12 +9,10 @@ namespace cmaple {
 class SeqRegion : public Mutation {
  public:
   /*!
-      @private
       Type of likelihood
    */
   using LHType = std::array<cmaple::RealNumType, NUM_STATES>;
   /*!
-      @private
       Type of likelihood pointer
    */
   using LHPtrType = std::unique_ptr<LHType>;
@@ -60,14 +58,12 @@ class SeqRegion : public Mutation {
 
  public:
   /**
-   @private
    Length of the path between the current phylo node and the node where the
    likelihood is calculated
    */
   cmaple::RealNumType plength_observation2node = -1;
 
   /**
-   @private
    Distance separates the observation at root from the observation at the
    current node To take into account that the observation might have occurred on
    the other side of the phylogeny with respect to the root; for example if the
@@ -80,25 +76,21 @@ class SeqRegion : public Mutation {
   cmaple::RealNumType plength_observation2root = -1;
 
   /**
-   @private
    The relative partial likelihood
    */
   LHPtrType likelihood;
 
   /**
-   @private
    Get the likelihood of a state
    */
   cmaple::RealNumType getLH(int pos) const { return (*likelihood)[pos]; }
 
   /**
-   * @private
    *  Region constructor
    */
   SeqRegion() = default;
 
   /**
-   * @private
    *  Region constructor
    */
   SeqRegion(cmaple::StateType n_type,
@@ -108,7 +100,6 @@ class SeqRegion : public Mutation {
             LHPtrType n_likelihood = nullptr);
 
   /**
-   * @private
    *  Region constructor
    */
   SeqRegion(cmaple::StateType n_type,
@@ -118,7 +109,6 @@ class SeqRegion : public Mutation {
             const LHType& n_likelihood);
 
   /**
-   * @private
    *  Region constructor
    *  @throw std::invalid\_argument if any of the following situations occur.
    *  - n\_type is invalid
@@ -130,7 +120,6 @@ class SeqRegion : public Mutation {
             int max_num_states);
 
   /**
-   * @private
    *  Region constructor
    *  @throw std::invalid\_argument if any of the following situations occur.
    *  - the type of n_mutation  is invalid
@@ -141,25 +130,21 @@ class SeqRegion : public Mutation {
             int max_num_states);
 
   /**
-   * @private
    *  Region constructor
    */
   // SeqRegion(SeqRegion* region, StateType num_states, bool copy_likelihood =
   // true);
 
   /**
-   @private
    Move CTor
    */
   SeqRegion(SeqRegion&& region) noexcept = default;
   /**
-   @private
    Move Assignment
    */
   SeqRegion& operator=(SeqRegion&& region) noexcept = default;
 
   /**
-   @private
    Clone a SeqRegion instance
    */
   static inline SeqRegion clone(const SeqRegion& from) {
@@ -172,13 +157,11 @@ class SeqRegion : public Mutation {
   }
 
   /**
-   * @private
    *  Region destructor
    */
   ~SeqRegion() = default;
 
   /**
-   @private
    For testing only, export codes to re-contruct this seqregions
    */
   void writeConstructionCodes(const std::string regions_name,
@@ -186,13 +169,11 @@ class SeqRegion : public Mutation {
                               const cmaple::StateType num_states) const;
 
   /**
-   @private
    Compare two regions
    */
   bool operator==(const SeqRegion& seqregion_1) const;
 
   /**
-   * @private
    * Parse sequence type from a string
    * @param n_seqtype_str a sequence type in string
    * @return a SeqType

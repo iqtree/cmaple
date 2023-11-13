@@ -28,13 +28,11 @@ namespace cmaple
     /*! @} End of Doxygen Groups*/
 
     /** \brief Run CMaple with user-specified parameters (via command-line)
-     * @private
      * @param[in] params user-specified parameters (via command-line)
      */
     void runCMaple(cmaple::Params& params);
 
     /** \brief Function for testing only
-     * @private
      * @param[in] params user-specified (parameters via command-line)
      */
     void testing(cmaple::Params& params);
