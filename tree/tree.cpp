@@ -1358,7 +1358,7 @@ void cmaple::Tree::updatePartialLhFromParent(
     // compute new upper left/right for next_node_1
     std::unique_ptr<SeqRegions> upper_left_right_regions_1 =
         computeUpperLeftRightRegions<num_states>(
-            index, node, RIGHT, parent_upper_regions, node_stack,
+            index, node, LEFT, parent_upper_regions, node_stack,
             update_blength);  // computeUpperLeftRightRegions(next_node_1, node,
                               // parent_upper_regions, node_stack,
                               // update_blength);
@@ -1367,16 +1367,16 @@ void cmaple::Tree::updatePartialLhFromParent(
     // compute new upper left/right for next_node_1
     if (!update_blength) {
       upper_left_right_regions_2 = computeUpperLeftRightRegions<num_states>(
-          index, node, LEFT, parent_upper_regions, node_stack, update_blength);
+          index, node, RIGHT, parent_upper_regions, node_stack, update_blength);
     }
 
     if (!update_blength) {
       // update new partiallh for next_node_1
-      updateNewPartialIfDifferent(node, RIGHT, upper_left_right_regions_2,
+      updateNewPartialIfDifferent(node, RIGHT, upper_left_right_regions_1,
                                   node_stack, seq_length);
 
       // update new partiallh for next_node_2
-      updateNewPartialIfDifferent(node, LEFT, upper_left_right_regions_1,
+      updateNewPartialIfDifferent(node, LEFT, upper_left_right_regions_2,
                                   node_stack, seq_length);
     }
   }
