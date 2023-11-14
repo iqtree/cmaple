@@ -1826,10 +1826,10 @@ void cmaple::Tree::seekSamplePlacement(
     // reaches the failure limit
     const short int failure_count = current_extended_node.getFailureCount();
     if ((params->strict_stop_seeking_placement_sample &&
-         failure_count < params->failure_limit_sample &&
+         failure_count <= params->failure_limit_sample &&
          lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample)) ||
         (!params->strict_stop_seeking_placement_sample &&
-         (failure_count < params->failure_limit_sample ||
+         (failure_count <= params->failure_limit_sample ||
           lh_diff_at_node > (best_lh_diff - params->thresh_log_lh_sample)))) {
       /*for (Index neighbor_index:current_node.getNeighborIndexes(TOP))
           extended_node_stack.push(TraversingNode(neighbor_index,

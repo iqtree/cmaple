@@ -563,7 +563,7 @@ cmaple::Params::Params() {
   failure_limit_sample = 5;
   failure_limit_subtree = 4;
   failure_limit_subtree_short_search = 1;
-  strict_stop_seeking_placement_sample = false;
+  strict_stop_seeking_placement_sample = true;
   strict_stop_seeking_placement_subtree = false;
   strict_stop_seeking_placement_subtree_short_search = true;
   thresh_log_lh_sample = 200;
@@ -997,15 +997,15 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
-      if (strcmp(argv[cnt], "--strict-stop-init") == 0 ||
-          strcmp(argv[cnt], "-strict-stop-init") == 0) {
-        params.strict_stop_seeking_placement_sample = true;
+      if (strcmp(argv[cnt], "--non-strict-stop-init") == 0 ||
+          strcmp(argv[cnt], "-non-strict-stop-init") == 0) {
+        params.strict_stop_seeking_placement_sample = false;
 
         continue;
       }
-      if (strcmp(argv[cnt], "--unstrict-stop-subtree") == 0 ||
-          strcmp(argv[cnt], "-unstrict-stop-stree") == 0) {
-        params.strict_stop_seeking_placement_subtree = false;
+      if (strcmp(argv[cnt], "--strict-stop-subtree") == 0 ||
+          strcmp(argv[cnt], "-strict-stop-stree") == 0) {
+        params.strict_stop_seeking_placement_subtree = true;
 
         continue;
       }
