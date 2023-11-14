@@ -1,6 +1,9 @@
 #include "../alignment/seqregions.h"
 
 using namespace std;
+#include "../libraries/ncl/ncl.h"
+#include "../libraries/nclextra/modelsblock.h"
+#include "../libraries/nclextra/myreader.h"
 #include "modelbase.h"
 using namespace cmaple;
 

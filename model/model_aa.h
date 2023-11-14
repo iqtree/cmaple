@@ -17,7 +17,7 @@ namespace cmaple
          Read model's rates from string/file
          @throw std::logic\_error if unexpected values/behaviors found during the operations
          */
-        virtual void readRates(istream &in, const bool is_reversible);
+        virtual void readRates(std::istream &in, const bool is_reversible);
         
         /**
          Rescale the lower diagonal rates
