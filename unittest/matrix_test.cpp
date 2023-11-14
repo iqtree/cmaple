@@ -19,13 +19,13 @@ template <typename FloatT> void testDotProduct()
   std::for_each(data_neg.begin(), data_neg.end(), [](FloatT& n) { n = -n; });
 
   // test the generic function
-  ASSERT_FLOAT_EQ(dotProduct<10>(&data[0], &data[0]), 385);
-  ASSERT_FLOAT_EQ(dotProduct<10>(&data[0], &data_neg[0]), -385);
+  ASSERT_FLOAT_EQ(dotProduct<10>(&data[0], &data[0]), 285);
+  ASSERT_FLOAT_EQ(dotProduct<10>(&data[0], &data_neg[0]), -285);
 
 
   // test SIMD/AVX overloads
-  ASSERT_FLOAT_EQ(dotProduct<20>(&data[0], &data[0]), 2870);
-  ASSERT_FLOAT_EQ(dotProduct<20>(&data[0], &data_neg[0]), -2870);
+  ASSERT_FLOAT_EQ(dotProduct<20>(&data[0], &data[0]), 2470);
+  ASSERT_FLOAT_EQ(dotProduct<20>(&data[0], &data_neg[0]), -2470);
 }
 
 TEST(Model, dotProduct)

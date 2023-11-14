@@ -281,7 +281,7 @@ auto cmaple::SeqRegions::areDiffFrom(
     PositionType seq_length,
     StateType num_states,
     const Params& params) const -> bool {
-  if (!regions2) {
+  if (this->size() != regions2->size()) {
     return true;
   }
 

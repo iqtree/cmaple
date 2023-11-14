@@ -88,11 +88,11 @@ TEST(PhyloNode, TestSetGetOutdated) {
  */
 TEST(PhyloNode, TestSetGetSPRApplied) {
     PhyloNode node((InternalNode()));
-    node.setSPRApplied(true);
-    EXPECT_TRUE(node.isSPRApplied());
+    node.setSPRCount(10);
+    EXPECT_EQ(node.getSPRCount(), 10);
     
-    node.setSPRApplied(false);
-    EXPECT_FALSE(node.isSPRApplied());
+    node.setSPRCount(0);
+    EXPECT_EQ(node.getSPRCount(), 0);
 }
 
 /*

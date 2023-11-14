@@ -202,8 +202,8 @@ TEST(Alignment, readMapleFile)
     // ----- test on test_100.maple -----
     
     // ----- test on test_5K.maple, load ref_seq from test_100.maple -----
-    std::string ref_seq = aln.readRefSeq("../../example/ref_test_100.maple", "REF");
-    aln.read("../../example/test_5K.maple", ref_seq);
+    //std::string ref_seq = aln.readRefSeq("../../example/ref_test_100.maple", "REF");
+    aln.read("../../example/test_5K.maple");
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 5000);

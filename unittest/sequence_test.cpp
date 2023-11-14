@@ -10,8 +10,7 @@ TEST(Sequence, constructor_1)
 {
     Sequence sequence1;
     Sequence sequence2("");
-    std::string name = "sequence name";
-    Sequence sequence3(name);
+    Sequence sequence3("sequence name");
     
     EXPECT_EQ(sequence1.seq_name, "");
     EXPECT_EQ(sequence1.size(), 0);
@@ -19,7 +18,7 @@ TEST(Sequence, constructor_1)
     EXPECT_EQ(sequence2.seq_name, "");
     EXPECT_EQ(sequence2.size(), 0);
     
-    EXPECT_EQ(sequence3.seq_name, name);
+    EXPECT_EQ(sequence3.seq_name, "sequence name");
     EXPECT_EQ(sequence3.size(), 0);
 }
 
@@ -29,19 +28,18 @@ TEST(Sequence, constructor_1)
 TEST(Sequence, constructor_2)
 {
     std::vector<Mutation> mutations1;
-    std::string name1 = "sequence name 1";
-    Sequence sequence1(name1, mutations1);
-    EXPECT_EQ(sequence1.seq_name, name1);
+    Sequence sequence1("sequence name 1", std::move(mutations1));
+    EXPECT_EQ(sequence1.seq_name, "sequence name 1");
     EXPECT_EQ(sequence1.size(), 0);
     
+    mutations1.reserve(10);
     mutations1.emplace_back(1, 132, 1);
     mutations1.emplace_back(TYPE_N, 5434, 943);
     mutations1.emplace_back(TYPE_O, 9563, 1);
     mutations1.emplace_back(TYPE_R, 38432, 45);
     mutations1.emplace_back(TYPE_DEL, 153, 3);
-    std::string name2 = "sequence name 2";
-    Sequence sequence2(name2, mutations1);
-    EXPECT_EQ(sequence2.seq_name, name2);
+    Sequence sequence2("sequence name 2", std::move(mutations1));
+    EXPECT_EQ(sequence2.seq_name, "sequence name 2");
     EXPECT_EQ(sequence2.size(), 5);
     EXPECT_EQ(sequence2[0].type, 1);
     EXPECT_EQ(sequence2[2].position, 9563);
@@ -59,13 +57,12 @@ TEST(Sequence, operators)
     mutations1.emplace_back(TYPE_O, 9563, 1);
     mutations1.emplace_back(TYPE_R, 38432, 45);
     mutations1.emplace_back(TYPE_DEL, 153, 3);
-    std::string name1 = "sequence name 1";
-    Sequence sequence1(name1, mutations1);
+    Sequence sequence1("sequence name 1", std::move(mutations1));
     
     Sequence sequence2(move(sequence1));
     EXPECT_EQ(sequence1.seq_name, "");
     EXPECT_EQ(sequence1.size(), 0);
-    EXPECT_EQ(sequence2.seq_name, name1);
+    EXPECT_EQ(sequence2.seq_name, "sequence name 1");
     EXPECT_EQ(sequence2.size(), 5);
     EXPECT_EQ(sequence2[0].type, 1);
     EXPECT_EQ(sequence2[2].position, 9563);
@@ -74,7 +71,7 @@ TEST(Sequence, operators)
     Sequence sequence3 = std::move(sequence2);
     EXPECT_EQ(sequence2.seq_name, "");
     EXPECT_EQ(sequence2.size(), 0);
-    EXPECT_EQ(sequence3.seq_name, name1);
+    EXPECT_EQ(sequence3.seq_name, "sequence name 1");
     EXPECT_EQ(sequence3.size(), 5);
     EXPECT_EQ(sequence3[0].type, 1);
     EXPECT_EQ(sequence3[2].position, 9563);
