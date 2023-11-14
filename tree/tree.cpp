@@ -717,9 +717,12 @@ std::string cmaple::Tree::doPlacementTemplate() {
         params ? (params->output_prefix.length() ? params->output_prefix
                                                  : params->aln_path)
                : "debug";
+    const cmaple::Tree::TreeType tree_format =
+        params ? cmaple::Tree::parseTreeType(params->tree_format_str)
+               : BIN_TREE;
 
     ofstream out = ofstream(prefix + "_init.treefile");
-    out << exportNewick(BIN_TREE);
+    out << exportNewick(tree_format);
     out.close();
   }
 
@@ -795,9 +798,12 @@ std::string cmaple::Tree::applySPRTemplate(
           params ? (params->output_prefix.length() ? params->output_prefix
                                                    : params->aln_path)
                  : "debug";
+      const cmaple::Tree::TreeType tree_format =
+          params ? cmaple::Tree::parseTreeType(params->tree_format_str)
+                 : BIN_TREE;
 
       ofstream out = ofstream(prefix + "_shallow_search.treefile");
-      out << exportNewick(BIN_TREE);
+      out << exportNewick(tree_format);
       out.close();
     }
   }
@@ -840,9 +846,12 @@ std::string cmaple::Tree::applySPRTemplate(
         params ? (params->output_prefix.length() ? params->output_prefix
                                                  : params->aln_path)
                : "debug";
+    const cmaple::Tree::TreeType tree_format =
+        params ? cmaple::Tree::parseTreeType(params->tree_format_str)
+               : BIN_TREE;
 
     ofstream out = ofstream(prefix + "_topo.treefile");
-    out << exportNewick(BIN_TREE);
+    out << exportNewick(tree_format);
     out.close();
   }
 
@@ -1012,9 +1021,12 @@ std::string cmaple::Tree::optimizeBranchTemplate() {
         params ? (params->output_prefix.length() ? params->output_prefix
                                                  : params->aln_path)
                : "debug";
+    const cmaple::Tree::TreeType tree_format =
+        params ? cmaple::Tree::parseTreeType(params->tree_format_str)
+               : BIN_TREE;
 
     ofstream out = ofstream(prefix + "_opt_blengths.treefile");
-    out << exportNewick(BIN_TREE);
+    out << exportNewick(tree_format);
     out.close();
   }
 
