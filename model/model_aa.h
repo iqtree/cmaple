@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "model.h"
 #include "modelbase.h"
 
 namespace cmaple

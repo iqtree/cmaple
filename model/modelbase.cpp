@@ -1,6 +1,7 @@
-#include "modelbase.h"
+#include "../alignment/seqregions.h"
 
 using namespace std;
+#include "modelbase.h"
 using namespace cmaple;
 
 // explicit instantiation of templates
@@ -16,6 +17,7 @@ const std::map<std::string, cmaple::ModelBase::SubModel>
         {"JC", cmaple::ModelBase::JC},
         {"GTR", cmaple::ModelBase::GTR},
         {"UNREST", cmaple::ModelBase::UNREST}};
+
 const std::map<std::string, cmaple::ModelBase::SubModel>
     cmaple::ModelBase::aa_models_mapping = {
         {"GTR20", cmaple::ModelBase::GTR20},
@@ -482,7 +484,7 @@ void cmaple::ModelBase::updateMutationMat() {
                  freq_j_transposed_ij_row += num_states_) {
     setVecByProduct<num_states>(freq_j_transposed_ij_row, root_freqs,
                                 transposed_mut_mat_row);
-}
+  }
 }
 
 template <StateType num_states>

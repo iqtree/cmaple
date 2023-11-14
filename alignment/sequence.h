@@ -1,5 +1,9 @@
 #include "seqregions.h"
 
+#include <vector>
+#include "mutation.h"
+#include "seqregion.h"
+
 #ifndef CMAPLE_SEQUENCE_H
 #define CMAPLE_SEQUENCE_H
 
