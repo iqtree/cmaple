@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "../alignment/seqregions.h"
 #include "modelbase.h"
 
 namespace cmaple {

@@ -2,13 +2,13 @@
 #pragma once
 
 #include <cassert>
+#include <istream>
 #include <string>
 #include "../alignment/alignment.h"
-#include "../libraries/ncl/ncl.h"
-#include "../libraries/nclextra/modelsblock.h"
-#include "../libraries/nclextra/myreader.h"
 #include "../utils/matrix.h"
 #include "../utils/tools.h"
+
+class ModelsBlock;  // do not pull in external headers!
 
 namespace cmaple {
 class SeqRegions;
@@ -31,7 +31,7 @@ class ModelBase {
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  void readStateFreq(istream& in);
+  void readStateFreq(std::istream& in);
 
   /**
    Update the mutation rate matrix regarding the pseu_mutation_count
@@ -63,14 +63,14 @@ class ModelBase {
    @return TRUE if the model is reversible
    @throw std::logic\_error if failing to read the parameters
    */
-  bool readParametersString(string& model_str);
+  bool readParametersString(std::string& model_str);
 
   /**
    Read model's rates from string/file
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  virtual void readRates(istream& in, const bool is_reversible){};
+  virtual void readRates(std::istream& in, const bool is_reversible){};
 
   /**
    Normalize the Q matrix so that the expected number of subtitution is 1

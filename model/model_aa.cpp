@@ -1,4 +1,5 @@
 #include "model_aa.h"
+#include "../libraries/nclextra/modelsblock.h"
 using namespace std;
 using namespace cmaple;
 
