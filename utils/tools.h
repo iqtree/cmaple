@@ -46,6 +46,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <cassert>
 #include "operatingsystem.h"
 #ifdef _OPENMP
 #include <omp.h> /* OpenMP */
