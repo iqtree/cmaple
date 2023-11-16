@@ -589,7 +589,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
                                          const StrVector& seq_names,
                                          const string& ref_sequence) {
   // Validate the inputs
-  ASSERT(str_sequences.size() == seq_names.size());
+  assert(str_sequences.size() == seq_names.size());
   if (!str_sequences.size()) {
     throw std::invalid_argument("The vector of sequences is empty");
   }

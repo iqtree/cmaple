@@ -1960,7 +1960,7 @@ RealNumType SeqRegions::calculateSiteLhContributions(
   size_t iseq1 = 0;
   size_t iseq2 = 0;
   const PositionType seq_length = aln->ref_seq.size();
-  ASSERT(site_lh_contributions.size() == seq_length);
+  assert(site_lh_contributions.size() == seq_length);
 
   // init merged_regions
   if (merged_regions) {

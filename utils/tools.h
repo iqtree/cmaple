@@ -956,7 +956,7 @@ void normalize_frequencies_from_index(RealNumType* freqs,
 inline void normalize_arr(RealNumType* const entries,
                           const int num_entries,
                           RealNumType sum_entries) {
-  ASSERT(num_entries > 0);
+  assert(num_entries > 0);
 
 #ifndef NDEBUG
   // if (fabs(sum_entries) < 1e-5)
@@ -1082,7 +1082,7 @@ template <class T1, class T2>
 void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
   if (left > right)
     return;
-  ASSERT(left <= right);
+  assert(left <= right);
   int i = left, j = right;
   T1 pivot = arr[(left + right) / 2];
 

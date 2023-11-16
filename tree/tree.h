@@ -1922,7 +1922,7 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
     // later
     /*for (Index neighbor_index:node.getNeighborIndexes(mini_index))
         node_stack.push(neighbor_index);*/
-    ASSERT(index.getMiniIndex() == TOP);
+    assert(index.getMiniIndex() == TOP);
     if (node.isInternal()) {
       node_stack.push(node.getNeighborIndex(RIGHT));
       node_stack.push(node.getNeighborIndex(LEFT));
@@ -2131,7 +2131,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
   std::unique_ptr<SeqRegions> best_parent_regions = nullptr;
   std::unique_ptr<SeqRegions> best_child_regions = nullptr;
 
-  ASSERT(selected_node_index.getMiniIndex() == TOP);
+  assert(selected_node_index.getMiniIndex() == TOP);
   const NumSeqsType selected_node_vec_index =
       selected_node_index.getVectorIndex();
   PhyloNode& selected_node = nodes[selected_node_vec_index];
@@ -2140,7 +2140,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
   if (best_child_index.getMiniIndex() != UNDEFINED) {
     PhyloNode& best_child = nodes[best_child_index.getVectorIndex()];
     best_child_lh = best_down_lh_diff;
-    ASSERT(best_child_index.getMiniIndex() == TOP);
+    assert(best_child_index.getMiniIndex() == TOP);
     best_child_blength_split =
         0.5 * best_child.getUpperLength();  // best_child->length;
     const std::unique_ptr<SeqRegions>& upper_left_right_regions =
@@ -2241,7 +2241,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
   // if the best placement is below the selected_node => add an internal node
   // below the selected_node
   if (best_child_lh >= best_parent_lh && best_child_lh >= best_lh_diff) {
-    ASSERT(best_child_index.getMiniIndex() == TOP);
+    assert(best_child_index.getMiniIndex() == TOP);
     PhyloNode& best_child = nodes[best_child_index.getVectorIndex()];
     const std::unique_ptr<SeqRegions>& upper_left_right_regions =
         getPartialLhAtNode(best_child.getNeighborIndex(
@@ -2374,7 +2374,7 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
   // selected_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
   // const MiniIndex seleted_node_mini_index =
   // selected_node_index.getMiniIndex();
-  ASSERT(selected_node_index.getMiniIndex() == TOP);
+  assert(selected_node_index.getMiniIndex() == TOP);
   PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
   const std::unique_ptr<SeqRegions>& upper_left_right_regions =
       getPartialLhAtNode(selected_node.getNeighborIndex(TOP));

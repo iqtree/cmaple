@@ -41,7 +41,7 @@ void cmaple::ModelAA::initMutationMat() {
 
   // read model params from string/file
   bool reversible;
-  ASSERT(num_states_ == 20);
+  assert(num_states_ == 20);
   model_block = readModelsDefinition(builtin_prot_models);
   if (!model_block) {
     throw std::logic_error("model_block uninitialized");
@@ -167,7 +167,7 @@ void cmaple::ModelAA::readRates(istream& in, const bool is_reversible) {
       /*if (id >= nrates) {
           cout << row << " " << col << endl;
       }
-      ASSERT(id < nrates && id >= 0); // make sure that the conversion is
+      assert(id < nrates && id >= 0); // make sure that the conversion is
       correct*/
 
       string tmp_value;

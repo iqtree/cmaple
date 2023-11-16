@@ -526,7 +526,7 @@ void cmaple::convert_string_vec(const char* str,
 void cmaple::normalize_frequencies_from_index(RealNumType* freqs,
                                               int num_states,
                                               int starting_index) {
-  ASSERT(num_states > 0);
+  assert(num_states > 0);
   // calculate the total_freqs
   RealNumType total_freqs = 0;
   for (int i = starting_index; i < starting_index + num_states; ++i) {

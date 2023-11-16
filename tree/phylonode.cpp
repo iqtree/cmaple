@@ -86,14 +86,14 @@ void cmaple::PhyloNode::setCorrespondingLength(const MiniIndex mini_index,
 }
 
 void cmaple::PhyloNode::setNode(LeafNode&& leaf) {
-  ASSERT(!is_internal_ && "Wrong data type! data should be a leaf node");
+  assert(!is_internal_ && "Wrong data type! data should be a leaf node");
 
   // update leaf
   data_.leaf_ = std::move(leaf);
 }
 
 void cmaple::PhyloNode::setNode(InternalNode&& internal) {
-  ASSERT(is_internal_ && "Wrong data type! data should be an internal node");
+  assert(is_internal_ && "Wrong data type! data should be an internal node");
 
   // update internal
   data_.internal_ = std::move(internal);
@@ -155,22 +155,22 @@ void cmaple::PhyloNode::setNeighborIndex(const MiniIndex mini_index,
 }
 
 std::vector<NumSeqsType>& cmaple::PhyloNode::getLessInfoSeqs() {
-  ASSERT(!is_internal_);
+  assert(!is_internal_);
   return data_.leaf_.less_info_seqs_;
 }
 
 void cmaple::PhyloNode::addLessInfoSeqs(NumSeqsType seq_name_index) {
-  ASSERT(!is_internal_);
+  assert(!is_internal_);
   data_.leaf_.less_info_seqs_.push_back(seq_name_index);
 }
 
 auto cmaple::PhyloNode::getSeqNameIndex() const -> NumSeqsType {
-  ASSERT(!is_internal_);
+  assert(!is_internal_);
   return data_.leaf_.seq_name_index_;
 }
 
 void cmaple::PhyloNode::setSeqNameIndex(NumSeqsType seq_name_index_) {
-  ASSERT(!is_internal_);
+  assert(!is_internal_);
   data_.leaf_.seq_name_index_ = seq_name_index_;
 }
 
@@ -258,12 +258,12 @@ const std::string cmaple::PhyloNode::exportString(
 }
 
 auto cmaple::PhyloNode::getNodelhIndex() const -> const NumSeqsType {
-  ASSERT(isInternal());
+  assert(isInternal());
   return data_.internal_.node_lh_index_;
 }
 
 void cmaple::PhyloNode::setNodeLhIndex(const NumSeqsType node_lh_index) {
-  ASSERT(isInternal());
+  assert(isInternal());
   data_.internal_.node_lh_index_ = node_lh_index;
 }
 

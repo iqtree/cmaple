@@ -170,7 +170,7 @@ std::istream& cmaple::operator>>(std::istream& in_stream, cmaple::Tree& tree) {
 }
 
 void cmaple::Tree::setupFuncPtrs() {
-  ASSERT(aln);
+  assert(aln);
 
   switch (aln->num_states) {
     case 4:
@@ -222,7 +222,7 @@ void cmaple::Tree::setupBlengthThresh() {
 }
 
 void cmaple::Tree::resetSeqAdded() {
-  ASSERT(aln);
+  assert(aln);
   const NumSeqsType num_sequences = aln->data.size();
   sequence_added.resize(num_sequences);
   for (auto i = 0; i < num_sequences; ++i)
@@ -294,7 +294,7 @@ template <const StateType num_states>
 void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
                                     const bool n_fixed_blengths) {
   // reset variables in tree
-  ASSERT(aln);
+  assert(aln);
   const NumSeqsType num_seqs = aln->data.size();
   // reset nodes
   nodes.clear();
@@ -421,7 +421,7 @@ void cmaple::Tree::changeAlnTemplate(Alignment* n_aln) {
 
 template <const cmaple::StateType num_states>
 void cmaple::Tree::changeModelTemplate(Model* n_model) {
-  ASSERT(model && aln);
+  assert(model && aln);
   // Validate input model
   if (!n_model || !n_model->model_base) {
     throw std::invalid_argument("The new model is null!");
@@ -469,7 +469,7 @@ std::string cmaple::Tree::doInferenceTemplate(
     const TreeSearchType tree_search_type,
     const bool shallow_tree_search) {
   // validate input
-  ASSERT(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
+  assert(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
@@ -806,8 +806,8 @@ std::string cmaple::Tree::applySPRTemplate(
 template <const cmaple::StateType num_states>
 void cmaple::Tree::makeTreeInOutConsistentTemplate() {
   // validate data
-  ASSERT(aln && "Null alignment");
-  ASSERT(model && "Null model");
+  assert(aln && "Null alignment");
+  assert(model && "Null model");
 
   // Make sure the tree is not empty
   if (!nodes.size()) {
@@ -1091,7 +1091,7 @@ std::string cmaple::Tree::computeBranchSupportTemplate(
       tmp_total_lh += site_lh;
   for (RealNumType site_lh : site_lh_at_root)
       tmp_total_lh += site_lh;
-  ASSERT(fabs(tmp_total_lh - total_lh) < 1e-6);*/
+  assert(fabs(tmp_total_lh - total_lh) < 1e-6);*/
 
   // calculate aLRT-SH for all internal branches
   calculate_aRLT_SH<num_states>(site_lh_contributions, site_lh_at_root,
@@ -1237,8 +1237,8 @@ bool cmaple::Tree::updateNewPartialIfDifferent(
     std::unique_ptr<SeqRegions>& upper_left_right_regions,
     std::stack<Index>& node_stack,
     const PositionType seq_length) {
-  // ASSERT(params.has_value());
-  ASSERT(params);
+  // assert(params.has_value());
+  assert(params);
   if (!node.getPartialLh(next_node_mini) ||
       node.getPartialLh(next_node_mini)
           ->areDiffFrom(
@@ -1343,7 +1343,7 @@ void cmaple::Tree::updatePartialLhFromChildren(
           other_next_node = next_node;
   }
 
-  ASSERT(top_node && other_next_node);*/
+  assert(top_node && other_next_node);*/
 
   const NumSeqsType node_vec_index = index.getVectorIndex();
   const Index top_node_index = Index(node_vec_index, TOP);
@@ -1437,8 +1437,8 @@ void cmaple::Tree::updatePartialLhFromChildren(
 
   if (!update_blength) {
     // update likelihoods at parent node
-    // ASSERT(params.has_value());
-    ASSERT(params);
+    // assert(params.has_value());
+    assert(params);
     if (node.getPartialLh(TOP)->areDiffFrom(old_lower_regions, seq_length,
                                             num_states, *params) &&
         root_vector_index !=
@@ -1528,7 +1528,7 @@ void cmaple::Tree::updatePartialLh(stack<Index>& node_stack) {
 
     // change in likelihoods is coming from parent node
     if (node_index.getMiniIndex() == TOP) {
-      ASSERT(is_non_root);
+      assert(is_non_root);
       updatePartialLhFromParent<num_states>(node_index, node, node_stack,
                                             parent_upper_regions, seq_length);
     }
@@ -1618,7 +1618,7 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
   /*for (Index
      neighbor_index:nodes[selected_node_index.getVectorIndex()].getNeighborIndexes(selected_node_index.getMiniIndex()))
       node_stack.push(neighbor_index);*/
-  // ASSERT(selected_node_index.getMiniIndex() == TOP);
+  // assert(selected_node_index.getMiniIndex() == TOP);
   if (selected_node.isInternal()) {
     node_stack.push(selected_node.getNeighborIndex(RIGHT));
     node_stack.push(selected_node.getNeighborIndex(LEFT));
@@ -1628,7 +1628,7 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
     Index node_index = node_stack.top();
     // MiniIndex node_mini_index = node_index.getMiniIndex();
     node_stack.pop();
-    ASSERT(node_index.getMiniIndex() == TOP);
+    assert(node_index.getMiniIndex() == TOP);
     PhyloNode& node = nodes[node_index.getVectorIndex()];
     // const RealNumType current_blength =
     // node.getCorrespondingLength(node_mini_index, nodes);
@@ -2002,8 +2002,8 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
     }
 
     // stop updating if the difference between the new and old regions is
-    // insignificant ASSERT(params.has_value());
-    ASSERT(params);
+    // insignificant assert(params.has_value());
+    assert(params);
     if (!new_at_node_regions->areDiffFrom(at_node.getTotalLh(), seq_length,
                                           num_states, *params)) {
       updating_node->setUpdate(false);
@@ -2162,7 +2162,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
     const std::unique_ptr<UpdatingNode>& updating_node,
     std::stack<std::unique_ptr<UpdatingNode>>& node_stack,
     const RealNumType threshold_prob) {
-  ASSERT(other_child_index.getMiniIndex() == TOP);
+  assert(other_child_index.getMiniIndex() == TOP);
   PhyloNode& other_child = nodes[other_child_index.getVectorIndex()];
   const Index updating_node_index = updating_node->getIndex();
   const MiniIndex updating_node_mini = updating_node_index.getMiniIndex();
@@ -2933,7 +2933,7 @@ void cmaple::Tree::connectSubTree2Branch(
     std::unique_ptr<SeqRegions>&& best_child_regions,
     const std::unique_ptr<SeqRegions>& upper_left_right_regions) {
   const RealNumType threshold_prob = params->threshold_prob;
-  ASSERT(sibling_node_index.getMiniIndex() == TOP);
+  assert(sibling_node_index.getMiniIndex() == TOP);
   const NumSeqsType internal_vec =
       subtree.getNeighborIndex(TOP).getVectorIndex();
   PhyloNode& internal = nodes[internal_vec];
@@ -3122,7 +3122,7 @@ void cmaple::Tree::connectSubTree2Root(
     const RealNumType best_root_blength,
     const RealNumType best_length2,
     std::unique_ptr<SeqRegions>&& best_parent_regions) {
-  ASSERT(sibling_node_index.getMiniIndex() == TOP);
+  assert(sibling_node_index.getMiniIndex() == TOP);
   const NumSeqsType new_root_vec =
       subtree.getNeighborIndex(TOP).getVectorIndex();
   PhyloNode& new_root = nodes[new_root_vec];
@@ -3450,7 +3450,7 @@ void cmaple::Tree::placeSubTreeAtNode(
   // likelihood score of appending above node; new_lh is the likelihood cost of
   // appending exactly at node.
   if (best_child_lh >= best_parent_lh && best_child_lh >= new_lh) {
-    ASSERT(best_child_index.getMiniIndex() != UNDEFINED);
+    assert(best_child_index.getMiniIndex() != UNDEFINED);
     PhyloNode& best_child = nodes[best_child_index.getVectorIndex()];
     const std::unique_ptr<SeqRegions>& upper_left_right_regions =
         getPartialLhAtNode(best_child.getNeighborIndex(
@@ -5033,7 +5033,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
                                          PhyloNode& node,
                                          bool short_range_search) {
   // dummy variables
-  ASSERT(node_index.getMiniIndex() == TOP);
+  assert(node_index.getMiniIndex() == TOP);
   const NumSeqsType vec_index = node_index.getVectorIndex();
   const RealNumType threshold_prob = params->threshold_prob;
   const RealNumType thresh_placement_cost =
@@ -5122,7 +5122,7 @@ void calculateSubtreeCost_R_R(const SeqRegion& seq1_region,
                               const PositionType end_pos,
                               RealNumType& lh_cost) {
   if (seq1_region.plength_observation2root >= 0) {
-    ASSERT(total_blength >= 0);
+    assert(total_blength >= 0);
     total_blength += seq1_region.plength_observation2node;
   }
 
@@ -5967,7 +5967,7 @@ void cmaple::Tree::updateZeroBlength(const Index index,
                                      std::stack<Index>& node_stack) {
   // get the top node in the phylo-node
   /*Node* top_node = node->getTopNode();
-  ASSERT(top_node);
+  assert(top_node);
   SeqRegions* upper_left_right_regions =
   top_node->neighbor->getPartialLhAtNode(aln, model, threshold_prob);
   SeqRegions* lower_regions = top_node->getPartialLhAtNode(aln, model,
@@ -6155,8 +6155,8 @@ void cmaple::Tree::computeLhContribution(
   }
 
   // if new_lower_lh is NULL
-  // ASSERT(params.has_value());
-  ASSERT(params);
+  // assert(params.has_value());
+  assert(params);
   if (!new_lower_lh) {
     throw std::logic_error(
         "Strange, inconsistent lower genome list creation in "
@@ -6904,8 +6904,8 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
     lh_diff_3 += site_lh_diff_3[j];
     lh_diff_3 += site_lh_root_diff_3[j];
   }
-  ASSERT(isinf(lh_diff_2) || fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-3);
-  ASSERT(isinf(lh_diff_3) || fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
+  assert(isinf(lh_diff_2) || fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-3);
+  assert(isinf(lh_diff_3) || fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
 
 // iterate a number of replicates
 #pragma omp parallel reduction(+ : sh_count)
@@ -8425,7 +8425,7 @@ const char cmaple::Tree::readNextChar(std::istream& in,
 }
 
 std::map<std::string, NumSeqsType> cmaple::Tree::initMapSeqNameIndex() {
-  ASSERT(aln);
+  assert(aln);
 
   // create the map
   std::map<std::string, NumSeqsType> map_seqname_index;
@@ -8460,7 +8460,7 @@ NumSeqsType cmaple::Tree::markAnExistingSeq(
 }
 
 void cmaple::Tree::remarkExistingSeqs() {
-  ASSERT(aln);
+  assert(aln);
 
   // init a mapping between sequence names and its index in the alignment
   std::map<std::string, NumSeqsType> map_name_index = initMapSeqNameIndex();
@@ -8554,7 +8554,7 @@ bool cmaple::Tree::readTree(std::istream& in) {
         }
     }
     // make sure that root is a leaf
-    ASSERT(root->isLeaf());*/
+    assert(root->isLeaf());*/
 
     if (in.eof() || ch != ';') {
       throw "Tree file must be ended with a semi-colon ';'";
@@ -8945,7 +8945,7 @@ cmaple::Tree::TreeType cmaple::Tree::parseTreeType(
 }
 
 void cmaple::Tree::computeCumulativeRate() {
-  ASSERT(aln && model);
+  assert(aln && model);
   const PositionType sequence_length = aln->ref_seq.size();
 
   if (sequence_length <= 0) {

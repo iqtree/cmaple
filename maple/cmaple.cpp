@@ -405,8 +405,8 @@ void cmaple::testing(cmaple::Params& params)
     aln.write("output.fa", "FASTA", true);
     aln.write("output.phy", "PHYLIP", true);
     // Read ref_seq from an alignment file (not yet exposed to APIs)
-    ASSERT(params.ref_path.length() && params.ref_seqname.length());
-     Alignment aln_base;
+    assert(params.ref_path.length() && params.ref_seqname.length());
+    Alignment aln_base;
     std::string ref_seq = aln_base.readRefSeq(params.ref_path, params.ref_seqname);
     Alignment aln2("output.fa", ref_seq);
     aln2.write("output1.maple", "MAPLE", true);

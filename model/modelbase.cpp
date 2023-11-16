@@ -252,25 +252,25 @@ ModelsBlock* cmaple::ModelBase::readModelsDefinition(
   {
       // loading internal model definitions
       stringstream in(builtin_mixmodels_definition);
-      ASSERT(in && "stringstream is OK");
+      assert(in && "stringstream is OK");
       NxsReader nexus;
       nexus.Add(models_block);
       MyToken token(in);
       nexus.Execute(token);
   } catch (...) {
-      ASSERT(0 && "predefined mixture models not initialized");
+      assert(0 && "predefined mixture models not initialized");
   }*/
 
   try {
     // loading internal protei model definitions
     stringstream in(builtin_models);
-    ASSERT(in && "stringstream is OK");
+    assert(in && "stringstream is OK");
     NxsReader nexus;
     nexus.Add(models_block);
     MyToken token(in);
     nexus.Execute(token);
   } catch (...) {
-    ASSERT(0 && "predefined protein models not initialized");
+    assert(0 && "predefined protein models not initialized");
   }
 
   /*if (params.model_def_file) {
@@ -331,7 +331,7 @@ void cmaple::ModelBase::readStateFreq(istream& in) {
 }
 
 void cmaple::ModelBase::normalizeQMatrix() {
-  ASSERT(root_freqs && mutation_mat);
+  assert(root_freqs && mutation_mat);
 
   RealNumType sum = 0.0;
   RealNumType* mutation_mat_row = mutation_mat;

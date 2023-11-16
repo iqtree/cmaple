@@ -25,7 +25,7 @@ cmaple::SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions) {
 auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
                                            PositionType seq_length,
                                            StateType num_states) const -> int {
-  ASSERT(seq_length > 0);
+  assert(seq_length > 0);
 
   // init dummy variables
   bool seq1_more_info = false;
@@ -475,7 +475,7 @@ auto cmaple::SeqRegions::simplifyO(cmaple::RealNumType* const partial_lh,
                                    cmaple::RealNumType threshold)
     -> cmaple::StateType {
   // dummy variables
-  ASSERT(partial_lh);
+  assert(partial_lh);
   cmaple::RealNumType max_prob = 0;
   cmaple::StateType max_index = 0;
   cmaple::StateType high_prob_count = 0;

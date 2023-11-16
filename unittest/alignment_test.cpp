@@ -126,7 +126,7 @@ TEST(Alignment, readRef)
     EXPECT_EQ(aln.ref_seq.size(), 20);
     // ----- test on input.fa; read ref_sequence -----
     
-    // ----- Test to invalid data , violating ASSERT(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out)
+    // ----- Test to invalid data , violating assert(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out)
     // str_sequences.size() != seq_names.size()
     sequences.pop_back();
     EXPECT_DEATH(aln.extractMutations(sequences, seq_names, ref_sequence, out, false), ".*");
