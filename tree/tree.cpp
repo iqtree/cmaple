@@ -5351,7 +5351,7 @@ void calculateSubtreeCost_ACGT_O(const SeqRegion& seq1_region,
     // mut[seq1_state,j] * total_blength * lh(seq2,j)
     RealNumType tot = dotProduct<num_states>(mutation_mat_row,
                                              &((*seq2_region.likelihood)[0]));
-    tot *= total_blength;
+    tot = total_blength > 0 ? tot * total_blength : 0;
     tot += seq2_region.getLH(seq1_state);
     total_factor *= tot;
   }
