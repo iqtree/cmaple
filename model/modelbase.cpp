@@ -7,14 +7,6 @@ using namespace std;
 #include "modelbase.h"
 using namespace cmaple;
 
-// explicit instantiation of templates
-template void cmaple::ModelBase::updateMutationMat<4>();
-template void cmaple::ModelBase::updateMutationMat<20>();
-template bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate<4>(
-    const Alignment*);
-template bool cmaple::ModelBase::updateMutationMatEmpiricalTemplate<20>(
-    const Alignment*);
-
 const std::map<std::string, cmaple::ModelBase::SubModel>
     cmaple::ModelBase::dna_models_mapping = {
         {"JC", cmaple::ModelBase::JC},
@@ -440,92 +432,6 @@ void cmaple::ModelBase::updateMutMatbyMutCount() {
   else {
     throw std::logic_error("Unsupported model! Please check and try again!");
   }
-}
-
-template <StateType num_states>
-void cmaple::ModelBase::updateMutationMat() {
-  // update Mutation matrix regarding the pseudo muation count
-  updateMutMatbyMutCount();
-
-  // compute the total rate regarding the root freqs
-  RealNumType total_rate = 0;
-  total_rate -= dotProduct<num_states>(root_freqs, diagonal_mut_mat);
-
-  // inverse total_rate
-  total_rate = 1.0 / total_rate;
-
-  // normalize the mutation_mat
-  RealNumType* mutation_mat_row = mutation_mat;
-  RealNumType* freqi_freqj_qij_row = freqi_freqj_qij;
-  for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_,
-                 freqi_freqj_qij_row += num_states_) {
-    for (StateType j = 0; j < num_states_; ++j) {
-      mutation_mat_row[j] *= total_rate;
-
-      // update freqi_freqj_qij
-      if (i != j) {
-        freqi_freqj_qij_row[j] =
-            root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
-      } else {
-        freqi_freqj_qij_row[j] = mutation_mat_row[j];
-      }
-
-      // update the transposed mutation matrix
-      transposed_mut_mat[row_index[j] + i] = mutation_mat_row[j];
-    }
-
-    // update diagonal
-    diagonal_mut_mat[i] = mutation_mat_row[i];
-  }
-
-  // pre-compute matrix to speedup
-  RealNumType* transposed_mut_mat_row = transposed_mut_mat;
-  RealNumType* freq_j_transposed_ij_row = freq_j_transposed_ij;
-
-  for (StateType i = 0; i < num_states_; ++i,
-                 transposed_mut_mat_row += num_states_,
-                 freq_j_transposed_ij_row += num_states_) {
-    setVecByProduct<num_states>(freq_j_transposed_ij_row, root_freqs,
-                                transposed_mut_mat_row);
-  }
-}
-
-template <StateType num_states>
-auto cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
-    -> bool {
-  bool update = false;
-
-  if (!fixed_params) {
-    // clone the current mutation matrix
-    RealNumType* tmp_mut_mat = new RealNumType[row_index[num_states_]];
-    memcpy(tmp_mut_mat, mutation_mat,
-           row_index[num_states_] * sizeof(RealNumType));
-
-    // update the mutation matrix regarding the pseu_mutation_count
-    updateMutationMat<num_states>();
-
-    // set update = true if the mutation matrix changes more than a threshold
-    const RealNumType change_thresh = 1e-3;
-    RealNumType sum_change = 0;
-    RealNumType* tmp_mut_mat_ptr = tmp_mut_mat;
-    RealNumType* mutation_mat_ptr = mutation_mat;
-    for (StateType i = 0; i < num_states_;
-         ++i, tmp_mut_mat_ptr += num_states_, mutation_mat_ptr += num_states_) {
-      for (StateType j = 0; j < num_states_; ++j) {
-        sum_change += fabs(tmp_mut_mat_ptr[j] - mutation_mat_ptr[j]);
-      }
-
-      sum_change -= fabs(tmp_mut_mat_ptr[i] - mutation_mat_ptr[i]);
-    }
-
-    update = sum_change > change_thresh;
-
-    // delete tmp_diagonal_mutation_mat
-    delete[] tmp_mut_mat;
-  }
-
-  // return update
-  return update;
 }
 
 void cmaple::ModelBase::updatePesudoCount(const Alignment* aln,

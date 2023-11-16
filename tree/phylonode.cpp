@@ -2,32 +2,6 @@
 using namespace std;
 using namespace cmaple;
 
-// explicit instantiation of templates
-template void cmaple::PhyloNode::computeTotalLhAtNode<2>(
-    std::unique_ptr<SeqRegions>&,
-    PhyloNode&,
-    const Alignment*,
-    const ModelBase*,
-    const RealNumType,
-    const bool,
-    const RealNumType);
-template void cmaple::PhyloNode::computeTotalLhAtNode<4>(
-    std::unique_ptr<SeqRegions>&,
-    PhyloNode&,
-    const Alignment*,
-    const ModelBase*,
-    const RealNumType,
-    const bool,
-    const RealNumType);
-template void cmaple::PhyloNode::computeTotalLhAtNode<20>(
-    std::unique_ptr<SeqRegions>&,
-    PhyloNode&,
-    const Alignment*,
-    const ModelBase*,
-    const RealNumType,
-    const bool,
-    const RealNumType);
-
 std::ostream& operator<<(std::ostream& os, const Index& index) {
   os << index.getVectorIndex() << " " << index.getMiniIndex();
   return os;
@@ -238,29 +212,6 @@ same as those in the previous implementation of pointers switch (mini_index)
 
     return neighbor_indexes;
 }*/
-
-template <const StateType num_states>
-void cmaple::PhyloNode::computeTotalLhAtNode(
-    std::unique_ptr<SeqRegions>& total_lh,
-    PhyloNode& neighbor,
-    const Alignment* aln,
-    const ModelBase* model,
-    const RealNumType threshold_prob,
-    const bool is_root,
-    const RealNumType blength) {
-  // if node is root
-  if (is_root) {
-    getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(total_lh, model,
-                                                        blength);
-    // if not is normal nodes
-  } else {
-    std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
-    neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())
-        ->mergeUpperLower<num_states>(total_lh, getUpperLength(),
-                                      *lower_regions, blength, aln, model,
-                                      threshold_prob);
-  }
-}
 
 const std::string cmaple::PhyloNode::exportString(
     const bool binary,

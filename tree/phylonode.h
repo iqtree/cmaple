@@ -351,6 +351,30 @@ struct NodeLh {
    */
   cmaple::RealNumType lh_contribution_;
 };
+
+template <const StateType num_states>
+void cmaple::PhyloNode::computeTotalLhAtNode(
+    std::unique_ptr<SeqRegions>& total_lh,
+    PhyloNode& neighbor,
+    const Alignment* aln,
+    const ModelBase* model,
+    const RealNumType threshold_prob,
+    const bool is_root,
+    const RealNumType blength) {
+  // if node is root
+  if (is_root) {
+    getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(total_lh, model,
+                                                        blength);
+    // if not is normal nodes
+  } else {
+    std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
+    neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())
+        ->mergeUpperLower<num_states>(total_lh, getUpperLength(),
+                                      *lower_regions, blength, aln, model,
+                                      threshold_prob);
+  }
+}
+
 }  // namespace cmaple
 
 // just for testing
