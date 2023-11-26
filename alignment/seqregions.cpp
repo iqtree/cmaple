@@ -24,7 +24,7 @@ cmaple::SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions) {
 
 auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
                                            PositionType seq_length,
-                                           StateType num_states) const -> int {
+                                           const Alignment* aln) const -> int {
   assert(seq_length > 0);
 
   // init dummy variables
@@ -35,6 +35,7 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
   const SeqRegions& seq2_regions = sequence2;
   size_t iseq1 = 0;
   size_t iseq2 = 0;
+  const StateType num_states = aln->num_states;
 
   while (pos < seq_length && (!seq1_more_info || !seq2_more_info)) {
     PositionType end_pos;
@@ -51,12 +52,26 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
       } else if (seq2_region->type == TYPE_N) {
         seq1_more_info = true;
       } else if (seq1_region->type == TYPE_O) {
-        seq2_more_info = true;
+        StateType seq2_state = seq2_region->type;
+        if (seq2_state == TYPE_R)
+            seq2_state = aln->ref_seq[end_pos];
+          
+        if (seq1_region->getLH(seq2_state) > 0.1)
+              seq2_more_info = true;
+        else
+              return 0;
+        
       } else if (seq2_region->type == TYPE_O) {
-        seq1_more_info = true;
+        StateType seq1_state = seq1_region->type;
+        if (seq1_state == TYPE_R)
+            seq1_state = aln->ref_seq[end_pos];
+          
+        if (seq2_region->getLH(seq1_state) > 0.1)
+              seq1_more_info = true;
+        else
+              return 0;
       } else {
-        seq1_more_info = true;
-        seq2_more_info = true;
+        return 0;
       }
     }
     // Both regions are type O

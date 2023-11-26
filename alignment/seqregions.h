@@ -102,7 +102,7 @@ class SeqRegions : public std::vector<SeqRegion> {
    */
   int compareWithSample(const SeqRegions& sequence2,
                         cmaple::PositionType seq_length,
-                        cmaple::StateType num_states) const;
+                        const Alignment* aln) const;
 
   /**
    Check if the current regions and regions2 represent the same partial

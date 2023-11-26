@@ -2040,7 +2040,7 @@ void cmaple::Tree::seekSamplePlacement(
     // node + stop seeking the placement
     if ((!is_internal) &&
         (current_node.getPartialLh(TOP)->compareWithSample(
-             *sample_regions, aln->ref_seq.size(), num_states) == 1)) {
+             *sample_regions, aln->ref_seq.size(), aln) == 1)) {
       current_node.addLessInfoSeqs(seq_name_index);
       selected_node_index = Index();
       return;
