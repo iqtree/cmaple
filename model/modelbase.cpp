@@ -348,7 +348,7 @@ void cmaple::ModelBase::normalizeQMatrix() {
   mutation_mat_row = mutation_mat;
   for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
     for (StateType j = 0; j < num_states_; ++j) {
-      mutation_mat_row[j] /= delta;
+      mutation_mat_row[j] /= sum;
     }
   }
 }
