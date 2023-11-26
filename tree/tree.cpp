@@ -5178,7 +5178,8 @@ void calculateSubtreeCost_R_O(const SeqRegion& seq1_region,
 
     // NHANLT NOTE: UNCLEAR
     // why we need to divide tot by root_freqs[seq1_state]
-    tot *= model->inverse_root_freqs[seq1_state];
+    tot /= model->root_freqs[seq1_state];
+    // tot *= model->inverse_root_freqs[seq1_state];
   } else {
     // NHANLT NOTE:
     // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) +
@@ -5340,7 +5341,8 @@ void calculateSubtreeCost_ACGT_O(const SeqRegion& seq1_region,
         seq1_region.plength_observation2node);
     // NHANLT NOTE: UNCLEAR
     // why we need to divide tot by root_freqs[seq1_state]
-    total_factor *= (tot * model->inverse_root_freqs[seq1_state]);
+    total_factor *= (tot / model->root_freqs[seq1_state]);
+    // total_factor *= (tot * model->inverse_root_freqs[seq1_state]);
   } else {
     RealNumType* mutation_mat_row =
         model->mutation_mat + model->row_index[seq1_state];
@@ -5616,7 +5618,8 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
         tot += tot2 * tot3 * total_blength;
       }
 
-      total_factor *= tot * model->inverse_root_freqs[seq1_state];
+      total_factor *= tot / model->root_freqs[seq1_state];
+      // total_factor *= tot * model->inverse_root_freqs[seq1_state];
     }
   } else {
     if (seq2_region.getLH(seq1_state) > 0.1) {
@@ -5783,7 +5786,8 @@ void calculateSampleCost_ACGT_O(const SeqRegion& seq1_region,
             tot2 * blength15 * tot3 + (seq2_region.getLH(i) > 0.1 ? tot2 : 0);
       }
 
-      total_factor *= (tot * model->inverse_root_freqs[seq1_state]);
+      total_factor *= (tot / model->root_freqs[seq1_state]);
+      // total_factor *= (tot * model->inverse_root_freqs[seq1_state]);
     }
   } else {
     RealNumType tmp_blength =

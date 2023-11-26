@@ -181,10 +181,10 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
   }
 
   // update root_freqs and root_log_freqs
-  RealNumType inverse_seq_length = 1.0 / seq_length;
+  // RealNumType inverse_seq_length = 1.0 / seq_length;
   for (StateType i = 0; i < num_states_; ++i) {
-    root_freqs[i] *= inverse_seq_length;
-    inverse_root_freqs[i] = 1.0 / root_freqs[i];
+    root_freqs[i] /= seq_length;
+    // inverse_root_freqs[i] = 1.0 / root_freqs[i];
     root_log_freqs[i] = log(root_freqs[i]);
   }
 }
@@ -323,9 +323,9 @@ void cmaple::ModelBase::readStateFreq(istream& in) {
       outWarning(
           "Normalizing state frequencies so that sum of them equals to 1");
     }
-    sum = 1.0 / sum;
+    // sum = 1.0 / sum;
     for (i = 0; i < num_states_; i++) {
-      root_freqs[i] *= sum;
+      root_freqs[i] /= sum;
     }
   }
 }
@@ -343,12 +343,12 @@ void cmaple::ModelBase::normalizeQMatrix() {
     throw std::logic_error("Empty Q matrix");
   }
 
-  double delta = 1.0 / sum;
+  //double delta = 1.0 / sum;
 
   mutation_mat_row = mutation_mat;
   for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_) {
     for (StateType j = 0; j < num_states_; ++j) {
-      mutation_mat_row[j] *= delta;
+      mutation_mat_row[j] /= delta;
     }
   }
 }
@@ -396,7 +396,8 @@ void cmaple::ModelBase::updateMutMatbyMutCount() {
       for (StateType j = 0; j < num_states_; ++j) {
         if (i != j) {
           RealNumType new_rate =
-              pseu_mutation_count_row[j] * inverse_root_freqs[i];
+              pseu_mutation_count_row[j] / root_freqs[i];
+              // pseu_mutation_count_row[j] * inverse_root_freqs[i];
           mutation_mat_row[j] = new_rate;
           sum_rate += new_rate;
         }
@@ -417,8 +418,10 @@ void cmaple::ModelBase::updateMutMatbyMutCount() {
       for (StateType j = 0; j < num_states_; ++j) {
         if (i != j) {
           mutation_mat_row[j] = (pseu_mutation_count_row[j] +
-                                 pseu_mutation_count[row_index[j] + i]) *
-                                inverse_root_freqs[i];
+                                 pseu_mutation_count[row_index[j] + i]) /
+                                 root_freqs[i];
+                                 /*pseu_mutation_count[row_index[j] + i]) *
+                                inverse_root_freqs[i];*/
           sum_rate += mutation_mat_row[j];
         }
       }
