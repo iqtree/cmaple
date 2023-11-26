@@ -1,302 +1,603 @@
-/*
- *  cmaple.h
- *  Created on: Jan 25, 2022
- *      Author: Nhan Ly-Trong
- */
-
 #include "cmaple.h"
 using namespace std;
+using namespace cmaple;
 
-void CMaple::loadInput()
+std::string cmaple::getVersion()
 {
-    // extract sequences (in vectors of mutations) from an input alignment (in PHYLIP or FASTA format)
-    if (tree.params->aln_path)
+    return "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "." + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH;
+}
+
+std::string cmaple::getCitations()
+{
+    return "[Citations]";
+}
+
+auto cmaple::checkMapleSuitability(const Alignment &aln) -> bool {
+  // validate the input
+  const auto seq_length = aln.ref_seq.size();
+  const auto num_seqs = aln.data.size();
+  if (!seq_length) {
+    throw std::invalid_argument("Empty reference genome!");
+  }
+  if (num_seqs < 3) {
+    throw std::invalid_argument(
+        "Empty alignment or the number of sequences is less than 3!");
+  }
+
+  // Get the sequence length
+  const auto max_mutations = seq_length * MAX_SUBS_PER_SITE;
+  auto max_sum_mutations = seq_length * MEAN_SUBS_PER_SITE * num_seqs;
+
+  // check the thresholds:
+  // (1) The number of mutations per sequence is no greater then <max_mutations>
+  // (2) The mean number of mutations per sequence is no greater than
+  // <seq_length * MEAN_SUBS_PER_SITE>, which means the total mutations (of all
+  // sequences) is no greater than max_sum_mutations
+  for (const Sequence &sequence : aln.data) {
+    // check the first (1) threshold
+    if (sequence.size() > max_mutations) {
+      return false;
+    }
+
+    // check the second (2) threshold
+    max_sum_mutations -= sequence.size();
+    if (max_sum_mutations < 0) {
+      return false;
+    }
+  }
+
+  // return TRUE (if the thresholds were not exceeded)
+  return true;
+}
+
+void cmaple::runCMaple(cmaple::Params &params)
+{
+    try
     {
-        // record the starting time
+        // record the start time
         auto start = getRealTime();
         
-        tree.aln.extractDiffFile(tree.params.value());
+        // Initialize output filename -> use aln_ as the output prefix if users didn't specify it
+        const std::string prefix = (params.output_prefix.length() ? params.output_prefix :  params.aln_path);
+        const std::string output_treefile = prefix + ".treefile";
+        // check whether output file is already exists
+        if (!params.overwrite_output && fileExists(output_treefile)) {
+          outError("File " + output_treefile +
+                   " already exists. Use `--overwrite` option if you really "
+                   "want to overwrite it.\n");
+        }
+
+        // Dummy variables
+        const cmaple::Tree::TreeType tree_format = cmaple::Tree::parseTreeType(params.tree_format_str);
+        const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
+        // Validate the seq_type
+        if (seq_type == cmaple::SeqRegion::SEQ_UNKNOWN) {
+          throw std::invalid_argument("Unknown SeqType " + params.seq_type_str);
+        }
+
+        // Initializa an Alignment
+        // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
+        std::string ref_seq = "";
+        if (params.ref_path.length() && params.ref_seqname.length())
+        {
+            Alignment aln_tmp;
+            ref_seq = aln_tmp.readRefSeq(params.ref_path, params.ref_seqname);
+        }
+        const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
+        // Validate the aln_format
+        if (aln_format == cmaple::Alignment::IN_UNKNOWN) {
+          throw std::invalid_argument("Unknown alignment format " +
+                                      params.aln_format_str);
+        }
+        Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
-        // record the end time and show the runtime
+        // check if CMaple is suitable for the input alignment
+        if (!checkMapleSuitability(aln)) {
+          outWarning("Look like the input sequences are too divergent from "
+                     "each other, which makes CMaple very slow. We highly "
+                     "recommend users to use other methods (e.g., IQ-TREE) to "
+                     "analyse this alignment!");
+        }
+
+        // Initialize a Model
+        const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
+        // Validate the sub_model
+        if (sub_model == cmaple::ModelBase::UNKNOWN) {
+          throw std::invalid_argument("Unknown Model " + params.sub_model_str);
+        }
+        Model model(sub_model, aln.getSeqType());
+        
+        // If users only want to convert the alignment to another format -> convert it and terminate
+        if (params.output_aln.length())
+        {
+          if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+            std::cout << "Write the alignment to " + params.output_aln
+                      << std::endl;
+          }
+            const Alignment::InputType output_aln_format = Alignment::parseAlnFormat(params.output_aln_format_str);
+            // Validate the aln_format
+            if (output_aln_format == cmaple::Alignment::IN_UNKNOWN) {
+              throw std::invalid_argument("Unknown alignment format " +
+                                          params.output_aln_format_str);
+            }
+            aln.write(params.output_aln, output_aln_format, params.overwrite_output);
+            return;
+        }
+        
+        // Initialize a Tree
+        Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths, std::make_unique<cmaple::Params>(params));
+        
+        // Infer a phylogenetic tree
+        const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
+        std::string redirected_msgs = tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
+        if (cmaple::verbose_mode >= cmaple::VB_MED) {
+          std::cout << redirected_msgs << std::endl;
+        }
+
+        // Write the normal tree file
+        ofstream out = ofstream(output_treefile);
+        out << tree.exportNewick(tree_format);
+        out.close();
+        
+        // Compute branch supports (if users want to do so)
+        if (params.compute_aLRT_SH)
+        {
+            // if users don't input a tree file, always allow CMaple to replace the ML tree by a higher-likelihood tree (if found)
+            bool allow_replacing_ML_tree = true;
+            // if users input a tree -> depend on the setting in params (false ~ don't allow replacing (by default)
+            if (params.input_treefile.length()) {
+              allow_replacing_ML_tree = params.allow_replace_input_tree;
+            }
+
+            redirected_msgs = tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree);
+            if (cmaple::verbose_mode >= cmaple::VB_MED) {
+              std::cout << redirected_msgs << std::endl;
+            }
+
+            // write the tree file with branch supports
+            ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
+            out_tree_branch_supports << tree.exportNewick(tree_format, true);
+            out_tree_branch_supports.close();
+        }
+        
+        // If needed, apply some minor changes (collapsing zero-branch leaves into less-info sequences, re-estimating model parameters) to make the processes of outputting then re-inputting a tree result in a consistent tree
+        if (params.make_consistent)
+        {
+            tree.makeTreeInOutConsistent();
+            
+            // Overwrite the normal tree file
+            ofstream out = ofstream(output_treefile);
+            out << tree.exportNewick(tree_format);
+            out.close();
+        }
+        
+        // output log-likelihood of the tree
+        if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+          std::cout << std::setprecision(10)
+                    << "Tree log likelihood: " << tree.computeLh() << std::endl;
+        }
+
+        // Show model parameters
+        if (cmaple::verbose_mode > cmaple::VB_QUIET)
+        {
+            cmaple::Model::ModelParams model_params = model.getParams();
+            std::cout << "\nMODEL: " + model_params.model_name + "\n";
+            std::cout << "\nROOT FREQUENCIES\n";
+            std::cout << model_params.state_freqs;
+            std::cout << "\nMUTATION MATRIX\n";
+            std::cout << model_params.mut_rates << std::endl;
+        }
+            
+        // Show information about output files
+        std::cout << "Analysis results written to:" << std::endl;
+        std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
+        if (params.compute_aLRT_SH) {
+          std::cout << "Tree with aLRT-SH values:      "
+                    << prefix + ".aLRT_SH.treefile" << std::endl;
+        }
+        std::cout << "Screen log file:               " << prefix + ".log" << std::endl << std::endl;
+        
+        // show runtime
         auto end = getRealTime();
-        cout << "The input alignment is converted into DIFF format at " << tree.params->diff_path << endl;
-        cout << " - Converting time: " << end-start << endl;
-    }
-    // or read sequences (in vectors of mutations) from a DIFF file
-    else
-    {
-        if (tree.params->only_extract_diff)
-            outError("To export a Diff file, please supple an alignment via --aln <ALIGNMENT>");
-        
-        // only want to reconstruc the aln file from the Diff file
-        if (tree.params->output_aln)
-            tree.aln.reconstructAln(tree.params->diff_path, tree.params->output_aln);
-        // otherwise, read the Diff file
-        else
-            tree.aln.readDiff(tree.params->diff_path, tree.params->ref_path);
-    }
-}
-
-void CMaple::preInference()
-{
-    // validate input
-    ASSERT(tree.aln.ref_seq.size() > 0 && "Reference sequence is not found!");
-    ASSERT(tree.aln.data.size() >= 3 && "The number of input sequences must be at least 3! Please check and try again!");
-    
-    // check whether output file is already exists
-    string output_file(tree.params->diff_path);
-    output_file += ".treefile";
-    if (!tree.params->redo_inference && fileExists(output_file))
-        outError("File " + output_file + " already exists. Use `-redo` option if you really want to redo the analysis and overwrite all output files.\n");
-    
-    // sort sequences by their distances to the reference sequence
-    tree.aln.sortSeqsByDistances(tree.params->hamming_weight);
-    
-    // extract related info (freqs, log_freqs) of the ref sequence
-    tree.model.extractRefInfo(tree.aln.ref_seq, tree.aln.num_states);
-    
-    // init the mutation matrix from a model name
-    tree.model.initMutationMat(tree.params->model_name, tree.aln.num_states);
-    
-    // compute cumulative rates of the ref sequence
-    tree.model.computeCumulativeRate(tree.aln);
-    
-    // setup function pointers in tree
-    tree.setup();
-    
-    // compute thresholds for approximations
-    tree.params->threshold_prob2 = tree.params->threshold_prob * tree.params->threshold_prob;
-}
-
-void CMaple::buildInitialTree()
-{
-    // record the start time
-    auto start = getRealTime();
-    
-    // dummy variables
-    Alignment& aln = tree.aln;
-    Model& model = tree.model;
-    const StateType num_states = aln.num_states;
-    const PositionType seq_length = aln.ref_seq.size();
-    
-    // place the root node
-    Sequence* sequence = &tree.aln.data.front();
-    tree.root = new Node(sequence->seq_name);
-    tree.root->partial_lh = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
-    tree.root->computeTotalLhAtNode(aln, model, tree.params->threshold_prob, true);
-    
-    // move to the next sequence in the alignment
-    ++sequence;
-    
-    // iteratively place other samples (sequences)
-    for (PositionType i = 1; i < (PositionType) aln.data.size(); ++i, ++sequence)
-    {
-        // get the lower likelihood vector of the current sequence
-        SeqRegions* lower_regions = sequence->getLowerLhVector(seq_length, num_states, aln.seq_type);
-        
-        // update the mutation matrix from empirical number of mutations observed from the recent sequences
-        if (i % tree.params->mutation_update_period == 0)
-            tree.model.updateMutationMatEmpirical(aln);
-        
-        // NHANLT: debug
-        /*if ((*sequence)->seq_name == "39")
-            cout << "debug" <<endl;*/
-        
-        // seek a position for new sample placement
-        Node* selected_node = NULL;
-        RealNumType best_lh_diff = MIN_NEGATIVE;
-        bool is_mid_branch = false;
-        RealNumType best_up_lh_diff = MIN_NEGATIVE;
-        RealNumType best_down_lh_diff = MIN_NEGATIVE;
-        Node* best_child = NULL;
-        tree.seekSamplePlacement(tree.root, sequence->seq_name, lower_regions, selected_node, best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff, best_child);
-        
-        // if new sample is not less informative than existing nodes (~selected_node != NULL) -> place the new sample in the existing tree
-        if (selected_node)
-        {
-            // place new sample as a descendant of a mid-branch point
-            if (is_mid_branch)
-                tree.placeNewSampleMidBranch(selected_node, lower_regions, sequence->seq_name, best_lh_diff);
-            // otherwise, best lk so far is for appending directly to existing node
-            else
-                tree.placeNewSampleAtNode(selected_node, lower_regions, sequence->seq_name, best_lh_diff, best_up_lh_diff, best_down_lh_diff, best_child);
+        if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+          cout << "Runtime: " << end - start << "s" << endl;
         }
-        else
-            delete lower_regions;
-        
-        // NHANLT: debug
-        //cout << "Added node " << (*sequence)->seq_name << endl;
-        //cout << (*sequence)->seq_name << endl;
-        //cout << tree.exportTreeString() << ";" << endl;
-        
-        /*if ((*sequence)->seq_name == "2219")
-        {
-            //cout << tree.exportTreeString() << ";" << endl;
-            string output_file(tree.params->diff_path);
-            exportOutput(output_file + "_init.treefile");
-            exit(0);
-        }*/
     }
-    
-    // show the runtime for building an initial tree
-    auto end = getRealTime();
-    cout << " - Time spent on building an initial tree: " << end - start << endl;
-    
-    // traverse the intial tree from root to re-calculate all likelihoods regarding the latest/final estimated model parameters
-    tree.refreshAllLhs();
-}
-
-void CMaple::optimizeTree()
-{
-    string output_file(tree.params->diff_path);
-    exportOutput(output_file + "_init.treefile");
-    
-    // run a short range search for tree topology improvement (if neccessary)
-    if (tree.params->short_range_topo_search)
+    catch (std::invalid_argument e)
     {
-        optimizeTreeTopology(true);
-        exportOutput(output_file + "_short_search.treefile");
+        outError(e.what());
     }
-    
-    // run a normal search for tree topology improvement
-    optimizeTreeTopology();
-    exportOutput(output_file + "_topo.treefile");
-    
-    // do further optimization on branch lengths (if needed)
-    if (tree.params->optimize_branch_length)
-        optimizeBranchLengthsOfTree();
-}
-
-void CMaple::optimizeTreeTopology(bool short_range_search)
-{
-    //  NHANLT - DELETE: reset the log file of the depths of pruning and regrafting branches
-    // open the tree file
-    string output_file(tree.params->diff_path);
-    ofstream out = ofstream(output_file + ".statistics.txt");
-    out << "Orig_prune \t Orig_Regraft \t Act_prune \t Act_regraft \t Dis_prune_regraft" << endl;
-    // close the output file
-    out.close();
-    
-    // record the start time
-    auto start = getRealTime();
-    int num_tree_improvement = short_range_search ? 1 : tree.params->num_tree_improvement;
-    
-    for (int i = 0; i < num_tree_improvement; ++i)
+    catch (std::logic_error e)
     {
-        // first, set all nodes outdated
-        tree.setAllNodeOutdated();
-        
-        // traverse the tree from root to try improvements on the entire tree
-        RealNumType improvement = tree.improveEntireTree(short_range_search);
-        
-        // stop trying if the improvement is so small
-        if (improvement < tree.params->thresh_entire_tree_improvement)
-        {
-            cout << "Small improvement, stopping topological search." << endl;
-            break;
-        }
-        
-        // run improvements only on the nodes that have been affected by some changes in the last round, and so on
-        for (int j = 0; j < 20; ++j)
-        {
-            improvement = tree.improveEntireTree(short_range_search);
-            cout << "Tree was improved by " + convertDoubleToString(improvement) + " at subround " + convertIntToString(j + 1) << endl;
-            
-            // stop trying if the improvement is so small
-            if (improvement < tree.params->thresh_entire_tree_improvement)
-                break;
-        }
-            
+        outError(e.what());
     }
-    
-    // show the runtime for optimize the tree
-    auto end = getRealTime();
-    cout << " - Time spent on";
-    cout << (short_range_search ? " a short range search for" : "");
-    cout << " optimizing the tree topology: " << end - start << endl;
-}
-
-void CMaple::optimizeBranchLengthsOfTree()
-{
-    // record the start time
-    auto start = getRealTime();
-    
-    cout << "Start optimizing branch lengths" << endl;
-    
-    // first, set all nodes outdated
-    tree.setAllNodeOutdated();
-   
-    // traverse the tree from root to optimize branch lengths
-    PositionType num_improvement = tree.optimizeBranchLengths();
-   
-    // run improvements only on the nodes that have been affected by some changes in the last round, and so on
-    for (int j = 0; j < 20; ++j)
+    catch (ios::failure e)
     {
-        // stop trying if the improvement is so small
-        if (num_improvement < tree.params->thresh_entire_tree_improvement)
-        //if (num_improvement == 0)
-          //  break;
-        
-        // traverse the tree from root to optimize branch lengths
-        num_improvement = tree.optimizeBranchLengths();
+        outError(e.what());
     }
-
-    // show the runtime for optimize the branch lengths
-    auto end = getRealTime();
-    cout << " - Time spent on optimizing the branch lengths: " << end - start << endl;
 }
 
-void CMaple::doInference()
+void cmaple::testing(cmaple::Params& params)
 {
-    // 1. Build an initial tree
-    buildInitialTree();
+    cmaple::verbose_mode = VB_DEBUG;
     
-    // 2. Optimize the tree with SPR
-    optimizeTree();
-}
+    // -------- Test write and read tree -----------
+   /* Alignment aln10("test_100.maple");
+    Model model10(cmaple::ModelBase::GTR);
+    Tree tree10(&aln10, &model10);
+    std::cout << tree10.autoProceedMAPLE() << std::endl;
+    std::stringstream tree10_stream(tree10.exportNewick(cmaple::Tree::MUL_TREE));
+    //tree10_stream << tree10;
+    
+    Tree tree10_1(&aln10, &model10, tree10_stream);
+    std::stringstream tree10_1_stream(tree10.exportNewick(cmaple::Tree::MUL_TREE));
+    //tree10_1_stream << tree10_1;
+    
+    std::cout << tree10_stream.str() << std::endl;
+    std::cout << tree10_1_stream.str() << std::endl;
+    string str1 = tree10_stream.str();
+    string str2 = tree10_1_stream.str();
+    for (auto i = 0; i < str1.length(); ++i)
+        if (str1[i] != str2[i])
+            std::cout << i << std::endl;
+    if (tree10_stream.str() != tree10_1_stream.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    // -------- Test write and read tree -----------
+    
+    // Initialize a Model
+    const cmaple::SeqRegion::SeqType seq_type = cmaple::SeqRegion::parseSeqType(params.seq_type_str);
+    const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::parseModel(params.sub_model_str);
+    Model model(sub_model, seq_type);
+    
+    Alignment aln_empty;
+    // Initialize a Tree
+    //Tree tree_empty(&aln_empty, &model);
+    
+    // Initialize an Alignment
+    const Alignment::InputType aln_format = Alignment::parseAlnFormat(params.aln_format_str);
+    Alignment aln(params.aln_path, "", aln_format, seq_type);
+    
+    // Initialize a Tree
+    Tree tree(&aln, &model);
+    
+    // Infer a phylogenetic tree
+    cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
+    std::string redirected_msgs = tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
+    if (cmaple::verbose_mode >= cmaple::VB_MED)
+        std::cout << redirected_msgs << std::endl;
+    
+    // Compute branch supports (if users want to do so)
+    if (params.compute_aLRT_SH)
+    {
+        redirected_msgs = tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, true);
+        if (cmaple::verbose_mode >= cmaple::VB_MED)
+            std::cout << redirected_msgs << std::endl;
+    }
+    
+    std::cout << tree << std::endl;*/
+    
+    // -------- Test changeAln -----------
+    // tree.changeAln(&aln_empty); // PASSED
+    
+    /*Alignment aln_100("test_100.maple");
+    // tree.changeAln(&aln_100); // PASSED some existing leaves are not found in the new (smaller) alignment
+    
+    std::stringstream tree_str_1;
+    tree_str_1 << tree;
+    
+    Alignment aln_500("test_500.maple");
+    tree.changeAln(&aln_500);
+    std::stringstream tree_str_2;
+    tree_str_2 << tree;
+    if (tree_str_1.str() != tree_str_2.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    Model model2(JC);
+    tree.changeModel(&model2);
+    tree.doInference();
+    tree.computeLh();
+    tree.computeBranchSupport(4);*/
+    
+    // -------- Test changeAln -----------
+    
+    // -------- Test re-read alignment -----------
+    /*std::stringstream tree_str_1;
+    tree_str_1 << tree.exportNewick(cmaple::Tree::MUL_TREE);
+    
+    Model model3(cmaple::ModelBase::GTR);
+    Tree tree2(&aln,&model3, tree_str_1, true);
+    std::stringstream tree_str_2;
+    tree_str_2 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
+    if (tree_str_1.str() != tree_str_2.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    
+    str1 = tree_str_1.str();
+    str2 = tree_str_2.str();
+    std::cout << str1 << std::endl;
+    std::cout << str2 << std::endl;
+    for (auto i = 0; i < str1.length(); ++i)
+        if (str1[i] != str2[i])
+            std::cout << i << std::endl;
+    
+    tree_str_1 >> tree2;
+    std::stringstream tree_str_2_6;
+    tree_str_2_6 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
+    if (tree_str_2_6.str() != tree_str_2.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    
+    aln.read("test_200.maple");
+    std::cout << tree2.autoProceedMAPLE(cmaple::Tree::FAST_TREE_SEARCH) << std::endl;
+    std::stringstream tree_str_2_5;
+    tree_str_2_5 << tree2.exportNewick(cmaple::Tree::MUL_TREE);
+    if (tree_str_2_5.str() != tree_str_2.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    
+    // aln.read("test_100.maple"); // PASSED - unable to change to a smaller alignment
+    aln.read("test_500.maple");
+    Model model2(cmaple::ModelBase::JC);*/
+    /*
+    std::stringstream tree_str_2;
+    tree.changeModel(&model2);
+    tree_str_2 << tree;
+    if (tree_str_1.str() != tree_str_2.str())
+        std::cout << "Mismatch tree strings" << std:: endl;*/
+    
+    /*std::cout << tree.computeLh() << std::endl;
+    std::stringstream tree_str_3;
+    tree_str_3 << tree;
+    if (tree_str_1.str() != tree_str_3.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    
+    tree_str_2_5 >> tree;
+    std::cout << tree.computeLh() << std::endl;
+    
+    std::stringstream tree_str_4;
+    std::cout << tree.autoProceedMAPLE() << std::endl;
+    tree_str_4 << tree;
+    if (tree_str_1.str() != tree_str_4.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    tree.computeLh();
+    
+    std::cout << tree.computeLh() << std::endl;
+    tree_str_2_5 >> tree;
+    std::cout << tree.computeLh() << std::endl;*/
+    
+    /*std::stringstream tree_str_2_2;
+    tree_str_2_2 << tree2;
+    if (tree_str_1.str() != tree_str_2_2.str())
+        std::cout << "Mismatch tree strings" << std:: endl;
+    std::cout << tree2.doInference(FAST_TREE_SEARCH, false) << std::endl;
+    std::stringstream tree_str_2_3;
+    tree_str_2_3 << tree2;
+    if (tree_str_1.str() != tree_str_2_3.str())
+        std::cout << "Mismatch tree strings" << std:: endl;*/
+    
+    
+    /*tree.computeBranchSupport(4);
+    
+    // -------- Test re-read alignment -----------
+    
+    std::cout << "DONE" << std::endl;*/
+    
+    /*CMaple cmaple;
+    cmaple::Params& cmaple_params = cmaple.getSettings();
+    cmaple_params = params;
+    cmaple.inferTree();*/
+    /*Model model(params.sub_model);
+    // with an alignment file
+    Alignment aln1(params.aln_path);
+    // with an alignment file
+    // Alignment aln2(""); // tested PASS
+    // Alignment aln3("notfound"); // tested PASS
+    // with a stream
+    const std::string aln_filename = params.aln_path;
+    std::ifstream aln_stream;
+    try {
+        aln_stream.exceptions(ios::failbit | ios::badbit);
+        aln_stream.open(aln_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, aln_filename);
+    }
+    Alignment aln(aln_stream);
+    aln_stream.close();
+    // Write alignment to file in MAPLE format
+    aln.write("output.maple", "MAPLE", true);
+    // write aln to a file in FASTA format
+    aln.write("output.fa", "FASTA", true);
+    aln.write("output.phy", "PHYLIP", true);
+    // Read ref_seq from an alignment file (not yet exposed to APIs)
+    assert(params.ref_path.length() && params.ref_seqname.length());
+    Alignment aln_base;
+    std::string ref_seq = aln_base.readRefSeq(params.ref_path, params.ref_seqname);
+    Alignment aln2("output.fa", ref_seq);
+    aln2.write("output1.maple", "MAPLE", true);
+    Alignment aln3("output.fa");
+    aln3.write("output2.maple", "MAPLE", true);
+    Alignment aln4("output.phy", ref_seq);
+    aln4.write("output_phy1.maple", "MAPLE", true);
+    Alignment aln5("output.phy");
+    aln5.write("output_phy2.maple", "MAPLE", true);
+    Alignment aln6("output2.maple");
+    aln4.write("output3.fa", "FASTA", true);
+    // aln5.write("output_phy3.maple", "INVALID", true);
+    // aln.write("output.maple");
+    // without tree file
+    Tree tree1(aln, model);
+    // with a tree file
+    const std::string tree_filename = params.input_treefile;
+    Tree tree2(aln, model, tree_filename, true);
+    // Test keeping blengths fixed when inputting an empty tree
+    Tree tree3(aln, model, "", true);
+    // Test keeping blengths fixed when inputting a tree topology without branch lengths
+    //Tree tree4(aln, model, "topo.treefile", true);
+    // Test keeing blengths fixed (successfully)
+    Tree tree5(aln, model, "test_200_5.diff.treefile", true);
+    std::cout << tree5.doInference("Normal", true) << std::endl;
+    
+    // with a tree stream
+    std::ifstream tree_stream;
+    try {
+        tree_stream.exceptions(ios::failbit | ios::badbit);
+        tree_stream.open(tree_filename);
+    } catch (ios::failure) {
+        outError(ERR_READ_INPUT, tree_filename);
+    }
+    Tree tree(aln, model, tree_stream);
+    tree_stream.close();
+    std::cout << tree.doInference("FAST", true) << std::endl;
+    
+    std::cout << tree.doInference("MORE_accurate") << std::endl;
 
-void CMaple::postInference()
-{
-    string output_file(tree.params->diff_path);
-    output_file += ".treefile";
-    exportOutput(output_file);
-}
+    // std::cout << tree.exportNewick("BIN", true) << std::endl;
+    //Tree tree(aln, model, "");
+    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;
+    std::cout << tree.computeBranchSupport(8, 100, 0.1, false) << std::endl;
+    //std::cout << tree.computeBranchSupport(8, 100, 0.1, true) << std::endl;
+    std::cout << tree.exportNewick("BIN", true) << std::endl;
+    tree.doInference();
+    std::cout << tree.exportNewick() << std::endl;
+    tree.computeBranchSupport(8, 100);
+    std::cout << tree.exportNewick("BIN", true) << std::endl;
+    std::cout << "Tree likelihood: " << tree.computeLh() << std::endl;*/
 
-void CMaple::exportOutput(const string &filename)
-{
-    // open the tree file
-    ofstream out = ofstream(filename);
-    
-    // write tree string into the tree file
-    out << tree.exportTreeString(tree.params->export_binary_tree) << ";" << endl;
-    
-    // close the output file
-    out.close();
-}
+    // Create an alignment from a file
+    /*cmaple::Alignment aln(params.aln_path);
 
-void runCMaple(Params &params)
-{
-    auto start = getRealTime();
-    CMaple cmaple(params);
+    // Create a model
+    cmaple::Model model("GTR");
+
+    // Create a tree, attach the alignment and model to the tree
+    cmaple::Tree tree(aln, model);
+
+    // Infer a phylogenetic tree from the alignment and the model
+    cout << tree.doInference() << endl;
+
+    // Compute the branch supports for the inferred tree
+    cout << tree.computeBranchSupport() << endl;
+
+    // Compute the likelihood of the tree
+    cout << "- Tree log likelihood: " << tree.computeLh() << endl;
+
+    // Export the tree (with branch supports) in NEWICK format
+    cout << "- Tree: " << tree.exportNewick("BIN", true) << endl;*/
     
-    // load input data
-    cmaple.loadInput();
+    // Create an alignment from a file
+    /*cmaple::Alignment aln(params.aln_path);
+
+    // Create a model
+    cmaple::Model model(GTR);
+
+    // Create a tree, attach the alignment and model to the tree
+    cmaple::Tree tree(&aln, &model);
     
-    // terminate if the user only wants to export a Diff file from an alignment
-    // or only want to reconstruct an aln from a Diff file
-    if (params.only_extract_diff || params.output_aln)
-        return;
+    // change aln
+    cmaple::Alignment aln1("test_100.maple");
+    tree.changeAln(&aln1);
     
-    // prepare for the inference
-    cmaple.preInference();
+    // infer
+    cout << tree.doInference()<< endl;
     
-    // infer trees and model params
-    cmaple.doInference();
+    cout << tree.exportNewick() << endl;
     
-    // complete remaining stuff after the inference
-    cmaple.postInference();
+    // change model
+    cmaple::Model model1(JC);
+    tree.changeModel(&model1);
     
-    // show runtime
-    auto end = getRealTime();
-    cout << "Runtime: " << end - start << "s" << endl;
+    // change model again
+    cmaple::Model model2(GTR);
+    tree.changeModel(&model2);
+    
+    // change aln
+    cmaple::Alignment aln2("test_200.maple");
+    tree.changeAln(&aln2);
+    
+    // infer again
+    cout << tree.doInference()<< endl;
+    
+    cout << tree.exportNewick() << endl;
+    
+    // change aln
+    // cmaple::Alignment aln3("test_100.maple");
+    // tree.changeAln(aln3);
+    
+    // change aln with different seqtypes
+    Alignment aln4("test_aa/test_aa_100K.maple");
+    tree.changeAln(&aln4);*/
+    
+    // -------- One model attaches to multiple trees -----------
+    std::unique_ptr<cmaple::Params> params1 = cmaple::ParamsBuilder().withRandomSeed(9).withThreshProb(1e-7).build();
+    std::cout << params1->ran_seed << std::endl;
+    std::cout << params1->threshold_prob << std::endl;
+    
+    Alignment aln1("test_200.maple");
+    Alignment aln2("test_1K.diff");
+    Model model1(cmaple::ModelBase::JC);
+    model1.fixParameters(true);
+    Tree tree101(&aln2, &model1, "", false, std::move(params1));
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    std::cout << tree101.autoProceedMAPLE() << std::endl;
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    model1.fixParameters(false);
+    Tree tree100(&aln1, &model1);
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    std::cout << tree100.autoProceedMAPLE() << std::endl;
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    model1.fixParameters(true);
+    std::cout << tree101.autoProceedMAPLE() << std::endl;
+    
+    // Show model parameters
+    if (cmaple::verbose_mode > cmaple::VB_QUIET)
+    {
+        cmaple::Model::ModelParams model_params = model1.getParams();
+        std::cout << "\nMODEL: " + model_params.model_name + "\n";
+        std::cout << "\nROOT FREQUENCIES\n";
+        std::cout << model_params.state_freqs;
+        std::cout << "\nMUTATION MATRIX\n";
+        std::cout << model_params.mut_rates << std::endl;
+    }
+    
+    std::cout << tree101.computeLh() << std::endl;
+    // -------- One model attaches to multiple trees -----------
 }

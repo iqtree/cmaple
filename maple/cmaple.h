@@ -1,88 +1,39 @@
-/*
- *  cmaple.h
- *
- *  Created on: Mar 13, 2021
- *      Author: Nhan Ly-Trong
- */
+#include "../tree/tree.h"
 
-#include "tree/tree.h"
-#include "utils/timeutil.h"
-#include "alignment/seqregions.h"
+#pragma once
+namespace cmaple
+{
+    /*!
+     *  \addtogroup cmaple
+     *  @{
+     */
 
-#ifndef CMAPLE_H
-#define CMAPLE_H
+    /*! \brief Get the version of CMaple
+     * @return CMAPLE version in a string
+     */
+    std::string getVersion();
+    
+    /*! \brief Get the citation strings for CMaple/Maple manuscripts
+     * @return A citation string
+     */
+    std::string getCitations();
 
-/** CMaple class contains all main methods*/
-class CMaple {
-private:
-    
-    /**
-        Build an Initial Tree
+    /*! \brief Check if an alignment is suitable for using [C]Maple method
+     * @param[in] aln an alignment
+     * @return TRUE if the alignment is suitable for using [C]Maple method; otherwise, classical methods (e.g., IQ-TREE, RAXML) are recommended.
+     * @throw std::invalid\_argument if the input alignment is empty or invalid
      */
-    void buildInitialTree();
-    
-    /**
-        Optimize the current tree
-     */
-    void optimizeTree();
-    
-    /**
-        Optimize the tree topology
-     */
-    void optimizeTreeTopology(bool short_range_search = false);
-    
-    /**
-        Optimize the branch lengths of the current tree
-     */
-    void optimizeBranchLengthsOfTree();
-    
-    /**
-        export output files
-     */
-    void exportOutput(const std::string &filename);
-    
-public:
-    
-    /** The phylogenetic tree */
-    Tree tree;
-    
-    /**
-    *  CMaple constructor
-    */
-    CMaple() = default;
-    
-    /**
-    *  CMaple constructor
-     @param params user-specified parameters
-    */
-    CMaple(Params params):tree(std::move(params)){};
-    
-    /**
-    *  CMaple destructor
-    */
-    ~CMaple() = default;
-    
-    /**
-        Load input data
-     */
-    void loadInput();
-    
-    /**
-        Prepare for the inference
-     */
-    void preInference();
-    
-    /**
-        Do the inference
-     */
-    void doInference();
-    
-    /**
-        Complete the inference
-     */
-    void postInference();
-};
+    bool checkMapleSuitability(const Alignment& aln);
 
-/** Method to run CMaple */
-void runCMaple(Params &params);
-#endif
+    /*! @} End of Doxygen Groups*/
+
+    /** \brief Run CMaple with user-specified parameters (via command-line)
+     * @param[in] params user-specified parameters (via command-line)
+     */
+    void runCMaple(cmaple::Params& params);
+
+    /** \brief Function for testing only
+     * @param[in] params user-specified (parameters via command-line)
+     */
+    void testing(cmaple::Params& params);
+}

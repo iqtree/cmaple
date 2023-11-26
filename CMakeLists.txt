@@ -1,6 +1,6 @@
 ##################################################################
 # CMAPLE cmake build definition
-# Copyright (c) 2022 Bui Quang Minh, Nhan Ly-Trong
+# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh 
 ##################################################################
 
 # Windows example usages:
@@ -14,7 +14,7 @@
 # Linux example usages:
 #----------------------
 # cmake <source_dir>                           
-# cmake -DCMAPLE_FLAGS="m32" <source_dir>  (32-bit version)
+# cmake  -DCMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -march=native" <source_dir>   ## some custom compile flags
 #
 # To compile with CLANG on Linux:CMAPLE_
 # export CC=/usr/bin/clang
@@ -34,13 +34,6 @@
 # To generate Xcode project without OpenMP:
 # cmake -G Xcode <source_dir>
 #
-# Compile 32-bit version: cmake -DCMAPLE_FLAGS=m32 ....
-# Compile static version: cmake -DCMAPLE_FLAGS=static ....
-#
-
-#NOTE: Static linking with clang windows: make a symlink libgcc_eh.a to libgcc.a (administrator required)
-# C:\TDM-GCC-64\lib\gcc\x86_64-w64-mingw32\5.1.0>mklink libgcc_eh.a libgcc.a
-#
 #
 
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
@@ -58,6 +51,7 @@ message("Setup clang-tidy")
 project(cmaple)
 add_definitions(-DCMAPLE)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # Enable IPO (LTO) by default
 
 # The version number.
 set (cmaple_VERSION_MAJOR 1)
@@ -65,8 +59,6 @@ set (cmaple_VERSION_MINOR 0)
 set (cmaple_VERSION_PATCH ".0")
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
-
-message("CMAPLE flags : ${CMAPLE_FLAGS}")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
@@ -83,32 +75,28 @@ endif()
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories(after system "/usr/local/include")
 
-set (__ARM_NEON "FALSE")
-set (NEON 0)
-if (APPLE)
-	execute_process(
-      COMMAND uname -m
-      RESULT_VARIABLE result
-      OUTPUT_VARIABLE OSX_NATIVE_ARCHITECTURE
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-	if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
-		message("APPLE SILICON (M1) DETECTED!")
-		set (__ARM_NEON "TRUE")
-		set (NEON 1)
-	endif()
-endif()
-
-
 ##################################################################
 # Setup compiler, currently supported GCC, CLANG, MSVC, and ICC
 ##################################################################
 
 
-
 ##################################################################
 # Setup compiler flags
 ##################################################################
+
+## enable 'SSE/AVX' on x86-64, 'neon' on arm to achive faster computations (mainly the Matrix::dotProduct())
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+    add_compile_options(-msse -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -mavx) # needed for simde instructions
+  elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+    add_compile_options(-neon)  
+  endif() 
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+    add_compile_options(/arch:AVX2) ## not really needed, but may be beneficial in other places when in Release mode (i.e. with optimizations turned on)
+  endif()
+endif()
+
 
 ##################################################################
 # check existence of a few basic functions
@@ -146,8 +134,10 @@ if(ZLIB_FOUND)
   include_directories(${ZLIB_INCLUDE_DIRS})
 else(ZLIB_FOUND)
   message ("Using own zlib-1.2.7")
-  include_directories("${PROJECT_BINARY_DIR}/zlib-1.2.7" "${PROJECT_SOURCE_DIR}/zlib-1.2.7")
-  add_subdirectory(zlib-1.2.7)
+  include_directories("${PROJECT_BINARY_DIR}/libraries/zlib-1.2.7" "${PROJECT_SOURCE_DIR}/libraries/zlib-1.2.7")
+  if (NOT TARGET zlibstatic)
+    add_subdirectory(libraries/zlib-1.2.7)
+  endif()
 endif(ZLIB_FOUND)
 
 ##################################################################
@@ -165,9 +155,16 @@ FetchContent_MakeAvailable(googletest)
 ##################################################################
 # subdirectories containing necessary libraries for the build
 ##################################################################
-
-add_subdirectory(utils)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+if (NOT TARGET ncl)
+	add_subdirectory(libraries/ncl)
+endif() 
+if (NOT TARGET nclextra)
+	add_subdirectory(libraries/nclextra)
+endif() 
+add_subdirectory(utils)
+add_subdirectory(libraries/SIMDe) 
+include_directories(${SIMDE_INCLUDE_DIRECTORY})
 add_subdirectory(model)
 add_subdirectory(alignment)
 add_subdirectory(tree)
@@ -179,30 +176,39 @@ add_subdirectory(unittest)
 # the main executable
 ##################################################################
 add_executable(cmaple main/main.cpp)
+add_executable(cmaple-aa main/main.cpp)
 
 if(Backtrace_FOUND)
   include_directories(${Backtrace_INCLUDE_DIR})
   target_link_libraries(cmaple ${Backtrace_LIBRARY})
+  target_link_libraries(cmaple-aa ${Backtrace_LIBRARY})
 endif(Backtrace_FOUND)
 
 ##################################################################
 # setup linking flags
 ##################################################################
 
-# basic linking librararies
-target_link_libraries(cmaple utils model alignment tree maple)
-
+target_link_libraries(cmaple maple cmaple_tree cmaple_alignment cmaple_model ncl nclextra cmaple_utils)
+target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils)
 
 ##############################################################
 # add the install targets
 ##############################################################
 install (TARGETS cmaple DESTINATION bin)
-install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa.ref" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/output.diff" DESTINATION .)
+install (TARGETS cmaple-aa DESTINATION bin)
+#install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
+#install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa.ref" DESTINATION .)
+#install (FILES "${PROJECT_SOURCE_DIR}/example/output.maple" DESTINATION .)
+#install (FILES "${PROJECT_BINARY_DIR}/cmaple_config.h" DESTINATION "include")
+#install(DIRECTORY "${PROJECT_SOURCE_DIR}/" # source directory
+#        DESTINATION "include/cmaple" # target directory
+#        FILES_MATCHING # install only matched files
+#        PATTERN "*.h" # select header files
+#)
 
 if (WIN32)
     install (FILES "${BINARY_DIR}/cmaple${EXE_SUFFIX}-click.exe" DESTINATION bin)
+    install (FILES "${BINARY_DIR}/cmaple-aa${EXE_SUFFIX}-click.exe" DESTINATION bin)
 endif()
 
 ##############################################################
