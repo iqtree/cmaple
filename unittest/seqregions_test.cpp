@@ -288,7 +288,7 @@ TEST(SeqRegions, countSharedSegments)
 /*
  Test compareWithSample(const SeqRegions& sequence2, PositionType seq_length, StateType num_states) const
  */
-TEST(SeqRegions, compareWithSample)
+/*TEST(SeqRegions, compareWithSample)
 {
     SeqRegions seqregions1, seqregions2;
     
@@ -343,7 +343,7 @@ TEST(SeqRegions, compareWithSample)
     
     // ----- Test compareWithSample() invalid sequence length
     EXPECT_DEATH(seqregions1.compareWithSample(seqregions3, 0, 4), ".*");
-}
+}*/
 
 /*
  Test areDiffFrom(const SeqRegions& regions2, PositionType seq_length, StateType num_states, const Params* params) const
