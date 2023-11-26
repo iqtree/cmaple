@@ -5979,19 +5979,19 @@ void cmaple::Tree::updateZeroBlength(const Index index,
       parent_node.getPartialLh(parent_index.getMiniIndex());
   const std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
 
-  RealNumType best_lh = calculateSamplePlacementCost<num_states>(
+  RealNumType best_lh = calculateSubTreePlacementCost<num_states>(
       upper_left_right_regions, lower_regions, default_blength);
   RealNumType best_length = default_blength;
 
   // try shorter lengths
   bool found_new_best_length = tryShorterNewBranch<
-      &cmaple::Tree::calculateSamplePlacementCost<num_states>>(
+      &cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
       upper_left_right_regions, lower_regions, best_length, best_lh,
       min_blength);
 
   // try longer lengths
   if (!found_new_best_length) {
-    tryLongerNewBranch<&cmaple::Tree::calculateSamplePlacementCost<num_states>>(
+    tryLongerNewBranch<&cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
         upper_left_right_regions, lower_regions, best_length, best_lh,
         max_blength);
   }
