@@ -62,7 +62,7 @@ class PhyloNode {
   uint8_t spr_count_ = 0;
 
   // branch length
-  float length_ = 0;  // Using float allows it to fit into the 5 bytes padding
+  double length_ = 0;  // Using float allows it to fit into the 5 bytes padding
                       // after the two bools + uint8.
                       // Using a double would make PyhloNode 8 bytes larger
 
