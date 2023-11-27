@@ -56,7 +56,7 @@ void cmaple::ModelAA::initMutationMat() {
 
     // compute root_log_freqs and inverse_root_freqs
     for (StateType i = 0; i < num_states_; ++i) {
-      // inverse_root_freqs[i] = 1.0 / root_freqs[i];
+      inverse_root_freqs[i] = 1.0 / root_freqs[i];
       root_log_freqs[i] = log(root_freqs[i]);
     }
 
@@ -106,8 +106,8 @@ void cmaple::ModelAA::initMutationMat() {
         // update freqi_freqj_qij
         if (i != j) {
           freqi_freqj_qij_row[j] =
-              root_freqs[i] / root_freqs[j] * mutation_mat_row[j];
-              // root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
+              root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
+              // root_freqs[i] / root_freqs[j] * mutation_mat_row[j];
         } else {
           freqi_freqj_qij_row[j] = mutation_mat_row[j];
         }

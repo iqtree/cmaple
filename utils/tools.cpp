@@ -538,9 +538,10 @@ void cmaple::normalize_frequencies_from_index(RealNumType* freqs,
     throw std::logic_error(
         "Sum of state frequencies must be greater than zero!");
   }
-  // total_freqs = 1.0 / total_freqs;
+  total_freqs = 1.0 / total_freqs;
   for (int i = starting_index; i < starting_index + num_states; ++i) {
-    freqs[i] /= total_freqs;
+    freqs[i] *= total_freqs;
+    // freqs[i] /= total_freqs;
   }
 }
 

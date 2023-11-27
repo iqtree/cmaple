@@ -329,7 +329,7 @@ void cmaple::ModelBase::updateMutationMat() {
   total_rate -= dotProduct<num_states>(root_freqs, diagonal_mut_mat);
 
   // inverse total_rate
-  // total_rate = 1.0 / total_rate;
+  total_rate = 1.0 / total_rate;
 
   // normalize the mutation_mat
   RealNumType* mutation_mat_row = mutation_mat;
@@ -337,13 +337,14 @@ void cmaple::ModelBase::updateMutationMat() {
   for (StateType i = 0; i < num_states_; ++i, mutation_mat_row += num_states_,
                  freqi_freqj_qij_row += num_states_) {
     for (StateType j = 0; j < num_states_; ++j) {
-      mutation_mat_row[j] /= total_rate;
+      mutation_mat_row[j] *= total_rate;
+      // mutation_mat_row[j] /= total_rate;
 
       // update freqi_freqj_qij
       if (i != j) {
         freqi_freqj_qij_row[j] =
-            root_freqs[i] / root_freqs[j] * mutation_mat_row[j];
-            //root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
+            root_freqs[i] * inverse_root_freqs[j] * mutation_mat_row[j];
+            // root_freqs[i] / root_freqs[j] * mutation_mat_row[j];
       } else {
         freqi_freqj_qij_row[j] = mutation_mat_row[j];
       }

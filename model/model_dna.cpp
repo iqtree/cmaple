@@ -46,8 +46,8 @@ void cmaple::ModelDNA::initMutationMatJC() {
         transposed_mut_mat[row_index[j] + i] = jc_rate;
         // update freqi_freqj_qij
         freqi_freqj_qij_row[j] =
-            root_freqs[i] / root_freqs[j] * jc_rate;
-            // root_freqs[i] * inverse_root_freqs[j] * jc_rate;
+            root_freqs[i] * inverse_root_freqs[j] * jc_rate;
+            // root_freqs[i] / root_freqs[j] * jc_rate;
         // update freq_j_transposed_ij_row
         freq_j_transposed_ij_row[j] =
             freq_j_jc_rate;  // 0.25 * 0.333 (freq(j) * transposed_ij)

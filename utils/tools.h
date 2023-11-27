@@ -964,9 +964,10 @@ inline void normalize_arr(RealNumType* const entries,
   //   outError("Sum of entries must be greater than zero!");
 #endif
 
-  // sum_entries = 1.0 / sum_entries;
+  sum_entries = 1.0 / sum_entries;
   for (int i = 0; i < num_entries; ++i)
-    entries[i] /= sum_entries;
+    entries[i] *= sum_entries;
+    // entries[i] /= sum_entries;
 }
 
 /**
