@@ -1690,7 +1690,7 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
       }
 
       // record new best_down_lh_diff
-      if (new_best_lh_mid_branch > best_down_lh_diff) {
+      if (new_best_lh_mid_branch  - 1e-13 > best_down_lh_diff) {
         best_down_lh_diff = new_best_lh_mid_branch;
         best_child_index = node_index;
       }
@@ -3292,7 +3292,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
 
       while (true) {
         // if better placement found -> record it
-        if (tmp_lh_diff > tmp_best_lh_diff) {
+        if (tmp_lh_diff  - 1e-13 > tmp_best_lh_diff) {
           tmp_best_lh_diff = tmp_lh_diff;
 
           if (tmp_lh_diff > best_down_lh_diff) {
