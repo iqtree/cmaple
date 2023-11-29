@@ -118,6 +118,7 @@ This will give another 5-10% speedup, depending on workload and hardware.
 ```
 git clone https://github.com/jemalloc/jemalloc.git
 cd jemalloc
+mkdir build
 export je_build=`pwd`/build   
 ./autogen.sh
 ./configure --prefix=${je_build}
