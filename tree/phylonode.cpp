@@ -232,24 +232,28 @@ const std::string cmaple::PhyloNode::exportString(
     } else {
       string branch_support = show_branch_supports ? "0" : "";
 
-      string output = "(" + seq_names[getSeqNameIndex()] + ":0";
+      string output = "";
       // export less informative sequences in binary tree format
       if (binary) {
-        string closing_brackets = "";
-        for (PositionType i = 0; i < num_less_info_seqs - 1; i++) {
-          output += ",(" + seq_names[less_info_seqs[i]] + ":0";
-          closing_brackets += ")" + branch_support + ":0";
+        output.resize(num_less_info_seqs, '(');
+        output += seq_names[getSeqNameIndex()];
+        
+        for (auto minor_seq_name_index : less_info_seqs) {
+          output += ":0," + seq_names[minor_seq_name_index] + ":0)";
         }
-        output += "," + seq_names[less_info_seqs[num_less_info_seqs - 1]] +
-                  ":0" + closing_brackets;
+        
+        output += branch_support + ":" + length_str;
       }
       // export less informative sequences in mutifurcating tree format
       else {
+        output = "(" + seq_names[getSeqNameIndex()] + ":0";
+        
         for (auto minor_seq_name_index : less_info_seqs) {
           output += "," + seq_names[minor_seq_name_index] + ":0";
         }
+        
+        output += ")" + branch_support + ":" + length_str;
       }
-      output += ")" + branch_support + ":" + length_str;
       return output;
     }
   }
