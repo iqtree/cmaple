@@ -1156,7 +1156,7 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
   }
   string length = node.getUpperLength() < 0
                       ? "0"
-                      : convertDoubleToString(node.getUpperLength(), 20);
+                      : convertDoubleToString(node.getUpperLength(), 12);
   output += ")" + branch_support + ":" + length;
 
   return output;

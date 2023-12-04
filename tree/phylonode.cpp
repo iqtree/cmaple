@@ -220,7 +220,7 @@ const std::string cmaple::PhyloNode::exportString(
   if (!isInternal()) {
     string length_str = getUpperLength() < 0
                             ? "0"
-                            : convertDoubleToString(getUpperLength(), 20);
+                            : convertDoubleToString(getUpperLength(), 12);
     // without minor sequences -> simply return node's name and its branch
     // length
     std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
