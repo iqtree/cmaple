@@ -218,7 +218,7 @@ const std::string cmaple::PhyloNode::exportString(
     const std::vector<std::string>& seq_names,
     const bool show_branch_supports) {
   if (!isInternal()) {
-    string length_str = getUpperLength() < 0
+    string length_str = getUpperLength() <= 0
                             ? "0"
                             : convertDoubleToString(getUpperLength(), 12);
     // without minor sequences -> simply return node's name and its branch
