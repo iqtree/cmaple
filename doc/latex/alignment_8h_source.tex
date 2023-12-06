@@ -2,125 +2,169 @@
 \hypertarget{alignment_8h_source}{}\label{alignment_8h_source}\index{alignment/alignment.h@{alignment/alignment.h}}
 
 \begin{DoxyCode}{0}
-\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#include\ "{}sequence.h"{}}}
-\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}../utils/timeutil.h"{}}}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#include\ "{}../utils/timeutil.h"{}}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}sequence.h"{}}}
 \DoxyCodeLine{00003\ }
 \DoxyCodeLine{00004\ \textcolor{preprocessor}{\#ifndef\ CMAPLE\_ALIGNMENT\_H}}
 \DoxyCodeLine{00005\ \textcolor{preprocessor}{\#define\ CMAPLE\_ALIGNMENT\_H}}
 \DoxyCodeLine{00006\ }
-\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }cmaple}
-\DoxyCodeLine{00008\ \{}
-\DoxyCodeLine{00010\ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}\ \{}
-\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keyword}{public}:}
-\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ \{}
-\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba4e2c0251b5ac83d386bc3ba19cf528e4}{IN\_FASTA}},\ }
-\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba70a7e3edeb35284e39c8f9fe7214fde1}{IN\_PHYLIP}},\ }
-\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80}{IN\_MAPLE}},\ }
-\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},\ }
-\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba2fed9cbb7e537d6a2976264543c712cc}{IN\_UNKNOWN}},\ }
-\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \};}
-\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ BEGIN\ OF\ PUBLIC\ APIs\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ //}}
-\DoxyCodeLine{00026\ \textcolor{comment}{}\ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a5a429c944ebac9aef2a2e20094a5dc2b}{Alignment}}();}
-\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a88ba338239e3863ced3d5dc3e63a350f}{Alignment}}(std::istream\&\ aln\_stream,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
-\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a128c4d12df8c70419d75edb9fd7b8d58}{Alignment}}(\textcolor{keyword}{const}\ std::string\&\ aln\_filename,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
-\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a36d8b2bbaf72d21162d6e273bb3674e1}{\string~Alignment}}();}
-\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a1d0cc7a3b1321c2f22351e8801a8890a}{read}}(std::istream\&\ aln\_stream,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
-\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a669f8cd477943459407b7ed32c934816}{read}}(\textcolor{keyword}{const}\ std::string\&\ aln\_filename,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
-\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a7cc0a73cc105173130dac55d78786f43}{write}}(std::ostream\&\ aln\_stream,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\&\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80}{IN\_MAPLE}});}
-\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a793e2c9b076c92298d812e35aa073952}{write}}(\textcolor{keyword}{const}\ std::string\&\ aln\_filename,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\&\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80}{IN\_MAPLE}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ overwrite\ =\ \textcolor{keyword}{false});}
-\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ END\ OF\ PUBLIC\ APIs\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ //}}
-\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ getSeqType()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ seq\_type\_;\ \};}
-\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ setSeqType(\mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seq\_type)\ \{}
-\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ seq\_type\_\ =\ seq\_type;}
-\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ updateNumStates();}
-\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \};}
-\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ std::string\ readRefSeq(\textcolor{keyword}{const}\ std::string\&\ ref\_filename,\ \textcolor{keyword}{const}\ std::string\&\ seq\_name);}
-\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}\ convertState2Char(\textcolor{keyword}{const}\ cmaple::StateType\&\ state,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\&\ seqtype);}
-\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ parseAlnFormat(\textcolor{keyword}{const}\ std::string\&\ n\_format);}
-\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ std::vector<Sequence>\ data;\ \textcolor{comment}{//\ note:\ this\ is\ inefficient,\ but\ only\ used\ briefly}}
-\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ std::vector<cmaple::StateType>\ ref\_seq;}
-\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ cmaple::StateType\ num\_states;}
-\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ aln\_format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}};}
-\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ std::unordered\_set<void*>\ attached\_trees;}
-\DoxyCodeLine{00176\ \ \ \ \ }
-\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keyword}{private}:}
-\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seq\_type\_\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}};}
-\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ reset();}
-\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ updateNumStates();}
-\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ detectSequenceType(cmaple::StrVector\&\ sequences);}
-\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ cmaple::PositionType\ computeSeqDistance(Sequence\&\ sequence,\ cmaple::RealNumType\ hamming\_weight);}
-\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ sortSeqsByDistances();}
-\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ cmaple::StateType\ convertChar2State(\textcolor{keywordtype}{char}\ state);}
-\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ extractMutations(\textcolor{keyword}{const}\ cmaple::StrVector\ \&sequences,\ \textcolor{keyword}{const}\ cmaple::StrVector\ \&seq\_names,\ \textcolor{keyword}{const}\ std::string\&\ ref\_sequence);}
-\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ readMaple(std::istream\&\ aln\_stream);}
-\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ readFastaOrPhylip(std::istream\&\ aln\_stream,\ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}});}
-\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ parseRefSeq(std::string\&\ ref\_sequence);}
-\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ readFasta(std::istream\&\ aln\_stream,\ cmaple::StrVector\ \&sequences,\ cmaple::StrVector\ \&seq\_names,\ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
-\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ readPhylip(std::istream\&\ aln\_stream,\ cmaple::StrVector\ \&sequences,\ cmaple::StrVector\ \&seq\_names,\ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
-\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ readSequences(std::istream\&\ aln\_stream,\ cmaple::StrVector\ \&sequences,\ cmaple::StrVector\ \&seq\_names,\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ aln\_format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},\ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
-\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ std::string\ generateRef(cmaple::StrVector\ \&sequences);}
-\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ processSeq(std::string\ \&sequence,\ std::string\ \&line,\ cmaple::PositionType\ line\_num);}
-\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ addMutation(Sequence*\ sequence,\ \textcolor{keywordtype}{char}\ state\_char,\ cmaple::PositionType\ pos,\ cmaple::PositionType\ length\ =\ -\/1);}
-\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ writeMAPLE(std::ostream\&\ aln\_stream);}
-\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ writeFASTA(std::ostream\&\ aln\_stream);}
-\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ writePHYLIP(std::ostream\&\ aln\_stream);}
-\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ std::string\ getRefSeqStr();}
-\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ std::string\ getSeqString(\textcolor{keyword}{const}\ std::string\&\ ref\_seq\_str,\ Sequence*\ sequence);}
-\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectMAPLEorFASTA(std::istream\&\ aln\_stream);}
-\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ }
-\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectInputFile(std::istream\&\ aln\_stream);}
-\DoxyCodeLine{00376\ \ \ \ \ \};}
+\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }cmaple\ \{}
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}\ \{}
+\DoxyCodeLine{00010\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00014\ \ \ \textcolor{keyword}{enum}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ \{}
+\DoxyCodeLine{00015\ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba4e2c0251b5ac83d386bc3ba19cf528e4}{IN\_FASTA}},\ \ \ }
+\DoxyCodeLine{00016\ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba70a7e3edeb35284e39c8f9fe7214fde1}{IN\_PHYLIP}},\ \ }
+\DoxyCodeLine{00017\ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80}{IN\_MAPLE}},\ \ \ }
+\DoxyCodeLine{00019\ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},\ \ \ \ }
+\DoxyCodeLine{00020\ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba2fed9cbb7e537d6a2976264543c712cc}{IN\_UNKNOWN}},\ }
+\DoxyCodeLine{00021\ \ \ \};}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ BEGIN\ OF\ PUBLIC\ APIs\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00024\ \ \ \textcolor{comment}{//\ //}}
+\DoxyCodeLine{00027\ \textcolor{comment}{}\ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a5a429c944ebac9aef2a2e20094a5dc2b}{Alignment}}();}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00044\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a88ba338239e3863ced3d5dc3e63a350f}{Alignment}}(}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00067\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a128c4d12df8c70419d75edb9fd7b8d58}{Alignment}}(}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ aln\_filename,}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00075\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_a36d8b2bbaf72d21162d6e273bb3674e1}{\string~Alignment}}();}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a1d0cc7a3b1321c2f22351e8801a8890a}{read}}(}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a669f8cd477943459407b7ed32c934816}{read}}(}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ aln\_filename,}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a7cc0a73cc105173130dac55d78786f43}{write}}(std::ostream\&\ aln\_stream,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\&\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80}{IN\_MAPLE}});}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_alignment_a793e2c9b076c92298d812e35aa073952}{write}}(\textcolor{keyword}{const}\ std::string\&\ aln\_filename,}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\&\ format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3baa1d0d04b8d6e30dc1340d981bf223e80}{IN\_MAPLE}},}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ overwrite\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ END\ OF\ PUBLIC\ APIs\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00148\ \ \ \textcolor{comment}{//\ //}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{keyword}{inline}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ getSeqType()\textcolor{keyword}{\ const\ }\{\ }
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordflow}{return}\ seq\_type\_;\ }
+\DoxyCodeLine{00156\ \ \ \};}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00161\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ setSeqType(\mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seq\_type)\ \{}
+\DoxyCodeLine{00162\ \ \ \ \ seq\_type\_\ =\ seq\_type;}
+\DoxyCodeLine{00163\ \ \ \ \ updateNumStates();}
+\DoxyCodeLine{00164\ \ \ \};}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00175\ \ \ std::string\ readRefSeq(\textcolor{keyword}{const}\ std::string\&\ ref\_filename,}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ seq\_name);}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}\ convertState2Char(\textcolor{keyword}{const}\ cmaple::StateType\&\ state,}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\&\ seqtype);}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ parseAlnFormat(\textcolor{keyword}{const}\ std::string\&\ n\_format);}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00197\ \ \ std::vector<Sequence>}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ data;\ \ \textcolor{comment}{//\ note:\ this\ is\ inefficient,\ but\ only\ used\ briefly}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00203\ \ \ std::vector<cmaple::StateType>\ ref\_seq;}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00208\ \ \ cmaple::StateType\ num\_states;}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00213\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ aln\_format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}};}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00218\ \ \ std::unordered\_set<void*>\ attached\_trees;}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00224\ \ \ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seq\_type\_\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}};}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{keywordtype}{void}\ reset();}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{keywordtype}{void}\ updateNumStates();}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00241\ \ \ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ detectSequenceType(cmaple::StrVector\&\ sequences);}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00250\ \ \ cmaple::PositionType\ computeSeqDistance(Sequence\&\ sequence,}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::RealNumType\ hamming\_weight);}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordtype}{void}\ sortSeqsByDistances();}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00267\ \ \ cmaple::StateType\ convertChar2State(\textcolor{keywordtype}{char}\ state);}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00278\ \ \ \textcolor{keywordtype}{void}\ extractMutations(\textcolor{keyword}{const}\ cmaple::StrVector\&\ sequences,}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ cmaple::StrVector\&\ seq\_names,}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_sequence);}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{keywordtype}{void}\ readMaple(std::istream\&\ aln\_stream);}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00300\ \ \ \textcolor{keywordtype}{void}\ readFastaOrPhylip(std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00308\ \ \ \textcolor{keywordtype}{void}\ parseRefSeq(std::string\&\ ref\_sequence);}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{void}\ readFasta(std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{keywordtype}{void}\ readPhylip(std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00345\ \ \ \textcolor{keywordtype}{void}\ readSequences(std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ aln\_format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00359\ \ \ std::string\ generateRef(cmaple::StrVector\&\ sequences);}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00365\ \ \ \textcolor{keywordtype}{void}\ processSeq(std::string\&\ sequence,}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ line,}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ line\_num);}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00373\ \ \ \textcolor{keywordtype}{void}\ addMutation(Sequence*\ sequence,}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ state\_char,}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ pos,}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ length\ =\ -\/1);}
 \DoxyCodeLine{00377\ }
-\DoxyCodeLine{00385\ \ \ \ \ std::ostream\&\ \mbox{\hyperlink{group__cmaple_gabf49c77ec0934b4d8750f61dd3ac6d71}{operator<<}}(std::ostream\&\ out\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln);}
-\DoxyCodeLine{00386\ }
-\DoxyCodeLine{00389\ \ \ \ \ std::istream\&\ \mbox{\hyperlink{group__cmaple_ga9f041909a438d7173dc9f15dcf20762d}{operator>>}}(std::istream\&\ in\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln);}
-\DoxyCodeLine{00390\ }
-\DoxyCodeLine{00395\ \ \ \ \ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_protein[];}
-\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_dna[];}
-\DoxyCodeLine{00397\ \ \ \ \ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_rna[];}
-\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_morph[];}
-\DoxyCodeLine{00399\ \}}
-\DoxyCodeLine{00400\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00382\ \ \ \textcolor{keywordtype}{void}\ writeMAPLE(std::ostream\&\ aln\_stream);}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00388\ \ \ \textcolor{keywordtype}{void}\ writeFASTA(std::ostream\&\ aln\_stream);}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00394\ \ \ \textcolor{keywordtype}{void}\ writePHYLIP(std::ostream\&\ aln\_stream);}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00399\ \ \ std::string\ getRefSeqStr();}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00404\ \ \ std::string\ getSeqString(\textcolor{keyword}{const}\ std::string\&\ ref\_seq\_str,\ Sequence*\ sequence);}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00413\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectMAPLEorFASTA(std::istream\&\ aln\_stream);}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00424\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectInputFile(std::istream\&\ aln\_stream);}
+\DoxyCodeLine{00425\ \ \ \ \ }
+\DoxyCodeLine{00427\ \};}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00437\ std::ostream\&\ \mbox{\hyperlink{group__cmaple_gabf49c77ec0934b4d8750f61dd3ac6d71}{operator<<}}(std::ostream\&\ out\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln);}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00441\ std::istream\&\ \mbox{\hyperlink{group__cmaple_ga9f041909a438d7173dc9f15dcf20762d}{operator>>}}(std::istream\&\ in\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln);}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00447\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_protein[];}
+\DoxyCodeLine{00448\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_dna[];}
+\DoxyCodeLine{00449\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_rna[];}
+\DoxyCodeLine{00450\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_morph[];}
+\DoxyCodeLine{00451\ \}\ \ \textcolor{comment}{//\ namespace\ cmaple}}
+\DoxyCodeLine{00452\ \textcolor{preprocessor}{\#endif}}
 
 \end{DoxyCode}

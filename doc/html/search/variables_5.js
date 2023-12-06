@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['thresh_5fentire_5ftree_5fimprovement_0',['thresh_entire_tree_improvement',['../classcmaple_1_1_params.html#a37e63254bb438e88ef66effa7a73b2d9',1,'cmaple::Params']]],
-  ['thresh_5fplacement_5fcost_1',['thresh_placement_cost',['../classcmaple_1_1_params.html#a196eb6907df1f2dd02cba0c502e0b789',1,'cmaple::Params']]],
-  ['threshold_5fprob_2',['threshold_prob',['../classcmaple_1_1_params.html#af79b770dac4ce0a135f8d09bd99c3509',1,'cmaple::Params']]]
+  ['plength_5fobservation2node_0',['plength_observation2node',['../classcmaple_1_1_seq_region.html#a46f90bae79f1da1cdbb6acb286bfeda5',1,'cmaple::SeqRegion']]],
+  ['plength_5fobservation2root_1',['plength_observation2root',['../classcmaple_1_1_seq_region.html#a11ce1bbd2cc0ded8b2ea9773d1e9938e',1,'cmaple::SeqRegion']]]
 ];

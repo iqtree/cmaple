@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['state_5ffreqs_0',['state_freqs',['../structcmaple_1_1_model_1_1_model_params.html#a725349a3fc3609fb8e200cd9eb11bfc6',1,'cmaple::Model::ModelParams']]]
+  ['num_5fstates_0',['num_states',['../classcmaple_1_1_alignment.html#ad95133d152bedf8b6607d1c448e8159d',1,'cmaple::Alignment']]]
 ];
