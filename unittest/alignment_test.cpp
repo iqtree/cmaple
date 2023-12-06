@@ -181,19 +181,19 @@ TEST(Alignment, readMapleFile)
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 100);
-    EXPECT_EQ(aln.data[4].seq_name, "12");
-    EXPECT_EQ(aln.data[18].size(), 24);
-    EXPECT_EQ(aln.data[90][34].type, 1);
+    EXPECT_EQ(aln.data[4].seq_name, "EPI_ISL_530098");
+    EXPECT_EQ(aln.data[18].size(), 8);
+    EXPECT_EQ(aln.data[90][3].type, 1);
     EXPECT_EQ(aln.data[53][7].getLength(), 1);
-    EXPECT_EQ(aln.data[46][11].position, 8371);
-    EXPECT_EQ(aln.data[38].size(), 31);
+    EXPECT_EQ(aln.data[46][7].position, 29871);
+    EXPECT_EQ(aln.data[38].size(), 8);
     EXPECT_EQ(aln.data[49][5].type, 3);
-    EXPECT_EQ(aln.data[66][30].getLength(), 1);
-    EXPECT_EQ(aln.data[75][3].position, 4570);
-    EXPECT_EQ(aln.data[30].size(), 29);
-    EXPECT_EQ(aln.data[43][25].type, 3);
-    EXPECT_EQ(aln.data[51][27].getLength(), 1);
-    EXPECT_EQ(aln.data[66][4].position, 5685);
+    EXPECT_EQ(aln.data[66][10].getLength(), 1);
+    EXPECT_EQ(aln.data[75][3].position, 3036);
+    EXPECT_EQ(aln.data[30].size(), 8);
+    EXPECT_EQ(aln.data[43][5].type, 1);
+    EXPECT_EQ(aln.data[51][7].getLength(), 1);
+    EXPECT_EQ(aln.data[66][4].position, 7797);
 
     EXPECT_EQ(aln.ref_seq.size(), 29891);
     EXPECT_EQ(aln.ref_seq[8], 3);
@@ -209,9 +209,9 @@ TEST(Alignment, readMapleFile)
     EXPECT_EQ(aln.data.size(), 5000);
     EXPECT_EQ(aln.data[454].seq_name, "3521");
     EXPECT_EQ(aln.data[1328].size(), 12);
-    EXPECT_EQ(aln.data[943][22].type, 3);
+    EXPECT_EQ(aln.data[943][8].type, 3);
     EXPECT_EQ(aln.data[953][9].getLength(), 1);
-    EXPECT_EQ(aln.data[76][25].position, 240);
+    EXPECT_EQ(aln.data[76][5].position, 23402);
     EXPECT_EQ(aln.data[1543].size(), 13);
     EXPECT_EQ(aln.data[2435][8].type, 3);
     EXPECT_EQ(aln.data[4864][17].getLength(), 1);
@@ -374,153 +374,4 @@ TEST(Alignment, convertState2Char)
     EXPECT_EQ(aln.convertChar2State('B'), 2+4+8+3);
     EXPECT_EQ(aln.convertChar2State('D'), 1+4+8+3);
     EXPECT_EQ(aln.convertChar2State('V'), 1+2+4+3);
-}*/
-
-/*
- Test computeSeqDistance(Sequence& sequence, RealNumType hamming_weight) -> moved to private
- */
-/*TEST(Alignment, computeSeqDistance)
-{
-    Alignment aln;
-    aln.setSeqType(SEQ_DNA);
-    
-    // test empty sequence
-    Sequence sequence1;
-    EXPECT_EQ(aln.computeSeqDistance(sequence1, 1), 0);
-    
-    // test other sequences with different hamming_weight
-    Sequence sequence2;
-    sequence2.emplace_back(1, 313, 1);
-    EXPECT_EQ(aln.computeSeqDistance(sequence2, 0), 0);
-    EXPECT_EQ(aln.computeSeqDistance(sequence2, 1), 1);
-    EXPECT_EQ(aln.computeSeqDistance(sequence2, 1000), 1000);
-    
-    Sequence sequence3;
-    sequence3.emplace_back(TYPE_N, 65, 142);
-    EXPECT_EQ(aln.computeSeqDistance(sequence3, 0), 142);
-    EXPECT_EQ(aln.computeSeqDistance(sequence3, 1), 143);
-    EXPECT_EQ(aln.computeSeqDistance(sequence3, 1000), 1142);
-    
-    Sequence sequence4;
-    sequence4.emplace_back(TYPE_DEL, 65, 142);
-    EXPECT_EQ(aln.computeSeqDistance(sequence4, 0), aln.computeSeqDistance(sequence3, 0));
-    EXPECT_EQ(aln.computeSeqDistance(sequence4, 1), aln.computeSeqDistance(sequence3, 1));
-    EXPECT_EQ(aln.computeSeqDistance(sequence4, 1000), aln.computeSeqDistance(sequence3, 1000));
-    
-    Sequence sequence5;
-    sequence5.emplace_back(TYPE_O, 65, 1);
-    EXPECT_EQ(aln.computeSeqDistance(sequence5, 0), 1);
-    EXPECT_EQ(aln.computeSeqDistance(sequence5, 1), 2);
-    EXPECT_EQ(aln.computeSeqDistance(sequence5, 1000), 1001);
-    
-    Sequence sequence6;
-    sequence6.emplace_back(1, 132, 1);
-    sequence6.emplace_back(TYPE_DEL, 153, 3);
-    sequence6.emplace_back(1+4+3, 154, 1);
-    sequence6.emplace_back(TYPE_N, 5434, 943);
-    sequence6.emplace_back(1+2+8+3, 6390, 1);
-    sequence6.emplace_back(0, 9563, 1);
-    sequence6.emplace_back(TYPE_N, 15209, 8);
-    sequence6.emplace_back(3, 28967, 1);
-    sequence6.emplace_back(1+2+4+3, 28968, 1);
-    
-    EXPECT_EQ(aln.computeSeqDistance(sequence6, 0), 957);
-    EXPECT_EQ(aln.computeSeqDistance(sequence6, 1), 966);
-    EXPECT_EQ(aln.computeSeqDistance(sequence6, 1000), 9957);
-}*/
-
-/*
- Test sortSeqsByDistances(RealNumType hamming_weight) -> moved to private, already tested in read()
- */
-/*TEST(Alignment, sortSeqsByDistances)
-{
-    Alignment aln;
-    aln.setSeqType(SEQ_DNA);
-    
-    // ----- test empty aln -----
-    aln.sortSeqsByDistances(1000);
-    
-    // ----- test aln with one empty sequence -----
-    Sequence sequence1(std::move("sequence 1")); // distance = 0
-    aln.data.push_back(std::move(sequence1));
-    aln.sortSeqsByDistances(1000);
-    EXPECT_EQ(aln.data.size(), 1);
-    EXPECT_EQ(aln.data[0].seq_name, "sequence 1");
-    
-    // ----- test aln with two empty sequences -----
-    Sequence sequence2(std::move("sequence 2")); // distance = 0
-    aln.data.push_back(std::move(sequence2));
-    aln.sortSeqsByDistances(1000);
-    EXPECT_EQ(aln.data.size(), 2);
-    EXPECT_EQ(aln.data[0].seq_name, "sequence 2"); // sequence 1 and sequence 2 have the same zero-distance => quicksort arbitrarily put sequence 2 before sequence 1
-    
-    // ----- test with more sequences -----
-    Sequence sequence3(std::move("sequence 3")); // distance = 1000
-    sequence3.emplace_back(1, 313, 1);
-    aln.data.push_back(std::move(sequence3));
-    aln.sortSeqsByDistances(1000);
-    EXPECT_EQ(aln.data.size(), 3);
-    EXPECT_EQ(aln.data[0].seq_name, "sequence 1");
-    EXPECT_EQ(aln.data[2].seq_name, "sequence 3");
-    
-    Sequence sequence4(std::move("sequence 4")); // distance = 1142
-    sequence4.emplace_back(TYPE_DEL, 65, 142);
-    aln.data.push_back(std::move(sequence4));
-    aln.sortSeqsByDistances(1000);
-    EXPECT_EQ(aln.data.size(), 4);
-    EXPECT_EQ(aln.data[2].seq_name, "sequence 3");
-    EXPECT_EQ(aln.data[3].seq_name, "sequence 4");
-    
-    Sequence sequence5(std::move("sequence 5")); // distance = 9957
-    sequence5.emplace_back(1, 132, 1);
-    sequence5.emplace_back(TYPE_DEL, 153, 3);
-    sequence5.emplace_back(1+4+3, 154, 1);
-    sequence5.emplace_back(TYPE_N, 5434, 943);
-    sequence5.emplace_back(1+2+8+3, 6390, 1);
-    sequence5.emplace_back(0, 9563, 1);
-    sequence5.emplace_back(TYPE_N, 15209, 8);
-    sequence5.emplace_back(3, 28967, 1);
-    sequence5.emplace_back(1+2+4+3, 28968, 1);
-    aln.data.push_back(std::move(sequence5));
-    aln.sortSeqsByDistances(1000);
-    EXPECT_EQ(aln.data.size(), 5);
-    EXPECT_EQ(aln.data[2].seq_name, "sequence 3");
-    EXPECT_EQ(aln.data[4].seq_name, "sequence 5");
-    
-    Sequence sequence6(std::move("sequence 6")); // distance = 1001
-    sequence6.emplace_back(TYPE_O, 65, 1);
-    aln.data.push_back(std::move(sequence6));
-    aln.sortSeqsByDistances(1000);
-    EXPECT_EQ(aln.data.size(), 6);
-    EXPECT_EQ(aln.data[2].seq_name, "sequence 3");
-    EXPECT_EQ(aln.data[3].seq_name, "sequence 6");
-    EXPECT_EQ(aln.data[4].seq_name, "sequence 4");
-    EXPECT_EQ(aln.data[5].seq_name, "sequence 5");
-    
-    // ----- test on data from MAPLE file -----
-    aln.data.clear();
-    std::string diff_file_path("../../example/test_100.maple");
-    aln.readMapleFile(diff_file_path, ""); // read ref_seq from the MAPLE file
-    
-    aln.sortSeqsByDistances(0);
-    EXPECT_EQ(aln.data.size(), 100);
-    EXPECT_EQ(aln.data[45].seq_name, "85");
-    EXPECT_EQ(aln.data[32].seq_name, "98");
-    EXPECT_EQ(aln.data[84].seq_name, "44");
-    EXPECT_EQ(aln.data[67].seq_name, "1");
-    EXPECT_EQ(aln.data[92].seq_name, "26");
-    
-    aln.sortSeqsByDistances(1);
-    EXPECT_EQ(aln.data[26].seq_name, "62");
-    EXPECT_EQ(aln.data[74].seq_name, "4");
-    EXPECT_EQ(aln.data[33].seq_name, "52");
-    EXPECT_EQ(aln.data[28].seq_name, "98");
-    EXPECT_EQ(aln.data[19].seq_name, "53");
-    
-    aln.sortSeqsByDistances(1000);
-    EXPECT_EQ(aln.data[83].seq_name, "27");
-    EXPECT_EQ(aln.data[47].seq_name, "96");
-    EXPECT_EQ(aln.data[39].seq_name, "65");
-    EXPECT_EQ(aln.data[62].seq_name, "3");
-    EXPECT_EQ(aln.data[74].seq_name, "64");
 }*/

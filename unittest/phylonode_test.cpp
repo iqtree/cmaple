@@ -332,7 +332,7 @@ TEST(PhyloNode, TestExportString)
     node2.addLessInfoSeqs(6);
     node2.addLessInfoSeqs(8);
     node2.setUpperLength(0.5);
-    EXPECT_EQ(node2.exportString(true, seq_names, false), "(sequence 1:0,(sequence 3:0,(sequence 6:0,sequence 8:0):0):0):0.5");
+    EXPECT_EQ(node2.exportString(true, seq_names, false), "(((sequence 1:0,sequence 3:0):0,sequence 6:0):0,sequence 8:0):0.5");
     EXPECT_EQ(node2.exportString(false, seq_names, false), "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
 }
 
