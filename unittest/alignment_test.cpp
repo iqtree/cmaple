@@ -219,7 +219,7 @@ TEST(Alignment, readMapleFile)
     EXPECT_EQ(aln.data[2454].size(), 14);
     EXPECT_EQ(aln.data[4423][14].type, 0);
     EXPECT_EQ(aln.data[643][5].getLength(), 1);
-    EXPECT_EQ(aln.data[59][12].position, 14407);
+    EXPECT_EQ(aln.data[59][2].position, 3036);
 
     EXPECT_EQ(aln.ref_seq.size(), 29891);
     EXPECT_EQ(aln.ref_seq[8], 3);
