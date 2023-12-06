@@ -1,7 +1,9 @@
 # What's CMAPLE?
 
 
-Introduction to CMAPLE...
+CMAPLE is a C++ reimplementation of [MAPLE][MAPLE_FORMAT] highly optimized for performance and scalability with many new features.
+
+Apart from a standalone software, we also provide a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods. For more detail, please see **[CMAPLE-LIB-DOC]**.
 
 
 # How to cite CMAPLE?
@@ -227,6 +229,15 @@ All the options available in CMAPLE are shown below:
 | `-mut-update <NUM>` | Specify the period (in term of the number of sample placements) to update the substitution rate matrix. *DEFAULT: 25* |
 | `-seed <NUM>` | Set a random number seed to reproduce a previous run. *DEFAULT: the CPU clock* |
 | `-v <MODE>`   | Set the verbose mode (`QUIET`, `MIN`, `MED`,  `MAX`, or `DEBUG`) to control the amount of messages to screen, which is uselful for debugging purposes. *DEFAULT: `MED`* |
+
+# Acknowledgment
+CMAPLE relies on the following third-party libraries:
+
+- **[ncl](https://github.com/mtholder/ncl)** (version 2.0) - Licensed under the [GNU General Public License](https://github.com/mtholder/ncl/blob/master/COPYING).
+- **[simde](https://github.com/simd-everywhere/simde)** - Licensed under the [MIT License](https://github.com/simd-everywhere/simde/blob/master/COPYING).
+- **[zlib](http://zlib.net/)** (version 1.2.7).
+
+
 
 [CMAPLE_RELEASES]: https://github.com/trongnhanuit/cmaple/releases
 [Gaston et al. 2011]: https://doi.org/10.1093/bioinformatics/btr470
