@@ -8,6 +8,7 @@ namespace cmaple {
 /** A class represents a region in a sequence */
 class SeqRegion : public Mutation {
  public:
+  /*! \cond PRIVATE */
   /*!
       Type of likelihood
    */
@@ -16,6 +17,7 @@ class SeqRegion : public Mutation {
       Type of likelihood pointer
    */
   using LHPtrType = std::unique_ptr<LHType>;
+  /*! \endcond */
 
   /*!
       Types of sequences
@@ -57,6 +59,7 @@ class SeqRegion : public Mutation {
   void convertAmbiguiousStateAA(int max_num_states);
 
  public:
+  /*! \cond PRIVATE */
   /**
    Length of the path between the current phylo node and the node where the
    likelihood is calculated
@@ -179,5 +182,6 @@ class SeqRegion : public Mutation {
    * @return a SeqType
    */
   static SeqType parseSeqType(const std::string& n_seqtype_str);
+  /*! \endcond */
 };
 }  // namespace cmaple

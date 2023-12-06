@@ -147,6 +147,7 @@ class Alignment {
   // ----------------- END OF PUBLIC APIs ------------------------------------
   // //
 
+  /*! \cond PRIVATE */
   /**
    * Get seq_type
    */
@@ -421,6 +422,8 @@ class Alignment {
       IN_UNKNOWN if file format unknown.
    */
   InputType detectInputFile(std::istream& aln_stream);
+    
+  /*! \endcond */
 };
 
 /*!

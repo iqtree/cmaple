@@ -265,6 +265,7 @@ enum MiniIndex : NumSeqsType {
 };
 
 /*--------------------------- NODE's INDEX -----------------------------------*/
+/*! \cond PRIVATE */
 /**
  Holds a space efficient index into a vector<PhyloNode> and subindex for the
  MiniNode inside the Phylonode
@@ -320,6 +321,7 @@ struct Index {
   NumSeqsType vector_index_ : 30 {0};
   MiniIndex mini_index_ : 2 {UNDEFINED};
 };
+/*! \endcond */
 /*--------------------------- NODE's INDEX -----------------------------------*/
 
 /*--------------------------------------------------------------*/
@@ -352,7 +354,7 @@ const RealNumType MAX_SUBS_PER_SITE = 0.067;
 
 /*--------------------------------------------------------------*/
 /*--------------------------------------------------------------*/
-
+/*! \cond PRIVATE */
 /**
  Program parameters, everything is specified here */
 class Params {
@@ -627,6 +629,7 @@ class Params {
    */
   // bool debug = false;
 };
+/*! \endcond */
 
 /**
  A PatternBuilder to build an instance of Params which stores all program

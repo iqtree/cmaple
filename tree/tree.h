@@ -289,6 +289,7 @@ class Tree {
   // ----------------- END OF PUBLIC APIs ------------------------------------
   // //
 
+  /*! \cond PRIVATE */
   /**
    TRUE to keep the branch lengths fixed
    */
@@ -385,6 +386,8 @@ class Tree {
    * @return a TreeType
    */
   static TreeType parseTreeType(const std::string& tree_type_str);
+    
+  /*! \endcond */
 
  private:
   /**
@@ -1887,6 +1890,7 @@ std::istream& operator>>(std::istream& in_stream, cmaple::Tree& tree);
 
 /*! @} End of Doxygen Groups*/
 
+/*! \cond PRIVATE */
 template <const StateType num_states>
 void cmaple::Tree::refreshAllLhs(bool avoid_using_upper_lr_lhs) {
   // 1. update all the lower lhs along the tree
@@ -2429,4 +2433,5 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
       selected_node_blength - best_branch_length_split, best_blength,
       best_child_regions, upper_left_right_regions);
 }
+/*! \endcond */
 }  // namespace cmaple

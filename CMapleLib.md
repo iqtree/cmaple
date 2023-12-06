@@ -1,9 +1,9 @@
 # What's CMaple library?
 
-Introduction to CMaple library...
+CMAPLE is a C++ reimplementation of [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) highly optimized for performance and scalability with many new features.
 
+CMAPLE library provides a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods.
 
-<br>
 # How to use?
 In the following, we give an instruction of how to include CMaple library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we'll take [IQ-TREE](https://github.com/iqtree/iqtree2) as example.
 

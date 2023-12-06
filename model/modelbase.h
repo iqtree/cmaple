@@ -42,7 +42,8 @@ class ModelBase {
 
  protected:
   // NHANLT: we can change to use unique_ptr(s) instead of normal pointers
-  /**
+   /*! \cond PRIVATE */
+   /**
    Model definitions
    */
   ModelsBlock* model_block = nullptr;
@@ -104,7 +105,8 @@ class ModelBase {
    */
   template <cmaple::StateType num_states>
   bool updateMutationMatEmpiricalTemplate(const Alignment* aln);
-
+  /*! \endcond */
+    
  public:
   /*!
    * List of substitution models. See [Substitution
@@ -165,6 +167,7 @@ class ModelBase {
     UNKNOWN,  ///<  Unknown model
   };
 
+  /*! \cond PRIVATE */
   /**
    Constructor
    */
@@ -317,8 +320,10 @@ class ModelBase {
    * @param n_seqtype_str a sequence type in string
    */
   static cmaple::ModelBase::SubModel parseModel(const std::string& model_name);
+  /*! \endcond */
 };
 
+/*! \cond PRIVATE */
 template <StateType num_states>
 void cmaple::ModelBase::updateMutationMat() {
   // update Mutation matrix regarding the pseudo muation count
@@ -406,4 +411,5 @@ auto cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
   // return update
   return update;
 }
+/*! \endcond */
 }  // namespace cmaple
