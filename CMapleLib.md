@@ -7,14 +7,14 @@ CMAPLE library provides a set of APIs, which allow users to integrate CMAPLE int
 # How to use?
 In the following, we give an instruction of how to include CMaple library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we'll take [IQ-TREE](https://github.com/iqtree/iqtree2) as example.
 
-### Include CMaple as a submodule of your project
+## Include CMaple as a submodule of your project
 
 In your project directory, run
     	
     	git submodule add https://github.com/trongnhanuit/cmaple.git
     	
    
-### Update CMakeList to include CMaple
+## Update CMakeList to include CMaple
 
     	project(iqtree)
     	
@@ -40,7 +40,7 @@ In your project directory, run
     	target_link_libraries(iqtree2 main maple cmaple_alignment)
     	target_link_libraries(iqtree2-aa main maple-aa cmaple_alignment-aa)
 
-### An example of APIs usage
+## An example of APIs usage
 
     	#include “cmaple.h”
     	
@@ -73,7 +73,7 @@ In your project directory, run
     		// Execute existing methods (e.g., IQ-TREE, RAXML, PHYML) to analyse this alignment
     	}
 
-### Tips for Debugging
+## Tips for Debugging
 CMaple outputs debugging messages to the standard output `std::cout`. One could control the amount of those messages via setting `cmaple::verbose_mode` to one of the following values.
 <br> - `VB_QUIET`: no messages except errors.
 <br> - `VB_MED` (default): common messages (showing the processing progress).

@@ -5,10 +5,10 @@
  CMAPLE is a C++ reimplementation of \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} highly optimized for performance and scalability with many new features.
 
 CMAPLE library provides a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods.\hypertarget{index_autotoc_md1}{}\doxysection{\texorpdfstring{How to use?}{How to use?}}\label{index_autotoc_md1}
-In the following, we give an instruction of how to include CMaple library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we\textquotesingle{}ll take \href{https://github.com/iqtree/iqtree2}{\texttt{ IQ-\/\+TREE}} as example.\hypertarget{index_autotoc_md2}{}\doxysubsubsection{\texorpdfstring{Include CMaple as a submodule of your project}{Include CMaple as a submodule of your project}}\label{index_autotoc_md2}
+In the following, we give an instruction of how to include CMaple library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we\textquotesingle{}ll take \href{https://github.com/iqtree/iqtree2}{\texttt{ IQ-\/\+TREE}} as example.\hypertarget{index_autotoc_md2}{}\doxysubsection{\texorpdfstring{Include CMaple as a submodule of your project}{Include CMaple as a submodule of your project}}\label{index_autotoc_md2}
 In your project directory, run \begin{DoxyVerb}    git submodule add https://github.com/trongnhanuit/cmaple.git
 \end{DoxyVerb}
-\hypertarget{index_autotoc_md3}{}\doxysubsubsection{\texorpdfstring{Update CMake\+List to include CMaple}{Update CMakeList to include CMaple}}\label{index_autotoc_md3}
+\hypertarget{index_autotoc_md3}{}\doxysubsection{\texorpdfstring{Update CMake\+List to include CMaple}{Update CMakeList to include CMaple}}\label{index_autotoc_md3}
 \begin{DoxyVerb}    project(iqtree)
 
     # Step 1: Add cmaple directory to the build
@@ -33,7 +33,7 @@ In your project directory, run \begin{DoxyVerb}    git submodule add https://git
     target_link_libraries(iqtree2 main maple cmaple_alignment)
     target_link_libraries(iqtree2-aa main maple-aa cmaple_alignment-aa)
 \end{DoxyVerb}
- \hypertarget{index_autotoc_md4}{}\doxysubsubsection{\texorpdfstring{An example of APIs usage}{An example of APIs usage}}\label{index_autotoc_md4}
+ \hypertarget{index_autotoc_md4}{}\doxysubsection{\texorpdfstring{An example of APIs usage}{An example of APIs usage}}\label{index_autotoc_md4}
 \begin{DoxyVerb}    #include “cmaple.h”
 
     // Create an alignment from a file
@@ -65,7 +65,7 @@ In your project directory, run \begin{DoxyVerb}    git submodule add https://git
         // Execute existing methods (e.g., IQ-TREE, RAXML, PHYML) to analyse this alignment
     }
 \end{DoxyVerb}
- \hypertarget{index_autotoc_md5}{}\doxysubsubsection{\texorpdfstring{Tips for Debugging}{Tips for Debugging}}\label{index_autotoc_md5}
+ \hypertarget{index_autotoc_md5}{}\doxysubsection{\texorpdfstring{Tips for Debugging}{Tips for Debugging}}\label{index_autotoc_md5}
 CMaple outputs debugging messages to the standard output {\ttfamily std\+::cout}. One could control the amount of those messages via setting {\ttfamily cmaple\+::verbose\+\_\+mode} to one of the following values. ~\newline
  -\/ {\ttfamily VB\+\_\+\+QUIET}\+: no messages except errors. ~\newline
  -\/ {\ttfamily VB\+\_\+\+MED} (default)\+: common messages (showing the processing progress). ~\newline

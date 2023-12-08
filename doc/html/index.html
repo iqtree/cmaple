@@ -78,11 +78,11 @@ $(function() {
 <h1><a class="anchor" id="autotoc_md1"></a>
 How to use?</h1>
 <p>In the following, we give an instruction of how to include CMaple library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we'll take <a href="https://github.com/iqtree/iqtree2">IQ-TREE</a> as example.</p>
-<h3><a class="anchor" id="autotoc_md2"></a>
-Include CMaple as a submodule of your project</h3>
+<h2><a class="anchor" id="autotoc_md2"></a>
+Include CMaple as a submodule of your project</h2>
 <p>In your project directory, run </p><pre class="fragment">    git submodule add https://github.com/trongnhanuit/cmaple.git
-</pre><h3><a class="anchor" id="autotoc_md3"></a>
-Update CMakeList to include CMaple</h3>
+</pre><h2><a class="anchor" id="autotoc_md3"></a>
+Update CMakeList to include CMaple</h2>
 <pre class="fragment">    project(iqtree)
 
     # Step 1: Add cmaple directory to the build
@@ -106,8 +106,8 @@ Update CMakeList to include CMaple</h3>
     # Step 4: Add linking libraries
     target_link_libraries(iqtree2 main maple cmaple_alignment)
     target_link_libraries(iqtree2-aa main maple-aa cmaple_alignment-aa)
-</pre> <h3><a class="anchor" id="autotoc_md4"></a>
-An example of APIs usage</h3>
+</pre> <h2><a class="anchor" id="autotoc_md4"></a>
+An example of APIs usage</h2>
 <pre class="fragment">    #include “cmaple.h”
 
     // Create an alignment from a file
@@ -138,8 +138,8 @@ An example of APIs usage</h3>
     {
         // Execute existing methods (e.g., IQ-TREE, RAXML, PHYML) to analyse this alignment
     }
-</pre> <h3><a class="anchor" id="autotoc_md5"></a>
-Tips for Debugging</h3>
+</pre> <h2><a class="anchor" id="autotoc_md5"></a>
+Tips for Debugging</h2>
 <p>CMaple outputs debugging messages to the standard output <code>std::cout</code>. One could control the amount of those messages via setting <code>cmaple::verbose_mode</code> to one of the following values. <br  />
  - <code>VB_QUIET</code>: no messages except errors. <br  />
  - <code>VB_MED</code> (default): common messages (showing the processing progress). <br  />
