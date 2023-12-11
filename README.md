@@ -26,7 +26,7 @@ As a command-line program, CMAPLE can be run by executing `cmaple ...` from a te
 
 ### 1. Infer a phylogenetic tree from an alignment
 
-Together with the executables, there is an example alignment (`example.maple` in the `example` directory) in the release package. Once can reconstruct a phylogenetic tree from that alignment (assuming that you are now in the same folder with `example.maple`).
+Together with the executables, there is an `example.maple` alignment in the release package. Once can reconstruct a phylogenetic tree from that alignment (assuming that you are now in the same folder with `example.maple`).
 
     cmaple -aln example.maple
     

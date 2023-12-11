@@ -58,6 +58,15 @@ set (cmaple_VERSION_MAJOR 1)
 set (cmaple_VERSION_MINOR 0)
 set (cmaple_VERSION_PATCH ".0")
 
+set (SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    if (IQTREE_FLAGS MATCHES "oldmac")
+        set (SYSTEM_NAME "MacOS10.5")
+    else()
+        set (SYSTEM_NAME "MacOSX")
+    endif()
+endif()
+
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -198,11 +207,6 @@ install (TARGETS cmaple DESTINATION bin)
 install (TARGETS cmaple-aa DESTINATION bin)
 install (FILES "${PROJECT_SOURCE_DIR}/example/example.maple" DESTINATION .)
 install (FILES "${PROJECT_SOURCE_DIR}/example/tree.nwk" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/input.phy" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/ref.fa" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/test_5K.maple" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/test_100.maple" DESTINATION .)
 #install (FILES "${PROJECT_BINARY_DIR}/cmaple_config.h" DESTINATION "include")
 #install(DIRECTORY "${PROJECT_SOURCE_DIR}/" # source directory
 #        DESTINATION "include/cmaple" # target directory
