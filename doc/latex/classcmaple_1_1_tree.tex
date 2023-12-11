@@ -35,17 +35,17 @@ void \mbox{\hyperlink{classcmaple_1_1_tree_ab932b3742c6e18d51554f72432c18151}{ch
 \begin{DoxyCompactList}\small\item\em Change the alignment. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_aa4f982f45f38226193cd584bbe7e93ef}{change\+Model}} (\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}model)
 \begin{DoxyCompactList}\small\item\em Change the substitution model. \end{DoxyCompactList}\item 
-std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a22c01b063bb2af96259d873b9c82ad8a}{do\+Placement}} ()
+void \mbox{\hyperlink{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}{do\+Placement}} (std\+::ostream \&out\+\_\+stream=std\+::cout)
 \item 
-std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a27aa5671934d696e91f6e5e4e2ab8608}{apply\+SPR}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type, const bool shallow\+\_\+tree\+\_\+search)
+void \mbox{\hyperlink{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}{apply\+SPR}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type, const bool shallow\+\_\+tree\+\_\+search, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \item 
-std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_abe5ff17922b8b186af5e08dabd4151a0}{optimize\+Branch}} ()
+void \mbox{\hyperlink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch}} (std\+::ostream \&out\+\_\+stream=std\+::cout)
 \item 
-std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a488a031a981471acb05dd6cd3dd7ed0c}{auto\+Proceed\+MAPLE}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}, const bool shallow\+\_\+tree\+\_\+search=false)
-\begin{DoxyCompactList}\small\item\em Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a22c01b063bb2af96259d873b9c82ad8a}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a27aa5671934d696e91f6e5e4e2ab8608}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_abe5ff17922b8b186af5e08dabd4151a0}{optimize\+Branch()} \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_tree_aaf42c58dd4db66c040386df9053f8ba9}{auto\+Proceed\+MAPLE}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}, const bool shallow\+\_\+tree\+\_\+search=false, std\+::ostream \&out\+\_\+stream=std\+::cout)
+\begin{DoxyCompactList}\small\item\em Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} \end{DoxyCompactList}\item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{compute\+Lh}} ()
 \begin{DoxyCompactList}\small\item\em Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
-std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a675f8a9a1704bfd3ed8f70d8c9408ab6}{compute\+Branch\+Support}} (const int num\+\_\+threads=1, const int num\+\_\+replicates=1000, const double epsilon=0.\+1, const bool allow\+\_\+replacing\+\_\+\+ML\+\_\+tree=true)
+void \mbox{\hyperlink{classcmaple_1_1_tree_a415d4e23f522c7ecb1f8363e27f6bafa}{compute\+Branch\+Support}} (const int num\+\_\+threads=1, const int num\+\_\+replicates=1000, const double epsilon=0.\+1, const bool allow\+\_\+replacing\+\_\+\+ML\+\_\+tree=true, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Compute branch supports (\href{https://academic.oup.com/sysbio/article/59/3/307/1702850}{\texttt{ a\+LRT-\/\+SH}}) of the current tree, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
 std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a8d1492f8a3291bd70af3a879b535f880}{export\+Newick}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{Tree\+Type}} tree\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da}{BIN\+\_\+\+TREE}}, const bool show\+\_\+branch\+\_\+supports=false)
 \begin{DoxyCompactList}\small\item\em Export the phylogenetic tree to a string in NEWICK format. \end{DoxyCompactList}\end{DoxyCompactItemize}
@@ -314,11 +314,11 @@ Change the substitution model.
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_a22c01b063bb2af96259d873b9c82ad8a}\label{classcmaple_1_1_tree_a22c01b063bb2af96259d873b9c82ad8a} 
+\Hypertarget{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}\label{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232} 
 \index{cmaple::Tree@{cmaple::Tree}!doPlacement@{doPlacement}}
 \index{doPlacement@{doPlacement}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{doPlacement()}{doPlacement()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::do\+Placement (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::do\+Placement (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
 Do placement (using stepwise addition) to build an initial tree. \doxylink{classcmaple_1_1_model}{Model} parameters (if not fixed) will be estimated during the placement process.
 \begin{DoxyItemize}
@@ -326,9 +326,11 @@ Do placement (using stepwise addition) to build an initial tree. \doxylink{class
 \item If users already supplied a complete tree, this function does nothing.
 \end{DoxyItemize}
 
-\begin{DoxyReturn}{Returns}
-a string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call \doxylink{classcmaple_1_1_tree_a8d1492f8a3291bd70af3a879b535f880}{export\+Newick()} later 
-\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyExceptions}{Exceptions}
 {\em std\+::logic\+\_\+error} & if any of the following situations occur.
@@ -338,22 +340,21 @@ a string contains all messages redirected from std\+::cout (for information and 
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_a27aa5671934d696e91f6e5e4e2ab8608}\label{classcmaple_1_1_tree_a27aa5671934d696e91f6e5e4e2ab8608} 
+\Hypertarget{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}\label{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8} 
 \index{cmaple::Tree@{cmaple::Tree}!applySPR@{applySPR}}
 \index{applySPR@{applySPR}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{applySPR()}{applySPR()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::apply\+SPR (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type,  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::apply\+SPR (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type,  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search,  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
-Apply SPR moves to optimize the tree 
+Apply SPR moves to optimize the tree. 
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em tree\+\_\+search\+\_\+type} & A type of tree search \\
 \hline
 \mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE to enable a shallow tree search before a deeper tree search \\
 \hline
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\hline
 \end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-a string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call \doxylink{classcmaple_1_1_tree_a8d1492f8a3291bd70af3a879b535f880}{export\+Newick()} later 
-\end{DoxyReturn}
 
 \begin{DoxyExceptions}{Exceptions}
 {\em std\+::logic\+\_\+error} & if any of the following situations occur.
@@ -364,15 +365,17 @@ a string contains all messages redirected from std\+::cout (for information and 
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_abe5ff17922b8b186af5e08dabd4151a0}\label{classcmaple_1_1_tree_abe5ff17922b8b186af5e08dabd4151a0} 
+\Hypertarget{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}\label{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8} 
 \index{cmaple::Tree@{cmaple::Tree}!optimizeBranch@{optimizeBranch}}
 \index{optimizeBranch@{optimizeBranch}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{optimizeBranch()}{optimizeBranch()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::optimize\+Branch (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::optimize\+Branch (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
-Optimize the branch lengths of the current tree \begin{DoxyReturn}{Returns}
-a string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call \doxylink{classcmaple_1_1_tree_a8d1492f8a3291bd70af3a879b535f880}{export\+Newick()} later 
-\end{DoxyReturn}
+Optimize the branch lengths of the current tree 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyExceptions}{Exceptions}
 {\em std\+::logic\+\_\+error} & if any of the following situations occur.
@@ -383,15 +386,15 @@ a string contains all messages redirected from std\+::cout (for information and 
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_a488a031a981471acb05dd6cd3dd7ed0c}\label{classcmaple_1_1_tree_a488a031a981471acb05dd6cd3dd7ed0c} 
+\Hypertarget{classcmaple_1_1_tree_aaf42c58dd4db66c040386df9053f8ba9}\label{classcmaple_1_1_tree_aaf42c58dd4db66c040386df9053f8ba9} 
 \index{cmaple::Tree@{cmaple::Tree}!autoProceedMAPLE@{autoProceedMAPLE}}
 \index{autoProceedMAPLE@{autoProceedMAPLE}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{autoProceedMAPLE()}{autoProceedMAPLE()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::auto\+Proceed\+MAPLE (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type = {\ttfamily \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}},  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search = {\ttfamily false} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::auto\+Proceed\+MAPLE (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type = {\ttfamily \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}},  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search = {\ttfamily false},  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
 
 
-Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a22c01b063bb2af96259d873b9c82ad8a}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a27aa5671934d696e91f6e5e4e2ab8608}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_abe5ff17922b8b186af5e08dabd4151a0}{optimize\+Branch()} 
+Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} 
 
 
 \begin{DoxyItemize}
@@ -411,10 +414,9 @@ Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a22c01b063
 \hline
 \mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE to enable a shallow tree search before a deeper tree search \\
 \hline
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\hline
 \end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-a string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the tree in NEWICK format, one could call \doxylink{classcmaple_1_1_tree_a8d1492f8a3291bd70af3a879b535f880}{export\+Newick()} later 
-\end{DoxyReturn}
 
 \begin{DoxyExceptions}{Exceptions}
 {\em std\+::invalid\+\_\+argument} & if tree\+\_\+search\+\_\+type is unknown \\
@@ -449,11 +451,11 @@ The log likelihood of the current tree
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_a675f8a9a1704bfd3ed8f70d8c9408ab6}\label{classcmaple_1_1_tree_a675f8a9a1704bfd3ed8f70d8c9408ab6} 
+\Hypertarget{classcmaple_1_1_tree_a415d4e23f522c7ecb1f8363e27f6bafa}\label{classcmaple_1_1_tree_a415d4e23f522c7ecb1f8363e27f6bafa} 
 \index{cmaple::Tree@{cmaple::Tree}!computeBranchSupport@{computeBranchSupport}}
 \index{computeBranchSupport@{computeBranchSupport}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{computeBranchSupport()}{computeBranchSupport()}}
-{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::compute\+Branch\+Support (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads = {\ttfamily 1},  }\item[{const int}]{num\+\_\+replicates = {\ttfamily 1000},  }\item[{const double}]{epsilon = {\ttfamily 0.1},  }\item[{const bool}]{allow\+\_\+replacing\+\_\+\+ML\+\_\+tree = {\ttfamily true} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::compute\+Branch\+Support (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads = {\ttfamily 1},  }\item[{const int}]{num\+\_\+replicates = {\ttfamily 1000},  }\item[{const double}]{epsilon = {\ttfamily 0.1},  }\item[{const bool}]{allow\+\_\+replacing\+\_\+\+ML\+\_\+tree = {\ttfamily true},  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
 
 
@@ -469,10 +471,9 @@ Compute branch supports (\href{https://academic.oup.com/sysbio/article/59/3/307/
 \hline
 \mbox{\texttt{ in}}  & {\em allow\+\_\+replacing\+\_\+\+ML\+\_\+tree} & TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional) \\
 \hline
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\hline
 \end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-A string contains all messages redirected from std\+::cout (for information and debugging purpuses only). To output the branch supports values, one could call export\+Newick(\+BIN, true) later 
-\end{DoxyReturn}
 
 \begin{DoxyExceptions}{Exceptions}
 {\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
