@@ -110,23 +110,23 @@ void cmaple::Tree::changeModel(Model* model) {
   (this->*changeModelPtr)(model);
 }
 
-std::string cmaple::Tree::doPlacement() {
-  return (this->*doPlacementPtr)();
+void cmaple::Tree::doPlacement(std::ostream& out_stream) {
+  (this->*doPlacementPtr)(out_stream);
 }
 
-std::string cmaple::Tree::applySPR(const TreeSearchType tree_search_type,
-                                   const bool shallow_tree_search) {
-  return (this->*applySPRPtr)(tree_search_type, shallow_tree_search);
+void cmaple::Tree::applySPR(const TreeSearchType tree_search_type,
+                                   const bool shallow_tree_search, std::ostream& out_stream) {
+  (this->*applySPRPtr)(tree_search_type, shallow_tree_search, out_stream);
 }
 
-std::string cmaple::Tree::optimizeBranch() {
-  return (this->*optimizeBranchPtr)();
+void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
+   (this->*optimizeBranchPtr)(out_stream);
 }
 
-std::string cmaple::Tree::autoProceedMAPLE(
+void cmaple::Tree::autoProceedMAPLE(
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search) {
-  return (this->*doInferencePtr)(tree_search_type, shallow_tree_search);
+    const bool shallow_tree_search, std::ostream& out_stream) {
+  (this->*doInferencePtr)(tree_search_type, shallow_tree_search, out_stream);
 }
 
 RealNumType cmaple::Tree::computeLh() {
@@ -336,7 +336,9 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
     }
 
     // optimize blengths
-    std::cout << optimizeBranch() << std::endl;
+    optimizeBranch();
+      
+    std::cout << std::endl;
   }
 
   // set outdated = false at all nodes to avoid considering SPR moves at those
@@ -465,26 +467,25 @@ void cmaple::Tree::changeModelTemplate(Model* n_model) {
 }
 
 template <const StateType num_states>
-std::string cmaple::Tree::doInferenceTemplate(
+void cmaple::Tree::doInferenceTemplate(
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search) {
+    const bool shallow_tree_search, std::ostream& out_stream) {
   // validate input
   assert(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
-  ostringstream target_cout;
-  cout.rdbuf(target_cout.rdbuf());
+  cout.rdbuf(out_stream.rdbuf());
 
   // 1. Do placement to build an initial tree
-  std::cout << doPlacement();
+  doPlacement(out_stream);
 
   // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-  std::cout << applySPR(tree_search_type, shallow_tree_search);
+  applySPR(tree_search_type, shallow_tree_search, out_stream);
 
   // 3. Optimize branch lengths (if needed)
   if (!fixed_blengths) {
-    std::cout << optimizeBranch();
+    optimizeBranch(out_stream);
   }
 
   // output log-likelihood of the tree
@@ -496,13 +497,10 @@ std::string cmaple::Tree::doInferenceTemplate(
 
   // Restore the source cout
   cout.rdbuf(src_cout);
-
-  // Will output our Hello World! from above.
-  return target_cout.str();
 }
 
 template <const StateType num_states>
-std::string cmaple::Tree::doPlacementTemplate() {
+void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
   if (aln->data.size() < 3) {
     throw std::logic_error(
         "The number of input sequences must be at least 3! "
@@ -511,8 +509,7 @@ std::string cmaple::Tree::doPlacementTemplate() {
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
-  ostringstream target_cout;
-  cout.rdbuf(target_cout.rdbuf());
+  cout.rdbuf(out_stream.rdbuf());
 
   // Make sure we use the updated alignment (in case users re-read the alignment
   // from a new file after attaching the alignment to the tree)
@@ -669,15 +666,12 @@ std::string cmaple::Tree::doPlacementTemplate() {
 
   // Restore the source cout
   cout.rdbuf(src_cout);
-
-  // Will output our Hello World! from above.
-  return target_cout.str();
 }
 
 template <const StateType num_states>
-std::string cmaple::Tree::applySPRTemplate(
+void cmaple::Tree::applySPRTemplate(
     const TreeSearchType n_tree_search_type,
-    const bool shallow_tree_search) {
+    const bool shallow_tree_search, std::ostream& out_stream) {
   TreeSearchType tree_search_type = n_tree_search_type;
   // Validate tree search type
   if (tree_search_type == UNKNOWN_TREE_SEARCH) {
@@ -691,8 +685,7 @@ std::string cmaple::Tree::applySPRTemplate(
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
-  ostringstream target_cout;
-  cout.rdbuf(target_cout.rdbuf());
+  cout.rdbuf(out_stream.rdbuf());
 
   // Make sure we use the updated alignment (in case users re-read the alignment
   // from a new file after attaching the alignment to the tree)
@@ -798,9 +791,6 @@ std::string cmaple::Tree::applySPRTemplate(
 
   // Restore the source cout
   cout.rdbuf(src_cout);
-
-  // Will output our Hello World! from above.
-  return target_cout.str();
 }
 
 template <const cmaple::StateType num_states>
@@ -901,7 +891,7 @@ void cmaple::Tree::optimizeTreeTopology(bool short_range_search) {
 }
 
 template <const StateType num_states>
-std::string cmaple::Tree::optimizeBranchTemplate() {
+void cmaple::Tree::optimizeBranchTemplate(std::ostream& out_stream) {
   // Make sure the tree is not empty
   if (!nodes.size()) {
     throw std::logic_error("Tree is empty. Please infer a tree first!");
@@ -910,8 +900,7 @@ std::string cmaple::Tree::optimizeBranchTemplate() {
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
-  ostringstream target_cout;
-  cout.rdbuf(target_cout.rdbuf());
+  cout.rdbuf(out_stream.rdbuf());
 
   // record the start time
   auto start = getRealTime();
@@ -973,9 +962,6 @@ std::string cmaple::Tree::optimizeBranchTemplate() {
 
   // Restore the source cout
   cout.rdbuf(src_cout);
-
-  // Will output our Hello World! from above.
-  return target_cout.str();
 }
 
 template <const StateType num_states>
@@ -1011,21 +997,23 @@ RealNumType cmaple::Tree::computeLhTemplate() {
   return total_lh;
 }
 
-std::string cmaple::Tree::computeBranchSupport(
+void cmaple::Tree::computeBranchSupport(
     const int num_threads,
     const int num_replicates,
     const double epsilon,
-    const bool allow_replacing_ML_tree) {
-  return (this->*computeBranchSupportPtr)(num_threads, num_replicates, epsilon,
-                                          allow_replacing_ML_tree);
+    const bool allow_replacing_ML_tree,
+    std::ostream& out_stream) {
+  (this->*computeBranchSupportPtr)(num_threads, num_replicates, epsilon,
+                                          allow_replacing_ML_tree, out_stream);
 }
 
 template <const StateType num_states>
-std::string cmaple::Tree::computeBranchSupportTemplate(
+void cmaple::Tree::computeBranchSupportTemplate(
     const int num_threads,
     const int num_replicates,
     const double epsilon,
-    const bool allow_replacing_ML_tree) {
+    const bool allow_replacing_ML_tree,
+    std::ostream& out_stream) {
   // Make sure the tree is not empty
   if (!nodes.size()) {
     throw std::invalid_argument(
@@ -1053,8 +1041,7 @@ std::string cmaple::Tree::computeBranchSupportTemplate(
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
-  ostringstream target_cout;
-  cout.rdbuf(target_cout.rdbuf());
+  cout.rdbuf(out_stream.rdbuf());
 
   // record the start time
   auto start = getRealTime();
@@ -1109,9 +1096,6 @@ std::string cmaple::Tree::computeBranchSupportTemplate(
 
   // Restore the source cout
   cout.rdbuf(src_cout);
-
-  // return the redirected messages
-  return target_cout.str();
 }
 
 std::string cmaple::Tree::exportNodeString(const bool binary,

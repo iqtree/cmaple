@@ -164,40 +164,34 @@ class Tree {
    * not existed in the input tree) from the alignment to the tree.
    * - If users already supplied a complete tree, this function does nothing.
    *
-   * @return a string contains all messages redirected from std::cout (for
-   * information and debugging purpuses only). To output the tree in NEWICK
-   * format, one could call exportNewick() later
+   * @param[out] out_stream the output message stream
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  std::string doPlacement();
+  void doPlacement(std::ostream& out_stream = std::cout);
 
-  /*! Apply SPR moves to optimize the tree
+  /*! Apply SPR moves to optimize the tree.
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search
-   * @return a string contains all messages redirected from std::cout (for
-   * information and debugging purpuses only). To output the tree in NEWICK
-   * format, one could call exportNewick() later
+   * @param[out] out_stream the output message stream
    * @throw std::logic\_error if any of the following situations occur.
    * - the tree is empty
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  std::string applySPR(const TreeSearchType tree_search_type,
-                       const bool shallow_tree_search);
+  void applySPR(const TreeSearchType tree_search_type,
+                       const bool shallow_tree_search, std::ostream& out_stream = std::cout);
 
   /*! Optimize the branch lengths of the current tree
-   * @return a string contains all messages redirected from std::cout (for
-   * information and debugging purpuses only). To output the tree in NEWICK
-   * format, one could call exportNewick() later
+   * @param[out] out_stream the output message stream
    * @throw std::logic\_error if any of the following situations occur.
    * - the tree is empty
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  std::string optimizeBranch();
+  void optimizeBranch(std::ostream& out_stream = std::cout);
 
   /*! \brief Infer a phylogenetic tree by executing doPlacement(), applySPR(),
    * and optimizeBranch()
@@ -221,17 +215,15 @@ class Tree {
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search
-   * @return a string contains all messages redirected from std::cout (for
-   * information and debugging purpuses only). To output the tree in NEWICK
-   * format, one could call exportNewick() later
+   * @param[out] out_stream the output message stream
    * @throw std::invalid\_argument if tree\_search\_type is unknown
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  std::string autoProceedMAPLE(
+  void autoProceedMAPLE(
       const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH,
-      const bool shallow_tree_search = false);
+      const bool shallow_tree_search = false, std::ostream& out_stream = std::cout);
 
   /*! \brief Compute the log likelihood of the current tree, which may or may
    * not contain all taxa in the alignment
@@ -254,9 +246,7 @@ class Tree {
    * 2010](https://academic.oup.com/sysbio/article/59/3/307/1702850))
    * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a
    * higher likelihood tree found when computing branch supports (optional)
-   * @return A string contains all messages redirected from std::cout (for
-   * information and debugging purpuses only). To output the branch supports
-   * values, one could call exportNewick(BIN, true) later
+   * @param[out] out_stream the output message stream
    * @throw std::invalid\_argument if any of the following situations occur.
    * - num_threads < 0 or num_threads > the number of CPU cores
    * - num_replicates <= 0
@@ -267,10 +257,11 @@ class Tree {
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  std::string computeBranchSupport(const int num_threads = 1,
+  void computeBranchSupport(const int num_threads = 1,
                                    const int num_replicates = 1000,
                                    const double epsilon = 0.1,
-                                   const bool allow_replacing_ML_tree = true);
+                                   const bool allow_replacing_ML_tree = true,
+                                   std::ostream& out_stream = std::cout);
 
   /*! \brief Export the phylogenetic tree  to a string in NEWICK format.
    * @param[in] tree_type The type of the output tree (optional): BIN_TREE
@@ -411,27 +402,27 @@ class Tree {
   /**
       Pointer  to doInference method
    */
-  typedef std::string (Tree::*DoInferencePtrType)(const TreeSearchType,
-                                                  const bool);
+  typedef void (Tree::*DoInferencePtrType)(const TreeSearchType,
+                                                  const bool, std::ostream&);
   DoInferencePtrType doInferencePtr;
 
   /**
       Pointer  to doPlacement method
    */
-  typedef std::string (Tree::*DoPlacementPtrType)();
+  typedef void (Tree::*DoPlacementPtrType)(std::ostream&);
   DoPlacementPtrType doPlacementPtr;
 
   /**
       Pointer  to applySPR method
    */
-  typedef std::string (Tree::*ApplySPRPtrType)(const TreeSearchType,
-                                               const bool);
+  typedef void (Tree::*ApplySPRPtrType)(const TreeSearchType,
+                                               const bool, std::ostream&);
   ApplySPRPtrType applySPRPtr;
 
   /**
       Pointer  to optimizeBranch method
    */
-  typedef std::string (Tree::*OptimizeBranchPtrType)();
+  typedef void (Tree::*OptimizeBranchPtrType)(std::ostream&);
   OptimizeBranchPtrType optimizeBranchPtr;
 
   /**
@@ -443,10 +434,10 @@ class Tree {
   /**
       Pointer  to computeBranchSupport method
    */
-  typedef std::string (Tree::*computeBranchSupportPtrType)(const int,
+  typedef void (Tree::*computeBranchSupportPtrType)(const int,
                                                            const int,
                                                            const double,
-                                                           const bool);
+                                                           const bool, std::ostream&);
   computeBranchSupportPtrType computeBranchSupportPtr;
 
   typedef void (Tree::*MakeTreeInOutConsistentPtrType)();
@@ -473,24 +464,24 @@ class Tree {
   /*! Template of doInference()
    */
   template <const cmaple::StateType num_states>
-  std::string doInferenceTemplate(const TreeSearchType tree_search_type,
-                                  const bool shallow_tree_search);
+  void doInferenceTemplate(const TreeSearchType tree_search_type,
+                                  const bool shallow_tree_search, std::ostream& out_stream);
 
   /*! Template of doPlacement()
    */
   template <const cmaple::StateType num_states>
-  std::string doPlacementTemplate();
+  void doPlacementTemplate(std::ostream& out_stream);
 
   /*! Template of applySPR()
    */
   template <const cmaple::StateType num_states>
-  std::string applySPRTemplate(const TreeSearchType tree_search_type,
-                               const bool shallow_tree_search);
+  void applySPRTemplate(const TreeSearchType tree_search_type,
+                               const bool shallow_tree_search, std::ostream& out_stream);
 
   /*! Template of optimizeBranch()
    */
   template <const cmaple::StateType num_states>
-  std::string optimizeBranchTemplate();
+  void optimizeBranchTemplate(std::ostream& out_stream);
 
   /*! Template of computeLh()
    */
@@ -500,10 +491,11 @@ class Tree {
   /*! Template of computeBranchSupport()
    */
   template <const cmaple::StateType num_states>
-  std::string computeBranchSupportTemplate(const int num_threads,
+  void computeBranchSupportTemplate(const int num_threads,
                                            const int num_replicates,
                                            const double epsilon,
-                                           const bool allow_replacing_ML_tree);
+                                           const bool allow_replacing_ML_tree,
+                                           std::ostream& out_stream);
 
   /*! Template of makeTreeInOutConsistent()
    */

@@ -129,10 +129,9 @@ void cmaple::runCMaple(cmaple::Params &params)
         
         // Infer a phylogenetic tree
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
-        std::string redirected_msgs = tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
-        if (cmaple::verbose_mode >= cmaple::VB_MED) {
-          std::cout << redirected_msgs << std::endl;
-        }
+        std::ostream null_stream(0);
+        std::ostream& out_stream = cmaple::verbose_mode >= cmaple::VB_MED ? std::cout : null_stream;
+        tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search, out_stream);
 
         // Write the normal tree file
         ofstream out = ofstream(output_treefile);
@@ -149,10 +148,7 @@ void cmaple::runCMaple(cmaple::Params &params)
               allow_replacing_ML_tree = params.allow_replace_input_tree;
             }
 
-            redirected_msgs = tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree);
-            if (cmaple::verbose_mode >= cmaple::VB_MED) {
-              std::cout << redirected_msgs << std::endl;
-            }
+            tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree, out_stream);
 
             // write the tree file with branch supports
             ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
@@ -544,7 +540,8 @@ void cmaple::testing(cmaple::Params& params)
         std::cout << model_params.mut_rates << std::endl;
     }
     
-    std::cout << tree101.autoProceedMAPLE() << std::endl;
+    tree101.autoProceedMAPLE();
+    std:cout << std::endl;
     
     // Show model parameters
     if (cmaple::verbose_mode > cmaple::VB_QUIET)
@@ -571,7 +568,8 @@ void cmaple::testing(cmaple::Params& params)
         std::cout << model_params.mut_rates << std::endl;
     }
     
-    std::cout << tree100.autoProceedMAPLE() << std::endl;
+    tree100.autoProceedMAPLE();
+    std::cout << std::endl;
     
     // Show model parameters
     if (cmaple::verbose_mode > cmaple::VB_QUIET)
@@ -585,7 +583,8 @@ void cmaple::testing(cmaple::Params& params)
     }
     
     model1.fixParameters(true);
-    std::cout << tree101.autoProceedMAPLE() << std::endl;
+    tree101.autoProceedMAPLE();
+    std::cout << std::endl;
     
     // Show model parameters
     if (cmaple::verbose_mode > cmaple::VB_QUIET)
