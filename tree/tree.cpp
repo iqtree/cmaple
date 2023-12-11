@@ -895,7 +895,7 @@ void cmaple::Tree::optimizeBranchTemplate(std::ostream& out_stream) {
   // Make sure the tree is not empty
   if (!nodes.size()) {
     throw std::logic_error("Tree is empty. Please infer a tree first!");
-    return 0;
+    return;
   }
 
   // Redirect the original src_cout to the target_cout
@@ -1018,7 +1018,7 @@ void cmaple::Tree::computeBranchSupportTemplate(
   if (!nodes.size()) {
     throw std::invalid_argument(
         "Tree is empty. Please build/infer a tree from the alignment first!");
-    return "";
+      return;
   }
 
   // set num_threads
