@@ -520,7 +520,7 @@ void cmaple::testing(cmaple::Params& params)
     tree.changeAln(&aln4);*/
     
     // -------- One model attaches to multiple trees -----------
-    std::unique_ptr<cmaple::Params> params1 = cmaple::ParamsBuilder().withRandomSeed(9).withThreshProb(1e-7).build();
+    /*std::unique_ptr<cmaple::Params> params1 = cmaple::ParamsBuilder().withRandomSeed(9).withThreshProb(1e-7).build();
     std::cout << params1->ran_seed << std::endl;
     std::cout << params1->threshold_prob << std::endl;
     
@@ -597,6 +597,6 @@ void cmaple::testing(cmaple::Params& params)
         std::cout << model_params.mut_rates << std::endl;
     }
     
-    std::cout << tree101.computeLh() << std::endl;
+    std::cout << tree101.computeLh() << std::endl;*/
     // -------- One model attaches to multiple trees -----------
 }

@@ -127,10 +127,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply SPR moves to optimize the tree.  <br /></td></tr>
 <tr class="separator:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc947148cb44b753d7799b4df5fa83f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8">optimizeBranch</a> (std::ostream &amp;out_stream=std::cout)</td></tr>
-<tr class="memdesc:afc947148cb44b753d7799b4df5fa83f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optimize the branch lengths of the current tree.  <br /></td></tr>
+<tr class="memdesc:afc947148cb44b753d7799b4df5fa83f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optimize the branch lengths of the tree.  <br /></td></tr>
 <tr class="separator:afc947148cb44b753d7799b4df5fa83f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf42c58dd4db66c040386df9053f8ba9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#aaf42c58dd4db66c040386df9053f8ba9">autoProceedMAPLE</a> (const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type=<a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1">NORMAL_TREE_SEARCH</a>, const bool shallow_tree_search=false, std::ostream &amp;out_stream=std::cout)</td></tr>
-<tr class="memdesc:aaf42c58dd4db66c040386df9053f8ba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the current tree.">optimizeBranch()</a>  <br /></td></tr>
+<tr class="memdesc:aaf42c58dd4db66c040386df9053f8ba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the tree.">optimizeBranch()</a>  <br /></td></tr>
 <tr class="separator:aaf42c58dd4db66c040386df9053f8ba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a987c92b41faa1303b5b0c8393c0704db"><td class="memItemLeft" align="right" valign="top">RealNumType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a987c92b41faa1303b5b0c8393c0704db">computeLh</a> ()</td></tr>
 <tr class="memdesc:a987c92b41faa1303b5b0c8393c0704db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment.  <br /></td></tr>
@@ -160,7 +160,7 @@ Public Member Functions</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43a782a94a0336018d3a43f5e71e76e0bc6" name="a39bd3bfce400c9222e8b77c584d26d43a782a94a0336018d3a43f5e71e76e0bc6"></a>FAST_TREE_SEARCH&#160;</td><td class="fielddoc"><p>No tree search (placement only) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1" name="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1"></a>NORMAL_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Only consider pruning branches at newly-added nodes when seeking SPR moves </p>
+<tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1" name="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1"></a>NORMAL_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider pruning branches only at newly-added nodes when seeking SPR moves </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2" name="a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2"></a>MORE_ACCURATE_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider all nodes when seeking SPR moves </p>
 </td></tr>
@@ -259,7 +259,7 @@ Public Member Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramname">std::logic_error</td><td>if any of the following situations occur.<ul>
-<li>taxa in the tree (is specified) is not found in the alignment</li>
+<li>any taxa in the tree (if specified) is not found in the alignment</li>
 <li>unexpected values/behaviors found during the operations</li>
 </ul>
 </td></tr>
@@ -331,12 +331,12 @@ Public Member Functions</h2></td></tr>
 <li>the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))</li>
 <li>the alignment is empty</li>
 <li>the model is unknown/unsupported</li>
-<li>the tree (is specified) but in an incorrect format</li>
+<li>the tree (if specified) is in an incorrect format</li>
 </ul>
 </td></tr>
-    <tr><td class="paramname">ios::failure</td><td>if the tree file (is specified) is not found </td></tr>
+    <tr><td class="paramname">ios::failure</td><td>if the tree file (if specified) is not found </td></tr>
     <tr><td class="paramname">std::logic_error</td><td>if any of the following situations occur.<ul>
-<li>taxa in the tree (is specified) is not found in the alignment</li>
+<li>any taxa in the tree (if specified) is not found in the alignment</li>
 <li>unexpected values/behaviors found during the operations</li>
 </ul>
 </td></tr>
@@ -402,7 +402,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::invalid_argument</td><td>if tree is empty or in an incorrect format </td></tr>
+    <tr><td class="paramname">std::invalid_argument</td><td>if the tree is empty or in an incorrect format </td></tr>
     <tr><td class="paramname">std::logic_error</td><td>if any of the following situations occur.<ul>
 <li>the attached substitution model is unknown/unsupported</li>
 <li>any taxa in the tree is not found in the alignment</li>
@@ -452,7 +452,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::invalid_argument</td><td>if tree is empty or in an incorrect format </td></tr>
+    <tr><td class="paramname">std::invalid_argument</td><td>if the tree is empty or in an incorrect format </td></tr>
     <tr><td class="paramname">ios::failure</td><td>if the tree file is not found </td></tr>
     <tr><td class="paramname">std::logic_error</td><td>if any of the following situations occur.<ul>
 <li>the attached substitution model is unknown/unsupported</li>
@@ -494,7 +494,7 @@ Public Member Functions</h2></td></tr>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>If the alignment is empty </td></tr>
     <tr><td class="paramname">std::logic_error</td><td>if any of the following situations occur.<ul>
-<li>taxa in the current tree is not found in the new alignment</li>
+<li>any taxa in the tree is not found in the new alignment</li>
 <li>the sequence type of the new alignment is different from the old one</li>
 <li>unexpected values/behaviors found during the operations </li>
 </ul>
@@ -565,7 +565,7 @@ Public Member Functions</h2></td></tr>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>the output message stream </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
   </table>
   </dd>
 </dl>
@@ -619,7 +619,7 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>A type of tree search </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE to enable a shallow tree search before a deeper tree search </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>the output message stream </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
   </table>
   </dd>
 </dl>
@@ -653,10 +653,10 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Optimize the branch lengths of the current tree. </p>
+<p>Optimize the branch lengths of the tree. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>the output message stream </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
   </table>
   </dd>
 </dl>
@@ -706,7 +706,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the current tree.">optimizeBranch()</a> </p>
+<p>Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the tree.">optimizeBranch()</a> </p>
 <ul>
 <li>If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:<ul>
 <li>performs placement (i.e., adding missing taxa from the alignment to the tree)</li>
@@ -714,14 +714,14 @@ Public Member Functions</h2></td></tr>
 <li>optimizes all branch lengths</li>
 </ul>
 </li>
-<li>If users already supplied a complete tree, this function, by default, does neither placment nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
-<li>If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they should set tree_search_type = MORE_ACCURATE</li>
+<li>If users already supplied a complete tree, this function, by default, does neither placement nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
+<li>If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree_search_type = MORE_ACCURATE</li>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>A type of tree search </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE to enable a shallow tree search before a deeper tree search </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>the output message stream </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>A type of tree search (optional) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE to enable a shallow tree search before a deeper tree search (optional) </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
   </table>
   </dd>
 </dl>
@@ -821,7 +821,7 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_replicates</td><td>A positive number of replicates (optional) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">epsilon</td><td>A positive epsilon (optional), which is used to avoid rounding effects, when the best and second best NNI trees have nearly identical site log-likelihood values (see <a href="https://academic.oup.com/sysbio/article/59/3/307/1702850">Guindon et al., 2010</a>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">allow_replacing_ML_tree</td><td>TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional) </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>the output message stream </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
   </table>
   </dd>
 </dl>
@@ -883,7 +883,7 @@ Public Member Functions</h2></td></tr>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
-<li>n_tree_type is unknown</li>
+<li>tree_type is unknown</li>
 <li>show_branch_supports = true but branch support values have yet been computed </li>
 </ul>
 </td></tr>

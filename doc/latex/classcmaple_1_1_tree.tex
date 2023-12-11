@@ -40,7 +40,7 @@ void \mbox{\hyperlink{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}{do
 void \mbox{\hyperlink{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}{apply\+SPR}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type, const bool shallow\+\_\+tree\+\_\+search, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Apply SPR moves to optimize the tree. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch}} (std\+::ostream \&out\+\_\+stream=std\+::cout)
-\begin{DoxyCompactList}\small\item\em Optimize the branch lengths of the current tree. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Optimize the branch lengths of the tree. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_aaf42c58dd4db66c040386df9053f8ba9}{auto\+Proceed\+MAPLE}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}, const bool shallow\+\_\+tree\+\_\+search=false, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} \end{DoxyCompactList}\item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{compute\+Lh}} ()
@@ -67,7 +67,7 @@ FAST\+\_\+\+TREE\+\_\+\+SEARCH&No tree search (placement only) \\
 \hline
 
 \raisebox{\heightof{T}}[0pt][0pt]{\index{NORMAL\_TREE\_SEARCH@{NORMAL\_TREE\_SEARCH}!cmaple::Tree@{cmaple::Tree}}\index{cmaple::Tree@{cmaple::Tree}!NORMAL\_TREE\_SEARCH@{NORMAL\_TREE\_SEARCH}}}\Hypertarget{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}\label{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1} 
-NORMAL\+\_\+\+TREE\+\_\+\+SEARCH&Only consider pruning branches at newly-\/added nodes when seeking SPR moves \\
+NORMAL\+\_\+\+TREE\+\_\+\+SEARCH&Consider pruning branches only at newly-\/added nodes when seeking SPR moves \\
 \hline
 
 \raisebox{\heightof{T}}[0pt][0pt]{\index{MORE\_ACCURATE\_TREE\_SEARCH@{MORE\_ACCURATE\_TREE\_SEARCH}!cmaple::Tree@{cmaple::Tree}}\index{cmaple::Tree@{cmaple::Tree}!MORE\_ACCURATE\_TREE\_SEARCH@{MORE\_ACCURATE\_TREE\_SEARCH}}}\Hypertarget{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2}\label{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2} 
@@ -137,7 +137,7 @@ Constructor from a stream of a (bifurcating or multifurcating) tree (with/withou
 \hline
 {\em std\+::logic\+\_\+error} & if any of the following situations occur.
 \begin{DoxyItemize}
-\item taxa in the tree (is specified) is not found in the alignment
+\item any taxa in the tree (if specified) is not found in the alignment
 \item unexpected values/behaviors found during the operations
 \end{DoxyItemize}\\
 \hline
@@ -174,14 +174,14 @@ Constructor from an optional (bifurcating or multifurcating) tree (with/without 
 \item the sequence type is unsupported (neither DNA (for nucleotide data) nor AA (for protein data))
 \item the alignment is empty
 \item the model is unknown/unsupported
-\item the tree (is specified) but in an incorrect format
+\item the tree (if specified) is in an incorrect format
 \end{DoxyItemize}\\
 \hline
-{\em ios\+::failure} & if the tree file (is specified) is not found \\
+{\em ios\+::failure} & if the tree file (if specified) is not found \\
 \hline
 {\em std\+::logic\+\_\+error} & if any of the following situations occur.
 \begin{DoxyItemize}
-\item taxa in the tree (is specified) is not found in the alignment
+\item any taxa in the tree (if specified) is not found in the alignment
 \item unexpected values/behaviors found during the operations
 \end{DoxyItemize}\\
 \hline
@@ -216,7 +216,7 @@ Load a tree from a stream of a (bifurcating or multifurcating) tree (with/withou
 \end{DoxyParams}
 
 \begin{DoxyExceptions}{Exceptions}
-{\em std\+::invalid\+\_\+argument} & if tree is empty or in an incorrect format \\
+{\em std\+::invalid\+\_\+argument} & if the tree is empty or in an incorrect format \\
 \hline
 {\em std\+::logic\+\_\+error} & if any of the following situations occur.
 \begin{DoxyItemize}
@@ -247,7 +247,7 @@ Load a tree from a (bifurcating or multifurcating) tree (with/without branch len
 \end{DoxyParams}
 
 \begin{DoxyExceptions}{Exceptions}
-{\em std\+::invalid\+\_\+argument} & if tree is empty or in an incorrect format \\
+{\em std\+::invalid\+\_\+argument} & if the tree is empty or in an incorrect format \\
 \hline
 {\em ios\+::failure} & if the tree file is not found \\
 \hline
@@ -282,7 +282,7 @@ Change the alignment.
 \hline
 {\em std\+::logic\+\_\+error} & if any of the following situations occur.
 \begin{DoxyItemize}
-\item taxa in the current tree is not found in the new alignment
+\item any taxa in the tree is not found in the new alignment
 \item the sequence type of the new alignment is different from the old one
 \item unexpected values/behaviors found during the operations 
 \end{DoxyItemize}\\
@@ -332,7 +332,7 @@ Do placement (using stepwise addition) to build an initial tree. \doxylink{class
 
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & The output message stream (optional) \\
 \hline
 \end{DoxyParams}
 
@@ -360,7 +360,7 @@ Apply SPR moves to optimize the tree.
 \hline
 \mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE to enable a shallow tree search before a deeper tree search \\
 \hline
-\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & The output message stream (optional) \\
 \hline
 \end{DoxyParams}
 
@@ -381,11 +381,11 @@ Apply SPR moves to optimize the tree.
 
 
 
-Optimize the branch lengths of the current tree. 
+Optimize the branch lengths of the tree. 
 
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & The output message stream (optional) \\
 \hline
 \end{DoxyParams}
 
@@ -416,17 +416,17 @@ Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a072d53937
 \item applies a NORMAL tree search (which does SPR moves only on newly-\/added nodes)
 \item optimizes all branch lengths
 \end{DoxyItemize}
-\item If users already supplied a complete tree, this function, by default, does neither placment nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed\+\_\+blengths = true when initializing the tree (by Tree() constructor);
-\item If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they should set tree\+\_\+search\+\_\+type = MORE\+\_\+\+ACCURATE
+\item If users already supplied a complete tree, this function, by default, does neither placement nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed\+\_\+blengths = true when initializing the tree (by Tree() constructor);
+\item If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree\+\_\+search\+\_\+type = MORE\+\_\+\+ACCURATE
 \end{DoxyItemize}
 
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em tree\+\_\+search\+\_\+type} & A type of tree search \\
+\mbox{\texttt{ in}}  & {\em tree\+\_\+search\+\_\+type} & A type of tree search (optional) \\
 \hline
-\mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE to enable a shallow tree search before a deeper tree search \\
+\mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE to enable a shallow tree search before a deeper tree search (optional) \\
 \hline
-\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & The output message stream (optional) \\
 \hline
 \end{DoxyParams}
 
@@ -483,7 +483,7 @@ Compute branch supports (\href{https://academic.oup.com/sysbio/article/59/3/307/
 \hline
 \mbox{\texttt{ in}}  & {\em allow\+\_\+replacing\+\_\+\+ML\+\_\+tree} & TRUE to allow replacing the ML tree by a higher likelihood tree found when computing branch supports (optional) \\
 \hline
-\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
+\mbox{\texttt{ out}}  & {\em out\+\_\+stream} & The output message stream (optional) \\
 \hline
 \end{DoxyParams}
 
@@ -527,7 +527,7 @@ A tree string in NEWICK format
 \begin{DoxyExceptions}{Exceptions}
 {\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
 \begin{DoxyItemize}
-\item n\+\_\+tree\+\_\+type is unknown
+\item tree\+\_\+type is unknown
 \item show\+\_\+branch\+\_\+supports = true but branch support values have yet been computed 
 \end{DoxyItemize}\\
 \hline

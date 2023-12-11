@@ -196,9 +196,13 @@ target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmap
 ##############################################################
 install (TARGETS cmaple DESTINATION bin)
 install (TARGETS cmaple-aa DESTINATION bin)
-#install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
-#install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa.ref" DESTINATION .)
-#install (FILES "${PROJECT_SOURCE_DIR}/example/output.maple" DESTINATION .)
+install (FILES "${PROJECT_SOURCE_DIR}/example/example.maple" DESTINATION .)
+install (FILES "${PROJECT_SOURCE_DIR}/example/tree.nwk" DESTINATION .)
+install (FILES "${PROJECT_SOURCE_DIR}/example/input.fa" DESTINATION .)
+install (FILES "${PROJECT_SOURCE_DIR}/example/input.phy" DESTINATION .)
+install (FILES "${PROJECT_SOURCE_DIR}/example/ref.fa" DESTINATION .)
+install (FILES "${PROJECT_SOURCE_DIR}/example/test_5K.maple" DESTINATION .)
+install (FILES "${PROJECT_SOURCE_DIR}/example/test_100.maple" DESTINATION .)
 #install (FILES "${PROJECT_BINARY_DIR}/cmaple_config.h" DESTINATION "include")
 #install(DIRECTORY "${PROJECT_SOURCE_DIR}/" # source directory
 #        DESTINATION "include/cmaple" # target directory
