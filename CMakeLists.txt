@@ -60,11 +60,7 @@ set (cmaple_VERSION_PATCH ".0")
 
 set (SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    if (IQTREE_FLAGS MATCHES "oldmac")
-        set (SYSTEM_NAME "MacOS10.5")
-    else()
-        set (SYSTEM_NAME "MacOSX")
-    endif()
+    set (SYSTEM_NAME "MacOSX")
 endif()
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
@@ -83,6 +79,31 @@ endif()
 
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories(after system "/usr/local/include")
+
+##################################################################
+# Build as static library
+##################################################################
+if (WIN32)
+    message("Target OS     : Windows")
+    # build as static binary to run on most machines
+    if (CMAPLE_FLAGS MATCHES "static")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    endif()
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+elseif (APPLE)
+    message("Target OS     : Mac OS X")
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+elseif (UNIX)
+    message("Target OS     : Unix")
+    # build as static binary to run on most machines
+    if (NOT CMAPLE_FLAGS MATCHES "static")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
+    else()
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+    endif()
+else()
+    message("Target OS     : Unknown and untested yet")
+endif()
 
 ##################################################################
 # Setup compiler, currently supported GCC, CLANG, MSVC, and ICC
@@ -134,7 +155,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 #include_directories("${PROJECT_BINARY_DIR}/zlib-1.2.7")
 
 
-if (NOT IQTREE_FLAGS MATCHES "nozlib")
+if (NOT CMAPLE_FLAGS MATCHES "nozlib")
     find_package(ZLIB)
 endif()
 
