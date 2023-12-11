@@ -798,10 +798,10 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         continue;
       }
       if (strcmp(argv[cnt], "-v") == 0 ||
-          strcmp(argv[cnt], "--verbose-mode") == 0) {
+          strcmp(argv[cnt], "--verbose") == 0) {
         cnt++;
         if (cnt >= argc) {
-          outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
+          outError("Use -v QUIET/MIN/MED/MAX/DEBUG");
         }
         // parse verbose
         std::string verbose = argv[cnt];
@@ -817,7 +817,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         } else if (verbose == "DEBUG") {
           verbose_mode = VB_DEBUG;
         } else {
-          outError("Use -verbose QUIET/MIN/MED/MAX/DEBUG");
+          outError("Use -v QUIET/MIN/MED/MAX/DEBUG");
         }
         continue;
       }
