@@ -35,6 +35,13 @@
 # cmake -G Xcode <source_dir>
 #
 #
+#
+# Disable installation of Googletest
+#------------------------------
+#
+# cmake -DINSTALL_GTEST=OFF <source_dir>
+#
+#
 
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
