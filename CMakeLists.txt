@@ -5,6 +5,10 @@
 
 # Windows example usages:
 #------------------------
+#
+# To compile a static version:
+# cmake -DCMAPLE_FLAGS=static <source_dir>
+#
 # cmake -G "Visual Studio 12" <source_dir>          (32-bit version, compiled with MSVC)
 # cmake -G "Visual Studio 12 Win64" <source_dir>    (64-bit version, compiled with MSVC)
 # cmake -G "Visual Studio 12 Win64" -T "Intel C++ Compiler XE 15.0" <source_dir>        (64-bit version, compiled with ICC)
@@ -13,27 +17,27 @@
 
 # Linux example usages:
 #----------------------
-# cmake <source_dir>                           
-# cmake  -DCMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer -march=native" <source_dir>   ## some custom compile flags
+# cmake <source_dir>
 #
-# To compile with CLANG on Linux:CMAPLE_
-# export CC=/usr/bin/clang
-# export CXX=/usr/bin/clang++
-# Best practices for setting up CMAKE for diffrent compiler can be found here:
-# http://stackoverflow.com/questions/7031126/switching-between-gcc-and-clang-llvm-using-cmake
+# To compile a static version:
+# cmake -DCMAPLE_FLAGS=static <source_dir>
+#
+# To compile with GCC on Linux:
+# cmake -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ <source_dir>
+#
+# To compile with CLANG on Linux:
+# cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ <source_dir>
 #
 # Mac OSX example usages:
 #------------------------
 #
-# Assuming clang3.7 and clang++3.7 are the newly built compilers, then:
-# cmake -DCMAKE_C_COMPILER=clang3.7 -DCMAKE_CXX_COMPILER=clang++3.7 <source_dir>   (OpenMP version)
+# cmake <source_dir>
 #
 # Xcode project example usages:
 #------------------------------
 #
-# To generate Xcode project without OpenMP:
+# To generate Xcode project:
 # cmake -G Xcode <source_dir>
-#
 #
 #
 # Disable installation of Googletest
