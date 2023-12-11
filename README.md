@@ -1,14 +1,14 @@
 # What's CMAPLE?
 
 
-CMAPLE is a C++ reimplementation of [MAPLE][MAPLE_FORMAT] highly optimized for performance and scalability with many new features.
+CMAPLE is a C++ reimplementation of [MAPLE][MAPLE_FORMAT] - a novel likelihood-based phylogenetic inference method for pandemic-scale epidemiological genomic data. CMAPLE is highly optimized for performance and scalability with many new features.
 
-Apart from a standalone software, we also provide a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods. For more detail, please see **[CMAPLE-LIB-DOC]**.
+Apart from a standalone software, we also provide a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods. For more detail, please see <TBU>**API_Documentation**.
 
 
 # How to cite CMAPLE?
 
-[C]MAPLE paper...
+<TBU>To be updated...
 
 
 # How to use CMAPLE?
@@ -16,9 +16,9 @@ Apart from a standalone software, we also provide a set of APIs, which allow use
 
 ## Installation
 
-CMAPLE executables for different platforms such as Linux, OSX, and Windows are available at [CMAPLE-RELEASES][CMAPLE_RELEASES]. 
+CMAPLE executables for different platforms such as Linux, OSX, and Windows are <TBU>attached in the paper submission. 
 
-In the release package, we provide two excutables `cmaple` and `cmaple-aa` for analysing DNA and amino acid data, respectively. For simplicity, we use `cmaple` in the following examples.
+In the release package, we provide two excutables `cmaple` and `cmaple-aa`, tailored for DNA and amino acid data, respectively. For simplicity, we use `cmaple` in the following examples.
 
 ## Usage examples
 
@@ -48,17 +48,17 @@ CMAPLE supports various common DNA and empirical amino-acid models (replicated f
     cmaple -aln example.maple -m JC
 
 ### 3. Specify an input tree
-One can specify an input tree (e.g., `tree.nwk`) in the NEWICK format for the tree search using the `-t` option. 
+One can specify an input tree (e.g., `tree.nwk`) in the NEWICK format using the `-t` option. 
 
 	    cmaple -aln example.maple -t tree.nwk
 
 **If the input tree is incomplete** (which doesn't contain all the taxa in the alignment), CMAPLE will:
 
 * Firstly, perform placements (i.e., adding missing taxa from the alignment to the tree);
-* Secondly, applie a [NORMAL](#4-set-the-tree-search-type) tree search (which does SPR moves only on newly-added nodes);
+* Secondly, apply a [NORMAL](#4-set-the-tree-search-type) tree search (which does SPR moves on newly-added nodes only);
 * Finally, optimize all branch lengths.
 
-**If the input tree is complete** (which contains all the taxa in the alignment), CMAPLE will, by default, do neither placment nor tree search, but it optimizes all branch lengths. To keep the branch lengths fixed, one can add `-blfix` to the command.
+**If the input tree is complete** (which contains all the taxa in the alignment), CMAPLE will, by default, do neither placement nor tree search, but it optimizes all branch lengths. To keep the branch lengths fixed, one can add `-blfix` to the command.
 
 	    cmaple -aln example.maple -t tree.nwk -blfix
 
@@ -73,14 +73,14 @@ We implemented three types of tree search:
  Tree search type        | Explanation |
 |------------------------|---------------------------------------------------------------|
 | FAST      | No tree search (placement only) |
-| NORMAL    | Only consider pruning branches at newly-added nodes when seeking SPR moves |
+| NORMAL    | Consider pruning branches only at newly-added nodes when seeking SPR moves |
 | MORE\_ACCURATE | Consider all nodes when seeking SPR moves |
 
 If users don't specify an input tree, `NORMAL` and `MORE_ACCURATE` perform the same behaviors since all taxa from the alignment are first added to the tree then SPR moves are considered at all those (newly-added) nodes during the tree search.
 
-If users specify an input complete tree, both `FAST` and `NORMAL` do nothing since no new taxa is added to the tree.
+If users input a complete tree, both `FAST` and `NORMAL` do nothing since no new taxa is added to the tree.
 
-If users specify an input incomplete tree, those tree search types have completely different behaviors as described in the above table. The runtime and the accuracy increase, in general, when changing the tree search type from the top to the bottom ones. 
+If users input an incomplete tree, those tree search types have completely different behaviors as described in the above table. The runtime and the accuracy increase, in general, when changing the tree search type from the top to the bottom ones. 
 
 By default, CMAPLE applies the `NORMAL` tree search. One can change it to, e.g, the `FAST` tree search by using the `-tree-search` option.
 
