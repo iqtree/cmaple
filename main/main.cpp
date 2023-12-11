@@ -120,7 +120,7 @@ auto main(int argc, char* argv[]) -> int {
   time_t start_time;
 
   // call the main function
-  cmaple::runCMaple(*params);
+  cmaple::runCMAPLE(*params);
   // cmaple::testing(*params);
 
   time(&start_time);

@@ -135,7 +135,7 @@ export PATH="${je_build}/bin:${PATH}"
 ### Run CMAPLE with jemalloc 
  
 ```
-## run cmaple with preloaded jemalloc
+## run CMAPLE with preloaded jemalloc
 LD_PRELOAD=`jemalloc-config --libdir`/libjemalloc.so.`jemalloc-config --revision` ./cmaple <more args here>
 ```    
 

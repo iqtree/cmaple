@@ -16,7 +16,7 @@ class Tree {
    */
   enum TreeSearchType {
     FAST_TREE_SEARCH,   /*!< No tree search (placement only) */
-    NORMAL_TREE_SEARCH, /*!< Only consider pruning branches at newly-added nodes
+    NORMAL_TREE_SEARCH, /*!< Consider pruning branches only at newly-added nodes
                            when seeking SPR moves */
     MORE_ACCURATE_TREE_SEARCH, /*!< Consider all nodes when seeking SPR moves */
     UNKNOWN_TREE_SEARCH,       /*!< Unknown (not specified) */
@@ -53,7 +53,7 @@ class Tree {
    * - the tree is in an incorrect format
    *
    * @throw std::logic\_error if any of the following situations occur.
-   * - taxa in the tree (is specified) is not found in the alignment
+   * - any taxa in the tree (if specified) is not found in the alignment
    * - unexpected values/behaviors found during the operations
    *
    * @throw std::bad\_alloc if failing to allocate memory to store the tree
@@ -82,11 +82,11 @@ class Tree {
    * AA (for protein data))
    * - the alignment is empty
    * - the model is unknown/unsupported
-   * - the tree (is specified) but in an incorrect format
+   * - the tree (if specified) is in an incorrect format
    *
-   * @throw ios::failure if the tree file (is specified)  is not found
+   * @throw ios::failure if the tree file (if specified) is not found
    * @throw std::logic\_error if any of the following situations occur.
-   * - taxa in the tree (is specified) is not found in the alignment
+   * - any taxa in the tree (if specified) is not found in the alignment
    * - unexpected values/behaviors found during the operations
    *
    * @throw std::bad\_alloc if failing to allocate memory to store the tree
@@ -108,7 +108,7 @@ class Tree {
    * @param[in] tree_stream A stream of an input tree
    * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged
    *(optional)
-   * @throw std::invalid\_argument if tree is empty or in an incorrect format
+   * @throw std::invalid\_argument if the tree is empty or in an incorrect format
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
    * - any taxa in the tree is not found in the alignment
@@ -125,7 +125,7 @@ class Tree {
    * @param[in] tree_filename Name of a tree file
    * @param[in] fixed_blengths TRUE to keep the input branch lengths unchanged
    * (optional)
-   * @throw std::invalid\_argument if tree is empty or in an incorrect format
+   * @throw std::invalid\_argument if the tree is empty or in an incorrect format
    * @throw ios::failure if the tree file is not found
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
@@ -141,7 +141,7 @@ class Tree {
    * @param[in] aln An alignment
    * @throw std::invalid\_argument If the alignment is empty
    * @throw std::logic\_error if any of the following situations occur.
-   * - taxa in the current tree is not found in the new alignment
+   * - any taxa in the tree is not found in the new alignment
    * - the sequence type of the new alignment is different from the old one
    * - unexpected values/behaviors found during the operations
    */
@@ -156,7 +156,7 @@ class Tree {
    */
   void changeModel(Model* model);
 
-  /*! Do placement (using stepwise addition) to build an initial tree. Model
+  /*! \brief Do placement (using stepwise addition) to build an initial tree. Model
    * parameters (if not fixed) will be estimated during the placement process.
    * - If users didn't supply an input tree or supplied an incomplete tree
    * (which doesn't contain all the taxa in the alignment) when initializing the
@@ -164,18 +164,18 @@ class Tree {
    * not existed in the input tree) from the alignment to the tree.
    * - If users already supplied a complete tree, this function does nothing.
    *
-   * @param[out] out_stream the output message stream
+   * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
   void doPlacement(std::ostream& out_stream = std::cout);
 
-  /*! Apply SPR moves to optimize the tree.
+  /*! \brief Apply SPR moves to optimize the tree.
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search
-   * @param[out] out_stream the output message stream
+   * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the tree is empty
    * - the attached substitution model is unknown/unsupported
@@ -184,8 +184,8 @@ class Tree {
   void applySPR(const TreeSearchType tree_search_type,
                        const bool shallow_tree_search, std::ostream& out_stream = std::cout);
 
-  /*! Optimize the branch lengths of the current tree
-   * @param[out] out_stream the output message stream
+  /*! \brief Optimize the branch lengths of the tree
+   * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the tree is empty
    * - the attached substitution model is unknown/unsupported
@@ -204,18 +204,18 @@ class Tree {
    * nodes)
    *  + optimizes all branch lengths
    * - If users already supplied a complete tree, this function, by default,
-   * does neither placment nor tree search, but it optimizes all branch lengths.
+   * does neither placement nor tree search, but it optimizes all branch lengths.
    * If users want to keep the branch lengths fixed, they should set
    * fixed_blengths = true when initializing the tree (by Tree() constructor);
    * - If users want to use the input (complete/incomplete) tree as a starting
    * tree to perform placement (for an incomplete tree), then consider SPR moves
-   * on all nodes, and optimize branch lengths, they should set tree_search_type
+   * on all nodes, and optimize branch lengths, they can set tree_search_type
    * = MORE_ACCURATE
    *
-   * @param[in] tree_search_type A type of tree search
+   * @param[in] tree_search_type A type of tree search (optional)
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
-   * a deeper tree search
-   * @param[out] out_stream the output message stream
+   * a deeper tree search (optional)
+   * @param[out] out_stream The output message stream (optional)
    * @throw std::invalid\_argument if tree\_search\_type is unknown
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
@@ -246,7 +246,7 @@ class Tree {
    * 2010](https://academic.oup.com/sysbio/article/59/3/307/1702850))
    * @param[in] allow_replacing_ML_tree TRUE to allow replacing the ML tree by a
    * higher likelihood tree found when computing branch supports (optional)
-   * @param[out] out_stream the output message stream
+   * @param[out] out_stream The output message stream (optional)
    * @throw std::invalid\_argument if any of the following situations occur.
    * - num_threads < 0 or num_threads > the number of CPU cores
    * - num_replicates <= 0
@@ -270,7 +270,7 @@ class Tree {
    * values)
    * @return A tree string in NEWICK format
    * @throw std::invalid\_argument if any of the following situations occur.
-   * - n\_tree\_type is unknown
+   * - tree\_type is unknown
    * - show\_branch\_supports = true but branch support values have yet been
    * computed
    */
@@ -1445,7 +1445,7 @@ class Tree {
   /**
    Read string from tree file to create new nodes
    @throw std::logic\_error if any of the following situations occur.
-   - taxa in the tree is not found in the  alignment
+   - any taxa in the tree is not found in the  alignment
    - unexpected values/behaviors found during the operations
    */
   cmaple::NumSeqsType parseFile(
@@ -1876,7 +1876,7 @@ class Tree {
  */
 std::ostream& operator<<(std::ostream& out_stream, cmaple::Tree& tree);
 
-/** \brief Customized >> operator to read the tree from a stream
+/** \brief Customized >> operator to read a tree from a stream
  */
 std::istream& operator>>(std::istream& in_stream, cmaple::Tree& tree);
 

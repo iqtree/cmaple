@@ -88,7 +88,7 @@ Constructor from a stream of an alignment in FASTA, PHYLIP, or \href{https://www
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em aln\+\_\+stream} & A stream of an alignment file \\
 \hline
-\mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A feference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
+\mbox{\texttt{ in}}  & {\em ref\+\_\+seq} & A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) \\
 \hline
 \mbox{\texttt{ in}}  & {\em format} & Format of the alignment (optional)\+: IN\+\_\+\+MAPLE, IN\+\_\+\+FASTA, IN\+\_\+\+PHYLIP, or IN\+\_\+\+AUTO (auto detection) \\
 \hline
@@ -100,7 +100,7 @@ Constructor from a stream of an alignment in FASTA, PHYLIP, or \href{https://www
 {\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
 \begin{DoxyItemize}
 \item the alignment is empty or in an incorrect format
-\item the sequences contains invalid states 
+\item the sequences contain invalid states 
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
@@ -130,7 +130,7 @@ Constructor from an alignment file in FASTA, PHYLIP, or \href{https://www.nature
 {\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
 \begin{DoxyItemize}
 \item the alignment is empty or in an incorrect format
-\item the sequences contains invalid states
+\item the sequences contain invalid states
 \end{DoxyItemize}\\
 \hline
 {\em std\+::ios\+\_\+base\+::failure} & if the alignment file is not found \\
@@ -165,7 +165,7 @@ Read an alignment from a stream in FASTA, PHYLIP, or \href{https://www.nature.co
 {\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
 \begin{DoxyItemize}
 \item the alignment is empty or in an incorrect format
-\item the sequences contains invalid states 
+\item the sequences contain invalid states 
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
@@ -195,7 +195,7 @@ Read an alignment from a file in FASTA, PHYLIP, or \href{https://www.nature.com/
 {\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
 \begin{DoxyItemize}
 \item the alignment is empty or in an incorrect format
-\item the sequences contains invalid states
+\item the sequences contain invalid states
 \end{DoxyItemize}\\
 \hline
 {\em std\+::ios\+\_\+base\+::failure} & if the alignment file is not found \\
@@ -220,7 +220,7 @@ Write the alignment to a stream in FASTA, PHYLIP, or \href{https://www.nature.co
 \end{DoxyParams}
 
 \begin{DoxyExceptions}{Exceptions}
-{\em std\+::invalid\+\_\+argument} & if format is unknown \\
+{\em std\+::invalid\+\_\+argument} & if the format is unknown \\
 \hline
 {\em std\+::logic\+\_\+error} & if the alignment is empty (i.\+e., nothing to write) \\
 \hline

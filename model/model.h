@@ -43,7 +43,7 @@ class Model {
    * data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
    * @throw std::invalid\_argument if any of the following situations occur.
    * - sub\_model is unknown/unsupported
-   * - both sub_model and seqtype are specified as AUTO
+   * - sub_model is DEFAULT and seqtype is SEQ_AUTO
    */
   Model(
       const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::DEFAULT,
@@ -61,7 +61,7 @@ class Model {
    */
   void fixParameters(const bool& fixed_model_params);
 
-  /*! \brief Export the substitution model and its parameters to ModelParams
+  /*! \brief Export the substitution model and its parameters to a ModelParams
    * structure
    * @return A ModelParams structure.
    */

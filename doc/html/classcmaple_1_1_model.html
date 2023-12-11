@@ -102,7 +102,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a3ee90312ac8a303f3c8cce9ca5766584"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keep the model parameters unchanged. This API is useful when using one model for multiple trees - after the model parameters are estimated according to a tree, users can keep them unchanged, then use the model for other trees.  <br /></td></tr>
 <tr class="separator:a3ee90312ac8a303f3c8cce9ca5766584"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9050e8b392d2502af1e8fc8b50e44b96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structcmaple_1_1_model_1_1_model_params.html">ModelParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_model.html#a9050e8b392d2502af1e8fc8b50e44b96">getParams</a> ()</td></tr>
-<tr class="memdesc:a9050e8b392d2502af1e8fc8b50e44b96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the substitution model and its parameters to <a class="el" href="structcmaple_1_1_model_1_1_model_params.html">ModelParams</a> structure.  <br /></td></tr>
+<tr class="memdesc:a9050e8b392d2502af1e8fc8b50e44b96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the substitution model and its parameters to a <a class="el" href="structcmaple_1_1_model_1_1_model_params.html">ModelParams</a> structure.  <br /></td></tr>
 <tr class="separator:a9050e8b392d2502af1e8fc8b50e44b96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -149,7 +149,7 @@ Public Member Functions</h2></td></tr>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
 <li>sub_model is unknown/unsupported</li>
-<li>both sub_model and seqtype are specified as AUTO </li>
+<li>sub_model is DEFAULT and seqtype is SEQ_AUTO </li>
 </ul>
 </td></tr>
   </table>
@@ -200,7 +200,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Export the substitution model and its parameters to <a class="el" href="structcmaple_1_1_model_1_1_model_params.html">ModelParams</a> structure. </p>
+<p>Export the substitution model and its parameters to a <a class="el" href="structcmaple_1_1_model_1_1_model_params.html">ModelParams</a> structure. </p>
 <dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="structcmaple_1_1_model_1_1_model_params.html">ModelParams</a> structure. </dd></dl>
 
 </div>

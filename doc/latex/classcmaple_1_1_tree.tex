@@ -36,11 +36,11 @@ void \mbox{\hyperlink{classcmaple_1_1_tree_ab932b3742c6e18d51554f72432c18151}{ch
 void \mbox{\hyperlink{classcmaple_1_1_tree_aa4f982f45f38226193cd584bbe7e93ef}{change\+Model}} (\mbox{\hyperlink{classcmaple_1_1_model}{Model}} \texorpdfstring{$\ast$}{*}model)
 \begin{DoxyCompactList}\small\item\em Change the substitution model. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}{do\+Placement}} (std\+::ostream \&out\+\_\+stream=std\+::cout)
-\item 
+\begin{DoxyCompactList}\small\item\em Do placement (using stepwise addition) to build an initial tree. \doxylink{classcmaple_1_1_model}{Model} parameters (if not fixed) will be estimated during the placement process. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}{apply\+SPR}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type, const bool shallow\+\_\+tree\+\_\+search, std\+::ostream \&out\+\_\+stream=std\+::cout)
-\item 
+\begin{DoxyCompactList}\small\item\em Apply SPR moves to optimize the tree. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch}} (std\+::ostream \&out\+\_\+stream=std\+::cout)
-\item 
+\begin{DoxyCompactList}\small\item\em Optimize the branch lengths of the current tree. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_aaf42c58dd4db66c040386df9053f8ba9}{auto\+Proceed\+MAPLE}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}, const bool shallow\+\_\+tree\+\_\+search=false, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a072d5393798650a838dc7f4b067f7232}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a2c9dfd1f20162021c5431ebe29d57ef8}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} \end{DoxyCompactList}\item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{compute\+Lh}} ()
@@ -320,7 +320,11 @@ Change the substitution model.
 \doxysubsubsection{\texorpdfstring{doPlacement()}{doPlacement()}}
 {\footnotesize\ttfamily void cmaple\+::\+Tree\+::do\+Placement (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
-Do placement (using stepwise addition) to build an initial tree. \doxylink{classcmaple_1_1_model}{Model} parameters (if not fixed) will be estimated during the placement process.
+
+
+Do placement (using stepwise addition) to build an initial tree. \doxylink{classcmaple_1_1_model}{Model} parameters (if not fixed) will be estimated during the placement process. 
+
+
 \begin{DoxyItemize}
 \item If users didn\textquotesingle{}t supply an input tree or supplied an incomplete tree (which doesn\textquotesingle{}t contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function will add new taxa (which are not existed in the input tree) from the alignment to the tree.
 \item If users already supplied a complete tree, this function does nothing.
@@ -346,7 +350,11 @@ Do placement (using stepwise addition) to build an initial tree. \doxylink{class
 \doxysubsubsection{\texorpdfstring{applySPR()}{applySPR()}}
 {\footnotesize\ttfamily void cmaple\+::\+Tree\+::apply\+SPR (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type,  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search,  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
+
+
 Apply SPR moves to optimize the tree. 
+
+
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em tree\+\_\+search\+\_\+type} & A type of tree search \\
 \hline
@@ -371,7 +379,11 @@ Apply SPR moves to optimize the tree.
 \doxysubsubsection{\texorpdfstring{optimizeBranch()}{optimizeBranch()}}
 {\footnotesize\ttfamily void cmaple\+::\+Tree\+::optimize\+Branch (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
-Optimize the branch lengths of the current tree 
+
+
+Optimize the branch lengths of the current tree. 
+
+
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ out}}  & {\em out\+\_\+stream} & the output message stream \\
 \hline

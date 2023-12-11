@@ -8,12 +8,12 @@ namespace cmaple
      *  @{
      */
 
-    /*! \brief Get the version of CMaple
+    /*! \brief Get the version of CMAPLE
      * @return CMAPLE version in a string
      */
     std::string getVersion();
     
-    /*! \brief Get the citation strings for CMaple/Maple manuscripts
+    /*! \brief Get a citation string of [C]Maple manuscript(s)
      * @return A citation string
      */
     std::string getCitations();
@@ -27,10 +27,10 @@ namespace cmaple
 
     /*! @} End of Doxygen Groups*/
 
-    /** \brief Run CMaple with user-specified parameters (via command-line)
+    /** \brief Run CMAPLE with user-specified parameters (via command-line)
      * @param[in] params user-specified parameters (via command-line)
      */
-    void runCMaple(cmaple::Params& params);
+    void runCMAPLE(cmaple::Params& params);
 
     /** \brief Function for testing only
      * @param[in] params user-specified (parameters via command-line)

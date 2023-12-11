@@ -20,7 +20,7 @@ struct \mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params}{Model\+Params}}
 void \mbox{\hyperlink{classcmaple_1_1_model_a3ee90312ac8a303f3c8cce9ca5766584}{fix\+Parameters}} (const bool \&fixed\+\_\+model\+\_\+params)
 \begin{DoxyCompactList}\small\item\em Keep the model parameters unchanged. This API is useful when using one model for multiple trees -\/ after the model parameters are estimated according to a tree, users can keep them unchanged, then use the model for other trees. \end{DoxyCompactList}\item 
 \mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params}{Model\+Params}} \mbox{\hyperlink{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}{get\+Params}} ()
-\begin{DoxyCompactList}\small\item\em Export the substitution model and its parameters to \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Export the substitution model and its parameters to a \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -52,7 +52,7 @@ Constructor from a model name.
 {\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
 \begin{DoxyItemize}
 \item sub\+\_\+model is unknown/unsupported
-\item both sub\+\_\+model and seqtype are specified as AUTO 
+\item sub\+\_\+model is DEFAULT and seqtype is SEQ\+\_\+\+AUTO 
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
@@ -82,7 +82,7 @@ Keep the model parameters unchanged. This API is useful when using one model for
 
 
 
-Export the substitution model and its parameters to \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. 
+Export the substitution model and its parameters to a \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. 
 
 \begin{DoxyReturn}{Returns}
 A \doxylink{structcmaple_1_1_model_1_1_model_params}{Model\+Params} structure. 

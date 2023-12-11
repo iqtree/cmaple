@@ -121,13 +121,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:aa4f982f45f38226193cd584bbe7e93ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Change the substitution model.  <br /></td></tr>
 <tr class="separator:aa4f982f45f38226193cd584bbe7e93ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a072d5393798650a838dc7f4b067f7232"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232">doPlacement</a> (std::ostream &amp;out_stream=std::cout)</td></tr>
+<tr class="memdesc:a072d5393798650a838dc7f4b067f7232"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do placement (using stepwise addition) to build an initial tree. <a class="el" href="classcmaple_1_1_model.html">Model</a> parameters (if not fixed) will be estimated during the placement process.  <br /></td></tr>
 <tr class="separator:a072d5393798650a838dc7f4b067f7232"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8">applySPR</a> (const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type, const bool shallow_tree_search, std::ostream &amp;out_stream=std::cout)</td></tr>
+<tr class="memdesc:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply SPR moves to optimize the tree.  <br /></td></tr>
 <tr class="separator:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc947148cb44b753d7799b4df5fa83f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8">optimizeBranch</a> (std::ostream &amp;out_stream=std::cout)</td></tr>
+<tr class="memdesc:afc947148cb44b753d7799b4df5fa83f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optimize the branch lengths of the current tree.  <br /></td></tr>
 <tr class="separator:afc947148cb44b753d7799b4df5fa83f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf42c58dd4db66c040386df9053f8ba9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#aaf42c58dd4db66c040386df9053f8ba9">autoProceedMAPLE</a> (const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type=<a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1">NORMAL_TREE_SEARCH</a>, const bool shallow_tree_search=false, std::ostream &amp;out_stream=std::cout)</td></tr>
-<tr class="memdesc:aaf42c58dd4db66c040386df9053f8ba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8">optimizeBranch()</a>  <br /></td></tr>
+<tr class="memdesc:aaf42c58dd4db66c040386df9053f8ba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the current tree.">optimizeBranch()</a>  <br /></td></tr>
 <tr class="separator:aaf42c58dd4db66c040386df9053f8ba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a987c92b41faa1303b5b0c8393c0704db"><td class="memItemLeft" align="right" valign="top">RealNumType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a987c92b41faa1303b5b0c8393c0704db">computeLh</a> ()</td></tr>
 <tr class="memdesc:a987c92b41faa1303b5b0c8393c0704db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment.  <br /></td></tr>
@@ -554,7 +557,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Do placement (using stepwise addition) to build an initial tree. <a class="el" href="classcmaple_1_1_model.html">Model</a> parameters (if not fixed) will be estimated during the placement process.</p><ul>
+
+<p>Do placement (using stepwise addition) to build an initial tree. <a class="el" href="classcmaple_1_1_model.html">Model</a> parameters (if not fixed) will be estimated during the placement process. </p>
+<ul>
 <li>If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function will add new taxa (which are not existed in the input tree) from the alignment to the tree.</li>
 <li>If users already supplied a complete tree, this function does nothing.</li>
 </ul>
@@ -608,7 +613,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Apply SPR moves to optimize the tree. </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>Apply SPR moves to optimize the tree. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>A type of tree search </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE to enable a shallow tree search before a deeper tree search </td></tr>
@@ -645,7 +652,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Optimize the branch lengths of the current tree </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>Optimize the branch lengths of the current tree. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>the output message stream </td></tr>
   </table>
@@ -697,7 +706,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8">optimizeBranch()</a> </p>
+<p>Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the current tree.">optimizeBranch()</a> </p>
 <ul>
 <li>If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:<ul>
 <li>performs placement (i.e., adding missing taxa from the alignment to the tree)</li>

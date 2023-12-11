@@ -8582,7 +8582,7 @@ void cmaple::Tree::collapseAllZeroLeave() {
   // sequences back to) the tree
   NumSeqsType num_collapsed_nodes = 0;
 
-  // the default min_blength in CMaple is not small enough -> I set it at
+  // the default min_blength in CMAPLE is not small enough -> I set it at
   // min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
   const RealNumType new_min_blength =
       (params->fixed_min_blength == -1) ? min_blength * 0.1 : min_blength;
@@ -8745,7 +8745,7 @@ void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
       model, params->threshold_prob);
 
   // add a new node representing the less-info-seq
-  // the default min_blength in CMaple is not small enough -> I set it at
+  // the default min_blength in CMAPLE is not small enough -> I set it at
   // min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
   const RealNumType new_min_blength =
       (params->fixed_min_blength == -1) ? min_blength * 0.1 : min_blength;

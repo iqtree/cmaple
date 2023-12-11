@@ -199,7 +199,7 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">aln_stream</td><td>A stream of an alignment file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ref_seq</td><td>A feference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ref_seq</td><td>A reference sequence (optional). If not specified, it will be read from the alignment (in MAPLE format) or automatically generated from the alignment (in FASTA or PHYLIP format) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>Format of the alignment (optional): IN_MAPLE, IN_FASTA, IN_PHYLIP, or IN_AUTO (auto detection) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection) </td></tr>
   </table>
@@ -209,7 +209,7 @@ Public Member Functions</h2></td></tr>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
 <li>the alignment is empty or in an incorrect format</li>
-<li>the sequences contains invalid states </li>
+<li>the sequences contain invalid states </li>
 </ul>
 </td></tr>
   </table>
@@ -270,7 +270,7 @@ Public Member Functions</h2></td></tr>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
 <li>the alignment is empty or in an incorrect format</li>
-<li>the sequences contains invalid states</li>
+<li>the sequences contain invalid states</li>
 </ul>
 </td></tr>
     <tr><td class="paramname">std::ios_base::failure</td><td>if the alignment file is not found </td></tr>
@@ -333,7 +333,7 @@ Public Member Functions</h2></td></tr>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
 <li>the alignment is empty or in an incorrect format</li>
-<li>the sequences contains invalid states </li>
+<li>the sequences contain invalid states </li>
 </ul>
 </td></tr>
   </table>
@@ -394,7 +394,7 @@ Public Member Functions</h2></td></tr>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
 <li>the alignment is empty or in an incorrect format</li>
-<li>the sequences contains invalid states</li>
+<li>the sequences contain invalid states</li>
 </ul>
 </td></tr>
     <tr><td class="paramname">std::ios_base::failure</td><td>if the alignment file is not found </td></tr>
@@ -440,7 +440,7 @@ Public Member Functions</h2></td></tr>
 </dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::invalid_argument</td><td>if format is unknown </td></tr>
+    <tr><td class="paramname">std::invalid_argument</td><td>if the format is unknown </td></tr>
     <tr><td class="paramname">std::logic_error</td><td>if the alignment is empty (i.e., nothing to write) </td></tr>
   </table>
   </dd>

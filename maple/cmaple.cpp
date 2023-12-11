@@ -9,7 +9,7 @@ std::string cmaple::getVersion()
 
 std::string cmaple::getCitations()
 {
-    return "[Citations]";
+    return "To be updated...";
 }
 
 auto cmaple::checkMapleSuitability(const Alignment &aln) -> bool {
@@ -50,7 +50,7 @@ auto cmaple::checkMapleSuitability(const Alignment &aln) -> bool {
   return true;
 }
 
-void cmaple::runCMaple(cmaple::Params &params)
+void cmaple::runCMAPLE(cmaple::Params &params)
 {
     try
     {
@@ -91,10 +91,10 @@ void cmaple::runCMaple(cmaple::Params &params)
         }
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
-        // check if CMaple is suitable for the input alignment
+        // check if CMAPLE is suitable for the input alignment
         if (!checkMapleSuitability(aln)) {
           outWarning("Look like the input sequences are too divergent from "
-                     "each other, which makes CMaple very slow. We highly "
+                     "each other, which makes CMAPLE very slow. We highly "
                      "recommend users to use other methods (e.g., IQ-TREE) to "
                      "analyse this alignment!");
         }
@@ -141,7 +141,7 @@ void cmaple::runCMaple(cmaple::Params &params)
         // Compute branch supports (if users want to do so)
         if (params.compute_aLRT_SH)
         {
-            // if users don't input a tree file, always allow CMaple to replace the ML tree by a higher-likelihood tree (if found)
+            // if users don't input a tree file, always allow CMAPLE to replace the ML tree by a higher-likelihood tree (if found)
             bool allow_replacing_ML_tree = true;
             // if users input a tree -> depend on the setting in params (false ~ don't allow replacing (by default)
             if (params.input_treefile.length()) {
@@ -374,7 +374,7 @@ void cmaple::testing(cmaple::Params& params)
     
     std::cout << "DONE" << std::endl;*/
     
-    /*CMaple cmaple;
+    /*CMAPLE cmaple;
     cmaple::Params& cmaple_params = cmaple.getSettings();
     cmaple_params = params;
     cmaple.inferTree();*/

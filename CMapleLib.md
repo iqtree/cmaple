@@ -1,20 +1,20 @@
-# What's CMaple library?
+# What's CMAPLE library?
 
-CMAPLE is a C++ reimplementation of [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) highly optimized for performance and scalability with many new features.
+CMAPLE is a C++ reimplementation of [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) - a novel likelihood-based phylogenetic inference method for pandemic-scale epidemiological genomic data. CMAPLE is highly optimized for performance and scalability with many new features.
 
 CMAPLE library provides a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods.
 
 # How to use?
-In the following, we give an instruction of how to include CMaple library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we'll take [IQ-TREE](https://github.com/iqtree/iqtree2) as example.
+In the following, we give an instruction of how to include CMAPLE library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we'll take [IQ-TREE](https://github.com/iqtree/iqtree2) as an example.
 
-## Include CMaple as a submodule of your project
+## Include CMAPLE as a submodule of your project
 
 In your project directory, run
     	
-    	git submodule add https://github.com/trongnhanuit/cmaple.git
+    	git submodule add https://github.com/iqtree/cmaple.git
     	
    
-## Update CMakeList to include CMaple
+## Update CMakeList to include CMAPLE
 
     	project(iqtree)
     	
@@ -33,7 +33,7 @@ In your project directory, run
 			main.cpp main.h
 		)
 		
-    	# Step 3: Add the binary tree to the search path for include files so that we will find cmaple/cmaple_config.h
+    	# Step 3: Add the binary tree to the search path for include files so that we can find cmaple/cmaple_config.h
     	include_directories("${PROJECT_BINARY_DIR}/cmaple")
     	
     	# Step 4: Add linking libraries
@@ -51,16 +51,16 @@ In your project directory, run
     	if (cmaple::checkMapleSuitability(aln))
     	{
     		// Create a default model according to the data type from the alignment (i.e., GTR for DNA, and LG for protein data)
-    		Model model(cmaple::ModelBase::DEFAULT, aln.getSeqType());
+    		cmaple::Model model(cmaple::ModelBase::DEFAULT, aln.getSeqType());
     	
     		// Create a tree, attach the alignment and model to the tree
     		cmaple::Tree tree(&aln, &model);
     	
     		// Infer a phylogenetic tree from the alignment and the model using [C]Maple algorithm
-    		cout << tree.autoProceedMAPLE() << endl;
+    		tree.autoProceedMAPLE();
     	
     		// Compute the branch supports for the inferred tree
-    		cout << tree.computeBranchSupport() << endl;
+    		tree.computeBranchSupport();
     	
     		// Compute the likelihood of the tree
     		cout << "- Tree log likelihood: " << tree.computeLh() << endl;
@@ -74,7 +74,7 @@ In your project directory, run
     	}
 
 ## Tips for Debugging
-CMaple outputs debugging messages to the standard output `std::cout`. One could control the amount of those messages via setting `cmaple::verbose_mode` to one of the following values.
+CMAPLE outputs debugging messages to the standard output `std::cout`. One could control the amount of those messages via setting `cmaple::verbose_mode` to one of the following values.
 <br> - `VB_QUIET`: no messages except errors.
 <br> - `VB_MED` (default): common messages (showing the processing progress).
 <br> - `VB_DEBUG`: as many messages as possible (useful for debugging).
@@ -82,7 +82,7 @@ CMaple outputs debugging messages to the standard output `std::cout`. One could 
 
 <br>
 # More APIs?
-CMaple APIs are exposed in the following.
+CMAPLE APIs are exposed in the following.
 <br>[**CMaple**](group__cmaple.html)
 <br>[**Alignment**](classcmaple_1_1_alignment.html)
 <br>[**Model**](classcmaple_1_1_model.html)
@@ -90,7 +90,8 @@ CMaple APIs are exposed in the following.
 
 
 <br>
-# How to cite CMaple?
-CMaple manuscript...
+# How to cite CMAPLE?
+
+To be updated...
 
 

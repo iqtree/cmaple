@@ -29,7 +29,7 @@ class Alignment {
   /*! \brief Constructor from a stream of an alignment in FASTA, PHYLIP, or
    * [MAPLE](https://www.nature.com/articles/s41588-023-01368-0) format
    * @param[in] aln_stream A stream of an alignment file
-   * @param[in] ref_seq A feference sequence (optional). If not specified, it
+   * @param[in] ref_seq A reference sequence (optional). If not specified, it
    *            will be read from the alignment (in MAPLE format) or
    * automatically generated from the alignment (in FASTA or PHYLIP format)
    * @param[in] format Format of the alignment (optional): IN_MAPLE, IN_FASTA,
@@ -39,7 +39,7 @@ class Alignment {
    *            detection)
    * @throw std::invalid\_argument if any of the following situations occur.
    * - the alignment is empty or in an incorrect format
-   * - the sequences contains invalid states
+   * - the sequences contain invalid states
    */
   Alignment(
       std::istream& aln_stream,
@@ -60,7 +60,7 @@ class Alignment {
    * detection)
    * @throw std::invalid\_argument if any of the following situations occur.
    * - the alignment is empty or in an incorrect format
-   * - the sequences contains invalid states
+   * - the sequences contain invalid states
    *
    * @throw std::ios\_base::failure if the alignment file is not found
    */
@@ -86,7 +86,7 @@ class Alignment {
    * data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
    * @throw std::invalid\_argument if any of the following situations occur.
    * - the alignment is empty or in an incorrect format
-   * - the sequences contains invalid states
+   * - the sequences contain invalid states
    */
   void read(
       std::istream& aln_stream,
@@ -106,7 +106,7 @@ class Alignment {
    * data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
    * @throw std::invalid\_argument if any of the following situations occur.
    * - the alignment is empty or in an incorrect format
-   * - the sequences contains invalid states
+   * - the sequences contain invalid states
    *
    * @throw std::ios\_base::failure if the alignment file is not found
    */
@@ -121,7 +121,7 @@ class Alignment {
    * @param[in] aln_stream A stream of the output alignment file
    * @param[in] format Format of the output alignment (optional): IN_MAPLE,
    * IN_FASTA, or IN_PHYLIP
-   * @throw std::invalid\_argument if format is unknown
+   * @throw std::invalid\_argument if the format is unknown
    * @throw std::logic\_error if the alignment is empty (i.e., nothing to write)
    */
   void write(std::ostream& aln_stream, const InputType& format = IN_MAPLE);
@@ -284,7 +284,7 @@ class Alignment {
    @param aln_stream A stream of an alignment file
    @throw std::logic\_error if any of the following situations occur.
    - the alignment is empty or in an incorrect format
-   - the sequences contains invalid states
+   - the sequences contain invalid states
    - unexpected values/behaviors found during the operations
    */
   void readMaple(std::istream& aln_stream);
@@ -436,7 +436,7 @@ class Alignment {
  */
 std::ostream& operator<<(std::ostream& out_stream, cmaple::Alignment& aln);
 
-/** \brief Customized >> operator to read the alignment from a stream
+/** \brief Customized >> operator to read an alignment from a stream
  */
 std::istream& operator>>(std::istream& in_stream, cmaple::Alignment& aln);
 

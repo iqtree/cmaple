@@ -546,7 +546,7 @@ class Params {
   /**
    *  Threshold to stop the tree search. If the total log likelihood improvement
    * obtained by an iteration of tree search is lower than this threshold,
-   * CMaple stops doing tree search . Default: 1
+   * CMAPLE stops doing tree search . Default: 1
    */
   RealNumType thresh_entire_tree_improvement;
 
@@ -711,7 +711,7 @@ class ParamsBuilder {
    */
   ParamsBuilder& withNumTreeTraversal(const int32_t& num_tree_traversal);
 
-  /*! \brief Specify a threshold that avoids CMaple trying to apply SPR moves on
+  /*! \brief Specify a threshold that avoids CMAPLE trying to apply SPR moves on
    * nodes that have the placement cost (i.e. the likelihood contribution by
    * placing a node on the tree) exceeds this threshold. Default: -1e-5
    * @param[in] SPR_thresh A positive threshold to consider applying SPR moves
@@ -723,7 +723,7 @@ class ParamsBuilder {
 
   /*! \brief Specify a threshold to stop the tree search. If the total log
    * likelihood improvement obtained by an iteration of tree search is lower
-   * than this threshold, CMaple stops doing tree search . Default: 1
+   * than this threshold, CMAPLE stops doing tree search . Default: 1
    * @param[in] stop_search_thresh A positive value for the threshold to stop
    * the tree search
    * @return A reference to the ParamsBuilder instance
@@ -1119,7 +1119,7 @@ void quicksort(T1* arr, int left, int right, T2* arr2 = NULL) {
 }
 
 /**
- * Print usage for CMaple
+ * Print usage for CMAPLE
  * @param program arguments list
  * @param full_command TRUE to print all available commands, FALSE to print
  * normal usage dialog
