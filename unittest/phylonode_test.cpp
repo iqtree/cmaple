@@ -335,7 +335,12 @@ TEST(PhyloNode, TestExportString)
  */
 TEST(PhyloNode, TestComputeTotalLhAtNode)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();

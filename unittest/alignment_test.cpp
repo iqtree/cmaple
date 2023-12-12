@@ -7,10 +7,15 @@ using namespace cmaple;
  */
 TEST(Alignment, readSequences)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     Alignment aln;
     
     // Test readFasta()
-    aln.read("../../example/input.fa");
+    aln.read(example_dir + "input.fa");
     EXPECT_EQ(aln.data.size(), 10);
     EXPECT_EQ(aln.data[9].seq_name, "T6"); // after sorting
     
@@ -21,7 +26,7 @@ TEST(Alignment, readSequences)
     EXPECT_EQ(aln.ref_seq[17], 0);
     
     // Test readPhylip()
-    aln.read("../../example/input.phy");
+    aln.read(example_dir + "input.phy");
     EXPECT_EQ(aln.data.size(), 10);
     EXPECT_EQ(aln.data[9].seq_name, "T6"); // after sorting
     
@@ -35,7 +40,7 @@ TEST(Alignment, readSequences)
     // EXPECT_EXIT(aln.generateRef(sequences), ::testing::ExitedWithCode(2), ".*");
     
     // Test input not found
-    EXPECT_THROW(aln.read("../../example/notfound"), std::ios_base::failure);
+    EXPECT_THROW(aln.read(example_dir + "notfound"), std::ios_base::failure);
 }
 
 /*
@@ -43,9 +48,14 @@ TEST(Alignment, readSequences)
  */
 TEST(Alignment, readRef)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     Alignment aln;
     aln.setSeqType(cmaple::SeqRegion::SEQ_DNA);
-    std::string ref_seq = aln.readRefSeq("../../example/ref.fa", "REF");
+    std::string ref_seq = aln.readRefSeq(example_dir + "ref.fa", "REF");
     
     EXPECT_EQ(ref_seq.length(), 20);
     EXPECT_EQ(ref_seq[0], 'A');
@@ -54,10 +64,10 @@ TEST(Alignment, readRef)
     EXPECT_EQ(ref_seq[11], 'A');
     
     // Test readRef() with an empty seq_name
-    EXPECT_THROW(aln.readRefSeq("../../example/ref.fa", ""), std::invalid_argument);
+    EXPECT_THROW(aln.readRefSeq(example_dir + "ref.fa", ""), std::invalid_argument);
     
     //  Test readRef() from not-found file
-    EXPECT_THROW(aln.readRefSeq("../../example/notfound", "REF"), std::ios_base::failure);
+    EXPECT_THROW(aln.readRefSeq(example_dir + "notfound", "REF"), std::ios_base::failure);
 }
 
 /*
@@ -74,10 +84,10 @@ TEST(Alignment, readRef)
     std::string ref_sequence;
     
     // output file
-    std::string diff_file_path("../../example/output.maple");
+    std::string diff_file_path(example_dir + "output.maple");
     
     // read sequences
-    std::string file_path = "../../example/input.fa";
+    std::string file_path = example_dir + "input.fa";
     aln.readSequences(file_path.c_str(), sequences, seq_names);
     // detect the type of the input sequences
     aln.setSeqType(aln.detectSequenceType(sequences));
@@ -102,7 +112,7 @@ TEST(Alignment, readRef)
     // ----- test on input.fa; generate ref_sequence-----
     
     // ----- test on input.fa; read ref_sequence -----
-    std::string ref_file_path = "../../example/ref.fa";
+    std::string ref_file_path = example_dir + "ref.fa";
     ref_sequence = aln.readRef(ref_file_path);
     
     // open the output file
@@ -141,7 +151,7 @@ TEST(Alignment, readRef)
     ref_sequence = "";
     
     // read sequences
-    file_path = "../../example/input_full.phy";
+    file_path = example_dir + "input_full.phy";
     aln.readSequences(file_path.c_str(), sequences, seq_names);
     
     // generate ref_sequence
@@ -174,10 +184,15 @@ TEST(Alignment, readRef)
  */
 TEST(Alignment, readMapleFile)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     Alignment aln;
     
     // ----- test on test_100.maple -----
-    aln.read("../../example/test_100.maple");
+    aln.read(example_dir + "test_100.maple");
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 100);
@@ -202,8 +217,8 @@ TEST(Alignment, readMapleFile)
     // ----- test on test_100.maple -----
     
     // ----- test on test_5K.maple, load ref_seq from test_100.maple -----
-    //std::string ref_seq = aln.readRefSeq("../../example/ref_test_100.maple", "REF");
-    aln.read("../../example/test_5K.maple");
+    //std::string ref_seq = aln.readRefSeq(example_dir + "ref_test_100.maple", "REF");
+    aln.read(example_dir + "test_5K.maple");
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 5000);
@@ -231,10 +246,10 @@ TEST(Alignment, readMapleFile)
     EXPECT_THROW(aln.read(""), std::invalid_argument);
     
     //  Test readMapleFile() from not-found file
-    EXPECT_THROW(aln.read("../../example/notfound"), std::ios_base::failure);
+    EXPECT_THROW(aln.read(example_dir + "notfound"), std::ios_base::failure);
     
     // ----- Test readMapleFile() with wrong format file
-    EXPECT_THROW(aln.read("../../example/input.fa", "", cmaple::Alignment::IN_MAPLE), std::invalid_argument);
+    EXPECT_THROW(aln.read(example_dir + "input.fa", "", cmaple::Alignment::IN_MAPLE), std::invalid_argument);
 }
 
 /*
@@ -242,19 +257,24 @@ TEST(Alignment, readMapleFile)
  */
 TEST(Alignment, write)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     Alignment aln;
     
     // extract MAPLE file
-    std::string ref_seq = aln.readRefSeq("../../example/ref.fa", "REF");
-    aln.read("../../example/input.phy", ref_seq);
-    aln.write("../../example/input.phy.maple", cmaple::Alignment::IN_MAPLE, true);
+    std::string ref_seq = aln.readRefSeq(example_dir + "ref.fa", "REF");
+    aln.read(example_dir + "input.phy", ref_seq);
+    aln.write(example_dir + "input.phy.maple", cmaple::Alignment::IN_MAPLE, true);
     
     // reset data
     aln.data.clear();
     aln.ref_seq.clear();
     
     // read MAPLE file (for testing)
-    aln.read("../../example/input.phy.maple");
+    aln.read(example_dir + "input.phy.maple");
     
     // test the output data
     EXPECT_EQ(aln.data.size(), 10);
@@ -284,7 +304,7 @@ TEST(Alignment, write)
     /*// ----- test on input.fa without ref file, specifying MAPLE file path -----
     aln.data.clear();
     aln.ref_seq.clear();
-    aln_file_path = "../../example/input_full.fa";
+    aln_file_path = example_dir + "input_full.fa";
     params.aln_path = aln_file_path;
     params.ref_path = "";
     

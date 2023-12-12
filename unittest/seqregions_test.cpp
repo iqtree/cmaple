@@ -128,7 +128,12 @@ TEST(SeqRegions, addNonConsecutiveRRegion)
  */
 void genTestData1(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqRegions>& seqregions2)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -273,7 +278,12 @@ TEST(SeqRegions, countSharedSegments)
  */
 TEST(SeqRegions, compareWithSample)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     std::unique_ptr<SeqRegions> seqregions1 = aln.data[0].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions2 = aln.data[10].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     std::vector<int> expected_results{1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
@@ -293,8 +303,13 @@ TEST(SeqRegions, compareWithSample)
  */
 TEST(SeqRegions, areDiffFrom)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     // init testing data
-    Alignment aln("../../example/test_5K.maple");
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -398,7 +413,12 @@ TEST(SeqRegions, simplifyO)
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -437,7 +457,12 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
  */
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -495,7 +520,12 @@ TEST(SeqRegions, computeTotalLhAtRoot)
  */
 TEST(SeqRegions, merge_N_O)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -626,7 +656,12 @@ TEST(SeqRegions, merge_N_O)
  */
 TEST(SeqRegions, merge_N_RACGT)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -965,7 +1000,12 @@ TEST(SeqRegions, merge_N_RACGT)
  */
 TEST(SeqRegions, merge_O_N)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -1086,7 +1126,12 @@ TEST(SeqRegions, merge_O_N)
  */
 TEST(SeqRegions, merge_RACGT_N)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -1425,7 +1470,12 @@ TEST(SeqRegions, merge_RACGT_N)
  */
 TEST(SeqRegions, merge_Zero_Distance)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -1542,7 +1592,12 @@ TEST(SeqRegions, merge_Zero_Distance)
  */
 TEST(SeqRegions, merge_O_ORACGT)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -1673,7 +1728,12 @@ TEST(SeqRegions, merge_O_ORACGT)
  */
 TEST(SeqRegions, merge_RACGT_O)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -1766,7 +1826,12 @@ TEST(SeqRegions, merge_RACGT_O)
  */
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -1927,8 +1992,13 @@ TEST(SeqRegions, merge_RACGT_RACGT)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     // NOTE: if plength_observation2root > 0 then must be plength_observation2node != -1;
-    Alignment aln("../../example/test_5K.maple");
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -2415,7 +2485,12 @@ void genTestData(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqRe
  */
 TEST(SeqRegions, mergeUpperLower)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -2575,7 +2650,12 @@ TEST(SeqRegions, mergeUpperLower)
  */
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -2691,7 +2771,12 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
  */
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -3031,7 +3116,12 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -3115,7 +3205,12 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -3253,7 +3348,12 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
  */
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -3382,7 +3482,12 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -3559,7 +3664,12 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -3723,7 +3833,12 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -3915,7 +4030,12 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -4085,7 +4205,12 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
@@ -4362,7 +4487,12 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();

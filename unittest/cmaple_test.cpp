@@ -21,19 +21,24 @@ TEST(CMapleTest, GetCitationsTest) {
 
 TEST(CMapleTest, checkMapleSuitability) {
     
-    Alignment aln("../../example/test_100.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_100.maple");
     // Check the result
     EXPECT_TRUE(cmaple::checkMapleSuitability(aln));
     
-    aln.read("../../example/test_5K.maple");
+    aln.read(example_dir + "test_5K.maple");
     // Check the result
     EXPECT_TRUE(cmaple::checkMapleSuitability(aln));
     
-    aln.read("../../example/input.fa");
+    aln.read(example_dir + "input.fa");
     // Check the result
     EXPECT_FALSE(cmaple::checkMapleSuitability(aln));
     
-    aln.read("../../example/input.phy");
+    aln.read(example_dir + "input.phy");
     // Check the result
     EXPECT_FALSE(cmaple::checkMapleSuitability(aln));;
 }

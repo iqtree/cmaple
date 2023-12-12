@@ -27,12 +27,17 @@ TEST(Sequence, constructor_1)
 */
 TEST(Sequence, constructor_2)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     std::vector<Mutation> mutations1;
     Sequence sequence1("sequence name 1", std::move(mutations1));
     EXPECT_EQ(sequence1.seq_name, "sequence name 1");
     EXPECT_EQ(sequence1.size(), 0);
     
-    Alignment aln("../../example/test_5K.maple");
+    Alignment aln(example_dir + "test_5K.maple");
     Sequence sequence2("sequence name 2", std::move(aln.data[0]));
     EXPECT_EQ(sequence2.seq_name, "sequence name 2");
     EXPECT_EQ(sequence2.size(), 5);
@@ -46,7 +51,12 @@ TEST(Sequence, constructor_2)
 */
 TEST(Sequence, operators)
 {
-    Alignment aln("../../example/test_5K.maple");
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
+    Alignment aln(example_dir + "test_5K.maple");
     Sequence sequence1("sequence name 1", std::move(aln.data[10]));
     
     Sequence sequence2(move(sequence1));
@@ -73,6 +83,11 @@ TEST(Sequence, operators)
 */
 TEST(Sequence, getLowerLhVector)
 {
+    // detect the path to the example directory
+    std::string example_dir = "../../example/";
+    if (!fileExists(example_dir + "example.maple"))
+        example_dir = "../example/";
+    
     Sequence sequence1;
     std::unique_ptr<SeqRegions> seqregions1 = sequence1.getLowerLhVector(30000, 4, cmaple::SeqRegion::SEQ_DNA);
     EXPECT_EQ(seqregions1->size(), 1);
@@ -83,7 +98,7 @@ TEST(Sequence, getLowerLhVector)
     EXPECT_EQ(seqregion0.plength_observation2node, -1);
     EXPECT_EQ(seqregion0.likelihood, nullptr);
     
-    Alignment aln("../../example/test_5K.maple");
+    Alignment aln(example_dir + "test_5K.maple");
     std::unique_ptr<SeqRegions> seqregions2 = aln.data[2].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     EXPECT_EQ(seqregions2->size(), 11);
     EXPECT_EQ(seqregions2->data()[0].type, TYPE_R);
