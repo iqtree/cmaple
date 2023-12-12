@@ -295,7 +295,9 @@ TEST(SeqRegions, compareWithSample)
     EXPECT_EQ(expected_results, results);
     
     // ----- Test compareWithSample() invalid sequence length
+#ifdef DEBUG
     EXPECT_DEATH(seqregions1->compareWithSample(*seqregions2, 0, &aln), ".*");
+#endif
 }
 
 /*
@@ -405,7 +407,9 @@ TEST(SeqRegions, simplifyO)
     EXPECT_EQ(SeqRegions::simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_R) ;
     
     // Test null lh
+#ifdef DEBUG
     EXPECT_DEATH(SeqRegions::simplifyO(NULL, 2, 4, threshold_prob), ".*");
+#endif
 }
 
 /*

@@ -137,12 +137,14 @@ TEST(Alignment, readRef)
     // ----- test on input.fa; read ref_sequence -----
     
     // ----- Test to invalid data , violating assert(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out)
+ #ifdef DEBUG
     // str_sequences.size() != seq_names.size()
     sequences.pop_back();
     EXPECT_DEATH(aln.extractMutations(sequences, seq_names, ref_sequence, out, false), ".*");
     // str_sequences.size() == 0
     sequences.clear();
     EXPECT_DEATH(aln.extractMutations(sequences, seq_names, ref_sequence, out, false), ".*");
+ #endif
     
     // ----- test on input_full.phy; generate ref_sequence -----
     aln.data.clear();
@@ -377,7 +379,9 @@ TEST(Alignment, convertState2Char)
     aln.setSeqType(SEQ_DNA);
     
     // ----- Test convertChar2State() with an invalid state
+ #ifdef DEBUG
     EXPECT_DEATH(aln.convertChar2State('e'), ".*");
+ #endif
     
     // convertChar2State requires input is a capital character
     

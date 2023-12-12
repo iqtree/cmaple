@@ -18,8 +18,11 @@ TEST(PhyloNode, TestConstructors)
     PhyloNode node1((InternalNode()));
     EXPECT_TRUE(node1.isInternal());
     // invalid access SeqNameIndex (from an internal node)
+#ifdef DEBUG
     EXPECT_DEATH(node1.getSeqNameIndex(), ".*");
     EXPECT_DEATH(node1.setSeqNameIndex(3), ".*");
+ #endif
+
     
     // PhyloNode(LeafNode&& leaf)
     LeafNode leaf1(100);
@@ -191,8 +194,10 @@ TEST(PhyloNode, TestGetSetNodeWithRvalueLeaf)
     EXPECT_EQ(node.getNode().leaf_.seq_name_index_, 100);
     
     // replace the current node by another internal (invalid)
+#ifdef DEBUG
     InternalNode internal;
     EXPECT_DEATH(node.setNode(std::move(internal)), ".*");
+#endif
 }
 
 /*
@@ -226,8 +231,10 @@ TEST(PhyloNode, TestGetSetNodeWithRvalueInternal)
     EXPECT_EQ(node.getNode().internal_.neighbor_index3_[0].getVectorIndex(), 0);
     
     // replace the current node by another leaf (invalid)
+#ifdef DEBUG
     LeafNode leaf(0);
     EXPECT_DEATH(node.setNode(std::move(leaf)), ".*");
+#endif
 }
 
 /*
@@ -244,9 +251,11 @@ TEST(PhyloNode, TestAddGetLessInfoSeqs) {
     EXPECT_EQ(node1.getLessInfoSeqs().size(), 4);
     
     // invalid access lessinfoseqs (from an internal node)
+#ifdef DEBUG
     PhyloNode node2((InternalNode()));
     EXPECT_DEATH(node2.getLessInfoSeqs(), ".*");
     EXPECT_DEATH(node2.addLessInfoSeqs(3), ".*");
+#endif
 }
 
 /*
