@@ -15,8 +15,10 @@
 # cmake -G "MinGW Makefiles" <source_dir> (TDM-GCC)
 # cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_MAKE_PROGRAM=mingw32-make <source_dir> (TDM-GCC and clang)
 
+
 # Linux example usages:
 #----------------------
+#
 # cmake <source_dir>
 #
 # To compile a static version:
@@ -28,24 +30,29 @@
 # To compile with CLANG on Linux:
 # cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ <source_dir>
 #
+
+
 # Mac OSX example usages:
 #------------------------
 #
 # cmake <source_dir>
 #
+
+
 # Xcode project example usages:
 #------------------------------
 #
 # To generate Xcode project:
 # cmake -G Xcode <source_dir>
 #
-#
-# Disable installation of Googletest
+
+
+# Disable compilation of googlemock and installation of Googletest
 #------------------------------
 #
-# cmake -DINSTALL_GTEST=OFF <source_dir>
+# cmake -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF <source_dir>
 #
-#
+
 
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
@@ -117,9 +124,54 @@ else()
 endif()
 
 ##################################################################
-# Setup compiler, currently supported GCC, CLANG, MSVC, and ICC
+# configure OpenMP to build a static version
 ##################################################################
+if (NOT CMAPLE_FLAGS MATCHES "single")
+    message("OpenMP        : Yes")
 
+    if(CLANG AND APPLE)
+        if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac_m1)
+        else()
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac)
+        endif()
+    elseif (WIN32 OR UNIX)
+        if (BINARY32)
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib32)
+        else()
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib)
+        endif()
+    endif()
+
+    if (VCC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
+    elseif (ICC)
+        if (WIN32)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qopenmp")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qopenmp")
+        endif()
+    elseif (GCC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+    elseif (CLANG)
+        if (CLANG_UNDER_VS)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_WARNINGS /DCLANG_UNDER_VS=1")
+            set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /openmp /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_WARNINGS /DCLANG_UNDER_VS=1")
+            
+            set (LLVM_DIR "C:\\Projects\\LLVM_10")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LIBPATH:${LLVM_DIR}\\lib libomp.lib")
+        else()
+            if (APPLE OR WIN32 )
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp")
+                set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lomp")
+            else()
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+            endif()
+        endif()
+    endif()
+else()
+    message("OpenMP        : NONE")
+endif()
 
 ##################################################################
 # Setup compiler flags
