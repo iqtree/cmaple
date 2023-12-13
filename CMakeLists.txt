@@ -78,6 +78,16 @@ set (cmaple_VERSION_PATCH ".0")
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 
+##################################################################
+# check existence of a few basic functions
+##################################################################
+include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
+check_function_exists (gettimeofday HAVE_GETTIMEOFDAY)
+check_function_exists (getrusage HAVE_GETRUSAGE)
+check_function_exists (GlobalMemoryStatusEx HAVE_GLOBALMEMORYSTATUSEX)
+check_function_exists (strndup HAVE_STRNDUP)
+check_function_exists (strtok_r HAVE_STRTOK_R)
+
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -131,7 +141,7 @@ if (NOT CMAPLE_FLAGS MATCHES "single")
             link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac)
         endif()
     elseif (WIN32 OR UNIX)
-        if (BINARY32)
+        if (CMAKE_SIZEOF_VOID_P EQUAL 4)
             link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib32)
         else()
             link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib)
@@ -180,18 +190,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 message("LINKER flags  : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
-
-
-
-##################################################################
-# check existence of a few basic functions
-##################################################################
-include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
-check_function_exists (gettimeofday HAVE_GETTIMEOFDAY)
-check_function_exists (getrusage HAVE_GETRUSAGE)
-check_function_exists (GlobalMemoryStatusEx HAVE_GLOBALMEMORYSTATUSEX)
-check_function_exists (strndup HAVE_STRNDUP)
-check_function_exists (strtok_r HAVE_STRTOK_R)
 
 find_package(Backtrace)
 
