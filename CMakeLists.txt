@@ -76,11 +76,6 @@ set (cmaple_VERSION_MAJOR 1)
 set (cmaple_VERSION_MINOR 0)
 set (cmaple_VERSION_PATCH ".0")
 
-set (SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    set (SYSTEM_NAME "MacOSX")
-endif()
-
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -129,7 +124,7 @@ endif()
 if (NOT CMAPLE_FLAGS MATCHES "single")
     message("OpenMP        : Yes")
 
-    if(CLANG AND APPLE)
+    if(APPLE)
         if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
             link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac_m1)
         else()
@@ -143,30 +138,14 @@ if (NOT CMAPLE_FLAGS MATCHES "single")
         endif()
     endif()
 
-    if (VCC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
-    elseif (ICC)
-        if (WIN32)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qopenmp")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qopenmp")
-        endif()
-    elseif (GCC)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-    elseif (CLANG)
-        if (CLANG_UNDER_VS)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_WARNINGS /DCLANG_UNDER_VS=1")
-            set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /openmp /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_WARNINGS /DCLANG_UNDER_VS=1")
-            
-            set (LLVM_DIR "C:\\Projects\\LLVM_10")
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LIBPATH:${LLVM_DIR}\\lib libomp.lib")
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if (APPLE OR WIN32)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lomp")
         else()
-            if (APPLE OR WIN32 )
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp")
-                set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lomp")
-            else()
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-            endif()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
         endif()
     endif()
 else()
@@ -189,6 +168,19 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     add_compile_options(/arch:AVX2) ## not really needed, but may be beneficial in other places when in Release mode (i.e. with optimizations turned on)
   endif()
 endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    message("C flags       : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
+    message("CXX flags     : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("C flags       : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
+    message("CXX flags     : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
+endif()
+
+message("LINKER flags  : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+
 
 
 ##################################################################
@@ -325,6 +317,10 @@ endif()
 set(CPACK_SOURCE_IGNORE_FILES
   "/build.*/;/debug.*/;/examples/;/test_scripts/;/manual/;/.bzr/;~$;/\\\\.svn/;/\\\\.git/;/pllrepo/;${CPACK_SOURCE_IGNORE_FILES}")
 
+set (SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    set (SYSTEM_NAME "MacOSX")
+endif()
 
 set(CPACK_PACKAGE_FILE_NAME
     "${CMAKE_PROJECT_NAME}${EXE_SUFFIX}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}${CPACK_PACKAGE_VERSION_PATCH}-${SYSTEM_NAME}")
