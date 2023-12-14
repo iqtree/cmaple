@@ -77,6 +77,7 @@ set (cmaple_VERSION_MINOR 0)
 set (cmaple_VERSION_PATCH ".0")
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
+option(INSTALL_CMAPLE "Enable installation of CMAPLE. (Projects integrating CMAPLE may want to turn this OFF.)" ON)
 
 ##################################################################
 # check existence of a few basic functions
@@ -280,20 +281,22 @@ target_link_libraries(cmaple-aa maple-aa cmaple_tree-aa cmaple_alignment-aa cmap
 ##############################################################
 # add the install targets
 ##############################################################
-install (TARGETS cmaple DESTINATION bin)
-install (TARGETS cmaple-aa DESTINATION bin)
-install (FILES "${PROJECT_SOURCE_DIR}/example/example.maple" DESTINATION .)
-install (FILES "${PROJECT_SOURCE_DIR}/example/tree.nwk" DESTINATION .)
-#install (FILES "${PROJECT_BINARY_DIR}/cmaple_config.h" DESTINATION "include")
-#install(DIRECTORY "${PROJECT_SOURCE_DIR}/" # source directory
-#        DESTINATION "include/cmaple" # target directory
-#        FILES_MATCHING # install only matched files
-#        PATTERN "*.h" # select header files
-#)
+if (INSTALL_CMAPLE)
+    install (TARGETS cmaple DESTINATION bin)
+    install (TARGETS cmaple-aa DESTINATION bin)
+    install (FILES "${PROJECT_SOURCE_DIR}/example/example.maple" DESTINATION .)
+    install (FILES "${PROJECT_SOURCE_DIR}/example/tree.nwk" DESTINATION .)
+    #install (FILES "${PROJECT_BINARY_DIR}/cmaple_config.h" DESTINATION "include")
+    #install(DIRECTORY "${PROJECT_SOURCE_DIR}/" # source directory
+    #        DESTINATION "include/cmaple" # target directory
+    #        FILES_MATCHING # install only matched files
+    #        PATTERN "*.h" # select header files
+    #)
 
-if (WIN32)
-    install (FILES "${BINARY_DIR}/cmaple${EXE_SUFFIX}-click.exe" DESTINATION bin)
-    install (FILES "${BINARY_DIR}/cmaple-aa${EXE_SUFFIX}-click.exe" DESTINATION bin)
+    if (WIN32)
+        install (FILES "${BINARY_DIR}/cmaple${EXE_SUFFIX}-click.exe" DESTINATION bin)
+        install (FILES "${BINARY_DIR}/cmaple-aa${EXE_SUFFIX}-click.exe" DESTINATION bin)
+    endif()
 endif()
 
 ##############################################################
