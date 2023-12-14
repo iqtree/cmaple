@@ -1905,6 +1905,7 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
   // dummy variables
   RealNumType total_improvement = 0;
   PositionType num_nodes = 0;
+  NumSeqsType count_node_1K = 0;
 
   // traverse downward the tree
   while (!node_stack.empty()) {
@@ -1970,9 +1971,10 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
 
       // Show log every 1000 nodes
       num_nodes += 1;
-      if (cmaple::verbose_mode >= cmaple::VB_DEBUG && num_nodes % 1000 == 0) {
+      if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000) {
         std::cout << "Processed topology for " << convertIntToString(num_nodes)
              << " nodes." << std::endl;
+        count_node_1K = num_nodes;
       }
     }
   }

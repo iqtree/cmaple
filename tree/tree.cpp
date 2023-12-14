@@ -536,6 +536,7 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
   if (nodes.capacity() < num_seqs + num_seqs)
     nodes.reserve(num_seqs + num_seqs);
   NumSeqsType i = 0;
+  NumSeqsType count_every_1K = 0;
 
   // if users don't input a tree -> create the root from the first sequence
   if (!from_input_tree) {
@@ -623,6 +624,14 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
     // exportOutput(output_file + "_init.treefile");
     // exit(0);
     //}
+    // show progress
+    if (cmaple::verbose_mode >= cmaple::VB_MED) {
+      if (i - count_every_1K >= 1000)
+      {
+        std::cout << "Added " << i << " samples" << std::endl;
+        count_every_1K = i;
+      }
+    }
   }
 
   // flag denotes whether there is any new nodes added
