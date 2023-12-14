@@ -226,6 +226,9 @@ endif(ZLIB_FOUND)
 ##################################################################
 # fetch GoogleTest framework when CMake runs
 ##################################################################
+SET(BUILD_GMOCK OFF CACHE BOOL "Disable compilation of googlemock" FORCE)
+SET(INSTALL_GTEST OFF CACHE BOOL "Disable installation of googletest" FORCE)
+
 include(FetchContent)
 FetchContent_Declare(
   googletest
