@@ -628,7 +628,7 @@ void merge_N_O(const RealNumType lower_plength,
   }
 
   auto new_lh =
-      std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
+      cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   RealNumType sum_lh = updateLHwithModel<num_states>(model, *reg_o.likelihood,
                                                      (*new_lh), total_blength);
   // normalize the new partial likelihood
@@ -664,7 +664,7 @@ void merge_O_N(const SeqRegion& reg_o,
   }
 
   if (total_blength > 0) {
-    auto new_lh = std::make_unique<SeqRegion::LHType>();  // = new
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();  // = new
     // RealNumType[num_states];
     RealNumType sum_lh = updateLHwithMat<num_states>(
         model->transposed_mut_mat, *(reg_o.likelihood), *new_lh, total_blength);
@@ -691,7 +691,7 @@ void merge_O_ORACGT(const SeqRegion& seq1_region,
                     const Alignment* aln,
                     SeqRegions& merged_regions) {
   auto new_lh =
-      std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
+      cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   auto& new_lh_value = *new_lh;
 
   // if total_blength_1 > 0 => compute new partial likelihood
@@ -814,7 +814,7 @@ void merge_RACGT_ORACGT(const SeqRegion& seq1_region,
   }
 
   auto new_lh =
-      std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
+      cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   auto& new_lh_value = *new_lh;
 
   // init or update new_lh/new_lh_value
@@ -881,7 +881,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
   if (merged_regions) {
     merged_regions->clear();
   } else {
-    merged_regions = std::make_unique<SeqRegions>();
+    merged_regions = cmaple::make_unique<SeqRegions>();
   }
 
   // avoid realloc of vector data (minimize memory footprint)
@@ -1110,7 +1110,7 @@ auto merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region,
                               std::unique_ptr<SeqRegions>& merged_regions,
                               const bool return_log_lh) -> bool {
   auto new_lh =
-      std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
+      cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   RealNumType sum_lh = 0;
 
   if (total_blength_1 > 0) {
@@ -1233,7 +1233,7 @@ auto merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
   }
 
   auto new_lh =
-      std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
+      cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   // auto& new_lh_value = *new_lh;
   RealNumType sum_lh = 0;
 
@@ -1345,7 +1345,7 @@ RealNumType SeqRegions::mergeTwoLowers(
   if (merged_regions) {
     merged_regions->clear();
   } else {
-    merged_regions = std::make_unique<SeqRegions>();
+    merged_regions = cmaple::make_unique<SeqRegions>();
   }
 
   // avoid realloc of vector data (minimize memory footprint)
@@ -1555,7 +1555,7 @@ void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh,
   if (total_lh) {
     total_lh->clear();
   } else {
-    total_lh = std::make_unique<SeqRegions>();
+    total_lh = cmaple::make_unique<SeqRegions>();
   }
 
   total_lh->reserve(size());  // avoid realloc of vector data
@@ -1579,7 +1579,7 @@ void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh,
         }
 
         // init new likelihood
-        auto new_lh = std::make_unique<SeqRegion::LHType>();  // = new
+        auto new_lh = cmaple::make_unique<SeqRegion::LHType>();  // = new
         // RealNumType[num_states];
         auto& new_lh_value = *new_lh;
         RealNumType sum_lh = updateLHwithModel<num_states>(
@@ -1725,7 +1725,7 @@ bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions,
                          RealNumType& log_lh,
                          std::unique_ptr<SeqRegions>& merged_regions) {
   auto new_lh =
-      std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
+      cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   RealNumType sum_lh = 0;
 
   if (total_blength_1 > 0) {
@@ -1851,7 +1851,7 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions,
   }
 
   auto new_lh =
-      std::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
+      cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   // auto& new_lh_value = *new_lh;
   RealNumType sum_lh = 0;
 
@@ -1966,7 +1966,7 @@ RealNumType SeqRegions::calculateSiteLhContributions(
   if (merged_regions) {
     merged_regions->clear();
   } else {
-    merged_regions = std::make_unique<SeqRegions>();
+    merged_regions = cmaple::make_unique<SeqRegions>();
   }
 
   // avoid realloc of vector data (minimize memory footprint)

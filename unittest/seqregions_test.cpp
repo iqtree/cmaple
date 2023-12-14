@@ -328,14 +328,14 @@ TEST(SeqRegions, areDiffFrom)
     seqregions_2->mergeTwoLowers<4>(seqregions2, 214e-4, *seqregions_3, 13e-8, tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
     
     // ---- seqregions4 is empty -----
-    std::unique_ptr<SeqRegions> seqregions4 = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> seqregions4 = cmaple::make_unique<SeqRegions>();
     EXPECT_EQ(seqregions1->areDiffFrom(seqregions4, seq_length, aln.num_states, *params), true);
     // ---- seqregions4 is empty -----
     
     // ---- other tests -----
     EXPECT_EQ(seqregions1->areDiffFrom(seqregions2, seq_length, aln.num_states, *params), true);
     
-    std::unique_ptr<SeqRegions> seqregions5 = std::make_unique<SeqRegions>(seqregions1);
+    std::unique_ptr<SeqRegions> seqregions5 = cmaple::make_unique<SeqRegions>(seqregions1);
     EXPECT_EQ(seqregions1->areDiffFrom(seqregions5, seq_length, aln.num_states, *params), false);
     
     seqregions5->data()[3].type = TYPE_R;
@@ -388,7 +388,7 @@ TEST(SeqRegions, simplifyO)
     RealNumType threshold_prob = params->threshold_prob;
     
     // tests
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.1,0.3,0.2,0.4};
     (*new_lh) = new_lh_value;
     EXPECT_EQ(SeqRegions::simplifyO(new_lh->data(), 2, 4, threshold_prob), TYPE_O) ;
@@ -542,7 +542,7 @@ TEST(SeqRegions, merge_N_O)
     SeqRegions merged_regions;
     const PositionType end_pos = 8623;
     RealNumType lower_plength = -1;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.27595781923293211113090706021466758102178573608398,8.3817209383128356075479820086471249851456377655268e-06,0.72401575181023847260775028189527802169322967529297,1.8047235891267821277644811672757896303664892911911e-05};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
@@ -1022,7 +1022,7 @@ TEST(SeqRegions, merge_O_N)
     SeqRegions merged_regions;
     const PositionType end_pos = 29180;
     RealNumType upper_plength = -1;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{7.4346402191731947664294494204639818235591519623995e-06,0.66666418845326025355291221785591915249824523925781,7.4346402191731947664294494204639818235591519623995e-06,0.33332094226630137878686355179524980485439300537109};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
@@ -1489,7 +1489,7 @@ TEST(SeqRegions, merge_Zero_Distance)
     const StateType num_states = aln.num_states;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions_ptr = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions_ptr = cmaple::make_unique<SeqRegions>();
     const RealNumType threshold_prob = params->threshold_prob;
     const PositionType end_pos = 6543;
     RealNumType total_blength_1 = -1;
@@ -1501,7 +1501,7 @@ TEST(SeqRegions, merge_Zero_Distance)
     // ----- Test 1 -----
     
     // ----- Test 2 -----
-    merged_regions_ptr = std::make_unique<SeqRegions>();
+    merged_regions_ptr = cmaple::make_unique<SeqRegions>();
     total_blength_1 = -1;
     total_blength_2 = 0;
     seqregion1.type = TYPE_R;
@@ -1511,7 +1511,7 @@ TEST(SeqRegions, merge_Zero_Distance)
     // ----- Test 2 -----
     
     // ----- Test 3 -----
-    merged_regions_ptr = std::make_unique<SeqRegions>();
+    merged_regions_ptr = cmaple::make_unique<SeqRegions>();
     total_blength_1 = -1;
     total_blength_2 = 1e-3;
     seqregion1.type = 3;
@@ -1534,7 +1534,7 @@ TEST(SeqRegions, merge_Zero_Distance)
     // ----- Test 4 -----
     
     // ----- Test 5 -----
-    merged_regions_ptr = std::make_unique<SeqRegions>();
+    merged_regions_ptr = cmaple::make_unique<SeqRegions>();
     total_blength_1 = 0;
     total_blength_2 = 0;
     seqregion1.type = 0;
@@ -1544,7 +1544,7 @@ TEST(SeqRegions, merge_Zero_Distance)
     // ----- Test 5 -----
     
     // ----- Test 6 -----
-    merged_regions_ptr = std::make_unique<SeqRegions>();
+    merged_regions_ptr = cmaple::make_unique<SeqRegions>();
     total_blength_1 = 0;
     total_blength_2 = 1e-10;
     seqregion1.type = TYPE_R;
@@ -1612,11 +1612,11 @@ TEST(SeqRegions, merge_O_ORACGT)
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.27595781923293211113090706021466758102178573608398,8.3817209383128356075479820086471249851456377655268e-06,0.72401575181023847260775028189527802169322967529297,1.8047235891267821277644811672757896303664892911911e-05};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
-    new_lh = std::make_unique<SeqRegion::LHType>();
+    new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.27595781923293211113090706021466758102178573608398,8.3817209383128356075479820086471249851456377655268e-06,0.72401575181023847260775028189527802169322967529297,1.8047235891267821277644811672757896303664892911911e-05};
     (*new_lh) = new_lh_value1;
     SeqRegion seqregion2(TYPE_O, 243, -1, 1e-3, std::move(new_lh));
@@ -1748,14 +1748,14 @@ TEST(SeqRegions, merge_RACGT_O)
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
     RealNumType total_blength_1 = -1;
     const PositionType end_pos = 3213;
     const RealNumType threshold_prob = params->threshold_prob;
-    new_lh = std::make_unique<SeqRegion::LHType>();
+    new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.99997490659690790870683940738672390580177307128906,2.5092097243268992381179730011275808010395849123597e-05,6.5292438309787796439726148030194621818544931102224e-10,6.5292438309787796439726148030194621818544931102224e-10};
     (*new_lh) = new_lh_value1;
     merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
@@ -1850,7 +1850,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     RealNumType total_blength_1 = -1;
     const PositionType end_pos = 3213;
     const RealNumType threshold_prob = params->threshold_prob;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
     (*new_lh) = new_lh_value1;
     merge_RACGT_RACGT<4>(seqregion1, total_blength_1, end_pos, *new_lh, tree.model, tree.aln, merged_regions);
@@ -2019,7 +2019,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     RealNumType total_blength_2 = -1;
     const PositionType end_pos = 5432;
     SeqRegion seqregion1(TYPE_R, 2131);
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766,5.5759387092817078802929955938516570768115343526006e-06,0.49999442406129068761089229155913926661014556884766};
     (*new_lh) = new_lh_value1;
     SeqRegion seqregion2(TYPE_O, 543, -1, -1, std::move(new_lh));
@@ -2672,7 +2672,7 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
     SeqRegions merged_regions;
     const PositionType end_pos = 8623;
     RealNumType plength2 = -1;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.27595781923293211113090706021466758102178573608398,8.3817209383128356075479820086471249851456377655268e-06,0.72401575181023847260775028189527802169322967529297,1.8047235891267821277644811672757896303664892911911e-05};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
@@ -3225,13 +3225,13 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions = cmaple::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 243, -1, -1, std::move(new_lh));
-    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    auto new_lh1 = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
     (*new_lh1) = new_lh_value1;
     RealNumType total_blength_2 = -1;
@@ -3368,11 +3368,11 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions = cmaple::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
     RealNumType sum_lh = 0;
     SeqRegion seqregion1(TYPE_R, 243, -1, -1);
-    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    auto new_lh1 = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
     (*new_lh1) = new_lh_value1;
     RealNumType total_blength_2 = -1;
@@ -3502,13 +3502,13 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions = cmaple::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 412, -1, -1, std::move(new_lh));
-    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    auto new_lh1 = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
     (*new_lh1) = new_lh_value1;
     SeqRegion seqregion2(TYPE_O, 412, -1, -1, std::move(new_lh1));
@@ -3684,12 +3684,12 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions = cmaple::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.12497560486006949187487435892762732692062854766846,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,9.7580559722090576469559833339140197949745925143361e-06};
     (*new_lh) = new_lh_value;
-    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    auto new_lh1 = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.59998393993535814594508792652050033211708068847656,2.6766774402933635499746492514283602304203668609262e-05,2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203};
     (*new_lh1) = new_lh_value1;
     SeqRegion seqregion2(TYPE_O, 412, -1, -1, std::move(new_lh1));
@@ -3853,10 +3853,10 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions = cmaple::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
     RealNumType sum_lh = 0;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{9.7580559722090576469559833339140197949745925143361e-06,9.7580559722090576469559833339140197949745925143361e-06,0.87500487902798607109389195102266967296600341796875,0.12497560486006949187487435892762732692062854766846};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion2(TYPE_R, 412, -1, -1);
@@ -4050,10 +4050,10 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions = cmaple::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
     SeqRegion seqregion1(TYPE_R, 3223);
-    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    auto new_lh1 = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{2.6766774402933635499746492514283602304203668609262e-05,0.39996252651583585890904259940725751221179962158203,2.6766774402933635499746492514283602304203668609262e-05,0.59998393993535814594508792652050033211708068847656};
     (*new_lh1) = new_lh_value1;
     SeqRegion seqregion2(TYPE_O, 3223, -1, -1, std::move(new_lh1));
@@ -4225,13 +4225,13 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
-    std::unique_ptr<SeqRegions> merged_regions = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> merged_regions = cmaple::make_unique<SeqRegions>();
     RealNumType log_lh = 0;
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.42855939517854246822992081433767452836036682128906,0.57141073458160607234646022334345616400241851806641,1.4935119925781397759922616841343767646321794018149e-05,1.4935119925781397759922616841343767646321794018149e-05};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion1(TYPE_O, 1412, -1, -1, std::move(new_lh));
-    auto new_lh1 = std::make_unique<SeqRegion::LHType>();
+    auto new_lh1 = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value1{0.61110448521316429459915298139094375073909759521484,1.1926616304335032169438128579752600444408017210662e-05,1.1926616304335032169438128579752600444408017210662e-05,0.38887166155422708824218602785549592226743698120117};
     (*new_lh1) = new_lh_value1;
     SeqRegion seqregion2(TYPE_O, 1412, -1, -1, std::move(new_lh1));

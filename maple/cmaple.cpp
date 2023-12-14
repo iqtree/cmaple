@@ -125,7 +125,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         }
         
         // Initialize a Tree
-        Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths, std::make_unique<cmaple::Params>(params));
+        Tree tree(&aln, &model, params.input_treefile, params.fixed_blengths, cmaple::make_unique<cmaple::Params>(params));
         
         // Infer a phylogenetic tree
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);

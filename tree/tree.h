@@ -2149,7 +2149,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
     // SeqRegions best_child_mid_clone =
     // SeqRegions(best_child.getMidBranchLh());
     best_child_regions =
-        nullptr;  // std::make_unique<SeqRegions>(std::move(best_child_mid_clone));
+        nullptr;  // cmaple::make_unique<SeqRegions>(std::move(best_child_mid_clone));
 
     // try a shorter split
     // tryShorterBranch<&cmaple::Tree::calculateSamplePlacementCost<num_states>>(best_child->length,
@@ -2164,7 +2164,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
     // Delay cloning SeqRegions
     if (!best_child_regions) {
       best_child_regions =
-          std::make_unique<SeqRegions>(SeqRegions(best_child.getMidBranchLh()));
+          cmaple::make_unique<SeqRegions>(SeqRegions(best_child.getMidBranchLh()));
     }
   }
 
@@ -2215,7 +2215,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
     // SeqRegions seq_regions_clone =
     // SeqRegions(selected_node.getMidBranchLh());
     best_parent_regions =
-        nullptr;  // std::make_unique<SeqRegions>(std::move(seq_regions_clone));
+        nullptr;  // cmaple::make_unique<SeqRegions>(std::move(seq_regions_clone));
 
     // try a shorter split
     // tryShorterBranch<&cmaple::Tree::calculateSamplePlacementCost<num_states>>(selected_node->length,
@@ -2229,7 +2229,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
 
     // Delay cloning SeqRegions
     if (!best_parent_regions) {
-      best_parent_regions = std::make_unique<SeqRegions>(
+      best_parent_regions = cmaple::make_unique<SeqRegions>(
           SeqRegions(selected_node.getMidBranchLh()));
     }
   }
@@ -2284,7 +2284,7 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
         // best_parent_regions = new SeqRegions(selected_node->total_lh);
         SeqRegions seq_regions_clone = SeqRegions(selected_node.getTotalLh());
         best_parent_regions =
-            std::make_unique<SeqRegions>(std::move(seq_regions_clone));
+            cmaple::make_unique<SeqRegions>(std::move(seq_regions_clone));
       }
     }
 
@@ -2378,7 +2378,7 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
   const RealNumType selected_node_blength = selected_node.getUpperLength();
   RealNumType best_branch_length_split = 0.5 * selected_node_blength;
   best_child_regions =
-      nullptr;  // std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
+      nullptr;  // cmaple::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
   // selected_node->getPartialLhAtNode(aln, model, threshold_prob);
   const std::unique_ptr<SeqRegions>& lower_regions =
       selected_node.getPartialLh(TOP);
@@ -2407,7 +2407,7 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
 
   // Delay cloning SeqRegions
   if (!best_child_regions) {
-    best_child_regions = std::make_unique<SeqRegions>(
+    best_child_regions = cmaple::make_unique<SeqRegions>(
         SeqRegions(selected_node.getMidBranchLh()));
   }
 

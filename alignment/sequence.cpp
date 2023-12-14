@@ -21,7 +21,7 @@ std::unique_ptr<SeqRegions> cmaple::Sequence::getLowerLhVector(
     const StateType num_states,
     const cmaple::SeqRegion::SeqType seq_type) {
   std::unique_ptr<SeqRegions> regions =
-      std::make_unique<SeqRegions>(SeqRegions());
+      cmaple::make_unique<SeqRegions>(SeqRegions());
   regions->reserve(size() *
                    2);  // avoid realloc of vector data (we could also count
                         // explicitly - see below), but that seems a bit slower

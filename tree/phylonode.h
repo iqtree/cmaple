@@ -47,7 +47,7 @@ class PhyloNode {
   };
 
   // total_lh and mid_branch_lh
-  // std::unique_ptr<OtherLh> other_lh_ = std::make_unique<OtherLh>(OtherLh());
+  // std::unique_ptr<OtherLh> other_lh_ = cmaple::make_unique<OtherLh>(OtherLh());
   std::unique_ptr<OtherLh> other_lh_ = std::unique_ptr<OtherLh>(new OtherLh());
 
   // NOTES: we can save 1 byte by using Bit Fields to store is_internal_ and

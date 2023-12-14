@@ -30,7 +30,7 @@ cmaple::SeqRegion::SeqRegion(StateType n_type,
     : Mutation(n_type, n_position),
       plength_observation2node(n_plength_observation),
       plength_observation2root(n_plength_from_root),
-      likelihood(std::make_unique<LHType>(n_likelihood)) {}
+      likelihood(cmaple::make_unique<LHType>(n_likelihood)) {}
 
 cmaple::SeqRegion::SeqRegion(StateType n_type,
                              PositionType n_position,
@@ -175,7 +175,7 @@ void cmaple::SeqRegion::computeLhAmbiguity(const LHType& entries) {
   // change type to 'O'
   type = TYPE_O;
   if (!likelihood) {
-    likelihood = std::make_unique<LHType>();
+    likelihood = cmaple::make_unique<LHType>();
   }
   (*likelihood) = entries;
 }
@@ -188,7 +188,7 @@ void cmaple::SeqRegion::writeConstructionCodes(
   std::string lh_str = "";
   if (likelihood) {
     out << "auto " << regions_name << "_new_lh" << position
-        << " = std::make_unique<cmaple::SeqRegion::LHType>();" << std::endl;
+        << " = cmaple::make_unique<cmaple::SeqRegion::LHType>();" << std::endl;
     out << "auto& " << regions_name << "_new_lh_value" << position << " = *"
         << regions_name << "_new_lh" << position << ";" << std::endl;
     for (StateType i = 0; i < num_states; ++i) {

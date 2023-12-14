@@ -28,7 +28,7 @@ TEST(PhyloNode, TestConstructors)
     LeafNode leaf1(100);
     SeqRegions seqregions1;
     seqregions1.resize(3);
-    leaf1.partial_lh_ = std::make_unique<SeqRegions>(std::move(seqregions1));
+    leaf1.partial_lh_ = cmaple::make_unique<SeqRegions>(std::move(seqregions1));
     
     PhyloNode node2(std::move(leaf1));
     EXPECT_EQ(leaf1.partial_lh_, nullptr);
@@ -50,7 +50,7 @@ TEST(PhyloNode, TestConstructors)
  */
 TEST(PhyloNode, TestSetGetTotalLh) {
     PhyloNode node((InternalNode()));
-    std::unique_ptr<SeqRegions> total_lh = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> total_lh = cmaple::make_unique<SeqRegions>();
     node.setTotalLh(std::move(total_lh));
     EXPECT_EQ(total_lh, nullptr);
     EXPECT_EQ(node.getTotalLh()->size(), 0);
@@ -63,7 +63,7 @@ TEST(PhyloNode, TestSetGetTotalLh) {
  */
 TEST(PhyloNode, TestSetGetMidBranchLh) {
     PhyloNode node((InternalNode()));
-    std::unique_ptr<SeqRegions> mid_branch_lh = std::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions> mid_branch_lh = cmaple::make_unique<SeqRegions>();
     node.setMidBranchLh(std::move(mid_branch_lh));
     EXPECT_EQ(mid_branch_lh, nullptr);
     EXPECT_EQ(node.getMidBranchLh()->size(), 0);
@@ -275,7 +275,7 @@ TEST(PhyloNode, TestGetSetPartialLh)
     // set partial lh for a leaf
     SeqRegions seqregions1;
     seqregions1.resize(3);
-    node.setPartialLh(TOP, std::make_unique<SeqRegions>(std::move(seqregions1)));
+    node.setPartialLh(TOP, cmaple::make_unique<SeqRegions>(std::move(seqregions1)));
     EXPECT_EQ(node.getPartialLh(TOP)->size(), 3);
     EXPECT_EQ(node.getPartialLh(LEFT), node.getPartialLh(TOP));
     EXPECT_EQ(node.getPartialLh(RIGHT), node.getPartialLh(TOP));
@@ -289,11 +289,11 @@ TEST(PhyloNode, TestGetSetPartialLh)
     // set partial lh for an internal
     SeqRegions seqregions2;
     seqregions2.emplace_back(TYPE_R, 382, -1, 0.321);
-    node2.setPartialLh(TOP, std::make_unique<SeqRegions>(std::move(seqregions2)));
+    node2.setPartialLh(TOP, cmaple::make_unique<SeqRegions>(std::move(seqregions2)));
     EXPECT_EQ(node2.getPartialLh(TOP)->size(), 1);
     EXPECT_EQ(node2.getPartialLh(LEFT), nullptr);
     EXPECT_EQ(node2.getPartialLh(RIGHT), nullptr);
-    auto seqregions3_ptr = std::make_unique<SeqRegions>();
+    auto seqregions3_ptr = cmaple::make_unique<SeqRegions>();
     seqregions3_ptr->resize(2);
     node2.setPartialLh(RIGHT, std::move(seqregions3_ptr));
     EXPECT_EQ(node2.getPartialLh(TOP)->size(), 1);
@@ -364,7 +364,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     PhyloNode neighbor((InternalNode()));
     PhyloNode node1((InternalNode()));
     std::unique_ptr<SeqRegions> total_lh = nullptr;
-    node1.setPartialLh(TOP, std::make_unique<SeqRegions>(std::move(merge_regions1)));
+    node1.setPartialLh(TOP, cmaple::make_unique<SeqRegions>(std::move(merge_regions1)));
     node1.computeTotalLhAtNode<4>(total_lh, neighbor, tree.aln, tree.model, params->threshold_prob, true); // deafault blength = -1
     EXPECT_EQ(total_lh->size(), 13);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
@@ -379,7 +379,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     std::unique_ptr<SeqRegions> merge_regions2 = nullptr;
     seqregions1->mergeTwoLowers<4>(merge_regions2, 14e-6, *seqregions3, 22e-5, tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
     const MiniIndex parent_mini = RIGHT;
-    neighbor.setPartialLh(parent_mini, std::make_unique<SeqRegions>(std::move(merge_regions2)));
+    neighbor.setPartialLh(parent_mini, cmaple::make_unique<SeqRegions>(std::move(merge_regions2)));
     node1.setNeighborIndex(TOP, Index(0, parent_mini));
     node1.setUpperLength(0.013);
     node1.computeTotalLhAtNode<4>(total_lh, neighbor, tree.aln, tree.model, params->threshold_prob, false, 141e-5);

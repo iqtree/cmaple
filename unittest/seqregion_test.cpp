@@ -29,10 +29,10 @@ TEST(SeqRegion, constructor_1)
     SeqRegion seqregion3(3, 14432, 0.432, 0);
     SeqRegion seqregion4(TYPE_N, 654, -1, 0.321);
     
-    auto new_lh = std::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>(); // = new RealNumType[num_states];
     SeqRegion seqregion5(TYPE_O, 8432, 0, -1, std::move(new_lh));
     
-    new_lh = std::make_unique<SeqRegion::LHType>();
+    new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{0.1,0.3,0.2,0.4};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion6(TYPE_O, 39324, -1, -1, std::move(new_lh));
@@ -284,7 +284,7 @@ TEST(SeqRegion, operators)
     Mutation m1(1+4+8+3, 543, 1); // { 1.0/3, 0, 1.0/3, 1.0/3}
     SeqRegion seqregion1(&m1, cmaple::SeqRegion::SEQ_DNA, 4);
     
-    auto new_lh = std::make_unique<SeqRegion::LHType>();
+    auto new_lh = cmaple::make_unique<SeqRegion::LHType>();
     SeqRegion::LHType new_lh_value{1.0/3, 0, 1.0/3, 1.0/3};
     (*new_lh) = new_lh_value;
     SeqRegion seqregion2(TYPE_O, 543, -1, -1, std::move(new_lh));

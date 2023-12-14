@@ -1504,7 +1504,7 @@ void cmaple::Tree::updatePartialLh(stack<Index>& node_stack) {
     params->threshold_prob); SeqRegions parent_upper_regions_clone =
     SeqRegions(getPartialLhAtNode(node.getNeighborIndex(TOP)));
         parent_upper_regions =
-    std::make_unique<SeqRegions>(std::move(parent_upper_regions_clone));
+    cmaple::make_unique<SeqRegions>(std::move(parent_upper_regions_clone));
     }*/
     const std::unique_ptr<SeqRegions>& parent_upper_regions =
         is_non_root ? getPartialLhAtNode(node.getNeighborIndex(TOP))
@@ -1719,11 +1719,11 @@ void cmaple::Tree::addStartingNodes(
     UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true,
     best_lh_diff, 0, false));*/
     std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
-    node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+    node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
         parent_index, std::move(null_seqregions_ptr1), other_child_node_regions,
         branch_length, true, best_lh_diff, 0)));
     std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
-    node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+    node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
         other_child_node_index, std::move(null_seqregions_ptr2),
         parent_upper_lr_regions, branch_length, true, best_lh_diff, 0)));
   }
@@ -1759,7 +1759,7 @@ void cmaple::Tree::addStartingNodes(
       // node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1,
       // grand_child_1->length, true, best_lh_diff, 0, true));
       std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           grand_child_1_index, std::move(up_lr_regions_1), null_seqregions_ptr1,
           grand_child_1.getUpperLength(), true, best_lh_diff, 0)));
 
@@ -1772,7 +1772,7 @@ void cmaple::Tree::addStartingNodes(
       // node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2,
       // grand_child_2->length, true, best_lh_diff, 0, true));
       std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           grand_child_2_index, std::move(up_lr_regions_2), null_seqregions_ptr2,
           grand_child_2.getUpperLength(), true, best_lh_diff, 0)));
     }
@@ -2110,7 +2110,7 @@ void cmaple::Tree::addChildSeekSubtreePlacement(
       // updating_node->failure_count, updating_node->need_updating));
 
       std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           child_1_index, std::move(upper_lr_regions), null_seqregions_ptr,
           child_1.getUpperLength(), updating_node->needUpdate(),
           lh_diff_at_node, updating_node->getFailureCount())));
@@ -2129,7 +2129,7 @@ void cmaple::Tree::addChildSeekSubtreePlacement(
       // child_1->length, updating_node->need_updating, lh_diff_at_node,
       // updating_node->failure_count, updating_node->need_updating));
       std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           child_1_index, std::move(null_seqregions_ptr), upper_lr_regions,
           child_1.getUpperLength(), updating_node->needUpdate(),
           lh_diff_at_node, updating_node->getFailureCount())));
@@ -2179,11 +2179,11 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
         return false;  // continue;
       } else {
         std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-        // node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(other_child_index,
+        // node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(other_child_index,
         // std::move(upper_lr_regions), null_seqregions_ptr,
         // other_child->length, updating_node->need_updating_, lh_diff_at_node,
         // updating_node->failure_count_)));
-        node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+        node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
             other_child_index, std::move(upper_lr_regions), null_seqregions_ptr,
             other_child.getUpperLength(), updating_node->needUpdate(),
             lh_diff_at_node, updating_node->getFailureCount())));
@@ -2208,7 +2208,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
         lh_diff_at_node, updating_node->failure_count,
         updating_node->need_updating));*/
         std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-        node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+        node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
             other_child_index, std::move(null_seqregions_ptr), upper_lr_regions,
             other_child.getUpperLength(), updating_node->needUpdate(),
             lh_diff_at_node, updating_node->getFailureCount())));
@@ -2259,12 +2259,12 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
         }
       }
 
-      // node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(top_node->neighbor,
+      // node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(top_node->neighbor,
       // bottom_regions, top_node->length, updating_node->need_updating,
       // lh_diff_at_node, updating_node->failure_count,
       // updating_node->need_updating)));
       std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           current_node.getNeighborIndex(TOP), std::move(bottom_regions),
           null_seqregions_ptr, current_node.getUpperLength(),
           updating_node->needUpdate(), lh_diff_at_node,
@@ -2277,11 +2277,11 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
                                            // model, threshold_prob);
 
       std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-      // node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(top_node->neighbor,
+      // node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(top_node->neighbor,
       // bottom_regions, top_node->length, updating_node->need_updating,
       // lh_diff_at_node, updating_node->failure_count,
       // updating_node->need_updating)));
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           current_node.getNeighborIndex(TOP), std::move(null_seqregions_ptr),
           bottom_regions_ref, current_node.getUpperLength(),
           updating_node->needUpdate(), lh_diff_at_node,
@@ -2302,7 +2302,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
           upper_lr_regions, model, updating_node->getBranchLength());
 
       std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           other_child_index, std::move(upper_lr_regions), null_seqregions_ptr,
           other_child.getUpperLength(), updating_node->needUpdate(),
           lh_diff_at_node, updating_node->getFailureCount())));
@@ -2312,7 +2312,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
                                 // model, threshold_prob);
 
       std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
-      node_stack.push(std::make_unique<UpdatingNode>(UpdatingNode(
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           other_child_index, std::move(null_seqregions_ptr), upper_lr_regions,
           other_child.getUpperLength(), updating_node->needUpdate(),
           lh_diff_at_node, updating_node->getFailureCount())));
@@ -3046,7 +3046,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
   RealNumType best_split_lh = new_lh;
   // RealNumType new_split = 0.25;
   std::unique_ptr<SeqRegions> best_child_regions =
-      nullptr;  // std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
+      nullptr;  // cmaple::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
   const std::unique_ptr<SeqRegions>& lower_regions =
       selected_node.getPartialLh(TOP);
 
@@ -3071,7 +3071,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
 
   // Delay cloning SeqRegions
   if (!best_child_regions) {
-    best_child_regions = std::make_unique<SeqRegions>(
+    best_child_regions = cmaple::make_unique<SeqRegions>(
         SeqRegions(selected_node.getMidBranchLh()));
   }
 
@@ -3260,7 +3260,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
       // height above or equal to the mid-branch.
       RealNumType tmp_best_lh_diff = MIN_NEGATIVE;
       std::unique_ptr<SeqRegions> mid_branch_regions =
-          nullptr;  // std::make_unique<SeqRegions>(SeqRegions(node.getMidBranchLh()));
+          nullptr;  // cmaple::make_unique<SeqRegions>(SeqRegions(node.getMidBranchLh()));
                     // // new SeqRegions(node->mid_branch_lh);
       const std::unique_ptr<SeqRegions>& parent_upper_lr_regions =
           getPartialLhAtNode(node.getNeighborIndex(
@@ -3288,7 +3288,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
             // Delay cloning SeqRegions
             best_child_regions = mid_branch_regions
                                      ? std::move(mid_branch_regions)
-                                     : std::make_unique<SeqRegions>(
+                                     : cmaple::make_unique<SeqRegions>(
                                            SeqRegions(node.getMidBranchLh()));
           }
 
@@ -3409,7 +3409,7 @@ void cmaple::Tree::placeSubTreeAtNode(
             TOP);  // selected_node->getPartialLhAtNode(aln,
                    // model, threshold_prob);
     best_parent_regions =
-        nullptr;  // std::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
+        nullptr;  // cmaple::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
     best_parent_lh = calculateSubTreePlacementCost<num_states>(
         selected_node.getMidBranchLh(), subtree_regions, new_branch_length);
     best_parent_blength_split = 0.5 * selected_node.getUpperLength();
@@ -3423,7 +3423,7 @@ void cmaple::Tree::placeSubTreeAtNode(
 
     // Delay cloning SeqRegions
     if (!best_parent_regions) {
-      best_parent_regions = std::make_unique<SeqRegions>(
+      best_parent_regions = cmaple::make_unique<SeqRegions>(
           SeqRegions(selected_node.getMidBranchLh()));
     }
   }
@@ -3480,7 +3480,7 @@ void cmaple::Tree::placeSubTreeAtNode(
             model, cumulative_rate, threshold_prob);
       } else {
         best_parent_regions =
-            std::make_unique<SeqRegions>(std::move(selected_node.getTotalLh()));
+            cmaple::make_unique<SeqRegions>(std::move(selected_node.getTotalLh()));
       }
     }
 
@@ -6571,7 +6571,7 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
   // Delay cloning SeqRegions
   if (!best_parent_regions) {
     best_parent_regions =
-        std::make_unique<SeqRegions>(SeqRegions(parent_new_mid_branch_lh));
+        cmaple::make_unique<SeqRegions>(SeqRegions(parent_new_mid_branch_lh));
   }
 
   // 3. estimate new l5 ~ the length for the new branch re-connecting child_1 to
@@ -7362,7 +7362,7 @@ bool cmaple::Tree::calculateNNILhNonRoot(
   // Delay cloning SeqRegions
   if (!best_parent_regions) {
     best_parent_regions =
-        std::make_unique<SeqRegions>(SeqRegions(parent_new_mid_branch_lh));
+        cmaple::make_unique<SeqRegions>(SeqRegions(parent_new_mid_branch_lh));
   }
 
   // 3. estimate new l5 ~ the length for the new branch re-connecting child_1 to
