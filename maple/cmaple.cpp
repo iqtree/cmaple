@@ -258,7 +258,7 @@ void cmaple::testing(cmaple::Params& params)
     
     // Infer a phylogenetic tree
     cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
-    std::string redirected_msgs = tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
+    tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search);
     if (cmaple::verbose_mode >= cmaple::VB_MED)
         std::cout << redirected_msgs << std::endl;
     

@@ -1595,9 +1595,16 @@ void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh,
       // other types: R or A/C/G/T
       else {
         // add new region to the total_lh_regions
+#if __cplusplus >= 201703L
         SeqRegion& new_region = total_lh->emplace_back(
             region->type, region->position, region->plength_observation2node,
             region->plength_observation2root);
+#else
+          total_lh->emplace_back(
+              region->type, region->position, region->plength_observation2node,
+              region->plength_observation2root);
+          SeqRegion& new_region = total_lh->at(total_lh->size() - 1);
+#endif
 
         if (new_region.plength_observation2node >= 0) {
           if (blength > 0) {
