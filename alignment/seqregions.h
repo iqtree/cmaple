@@ -4,7 +4,7 @@
 #include "../model/modelbase.h"
 #include "alignment.h"
 #include "seqregion.h"
-#include "utils/tools.h"
+#include "../utils/tools.h"
 
 namespace cmaple {
 
