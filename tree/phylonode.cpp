@@ -243,7 +243,7 @@ const std::string cmaple::PhyloNode::exportString(
         
         // add the remaining less-info-seqs
         for (auto  i = 1; i < less_info_seqs.size(); ++i) {
-          output += branch_support + ":0," + seq_names[less_info_seqs[0]] + ":0)";
+          output += branch_support + ":0," + seq_names[less_info_seqs[i]] + ":0)";
         }
         
         output += branch_support + ":" + length_str;
