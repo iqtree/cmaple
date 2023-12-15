@@ -100,7 +100,7 @@ class PhyloNode {
   ~PhyloNode() {
     // could also be part of a separate class test, but we need to make sure
     // that this is enforced and noone accidentally changes it
-    static_assert(sizeof(PhyloNode) <= 64);  // make sure it fits on a cacheline
+    static_assert(sizeof(PhyloNode) <= 64, "PhyloNode does not fit on a cacheline");  // make sure it fits on a cacheline
     if (is_internal_)
       data_.internal_.~InternalNode();
     else
