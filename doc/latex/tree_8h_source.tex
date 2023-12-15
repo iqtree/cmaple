@@ -1035,526 +1035,528 @@
 \DoxyCodeLine{01905\ \ \ \textcolor{comment}{//\ dummy\ variables}}
 \DoxyCodeLine{01906\ \ \ RealNumType\ total\_improvement\ =\ 0;}
 \DoxyCodeLine{01907\ \ \ PositionType\ num\_nodes\ =\ 0;}
-\DoxyCodeLine{01908\ }
-\DoxyCodeLine{01909\ \ \ \textcolor{comment}{//\ traverse\ downward\ the\ tree}}
-\DoxyCodeLine{01910\ \ \ \textcolor{keywordflow}{while}\ (!node\_stack.empty())\ \{}
-\DoxyCodeLine{01911\ \ \ \ \ \textcolor{comment}{//\ pick\ the\ top\ node\ from\ the\ stack}}
-\DoxyCodeLine{01912\ \ \ \ \ Index\ index\ =\ node\_stack.top();}
-\DoxyCodeLine{01913\ \ \ \ \ node\_stack.pop();}
-\DoxyCodeLine{01914\ \ \ \ \ PhyloNode\&\ node\ =\ nodes[index.getVectorIndex()];}
-\DoxyCodeLine{01915\ \ \ \ \ \textcolor{comment}{//\ MiniIndex\ mini\_index\ =\ index.getMiniIndex();}}
-\DoxyCodeLine{01916\ }
-\DoxyCodeLine{01917\ \ \ \ \ \textcolor{comment}{//\ add\ all\ children\ of\ the\ current\ nodes\ to\ the\ stack\ for\ further\ traversing}}
-\DoxyCodeLine{01918\ \ \ \ \ \textcolor{comment}{//\ later}}
-\DoxyCodeLine{01919\ \ \ \ \ \textcolor{comment}{/*for\ (Index\ neighbor\_index:node.getNeighborIndexes(mini\_index))}}
-\DoxyCodeLine{01920\ \textcolor{comment}{\ \ \ \ \ \ \ \ node\_stack.push(neighbor\_index);*/}}
-\DoxyCodeLine{01921\ \ \ \ \ assert(index.getMiniIndex()\ ==\ TOP);}
-\DoxyCodeLine{01922\ \ \ \ \ \textcolor{keywordflow}{if}\ (node.isInternal())\ \{}
-\DoxyCodeLine{01923\ \ \ \ \ \ \ node\_stack.push(node.getNeighborIndex(RIGHT));}
-\DoxyCodeLine{01924\ \ \ \ \ \ \ node\_stack.push(node.getNeighborIndex(LEFT));}
-\DoxyCodeLine{01925\ \ \ \ \ \}}
-\DoxyCodeLine{01926\ }
-\DoxyCodeLine{01927\ \ \ \ \ \textcolor{comment}{//\ only\ process\ outdated\ node\ to\ avoid\ traversing\ the\ same\ part\ of\ the\ tree}}
-\DoxyCodeLine{01928\ \ \ \ \ \textcolor{comment}{//\ multiple\ times}}
-\DoxyCodeLine{01929\ \ \ \ \ \textcolor{keywordflow}{if}\ (node.isOutdated()\ \&\&\ node.getSPRCount()\ <=\ 5)\ \{}
-\DoxyCodeLine{01930\ \ \ \ \ \ \ node.setOutdated(\textcolor{keyword}{false});}
-\DoxyCodeLine{01931\ }
-\DoxyCodeLine{01932\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ checkEachSPR:}}
-\DoxyCodeLine{01933\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ root=node}}
-\DoxyCodeLine{01934\ \ \ \ \ \ \ \textcolor{comment}{//\ \ while\ root.up!=None:}}
-\DoxyCodeLine{01935\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ root=root.up}}
-\DoxyCodeLine{01936\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \#print("{}Pre-\/SPR\ tree:\ "{}+createBinaryNewick(root))}}
-\DoxyCodeLine{01937\ \ \ \ \ \ \ \textcolor{comment}{//\ \ oldTreeLK=calculateTreeLikelihood(root,mutMatrix,checkCorrectness=True)}}
-\DoxyCodeLine{01938\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \#print("{}Pre-\/SPR\ tree\ likelihood:\ "{}+str(oldTreeLK))}}
-\DoxyCodeLine{01939\ \ \ \ \ \ \ \textcolor{comment}{//\ reCalculateAllGenomeLists(root,mutMatrix,\ checkExistingAreCorrect=True)}}
-\DoxyCodeLine{01940\ }
-\DoxyCodeLine{01941\ \ \ \ \ \ \ \textcolor{comment}{//\ do\ SPR\ moves\ to\ improve\ the\ tree}}
-\DoxyCodeLine{01942\ \ \ \ \ \ \ RealNumType\ improvement\ =}
-\DoxyCodeLine{01943\ \ \ \ \ \ \ \ \ \ \ improveSubTree<num\_states>(index,\ node,\ short\_range\_search);}
-\DoxyCodeLine{01944\ }
-\DoxyCodeLine{01945\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ checkEachSPR:}}
-\DoxyCodeLine{01946\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \#print("{}\ apparent\ improvement\ "{}+str(improvement))}}
-\DoxyCodeLine{01947\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ root=node}}
-\DoxyCodeLine{01948\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ while\ root.up!=None:}}
-\DoxyCodeLine{01949\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ root=root.up}}
-\DoxyCodeLine{01950\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \#print("{}Post-\/SPR\ tree:\ "{}+createBinaryNewick(root))}}
-\DoxyCodeLine{01951\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ newTreeLK=calculateTreeLikelihood(root,mutMatrix)}}
-\DoxyCodeLine{01952\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ reCalculateAllGenomeLists(root,mutMatrix,}}
-\DoxyCodeLine{01953\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ checkExistingAreCorrect=True)}}
-\DoxyCodeLine{01954\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \#print("{}Post-\/SPR\ tree\ likelihood:\ "{}+str(newTreeLK))}}
-\DoxyCodeLine{01955\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ if\ newTreeLK-\/oldTreeLK\ <\ improvement-\/1.0:}}
-\DoxyCodeLine{01956\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ print("{}In\ startTopologyUpdates,\ LK\ score\ of\ improvement}}
-\DoxyCodeLine{01957\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}+str(newTreeLK)+"{}\ -\/\ "{}+str(oldTreeLK)+"{}\ =}}
-\DoxyCodeLine{01958\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}+str(newTreeLK-\/oldTreeLK)+"{}\ is\ less\ than\ //what\ is}}
-\DoxyCodeLine{01959\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ supposd\ to\ be\ "{}+str(improvement))}}
-\DoxyCodeLine{01960\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ exit()}}
-\DoxyCodeLine{01961\ \ \ \ \ \ \ \textcolor{comment}{//}}
-\DoxyCodeLine{01962\ }
-\DoxyCodeLine{01963\ \ \ \ \ \ \ \textcolor{comment}{//\ update\ total\_improvement}}
-\DoxyCodeLine{01964\ \ \ \ \ \ \ total\_improvement\ +=\ improvement;}
-\DoxyCodeLine{01965\ }
-\DoxyCodeLine{01966\ \ \ \ \ \ \ \textcolor{comment}{//\ NHANLT:\ LOGS\ FOR\ DEBUGGING}}
-\DoxyCodeLine{01967\ \ \ \ \ \ \ \textcolor{comment}{/*if\ (params-\/>debug\ \&\&\ improvement\ >\ 0)}}
-\DoxyCodeLine{01968\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ std::cout\ <<\ num\_nodes\ <<\ "{}:\ "{}\ <<\ std::setprecision(20)\ <<}}
-\DoxyCodeLine{01969\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ total\_improvement\ <<\ std::endl;*/}}
-\DoxyCodeLine{01970\ }
-\DoxyCodeLine{01971\ \ \ \ \ \ \ \textcolor{comment}{//\ Show\ log\ every\ 1000\ nodes}}
-\DoxyCodeLine{01972\ \ \ \ \ \ \ num\_nodes\ +=\ 1;}
-\DoxyCodeLine{01973\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cmaple::verbose\_mode\ >=\ cmaple::VB\_DEBUG\ \&\&\ num\_nodes\ \%\ 1000\ ==\ 0)\ \{}
-\DoxyCodeLine{01974\ \ \ \ \ \ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}Processed\ topology\ for\ "{}}\ <<\ convertIntToString(num\_nodes)}
-\DoxyCodeLine{01975\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ nodes."{}}\ <<\ std::endl;}
-\DoxyCodeLine{01976\ \ \ \ \ \ \ \}}
-\DoxyCodeLine{01977\ \ \ \ \ \}}
-\DoxyCodeLine{01978\ \ \ \}}
-\DoxyCodeLine{01979\ }
-\DoxyCodeLine{01980\ \ \ \textcolor{keywordflow}{return}\ total\_improvement;}
-\DoxyCodeLine{01981\ \}}
-\DoxyCodeLine{01982\ }
-\DoxyCodeLine{01983\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
-\DoxyCodeLine{01984\ \textcolor{keywordtype}{void}\ cmaple::Tree::updateModelParams()\ \{}
-\DoxyCodeLine{01985\ \ \ \textcolor{comment}{//\ perform\ a\ DFS\ -\/>\ at\ each\ leaf,\ update\ the\ pesudoCount\ of\ the\ model\ based\ on}}
-\DoxyCodeLine{01986\ \ \ \textcolor{comment}{//\ the\ sequence\ of\ that\ leaf}}
-\DoxyCodeLine{01987\ \ \ performDFSAtLeave<\&cmaple::Tree::updatePesudoCountModel<num\_states>>();}
-\DoxyCodeLine{01988\ }
-\DoxyCodeLine{01989\ \ \ \textcolor{comment}{//\ update\ model\ params\ based\ on\ the\ pseudo\ count}}
-\DoxyCodeLine{01990\ \ \ \textcolor{keywordflow}{if}\ (model-\/>updateMutationMatEmpirical(aln))\ \{}
-\DoxyCodeLine{01991\ \ \ \ \ computeCumulativeRate();}
-\DoxyCodeLine{01992\ \ \ \}}
-\DoxyCodeLine{01993\ \}}
-\DoxyCodeLine{01994\ }
-\DoxyCodeLine{01995\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
-\DoxyCodeLine{01996\ \textcolor{keywordtype}{void}\ cmaple::Tree::seekSamplePlacement(}
-\DoxyCodeLine{01997\ \ \ \ \ \textcolor{keyword}{const}\ Index\ start\_node\_index,}
-\DoxyCodeLine{01998\ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ seq\_name\_index,}
-\DoxyCodeLine{01999\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ sample\_regions,}
-\DoxyCodeLine{02000\ \ \ \ \ Index\&\ selected\_node\_index,}
-\DoxyCodeLine{02001\ \ \ \ \ RealNumType\&\ best\_lh\_diff,}
-\DoxyCodeLine{02002\ \ \ \ \ \textcolor{keywordtype}{bool}\&\ is\_mid\_branch,}
-\DoxyCodeLine{02003\ \ \ \ \ RealNumType\&\ best\_up\_lh\_diff,}
-\DoxyCodeLine{02004\ \ \ \ \ RealNumType\&\ best\_down\_lh\_diff,}
-\DoxyCodeLine{02005\ \ \ \ \ Index\&\ best\_child\_index)\ \{}
-\DoxyCodeLine{02006\ \ \ \textcolor{comment}{//\ init\ variables}}
-\DoxyCodeLine{02007\ \ \ \textcolor{comment}{//\ output\ variables}}
-\DoxyCodeLine{02008\ \ \ selected\_node\_index\ =\ start\_node\_index;}
-\DoxyCodeLine{02009\ \ \ \textcolor{comment}{//\ dummy\ variables}}
-\DoxyCodeLine{02010\ \ \ RealNumType\ lh\_diff\_mid\_branch\ =\ 0;}
-\DoxyCodeLine{02011\ \ \ RealNumType\ lh\_diff\_at\_node\ =\ 0;}
-\DoxyCodeLine{02012\ \ \ \textcolor{comment}{//\ stack\ of\ nodes\ to\ examine\ positions}}
-\DoxyCodeLine{02013\ \ \ std::stack<TraversingNode>\ extended\_node\_stack;}
-\DoxyCodeLine{02014\ \ \ extended\_node\_stack.push(TraversingNode(start\_node\_index,\ 0,\ MIN\_NEGATIVE));}
-\DoxyCodeLine{02015\ }
-\DoxyCodeLine{02016\ \ \ \textcolor{comment}{//\ recursively\ examine\ positions\ for\ placing\ the\ new\ sample}}
-\DoxyCodeLine{02017\ \ \ \textcolor{keywordflow}{while}\ (!extended\_node\_stack.empty())\ \{}
-\DoxyCodeLine{02018\ \ \ \ \ TraversingNode\ current\_extended\_node\ =\ std::move(extended\_node\_stack.top());}
-\DoxyCodeLine{02019\ \ \ \ \ extended\_node\_stack.pop();}
-\DoxyCodeLine{02020\ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ current\_node\_vec\ =}
-\DoxyCodeLine{02021\ \ \ \ \ \ \ \ \ current\_extended\_node.getIndex().getVectorIndex();}
-\DoxyCodeLine{02022\ \ \ \ \ PhyloNode\&\ current\_node\ =\ nodes[current\_node\_vec];}
-\DoxyCodeLine{02023\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\&\ is\_internal\ =\ current\_node.isInternal();}
-\DoxyCodeLine{02024\ }
-\DoxyCodeLine{02025\ \ \ \ \ \textcolor{comment}{//\ NHANLT:\ debug}}
-\DoxyCodeLine{02026\ \ \ \ \ \textcolor{comment}{//\ if\ (current\_node-\/>next\ \&\&\ ((current\_node-\/>next-\/>neighbor\ \&\&}}
-\DoxyCodeLine{02027\ \ \ \ \ \textcolor{comment}{//\ current\_node-\/>next-\/>neighbor-\/>seq\_name\ ==\ "{}25"{})}}
-\DoxyCodeLine{02028\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ (current\_node-\/>next-\/>next-\/>neighbor\ \&\&}}
-\DoxyCodeLine{02029\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ current\_node-\/>next-\/>next-\/>neighbor-\/>seq\_name\ ==}}
-\DoxyCodeLine{02030\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}25"{})))}}
-\DoxyCodeLine{02031\ \ \ \ \ \textcolor{comment}{//\ cout\ <<\ "{}fdsfsd"{};}}
-\DoxyCodeLine{02032\ }
-\DoxyCodeLine{02033\ \ \ \ \ \textcolor{comment}{//\ if\ the\ current\ node\ is\ a\ leaf\ AND\ the\ new\ sample/sequence\ is\ strictly}}
-\DoxyCodeLine{02034\ \ \ \ \ \textcolor{comment}{//\ less\ informative\ than\ the\ current\ node}}
-\DoxyCodeLine{02035\ \ \ \ \ \textcolor{comment}{//\ -\/>\ add\ the\ new\ sequence\ into\ the\ list\ of\ minor\ sequences\ of\ the\ current}}
-\DoxyCodeLine{02036\ \ \ \ \ \textcolor{comment}{//\ node\ +\ stop\ seeking\ the\ placement}}
-\DoxyCodeLine{02037\ \ \ \ \ \textcolor{keywordflow}{if}\ ((!is\_internal)\ \&\&}
-\DoxyCodeLine{02038\ \ \ \ \ \ \ \ \ (current\_node.getPartialLh(TOP)-\/>compareWithSample(}
-\DoxyCodeLine{02039\ \ \ \ \ \ \ \ \ \ \ \ \ \ *sample\_regions,\ aln-\/>ref\_seq.size(),\ aln)\ ==\ 1))\ \{}
-\DoxyCodeLine{02040\ \ \ \ \ \ \ current\_node.addLessInfoSeqs(seq\_name\_index);}
-\DoxyCodeLine{02041\ \ \ \ \ \ \ selected\_node\_index\ =\ Index();}
-\DoxyCodeLine{02042\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
-\DoxyCodeLine{02043\ \ \ \ \ \}}
-\DoxyCodeLine{02044\ }
-\DoxyCodeLine{02045\ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ current\_node\_blength\ =\ current\_node.getUpperLength();}
+\DoxyCodeLine{01908\ \ \ NumSeqsType\ count\_node\_1K\ =\ 0;}
+\DoxyCodeLine{01909\ }
+\DoxyCodeLine{01910\ \ \ \textcolor{comment}{//\ traverse\ downward\ the\ tree}}
+\DoxyCodeLine{01911\ \ \ \textcolor{keywordflow}{while}\ (!node\_stack.empty())\ \{}
+\DoxyCodeLine{01912\ \ \ \ \ \textcolor{comment}{//\ pick\ the\ top\ node\ from\ the\ stack}}
+\DoxyCodeLine{01913\ \ \ \ \ Index\ index\ =\ node\_stack.top();}
+\DoxyCodeLine{01914\ \ \ \ \ node\_stack.pop();}
+\DoxyCodeLine{01915\ \ \ \ \ PhyloNode\&\ node\ =\ nodes[index.getVectorIndex()];}
+\DoxyCodeLine{01916\ \ \ \ \ \textcolor{comment}{//\ MiniIndex\ mini\_index\ =\ index.getMiniIndex();}}
+\DoxyCodeLine{01917\ }
+\DoxyCodeLine{01918\ \ \ \ \ \textcolor{comment}{//\ add\ all\ children\ of\ the\ current\ nodes\ to\ the\ stack\ for\ further\ traversing}}
+\DoxyCodeLine{01919\ \ \ \ \ \textcolor{comment}{//\ later}}
+\DoxyCodeLine{01920\ \ \ \ \ \textcolor{comment}{/*for\ (Index\ neighbor\_index:node.getNeighborIndexes(mini\_index))}}
+\DoxyCodeLine{01921\ \textcolor{comment}{\ \ \ \ \ \ \ \ node\_stack.push(neighbor\_index);*/}}
+\DoxyCodeLine{01922\ \ \ \ \ assert(index.getMiniIndex()\ ==\ TOP);}
+\DoxyCodeLine{01923\ \ \ \ \ \textcolor{keywordflow}{if}\ (node.isInternal())\ \{}
+\DoxyCodeLine{01924\ \ \ \ \ \ \ node\_stack.push(node.getNeighborIndex(RIGHT));}
+\DoxyCodeLine{01925\ \ \ \ \ \ \ node\_stack.push(node.getNeighborIndex(LEFT));}
+\DoxyCodeLine{01926\ \ \ \ \ \}}
+\DoxyCodeLine{01927\ }
+\DoxyCodeLine{01928\ \ \ \ \ \textcolor{comment}{//\ only\ process\ outdated\ node\ to\ avoid\ traversing\ the\ same\ part\ of\ the\ tree}}
+\DoxyCodeLine{01929\ \ \ \ \ \textcolor{comment}{//\ multiple\ times}}
+\DoxyCodeLine{01930\ \ \ \ \ \textcolor{keywordflow}{if}\ (node.isOutdated()\ \&\&\ node.getSPRCount()\ <=\ 5)\ \{}
+\DoxyCodeLine{01931\ \ \ \ \ \ \ node.setOutdated(\textcolor{keyword}{false});}
+\DoxyCodeLine{01932\ }
+\DoxyCodeLine{01933\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ checkEachSPR:}}
+\DoxyCodeLine{01934\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ root=node}}
+\DoxyCodeLine{01935\ \ \ \ \ \ \ \textcolor{comment}{//\ \ while\ root.up!=None:}}
+\DoxyCodeLine{01936\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ root=root.up}}
+\DoxyCodeLine{01937\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \#print("{}Pre-\/SPR\ tree:\ "{}+createBinaryNewick(root))}}
+\DoxyCodeLine{01938\ \ \ \ \ \ \ \textcolor{comment}{//\ \ oldTreeLK=calculateTreeLikelihood(root,mutMatrix,checkCorrectness=True)}}
+\DoxyCodeLine{01939\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \#print("{}Pre-\/SPR\ tree\ likelihood:\ "{}+str(oldTreeLK))}}
+\DoxyCodeLine{01940\ \ \ \ \ \ \ \textcolor{comment}{//\ reCalculateAllGenomeLists(root,mutMatrix,\ checkExistingAreCorrect=True)}}
+\DoxyCodeLine{01941\ }
+\DoxyCodeLine{01942\ \ \ \ \ \ \ \textcolor{comment}{//\ do\ SPR\ moves\ to\ improve\ the\ tree}}
+\DoxyCodeLine{01943\ \ \ \ \ \ \ RealNumType\ improvement\ =}
+\DoxyCodeLine{01944\ \ \ \ \ \ \ \ \ \ \ improveSubTree<num\_states>(index,\ node,\ short\_range\_search);}
+\DoxyCodeLine{01945\ }
+\DoxyCodeLine{01946\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ checkEachSPR:}}
+\DoxyCodeLine{01947\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \#print("{}\ apparent\ improvement\ "{}+str(improvement))}}
+\DoxyCodeLine{01948\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ root=node}}
+\DoxyCodeLine{01949\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ while\ root.up!=None:}}
+\DoxyCodeLine{01950\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ root=root.up}}
+\DoxyCodeLine{01951\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \#print("{}Post-\/SPR\ tree:\ "{}+createBinaryNewick(root))}}
+\DoxyCodeLine{01952\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ newTreeLK=calculateTreeLikelihood(root,mutMatrix)}}
+\DoxyCodeLine{01953\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ reCalculateAllGenomeLists(root,mutMatrix,}}
+\DoxyCodeLine{01954\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ checkExistingAreCorrect=True)}}
+\DoxyCodeLine{01955\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \#print("{}Post-\/SPR\ tree\ likelihood:\ "{}+str(newTreeLK))}}
+\DoxyCodeLine{01956\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ if\ newTreeLK-\/oldTreeLK\ <\ improvement-\/1.0:}}
+\DoxyCodeLine{01957\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ print("{}In\ startTopologyUpdates,\ LK\ score\ of\ improvement}}
+\DoxyCodeLine{01958\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}+str(newTreeLK)+"{}\ -\/\ "{}+str(oldTreeLK)+"{}\ =}}
+\DoxyCodeLine{01959\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}+str(newTreeLK-\/oldTreeLK)+"{}\ is\ less\ than\ //what\ is}}
+\DoxyCodeLine{01960\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ supposd\ to\ be\ "{}+str(improvement))}}
+\DoxyCodeLine{01961\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ exit()}}
+\DoxyCodeLine{01962\ \ \ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{01963\ }
+\DoxyCodeLine{01964\ \ \ \ \ \ \ \textcolor{comment}{//\ update\ total\_improvement}}
+\DoxyCodeLine{01965\ \ \ \ \ \ \ total\_improvement\ +=\ improvement;}
+\DoxyCodeLine{01966\ }
+\DoxyCodeLine{01967\ \ \ \ \ \ \ \textcolor{comment}{//\ NHANLT:\ LOGS\ FOR\ DEBUGGING}}
+\DoxyCodeLine{01968\ \ \ \ \ \ \ \textcolor{comment}{/*if\ (params-\/>debug\ \&\&\ improvement\ >\ 0)}}
+\DoxyCodeLine{01969\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ std::cout\ <<\ num\_nodes\ <<\ "{}:\ "{}\ <<\ std::setprecision(20)\ <<}}
+\DoxyCodeLine{01970\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ total\_improvement\ <<\ std::endl;*/}}
+\DoxyCodeLine{01971\ }
+\DoxyCodeLine{01972\ \ \ \ \ \ \ \textcolor{comment}{//\ Show\ log\ every\ 1000\ nodes}}
+\DoxyCodeLine{01973\ \ \ \ \ \ \ num\_nodes\ +=\ 1;}
+\DoxyCodeLine{01974\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cmaple::verbose\_mode\ >=\ cmaple::VB\_MED\ \&\&\ num\_nodes\ -\/\ count\_node\_1K\ >=\ 1000)\ \{}
+\DoxyCodeLine{01975\ \ \ \ \ \ \ \ \ std::cout\ <<\ \textcolor{stringliteral}{"{}Processed\ topology\ for\ "{}}\ <<\ convertIntToString(num\_nodes)}
+\DoxyCodeLine{01976\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ nodes."{}}\ <<\ std::endl;}
+\DoxyCodeLine{01977\ \ \ \ \ \ \ \ \ count\_node\_1K\ =\ num\_nodes;}
+\DoxyCodeLine{01978\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01979\ \ \ \ \ \}}
+\DoxyCodeLine{01980\ \ \ \}}
+\DoxyCodeLine{01981\ }
+\DoxyCodeLine{01982\ \ \ \textcolor{keywordflow}{return}\ total\_improvement;}
+\DoxyCodeLine{01983\ \}}
+\DoxyCodeLine{01984\ }
+\DoxyCodeLine{01985\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
+\DoxyCodeLine{01986\ \textcolor{keywordtype}{void}\ cmaple::Tree::updateModelParams()\ \{}
+\DoxyCodeLine{01987\ \ \ \textcolor{comment}{//\ perform\ a\ DFS\ -\/>\ at\ each\ leaf,\ update\ the\ pesudoCount\ of\ the\ model\ based\ on}}
+\DoxyCodeLine{01988\ \ \ \textcolor{comment}{//\ the\ sequence\ of\ that\ leaf}}
+\DoxyCodeLine{01989\ \ \ performDFSAtLeave<\&cmaple::Tree::updatePesudoCountModel<num\_states>>();}
+\DoxyCodeLine{01990\ }
+\DoxyCodeLine{01991\ \ \ \textcolor{comment}{//\ update\ model\ params\ based\ on\ the\ pseudo\ count}}
+\DoxyCodeLine{01992\ \ \ \textcolor{keywordflow}{if}\ (model-\/>updateMutationMatEmpirical(aln))\ \{}
+\DoxyCodeLine{01993\ \ \ \ \ computeCumulativeRate();}
+\DoxyCodeLine{01994\ \ \ \}}
+\DoxyCodeLine{01995\ \}}
+\DoxyCodeLine{01996\ }
+\DoxyCodeLine{01997\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
+\DoxyCodeLine{01998\ \textcolor{keywordtype}{void}\ cmaple::Tree::seekSamplePlacement(}
+\DoxyCodeLine{01999\ \ \ \ \ \textcolor{keyword}{const}\ Index\ start\_node\_index,}
+\DoxyCodeLine{02000\ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ seq\_name\_index,}
+\DoxyCodeLine{02001\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ sample\_regions,}
+\DoxyCodeLine{02002\ \ \ \ \ Index\&\ selected\_node\_index,}
+\DoxyCodeLine{02003\ \ \ \ \ RealNumType\&\ best\_lh\_diff,}
+\DoxyCodeLine{02004\ \ \ \ \ \textcolor{keywordtype}{bool}\&\ is\_mid\_branch,}
+\DoxyCodeLine{02005\ \ \ \ \ RealNumType\&\ best\_up\_lh\_diff,}
+\DoxyCodeLine{02006\ \ \ \ \ RealNumType\&\ best\_down\_lh\_diff,}
+\DoxyCodeLine{02007\ \ \ \ \ Index\&\ best\_child\_index)\ \{}
+\DoxyCodeLine{02008\ \ \ \textcolor{comment}{//\ init\ variables}}
+\DoxyCodeLine{02009\ \ \ \textcolor{comment}{//\ output\ variables}}
+\DoxyCodeLine{02010\ \ \ selected\_node\_index\ =\ start\_node\_index;}
+\DoxyCodeLine{02011\ \ \ \textcolor{comment}{//\ dummy\ variables}}
+\DoxyCodeLine{02012\ \ \ RealNumType\ lh\_diff\_mid\_branch\ =\ 0;}
+\DoxyCodeLine{02013\ \ \ RealNumType\ lh\_diff\_at\_node\ =\ 0;}
+\DoxyCodeLine{02014\ \ \ \textcolor{comment}{//\ stack\ of\ nodes\ to\ examine\ positions}}
+\DoxyCodeLine{02015\ \ \ std::stack<TraversingNode>\ extended\_node\_stack;}
+\DoxyCodeLine{02016\ \ \ extended\_node\_stack.push(TraversingNode(start\_node\_index,\ 0,\ MIN\_NEGATIVE));}
+\DoxyCodeLine{02017\ }
+\DoxyCodeLine{02018\ \ \ \textcolor{comment}{//\ recursively\ examine\ positions\ for\ placing\ the\ new\ sample}}
+\DoxyCodeLine{02019\ \ \ \textcolor{keywordflow}{while}\ (!extended\_node\_stack.empty())\ \{}
+\DoxyCodeLine{02020\ \ \ \ \ TraversingNode\ current\_extended\_node\ =\ std::move(extended\_node\_stack.top());}
+\DoxyCodeLine{02021\ \ \ \ \ extended\_node\_stack.pop();}
+\DoxyCodeLine{02022\ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ current\_node\_vec\ =}
+\DoxyCodeLine{02023\ \ \ \ \ \ \ \ \ current\_extended\_node.getIndex().getVectorIndex();}
+\DoxyCodeLine{02024\ \ \ \ \ PhyloNode\&\ current\_node\ =\ nodes[current\_node\_vec];}
+\DoxyCodeLine{02025\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\&\ is\_internal\ =\ current\_node.isInternal();}
+\DoxyCodeLine{02026\ }
+\DoxyCodeLine{02027\ \ \ \ \ \textcolor{comment}{//\ NHANLT:\ debug}}
+\DoxyCodeLine{02028\ \ \ \ \ \textcolor{comment}{//\ if\ (current\_node-\/>next\ \&\&\ ((current\_node-\/>next-\/>neighbor\ \&\&}}
+\DoxyCodeLine{02029\ \ \ \ \ \textcolor{comment}{//\ current\_node-\/>next-\/>neighbor-\/>seq\_name\ ==\ "{}25"{})}}
+\DoxyCodeLine{02030\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ||\ (current\_node-\/>next-\/>next-\/>neighbor\ \&\&}}
+\DoxyCodeLine{02031\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ current\_node-\/>next-\/>next-\/>neighbor-\/>seq\_name\ ==}}
+\DoxyCodeLine{02032\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "{}25"{})))}}
+\DoxyCodeLine{02033\ \ \ \ \ \textcolor{comment}{//\ cout\ <<\ "{}fdsfsd"{};}}
+\DoxyCodeLine{02034\ }
+\DoxyCodeLine{02035\ \ \ \ \ \textcolor{comment}{//\ if\ the\ current\ node\ is\ a\ leaf\ AND\ the\ new\ sample/sequence\ is\ strictly}}
+\DoxyCodeLine{02036\ \ \ \ \ \textcolor{comment}{//\ less\ informative\ than\ the\ current\ node}}
+\DoxyCodeLine{02037\ \ \ \ \ \textcolor{comment}{//\ -\/>\ add\ the\ new\ sequence\ into\ the\ list\ of\ minor\ sequences\ of\ the\ current}}
+\DoxyCodeLine{02038\ \ \ \ \ \textcolor{comment}{//\ node\ +\ stop\ seeking\ the\ placement}}
+\DoxyCodeLine{02039\ \ \ \ \ \textcolor{keywordflow}{if}\ ((!is\_internal)\ \&\&}
+\DoxyCodeLine{02040\ \ \ \ \ \ \ \ \ (current\_node.getPartialLh(TOP)-\/>compareWithSample(}
+\DoxyCodeLine{02041\ \ \ \ \ \ \ \ \ \ \ \ \ \ *sample\_regions,\ aln-\/>ref\_seq.size(),\ aln)\ ==\ 1))\ \{}
+\DoxyCodeLine{02042\ \ \ \ \ \ \ current\_node.addLessInfoSeqs(seq\_name\_index);}
+\DoxyCodeLine{02043\ \ \ \ \ \ \ selected\_node\_index\ =\ Index();}
+\DoxyCodeLine{02044\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{02045\ \ \ \ \ \}}
 \DoxyCodeLine{02046\ }
-\DoxyCodeLine{02047\ \ \ \ \ \textcolor{comment}{//\ 1.\ try\ first\ placing\ as\ a\ descendant\ of\ the\ mid-\/branch\ point\ of\ the}}
-\DoxyCodeLine{02048\ \ \ \ \ \textcolor{comment}{//\ branch\ above\ the\ current\ node}}
-\DoxyCodeLine{02049\ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ !=\ current\_node\_vec\ \&\&\ current\_node\_blength\ >\ 0)\ \{}
-\DoxyCodeLine{02050\ \ \ \ \ \ \ examineSamplePlacementMidBranch<num\_states>(}
-\DoxyCodeLine{02051\ \ \ \ \ \ \ \ \ \ \ selected\_node\_index,\ current\_node.getMidBranchLh(),\ best\_lh\_diff,}
-\DoxyCodeLine{02052\ \ \ \ \ \ \ \ \ \ \ is\_mid\_branch,\ lh\_diff\_mid\_branch,\ current\_extended\_node,}
-\DoxyCodeLine{02053\ \ \ \ \ \ \ \ \ \ \ sample\_regions);}
-\DoxyCodeLine{02054\ \ \ \ \ \}}
-\DoxyCodeLine{02055\ \ \ \ \ \textcolor{comment}{//\ otherwise,\ don't\ consider\ mid-\/branch\ point}}
-\DoxyCodeLine{02056\ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
-\DoxyCodeLine{02057\ \ \ \ \ \ \ lh\_diff\_mid\_branch\ =\ MIN\_NEGATIVE;}
-\DoxyCodeLine{02058\ \ \ \ \ \}}
-\DoxyCodeLine{02059\ }
-\DoxyCodeLine{02060\ \ \ \ \ \textcolor{comment}{//\ 2.\ try\ to\ place\ as\ descendant\ of\ the\ current\ node\ (this\ is\ skipped\ if\ the}}
-\DoxyCodeLine{02061\ \ \ \ \ \textcolor{comment}{//\ node\ has\ top\ branch\ length\ 0\ and\ so\ is\ part\ of\ a\ polytomy).}}
-\DoxyCodeLine{02062\ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ current\_node\_vec\ ||\ current\_node\_blength\ >\ 0)\ \{}
-\DoxyCodeLine{02063\ \ \ \ \ \ \ examineSamplePlacementAtNode<num\_states>(}
-\DoxyCodeLine{02064\ \ \ \ \ \ \ \ \ \ \ selected\_node\_index,\ current\_node.getTotalLh(),\ best\_lh\_diff,}
-\DoxyCodeLine{02065\ \ \ \ \ \ \ \ \ \ \ is\_mid\_branch,\ lh\_diff\_at\_node,\ lh\_diff\_mid\_branch,\ best\_up\_lh\_diff,}
-\DoxyCodeLine{02066\ \ \ \ \ \ \ \ \ \ \ best\_down\_lh\_diff,\ best\_child\_index,\ current\_extended\_node,}
-\DoxyCodeLine{02067\ \ \ \ \ \ \ \ \ \ \ sample\_regions);}
-\DoxyCodeLine{02068\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
-\DoxyCodeLine{02069\ \ \ \ \ \ \ lh\_diff\_at\_node\ =\ current\_extended\_node.getLhDiff();}
-\DoxyCodeLine{02070\ \ \ \ \ \}}
-\DoxyCodeLine{02071\ }
-\DoxyCodeLine{02072\ \ \ \ \ \textcolor{comment}{//\ keep\ trying\ to\ place\ at\ children\ nodes,\ unless\ the\ number\ of\ attempts\ has}}
-\DoxyCodeLine{02073\ \ \ \ \ \textcolor{comment}{//\ reaches\ the\ failure\ limit}}
-\DoxyCodeLine{02074\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{short}\ \textcolor{keywordtype}{int}\ failure\_count\ =\ current\_extended\_node.getFailureCount();}
-\DoxyCodeLine{02075\ \ \ \ \ \textcolor{keywordflow}{if}\ ((params-\/>strict\_stop\_seeking\_placement\_sample\ \&\&}
-\DoxyCodeLine{02076\ \ \ \ \ \ \ \ \ \ failure\_count\ <=\ params-\/>failure\_limit\_sample\ \&\&}
-\DoxyCodeLine{02077\ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node\ >\ (best\_lh\_diff\ -\/\ params-\/>thresh\_log\_lh\_sample))\ ||}
-\DoxyCodeLine{02078\ \ \ \ \ \ \ \ \ (!params-\/>strict\_stop\_seeking\_placement\_sample\ \&\&}
-\DoxyCodeLine{02079\ \ \ \ \ \ \ \ \ \ (failure\_count\ <=\ params-\/>failure\_limit\_sample\ ||}
-\DoxyCodeLine{02080\ \ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node\ >\ (best\_lh\_diff\ -\/\ params-\/>thresh\_log\_lh\_sample))))\ \{}
-\DoxyCodeLine{02081\ \ \ \ \ \ \ \textcolor{comment}{/*for\ (Index\ neighbor\_index:current\_node.getNeighborIndexes(TOP))}}
-\DoxyCodeLine{02082\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ extended\_node\_stack.push(TraversingNode(neighbor\_index,}}
-\DoxyCodeLine{02083\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ current\_extended\_node.getFailureCount(),\ lh\_diff\_at\_node));*/}}
-\DoxyCodeLine{02084\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (is\_internal)\ \{}
-\DoxyCodeLine{02085\ \ \ \ \ \ \ \ \ extended\_node\_stack.push(}
-\DoxyCodeLine{02086\ \ \ \ \ \ \ \ \ \ \ \ \ TraversingNode(current\_node.getNeighborIndex(RIGHT),\ failure\_count,}
-\DoxyCodeLine{02087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node));}
-\DoxyCodeLine{02088\ \ \ \ \ \ \ \ \ extended\_node\_stack.push(}
-\DoxyCodeLine{02089\ \ \ \ \ \ \ \ \ \ \ \ \ TraversingNode(current\_node.getNeighborIndex(LEFT),\ failure\_count,}
-\DoxyCodeLine{02090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node));}
-\DoxyCodeLine{02091\ \ \ \ \ \ \ \}}
-\DoxyCodeLine{02092\ \ \ \ \ \}}
-\DoxyCodeLine{02093\ \ \ \}}
-\DoxyCodeLine{02094\ }
-\DoxyCodeLine{02095\ \ \ \textcolor{comment}{//\ exploration\ of\ the\ tree\ is\ finished,\ and\ we\ are\ left\ with\ the\ node\ found\ so}}
-\DoxyCodeLine{02096\ \ \ \textcolor{comment}{//\ far\ with\ the\ best\ appending\ likelihood\ cost.\ Now\ we\ explore\ placement\ just}}
-\DoxyCodeLine{02097\ \ \ \textcolor{comment}{//\ below\ this\ node\ for\ more\ fine-\/grained\ placement\ within\ its\ descendant}}
-\DoxyCodeLine{02098\ \ \ \textcolor{comment}{//\ branches.}}
-\DoxyCodeLine{02099\ \ \ best\_down\_lh\_diff\ =\ MIN\_NEGATIVE;}
-\DoxyCodeLine{02100\ \ \ best\_child\_index\ =\ Index();}
-\DoxyCodeLine{02101\ \ \ ;}
-\DoxyCodeLine{02102\ }
-\DoxyCodeLine{02103\ \ \ \textcolor{comment}{//\ if\ best\ position\ so\ far\ is\ the\ descendant\ of\ a\ node\ -\/>\ explore\ further\ at}}
-\DoxyCodeLine{02104\ \ \ \textcolor{comment}{//\ its\ children}}
-\DoxyCodeLine{02105\ \ \ \textcolor{keywordflow}{if}\ (!is\_mid\_branch)\ \{}
-\DoxyCodeLine{02106\ \ \ \ \ finetuneSamplePlacementAtNode<num\_states>(}
-\DoxyCodeLine{02107\ \ \ \ \ \ \ \ \ nodes[selected\_node\_index.getVectorIndex()],\ best\_down\_lh\_diff,}
-\DoxyCodeLine{02108\ \ \ \ \ \ \ \ \ best\_child\_index,\ sample\_regions);}
-\DoxyCodeLine{02109\ \ \ \}}
-\DoxyCodeLine{02110\ \}}
-\DoxyCodeLine{02111\ }
-\DoxyCodeLine{02112\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
-\DoxyCodeLine{02113\ \textcolor{keywordtype}{void}\ cmaple::Tree::placeNewSampleAtNode(\textcolor{keyword}{const}\ Index\ selected\_node\_index,}
-\DoxyCodeLine{02114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<SeqRegions>\&\ sample,}
-\DoxyCodeLine{02115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ seq\_name\_index,}
-\DoxyCodeLine{02116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_lh\_diff,}
-\DoxyCodeLine{02117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_up\_lh\_diff,}
-\DoxyCodeLine{02118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_down\_lh\_diff,}
-\DoxyCodeLine{02119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Index\ best\_child\_index)\ \{}
-\DoxyCodeLine{02120\ \ \ \textcolor{comment}{//\ dummy\ variables}}
-\DoxyCodeLine{02121\ \ \ RealNumType\ best\_child\_lh\ =\ MIN\_NEGATIVE;}
-\DoxyCodeLine{02122\ \ \ RealNumType\ best\_child\_blength\_split\ =\ 0;}
-\DoxyCodeLine{02123\ \ \ RealNumType\ best\_parent\_lh;}
-\DoxyCodeLine{02124\ \ \ RealNumType\ best\_parent\_blength\_split\ =\ 0;}
-\DoxyCodeLine{02125\ \ \ RealNumType\ best\_root\_blength\ =\ -\/1;}
-\DoxyCodeLine{02126\ \ \ \textcolor{keyword}{const}\ RealNumType\ threshold\_prob\ =\ params-\/>threshold\_prob;}
-\DoxyCodeLine{02127\ \ \ std::unique\_ptr<SeqRegions>\ best\_parent\_regions\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{02128\ \ \ std::unique\_ptr<SeqRegions>\ best\_child\_regions\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{02129\ }
-\DoxyCodeLine{02130\ \ \ assert(selected\_node\_index.getMiniIndex()\ ==\ TOP);}
-\DoxyCodeLine{02131\ \ \ \textcolor{keyword}{const}\ NumSeqsType\ selected\_node\_vec\_index\ =}
-\DoxyCodeLine{02132\ \ \ \ \ \ \ selected\_node\_index.getVectorIndex();}
-\DoxyCodeLine{02133\ \ \ PhyloNode\&\ selected\_node\ =\ nodes[selected\_node\_vec\_index];}
-\DoxyCodeLine{02134\ }
-\DoxyCodeLine{02135\ \ \ \textcolor{comment}{//\ place\ the\ new\ sample\ as\ a\ descendant\ of\ an\ existing\ node}}
-\DoxyCodeLine{02136\ \ \ \textcolor{keywordflow}{if}\ (best\_child\_index.getMiniIndex()\ !=\ UNDEFINED)\ \{}
-\DoxyCodeLine{02137\ \ \ \ \ PhyloNode\&\ best\_child\ =\ nodes[best\_child\_index.getVectorIndex()];}
-\DoxyCodeLine{02138\ \ \ \ \ best\_child\_lh\ =\ best\_down\_lh\_diff;}
-\DoxyCodeLine{02139\ \ \ \ \ assert(best\_child\_index.getMiniIndex()\ ==\ TOP);}
-\DoxyCodeLine{02140\ \ \ \ \ best\_child\_blength\_split\ =}
-\DoxyCodeLine{02141\ \ \ \ \ \ \ \ \ 0.5\ *\ best\_child.getUpperLength();\ \ \textcolor{comment}{//\ best\_child-\/>length;}}
-\DoxyCodeLine{02142\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
-\DoxyCodeLine{02143\ \ \ \ \ \ \ \ \ getPartialLhAtNode(best\_child.getNeighborIndex(}
-\DoxyCodeLine{02144\ \ \ \ \ \ \ \ \ \ \ \ \ TOP));\ \ \textcolor{comment}{//\ best\_child-\/>neighbor-\/>getPartialLhAtNode(aln,}}
-\DoxyCodeLine{02145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02146\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =\ best\_child.getPartialLh(}
-\DoxyCodeLine{02147\ \ \ \ \ \ \ \ \ TOP);\ \ \textcolor{comment}{//\ -\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02148\ \ \ \ \ \textcolor{comment}{//\ best\_child\_regions\ =\ new\ SeqRegions(best\_child-\/>mid\_branch\_lh);}}
-\DoxyCodeLine{02149\ \ \ \ \ \textcolor{comment}{//\ SeqRegions\ best\_child\_mid\_clone\ =}}
-\DoxyCodeLine{02150\ \ \ \ \ \textcolor{comment}{//\ SeqRegions(best\_child.getMidBranchLh());}}
-\DoxyCodeLine{02151\ \ \ \ \ best\_child\_regions\ =}
-\DoxyCodeLine{02152\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr};\ \ \textcolor{comment}{//\ std::make\_unique<SeqRegions>(std::move(best\_child\_mid\_clone));}}
-\DoxyCodeLine{02153\ }
-\DoxyCodeLine{02154\ \ \ \ \ \textcolor{comment}{//\ try\ a\ shorter\ split}}
-\DoxyCodeLine{02155\ \ \ \ \ \textcolor{comment}{//\ tryShorterBranch<\&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(best\_child-\/>length,}}
-\DoxyCodeLine{02156\ \ \ \ \ \textcolor{comment}{//\ best\_child\_regions,\ sample,\ upper\_left\_right\_regions,\ lower\_regions,}}
-\DoxyCodeLine{02157\ \ \ \ \ \textcolor{comment}{//\ best\_child\_lh,\ best\_child\_blength\_split,\ default\_blength,\ true);}}
-\DoxyCodeLine{02158\ \ \ \ \ tryShorterBranch<num\_states,}
-\DoxyCodeLine{02159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
-\DoxyCodeLine{02160\ \ \ \ \ \ \ \ \ best\_child.getUpperLength(),\ best\_child\_regions,\ sample,}
-\DoxyCodeLine{02161\ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_child\_lh,}
-\DoxyCodeLine{02162\ \ \ \ \ \ \ \ \ best\_child\_blength\_split,\ default\_blength,\ \textcolor{keyword}{true});}
-\DoxyCodeLine{02163\ }
-\DoxyCodeLine{02164\ \ \ \ \ \textcolor{comment}{//\ Delay\ cloning\ SeqRegions}}
-\DoxyCodeLine{02165\ \ \ \ \ \textcolor{keywordflow}{if}\ (!best\_child\_regions)\ \{}
-\DoxyCodeLine{02166\ \ \ \ \ \ \ best\_child\_regions\ =}
-\DoxyCodeLine{02167\ \ \ \ \ \ \ \ \ \ \ std::make\_unique<SeqRegions>(SeqRegions(best\_child.getMidBranchLh()));}
-\DoxyCodeLine{02168\ \ \ \ \ \}}
-\DoxyCodeLine{02169\ \ \ \}}
-\DoxyCodeLine{02170\ }
-\DoxyCodeLine{02171\ \ \ \textcolor{comment}{//\ if\ node\ is\ root,\ try\ to\ place\ as\ sibling\ of\ the\ current\ root.}}
-\DoxyCodeLine{02172\ \ \ RealNumType\ old\_root\_lh\ =\ MIN\_NEGATIVE;}
-\DoxyCodeLine{02173\ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ selected\_node\_vec\_index)\ \{}
-\DoxyCodeLine{02174\ \ \ \ \ \textcolor{comment}{/*old\_root\_lh\ =\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
-\DoxyCodeLine{02175\ \textcolor{comment}{\ \ \ \ threshold\_prob)-\/>computeAbsoluteLhAtRoot(num\_states,\ model);\ SeqRegions*}}
-\DoxyCodeLine{02176\ \textcolor{comment}{\ \ \ \ lower\_regions\ =\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
-\DoxyCodeLine{02177\ \textcolor{comment}{\ \ \ \ threshold\_prob);*/}}
-\DoxyCodeLine{02178\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
-\DoxyCodeLine{02179\ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(TOP);}
-\DoxyCodeLine{02180\ \ \ \ \ old\_root\_lh\ =\ lower\_regions-\/>computeAbsoluteLhAtRoot<num\_states>(}
-\DoxyCodeLine{02181\ \ \ \ \ \ \ \ \ model,\ cumulative\_base);}
-\DoxyCodeLine{02182\ }
-\DoxyCodeLine{02183\ \ \ \ \ \textcolor{comment}{//\ merge\ 2\ lower\ vector\ into\ one}}
-\DoxyCodeLine{02184\ \ \ \ \ RealNumType\ new\_root\_lh\ =\ lower\_regions-\/>mergeTwoLowers<num\_states>(}
-\DoxyCodeLine{02185\ \ \ \ \ \ \ \ \ best\_parent\_regions,\ default\_blength,\ *sample,\ default\_blength,\ aln,}
-\DoxyCodeLine{02186\ \ \ \ \ \ \ \ \ model,\ cumulative\_rate,\ threshold\_prob,\ \textcolor{keyword}{true});}
-\DoxyCodeLine{02187\ }
-\DoxyCodeLine{02188\ \ \ \ \ new\_root\_lh\ +=\ best\_parent\_regions-\/>computeAbsoluteLhAtRoot<num\_states>(}
-\DoxyCodeLine{02189\ \ \ \ \ \ \ \ \ model,\ cumulative\_base);}
-\DoxyCodeLine{02190\ \ \ \ \ best\_parent\_lh\ =\ new\_root\_lh;}
-\DoxyCodeLine{02191\ }
-\DoxyCodeLine{02192\ \ \ \ \ \textcolor{comment}{//\ try\ shorter\ branch\ lengths}}
-\DoxyCodeLine{02193\ \ \ \ \ best\_root\_blength\ =\ default\_blength;}
-\DoxyCodeLine{02194\ \ \ \ \ tryShorterBranchAtRoot<num\_states>(sample,\ lower\_regions,}
-\DoxyCodeLine{02195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ best\_parent\_regions,\ best\_root\_blength,}
-\DoxyCodeLine{02196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ best\_parent\_lh,\ default\_blength);}
-\DoxyCodeLine{02197\ }
-\DoxyCodeLine{02198\ \ \ \ \ \textcolor{comment}{//\ update\ best\_parent\_lh\ (taking\ into\ account\ old\_root\_lh)}}
-\DoxyCodeLine{02199\ \ \ \ \ best\_parent\_lh\ -\/=\ old\_root\_lh;}
-\DoxyCodeLine{02200\ \ \ \}}
-\DoxyCodeLine{02201\ \ \ \textcolor{comment}{//\ selected\_node\ is\ not\ root}}
-\DoxyCodeLine{02202\ \ \ \textcolor{keywordflow}{else}\ \{}
-\DoxyCodeLine{02203\ \ \ \ \ best\_parent\_lh\ =\ best\_up\_lh\_diff;}
-\DoxyCodeLine{02204\ \ \ \ \ best\_parent\_blength\_split\ =}
-\DoxyCodeLine{02205\ \ \ \ \ \ \ \ \ 0.5\ *\ selected\_node.getUpperLength();\ \ \textcolor{comment}{//\ selected\_node-\/>length;}}
-\DoxyCodeLine{02206\ \ \ \ \ \textcolor{comment}{/*SeqRegions*\ upper\_left\_right\_regions\ =}}
-\DoxyCodeLine{02207\ \textcolor{comment}{\ \ \ \ selected\_node-\/>neighbor-\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02208\ \textcolor{comment}{\ \ \ \ SeqRegions*\ lower\_regions\ =\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
-\DoxyCodeLine{02209\ \textcolor{comment}{\ \ \ \ threshold\_prob);\ best\_parent\_regions\ =\ new}}
-\DoxyCodeLine{02210\ \textcolor{comment}{\ \ \ \ SeqRegions(selected\_node-\/>mid\_branch\_lh);*/}}
-\DoxyCodeLine{02211\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
-\DoxyCodeLine{02212\ \ \ \ \ \ \ \ \ getPartialLhAtNode(selected\_node.getNeighborIndex(TOP));}
-\DoxyCodeLine{02213\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
-\DoxyCodeLine{02214\ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(TOP);}
-\DoxyCodeLine{02215\ \ \ \ \ \textcolor{comment}{//\ SeqRegions\ seq\_regions\_clone\ =}}
-\DoxyCodeLine{02216\ \ \ \ \ \textcolor{comment}{//\ SeqRegions(selected\_node.getMidBranchLh());}}
-\DoxyCodeLine{02217\ \ \ \ \ best\_parent\_regions\ =}
-\DoxyCodeLine{02218\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr};\ \ \textcolor{comment}{//\ std::make\_unique<SeqRegions>(std::move(seq\_regions\_clone));}}
-\DoxyCodeLine{02219\ }
-\DoxyCodeLine{02220\ \ \ \ \ \textcolor{comment}{//\ try\ a\ shorter\ split}}
-\DoxyCodeLine{02221\ \ \ \ \ \textcolor{comment}{//\ tryShorterBranch<\&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(selected\_node-\/>length,}}
-\DoxyCodeLine{02222\ \ \ \ \ \textcolor{comment}{//\ best\_parent\_regions,\ sample,\ upper\_left\_right\_regions,\ lower\_regions,}}
-\DoxyCodeLine{02223\ \ \ \ \ \textcolor{comment}{//\ best\_parent\_lh,\ best\_parent\_blength\_split,\ default\_blength,\ false);}}
-\DoxyCodeLine{02224\ \ \ \ \ tryShorterBranch<num\_states,}
-\DoxyCodeLine{02225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
-\DoxyCodeLine{02226\ \ \ \ \ \ \ \ \ selected\_node.getUpperLength(),\ best\_parent\_regions,\ sample,}
-\DoxyCodeLine{02227\ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_parent\_lh,}
-\DoxyCodeLine{02228\ \ \ \ \ \ \ \ \ best\_parent\_blength\_split,\ default\_blength,\ \textcolor{keyword}{false});}
-\DoxyCodeLine{02229\ }
-\DoxyCodeLine{02230\ \ \ \ \ \textcolor{comment}{//\ Delay\ cloning\ SeqRegions}}
-\DoxyCodeLine{02231\ \ \ \ \ \textcolor{keywordflow}{if}\ (!best\_parent\_regions)\ \{}
-\DoxyCodeLine{02232\ \ \ \ \ \ \ best\_parent\_regions\ =\ std::make\_unique<SeqRegions>(}
-\DoxyCodeLine{02233\ \ \ \ \ \ \ \ \ \ \ SeqRegions(selected\_node.getMidBranchLh()));}
-\DoxyCodeLine{02234\ \ \ \ \ \}}
-\DoxyCodeLine{02235\ \ \ \}}
-\DoxyCodeLine{02236\ }
-\DoxyCodeLine{02237\ \ \ \textcolor{comment}{//\ if\ the\ best\ placement\ is\ below\ the\ selected\_node\ =>\ add\ an\ internal\ node}}
-\DoxyCodeLine{02238\ \ \ \textcolor{comment}{//\ below\ the\ selected\_node}}
-\DoxyCodeLine{02239\ \ \ \textcolor{keywordflow}{if}\ (best\_child\_lh\ >=\ best\_parent\_lh\ \&\&\ best\_child\_lh\ >=\ best\_lh\_diff)\ \{}
-\DoxyCodeLine{02240\ \ \ \ \ assert(best\_child\_index.getMiniIndex()\ ==\ TOP);}
-\DoxyCodeLine{02241\ \ \ \ \ PhyloNode\&\ best\_child\ =\ nodes[best\_child\_index.getVectorIndex()];}
-\DoxyCodeLine{02242\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
-\DoxyCodeLine{02243\ \ \ \ \ \ \ \ \ getPartialLhAtNode(best\_child.getNeighborIndex(}
-\DoxyCodeLine{02244\ \ \ \ \ \ \ \ \ \ \ \ \ TOP));\ \ \textcolor{comment}{//\ best\_child-\/>neighbor-\/>getPartialLhAtNode(aln,}}
-\DoxyCodeLine{02245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02246\ }
-\DoxyCodeLine{02247\ \ \ \ \ \textcolor{comment}{//\ Estimate\ the\ length\ for\ the\ new\ branch}}
-\DoxyCodeLine{02248\ \ \ \ \ RealNumType\ best\_length\ =\ default\_blength;}
-\DoxyCodeLine{02249\ \ \ \ \ estimateLengthNewBranch<}
-\DoxyCodeLine{02250\ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
-\DoxyCodeLine{02251\ \ \ \ \ \ \ \ \ best\_child\_lh,\ best\_child\_regions,\ sample,\ best\_length,\ max\_blength,}
-\DoxyCodeLine{02252\ \ \ \ \ \ \ \ \ min\_blength,\ \textcolor{keyword}{false});}
-\DoxyCodeLine{02253\ }
-\DoxyCodeLine{02254\ \ \ \ \ \textcolor{comment}{//\ create\ new\ internal\ node\ and\ append\ child\ to\ it}}
-\DoxyCodeLine{02255\ \ \ \ \ \textcolor{comment}{//\ connectNewSample2Branch(sample,\ seq\_name\_index,\ best\_child,}}
-\DoxyCodeLine{02256\ \ \ \ \ \textcolor{comment}{//\ best\_child\_blength\_split,\ best\_child-\/>length\ -\/\ best\_child\_blength\_split,}}
-\DoxyCodeLine{02257\ \ \ \ \ \textcolor{comment}{//\ best\_length,\ best\_child\_regions,\ upper\_left\_right\_regions);}}
-\DoxyCodeLine{02258\ \ \ \ \ connectNewSample2Branch<num\_states>(}
-\DoxyCodeLine{02259\ \ \ \ \ \ \ \ \ sample,\ seq\_name\_index,\ best\_child\_index,\ best\_child,}
-\DoxyCodeLine{02260\ \ \ \ \ \ \ \ \ best\_child\_blength\_split,}
-\DoxyCodeLine{02261\ \ \ \ \ \ \ \ \ best\_child.getUpperLength()\ -\/\ best\_child\_blength\_split,\ best\_length,}
-\DoxyCodeLine{02262\ \ \ \ \ \ \ \ \ best\_child\_regions,\ upper\_left\_right\_regions);}
-\DoxyCodeLine{02263\ \ \ \}}
-\DoxyCodeLine{02264\ \ \ \textcolor{comment}{//\ otherwise,\ add\ new\ parent\ to\ the\ selected\_node}}
-\DoxyCodeLine{02265\ \ \ \textcolor{keywordflow}{else}\ \{}
-\DoxyCodeLine{02266\ \ \ \ \ \textcolor{comment}{//\ new\ parent\ is\ actually\ part\ of\ a\ polytomy\ since\ best\ placement\ is\ exactly}}
-\DoxyCodeLine{02267\ \ \ \ \ \textcolor{comment}{//\ at\ the\ node}}
-\DoxyCodeLine{02268\ \ \ \ \ \textcolor{keywordflow}{if}\ (best\_lh\_diff\ >=\ best\_parent\_lh)\ \{}
-\DoxyCodeLine{02269\ \ \ \ \ \ \ best\_root\_blength\ =\ -\/1;}
-\DoxyCodeLine{02270\ \ \ \ \ \ \ best\_parent\_blength\_split\ =\ -\/1;}
-\DoxyCodeLine{02271\ \ \ \ \ \ \ best\_parent\_lh\ =\ best\_lh\_diff;}
-\DoxyCodeLine{02272\ \ \ \ \ \ \ \textcolor{comment}{/*if\ (best\_parent\_regions)\ delete\ best\_parent\_regions;}}
-\DoxyCodeLine{02273\ \textcolor{comment}{\ \ \ \ \ \ best\_parent\_regions\ =\ NULL;*/}}
-\DoxyCodeLine{02274\ \ \ \ \ \ \ best\_parent\_regions\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{02275\ }
-\DoxyCodeLine{02276\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ selected\_node\_vec\_index)\ \{}
-\DoxyCodeLine{02277\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
-\DoxyCodeLine{02278\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ threshold\_prob)-\/>mergeTwoLowers<num\_states>(best\_parent\_regions,}}
-\DoxyCodeLine{02279\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/1,\ *sample,\ default\_blength,\ aln,\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02280\ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(TOP)-\/>mergeTwoLowers<num\_states>(}
-\DoxyCodeLine{02281\ \ \ \ \ \ \ \ \ \ \ \ \ best\_parent\_regions,\ -\/1,\ *sample,\ default\_blength,\ aln,\ model,}
-\DoxyCodeLine{02282\ \ \ \ \ \ \ \ \ \ \ \ \ cumulative\_rate,\ threshold\_prob);}
-\DoxyCodeLine{02283\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
-\DoxyCodeLine{02284\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ best\_parent\_regions\ =\ new\ SeqRegions(selected\_node-\/>total\_lh);}}
-\DoxyCodeLine{02285\ \ \ \ \ \ \ \ \ SeqRegions\ seq\_regions\_clone\ =\ SeqRegions(selected\_node.getTotalLh());}
-\DoxyCodeLine{02286\ \ \ \ \ \ \ \ \ best\_parent\_regions\ =}
-\DoxyCodeLine{02287\ \ \ \ \ \ \ \ \ \ \ \ \ std::make\_unique<SeqRegions>(std::move(seq\_regions\_clone));}
-\DoxyCodeLine{02288\ \ \ \ \ \ \ \}}
-\DoxyCodeLine{02289\ \ \ \ \ \}}
-\DoxyCodeLine{02290\ }
-\DoxyCodeLine{02291\ \ \ \ \ \textcolor{comment}{//\ add\ parent\ to\ the\ root}}
-\DoxyCodeLine{02292\ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ selected\_node\_vec\_index)\ \{}
-\DoxyCodeLine{02293\ \ \ \ \ \ \ \textcolor{comment}{//\ now\ try\ different\ lengths\ for\ right\ branch}}
-\DoxyCodeLine{02294\ \ \ \ \ \ \ best\_parent\_lh\ +=\ old\_root\_lh;}
-\DoxyCodeLine{02295\ \ \ \ \ \ \ RealNumType\ best\_length2\ =\ default\_blength;}
-\DoxyCodeLine{02296\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
-\DoxyCodeLine{02297\ \ \ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(}
-\DoxyCodeLine{02298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TOP);\ \ \textcolor{comment}{//\ -\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02299\ }
-\DoxyCodeLine{02300\ \ \ \ \ \ \ estimateLengthNewBranchAtRoot<num\_states>(}
-\DoxyCodeLine{02301\ \ \ \ \ \ \ \ \ \ \ sample,\ lower\_regions,\ best\_parent\_regions,\ best\_length2,}
-\DoxyCodeLine{02302\ \ \ \ \ \ \ \ \ \ \ best\_parent\_lh,\ best\_root\_blength,\ min\_blength,\ \textcolor{keyword}{false});}
-\DoxyCodeLine{02303\ }
-\DoxyCodeLine{02304\ \ \ \ \ \ \ \textcolor{comment}{//\ update\ best\_parent\_lh\ (taking\ into\ account\ old\_root\_lh)}}
-\DoxyCodeLine{02305\ \ \ \ \ \ \ best\_parent\_lh\ -\/=\ old\_root\_lh;}
-\DoxyCodeLine{02306\ }
-\DoxyCodeLine{02307\ \ \ \ \ \ \ \textcolor{comment}{//\ add\ new\ sample\ to\ a\ new\ root}}
-\DoxyCodeLine{02308\ \ \ \ \ \ \ connectNewSample2Root<num\_states>(}
-\DoxyCodeLine{02309\ \ \ \ \ \ \ \ \ \ \ sample,\ seq\_name\_index,\ selected\_node\_index,\ selected\_node,}
-\DoxyCodeLine{02310\ \ \ \ \ \ \ \ \ \ \ best\_root\_blength,\ best\_length2,\ best\_parent\_regions);}
-\DoxyCodeLine{02311\ \ \ \ \ \}}
-\DoxyCodeLine{02312\ \ \ \ \ \textcolor{comment}{//\ add\ parent\ to\ non-\/root\ node}}
-\DoxyCodeLine{02313\ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
-\DoxyCodeLine{02314\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
-\DoxyCodeLine{02315\ \ \ \ \ \ \ \ \ \ \ getPartialLhAtNode(selected\_node.getNeighborIndex(}
-\DoxyCodeLine{02316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TOP));\ \ \textcolor{comment}{//\ selected\_node-\/>neighbor-\/>getPartialLhAtNode(aln,}}
-\DoxyCodeLine{02317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02318\ }
-\DoxyCodeLine{02319\ \ \ \ \ \ \ \textcolor{comment}{//\ now\ try\ different\ lengths\ for\ the\ new\ branch}}
-\DoxyCodeLine{02320\ \ \ \ \ \ \ RealNumType\ new\_branch\_length\_lh\ =\ best\_parent\_lh;}
-\DoxyCodeLine{02321\ \ \ \ \ \ \ RealNumType\ best\_length\ =\ default\_blength;}
-\DoxyCodeLine{02322\ \ \ \ \ \ \ estimateLengthNewBranch<}
-\DoxyCodeLine{02323\ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
-\DoxyCodeLine{02324\ \ \ \ \ \ \ \ \ \ \ best\_parent\_lh,\ best\_parent\_regions,\ sample,\ best\_length,\ max\_blength,}
-\DoxyCodeLine{02325\ \ \ \ \ \ \ \ \ \ \ min\_blength,\ \textcolor{keyword}{false});}
-\DoxyCodeLine{02326\ }
-\DoxyCodeLine{02327\ \ \ \ \ \ \ \textcolor{comment}{//\ now\ create\ new\ internal\ node\ and\ append\ child\ to\ it}}
-\DoxyCodeLine{02328\ \ \ \ \ \ \ RealNumType\ down\_distance\ =\ best\_parent\_blength\_split;}
-\DoxyCodeLine{02329\ \ \ \ \ \ \ RealNumType\ top\_distance\ =}
-\DoxyCodeLine{02330\ \ \ \ \ \ \ \ \ \ \ selected\_node.getUpperLength()\ -\/}
-\DoxyCodeLine{02331\ \ \ \ \ \ \ \ \ \ \ down\_distance;\ \ \textcolor{comment}{//\ selected\_node-\/>length\ -\/\ down\_distance;}}
-\DoxyCodeLine{02332\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (best\_parent\_blength\_split\ <\ 0)\ \{}
-\DoxyCodeLine{02333\ \ \ \ \ \ \ \ \ down\_distance\ =\ -\/1;}
-\DoxyCodeLine{02334\ \ \ \ \ \ \ \ \ top\_distance\ =}
-\DoxyCodeLine{02335\ \ \ \ \ \ \ \ \ \ \ \ \ selected\_node.getUpperLength();\ \ \textcolor{comment}{//\ selected\_node-\/>length;}}
-\DoxyCodeLine{02336\ }
-\DoxyCodeLine{02337\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*if\ (selected\_node-\/>total\_lh)\ delete\ selected\_node-\/>total\_lh;}}
-\DoxyCodeLine{02338\ \textcolor{comment}{\ \ \ \ \ \ \ \ selected\_node-\/>total\_lh\ =\ NULL;}}
-\DoxyCodeLine{02339\ \textcolor{comment}{}}
-\DoxyCodeLine{02340\ \textcolor{comment}{\ \ \ \ \ \ \ \ if\ (selected\_node-\/>mid\_branch\_lh)\ delete\ selected\_node-\/>mid\_branch\_lh;}}
-\DoxyCodeLine{02341\ \textcolor{comment}{\ \ \ \ \ \ \ \ selected\_node-\/>mid\_branch\_lh\ =\ NULL;*/}}
-\DoxyCodeLine{02342\ \ \ \ \ \ \ \ \ selected\_node.setTotalLh(\textcolor{keyword}{nullptr});}
-\DoxyCodeLine{02343\ \ \ \ \ \ \ \ \ selected\_node.setMidBranchLh(\textcolor{keyword}{nullptr});}
-\DoxyCodeLine{02344\ }
-\DoxyCodeLine{02345\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ node.furtherMidNodes=None}}
-\DoxyCodeLine{02346\ \ \ \ \ \ \ \}}
-\DoxyCodeLine{02347\ \ \ \ \ \ \ connectNewSample2Branch<num\_states>(}
-\DoxyCodeLine{02348\ \ \ \ \ \ \ \ \ \ \ sample,\ seq\_name\_index,\ selected\_node\_index,\ selected\_node,}
-\DoxyCodeLine{02349\ \ \ \ \ \ \ \ \ \ \ top\_distance,\ down\_distance,\ best\_length,\ best\_parent\_regions,}
-\DoxyCodeLine{02350\ \ \ \ \ \ \ \ \ \ \ upper\_left\_right\_regions);}
-\DoxyCodeLine{02351\ \ \ \ \ \}}
-\DoxyCodeLine{02352\ \ \ \}}
-\DoxyCodeLine{02353\ }
-\DoxyCodeLine{02354\ \ \ \textcolor{comment}{//\ delete\ best\_parent\_regions\ and\ best\_child\_regions}}
-\DoxyCodeLine{02355\ \ \ \textcolor{comment}{/*if\ (best\_parent\_regions)}}
-\DoxyCodeLine{02356\ \textcolor{comment}{\ \ \ \ \ \ delete\ best\_parent\_regions;}}
-\DoxyCodeLine{02357\ \textcolor{comment}{\ \ if\ (best\_child\_regions)}}
-\DoxyCodeLine{02358\ \textcolor{comment}{\ \ \ \ \ \ delete\ best\_child\_regions;*/}}
-\DoxyCodeLine{02359\ \}}
-\DoxyCodeLine{02360\ }
-\DoxyCodeLine{02361\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
-\DoxyCodeLine{02362\ \textcolor{keywordtype}{void}\ cmaple::Tree::placeNewSampleMidBranch(\textcolor{keyword}{const}\ Index\&\ selected\_node\_index,}
-\DoxyCodeLine{02363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<SeqRegions>\&\ sample,}
-\DoxyCodeLine{02364\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ seq\_name\_index,}
-\DoxyCodeLine{02365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_lh\_diff)\ \{}
-\DoxyCodeLine{02366\ \ \ \textcolor{comment}{//\ dummy\ variables}}
-\DoxyCodeLine{02367\ \ \ \textcolor{comment}{//\ const\ RealNumType\ threshold\_prob\ =\ params-\/>threshold\_prob;}}
-\DoxyCodeLine{02368\ \ \ std::unique\_ptr<SeqRegions>\ best\_child\_regions\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{02369\ }
-\DoxyCodeLine{02370\ \ \ \textcolor{comment}{//\ selected\_node-\/>neighbor-\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02371\ \ \ \textcolor{comment}{//\ const\ MiniIndex\ seleted\_node\_mini\_index\ =}}
-\DoxyCodeLine{02372\ \ \ \textcolor{comment}{//\ selected\_node\_index.getMiniIndex();}}
-\DoxyCodeLine{02373\ \ \ assert(selected\_node\_index.getMiniIndex()\ ==\ TOP);}
-\DoxyCodeLine{02374\ \ \ PhyloNode\&\ selected\_node\ =\ nodes[selected\_node\_index.getVectorIndex()];}
-\DoxyCodeLine{02375\ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
-\DoxyCodeLine{02376\ \ \ \ \ \ \ getPartialLhAtNode(selected\_node.getNeighborIndex(TOP));}
-\DoxyCodeLine{02377\ \ \ RealNumType\ best\_split\_lh\ =\ best\_lh\_diff;}
-\DoxyCodeLine{02378\ \ \ \textcolor{keyword}{const}\ RealNumType\ selected\_node\_blength\ =\ selected\_node.getUpperLength();}
-\DoxyCodeLine{02379\ \ \ RealNumType\ best\_branch\_length\_split\ =\ 0.5\ *\ selected\_node\_blength;}
-\DoxyCodeLine{02380\ \ \ best\_child\_regions\ =}
-\DoxyCodeLine{02381\ \ \ \ \ \ \ \textcolor{keyword}{nullptr};\ \ \textcolor{comment}{//\ std::make\_unique<SeqRegions>(SeqRegions(selected\_node.getMidBranchLh()));}}
-\DoxyCodeLine{02382\ \ \ \textcolor{comment}{//\ selected\_node-\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
-\DoxyCodeLine{02383\ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
-\DoxyCodeLine{02384\ \ \ \ \ \ \ selected\_node.getPartialLh(TOP);}
-\DoxyCodeLine{02385\ }
-\DoxyCodeLine{02386\ \ \ \textcolor{comment}{//\ try\ different\ positions\ on\ the\ existing\ branch}}
-\DoxyCodeLine{02387\ \ \ \textcolor{keywordtype}{bool}\ found\_new\_split\ =}
-\DoxyCodeLine{02388\ \ \ \ \ \ \ tryShorterBranch<num\_states,}
-\DoxyCodeLine{02389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
-\DoxyCodeLine{02390\ \ \ \ \ \ \ \ \ \ \ selected\_node\_blength,\ best\_child\_regions,\ sample,}
-\DoxyCodeLine{02391\ \ \ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_split\_lh,}
-\DoxyCodeLine{02392\ \ \ \ \ \ \ \ \ \ \ best\_branch\_length\_split,\ default\_blength,\ \textcolor{keyword}{true});}
-\DoxyCodeLine{02393\ }
-\DoxyCodeLine{02394\ \ \ \textcolor{keywordflow}{if}\ (!found\_new\_split)\ \{}
-\DoxyCodeLine{02395\ \ \ \ \ \textcolor{comment}{//\ try\ on\ the\ second\ branch}}
-\DoxyCodeLine{02396\ \ \ \ \ found\_new\_split\ =\ tryShorterBranch<}
-\DoxyCodeLine{02397\ \ \ \ \ \ \ \ \ num\_states,\ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
-\DoxyCodeLine{02398\ \ \ \ \ \ \ \ \ selected\_node\_blength,\ best\_child\_regions,\ sample,}
-\DoxyCodeLine{02399\ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_split\_lh,}
-\DoxyCodeLine{02400\ \ \ \ \ \ \ \ \ best\_branch\_length\_split,\ default\_blength,\ \textcolor{keyword}{false});}
-\DoxyCodeLine{02401\ }
-\DoxyCodeLine{02402\ \ \ \ \ \textcolor{keywordflow}{if}\ (found\_new\_split)\ \{}
-\DoxyCodeLine{02403\ \ \ \ \ \ \ best\_branch\_length\_split\ =}
-\DoxyCodeLine{02404\ \ \ \ \ \ \ \ \ \ \ selected\_node\_blength\ -\/\ best\_branch\_length\_split;}
-\DoxyCodeLine{02405\ \ \ \ \ \}}
-\DoxyCodeLine{02406\ \ \ \}}
-\DoxyCodeLine{02407\ }
-\DoxyCodeLine{02408\ \ \ \textcolor{comment}{//\ Delay\ cloning\ SeqRegions}}
-\DoxyCodeLine{02409\ \ \ \textcolor{keywordflow}{if}\ (!best\_child\_regions)\ \{}
-\DoxyCodeLine{02410\ \ \ \ \ best\_child\_regions\ =\ std::make\_unique<SeqRegions>(}
-\DoxyCodeLine{02411\ \ \ \ \ \ \ \ \ SeqRegions(selected\_node.getMidBranchLh()));}
-\DoxyCodeLine{02412\ \ \ \}}
-\DoxyCodeLine{02413\ }
-\DoxyCodeLine{02414\ \ \ \textcolor{comment}{//\ now\ try\ different\ lengths\ for\ the\ new\ branch}}
-\DoxyCodeLine{02415\ \ \ RealNumType\ best\_blength\ =\ default\_blength;}
-\DoxyCodeLine{02416\ \ \ estimateLengthNewBranch<}
-\DoxyCodeLine{02417\ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
-\DoxyCodeLine{02418\ \ \ \ \ \ \ best\_split\_lh,\ best\_child\_regions,\ sample,\ best\_blength,\ max\_blength,}
-\DoxyCodeLine{02419\ \ \ \ \ \ \ min\_blength,\ \textcolor{keyword}{false});}
-\DoxyCodeLine{02420\ }
-\DoxyCodeLine{02421\ \ \ \textcolor{comment}{//\ create\ new\ internal\ node\ and\ append\ child\ to\ it}}
-\DoxyCodeLine{02422\ \ \ connectNewSample2Branch<num\_states>(}
-\DoxyCodeLine{02423\ \ \ \ \ \ \ sample,\ seq\_name\_index,\ selected\_node\_index,\ selected\_node,}
-\DoxyCodeLine{02424\ \ \ \ \ \ \ best\_branch\_length\_split,}
-\DoxyCodeLine{02425\ \ \ \ \ \ \ selected\_node\_blength\ -\/\ best\_branch\_length\_split,\ best\_blength,}
-\DoxyCodeLine{02426\ \ \ \ \ \ \ best\_child\_regions,\ upper\_left\_right\_regions);}
-\DoxyCodeLine{02427\ \}}
-\DoxyCodeLine{02429\ \}\ \ \textcolor{comment}{//\ namespace\ cmaple}}
+\DoxyCodeLine{02047\ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ current\_node\_blength\ =\ current\_node.getUpperLength();}
+\DoxyCodeLine{02048\ }
+\DoxyCodeLine{02049\ \ \ \ \ \textcolor{comment}{//\ 1.\ try\ first\ placing\ as\ a\ descendant\ of\ the\ mid-\/branch\ point\ of\ the}}
+\DoxyCodeLine{02050\ \ \ \ \ \textcolor{comment}{//\ branch\ above\ the\ current\ node}}
+\DoxyCodeLine{02051\ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ !=\ current\_node\_vec\ \&\&\ current\_node\_blength\ >\ 0)\ \{}
+\DoxyCodeLine{02052\ \ \ \ \ \ \ examineSamplePlacementMidBranch<num\_states>(}
+\DoxyCodeLine{02053\ \ \ \ \ \ \ \ \ \ \ selected\_node\_index,\ current\_node.getMidBranchLh(),\ best\_lh\_diff,}
+\DoxyCodeLine{02054\ \ \ \ \ \ \ \ \ \ \ is\_mid\_branch,\ lh\_diff\_mid\_branch,\ current\_extended\_node,}
+\DoxyCodeLine{02055\ \ \ \ \ \ \ \ \ \ \ sample\_regions);}
+\DoxyCodeLine{02056\ \ \ \ \ \}}
+\DoxyCodeLine{02057\ \ \ \ \ \textcolor{comment}{//\ otherwise,\ don't\ consider\ mid-\/branch\ point}}
+\DoxyCodeLine{02058\ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{02059\ \ \ \ \ \ \ lh\_diff\_mid\_branch\ =\ MIN\_NEGATIVE;}
+\DoxyCodeLine{02060\ \ \ \ \ \}}
+\DoxyCodeLine{02061\ }
+\DoxyCodeLine{02062\ \ \ \ \ \textcolor{comment}{//\ 2.\ try\ to\ place\ as\ descendant\ of\ the\ current\ node\ (this\ is\ skipped\ if\ the}}
+\DoxyCodeLine{02063\ \ \ \ \ \textcolor{comment}{//\ node\ has\ top\ branch\ length\ 0\ and\ so\ is\ part\ of\ a\ polytomy).}}
+\DoxyCodeLine{02064\ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ current\_node\_vec\ ||\ current\_node\_blength\ >\ 0)\ \{}
+\DoxyCodeLine{02065\ \ \ \ \ \ \ examineSamplePlacementAtNode<num\_states>(}
+\DoxyCodeLine{02066\ \ \ \ \ \ \ \ \ \ \ selected\_node\_index,\ current\_node.getTotalLh(),\ best\_lh\_diff,}
+\DoxyCodeLine{02067\ \ \ \ \ \ \ \ \ \ \ is\_mid\_branch,\ lh\_diff\_at\_node,\ lh\_diff\_mid\_branch,\ best\_up\_lh\_diff,}
+\DoxyCodeLine{02068\ \ \ \ \ \ \ \ \ \ \ best\_down\_lh\_diff,\ best\_child\_index,\ current\_extended\_node,}
+\DoxyCodeLine{02069\ \ \ \ \ \ \ \ \ \ \ sample\_regions);}
+\DoxyCodeLine{02070\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{02071\ \ \ \ \ \ \ lh\_diff\_at\_node\ =\ current\_extended\_node.getLhDiff();}
+\DoxyCodeLine{02072\ \ \ \ \ \}}
+\DoxyCodeLine{02073\ }
+\DoxyCodeLine{02074\ \ \ \ \ \textcolor{comment}{//\ keep\ trying\ to\ place\ at\ children\ nodes,\ unless\ the\ number\ of\ attempts\ has}}
+\DoxyCodeLine{02075\ \ \ \ \ \textcolor{comment}{//\ reaches\ the\ failure\ limit}}
+\DoxyCodeLine{02076\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{short}\ \textcolor{keywordtype}{int}\ failure\_count\ =\ current\_extended\_node.getFailureCount();}
+\DoxyCodeLine{02077\ \ \ \ \ \textcolor{keywordflow}{if}\ ((params-\/>strict\_stop\_seeking\_placement\_sample\ \&\&}
+\DoxyCodeLine{02078\ \ \ \ \ \ \ \ \ \ failure\_count\ <=\ params-\/>failure\_limit\_sample\ \&\&}
+\DoxyCodeLine{02079\ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node\ >\ (best\_lh\_diff\ -\/\ params-\/>thresh\_log\_lh\_sample))\ ||}
+\DoxyCodeLine{02080\ \ \ \ \ \ \ \ \ (!params-\/>strict\_stop\_seeking\_placement\_sample\ \&\&}
+\DoxyCodeLine{02081\ \ \ \ \ \ \ \ \ \ (failure\_count\ <=\ params-\/>failure\_limit\_sample\ ||}
+\DoxyCodeLine{02082\ \ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node\ >\ (best\_lh\_diff\ -\/\ params-\/>thresh\_log\_lh\_sample))))\ \{}
+\DoxyCodeLine{02083\ \ \ \ \ \ \ \textcolor{comment}{/*for\ (Index\ neighbor\_index:current\_node.getNeighborIndexes(TOP))}}
+\DoxyCodeLine{02084\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ extended\_node\_stack.push(TraversingNode(neighbor\_index,}}
+\DoxyCodeLine{02085\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ current\_extended\_node.getFailureCount(),\ lh\_diff\_at\_node));*/}}
+\DoxyCodeLine{02086\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (is\_internal)\ \{}
+\DoxyCodeLine{02087\ \ \ \ \ \ \ \ \ extended\_node\_stack.push(}
+\DoxyCodeLine{02088\ \ \ \ \ \ \ \ \ \ \ \ \ TraversingNode(current\_node.getNeighborIndex(RIGHT),\ failure\_count,}
+\DoxyCodeLine{02089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node));}
+\DoxyCodeLine{02090\ \ \ \ \ \ \ \ \ extended\_node\_stack.push(}
+\DoxyCodeLine{02091\ \ \ \ \ \ \ \ \ \ \ \ \ TraversingNode(current\_node.getNeighborIndex(LEFT),\ failure\_count,}
+\DoxyCodeLine{02092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_diff\_at\_node));}
+\DoxyCodeLine{02093\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{02094\ \ \ \ \ \}}
+\DoxyCodeLine{02095\ \ \ \}}
+\DoxyCodeLine{02096\ }
+\DoxyCodeLine{02097\ \ \ \textcolor{comment}{//\ exploration\ of\ the\ tree\ is\ finished,\ and\ we\ are\ left\ with\ the\ node\ found\ so}}
+\DoxyCodeLine{02098\ \ \ \textcolor{comment}{//\ far\ with\ the\ best\ appending\ likelihood\ cost.\ Now\ we\ explore\ placement\ just}}
+\DoxyCodeLine{02099\ \ \ \textcolor{comment}{//\ below\ this\ node\ for\ more\ fine-\/grained\ placement\ within\ its\ descendant}}
+\DoxyCodeLine{02100\ \ \ \textcolor{comment}{//\ branches.}}
+\DoxyCodeLine{02101\ \ \ best\_down\_lh\_diff\ =\ MIN\_NEGATIVE;}
+\DoxyCodeLine{02102\ \ \ best\_child\_index\ =\ Index();}
+\DoxyCodeLine{02103\ \ \ ;}
+\DoxyCodeLine{02104\ }
+\DoxyCodeLine{02105\ \ \ \textcolor{comment}{//\ if\ best\ position\ so\ far\ is\ the\ descendant\ of\ a\ node\ -\/>\ explore\ further\ at}}
+\DoxyCodeLine{02106\ \ \ \textcolor{comment}{//\ its\ children}}
+\DoxyCodeLine{02107\ \ \ \textcolor{keywordflow}{if}\ (!is\_mid\_branch)\ \{}
+\DoxyCodeLine{02108\ \ \ \ \ finetuneSamplePlacementAtNode<num\_states>(}
+\DoxyCodeLine{02109\ \ \ \ \ \ \ \ \ nodes[selected\_node\_index.getVectorIndex()],\ best\_down\_lh\_diff,}
+\DoxyCodeLine{02110\ \ \ \ \ \ \ \ \ best\_child\_index,\ sample\_regions);}
+\DoxyCodeLine{02111\ \ \ \}}
+\DoxyCodeLine{02112\ \}}
+\DoxyCodeLine{02113\ }
+\DoxyCodeLine{02114\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
+\DoxyCodeLine{02115\ \textcolor{keywordtype}{void}\ cmaple::Tree::placeNewSampleAtNode(\textcolor{keyword}{const}\ Index\ selected\_node\_index,}
+\DoxyCodeLine{02116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<SeqRegions>\&\ sample,}
+\DoxyCodeLine{02117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ seq\_name\_index,}
+\DoxyCodeLine{02118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_lh\_diff,}
+\DoxyCodeLine{02119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_up\_lh\_diff,}
+\DoxyCodeLine{02120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_down\_lh\_diff,}
+\DoxyCodeLine{02121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Index\ best\_child\_index)\ \{}
+\DoxyCodeLine{02122\ \ \ \textcolor{comment}{//\ dummy\ variables}}
+\DoxyCodeLine{02123\ \ \ RealNumType\ best\_child\_lh\ =\ MIN\_NEGATIVE;}
+\DoxyCodeLine{02124\ \ \ RealNumType\ best\_child\_blength\_split\ =\ 0;}
+\DoxyCodeLine{02125\ \ \ RealNumType\ best\_parent\_lh;}
+\DoxyCodeLine{02126\ \ \ RealNumType\ best\_parent\_blength\_split\ =\ 0;}
+\DoxyCodeLine{02127\ \ \ RealNumType\ best\_root\_blength\ =\ -\/1;}
+\DoxyCodeLine{02128\ \ \ \textcolor{keyword}{const}\ RealNumType\ threshold\_prob\ =\ params-\/>threshold\_prob;}
+\DoxyCodeLine{02129\ \ \ std::unique\_ptr<SeqRegions>\ best\_parent\_regions\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{02130\ \ \ std::unique\_ptr<SeqRegions>\ best\_child\_regions\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{02131\ }
+\DoxyCodeLine{02132\ \ \ assert(selected\_node\_index.getMiniIndex()\ ==\ TOP);}
+\DoxyCodeLine{02133\ \ \ \textcolor{keyword}{const}\ NumSeqsType\ selected\_node\_vec\_index\ =}
+\DoxyCodeLine{02134\ \ \ \ \ \ \ selected\_node\_index.getVectorIndex();}
+\DoxyCodeLine{02135\ \ \ PhyloNode\&\ selected\_node\ =\ nodes[selected\_node\_vec\_index];}
+\DoxyCodeLine{02136\ }
+\DoxyCodeLine{02137\ \ \ \textcolor{comment}{//\ place\ the\ new\ sample\ as\ a\ descendant\ of\ an\ existing\ node}}
+\DoxyCodeLine{02138\ \ \ \textcolor{keywordflow}{if}\ (best\_child\_index.getMiniIndex()\ !=\ UNDEFINED)\ \{}
+\DoxyCodeLine{02139\ \ \ \ \ PhyloNode\&\ best\_child\ =\ nodes[best\_child\_index.getVectorIndex()];}
+\DoxyCodeLine{02140\ \ \ \ \ best\_child\_lh\ =\ best\_down\_lh\_diff;}
+\DoxyCodeLine{02141\ \ \ \ \ assert(best\_child\_index.getMiniIndex()\ ==\ TOP);}
+\DoxyCodeLine{02142\ \ \ \ \ best\_child\_blength\_split\ =}
+\DoxyCodeLine{02143\ \ \ \ \ \ \ \ \ 0.5\ *\ best\_child.getUpperLength();\ \ \textcolor{comment}{//\ best\_child-\/>length;}}
+\DoxyCodeLine{02144\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
+\DoxyCodeLine{02145\ \ \ \ \ \ \ \ \ getPartialLhAtNode(best\_child.getNeighborIndex(}
+\DoxyCodeLine{02146\ \ \ \ \ \ \ \ \ \ \ \ \ TOP));\ \ \textcolor{comment}{//\ best\_child-\/>neighbor-\/>getPartialLhAtNode(aln,}}
+\DoxyCodeLine{02147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02148\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =\ best\_child.getPartialLh(}
+\DoxyCodeLine{02149\ \ \ \ \ \ \ \ \ TOP);\ \ \textcolor{comment}{//\ -\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02150\ \ \ \ \ \textcolor{comment}{//\ best\_child\_regions\ =\ new\ SeqRegions(best\_child-\/>mid\_branch\_lh);}}
+\DoxyCodeLine{02151\ \ \ \ \ \textcolor{comment}{//\ SeqRegions\ best\_child\_mid\_clone\ =}}
+\DoxyCodeLine{02152\ \ \ \ \ \textcolor{comment}{//\ SeqRegions(best\_child.getMidBranchLh());}}
+\DoxyCodeLine{02153\ \ \ \ \ best\_child\_regions\ =}
+\DoxyCodeLine{02154\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr};\ \ \textcolor{comment}{//\ cmaple::make\_unique<SeqRegions>(std::move(best\_child\_mid\_clone));}}
+\DoxyCodeLine{02155\ }
+\DoxyCodeLine{02156\ \ \ \ \ \textcolor{comment}{//\ try\ a\ shorter\ split}}
+\DoxyCodeLine{02157\ \ \ \ \ \textcolor{comment}{//\ tryShorterBranch<\&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(best\_child-\/>length,}}
+\DoxyCodeLine{02158\ \ \ \ \ \textcolor{comment}{//\ best\_child\_regions,\ sample,\ upper\_left\_right\_regions,\ lower\_regions,}}
+\DoxyCodeLine{02159\ \ \ \ \ \textcolor{comment}{//\ best\_child\_lh,\ best\_child\_blength\_split,\ default\_blength,\ true);}}
+\DoxyCodeLine{02160\ \ \ \ \ tryShorterBranch<num\_states,}
+\DoxyCodeLine{02161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
+\DoxyCodeLine{02162\ \ \ \ \ \ \ \ \ best\_child.getUpperLength(),\ best\_child\_regions,\ sample,}
+\DoxyCodeLine{02163\ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_child\_lh,}
+\DoxyCodeLine{02164\ \ \ \ \ \ \ \ \ best\_child\_blength\_split,\ default\_blength,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{02165\ }
+\DoxyCodeLine{02166\ \ \ \ \ \textcolor{comment}{//\ Delay\ cloning\ SeqRegions}}
+\DoxyCodeLine{02167\ \ \ \ \ \textcolor{keywordflow}{if}\ (!best\_child\_regions)\ \{}
+\DoxyCodeLine{02168\ \ \ \ \ \ \ best\_child\_regions\ =}
+\DoxyCodeLine{02169\ \ \ \ \ \ \ \ \ \ \ cmaple::make\_unique<SeqRegions>(SeqRegions(best\_child.getMidBranchLh()));}
+\DoxyCodeLine{02170\ \ \ \ \ \}}
+\DoxyCodeLine{02171\ \ \ \}}
+\DoxyCodeLine{02172\ }
+\DoxyCodeLine{02173\ \ \ \textcolor{comment}{//\ if\ node\ is\ root,\ try\ to\ place\ as\ sibling\ of\ the\ current\ root.}}
+\DoxyCodeLine{02174\ \ \ RealNumType\ old\_root\_lh\ =\ MIN\_NEGATIVE;}
+\DoxyCodeLine{02175\ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ selected\_node\_vec\_index)\ \{}
+\DoxyCodeLine{02176\ \ \ \ \ \textcolor{comment}{/*old\_root\_lh\ =\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
+\DoxyCodeLine{02177\ \textcolor{comment}{\ \ \ \ threshold\_prob)-\/>computeAbsoluteLhAtRoot(num\_states,\ model);\ SeqRegions*}}
+\DoxyCodeLine{02178\ \textcolor{comment}{\ \ \ \ lower\_regions\ =\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
+\DoxyCodeLine{02179\ \textcolor{comment}{\ \ \ \ threshold\_prob);*/}}
+\DoxyCodeLine{02180\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
+\DoxyCodeLine{02181\ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(TOP);}
+\DoxyCodeLine{02182\ \ \ \ \ old\_root\_lh\ =\ lower\_regions-\/>computeAbsoluteLhAtRoot<num\_states>(}
+\DoxyCodeLine{02183\ \ \ \ \ \ \ \ \ model,\ cumulative\_base);}
+\DoxyCodeLine{02184\ }
+\DoxyCodeLine{02185\ \ \ \ \ \textcolor{comment}{//\ merge\ 2\ lower\ vector\ into\ one}}
+\DoxyCodeLine{02186\ \ \ \ \ RealNumType\ new\_root\_lh\ =\ lower\_regions-\/>mergeTwoLowers<num\_states>(}
+\DoxyCodeLine{02187\ \ \ \ \ \ \ \ \ best\_parent\_regions,\ default\_blength,\ *sample,\ default\_blength,\ aln,}
+\DoxyCodeLine{02188\ \ \ \ \ \ \ \ \ model,\ cumulative\_rate,\ threshold\_prob,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{02189\ }
+\DoxyCodeLine{02190\ \ \ \ \ new\_root\_lh\ +=\ best\_parent\_regions-\/>computeAbsoluteLhAtRoot<num\_states>(}
+\DoxyCodeLine{02191\ \ \ \ \ \ \ \ \ model,\ cumulative\_base);}
+\DoxyCodeLine{02192\ \ \ \ \ best\_parent\_lh\ =\ new\_root\_lh;}
+\DoxyCodeLine{02193\ }
+\DoxyCodeLine{02194\ \ \ \ \ \textcolor{comment}{//\ try\ shorter\ branch\ lengths}}
+\DoxyCodeLine{02195\ \ \ \ \ best\_root\_blength\ =\ default\_blength;}
+\DoxyCodeLine{02196\ \ \ \ \ tryShorterBranchAtRoot<num\_states>(sample,\ lower\_regions,}
+\DoxyCodeLine{02197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ best\_parent\_regions,\ best\_root\_blength,}
+\DoxyCodeLine{02198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ best\_parent\_lh,\ default\_blength);}
+\DoxyCodeLine{02199\ }
+\DoxyCodeLine{02200\ \ \ \ \ \textcolor{comment}{//\ update\ best\_parent\_lh\ (taking\ into\ account\ old\_root\_lh)}}
+\DoxyCodeLine{02201\ \ \ \ \ best\_parent\_lh\ -\/=\ old\_root\_lh;}
+\DoxyCodeLine{02202\ \ \ \}}
+\DoxyCodeLine{02203\ \ \ \textcolor{comment}{//\ selected\_node\ is\ not\ root}}
+\DoxyCodeLine{02204\ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{02205\ \ \ \ \ best\_parent\_lh\ =\ best\_up\_lh\_diff;}
+\DoxyCodeLine{02206\ \ \ \ \ best\_parent\_blength\_split\ =}
+\DoxyCodeLine{02207\ \ \ \ \ \ \ \ \ 0.5\ *\ selected\_node.getUpperLength();\ \ \textcolor{comment}{//\ selected\_node-\/>length;}}
+\DoxyCodeLine{02208\ \ \ \ \ \textcolor{comment}{/*SeqRegions*\ upper\_left\_right\_regions\ =}}
+\DoxyCodeLine{02209\ \textcolor{comment}{\ \ \ \ selected\_node-\/>neighbor-\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02210\ \textcolor{comment}{\ \ \ \ SeqRegions*\ lower\_regions\ =\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
+\DoxyCodeLine{02211\ \textcolor{comment}{\ \ \ \ threshold\_prob);\ best\_parent\_regions\ =\ new}}
+\DoxyCodeLine{02212\ \textcolor{comment}{\ \ \ \ SeqRegions(selected\_node-\/>mid\_branch\_lh);*/}}
+\DoxyCodeLine{02213\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
+\DoxyCodeLine{02214\ \ \ \ \ \ \ \ \ getPartialLhAtNode(selected\_node.getNeighborIndex(TOP));}
+\DoxyCodeLine{02215\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
+\DoxyCodeLine{02216\ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(TOP);}
+\DoxyCodeLine{02217\ \ \ \ \ \textcolor{comment}{//\ SeqRegions\ seq\_regions\_clone\ =}}
+\DoxyCodeLine{02218\ \ \ \ \ \textcolor{comment}{//\ SeqRegions(selected\_node.getMidBranchLh());}}
+\DoxyCodeLine{02219\ \ \ \ \ best\_parent\_regions\ =}
+\DoxyCodeLine{02220\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr};\ \ \textcolor{comment}{//\ cmaple::make\_unique<SeqRegions>(std::move(seq\_regions\_clone));}}
+\DoxyCodeLine{02221\ }
+\DoxyCodeLine{02222\ \ \ \ \ \textcolor{comment}{//\ try\ a\ shorter\ split}}
+\DoxyCodeLine{02223\ \ \ \ \ \textcolor{comment}{//\ tryShorterBranch<\&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(selected\_node-\/>length,}}
+\DoxyCodeLine{02224\ \ \ \ \ \textcolor{comment}{//\ best\_parent\_regions,\ sample,\ upper\_left\_right\_regions,\ lower\_regions,}}
+\DoxyCodeLine{02225\ \ \ \ \ \textcolor{comment}{//\ best\_parent\_lh,\ best\_parent\_blength\_split,\ default\_blength,\ false);}}
+\DoxyCodeLine{02226\ \ \ \ \ tryShorterBranch<num\_states,}
+\DoxyCodeLine{02227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
+\DoxyCodeLine{02228\ \ \ \ \ \ \ \ \ selected\_node.getUpperLength(),\ best\_parent\_regions,\ sample,}
+\DoxyCodeLine{02229\ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_parent\_lh,}
+\DoxyCodeLine{02230\ \ \ \ \ \ \ \ \ best\_parent\_blength\_split,\ default\_blength,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{02231\ }
+\DoxyCodeLine{02232\ \ \ \ \ \textcolor{comment}{//\ Delay\ cloning\ SeqRegions}}
+\DoxyCodeLine{02233\ \ \ \ \ \textcolor{keywordflow}{if}\ (!best\_parent\_regions)\ \{}
+\DoxyCodeLine{02234\ \ \ \ \ \ \ best\_parent\_regions\ =\ cmaple::make\_unique<SeqRegions>(}
+\DoxyCodeLine{02235\ \ \ \ \ \ \ \ \ \ \ SeqRegions(selected\_node.getMidBranchLh()));}
+\DoxyCodeLine{02236\ \ \ \ \ \}}
+\DoxyCodeLine{02237\ \ \ \}}
+\DoxyCodeLine{02238\ }
+\DoxyCodeLine{02239\ \ \ \textcolor{comment}{//\ if\ the\ best\ placement\ is\ below\ the\ selected\_node\ =>\ add\ an\ internal\ node}}
+\DoxyCodeLine{02240\ \ \ \textcolor{comment}{//\ below\ the\ selected\_node}}
+\DoxyCodeLine{02241\ \ \ \textcolor{keywordflow}{if}\ (best\_child\_lh\ >=\ best\_parent\_lh\ \&\&\ best\_child\_lh\ >=\ best\_lh\_diff)\ \{}
+\DoxyCodeLine{02242\ \ \ \ \ assert(best\_child\_index.getMiniIndex()\ ==\ TOP);}
+\DoxyCodeLine{02243\ \ \ \ \ PhyloNode\&\ best\_child\ =\ nodes[best\_child\_index.getVectorIndex()];}
+\DoxyCodeLine{02244\ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
+\DoxyCodeLine{02245\ \ \ \ \ \ \ \ \ getPartialLhAtNode(best\_child.getNeighborIndex(}
+\DoxyCodeLine{02246\ \ \ \ \ \ \ \ \ \ \ \ \ TOP));\ \ \textcolor{comment}{//\ best\_child-\/>neighbor-\/>getPartialLhAtNode(aln,}}
+\DoxyCodeLine{02247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02248\ }
+\DoxyCodeLine{02249\ \ \ \ \ \textcolor{comment}{//\ Estimate\ the\ length\ for\ the\ new\ branch}}
+\DoxyCodeLine{02250\ \ \ \ \ RealNumType\ best\_length\ =\ default\_blength;}
+\DoxyCodeLine{02251\ \ \ \ \ estimateLengthNewBranch<}
+\DoxyCodeLine{02252\ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
+\DoxyCodeLine{02253\ \ \ \ \ \ \ \ \ best\_child\_lh,\ best\_child\_regions,\ sample,\ best\_length,\ max\_blength,}
+\DoxyCodeLine{02254\ \ \ \ \ \ \ \ \ min\_blength,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{02255\ }
+\DoxyCodeLine{02256\ \ \ \ \ \textcolor{comment}{//\ create\ new\ internal\ node\ and\ append\ child\ to\ it}}
+\DoxyCodeLine{02257\ \ \ \ \ \textcolor{comment}{//\ connectNewSample2Branch(sample,\ seq\_name\_index,\ best\_child,}}
+\DoxyCodeLine{02258\ \ \ \ \ \textcolor{comment}{//\ best\_child\_blength\_split,\ best\_child-\/>length\ -\/\ best\_child\_blength\_split,}}
+\DoxyCodeLine{02259\ \ \ \ \ \textcolor{comment}{//\ best\_length,\ best\_child\_regions,\ upper\_left\_right\_regions);}}
+\DoxyCodeLine{02260\ \ \ \ \ connectNewSample2Branch<num\_states>(}
+\DoxyCodeLine{02261\ \ \ \ \ \ \ \ \ sample,\ seq\_name\_index,\ best\_child\_index,\ best\_child,}
+\DoxyCodeLine{02262\ \ \ \ \ \ \ \ \ best\_child\_blength\_split,}
+\DoxyCodeLine{02263\ \ \ \ \ \ \ \ \ best\_child.getUpperLength()\ -\/\ best\_child\_blength\_split,\ best\_length,}
+\DoxyCodeLine{02264\ \ \ \ \ \ \ \ \ best\_child\_regions,\ upper\_left\_right\_regions);}
+\DoxyCodeLine{02265\ \ \ \}}
+\DoxyCodeLine{02266\ \ \ \textcolor{comment}{//\ otherwise,\ add\ new\ parent\ to\ the\ selected\_node}}
+\DoxyCodeLine{02267\ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{02268\ \ \ \ \ \textcolor{comment}{//\ new\ parent\ is\ actually\ part\ of\ a\ polytomy\ since\ best\ placement\ is\ exactly}}
+\DoxyCodeLine{02269\ \ \ \ \ \textcolor{comment}{//\ at\ the\ node}}
+\DoxyCodeLine{02270\ \ \ \ \ \textcolor{keywordflow}{if}\ (best\_lh\_diff\ >=\ best\_parent\_lh)\ \{}
+\DoxyCodeLine{02271\ \ \ \ \ \ \ best\_root\_blength\ =\ -\/1;}
+\DoxyCodeLine{02272\ \ \ \ \ \ \ best\_parent\_blength\_split\ =\ -\/1;}
+\DoxyCodeLine{02273\ \ \ \ \ \ \ best\_parent\_lh\ =\ best\_lh\_diff;}
+\DoxyCodeLine{02274\ \ \ \ \ \ \ \textcolor{comment}{/*if\ (best\_parent\_regions)\ delete\ best\_parent\_regions;}}
+\DoxyCodeLine{02275\ \textcolor{comment}{\ \ \ \ \ \ best\_parent\_regions\ =\ NULL;*/}}
+\DoxyCodeLine{02276\ \ \ \ \ \ \ best\_parent\_regions\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{02277\ }
+\DoxyCodeLine{02278\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ selected\_node\_vec\_index)\ \{}
+\DoxyCodeLine{02279\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ selected\_node-\/>getPartialLhAtNode(aln,\ model,}}
+\DoxyCodeLine{02280\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ threshold\_prob)-\/>mergeTwoLowers<num\_states>(best\_parent\_regions,}}
+\DoxyCodeLine{02281\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/1,\ *sample,\ default\_blength,\ aln,\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02282\ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(TOP)-\/>mergeTwoLowers<num\_states>(}
+\DoxyCodeLine{02283\ \ \ \ \ \ \ \ \ \ \ \ \ best\_parent\_regions,\ -\/1,\ *sample,\ default\_blength,\ aln,\ model,}
+\DoxyCodeLine{02284\ \ \ \ \ \ \ \ \ \ \ \ \ cumulative\_rate,\ threshold\_prob);}
+\DoxyCodeLine{02285\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{02286\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ best\_parent\_regions\ =\ new\ SeqRegions(selected\_node-\/>total\_lh);}}
+\DoxyCodeLine{02287\ \ \ \ \ \ \ \ \ SeqRegions\ seq\_regions\_clone\ =\ SeqRegions(selected\_node.getTotalLh());}
+\DoxyCodeLine{02288\ \ \ \ \ \ \ \ \ best\_parent\_regions\ =}
+\DoxyCodeLine{02289\ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::make\_unique<SeqRegions>(std::move(seq\_regions\_clone));}
+\DoxyCodeLine{02290\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{02291\ \ \ \ \ \}}
+\DoxyCodeLine{02292\ }
+\DoxyCodeLine{02293\ \ \ \ \ \textcolor{comment}{//\ add\ parent\ to\ the\ root}}
+\DoxyCodeLine{02294\ \ \ \ \ \textcolor{keywordflow}{if}\ (root\_vector\_index\ ==\ selected\_node\_vec\_index)\ \{}
+\DoxyCodeLine{02295\ \ \ \ \ \ \ \textcolor{comment}{//\ now\ try\ different\ lengths\ for\ right\ branch}}
+\DoxyCodeLine{02296\ \ \ \ \ \ \ best\_parent\_lh\ +=\ old\_root\_lh;}
+\DoxyCodeLine{02297\ \ \ \ \ \ \ RealNumType\ best\_length2\ =\ default\_blength;}
+\DoxyCodeLine{02298\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
+\DoxyCodeLine{02299\ \ \ \ \ \ \ \ \ \ \ selected\_node.getPartialLh(}
+\DoxyCodeLine{02300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TOP);\ \ \textcolor{comment}{//\ -\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02301\ }
+\DoxyCodeLine{02302\ \ \ \ \ \ \ estimateLengthNewBranchAtRoot<num\_states>(}
+\DoxyCodeLine{02303\ \ \ \ \ \ \ \ \ \ \ sample,\ lower\_regions,\ best\_parent\_regions,\ best\_length2,}
+\DoxyCodeLine{02304\ \ \ \ \ \ \ \ \ \ \ best\_parent\_lh,\ best\_root\_blength,\ min\_blength,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{02305\ }
+\DoxyCodeLine{02306\ \ \ \ \ \ \ \textcolor{comment}{//\ update\ best\_parent\_lh\ (taking\ into\ account\ old\_root\_lh)}}
+\DoxyCodeLine{02307\ \ \ \ \ \ \ best\_parent\_lh\ -\/=\ old\_root\_lh;}
+\DoxyCodeLine{02308\ }
+\DoxyCodeLine{02309\ \ \ \ \ \ \ \textcolor{comment}{//\ add\ new\ sample\ to\ a\ new\ root}}
+\DoxyCodeLine{02310\ \ \ \ \ \ \ connectNewSample2Root<num\_states>(}
+\DoxyCodeLine{02311\ \ \ \ \ \ \ \ \ \ \ sample,\ seq\_name\_index,\ selected\_node\_index,\ selected\_node,}
+\DoxyCodeLine{02312\ \ \ \ \ \ \ \ \ \ \ best\_root\_blength,\ best\_length2,\ best\_parent\_regions);}
+\DoxyCodeLine{02313\ \ \ \ \ \}}
+\DoxyCodeLine{02314\ \ \ \ \ \textcolor{comment}{//\ add\ parent\ to\ non-\/root\ node}}
+\DoxyCodeLine{02315\ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{02316\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
+\DoxyCodeLine{02317\ \ \ \ \ \ \ \ \ \ \ getPartialLhAtNode(selected\_node.getNeighborIndex(}
+\DoxyCodeLine{02318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TOP));\ \ \textcolor{comment}{//\ selected\_node-\/>neighbor-\/>getPartialLhAtNode(aln,}}
+\DoxyCodeLine{02319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02320\ }
+\DoxyCodeLine{02321\ \ \ \ \ \ \ \textcolor{comment}{//\ now\ try\ different\ lengths\ for\ the\ new\ branch}}
+\DoxyCodeLine{02322\ \ \ \ \ \ \ RealNumType\ new\_branch\_length\_lh\ =\ best\_parent\_lh;}
+\DoxyCodeLine{02323\ \ \ \ \ \ \ RealNumType\ best\_length\ =\ default\_blength;}
+\DoxyCodeLine{02324\ \ \ \ \ \ \ estimateLengthNewBranch<}
+\DoxyCodeLine{02325\ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
+\DoxyCodeLine{02326\ \ \ \ \ \ \ \ \ \ \ best\_parent\_lh,\ best\_parent\_regions,\ sample,\ best\_length,\ max\_blength,}
+\DoxyCodeLine{02327\ \ \ \ \ \ \ \ \ \ \ min\_blength,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{02328\ }
+\DoxyCodeLine{02329\ \ \ \ \ \ \ \textcolor{comment}{//\ now\ create\ new\ internal\ node\ and\ append\ child\ to\ it}}
+\DoxyCodeLine{02330\ \ \ \ \ \ \ RealNumType\ down\_distance\ =\ best\_parent\_blength\_split;}
+\DoxyCodeLine{02331\ \ \ \ \ \ \ RealNumType\ top\_distance\ =}
+\DoxyCodeLine{02332\ \ \ \ \ \ \ \ \ \ \ selected\_node.getUpperLength()\ -\/}
+\DoxyCodeLine{02333\ \ \ \ \ \ \ \ \ \ \ down\_distance;\ \ \textcolor{comment}{//\ selected\_node-\/>length\ -\/\ down\_distance;}}
+\DoxyCodeLine{02334\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (best\_parent\_blength\_split\ <\ 0)\ \{}
+\DoxyCodeLine{02335\ \ \ \ \ \ \ \ \ down\_distance\ =\ -\/1;}
+\DoxyCodeLine{02336\ \ \ \ \ \ \ \ \ top\_distance\ =}
+\DoxyCodeLine{02337\ \ \ \ \ \ \ \ \ \ \ \ \ selected\_node.getUpperLength();\ \ \textcolor{comment}{//\ selected\_node-\/>length;}}
+\DoxyCodeLine{02338\ }
+\DoxyCodeLine{02339\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*if\ (selected\_node-\/>total\_lh)\ delete\ selected\_node-\/>total\_lh;}}
+\DoxyCodeLine{02340\ \textcolor{comment}{\ \ \ \ \ \ \ \ selected\_node-\/>total\_lh\ =\ NULL;}}
+\DoxyCodeLine{02341\ \textcolor{comment}{}}
+\DoxyCodeLine{02342\ \textcolor{comment}{\ \ \ \ \ \ \ \ if\ (selected\_node-\/>mid\_branch\_lh)\ delete\ selected\_node-\/>mid\_branch\_lh;}}
+\DoxyCodeLine{02343\ \textcolor{comment}{\ \ \ \ \ \ \ \ selected\_node-\/>mid\_branch\_lh\ =\ NULL;*/}}
+\DoxyCodeLine{02344\ \ \ \ \ \ \ \ \ selected\_node.setTotalLh(\textcolor{keyword}{nullptr});}
+\DoxyCodeLine{02345\ \ \ \ \ \ \ \ \ selected\_node.setMidBranchLh(\textcolor{keyword}{nullptr});}
+\DoxyCodeLine{02346\ }
+\DoxyCodeLine{02347\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ node.furtherMidNodes=None}}
+\DoxyCodeLine{02348\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{02349\ \ \ \ \ \ \ connectNewSample2Branch<num\_states>(}
+\DoxyCodeLine{02350\ \ \ \ \ \ \ \ \ \ \ sample,\ seq\_name\_index,\ selected\_node\_index,\ selected\_node,}
+\DoxyCodeLine{02351\ \ \ \ \ \ \ \ \ \ \ top\_distance,\ down\_distance,\ best\_length,\ best\_parent\_regions,}
+\DoxyCodeLine{02352\ \ \ \ \ \ \ \ \ \ \ upper\_left\_right\_regions);}
+\DoxyCodeLine{02353\ \ \ \ \ \}}
+\DoxyCodeLine{02354\ \ \ \}}
+\DoxyCodeLine{02355\ }
+\DoxyCodeLine{02356\ \ \ \textcolor{comment}{//\ delete\ best\_parent\_regions\ and\ best\_child\_regions}}
+\DoxyCodeLine{02357\ \ \ \textcolor{comment}{/*if\ (best\_parent\_regions)}}
+\DoxyCodeLine{02358\ \textcolor{comment}{\ \ \ \ \ \ delete\ best\_parent\_regions;}}
+\DoxyCodeLine{02359\ \textcolor{comment}{\ \ if\ (best\_child\_regions)}}
+\DoxyCodeLine{02360\ \textcolor{comment}{\ \ \ \ \ \ delete\ best\_child\_regions;*/}}
+\DoxyCodeLine{02361\ \}}
+\DoxyCodeLine{02362\ }
+\DoxyCodeLine{02363\ \textcolor{keyword}{template}\ <const\ StateType\ num\_states>}
+\DoxyCodeLine{02364\ \textcolor{keywordtype}{void}\ cmaple::Tree::placeNewSampleMidBranch(\textcolor{keyword}{const}\ Index\&\ selected\_node\_index,}
+\DoxyCodeLine{02365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<SeqRegions>\&\ sample,}
+\DoxyCodeLine{02366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ NumSeqsType\ seq\_name\_index,}
+\DoxyCodeLine{02367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ RealNumType\ best\_lh\_diff)\ \{}
+\DoxyCodeLine{02368\ \ \ \textcolor{comment}{//\ dummy\ variables}}
+\DoxyCodeLine{02369\ \ \ \textcolor{comment}{//\ const\ RealNumType\ threshold\_prob\ =\ params-\/>threshold\_prob;}}
+\DoxyCodeLine{02370\ \ \ std::unique\_ptr<SeqRegions>\ best\_child\_regions\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{02371\ }
+\DoxyCodeLine{02372\ \ \ \textcolor{comment}{//\ selected\_node-\/>neighbor-\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02373\ \ \ \textcolor{comment}{//\ const\ MiniIndex\ seleted\_node\_mini\_index\ =}}
+\DoxyCodeLine{02374\ \ \ \textcolor{comment}{//\ selected\_node\_index.getMiniIndex();}}
+\DoxyCodeLine{02375\ \ \ assert(selected\_node\_index.getMiniIndex()\ ==\ TOP);}
+\DoxyCodeLine{02376\ \ \ PhyloNode\&\ selected\_node\ =\ nodes[selected\_node\_index.getVectorIndex()];}
+\DoxyCodeLine{02377\ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ upper\_left\_right\_regions\ =}
+\DoxyCodeLine{02378\ \ \ \ \ \ \ getPartialLhAtNode(selected\_node.getNeighborIndex(TOP));}
+\DoxyCodeLine{02379\ \ \ RealNumType\ best\_split\_lh\ =\ best\_lh\_diff;}
+\DoxyCodeLine{02380\ \ \ \textcolor{keyword}{const}\ RealNumType\ selected\_node\_blength\ =\ selected\_node.getUpperLength();}
+\DoxyCodeLine{02381\ \ \ RealNumType\ best\_branch\_length\_split\ =\ 0.5\ *\ selected\_node\_blength;}
+\DoxyCodeLine{02382\ \ \ best\_child\_regions\ =}
+\DoxyCodeLine{02383\ \ \ \ \ \ \ \textcolor{keyword}{nullptr};\ \ \textcolor{comment}{//\ cmaple::make\_unique<SeqRegions>(SeqRegions(selected\_node.getMidBranchLh()));}}
+\DoxyCodeLine{02384\ \ \ \textcolor{comment}{//\ selected\_node-\/>getPartialLhAtNode(aln,\ model,\ threshold\_prob);}}
+\DoxyCodeLine{02385\ \ \ \textcolor{keyword}{const}\ std::unique\_ptr<SeqRegions>\&\ lower\_regions\ =}
+\DoxyCodeLine{02386\ \ \ \ \ \ \ selected\_node.getPartialLh(TOP);}
+\DoxyCodeLine{02387\ }
+\DoxyCodeLine{02388\ \ \ \textcolor{comment}{//\ try\ different\ positions\ on\ the\ existing\ branch}}
+\DoxyCodeLine{02389\ \ \ \textcolor{keywordtype}{bool}\ found\_new\_split\ =}
+\DoxyCodeLine{02390\ \ \ \ \ \ \ tryShorterBranch<num\_states,}
+\DoxyCodeLine{02391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
+\DoxyCodeLine{02392\ \ \ \ \ \ \ \ \ \ \ selected\_node\_blength,\ best\_child\_regions,\ sample,}
+\DoxyCodeLine{02393\ \ \ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_split\_lh,}
+\DoxyCodeLine{02394\ \ \ \ \ \ \ \ \ \ \ best\_branch\_length\_split,\ default\_blength,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{02395\ }
+\DoxyCodeLine{02396\ \ \ \textcolor{keywordflow}{if}\ (!found\_new\_split)\ \{}
+\DoxyCodeLine{02397\ \ \ \ \ \textcolor{comment}{//\ try\ on\ the\ second\ branch}}
+\DoxyCodeLine{02398\ \ \ \ \ found\_new\_split\ =\ tryShorterBranch<}
+\DoxyCodeLine{02399\ \ \ \ \ \ \ \ \ num\_states,\ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
+\DoxyCodeLine{02400\ \ \ \ \ \ \ \ \ selected\_node\_blength,\ best\_child\_regions,\ sample,}
+\DoxyCodeLine{02401\ \ \ \ \ \ \ \ \ upper\_left\_right\_regions,\ lower\_regions,\ best\_split\_lh,}
+\DoxyCodeLine{02402\ \ \ \ \ \ \ \ \ best\_branch\_length\_split,\ default\_blength,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{02403\ }
+\DoxyCodeLine{02404\ \ \ \ \ \textcolor{keywordflow}{if}\ (found\_new\_split)\ \{}
+\DoxyCodeLine{02405\ \ \ \ \ \ \ best\_branch\_length\_split\ =}
+\DoxyCodeLine{02406\ \ \ \ \ \ \ \ \ \ \ selected\_node\_blength\ -\/\ best\_branch\_length\_split;}
+\DoxyCodeLine{02407\ \ \ \ \ \}}
+\DoxyCodeLine{02408\ \ \ \}}
+\DoxyCodeLine{02409\ }
+\DoxyCodeLine{02410\ \ \ \textcolor{comment}{//\ Delay\ cloning\ SeqRegions}}
+\DoxyCodeLine{02411\ \ \ \textcolor{keywordflow}{if}\ (!best\_child\_regions)\ \{}
+\DoxyCodeLine{02412\ \ \ \ \ best\_child\_regions\ =\ cmaple::make\_unique<SeqRegions>(}
+\DoxyCodeLine{02413\ \ \ \ \ \ \ \ \ SeqRegions(selected\_node.getMidBranchLh()));}
+\DoxyCodeLine{02414\ \ \ \}}
+\DoxyCodeLine{02415\ }
+\DoxyCodeLine{02416\ \ \ \textcolor{comment}{//\ now\ try\ different\ lengths\ for\ the\ new\ branch}}
+\DoxyCodeLine{02417\ \ \ RealNumType\ best\_blength\ =\ default\_blength;}
+\DoxyCodeLine{02418\ \ \ estimateLengthNewBranch<}
+\DoxyCodeLine{02419\ \ \ \ \ \ \ \&cmaple::Tree::calculateSamplePlacementCost<num\_states>>(}
+\DoxyCodeLine{02420\ \ \ \ \ \ \ best\_split\_lh,\ best\_child\_regions,\ sample,\ best\_blength,\ max\_blength,}
+\DoxyCodeLine{02421\ \ \ \ \ \ \ min\_blength,\ \textcolor{keyword}{false});}
+\DoxyCodeLine{02422\ }
+\DoxyCodeLine{02423\ \ \ \textcolor{comment}{//\ create\ new\ internal\ node\ and\ append\ child\ to\ it}}
+\DoxyCodeLine{02424\ \ \ connectNewSample2Branch<num\_states>(}
+\DoxyCodeLine{02425\ \ \ \ \ \ \ sample,\ seq\_name\_index,\ selected\_node\_index,\ selected\_node,}
+\DoxyCodeLine{02426\ \ \ \ \ \ \ best\_branch\_length\_split,}
+\DoxyCodeLine{02427\ \ \ \ \ \ \ selected\_node\_blength\ -\/\ best\_branch\_length\_split,\ best\_blength,}
+\DoxyCodeLine{02428\ \ \ \ \ \ \ best\_child\_regions,\ upper\_left\_right\_regions);}
+\DoxyCodeLine{02429\ \}}
+\DoxyCodeLine{02431\ \}\ \ \textcolor{comment}{//\ namespace\ cmaple}}
 
 \end{DoxyCode}

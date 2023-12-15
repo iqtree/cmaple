@@ -104,8 +104,8 @@ Update CMakeList to include CMAPLE</h2>
     include_directories("${PROJECT_BINARY_DIR}/cmaple")
 
     # Step 4: Add linking libraries
-    target_link_libraries(iqtree2 main maple cmaple_alignment)
-    target_link_libraries(iqtree2-aa main maple-aa cmaple_alignment-aa)
+    target_link_libraries(iqtree2 main maple)
+    target_link_libraries(iqtree2-aa main maple-aa)
 </pre> <h2><a class="anchor" id="autotoc_md4"></a>
 An example of APIs usage</h2>
 <pre class="fragment">    #include “cmaple.h”

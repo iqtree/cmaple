@@ -37,8 +37,8 @@ In your project directory, run
     	include_directories("${PROJECT_BINARY_DIR}/cmaple")
     	
     	# Step 4: Add linking libraries
-    	target_link_libraries(iqtree2 main maple cmaple_alignment)
-    	target_link_libraries(iqtree2-aa main maple-aa cmaple_alignment-aa)
+    	target_link_libraries(iqtree2 main maple)
+    	target_link_libraries(iqtree2-aa main maple-aa)
 
 ## An example of APIs usage
 

@@ -30,8 +30,8 @@ In your project directory, run \begin{DoxyVerb}    git submodule add https://git
     include_directories("${PROJECT_BINARY_DIR}/cmaple")
 
     # Step 4: Add linking libraries
-    target_link_libraries(iqtree2 main maple cmaple_alignment)
-    target_link_libraries(iqtree2-aa main maple-aa cmaple_alignment-aa)
+    target_link_libraries(iqtree2 main maple)
+    target_link_libraries(iqtree2-aa main maple-aa)
 \end{DoxyVerb}
  \hypertarget{index_autotoc_md4}{}\doxysubsection{\texorpdfstring{An example of APIs usage}{An example of APIs usage}}\label{index_autotoc_md4}
 \begin{DoxyVerb}    #include “cmaple.h”
