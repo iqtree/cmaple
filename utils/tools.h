@@ -318,8 +318,8 @@ struct Index {
   }
 
  private:
-  NumSeqsType vector_index_ : 30 {0};
-  MiniIndex mini_index_ : 2 {UNDEFINED};
+  NumSeqsType vector_index_ : 30;
+  MiniIndex mini_index_ : 2;
 };
 /*! \endcond */
 /*--------------------------- NODE's INDEX -----------------------------------*/
