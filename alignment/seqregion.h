@@ -86,7 +86,10 @@ class SeqRegion : public Mutation {
   /**
    Get the likelihood of a state
    */
-  cmaple::RealNumType getLH(int pos) const { return (*likelihood)[pos]; }
+  cmaple::RealNumType getLH(int pos) const {
+      assert(type == TYPE_O);
+      return (*likelihood)[pos];
+  }
 
   /**
    *  Region constructor
@@ -163,13 +166,6 @@ class SeqRegion : public Mutation {
    *  Region destructor
    */
   ~SeqRegion() = default;
-
-  /**
-   For testing only, export codes to re-contruct this seqregions
-   */
-  void writeConstructionCodes(const std::string regions_name,
-                              std::ofstream& out,
-                              const cmaple::StateType num_states) const;
 
   /**
    Compare two regions

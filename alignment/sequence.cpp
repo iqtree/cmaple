@@ -20,6 +20,9 @@ std::unique_ptr<SeqRegions> cmaple::Sequence::getLowerLhVector(
     const PositionType sequence_length,
     const StateType num_states,
     const cmaple::SeqRegion::SeqType seq_type) {
+  assert(sequence_length > 0);
+  assert(num_states > 0);
+    
   std::unique_ptr<SeqRegions> regions =
       cmaple::make_unique<SeqRegions>(SeqRegions());
   regions->reserve(size() *

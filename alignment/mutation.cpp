@@ -20,6 +20,9 @@ cmaple::Mutation::Mutation(StateType n_type, PositionType n_position, LengthType
    position(n_position),
    length_(n_length)
 {
+  assert(n_length > 0);
+  assert(n_position >= 0);
+  
   // validate the data
   if (n_length > 1 && type != TYPE_N && type != TYPE_DEL && type != TYPE_R) {
     throw std::invalid_argument("Invalid mutation. Only mutation type N, -, or "

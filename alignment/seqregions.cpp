@@ -12,6 +12,8 @@
 using namespace cmaple;
 
 cmaple::SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions) {
+  assert(n_regions);
+    
   if (!n_regions) {
     throw std::invalid_argument("n_regions is null");
   }
@@ -26,6 +28,10 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
                                            PositionType seq_length,
                                            const Alignment* aln) const -> int {
   assert(seq_length > 0);
+  assert(sequence2.size() > 0);
+  assert(size() > 0);
+  assert(aln);
+  assert(aln->ref_seq.size() == seq_length);
 
   // init dummy variables
   bool seq1_more_info = false;
@@ -110,6 +116,11 @@ auto cmaple::SeqRegions::areDiffFrom(
     PositionType seq_length,
     StateType num_states,
     const Params& params) const -> bool {
+
+  assert(seq_length > 0);
+  assert(num_states > 0);
+  assert(size() > 0);
+        
   if (this->size() != regions2->size()) {
     return true;
   }
@@ -192,6 +203,10 @@ auto cmaple::SeqRegions::countSharedSegments(const SeqRegions& seq2_regions,
   PositionType pos{};
   size_t iseq1 = 0;
   size_t iseq2 = 0;
+        
+  assert(seq_length > 0);
+  assert(seq2_regions.size() > 0);
+  assert(size() > 0);
 
   while (pos < seq_length) {
     PositionType end_pos{};
@@ -239,6 +254,8 @@ void cmaple::merge_RACGT_N(const SeqRegion& reg_n,
                            const PositionType end_pos,
                            const RealNumType threshold_prob,
                            SeqRegions& merged_regions) {
+  assert(reg_n.type != TYPE_N && reg_n.type != TYPE_O);
+    
   // todo rewrite
   RealNumType plength_observation2node = -1;
   RealNumType plength_observation2root = -1;
@@ -277,6 +294,9 @@ auto cmaple::merge_Zero_Distance(const SeqRegion& seq1_region,
                                  const StateType num_states,
                                  std::unique_ptr<SeqRegions>& merged_regions)
     -> bool {
+
+  assert(num_states > 0);
+  
   // due to 0 distance, the entry will be of same type as entry2
   if ((seq2_region.type < num_states || seq2_region.type == TYPE_R) &&
       total_blength_2 <= 0) {
@@ -311,6 +331,8 @@ void cmaple::merge_N_O_TwoLowers(const SeqRegion& seq2_region,
                                  const PositionType end_pos,
                                  const RealNumType plength2,
                                  SeqRegions& merged_regions) {
+  assert(seq2_region.type == TYPE_O);
+  
   // add merged region into merged_regions
   SeqRegion new_region = SeqRegion::clone(seq2_region);
   new_region.position = end_pos;
@@ -331,6 +353,8 @@ void cmaple::merge_N_RACGT_TwoLowers(const SeqRegion& seq2_region,
                                      const RealNumType plength2,
                                      const RealNumType threshold_prob,
                                      SeqRegions& merged_regions) {
+  assert(seq2_region.type != TYPE_N && seq2_region.type != TYPE_O);
+  
   RealNumType plength_observation2node = -1;
 
   if (seq2_region.plength_observation2node >= 0) {
@@ -362,6 +386,10 @@ void cmaple::merge_identicalRACGT_TwoLowers(
     RealNumType& log_lh,
     SeqRegions& merged_regions,
     const bool return_log_lh) {
+  assert(seq1_region.type != TYPE_N && seq1_region.type != TYPE_O);
+  assert(model);
+  assert(cumulative_rate);
+    
   // add a new region and try to merge consecutive R regions together
   cmaple::SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type,
                                                -1, -1, end_pos, threshold_prob);
@@ -396,6 +424,10 @@ void cmaple::calSiteLhs_identicalRACGT(std::vector<RealNumType>&site_lh_contribu
                                const RealNumType* const cumulative_rate,
                                RealNumType& log_lh,
                                SeqRegions& merged_regions) {
+  assert(seq1_region.type != TYPE_N && seq1_region.type != TYPE_O);
+  assert(model);
+  assert(cumulative_rate);
+    
   // add a new region and try to merge consecutive R regions together
   cmaple::SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type,
                                                -1, -1, end_pos, threshold_prob);
@@ -443,18 +475,6 @@ auto cmaple::SeqRegions::operator==(const SeqRegions& seqregions_1) const
   return true;
 }
 
-void cmaple::SeqRegions::writeConstructionCodes(
-    const std::string regions_name,
-    std::ofstream& out,
-    const StateType num_states) const {
-  const SeqRegions& regions = *this;
-
-  // browse regions one by one to export the construction codes
-  for (const SeqRegion& region : regions) {
-    region.writeConstructionCodes(regions_name, out, num_states);
-  }
-}
-
 void cmaple::SeqRegions::addNonConsecutiveRRegion(
     SeqRegions& regions,
     const cmaple::StateType new_region_type,
@@ -491,6 +511,7 @@ auto cmaple::SeqRegions::simplifyO(cmaple::RealNumType* const partial_lh,
     -> cmaple::StateType {
   // dummy variables
   assert(partial_lh);
+  assert(num_states > 0);
   cmaple::RealNumType max_prob = 0;
   cmaple::StateType max_index = 0;
   cmaple::StateType high_prob_count = 0;
@@ -532,6 +553,8 @@ void cmaple::SeqRegions::addSimplifiedO(
     const Alignment* aln,
     const cmaple::RealNumType threshold_prob,
     SeqRegions& merged_regions) {
+  assert(aln);
+    
   cmaple::StateType new_state = SeqRegions::simplifyO(
       new_lh.data(), aln->ref_seq[end_pos], aln->num_states, threshold_prob);
 

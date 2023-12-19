@@ -10,7 +10,7 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model,
     : model_base(nullptr) {
   cmaple::ModelBase::SubModel n_sub_model = sub_model;
   cmaple::SeqRegion::SeqType n_seqtype = seqtype;
-
+        
   // Make sure either sub_model or n_seqtype is non-auto
   if (n_sub_model == ModelBase::DEFAULT && n_seqtype == SeqRegion::SEQ_AUTO) {
     throw std::invalid_argument("Either sub_model or seqtype must be non-AUTO");
