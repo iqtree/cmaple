@@ -1885,6 +1885,10 @@ std::istream& operator>>(std::istream& in_stream, cmaple::Tree& tree);
 /*! \cond PRIVATE */
 template <const StateType num_states>
 void cmaple::Tree::refreshAllLhs(bool avoid_using_upper_lr_lhs) {
+  assert(aln);
+  assert(model);
+  assert(cumulative_rate);
+    
   // 1. update all the lower lhs along the tree
   if (avoid_using_upper_lr_lhs) {
     performDFS<&cmaple::Tree::updateLowerLhAvoidUsingUpperLRLh<num_states>>();
@@ -1898,6 +1902,11 @@ void cmaple::Tree::refreshAllLhs(bool avoid_using_upper_lr_lhs) {
 
 template <const StateType num_states>
 RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
+  assert(aln);
+  assert(model);
+  assert(cumulative_rate);
+  assert(nodes.size() > 0);
+    
   // start from the root
   std::stack<Index> node_stack;
   node_stack.push(Index(root_vector_index, TOP));
@@ -1984,6 +1993,9 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
 
 template <const StateType num_states>
 void cmaple::Tree::updateModelParams() {
+  assert(aln);
+  assert(model);
+    
   // perform a DFS -> at each leaf, update the pesudoCount of the model based on
   // the sequence of that leaf
   performDFSAtLeave<&cmaple::Tree::updatePesudoCountModel<num_states>>();
@@ -2005,6 +2017,12 @@ void cmaple::Tree::seekSamplePlacement(
     RealNumType& best_up_lh_diff,
     RealNumType& best_down_lh_diff,
     Index& best_child_index) {
+  assert(sample_regions && sample_regions->size() > 0);
+  assert(seq_name_index >= 0);
+  assert(aln);
+  assert(model);
+  assert(cumulative_rate);
+    
   // init variables
   // output variables
   selected_node_index = start_node_index;
@@ -2130,6 +2148,12 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
   std::unique_ptr<SeqRegions> best_child_regions = nullptr;
 
   assert(selected_node_index.getMiniIndex() == TOP);
+  assert(sample && sample->size() > 0);
+  assert(seq_name_index >= 0);
+  assert(aln);
+  assert(model);
+  assert(cumulative_rate);
+    
   const NumSeqsType selected_node_vec_index =
       selected_node_index.getVectorIndex();
   PhyloNode& selected_node = nodes[selected_node_vec_index];
@@ -2373,6 +2397,12 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
   // const MiniIndex seleted_node_mini_index =
   // selected_node_index.getMiniIndex();
   assert(selected_node_index.getMiniIndex() == TOP);
+  assert(sample && sample->size() > 0);
+  assert(seq_name_index >= 0);
+  assert(aln);
+  assert(model);
+  assert(cumulative_rate);
+    
   PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
   const std::unique_ptr<SeqRegions>& upper_left_right_regions =
       getPartialLhAtNode(selected_node.getNeighborIndex(TOP));

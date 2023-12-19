@@ -361,6 +361,9 @@ void cmaple::PhyloNode::computeTotalLhAtNode(
     const RealNumType threshold_prob,
     const bool is_root,
     const RealNumType blength) {
+  assert(aln);
+  assert(model);
+    
   // if node is root
   if (is_root) {
     getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(total_lh, model,
