@@ -108,11 +108,10 @@ void cmaple::Alignment::read(const std::string& aln_filename,
                              const std::string& ref_seq,
                              const InputType format,
                              const cmaple::SeqRegion::SeqType seqtype) {
-  assert(aln_filename.length() > 0);
-    
   if (!aln_filename.length()) {
     throw std::invalid_argument("Please specify an alignnment file");
   }
+  assert(aln_filename.length() > 0);
 
   // Create a stream from the input alignment
   ifstream aln_stream;
@@ -161,16 +160,16 @@ void cmaple::Alignment::write(std::ostream& aln_stream,
 void cmaple::Alignment::write(const std::string& aln_filename,
                               const InputType& format,
                               const bool overwrite) {
-  assert(aln_filename.length() > 0);
-  assert(data.size() > 0);
-  assert(format != IN_AUTO && format != IN_UNKNOWN);
-    
   // Validate the input
   if (!aln_filename.length()) {
     throw std::invalid_argument(
         "Please specify a filename to output the alignment");
   }
 
+  assert(aln_filename.length() > 0);
+  assert(data.size() > 0);
+  assert(format != IN_AUTO && format != IN_UNKNOWN);
+    
   // Check whether the output file already exists
   if (!overwrite && fileExists(aln_filename)) {
     throw ios::failure(
@@ -530,9 +529,6 @@ auto cmaple::Alignment::generateRef(StrVector& sequences) -> string {
 
 auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
                                    const std::string& ref_name) -> string {
-  assert(ref_filename.length() > 0);
-  assert(ref_name.length() > 0);
-    
   if (!fileExists(ref_filename)) {
     throw ios::failure("File not found " + ref_filename);
   }
@@ -540,6 +536,8 @@ auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
     throw std::invalid_argument(
         "Please specify the name of the reference sequence!");
   }
+  assert(ref_filename.length() > 0);
+  assert(ref_name.length() > 0);
 
   // convert ref_name to uppercase
   std::string ref_name_upcase(ref_name);

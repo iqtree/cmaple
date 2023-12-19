@@ -12,11 +12,12 @@
 using namespace cmaple;
 
 cmaple::SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions) {
-  assert(n_regions);
-    
   if (!n_regions) {
     throw std::invalid_argument("n_regions is null");
   }
+    
+  assert(n_regions);
+    
   // clone regions one by one
   reserve(n_regions->size());
   for (const auto& region : *n_regions) {
@@ -203,10 +204,6 @@ auto cmaple::SeqRegions::countSharedSegments(const SeqRegions& seq2_regions,
   PositionType pos{};
   size_t iseq1 = 0;
   size_t iseq2 = 0;
-        
-  assert(seq_length > 0);
-  assert(seq2_regions.size() > 0);
-  assert(size() > 0);
 
   while (pos < seq_length) {
     PositionType end_pos{};
