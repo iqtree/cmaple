@@ -13,6 +13,16 @@ cmaple::ModelDNA::ModelDNA(const cmaple::ModelBase::SubModel sub_model)
 }
 
 void cmaple::ModelDNA::initMutationMatJC() {
+  assert(num_states_ == 4);
+  assert(root_freqs);
+  assert(diagonal_mut_mat);
+  assert(inverse_root_freqs);
+  assert(root_log_freqs);
+  assert(mutation_mat);
+  assert(transposed_mut_mat);
+  assert(freqi_freqj_qij);
+  assert(freq_j_transposed_ij);
+    
   // update root_freqs
   const RealNumType log_freq = log(0.25);
 
@@ -62,6 +72,16 @@ void cmaple::ModelDNA::initMutationMatJC() {
 void cmaple::ModelDNA::initMutationMat() {
   // init variable pointers
   initPointers();
+    
+  assert(row_index);
+  assert(root_freqs);
+  assert(root_log_freqs);
+  assert(inverse_root_freqs);
+  assert(mutation_mat);
+  assert(transposed_mut_mat);
+  assert(diagonal_mut_mat);
+  assert(freqi_freqj_qij);
+  assert(freq_j_transposed_ij);
 
   // for JC model
   if (sub_model == JC) {
@@ -92,6 +112,8 @@ void cmaple::ModelDNA::extractRootFreqs(const Alignment* aln) {
 
 auto cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment* aln)
     -> bool {
+  assert(aln);
+        
   // don't update JC model parameters
   if (!fixed_params && sub_model != JC) {
     return updateMutationMatEmpiricalTemplate<4>(aln);
@@ -104,6 +126,10 @@ auto cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment* aln)
 void cmaple::ModelDNA::updatePesudoCount(const Alignment* aln,
                                          const SeqRegions& regions1,
                                          const SeqRegions& regions2) {
+  assert(aln);
+  assert(regions1.size() > 0);
+  assert(regions2.size() > 0);
+    
   if (!fixed_params && sub_model != JC) {
     ModelBase::updatePesudoCount(aln, regions1, regions2);
   }

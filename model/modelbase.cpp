@@ -139,6 +139,8 @@ void cmaple::ModelBase::init() {
 }
 
 void cmaple::ModelBase::extractRefInfo(const Alignment* aln) {
+  assert(aln);
+    
   if (!fixed_params) {
     // init variables
     if (!root_freqs) {
@@ -157,6 +159,8 @@ void cmaple::ModelBase::extractRefInfo(const Alignment* aln) {
 }
 
 void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
+  assert(aln);
+    
   // init variables
   const vector<StateType>& ref_seq = aln->ref_seq;
   if (!ref_seq.size()) {
@@ -386,6 +390,9 @@ void cmaple::ModelBase::initPointers() {
 }
 
 void cmaple::ModelBase::updateMutMatbyMutCount() {
+  assert(pseu_mutation_count);
+  assert(mutation_mat);
+    
   RealNumType* pseu_mutation_count_row = pseu_mutation_count;
   RealNumType* mutation_mat_row = mutation_mat;
 
@@ -443,6 +450,10 @@ void cmaple::ModelBase::updateMutMatbyMutCount() {
 void cmaple::ModelBase::updatePesudoCount(const Alignment* aln,
                                           const SeqRegions& regions1,
                                           const SeqRegions& regions2) {
+  assert(aln);
+  assert(regions1.size() > 0);
+  assert(regions2.size() > 0);
+    
   if (!fixed_params) {
     // init variables
     PositionType pos = 0;

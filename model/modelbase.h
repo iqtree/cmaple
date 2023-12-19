@@ -377,6 +377,7 @@ void cmaple::ModelBase::updateMutationMat() {
 template <StateType num_states>
 auto cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
     -> bool {
+  assert(aln);
   bool update = false;
 
   if (!fixed_params) {

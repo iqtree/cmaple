@@ -35,6 +35,16 @@ cmaple::ModelAA::~ModelAA() {
 void cmaple::ModelAA::initMutationMat() {
   // init variable pointers
   initPointers();
+  
+  assert(row_index);
+  assert(root_freqs);
+  assert(root_log_freqs);
+  assert(inverse_root_freqs);
+  assert(mutation_mat);
+  assert(transposed_mut_mat);
+  assert(diagonal_mut_mat);
+  assert(freqi_freqj_qij);
+  assert(freq_j_transposed_ij);
 
   // Get the model_name
   string name_upper = getModelName();
@@ -208,6 +218,9 @@ void cmaple::ModelAA::readRates(istream& in, const bool is_reversible) {
 }
 
 void cmaple::ModelAA::rescaleLowerDiagonalRates() {
+  assert(mutation_mat);
+  assert(num_states_ > 0);
+    
   RealNumType max_rate = 0.0;
 
   RealNumType* mutation_mat_row = mutation_mat;
@@ -232,6 +245,9 @@ void cmaple::ModelAA::rescaleLowerDiagonalRates() {
 }
 
 void cmaple::ModelAA::rescaleAllRates() {
+  assert(mutation_mat);
+  assert(num_states_ > 0);
+    
   RealNumType max_rate = 0.0;
 
   RealNumType* mutation_mat_row = mutation_mat;
@@ -255,6 +271,8 @@ void cmaple::ModelAA::rescaleAllRates() {
 }
 
 auto cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln) -> bool {
+  assert(aln);
+    
   // only handle GTR20 or NONREV
   if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV)) {
     return updateMutationMatEmpiricalTemplate<20>(aln);
@@ -267,6 +285,10 @@ auto cmaple::ModelAA::updateMutationMatEmpirical(const Alignment* aln) -> bool {
 void cmaple::ModelAA::updatePesudoCount(const Alignment* aln,
                                         const SeqRegions& regions1,
                                         const SeqRegions& regions2) {
+  assert(aln);
+  assert(regions1.size() > 0);
+  assert(regions2.size() > 0);
+    
   // only handle GTR20 or NONREV
   if (!fixed_params && (sub_model == GTR20 || sub_model == NONREV)) {
     ModelBase::updatePesudoCount(aln, regions1, regions2);
@@ -274,6 +296,8 @@ void cmaple::ModelAA::updatePesudoCount(const Alignment* aln,
 }
 
 void cmaple::ModelAA::extractRootFreqs(const Alignment* aln) {
+  assert(aln);
+    
   // only extract root freqs for GTR20 or NONREV
   if (sub_model == GTR20 || sub_model == NONREV) {
     ModelBase::extractRootFreqs(aln);
