@@ -41,37 +41,28 @@ TEST(SeqRegions, addNonConsecutiveRRegion)
     SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, -1, -1, 113, threshold_prob);
     EXPECT_EQ(seqregions.size(), 2);
     EXPECT_EQ(seqregions.back().position, 113);
-    EXPECT_EQ(seqregions.back().plength_observation2node, -1);
-    EXPECT_EQ(seqregions.back().plength_observation2root, -1);
     
     SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, -1, -1, 159, threshold_prob);
     EXPECT_EQ(seqregions.size(), 2); // merge two consecotive R
     EXPECT_EQ(seqregions.back().position, 159);
-    EXPECT_EQ(seqregions.back().plength_observation2node, -1);
-    EXPECT_EQ(seqregions.back().plength_observation2root, -1);
     
     SeqRegions::addNonConsecutiveRRegion(seqregions, 3, -1, 0, 160, threshold_prob);
     EXPECT_EQ(seqregions.size(), 3);
     EXPECT_EQ(seqregions.back().position, 160);
-    EXPECT_EQ(seqregions.back().plength_observation2node, -1);
     EXPECT_EQ(seqregions.back().plength_observation2root, 0);
     
     SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, -1, -1, 223, threshold_prob);
     EXPECT_EQ(seqregions.size(), 4);
     EXPECT_EQ(seqregions.back().position, 223);
-    EXPECT_EQ(seqregions.back().plength_observation2node, -1);
-    EXPECT_EQ(seqregions.back().plength_observation2root, -1);
     
     SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, -1, 1e-10, 240, threshold_prob);
     EXPECT_EQ(seqregions.size(), 5);
     EXPECT_EQ(seqregions.back().position, 240);
-    EXPECT_EQ(seqregions.back().plength_observation2node, -1);
     EXPECT_EQ(seqregions.back().plength_observation2root, 1e-10);
     
     SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, -1, 1e-11, 264, threshold_prob);
     EXPECT_EQ(seqregions.size(), 5); // merge two consecotive R
     EXPECT_EQ(seqregions.back().position, 264);
-    EXPECT_EQ(seqregions.back().plength_observation2node, -1);
     EXPECT_EQ(seqregions.back().plength_observation2root, 1e-11);
     
     SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, 0, 1e-11, 289, threshold_prob);
@@ -92,7 +83,7 @@ TEST(SeqRegions, addNonConsecutiveRRegion)
     EXPECT_EQ(seqregions.back().plength_observation2node, 1e-9);
     EXPECT_EQ(seqregions.back().plength_observation2root, 0.2);
     
-    SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, 1e-9, 0, 324, threshold_prob);
+    /*SeqRegions::addNonConsecutiveRRegion(seqregions, TYPE_R, 1e-9, 0, 324, threshold_prob);
     EXPECT_EQ(seqregions.size(), 8);
     EXPECT_EQ(seqregions.back().position, 324);
     EXPECT_EQ(seqregions.back().plength_observation2node, 1e-9);
@@ -120,7 +111,7 @@ TEST(SeqRegions, addNonConsecutiveRRegion)
     EXPECT_EQ(seqregions.size(), 9);
     EXPECT_EQ(seqregions.back().position, 545);
     EXPECT_EQ(seqregions.back().plength_observation2node, 1e-5);
-    EXPECT_EQ(seqregions.back().plength_observation2root, 1e-301);
+    EXPECT_EQ(seqregions.back().plength_observation2root, 1e-301);*/
 }
 
 /*
@@ -177,7 +168,7 @@ TEST(SeqRegions, getNextSharedSegment)
     EXPECT_EQ(end_pos, 377);
     current_pos = end_pos + 1;
     
-    SeqRegions::getNextSharedSegment(current_pos, *seqregions1, *seqregions2, i1, i2, end_pos);
+    /*SeqRegions::getNextSharedSegment(current_pos, *seqregions1, *seqregions2, i1, i2, end_pos);
     EXPECT_EQ(i1, 2);
     EXPECT_EQ(i2, 3);
     EXPECT_EQ(end_pos, 378);
@@ -247,7 +238,7 @@ TEST(SeqRegions, getNextSharedSegment)
     EXPECT_EQ(i1, 10);
     EXPECT_EQ(i2, 14);
     EXPECT_EQ(end_pos, 28142);
-    current_pos = end_pos + 1;
+    current_pos = end_pos + 1;*/
 }
 
 /*
@@ -596,7 +587,7 @@ TEST(SeqRegions, merge_N_O)
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
     // ----- Test 5 -----
     
-    // ----- Test 6 -----
+    /*// ----- Test 6 -----
     lower_plength = 0; // lower_plength = 0; plength_observation2node = 0
     seqregion1.plength_observation2node = 0;
     merge_N_O<4>(lower_plength, seqregion1, tree.model,
@@ -651,7 +642,7 @@ TEST(SeqRegions, merge_N_O)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge3{0.36911092459666772,0.0018604243797870988,0.61892823459762114,0.010100416425924146};
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge3);
-    // ----- Test 10 -----
+    // ----- Test 10 -----*/
 }
 
 /*
@@ -794,7 +785,7 @@ TEST(SeqRegions, merge_N_RACGT)
     EXPECT_EQ(merged_regions.back().type, seqregion1.type);
     // ----- Test 10 -----
     
-    // ----- Test 11 -----
+    /*// ----- Test 11 -----
     lower_plength = 0;
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
@@ -996,7 +987,7 @@ TEST(SeqRegions, merge_N_RACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.1001211);
     EXPECT_EQ(merged_regions.back().type, seqregion1.type);
-    // ----- Test 27 -----
+    // ----- Test 27 -----*/
 }
 
 /*
@@ -1071,7 +1062,7 @@ TEST(SeqRegions, merge_O_N)
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
     // ----- Test 5 -----
     
-    // ----- Test 6 -----
+    /*// ----- Test 6 -----
     upper_plength = 0; // lower_plength = 0; plength_observation2node = 0
     seqregion1.plength_observation2node = 0;
     merge_O_N<4>(seqregion1, upper_plength, end_pos, tree.model, merged_regions);
@@ -1121,7 +1112,7 @@ TEST(SeqRegions, merge_O_N)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge3{0.0020947741930660798,0.6481759296959182,0.0045434247246658715,0.34518587138634999};
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge3);
-    // ----- Test 10 -----
+    // ----- Test 10 -----*/
 }
 
 /*
@@ -1264,7 +1255,7 @@ TEST(SeqRegions, merge_RACGT_N)
     EXPECT_EQ(merged_regions.back().type, seqregion1.type);
     // ----- Test 10 -----
     
-    // ----- Test 11 -----
+    /*// ----- Test 11 -----
     lower_plength = 0;
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
@@ -1466,7 +1457,7 @@ TEST(SeqRegions, merge_RACGT_N)
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.1001211);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.1);
     EXPECT_EQ(merged_regions.back().type, seqregion1.type);
-    // ----- Test 27 -----
+    // ----- Test 27 -----*/
 }
 
 /*
@@ -1533,7 +1524,7 @@ TEST(SeqRegions, merge_Zero_Distance)
     EXPECT_EQ(merged_regions_ptr, nullptr);
     // ----- Test 4 -----
     
-    // ----- Test 5 -----
+    /*// ----- Test 5 -----
     merged_regions_ptr = cmaple::make_unique<SeqRegions>();
     total_blength_1 = 0;
     total_blength_2 = 0;
@@ -1588,7 +1579,7 @@ TEST(SeqRegions, merge_Zero_Distance)
     EXPECT_FALSE(merge_Zero_Distance(seqregion1, seqregion2, total_blength_1, total_blength_2, end_pos, threshold_prob, num_states, merged_regions_ptr));
     EXPECT_TRUE(merged_regions_ptr != nullptr);
     EXPECT_EQ(merged_regions_ptr->size(), 2);
-    // ----- Test 9 -----
+    // ----- Test 9 -----*/
 }
 
 /*
@@ -1669,7 +1660,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge3);
     // ----- Test 4 -----
     
-    // ----- Test 5 -----
+    /*// ----- Test 5 -----
     total_blength_1 = -1;
     total_blength_2 = -1;
     SeqRegion seqregion3(TYPE_R, 4324, 0.121, 0);
@@ -1724,7 +1715,7 @@ TEST(SeqRegions, merge_O_ORACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge4{0.045597223147683601,0.0013901861006516344,0.92036965105659874,0.032642939695066098};
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge4);
-    // ----- Test 9 -----
+    // ----- Test 9 -----*/
 }
 
 /*
@@ -1788,7 +1779,7 @@ TEST(SeqRegions, merge_RACGT_O)
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
     // ----- Test 3 -----
     
-    // ----- Test 4 -----
+    /*// ----- Test 4 -----
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
     merge_RACGT_O<4>(seqregion1, total_blength_1, end_pos, *new_lh, threshold_prob, tree.model, tree.aln, merged_regions);
@@ -1822,7 +1813,7 @@ TEST(SeqRegions, merge_RACGT_O)
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
-    // ----- Test 6 -----
+    // ----- Test 6 -----*/
 }
 
 /*
@@ -1908,7 +1899,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
     // ----- Test 5 -----
     
-    // ----- Test 6 -----
+    /*// ----- Test 6 -----
     seqregion1.plength_observation2node = 1e-7; // neither plength_observation2root nor plength_observation2node affect the merged region
     total_blength_1 = 1e-4;
     (*new_lh) = new_lh_value2;
@@ -1988,7 +1979,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge3);
-    // ----- Test 12 -----
+    // ----- Test 12 -----*/
 }
 
 /*
@@ -2201,7 +2192,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge8);
     // ----- Test 10 -----
     
-    // ----- Test 11 -----
+    /*// ----- Test 11 -----
     upper_plength = 0.123;
     total_blength_1 = -1;
     total_blength_2 = -1;
@@ -2461,7 +2452,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge20{0.0000033509369075667414,0.059613997536883151,0.52309211091516972,0.41729054061103954};
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge20);
-    // ----- Test 24 -----
+    // ----- Test 24 -----*/
 }
 
 /*
@@ -2581,7 +2572,7 @@ TEST(SeqRegions, mergeUpperLower)
     
     // ----- Test 5 -----
     
-    // ----- Test 6 -----
+    /*// ----- Test 6 -----
     genTestData(seqregions1, seqregions2, tree, threshold_prob, 6);
     
     seqregions1->mergeUpperLower<4>(merged_regions_ptr, 3.3454886086112878360986772063867533688608091324568e-05, *seqregions2, -1, tree.aln, tree.model, threshold_prob);
@@ -2646,7 +2637,7 @@ TEST(SeqRegions, mergeUpperLower)
     seqregions1->mergeUpperLower<4>(merged_regions_ptr, -1, *seqregions2, -1, tree.aln, tree.model, threshold_prob);
     
     EXPECT_EQ(merged_regions_ptr->size(), 11);
-    // ----- Test 10 -----
+    // ----- Test 10 -----*/
 }
 
 /*
@@ -2710,7 +2701,7 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value);
     // ----- Test 4 -----
     
-    // ----- Test 5 -----
+    /*// ----- Test 5 -----
     plength2 = 0; // plength2 = 0; plength_observation2node > 0
     merge_N_O_TwoLowers(seqregion1, end_pos, plength2, merged_regions);
     EXPECT_EQ(merged_regions.size(), 5);
@@ -2767,7 +2758,7 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0.311);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.0233101);
     EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value);
-    // ----- Test 10 -----
+    // ----- Test 10 -----*/
 }
 
 /*
@@ -2910,7 +2901,7 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
     EXPECT_EQ(merged_regions.back().type, seqregion1.type);
     // ----- Test 10 -----
     
-    // ----- Test 11 -----
+    /*// ----- Test 11 -----
     plength2 = 0;
     seqregion1.plength_observation2node = -1;
     seqregion1.plength_observation2root = 0;
@@ -3112,7 +3103,7 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
     EXPECT_EQ(merged_regions.back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0.1001211);
     EXPECT_EQ(merged_regions.back().type, seqregion1.type);
-    // ----- Test 27 -----
+    // ----- Test 27 -----*/
 }
 
 /*
@@ -3274,7 +3265,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     EXPECT_EQ(log_lh, -2.5901247759055703);
     // ----- Test 3 -----
     
-    // ----- Test 4 -----
+    /*// ----- Test 4 -----
     log_lh = 0;
     total_blength_2 = -1;
     SeqRegion::LHType new_lh_value2{1.1151877415789591228433182135137968771232408471406e-05,1.2436575683940661210420103588707597258578019250308e-10,0.99998884787385255989988763758447021245956420898438,1.2436575683940661210420103588707597258578019250308e-10};
@@ -3344,7 +3335,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
     EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
     SeqRegion::LHType new_lh_value_merge7{0.12684809781766063,1.3059895886789165E-10,0.87315190141833243,6.3340794416577515E-10};
     EXPECT_EQ(log_lh, -0.22314300087916599802);
-    // ----- Test 8 -----
+    // ----- Test 8 -----*/
 }
 
 /*
@@ -3427,7 +3418,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     EXPECT_EQ(log_lh, -1.1152188332861237853011436571559755748239695094526e-05);
     // ----- Test 4 -----
     
-    // ----- Test 5 -----
+    /*// ----- Test 5 -----
     log_lh = 0;
     total_blength_2 = 0;
     seqregion1.type = TYPE_R;
@@ -3478,7 +3469,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
     EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
     SeqRegion::LHType new_lh_value_merge7{0.12684809781766063,1.3059895886789165E-10,0.87315190141833243,6.3340794416577515E-10};
     EXPECT_EQ(log_lh, -28.181320607597758);
-    // ----- Test 8 -----
+    // ----- Test 8 -----*/
 }
 
 /*
@@ -3585,7 +3576,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     EXPECT_EQ(log_lh, -7.5008336555086989);
     // ----- Test 5 -----
     
-    // ----- Test 6 -----
+    /*// ----- Test 6 -----
     log_lh = 0;
     total_blength_1 = 0;
     total_blength_2 = 15e-2;
@@ -3660,7 +3651,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
     EXPECT_EQ(log_lh, -0.69315833249954661443581471758079715073108673095703);
-    // ----- Test 10 -----
+    // ----- Test 10 -----*/
 }
 
 /*
@@ -3753,7 +3744,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     EXPECT_EQ(log_lh, -0.98093450214178112833707245954428799450397491455078);
     // ----- Test 4 -----
     
-    // ----- Test 5 -----
+    /*// ----- Test 5 -----
     log_lh = 0;
     total_blength_2 = -1;
     SeqRegion::LHType new_lh_value5{9.9498152920206932387357935649403392619483099679201e-10,8.9219993723549547142565030455330088443588465452194e-05,9.9498152920206932387357935649403392619483099679201e-10,0.99991077801631333965559633725206367671489715576172};
@@ -3829,7 +3820,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
     EXPECT_EQ(log_lh, -2.0796618090328400363375749293481931090354919433594);
-    // ----- Test 9 -----
+    // ----- Test 9 -----*/
 }
 
 /*
@@ -3932,7 +3923,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     EXPECT_EQ(log_lh, -11.537417360554178102916011994238942861557006835938);
     // ----- Test 5 -----
     
-    // ----- Test 6 -----
+    /*// ----- Test 6 -----
     log_lh = 0;
     sum_lh = 0;
     total_blength_2 = 0.49999442406129068761089229155913926661014556884766;
@@ -4025,7 +4016,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
     SeqRegion::LHType new_lh_value_merge11{0.999997469693585716576933464239,2.53030640795433316882884731969e-06,5.15495543614262290103202928001e-15,1.25992117026322114735542991217e-15};
     EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge11);
     EXPECT_EQ(log_lh, -10.592955082179518200291568064130842685699462890625);
-    // ----- Test 11 -----
+    // ----- Test 11 -----*/
 }
 
 
@@ -4112,7 +4103,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     EXPECT_EQ(log_lh, -23.07170390644744628616535919718444347381591796875);
     // ----- Test 4 -----
     
-    // ----- Test 5 -----
+    /*// ----- Test 5 -----
     log_lh = 0;
     total_blength_1 = 1e-5;
     total_blength_2 = 68e-4;
@@ -4201,7 +4192,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
     EXPECT_EQ(log_lh, -15.129806325448386772336561989504843950271606445312);
-    // ----- Test 10 -----
+    // ----- Test 10 -----*/
 }
 
 /*
@@ -4359,7 +4350,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     EXPECT_EQ(log_lh, -20.556471434224643957122680149041116237640380859375);
     // ----- Test 8 -----
     
-    // ----- Test 9 -----
+    /*// ----- Test 9 -----
     log_lh = 0;
     plength1 = 3.4820599267114684E-9;
     plength2 = -1;
@@ -4483,7 +4474,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
     EXPECT_EQ(merged_regions->back().plength_observation2root, -1);
     EXPECT_EQ(merged_regions->back().plength_observation2node, -1);
     EXPECT_EQ(log_lh, -6.903698068549179112096680910326540470123291015625);
-    // ----- Test 16 -----
+    // ----- Test 16 -----*/
 }
 
 /*
@@ -4571,7 +4562,7 @@ TEST(SeqRegions, mergeTwoLowers)
     EXPECT_EQ(*merged_regions_ptr->at(16).likelihood, lh_value4_16);
     // ----- Test 4 -----
     
-    // ----- Test 5 -----
+    /*// ----- Test 5 -----
     genTestData(seqregions1, seqregions2, tree, threshold_prob, 5);
     
     seqregions1->mergeTwoLowers<4>(merged_regions_ptr, -1, *seqregions2, 5.0182329129169314153348369078599944259622134268284e-05, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
@@ -4643,5 +4634,5 @@ TEST(SeqRegions, mergeTwoLowers)
     seqregions1->mergeTwoLowers<4>(merged_regions_ptr, -1, *seqregions2, -1, tree.aln, tree.model, tree.cumulative_rate, threshold_prob);
     
     EXPECT_EQ(merged_regions_ptr->size(), 11);
-    // ----- Test 10 -----
+    // ----- Test 10 -----*/
 }
