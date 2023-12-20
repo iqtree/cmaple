@@ -52,15 +52,15 @@ auto gzstreambuf::open(const char *name, int open_mode, int compression_level)
   }
   mode = open_mode;
   // no append nor read/write mode
-  if ((mode & std::ios::ate) || (mode & std::ios::app) ||
-      ((mode & std::ios::in) && (mode & std::ios::out))) {
+  if (((unsigned int)mode & std::ios::ate) || ((unsigned int)mode & std::ios::app) ||
+      (((unsigned int)mode & std::ios::in) && ((unsigned int)mode & std::ios::out))) {
     return (gzstreambuf *)nullptr;
   }
   char fmode[10];
   char *fmodeptr = fmode;
-  if (mode & std::ios::in) {
+  if ((unsigned int)mode & std::ios::in) {
     *fmodeptr++ = 'r';
-  } else if (mode & std::ios::out) {
+  } else if ((unsigned int) mode & std::ios::out) {
     *fmodeptr++ = 'w';
   }
   *fmodeptr++ = 'b';
@@ -72,7 +72,7 @@ auto gzstreambuf::open(const char *name, int open_mode, int compression_level)
   *fmodeptr = '\0';
 
   // BEGIN - Figure out length of the compressed file
-  if (mode & std::ios::in) {
+  if ((unsigned int) mode & std::ios::in) {
     FILE *fp = fopen(name, "rb");
     if (fp) {
       fseek(fp, 0, SEEK_END);
@@ -81,7 +81,7 @@ auto gzstreambuf::open(const char *name, int open_mode, int compression_level)
 #elif defined(WIN32)
       compressed_length = ftell(fp);
 #else
-      compressed_length = ftello(fp);
+      compressed_length = (size_t) ftello(fp);
 #endif
       fclose(fp);
     }
@@ -94,7 +94,7 @@ auto gzstreambuf::open(const char *name, int open_mode, int compression_level)
   }
   opened = 1;
 
-  if (mode & std::ios::out) {
+  if ((unsigned int) mode & std::ios::out) {
     gzsetparams(file, compression_level, Z_DEFAULT_STRATEGY);
   }
 
@@ -117,7 +117,7 @@ auto gzstreambuf::underflow() -> int { // used for input buffer only
     return *reinterpret_cast<unsigned char *>(gptr());
   }
 
-  if (!(mode & std::ios::in) || !opened) {
+  if (!((unsigned int) mode & std::ios::in) || !opened) {
     return EOF;
   }
   // Josuttis' implementation of inbuf
@@ -125,14 +125,14 @@ auto gzstreambuf::underflow() -> int { // used for input buffer only
   if (n_putback > 4) {
     n_putback = 4;
   }
-  memcpy(buffer + (4 - n_putback), gptr() - n_putback, n_putback);
+  memcpy(buffer + (4 - n_putback), gptr() - n_putback, (size_t) n_putback);
 
   int num = gzread(file, buffer + 4, bufferSize - 4);
   if (num <= 0) { // ERROR or EOF
     return EOF;
   }
 
-  compressed_position = gzoffset(file);
+  compressed_position = (size_t) gzoffset(file);
 
   // reset buffer pointers
   setg(buffer + (4 - n_putback), // beginning of putback area
@@ -147,7 +147,7 @@ auto gzstreambuf::flush_buffer() -> int {
   // Separate the writing of the buffer from overflow() and
   // sync() operation.
   int w = static_cast<int>(pptr() - pbase());
-  long wDone = gzwrite(file, pbase(), w);
+  long wDone = gzwrite(file, pbase(), (unsigned int) w);
   if (wDone != w) {
     return EOF;
   }
@@ -156,7 +156,7 @@ auto gzstreambuf::flush_buffer() -> int {
 }
 
 auto gzstreambuf::overflow(int c) -> int { // used for output buffer only
-  if (!(mode & std::ios::out) || !opened) {
+  if (!((unsigned int) mode & std::ios::out) || !opened) {
     return EOF;
   }
   if (c != EOF) {
