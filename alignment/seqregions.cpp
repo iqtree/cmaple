@@ -61,7 +61,7 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
       } else if (seq1_region->type == TYPE_O) {
         StateType seq2_state = seq2_region->type;
         if (seq2_state == TYPE_R)
-            seq2_state = aln->ref_seq[end_pos];
+            seq2_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
           
         if (seq1_region->getLH(seq2_state) > 0.1)
               seq2_more_info = true;
@@ -71,7 +71,7 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
       } else if (seq2_region->type == TYPE_O) {
         StateType seq1_state = seq1_region->type;
         if (seq1_state == TYPE_R)
-            seq1_state = aln->ref_seq[end_pos];
+            seq1_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
           
         if (seq2_region->getLH(seq1_state) > 0.1)
               seq1_more_info = true;
@@ -205,7 +205,7 @@ auto cmaple::SeqRegions::countSharedSegments(const SeqRegions& seq2_regions,
   size_t iseq1 = 0;
   size_t iseq2 = 0;
 
-  while (pos < seq_length) {
+  while (pos < (PositionType) seq_length) {
     PositionType end_pos{};
 
     // get the next shared segment in the two sequences
@@ -445,14 +445,14 @@ void cmaple::calSiteLhs_identicalRACGT(std::vector<RealNumType>&site_lh_contribu
 
     // compute site lh contributions
     for (PositionType i = pos; i < end_pos + 1; ++i) {
-      site_lh_contributions[i] +=
+      site_lh_contributions[(std::vector<RealNumType>::size_type) i] +=
           total_blength * (cumulative_rate[i + 1] - cumulative_rate[i]);
     }
   } else {
     log_lh += model->diagonal_mut_mat[seq1_region.type] * total_blength;
 
     // compute site lh contributions
-    site_lh_contributions[pos] +=
+    site_lh_contributions[(std::vector<RealNumType>::size_type) pos] +=
         model->diagonal_mut_mat[seq1_region.type] * total_blength;
   }
 }
@@ -463,7 +463,7 @@ auto cmaple::SeqRegions::operator==(const SeqRegions& seqregions_1) const
     return false;
   }
 
-  for (PositionType i = 0; i < size(); ++i) {
+  for (std::vector<cmaple::SeqRegion>::size_type i = 0; i < size(); ++i) {
     if (!(at(i) == seqregions_1[i])) {
       return false;
     }
@@ -553,7 +553,8 @@ void cmaple::SeqRegions::addSimplifiedO(
   assert(aln);
     
   cmaple::StateType new_state = SeqRegions::simplifyO(
-      new_lh.data(), aln->ref_seq[end_pos], aln->num_states, threshold_prob);
+      new_lh.data(), aln->ref_seq[(std::vector<cmaple::StateType>::size_type)
+                                  end_pos], aln->num_states, threshold_prob);
 
   if (new_state == cmaple::TYPE_O) {
     merged_regions.emplace_back(cmaple::TYPE_O, end_pos, 0, 0,
