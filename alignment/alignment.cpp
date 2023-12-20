@@ -300,7 +300,8 @@ void cmaple::Alignment::readFasta(std::istream& in,
   }
 
   // now try to cut down sequence name if possible
-  PositionType i, step = 0;
+  std::vector<std::string>::size_type i;
+  PositionType step = 0;
   StrVector new_seq_names, remain_seq_names;
   new_seq_names.resize(seq_names.size());
   remain_seq_names = seq_names;
@@ -310,25 +311,25 @@ void cmaple::Alignment::readFasta(std::istream& in,
     unordered_set<string> namesSeenThisTime;
     // Set of shorted names seen so far, this iteration
     for (i = 0; i < (PositionType)seq_names.size(); ++i) {
-      if (remain_seq_names[(std::vector<std::string>::size_type) i].empty()) {
+      if (remain_seq_names[i].empty()) {
         continue;
       }
-      size_t pos = remain_seq_names[(std::vector<std::string>::size_type) i].find_first_of(" \t");
+      size_t pos = remain_seq_names[i].find_first_of(" \t");
       if (pos == string::npos) {
-        new_seq_names[(std::vector<std::string>::size_type) i] +=
-          remain_seq_names[(std::vector<std::string>::size_type) i];
-        remain_seq_names[(std::vector<std::string>::size_type) i] = "";
+        new_seq_names[i] +=
+          remain_seq_names[i];
+        remain_seq_names[i] = "";
       } else {
-        new_seq_names[(std::vector<std::string>::size_type) i] +=
-          remain_seq_names[(std::vector<std::string>::size_type) i].substr(0, pos);
-        remain_seq_names[(std::vector<std::string>::size_type) i] = "_" +
-          remain_seq_names[(std::vector<std::string>::size_type) i].substr(pos + 1);
+        new_seq_names[i] +=
+          remain_seq_names[i].substr(0, pos);
+        remain_seq_names[i] = "_" +
+          remain_seq_names[i].substr(pos + 1);
       }
       if (!duplicated) {
         // add the shortened name for sequence i to the
         // set of shortened names seen so far, and set
         // duplicated to true if it was already there.
-        duplicated = !namesSeenThisTime.insert(new_seq_names[(std::vector<std::string>::size_type) i]).second;
+        duplicated = !namesSeenThisTime.insert(new_seq_names[i]).second;
       }
     }
     if (!duplicated) {
@@ -337,11 +338,11 @@ void cmaple::Alignment::readFasta(std::istream& in,
   }
 
   if (step > 0) {
-    for (i = 0; i < (PositionType)seq_names.size(); ++i) {
-      if (seq_names[i] != new_seq_names[(std::vector<std::string>::size_type) i] &&
+    for (i = 0; i < seq_names.size(); ++i) {
+      if (seq_names[i] != new_seq_names[i] &&
           cmaple::verbose_mode > cmaple::VB_QUIET) {
         cout << "NOTE: Change sequence name '" << seq_names[i] << "' -> "
-             << new_seq_names[(std::vector<std::string>::size_type) i] << endl;
+             << new_seq_names[i] << endl;
       }
     }
   }
@@ -358,9 +359,9 @@ void cmaple::Alignment::readPhylip(std::istream& in,
 
   // set the failbit and badbit
   in.exceptions(ios::failbit | ios::badbit);
-  PositionType seq_id = 0;
-  PositionType nseq = 0;
-  PositionType nsite = 0;
+  std::vector<std::string>::size_type seq_id = 0;
+  std::vector<std::string>::size_type nseq = 0;
+  std::vector<std::string>::size_type nsite = 0;
   string line;
 
   // remove the failbit
@@ -393,25 +394,25 @@ void cmaple::Alignment::readPhylip(std::istream& in,
       sequences.resize(nseq, "");
 
     } else {                          // read sequence contents
-      if (seq_names[(std::vector<std::string>::size_type) seq_id] == "") {  // cut out the sequence name
+      if (seq_names[seq_id] == "") {  // cut out the sequence name
         string::size_type pos = line.find_first_of(" \t");
         if (pos == string::npos) {
           pos = 10;  //  assume standard phylip
         }
-        seq_names[(std::vector<std::string>::size_type) seq_id] = line.substr(0, pos);
+        seq_names[seq_id] = line.substr(0, pos);
         line.erase(0, pos);
       }
 
-      PositionType old_len = sequences[seq_id].length();
+      std::basic_string<char>::size_type old_len = sequences[seq_id].length();
       processSeq(sequences[seq_id], line, line_num);
 
       if (sequences[seq_id].length() != sequences[0].length()) {
-        err_str << "Line " << line_num << ": Sequence " << seq_names[(std::vector<std::string>::size_type) seq_id]
+        err_str << "Line " << line_num << ": Sequence " << seq_names[seq_id]
                 << " has wrong sequence length " << sequences[seq_id].length()
                 << endl;
         throw std::logic_error(err_str.str());
       }
-      if ((PositionType)sequences[seq_id].length() > old_len) {
+      if (sequences[seq_id].length() > old_len) {
         ++seq_id;
       }
       if (seq_id == nseq) {
@@ -487,12 +488,12 @@ auto cmaple::Alignment::generateRef(StrVector& sequences) -> string {
   const char DEFAULT_CHAR = cmaple::Alignment::convertState2Char(0, seq_type_);
 
   // determine a character for each site one by one
-  PositionType threshold = sequences.size() * 0.5;
-  for (PositionType i = 0; i < (PositionType)ref_str.length(); ++i) {
+  PositionType threshold = (PositionType) (sequences.size() * 0.5);
+  for (std::basic_string<char>::size_type i = 0; i < ref_str.length(); ++i) {
     // Init a map to count the number of times each character appears
     std::map<char, PositionType> num_appear;
 
-    for (PositionType j = 0; j < (PositionType)sequences.size(); ++j) {
+    for (std::vector<std::string>::size_type j = 0; j < sequences.size(); ++j) {
       // update num_appear for the current character
       PositionType count = num_appear[sequences[j][i]] + 1;
       num_appear[sequences[j][i]] = count;
@@ -576,7 +577,7 @@ auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
 
   // extract the ref_sequence
   string ref_str = "";
-  for (auto i = 0; i < seq_names.size(); ++i) {
+  for (std::vector<std::string>::size_type i = 0; i < seq_names.size(); ++i) {
     std::string seq_name = seq_names[(std::vector<std::string>::size_type) i];
     transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
     if (seq_name == ref_name_upcase) {
@@ -625,18 +626,18 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
 
   data.clear();
   Sequence* sequence = nullptr;
-  PositionType seq_length = ref_sequence.length();
+  std::vector<char>::size_type seq_length = ref_sequence.length();
 
   // extract mutations of sequences one by one
-  for (PositionType i = 0; i < (PositionType)str_sequences.size(); ++i) {
+  for (std::vector<std::string>::size_type i = 0; i < str_sequences.size(); ++i) {
     // validate the sequence length
     string str_sequence = str_sequences[i];
     if (seq_length != (PositionType)str_sequence.length()) {
       throw std::logic_error(
           "The sequence length of " + seq_names[(std::vector<std::string>::size_type) i] + " (" +
-          convertIntToString(str_sequence.length()) +
+          convertIntToString((int) str_sequence.length()) +
           ") is different from that of the reference sequence (" +
-          convertIntToString(ref_sequence.length()) + ")!");
+          convertIntToString((int) ref_sequence.length()) + ")!");
     }
 
     // init new sequence instance for the inference process afterwards
@@ -646,7 +647,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
     // init dummy variables
     int state = 0;
     PositionType length = 0;
-    for (PositionType pos = 0; pos < seq_length; ++pos) {
+    for (std::basic_string<char>::size_type pos = 0; pos < seq_length; ++pos) {
       switch (state) {
         case 0:  // previous character is neither 'N' nor '-'
           if (str_sequence[pos] != ref_sequence[pos]) {
@@ -661,7 +662,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
               state = 2;
               // output a mutation
             } else {
-              addMutation(sequence, str_sequence[pos], pos);
+              addMutation(sequence, str_sequence[pos], (PositionType) pos);
             }
           }
           break;
@@ -672,7 +673,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
             ++length;
           } else {
             // output the previous sequence of 'N'
-            addMutation(sequence, str_sequence[pos - 1], pos - length, length);
+            addMutation(sequence, str_sequence[pos - 1], (PositionType) (pos - length), length);
 
             // reset state
             state = 0;
@@ -685,7 +686,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
                 state = 2;
                 // output a mutation
               } else {
-                addMutation(sequence, str_sequence[pos], pos);
+                addMutation(sequence, str_sequence[pos], (PositionType) pos);
                 state = 0;
               }
             }
@@ -698,7 +699,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
             ++length;
           } else {
             // output the previous sequence of '-'
-            addMutation(sequence, str_sequence[pos - 1], pos - length, length);
+            addMutation(sequence, str_sequence[pos - 1], (PositionType) (pos - length), length);
 
             // reset state
             state = 0;
@@ -712,7 +713,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
                 state = 1;
                 // output a mutation
               } else {
-                addMutation(sequence, str_sequence[pos], pos);
+                addMutation(sequence, str_sequence[pos], (PositionType) pos);
                 state = 0;
               }
             }
@@ -724,7 +725,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
     //  output the last sequence of 'N' or '-' (if any)
     if (state != 0) {
       addMutation(sequence, str_sequence[str_sequence.length() - 1],
-                  str_sequence.length() - length, length);
+                  (PositionType) (str_sequence.length() - length), length);
     }
   }
 }
@@ -739,7 +740,7 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence) {
   transform(ref_sequence.begin(), ref_sequence.end(), ref_sequence.begin(),
             ::toupper);
 
-  for (PositionType i = 0; i < (PositionType)ref_sequence.length(); ++i) {
+  for (std::vector<StateType>::size_type i = 0; i < ref_sequence.length(); ++i) {
     ref_seq[i] = convertChar2State(ref_sequence[i]);
 
     // validate the ref state
@@ -747,7 +748,7 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence) {
       ref_sequence[i] = DEFAULT_CHAR;
       if (cmaple::verbose_mode > cmaple::VB_QUIET) {
         outWarning("Invalid reference state found at site " +
-                   convertPosTypeToString(i) +
+                   convertPosTypeToString((PositionType) i) +
                    " was replaced by a default state " + DEFAULT_CHAR);
       }
       ref_seq[i] = 0;
@@ -853,7 +854,7 @@ void cmaple::Alignment::readMaple(std::istream& in) {
     else {
       // validate the input
       char separator = '\t';
-      size_t num_items = std::count(line.begin(), line.end(), separator) + 1;
+      long num_items = std::count(line.begin(), line.end(), separator) + 1;
       if (num_items < 2 || num_items > 3) {
         throw std::logic_error(
             "Invalid input. Each difference must be presented be <Type>    "
@@ -875,7 +876,7 @@ void cmaple::Alignment::readMaple(std::istream& in) {
         throw std::logic_error(
             "<Position> must be greater than 0 and less than the reference "
             "sequence length (" +
-            convertPosTypeToString(ref_seq.size()) + ")!");
+            convertPosTypeToString((PositionType) ref_seq.size()) + ")!");
       }
 
       // extract <Length>
@@ -891,7 +892,7 @@ void cmaple::Alignment::readMaple(std::istream& in) {
             throw std::logic_error(
                 "<Length> + <Position> must be less than the reference "
                 "sequence length (" +
-                convertPosTypeToString(ref_seq.size()) + ")!");
+                convertPosTypeToString((PositionType) ref_seq.size()) + ")!");
           }
         } else if (cmaple::verbose_mode >= cmaple::VB_MED) {
           outWarning("Ignoring <Length> of " + tmp +
