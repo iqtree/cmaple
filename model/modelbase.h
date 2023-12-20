@@ -181,7 +181,7 @@ class ModelBase {
   /**
    Destructor
    */
-  ~ModelBase();
+   virtual ~ModelBase();
 
   /**
    * mapping between DNA model names and their enums

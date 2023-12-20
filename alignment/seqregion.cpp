@@ -54,7 +54,7 @@ void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type,
     assert(max_num_states > 0);
     assert(seq_type == cmaple::SeqRegion::SEQ_DNA || seq_type == cmaple::SeqRegion::SEQ_PROTEIN);
     
-  if (type < 0 || type >= TYPE_INVALID) {
+  if (type >= TYPE_INVALID) {
     throw std::logic_error("Invalid type of seqregion");
   }
 

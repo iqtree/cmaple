@@ -88,7 +88,7 @@ class SeqRegion : public Mutation {
    */
   cmaple::RealNumType getLH(int pos) const {
       assert(type == TYPE_O);
-      return (*likelihood)[pos];
+      return (*likelihood)[(unsigned long) pos];
   }
 
   /**
