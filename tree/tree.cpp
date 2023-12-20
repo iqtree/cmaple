@@ -134,19 +134,11 @@ void cmaple::Tree::doPlacement(std::ostream& out_stream) {
 
 void cmaple::Tree::applySPR(const TreeSearchType tree_search_type,
                                    const bool shallow_tree_search, std::ostream& out_stream) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
   assert(applySPRPtr);
   (this->*applySPRPtr)(tree_search_type, shallow_tree_search, out_stream);
 }
 
 void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
   assert(optimizeBranchPtr);
   (this->*optimizeBranchPtr)(out_stream);
 }
@@ -154,24 +146,16 @@ void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
 void cmaple::Tree::autoProceedMAPLE(
     const TreeSearchType tree_search_type,
     const bool shallow_tree_search, std::ostream& out_stream) {
-  assert(aln);
-  assert(model);
   assert(doInferencePtr);
   (this->*doInferencePtr)(tree_search_type, shallow_tree_search, out_stream);
 }
 
 RealNumType cmaple::Tree::computeLh() {
-  assert(aln);
-  assert(model);
   assert(computeLhPtr);
   return (this->*computeLhPtr)();
 }
 
 void cmaple::Tree::makeTreeInOutConsistent() {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
   assert(makeTreeInOutConsistentPtr);
   (this->*makeTreeInOutConsistentPtr)();
 }
@@ -520,10 +504,7 @@ void cmaple::Tree::doInferenceTemplate(
     const TreeSearchType tree_search_type,
     const bool shallow_tree_search, std::ostream& out_stream) {
   // validate input
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
+  assert(aln && model);
   assert(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
 
   // Redirect the original src_cout to the target_cout
@@ -554,10 +535,7 @@ void cmaple::Tree::doInferenceTemplate(
 
 template <const StateType num_states>
 void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
-  assert(aln);
-  assert(model);
   assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
   assert(aln->ref_seq.size() > 0);
     
   if (aln->data.size() < 3) {
@@ -740,11 +718,7 @@ template <const StateType num_states>
 void cmaple::Tree::applySPRTemplate(
     const TreeSearchType n_tree_search_type,
     const bool shallow_tree_search, std::ostream& out_stream) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
   assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
   assert(nodes.size() > 0);
     
   TreeSearchType tree_search_type = n_tree_search_type;
@@ -873,10 +847,6 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate() {
   // validate data
   assert(aln && "Null alignment");
   assert(model && "Null model");
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
 
   // Make sure the tree is not empty
   if (!nodes.size()) {
@@ -918,10 +888,6 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate() {
 
 template <const StateType num_states>
 void cmaple::Tree::optimizeTreeTopology(bool short_range_search) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
   assert(aln->ref_seq.size() > 0);
   assert(nodes.size() > 0);
     
@@ -978,11 +944,7 @@ void cmaple::Tree::optimizeTreeTopology(bool short_range_search) {
 
 template <const StateType num_states>
 void cmaple::Tree::optimizeBranchTemplate(std::ostream& out_stream) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
+  assert(aln && model);
   assert(nodes.size() > 0);
     
   // Make sure the tree is not empty
@@ -1059,11 +1021,6 @@ void cmaple::Tree::optimizeBranchTemplate(std::ostream& out_stream) {
 
 template <const StateType num_states>
 RealNumType cmaple::Tree::computeLhTemplate() {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
     
   // Make sure the tree is not empty
   if (!nodes.size()) {
@@ -1102,11 +1059,6 @@ void cmaple::Tree::computeBranchSupport(
     const double epsilon,
     const bool allow_replacing_ML_tree,
     std::ostream& out_stream) {
-    assert(aln);
-    assert(model);
-    assert(cumulative_rate);
-    assert(cumulative_base.size() > 0);
-    assert(aln->ref_seq.size() > 0);
     assert(computeBranchSupportPtr);
   (this->*computeBranchSupportPtr)(num_threads, num_replicates, epsilon,
                                           allow_replacing_ML_tree, out_stream);
@@ -1119,11 +1071,6 @@ void cmaple::Tree::computeBranchSupportTemplate(
     const double epsilon,
     const bool allow_replacing_ML_tree,
     std::ostream& out_stream) {
-    assert(aln);
-    assert(model);
-    assert(cumulative_rate);
-    assert(cumulative_base.size() > 0);
-    assert(aln->ref_seq.size() > 0);
     
   // Make sure the tree is not empty
   if (!nodes.size()) {
@@ -1275,12 +1222,7 @@ void cmaple::Tree::updateMidBranchLh(
     const std::unique_ptr<SeqRegions>& parent_upper_regions,
     stack<Index>& node_stack,
     bool& update_blength) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
+  assert(aln && model && cumulative_rate);
     
   // update vector of regions at mid-branch point
   std::unique_ptr<SeqRegions> mid_branch_regions = nullptr;
@@ -1307,11 +1249,7 @@ std::unique_ptr<SeqRegions> cmaple::Tree::computeUpperLeftRightRegions(
     const std::unique_ptr<SeqRegions>& parent_upper_regions,
     std::stack<Index>& node_stack,
     bool& update_blength) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
+  assert(aln && model && cumulative_rate);
   assert(nodes.size() > 0);
     
   std::unique_ptr<SeqRegions> upper_left_right_regions = nullptr;
@@ -1347,13 +1285,8 @@ bool cmaple::Tree::updateNewPartialIfDifferent(
     std::stack<Index>& node_stack,
     const PositionType seq_length) {
   // assert(params.has_value());
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
-  assert(params);
+  assert(aln && model && cumulative_rate && params);
+    
   if (!node.getPartialLh(next_node_mini) ||
       node.getPartialLh(next_node_mini)
           ->areDiffFrom(
@@ -1379,12 +1312,6 @@ void cmaple::Tree::updatePartialLhFromParent(
     stack<Index>& node_stack,
     const std::unique_ptr<SeqRegions>& parent_upper_regions,
     const PositionType seq_length) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
     
   bool update_blength = false;
 
@@ -1453,12 +1380,6 @@ void cmaple::Tree::updatePartialLhFromChildren(
     const std::unique_ptr<SeqRegions>& parent_upper_regions,
     const bool is_non_root,
     const PositionType seq_length) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
     
   bool update_blength = false;
   /*Node* top_node = NULL;
@@ -1679,11 +1600,6 @@ void cmaple::Tree::examineSamplePlacementMidBranch(
     RealNumType& lh_diff_mid_branch,
     TraversingNode& current_extended_node,
     const std::unique_ptr<SeqRegions>& sample_regions) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
     
   // compute the placement cost
   lh_diff_mid_branch = calculateSamplePlacementCost<num_states>(
@@ -1713,12 +1629,6 @@ void cmaple::Tree::examineSamplePlacementAtNode(
     Index& best_child_index,
     TraversingNode& current_extended_node,
     const std::unique_ptr<SeqRegions>& sample_regions) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
     
   // compute the placement cost
   lh_diff_at_node = calculateSamplePlacementCost<num_states>(
@@ -1752,12 +1662,6 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
     RealNumType& best_down_lh_diff,
     Index& best_child_index,
     const std::unique_ptr<SeqRegions>& sample_regions) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
 
   // current node might be part of a polytomy (represented by 0 branch lengths)
   // so we want to explore all the children of the current node to find out if
@@ -1854,11 +1758,6 @@ void cmaple::Tree::addStartingNodes(
     const Index& other_child_node_index,
     const RealNumType best_lh_diff,
     std::stack<std::unique_ptr<UpdatingNode>>& node_stack) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
     
   // dummy variables
   const NumSeqsType vec_index = node_index.getVectorIndex();
@@ -1968,12 +1867,6 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     const RealNumType removed_blength,
     const Index top_node_index,
     std::unique_ptr<SeqRegions>& bottom_regions) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
     
   const bool top_node_exists = (top_node_index.getMiniIndex() != UNDEFINED);
   const Index updating_node_index = updating_node->getIndex();
@@ -2126,12 +2019,6 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
     const RealNumType threshold_prob,
     const RealNumType removed_blength,
     const Index top_node_index) {
-  assert(aln);
-  assert(model);
-  assert(cumulative_rate);
-  assert(cumulative_base.size() > 0);
-  assert(aln->ref_seq.size() > 0);
-  assert(nodes.size() > 0);
     
   const PositionType seq_length = aln->ref_seq.size();
 
