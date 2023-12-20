@@ -23,10 +23,16 @@ auto cmaple::checkMapleSuitability(const Alignment &aln) -> bool {
     throw std::invalid_argument(
         "Empty alignment or the number of sequences is less than 3!");
   }
+    
+  assert(seq_length > 0);
+  assert(num_seqs > 0);
 
   // Get the sequence length
   const auto max_mutations = seq_length * MAX_SUBS_PER_SITE;
   auto max_sum_mutations = seq_length * MEAN_SUBS_PER_SITE * num_seqs;
+    
+  assert(max_mutations > 0);
+  assert(max_sum_mutations > max_mutations);
 
   // check the thresholds:
   // (1) The number of mutations per sequence is no greater then <max_mutations>
@@ -59,6 +65,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         
         // Initialize output filename -> use aln_ as the output prefix if users didn't specify it
         const std::string prefix = (params.output_prefix.length() ? params.output_prefix :  params.aln_path);
+        assert(prefix.length() > 0);
         const std::string output_treefile = prefix + ".treefile";
         // check whether output file is already exists
         if (!params.overwrite_output && fileExists(output_treefile)) {
@@ -74,6 +81,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         if (seq_type == cmaple::SeqRegion::SEQ_UNKNOWN) {
           throw std::invalid_argument("Unknown SeqType " + params.seq_type_str);
         }
+        assert(seq_type != cmaple::SeqRegion::SEQ_UNKNOWN);
 
         // Initializa an Alignment
         // Retrieve the reference genome (if specified) from an alignment -> this feature has not yet exposed to APIs -> should be refactoring later
@@ -89,6 +97,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
           throw std::invalid_argument("Unknown alignment format " +
                                       params.aln_format_str);
         }
+        assert(aln_format != cmaple::Alignment::IN_UNKNOWN);
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
         // check if CMAPLE is suitable for the input alignment
@@ -105,6 +114,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         if (sub_model == cmaple::ModelBase::UNKNOWN) {
           throw std::invalid_argument("Unknown Model " + params.sub_model_str);
         }
+        assert(sub_model != cmaple::ModelBase::UNKNOWN);
         Model model(sub_model, aln.getSeqType());
         
         // If users only want to convert the alignment to another format -> convert it and terminate
@@ -120,6 +130,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
               throw std::invalid_argument("Unknown alignment format " +
                                           params.output_aln_format_str);
             }
+            assert(output_aln_format != cmaple::Alignment::IN_UNKNOWN);
             aln.write(params.output_aln, output_aln_format, params.overwrite_output);
             return;
         }
