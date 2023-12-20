@@ -241,7 +241,7 @@ void cmaple::Alignment::processSeq(string& sequence,
       sequence.append(1, '?');
       if (cmaple::verbose_mode > cmaple::VB_QUIET) {
         cout << "NOTE: Line " << line_num << ": "
-             << line.substr(start_it - line.begin(), (it - start_it) + 1)
+             << line.substr((std::basic_string<char>::size_type) (start_it - line.begin()), (std::basic_string<char>::size_type) (it - start_it) + 1)
              << " is treated as unknown character" << endl;
       }
     } else {
@@ -310,22 +310,25 @@ void cmaple::Alignment::readFasta(std::istream& in,
     unordered_set<string> namesSeenThisTime;
     // Set of shorted names seen so far, this iteration
     for (i = 0; i < (PositionType)seq_names.size(); ++i) {
-      if (remain_seq_names[i].empty()) {
+      if (remain_seq_names[(std::vector<std::string>::size_type) i].empty()) {
         continue;
       }
-      size_t pos = remain_seq_names[i].find_first_of(" \t");
+      size_t pos = remain_seq_names[(std::vector<std::string>::size_type) i].find_first_of(" \t");
       if (pos == string::npos) {
-        new_seq_names[i] += remain_seq_names[i];
-        remain_seq_names[i] = "";
+        new_seq_names[(std::vector<std::string>::size_type) i] +=
+          remain_seq_names[(std::vector<std::string>::size_type) i];
+        remain_seq_names[(std::vector<std::string>::size_type) i] = "";
       } else {
-        new_seq_names[i] += remain_seq_names[i].substr(0, pos);
-        remain_seq_names[i] = "_" + remain_seq_names[i].substr(pos + 1);
+        new_seq_names[(std::vector<std::string>::size_type) i] +=
+          remain_seq_names[(std::vector<std::string>::size_type) i].substr(0, pos);
+        remain_seq_names[(std::vector<std::string>::size_type) i] = "_" +
+          remain_seq_names[(std::vector<std::string>::size_type) i].substr(pos + 1);
       }
       if (!duplicated) {
         // add the shortened name for sequence i to the
         // set of shortened names seen so far, and set
         // duplicated to true if it was already there.
-        duplicated = !namesSeenThisTime.insert(new_seq_names[i]).second;
+        duplicated = !namesSeenThisTime.insert(new_seq_names[(std::vector<std::string>::size_type) i]).second;
       }
     }
     if (!duplicated) {
@@ -335,10 +338,10 @@ void cmaple::Alignment::readFasta(std::istream& in,
 
   if (step > 0) {
     for (i = 0; i < (PositionType)seq_names.size(); ++i) {
-      if (seq_names[i] != new_seq_names[i] &&
+      if (seq_names[i] != new_seq_names[(std::vector<std::string>::size_type) i] &&
           cmaple::verbose_mode > cmaple::VB_QUIET) {
         cout << "NOTE: Change sequence name '" << seq_names[i] << "' -> "
-             << new_seq_names[i] << endl;
+             << new_seq_names[(std::vector<std::string>::size_type) i] << endl;
       }
     }
   }
@@ -390,12 +393,12 @@ void cmaple::Alignment::readPhylip(std::istream& in,
       sequences.resize(nseq, "");
 
     } else {                          // read sequence contents
-      if (seq_names[seq_id] == "") {  // cut out the sequence name
+      if (seq_names[(std::vector<std::string>::size_type) seq_id] == "") {  // cut out the sequence name
         string::size_type pos = line.find_first_of(" \t");
         if (pos == string::npos) {
           pos = 10;  //  assume standard phylip
         }
-        seq_names[seq_id] = line.substr(0, pos);
+        seq_names[(std::vector<std::string>::size_type) seq_id] = line.substr(0, pos);
         line.erase(0, pos);
       }
 
@@ -403,7 +406,7 @@ void cmaple::Alignment::readPhylip(std::istream& in,
       processSeq(sequences[seq_id], line, line_num);
 
       if (sequences[seq_id].length() != sequences[0].length()) {
-        err_str << "Line " << line_num << ": Sequence " << seq_names[seq_id]
+        err_str << "Line " << line_num << ": Sequence " << seq_names[(std::vector<std::string>::size_type) seq_id]
                 << " has wrong sequence length " << sequences[seq_id].length()
                 << endl;
         throw std::logic_error(err_str.str());
@@ -574,7 +577,7 @@ auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
   // extract the ref_sequence
   string ref_str = "";
   for (auto i = 0; i < seq_names.size(); ++i) {
-    std::string seq_name = seq_names[i];
+    std::string seq_name = seq_names[(std::vector<std::string>::size_type) i];
     transform(seq_name.begin(), seq_name.end(), seq_name.begin(), ::toupper);
     if (seq_name == ref_name_upcase) {
       ref_str = str_sequences[i];
@@ -630,14 +633,14 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
     string str_sequence = str_sequences[i];
     if (seq_length != (PositionType)str_sequence.length()) {
       throw std::logic_error(
-          "The sequence length of " + seq_names[i] + " (" +
+          "The sequence length of " + seq_names[(std::vector<std::string>::size_type) i] + " (" +
           convertIntToString(str_sequence.length()) +
           ") is different from that of the reference sequence (" +
           convertIntToString(ref_sequence.length()) + ")!");
     }
 
     // init new sequence instance for the inference process afterwards
-    data.push_back(string(seq_names[i]));
+    data.push_back(string(seq_names[(std::vector<std::string>::size_type) i]));
     sequence = &data.back();
 
     // init dummy variables
@@ -1343,7 +1346,7 @@ void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream,
     for (PositionType i = 0; i < (PositionType)sequences.size(); ++i) {
       if (sequences[i].length() != sequences[0].length()) {
         throw std::logic_error(
-            "Sequence " + seq_names[i] +
+            "Sequence " + seq_names[(std::vector<std::string>::size_type) i] +
             " has a different length compared to the first sequence.");
       }
     }
