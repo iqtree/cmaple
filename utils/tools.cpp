@@ -162,7 +162,7 @@ std::string cmaple::convertDoubleToString(RealNumType number,
 }
 
 auto cmaple::iEquals(const string& a, const string& b) -> bool {
-  unsigned int sz = a.size();
+  unsigned int sz = (unsigned int) a.size();
   if (b.size() != sz) {
     return false;
   }
@@ -219,7 +219,7 @@ auto cmaple::fileExists(const string& strFilename) -> bool {
 
 auto cmaple::convert_int(const char* str, int& end_pos) -> int {
   char* endptr;
-  int i = strtol(str, &endptr, 10);
+  int i = (int) strtol(str, &endptr, 10);
 
   if ((i == 0 && endptr == str) || abs(i) == HUGE_VALL) {
     string err = "Expecting integer, but found \"";
@@ -227,13 +227,13 @@ auto cmaple::convert_int(const char* str, int& end_pos) -> int {
     err += "\" instead";
     throw std::invalid_argument(err);
   }
-  end_pos = endptr - str;
+  end_pos = (int) (endptr - str);
   return i;
 }
 
 auto cmaple::convert_int(const char* str) -> int {
   char* endptr;
-  int i = strtol(str, &endptr, 10);
+  int i = (int) strtol(str, &endptr, 10);
 
   if ((i == 0 && endptr == str) || abs(i) == HUGE_VALL || *endptr != 0) {
     string err = "Expecting integer, but found \"";
@@ -263,7 +263,7 @@ void cmaple::convert_int_vec(const char* str, IntVector& vec) {
   char *beginptr = (char*)str, *endptr;
   vec.clear();
   do {
-    int i = strtol(beginptr, &endptr, 10);
+    int i = (int) strtol(beginptr, &endptr, 10);
 
     if ((i == 0 && endptr == beginptr) || abs(i) == HUGE_VALL) {
       string err = "Expecting integer, but found \"";
@@ -307,7 +307,7 @@ auto cmaple::convert_int64(const char* str, int& end_pos) -> int64_t {
     err += "\" instead";
     throw std::invalid_argument(err);
   }
-  end_pos = endptr - str;
+  end_pos = (int) (endptr - str);
   return i;
 }
 
@@ -332,16 +332,16 @@ auto cmaple::convert_real_number(const char* str, int& end_pos) -> RealNumType {
     err += "\" instead";
     throw std::invalid_argument(err);
   }
-  end_pos = endptr - str;
+  end_pos = (int) (endptr - str);
   return d;
 }
 
 void cmaple::convert_real_numbers(RealNumType*& arr, string input_str) {
   // count the number of input real_numbers
-  int number_count = count(input_str.begin(), input_str.end(), ' ') + 1;
+  int number_count = (int) count(input_str.begin(), input_str.end(), ' ') + 1;
 
   // init array
-  arr = new RealNumType[number_count];
+  arr = new RealNumType[(unsigned long) number_count];
 
   // parse rates
   stringstream ss(input_str);
@@ -391,7 +391,7 @@ void cmaple::convert_range(const char* str,
   char* endptr;
 
   // parse the lower bound of the range
-  int d = strtol(str, &endptr, 10);
+  int d = (int) strtol(str, &endptr, 10);
   if ((d == 0 && endptr == str) || abs(d) == HUGE_VALL ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting integer, but found \"";
@@ -408,7 +408,7 @@ void cmaple::convert_range(const char* str,
 
   // parse the upper bound of the range
   str = endptr + 1;
-  d = strtol(str, &endptr, 10);
+  d = (int) strtol(str, &endptr, 10);
   if ((d == 0 && endptr == str) || abs(d) == HUGE_VALL ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting integer, but found \"";
@@ -425,7 +425,7 @@ void cmaple::convert_range(const char* str,
 
   // parse the step size of the range
   str = endptr + 1;
-  d = strtol(str, &endptr, 10);
+  d = (int) strtol(str, &endptr, 10);
   if ((d == 0 && endptr == str) || abs(d) == HUGE_VALL || *endptr != 0) {
     string err = "Expecting integer, but found \"";
     err += str;
@@ -517,7 +517,7 @@ void cmaple::convert_string_vec(const char* str,
       vec.push_back(elem);
       return;
     }
-    elem.assign(beginptr, endptr - beginptr);
+    elem.assign(beginptr, (unsigned long) (endptr - beginptr));
     vec.push_back(elem);
     beginptr = endptr + 1;
   } while (*endptr != 0);
@@ -602,7 +602,7 @@ cmaple::Params::Params() {
   struct timezone tz;
   gettimeofday(&tv, &tz);
   // ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
-  ran_seed = (tv.tv_usec);
+  ran_seed = (uint64_t) (tv.tv_usec);
 }
 
 cmaple::ParamsBuilder::ParamsBuilder() : params_ptr(new Params()) {}
@@ -1079,7 +1079,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         }
 
         try {
-          params.ran_seed = abs(convert_int(argv[cnt]));
+          params.ran_seed = (uint64_t) abs(convert_int(argv[cnt]));
         } catch (std::invalid_argument e) {
           outError(e.what());
         }
@@ -1095,7 +1095,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           params.num_threads = 0;
         } else {
           try {
-            params.num_threads = convert_int(argv[cnt]);
+            params.num_threads = (uint32_t) convert_int(argv[cnt]);
           } catch (std::invalid_argument e) {
             outError(e.what());
           }
