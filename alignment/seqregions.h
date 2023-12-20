@@ -915,7 +915,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
-      seq2_regions, seq_length));  // avoid realloc of vector data
+      seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
   const size_t max_elements =
       merged_regions
           ->capacity();  // remember capacity (may be more than we 'reserved')
@@ -2064,7 +2064,7 @@ RealNumType SeqRegions::calculateSiteLhContributions(
   const SeqRegions& seq2_regions = regions2;
   size_t iseq1 = 0;
   size_t iseq2 = 0;
-  const PositionType seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
   assert(site_lh_contributions.size() == seq_length);
 
   // init merged_regions
@@ -2076,7 +2076,7 @@ RealNumType SeqRegions::calculateSiteLhContributions(
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
-      seq2_regions, seq_length));  // avoid realloc of vector data
+      seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
   const size_t max_elements =
       merged_regions
           ->capacity();  // remember capacity (may be more than we 'reserved')
