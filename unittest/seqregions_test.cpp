@@ -115,19 +115,28 @@ TEST(SeqRegions, addNonConsecutiveRRegion)
 }
 
 /*
-    Generate testing data (seqregions1, seqregions2)
+    Load the alignment with 5K seqs
  */
-void genTestData1(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqRegions>& seqregions2)
+cmaple::Alignment loadAln5K()
 {
     // detect the path to the example directory
     std::string example_dir = "../../example/";
     if (!fileExists(example_dir + "example.maple"))
         example_dir = "../example/";
     
-    Alignment aln(example_dir + "test_5K.maple");
+    // load aln 5K
+    return Alignment(example_dir + "test_5K.maple");
+}
+
+/*
+    Generate testing data (seqregions1, seqregions2)
+ */
+void genTestData1(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqRegions>& seqregions2)
+{
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
-    Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
+    Tree tree(&aln, &model);
     
     std::unique_ptr<SeqRegions> seqregions_1 = aln.data[0].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions_2 = aln.data[10].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
@@ -269,12 +278,7 @@ TEST(SeqRegions, countSharedSegments)
  */
 TEST(SeqRegions, compareWithSample)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     std::unique_ptr<SeqRegions> seqregions1 = aln.data[0].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions2 = aln.data[10].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     std::vector<int> expected_results{1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
@@ -296,17 +300,12 @@ TEST(SeqRegions, compareWithSample)
  */
 TEST(SeqRegions, areDiffFrom)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    // init testing data
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
+    
     std::unique_ptr<SeqRegions> seqregions1 = nullptr;
     std::unique_ptr<SeqRegions> seqregions2 = nullptr;
     
@@ -408,15 +407,11 @@ TEST(SeqRegions, simplifyO)
  */
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
-    Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
+    Tree tree(&aln, &model);
+    
     std::unique_ptr<SeqRegions> seqregions1 = nullptr;
     std::unique_ptr<SeqRegions> seqregions2 = nullptr;
     std::unique_ptr<SeqRegions> seqregions3 = nullptr;
@@ -452,15 +447,11 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
  */
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
+    std::unique_ptr<Params>& params = tree.params;
+    
     std::unique_ptr<SeqRegions> seqregions1 = nullptr;
     std::unique_ptr<SeqRegions> seqregions2 = nullptr;
     std::unique_ptr<SeqRegions> seqregions3 = nullptr;
@@ -515,17 +506,10 @@ TEST(SeqRegions, computeTotalLhAtRoot)
  */
 TEST(SeqRegions, merge_N_O)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    std::unique_ptr<Params> params = ParamsBuilder().build();
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -651,19 +635,12 @@ TEST(SeqRegions, merge_N_O)
  */
 TEST(SeqRegions, merge_N_RACGT)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
-    Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
+    Tree(&aln, &model);
     
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
+    std::unique_ptr<Params> params = ParamsBuilder().build();
     
     // ----- Test 1 -----
     SeqRegions merged_regions;
@@ -995,17 +972,10 @@ TEST(SeqRegions, merge_N_RACGT)
  */
 TEST(SeqRegions, merge_O_N)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    std::unique_ptr<Params> params = ParamsBuilder().build();
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -1121,17 +1091,10 @@ TEST(SeqRegions, merge_O_N)
  */
 TEST(SeqRegions, merge_RACGT_N)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    std::unique_ptr<Params> params = ParamsBuilder().build();
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -1465,17 +1428,10 @@ TEST(SeqRegions, merge_RACGT_N)
  */
 TEST(SeqRegions, merge_Zero_Distance)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    std::unique_ptr<Params> params = ParamsBuilder().build();
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -1587,17 +1543,10 @@ TEST(SeqRegions, merge_Zero_Distance)
  */
 TEST(SeqRegions, merge_O_ORACGT)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -1723,17 +1672,10 @@ TEST(SeqRegions, merge_O_ORACGT)
  */
 TEST(SeqRegions, merge_RACGT_O)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -1821,17 +1763,10 @@ TEST(SeqRegions, merge_RACGT_O)
  */
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -1987,18 +1922,10 @@ TEST(SeqRegions, merge_RACGT_RACGT)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    // NOTE: if plength_observation2root > 0 then must be plength_observation2node != -1;
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -2483,22 +2410,18 @@ void genTestData(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqRe
  */
 TEST(SeqRegions, mergeUpperLower)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
+    std::unique_ptr<Params>& params = tree.params;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    
     std::unique_ptr<SeqRegions> seqregions1 = nullptr;
     std::unique_ptr<SeqRegions> seqregions2 = nullptr;
     std::unique_ptr<SeqRegions> merged_regions_ptr = nullptr;
     
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
@@ -2648,17 +2571,10 @@ TEST(SeqRegions, mergeUpperLower)
  */
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     
@@ -2769,17 +2685,10 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
  */
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -3114,17 +3023,10 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -3203,17 +3105,10 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -3346,17 +3241,10 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
  */
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -3477,17 +3365,10 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -3656,17 +3537,10 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -3827,17 +3701,10 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -4022,17 +3889,10 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -4195,17 +4055,10 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
  */
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
-    
-    // dummy variables
+    std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
@@ -4471,22 +4324,17 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
  */
 TEST(SeqRegions, mergeTwoLowers)
 {
-    // detect the path to the example directory
-    std::string example_dir = "../../example/";
-    if (!fileExists(example_dir + "example.maple"))
-        example_dir = "../example/";
-    
-    Alignment aln(example_dir + "test_5K.maple");
+    Alignment aln = loadAln5K();
     Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
-    std::unique_ptr<Params> params = ParamsBuilder().build();
+    std::unique_ptr<Params>& params = tree.params;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
     std::unique_ptr<SeqRegions> seqregions1 = nullptr;
     std::unique_ptr<SeqRegions> seqregions2 = nullptr;
     std::unique_ptr<SeqRegions> merged_regions_ptr = nullptr;
     
     // dummy variables
-    const PositionType seq_length = aln.ref_seq.size();
-    const StateType num_states = aln.num_states;
     const RealNumType threshold_prob = params->threshold_prob;
     
     // ----- Test 1 -----
