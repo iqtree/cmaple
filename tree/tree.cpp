@@ -315,7 +315,7 @@ void cmaple::Tree::updateModelByAln() {
   model->extractRefInfo(aln);
 
   // update the mutation matrix
-  model->updateMutationMatEmpirical(aln);
+  model->updateMutationMatEmpirical();
 
   // always re-compute cumulative rates of the ref sequence
   computeCumulativeRate();
@@ -612,7 +612,7 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
     // update the mutation matrix from empirical number of mutations observed
     // from the recent sequences (if allowed)
     if (!(i % ((std::vector<cmaple::Sequence>::size_type) params->mutation_update_period))) {
-      if (model->updateMutationMatEmpirical(aln)) {
+      if (model->updateMutationMatEmpirical()) {
         computeCumulativeRate();
       }
     }

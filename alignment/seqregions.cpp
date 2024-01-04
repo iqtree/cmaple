@@ -109,7 +109,7 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
     return 1;
   }
 
-  return 0;
+  // return 0;
 }
 
 auto cmaple::SeqRegions::areDiffFrom(

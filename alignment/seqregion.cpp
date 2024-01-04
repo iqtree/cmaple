@@ -66,10 +66,11 @@ void cmaple::SeqRegion::convertAmbiguiousState(SeqType seq_type,
       convertAmbiguiousStateAA(max_num_states);
       break;
 
+    case cmaple::SeqRegion::SEQ_AUTO:
+    case cmaple::SeqRegion::SEQ_UNKNOWN:
     default:
       throw std::invalid_argument(
           "Sorry! Currently, we only support DNA and Protein data.");
-      break;
   }
 }
 

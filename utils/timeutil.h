@@ -130,7 +130,7 @@ __inline double getCPUTime() {
  */
 __inline double getRealTime() {
 struct timeval tv;
-gettimeofday(&tv, NULL);
+gettimeofday(&tv, nullptr);
 //Tung: the if statement below causes compiling error because gettimeofday() return void not boolean
 //if (gettimeofday(&tv, NULL)) return -1.0; /* error */
 return (tv.tv_sec + (double)tv.tv_usec / 1.0e6);
@@ -238,7 +238,7 @@ __inline uint64_t getMemorySize( )
 #endif
 	uint64_t size = 0;               /* 64-bit */
 	size_t len = sizeof( size );
-	if ( sysctl( mib, 2, &size, &len, NULL, 0 ) == 0 )
+	if ( sysctl( mib, 2, &size, &len, nullptr, 0 ) == 0 )
 		return (uint64_t)size;
 	return 0L;			/* Failed? */
 
@@ -267,7 +267,7 @@ __inline uint64_t getMemorySize( )
 #endif
 	uint64_t size = 0;		/* 32-bit */
 	size_t len = sizeof( size );
-	if ( sysctl( mib, 2, &size, &len, NULL, 0 ) == 0 )
+	if ( sysctl( mib, 2, &size, &len, nullptr, 0 ) == 0 )
 		return (uint64_t)size;
 	return 0L;			/* Failed? */
 #endif /* sysctl and sysconf variants */

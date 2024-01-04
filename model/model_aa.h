@@ -14,12 +14,6 @@ namespace cmaple
     private:
         
         /**
-         Read model's rates from string/file
-         @throw std::logic\_error if unexpected values/behaviors found during the operations
-         */
-        virtual void readRates(std::istream &in, const bool is_reversible);
-        
-        /**
          Rescale the lower diagonal rates
          */
         void rescaleLowerDiagonalRates();
@@ -61,7 +55,7 @@ namespace cmaple
          - the substitution model is unknown/unsupported
          - the reference genome is empty
          */
-        virtual bool updateMutationMatEmpirical(const Alignment* aln);
+        virtual bool updateMutationMatEmpirical();
         
         /**
          Update pseudocounts from new sample to improve the estimate of the substitution rates

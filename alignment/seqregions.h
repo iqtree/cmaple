@@ -720,7 +720,6 @@ void merge_O_ORACGT(const SeqRegion& seq1_region,
 
   // seq1 = seq2 = O
   if (seq2_region.type == TYPE_O) {
-    RealNumType* mutation_mat_row = model->mutation_mat;
     sum_new_lh = updateMultLHwithMat<num_states>(model->mutation_mat,
                                                  *(seq2_region.likelihood),
                                                  *new_lh, total_blength_2);
@@ -916,9 +915,11 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
       seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
+#ifdef DEBUG
   const size_t max_elements =
       merged_regions
           ->capacity();  // remember capacity (may be more than we 'reserved')
+#endif
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -1025,9 +1026,11 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
     pos = end_pos + 1;
   }
 
+#ifdef DEBUG
   assert(merged_regions->capacity() ==
          max_elements);  // ensure we did the correct reserve, otherwise it was
   // a pessimization
+#endif
 }
 
 template <const StateType num_states>
@@ -1404,9 +1407,11 @@ RealNumType SeqRegions::mergeTwoLowers(
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
       seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
+#ifdef DEBUG
   const size_t max_elements =
       merged_regions
           ->capacity();  // remember capacity (may be more than we 'reserved')
+#endif
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -1469,9 +1474,11 @@ RealNumType SeqRegions::mergeTwoLowers(
     pos = end_pos + 1;
   }
 
+#ifdef DEBUG
   assert(merged_regions->capacity() ==
          max_elements);  // ensure we did the correct reserve, otherwise it was
   // a pessimization
+#endif
 
   return log_lh;
 }
@@ -1650,7 +1657,6 @@ void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh,
         // init new likelihood
         auto new_lh = cmaple::make_unique<SeqRegion::LHType>();  // = new
         // RealNumType[num_states];
-        auto& new_lh_value = *new_lh;
         RealNumType sum_lh = updateLHwithModel<num_states>(
             model, *region->likelihood, (*new_lh), total_blength);
         // normalize the new partial likelihood
@@ -2077,9 +2083,11 @@ RealNumType SeqRegions::calculateSiteLhContributions(
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
       seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
+#ifdef DEBUG
   const size_t max_elements =
       merged_regions
           ->capacity();  // remember capacity (may be more than we 'reserved')
+#endif
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -2145,8 +2153,10 @@ RealNumType SeqRegions::calculateSiteLhContributions(
     pos = end_pos + 1;
   }
 
+#ifdef DEBUG
   assert(merged_regions->capacity() ==
          max_elements);  // ensure we did the correct reserve, otherwise it was
+#endif
   // a pessimization
 
   return log_lh;

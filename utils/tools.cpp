@@ -314,7 +314,7 @@ auto cmaple::convert_int64(const char* str, int& end_pos) -> int64_t {
 auto cmaple::convert_real_number(const char* str) -> RealNumType {
   char* endptr;
   RealNumType d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF || *endptr != 0) {
+  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF || *endptr != 0) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
     err += "\" instead";
@@ -326,7 +326,7 @@ auto cmaple::convert_real_number(const char* str) -> RealNumType {
 auto cmaple::convert_real_number(const char* str, int& end_pos) -> RealNumType {
   char* endptr;
   RealNumType d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF) {
+  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
     err += "\" instead";
@@ -360,7 +360,7 @@ void cmaple::convert_real_number_vec(const char* str,
   do {
     RealNumType d = strtod(beginptr, &endptr);
 
-    if ((d == 0.0 && endptr == beginptr) || fabs(d) == HUGE_VALF) {
+    if ((d == 0.0 && endptr == beginptr) || fabs(d) == (double) HUGE_VALF) {
       string err = "Expecting floating-point number, but found \"";
       err += beginptr;
       err += "\" instead";
@@ -443,7 +443,7 @@ void cmaple::convert_range(const char* str,
 
   // parse the lower bound of the range
   RealNumType d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF ||
+  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
@@ -460,7 +460,7 @@ void cmaple::convert_range(const char* str,
   // parse the upper bound of the range
   str = endptr + 1;
   d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF ||
+  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
@@ -477,7 +477,7 @@ void cmaple::convert_range(const char* str,
   // parse the step size of the range
   str = endptr + 1;
   d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == HUGE_VALF || *endptr != 0) {
+  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF || *endptr != 0) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
     err += "\" instead";

@@ -42,7 +42,7 @@ cmaple::Alignment::Alignment(const std::string& aln_filename,
 cmaple::Alignment::~Alignment() = default;
 
 void cmaple::Alignment::read(std::istream& aln_stream,
-                             const std::string& ref_seq,
+                             const std::string& n_ref_seq,
                              const InputType format,
                              const cmaple::SeqRegion::SeqType seqtype) {
   if (cmaple::verbose_mode >= cmaple::VB_MED) {
@@ -78,10 +78,10 @@ void cmaple::Alignment::read(std::istream& aln_stream,
   try {
     // in FASTA or PHYLIP format
     if (aln_format != IN_MAPLE) {
-      readFastaOrPhylip(aln_stream, ref_seq);
+      readFastaOrPhylip(aln_stream, n_ref_seq);
       // in MAPLE format
     } else {
-      if (ref_seq.length() && cmaple::verbose_mode > cmaple::VB_QUIET) {
+      if (n_ref_seq.length() && cmaple::verbose_mode > cmaple::VB_QUIET) {
         outWarning(
             "Ignore the input reference as it must be already "
             "specified in the MAPLE format");
@@ -105,7 +105,7 @@ void cmaple::Alignment::read(std::istream& aln_stream,
 }
 
 void cmaple::Alignment::read(const std::string& aln_filename,
-                             const std::string& ref_seq,
+                             const std::string& n_ref_seq,
                              const InputType format,
                              const cmaple::SeqRegion::SeqType seqtype) {
   if (!aln_filename.length()) {
@@ -124,7 +124,7 @@ void cmaple::Alignment::read(const std::string& aln_filename,
   }
 
   // Initialize an alignment instance from the input stream
-  read(aln_stream, ref_seq, format, seqtype);
+  read(aln_stream, n_ref_seq, format, seqtype);
 
   // close aln_stream
   aln_stream.close();
@@ -150,10 +150,11 @@ void cmaple::Alignment::write(std::ostream& aln_stream,
     case IN_PHYLIP:
       writePHYLIP(aln_stream);
       break;
-    default:  // IN_AUTO or IN_UNKNOWN
+    case IN_AUTO:
+    case IN_UNKNOWN:
+    default:
       throw std::invalid_argument(
           "Unsupported format for outputting the alignment!");
-      break;
   }
 }
 
@@ -459,11 +460,12 @@ void cmaple::Alignment::readSequences(std::istream& aln_stream,
     case IN_PHYLIP:
       readPhylip(aln_stream, sequences, seq_names, check_min_seqs);
       break;
-
+    case IN_MAPLE:
+    case IN_AUTO:
+    case IN_UNKNOWN:
     default:
       throw std::logic_error(
           "Please input an alignment in FASTA or PHYLIP format!");
-      break;
   }
 }
 
@@ -980,7 +982,7 @@ auto cmaple::Alignment::convertState2Char(
         default:
           return '?';  // unrecognize character
       }
-      return state;
+      // return state;
     case cmaple::SeqRegion::SEQ_PROTEIN:  // Protein
       if (state < 20) {
         return symbols_protein[(StateType)state];
@@ -1001,6 +1003,8 @@ auto cmaple::Alignment::convertState2Char(
             return symbols_morph[state];
         else
             return '-';*/
+    case cmaple::SeqRegion::SEQ_AUTO:
+    case cmaple::SeqRegion::SEQ_UNKNOWN:
     default:
       // unknown
       return '*';
@@ -1075,10 +1079,10 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
           invalid_state_msg += state;
           invalid_state_msg += ". Please check and try again!";
           throw std::invalid_argument(invalid_state_msg);
-          return TYPE_INVALID;  // unrecognize character
+          // return TYPE_INVALID;  // unrecognize character
         }
       }
-      return (StateType) state;
+      // return (StateType) state;
     case cmaple::SeqRegion::SEQ_PROTEIN:  // Protein
       //        if (state == 'B') return 4+8+19;
       //        if (state == 'Z') return 32+64+19;
@@ -1107,7 +1111,7 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
         invalid_state_msg += state;
         invalid_state_msg += ". Please check and try again!";
         throw std::invalid_argument(invalid_state_msg);
-        return TYPE_INVALID;  // unrecognize character
+        // return TYPE_INVALID;  // unrecognize character
       }
       state = loc - symbols_protein;
       if (state < 20) {
@@ -1128,12 +1132,14 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
         }
         state = loc - symbols_morph;
         return state;*/
+    case cmaple::SeqRegion::SEQ_AUTO:
+    case cmaple::SeqRegion::SEQ_UNKNOWN:
     default: {
       string invalid_state_msg = "Invalid state ";
       invalid_state_msg += state;
       invalid_state_msg += ". Please check and try again!";
       throw std::invalid_argument(invalid_state_msg);
-      return TYPE_INVALID;
+      // return TYPE_INVALID;
     }
   }
 }
@@ -1151,7 +1157,7 @@ auto cmaple::Alignment::computeSeqDistance(Sequence& sequence,
       case TYPE_R:  // Type R does not exist in Mutations (only in Regions)
         throw std::logic_error(
             "Sorry! Something went wrong. Invalid mutation type (type R).");
-        break;
+        // break;
       case TYPE_N:  // handle unsequenced sites ('-' or 'N')
       case TYPE_DEL:
       case TYPE_O:  // handle ambiguity
@@ -1325,7 +1331,7 @@ void cmaple::Alignment::writePHYLIP(std::ostream& out) {
 }
 
 void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream,
-                                          const std::string& ref_seq) {
+                                          const std::string& n_ref_seq) {
   assert(aln_format != IN_UNKNOWN);
     
   // read input sequences
@@ -1363,8 +1369,8 @@ void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream,
   // generate reference sequence from the input sequences
   string ref_sequence;
   // read the reference sequence from file (if the user supplies it)
-  if (ref_seq.length()) {
-    ref_sequence = ref_seq;
+  if (n_ref_seq.length()) {
+    ref_sequence = n_ref_seq;
   } else {
     ref_sequence = generateRef(sequences);
   }
@@ -1455,8 +1461,12 @@ void cmaple::Alignment::updateNumStates() {
     case cmaple::SeqRegion::SEQ_PROTEIN:
       num_states = 20;
       break;
-
-    default:  // dna
+    case cmaple::SeqRegion::SEQ_DNA:
+      num_states = 4;
+      break;
+    case cmaple::SeqRegion::SEQ_AUTO:
+    case cmaple::SeqRegion::SEQ_UNKNOWN:
+    default:
       num_states = 4;
       break;
   }
@@ -1541,7 +1551,7 @@ auto cmaple::Alignment::detectInputFile(std::istream& in)
       return cmaple::Alignment::IN_UNKNOWN;
   }
 
-  return cmaple::Alignment::IN_UNKNOWN;
+  // return cmaple::Alignment::IN_UNKNOWN;
 }
 
 auto cmaple::Alignment::parseAlnFormat(const std::string& n_format)

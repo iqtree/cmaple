@@ -71,7 +71,7 @@ class ModelBase {
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  virtual void readRates(std::istream& in, const bool is_reversible){};
+  void readRates(std::istream& in, const bool is_reversible);
 
   /**
    Normalize the Q matrix so that the expected number of subtitution is 1
@@ -104,7 +104,7 @@ class ModelBase {
    @throw  std::logic\_error if the substitution model is unknown/unsupported
    */
   template <cmaple::StateType num_states>
-  bool updateMutationMatEmpiricalTemplate(const Alignment* aln);
+  bool updateMutationMatEmpiricalTemplate();
   /*! \endcond */
     
  public:
@@ -295,7 +295,7 @@ class ModelBase {
    - the substitution model is unknown/unsupported
    - the reference genome is empty
    */
-  virtual bool updateMutationMatEmpirical(const Alignment* aln) {
+  virtual bool updateMutationMatEmpirical() {
     return false;
   }
 
@@ -375,9 +375,8 @@ void cmaple::ModelBase::updateMutationMat() {
 }
 
 template <StateType num_states>
-auto cmaple::ModelBase::updateMutationMatEmpiricalTemplate(const Alignment* aln)
+auto cmaple::ModelBase::updateMutationMatEmpiricalTemplate()
     -> bool {
-  assert(aln);
   bool update = false;
 
   if (!fixed_params) {

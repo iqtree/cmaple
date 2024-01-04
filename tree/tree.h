@@ -2001,7 +2001,7 @@ void cmaple::Tree::updateModelParams() {
   performDFSAtLeave<&cmaple::Tree::updatePesudoCountModel<num_states>>();
 
   // update model params based on the pseudo count
-  if (model->updateMutationMatEmpirical(aln)) {
+  if (model->updateMutationMatEmpirical()) {
     computeCumulativeRate();
   }
 }

@@ -9,7 +9,6 @@ auto outstreambuf::open(const char *name, ios::openmode mode)
   if (!fout.is_open()) {
     cerr << "ERROR: Could not open " << name << " for logging" << endl;
     exit(EXIT_FAILURE);
-    return NULL;
   }
   fout_buf = fout.rdbuf();
   // }
@@ -28,7 +27,7 @@ auto outstreambuf::close() -> outstreambuf * {
     fout.close();
     return this;
   }
-  return NULL;
+  return nullptr;
 }
 
 auto outstreambuf::overflow(int c) -> int { // used for output buffer only

@@ -98,8 +98,8 @@ inline RealType dotProduct(const RealType* p1, const RealType* p2)
 template <>
 inline float dotProduct<20>(const float* p1, const float* p2)
 {
-  const int count = 20;
-  const float* const p1End = p1 + count;
+  // const int count = 20;
+  // const float* const p1End = p1 + count;
 
   // Process all 20 values. Nothing to add yet, just multiplying.
   auto dot0 = mul4<0>(p1, p2);
@@ -120,8 +120,8 @@ inline float dotProduct<20>(const float* p1, const float* p2)
 template <>
 inline double dotProduct<20>(const double* p1, const double* p2)
 {
-  const int count = 20;
-  const double* const p1End = p1 + count;
+  // const int count = 20;
+  // const double* const p1End = p1 + count;
 
   // Process all 20 values. Nothing to add yet, just multiplying.
   auto dot0 = mul4<0>(p1, p2);

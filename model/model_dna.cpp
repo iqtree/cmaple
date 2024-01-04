@@ -110,13 +110,12 @@ void cmaple::ModelDNA::extractRootFreqs(const Alignment* aln) {
   }
 }
 
-auto cmaple::ModelDNA::updateMutationMatEmpirical(const Alignment* aln)
+auto cmaple::ModelDNA::updateMutationMatEmpirical()
     -> bool {
-  assert(aln);
         
   // don't update JC model parameters
   if (!fixed_params && sub_model != JC) {
-    return updateMutationMatEmpiricalTemplate<4>(aln);
+    return updateMutationMatEmpiricalTemplate<4>();
   }
 
   // no update -> return false;

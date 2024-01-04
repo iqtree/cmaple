@@ -62,8 +62,8 @@ public:
     /**
         Initialize the errstreambuf
      */
-    void init(std::streambuf* fout_buf) {
-        this->fout_buf = fout_buf;
+    void init(std::streambuf* n_fout_buf) {
+        this->fout_buf = n_fout_buf;
         cerr_buf = std::cerr.rdbuf();
         std::cerr.rdbuf(this);
         new_line = true;
@@ -113,9 +113,9 @@ protected:
 /** Must stream buffer ? */
 class muststreambuf : public std::streambuf {
 public:
-    void init(std::streambuf* cout_buf, std::streambuf* fout_buf) {
-        this->fout_buf = fout_buf;
-        this->cout_buf = cout_buf;
+    void init(std::streambuf* n_cout_buf, std::streambuf* n_fout_buf) {
+        this->fout_buf = n_fout_buf;
+        this->cout_buf = n_cout_buf;
     }
     
 protected:

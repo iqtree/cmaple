@@ -38,7 +38,7 @@ class ModelDNA : public ModelBase {
    - the substitution model is unknown/unsupported
    - the reference genome is empty
    */
-  virtual bool updateMutationMatEmpirical(const Alignment* aln);
+  virtual bool updateMutationMatEmpirical();
 
   /**
    Update pseudocounts from new sample to improve the estimate of the

@@ -290,6 +290,66 @@ ModelsBlock* cmaple::ModelBase::readModelsDefinition(
   return models_block;
 }
 
+void cmaple::ModelBase::readRates(istream& in, const bool is_reversible) {
+  StateType row = 1, col = 0;
+  StateType row_index = num_states_;
+  if (is_reversible) {
+    const StateType nrates = 190;
+    // since states for protein is stored in lower-triangle, special treatment
+    // is needed
+    for (StateType i = 0; i < nrates; i++, col++) {
+      if (col == row) {
+        row++;
+        col = 0;
+        row_index += num_states_;
+      }
+      // switch col and row
+      // int id = col * (2 * num_states - col - 1) / 2 + (row - col - 1);
+
+      // don't switch the row and col
+      int id = row_index + col;
+      /*if (id >= nrates) {
+          cout << row << " " << col << endl;
+      }
+      assert(id < nrates && id >= 0); // make sure that the conversion is
+      correct*/
+
+      string tmp_value;
+      in >> tmp_value;
+      if (!tmp_value.length()) {
+        throw getModelName() + ": Rate entries could not be read";
+      }
+      mutation_mat[id] = convert_real_number(tmp_value.c_str());
+
+      if (mutation_mat[id] < 0.0) {
+        throw "Negative rates found";
+      }
+    }
+  } else {
+    // non-reversible model, read the whole rate matrix
+    RealNumType* mutation_mat_ptr = mutation_mat;
+    for (row = 0; row < num_states_; row++) {
+      RealNumType row_sum = 0.0;
+      for (col = 0; col < num_states_; col++, ++mutation_mat_ptr) {
+        string tmp_value;
+        in >> tmp_value;
+        if (!tmp_value.length()) {
+          throw getModelName() + ": Rate entries could not be read";
+        }
+        mutation_mat_ptr[0] = convert_real_number(tmp_value.c_str());
+
+        if (mutation_mat_ptr[0] < 0.0 && row != col) {
+          throw "Negative rates found";
+        }
+        row_sum += mutation_mat_ptr[0];
+      }
+      if (fabs(row_sum) > 1e-3) {
+        throw "Row " + convertIntToString(row) + " does not sum to 0";
+      }
+    }
+  }
+}
+
 bool cmaple::ModelBase::readParametersString(string& model_str) {
   // if detect if reading full matrix or half matrix by the first entry
   PositionType end_pos;
