@@ -224,7 +224,7 @@ const std::string cmaple::PhyloNode::exportString(
     // without minor sequences -> simply return node's name and its branch
     // length
     std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
-    const PositionType num_less_info_seqs = less_info_seqs.size();
+    const std::vector<NumSeqsType>::size_type num_less_info_seqs = less_info_seqs.size();
     if (num_less_info_seqs == 0) {
       return seq_names[getSeqNameIndex()] + ":" + length_str;
       // with minor sequences -> return minor sequences' names with zero
@@ -242,7 +242,7 @@ const std::string cmaple::PhyloNode::exportString(
         output += ":0," + seq_names[less_info_seqs[0]] + ":0)";
         
         // add the remaining less-info-seqs
-        for (auto  i = 1; i < less_info_seqs.size(); ++i) {
+        for (std::vector<NumSeqsType>::size_type  i = 1; i < less_info_seqs.size(); ++i) {
           output += branch_support + ":0," + seq_names[less_info_seqs[i]] + ":0)";
         }
         

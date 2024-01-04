@@ -159,7 +159,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
               allow_replacing_ML_tree = params.allow_replace_input_tree;
             }
 
-            tree.computeBranchSupport(params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree, out_stream);
+            tree.computeBranchSupport((int) params.num_threads, params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree, out_stream);
 
             // write the tree file with branch supports
             ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");

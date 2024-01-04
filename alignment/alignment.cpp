@@ -310,7 +310,7 @@ void cmaple::Alignment::readFasta(std::istream& in,
     bool duplicated = false;
     unordered_set<string> namesSeenThisTime;
     // Set of shorted names seen so far, this iteration
-    for (i = 0; i < (PositionType)seq_names.size(); ++i) {
+    for (i = 0; i < seq_names.size(); ++i) {
       if (remain_seq_names[i].empty()) {
         continue;
       }
