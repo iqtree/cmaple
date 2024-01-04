@@ -565,7 +565,7 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
   // dummy variables
   //  Check whether we infer a phologeny from an input tree
   const bool from_input_tree = nodes.size() > 0;
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
   const std::vector<cmaple::Sequence>::size_type num_seqs = aln->data.size();
   std::vector<cmaple::Sequence>::size_type num_new_sequences = num_seqs;
   Sequence* sequence = &aln->data.front();
@@ -611,7 +611,7 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
 
     // update the mutation matrix from empirical number of mutations observed
     // from the recent sequences (if allowed)
-    if (!(i % params->mutation_update_period)) {
+    if (!(i % ((std::vector<cmaple::Sequence>::size_type) params->mutation_update_period))) {
       if (model->updateMutationMatEmpirical(aln)) {
         computeCumulativeRate();
       }
@@ -629,7 +629,7 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
     RealNumType best_down_lh_diff = MIN_NEGATIVE;
     Index best_child_index;
     seekSamplePlacement<num_states>(
-        Index(root_vector_index, TOP), i, lower_regions, selected_node_index,
+        Index(root_vector_index, TOP), (NumSeqsType) i, lower_regions, selected_node_index,
         best_lh_diff, is_mid_branch, best_up_lh_diff, best_down_lh_diff,
         best_child_index);
 
@@ -639,11 +639,11 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
       // place new sample as a descendant of a mid-branch point
       if (is_mid_branch) {
         placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions,
-                                            i, best_lh_diff);
+                                            (NumSeqsType) i, best_lh_diff);
         // otherwise, best lk so far is for appending directly to existing
         // node
       } else {
-        placeNewSampleAtNode<num_states>(selected_node_index, lower_regions, i,
+        placeNewSampleAtNode<num_states>(selected_node_index, lower_regions, (NumSeqsType) i,
                                          best_lh_diff, best_up_lh_diff,
                                          best_down_lh_diff, best_child_index);
       }
@@ -1545,7 +1545,7 @@ void cmaple::Tree::updatePartialLhFromChildren(
 
 template <const StateType num_states>
 void cmaple::Tree::updatePartialLh(stack<Index>& node_stack) {
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   while (!node_stack.empty()) {
     Index node_index = node_stack.top();
@@ -2020,7 +2020,7 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
     const RealNumType removed_blength,
     const Index top_node_index) {
     
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   // Node* at_node = top_node ? top_node: updating_node->node;
   const bool top_node_exits = top_node_index.getMiniIndex() != UNDEFINED;
@@ -3811,10 +3811,10 @@ void cmaple::Tree::connectNewSample2Branch(
   next_node_1->next = new_internal_node;*/
   createAnInternalNode();
   createALeafNode(seq_name_index);
-  const std::vector<cmaple::PhyloNode>::size_type leaf_vec_index = nodes.size() - 1;
-  PhyloNode& leaf = nodes[leaf_vec_index];
-  const std::vector<cmaple::PhyloNode>::size_type internal_vec_index = leaf_vec_index - 1;
-  PhyloNode& internal = nodes[internal_vec_index];
+  const NumSeqsType leaf_vec_index = (NumSeqsType) nodes.size() - 1;
+  PhyloNode& leaf = nodes[(std::vector<cmaple::PhyloNode>::size_type) leaf_vec_index];
+  const NumSeqsType internal_vec_index = leaf_vec_index - 1;
+  PhyloNode& internal = nodes[(std::vector<cmaple::PhyloNode>::size_type) internal_vec_index];
 
   /*new_internal_node->neighbor = sibling_node->neighbor;
    sibling_node->neighbor->neighbor = new_internal_node;
@@ -4130,10 +4130,10 @@ void cmaple::Tree::connectNewSample2Root(
 
   createAnInternalNode();
   createALeafNode(seq_name_index);
-  const std::vector<cmaple::PhyloNode>::size_type leaf_vec_index = nodes.size() - 1;
-  PhyloNode& leaf = nodes[leaf_vec_index];
-  const std::vector<cmaple::PhyloNode>::size_type new_root_vec_index = leaf_vec_index - 1;
-  PhyloNode& new_root = nodes[new_root_vec_index];
+  const NumSeqsType leaf_vec_index = (NumSeqsType) nodes.size() - 1;
+  PhyloNode& leaf = nodes[(std::vector<cmaple::PhyloNode>::size_type) leaf_vec_index];
+  const NumSeqsType new_root_vec_index = leaf_vec_index - 1;
+  PhyloNode& new_root = nodes[(std::vector<cmaple::PhyloNode>::size_type) new_root_vec_index];
 
   new_root.setNeighborIndex(TOP, Index());
 
@@ -4848,11 +4848,11 @@ RealNumType cmaple::Tree::estimateBranchLength(
   const SeqRegions& seq2_regions = *child_regions;
   size_t iseq1 = 0;
   size_t iseq2 = 0;
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   // avoid reallocations
   coefficient_vec.reserve(parent_regions->countSharedSegments(
-      seq2_regions, seq_length));  // avoid realloc of vector data
+      seq2_regions, (std::vector<cmaple::StateType>::size_type) seq_length));  // avoid realloc of vector data
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -5511,7 +5511,7 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
   const SeqRegions& seq2_regions = *child_regions;
   size_t iseq1 = 0;
   size_t iseq2 = 0;
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -5560,7 +5560,7 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
     // 2.2. e1.type = R and e2.type = O
     else if (s1s2 == RO) {
       calculateSubtreeCost_R_O<num_states>(*seq1_region, *seq2_region,
-                                           total_blength, aln->ref_seq[end_pos],
+                                           total_blength, aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos],
                                            total_factor, model);
     }
     // 2.3. e1.type = R and e2.type = A/C/G/T
@@ -5936,7 +5936,7 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
   if (blength < 0) {
     blength = 0;
   }
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -5971,7 +5971,7 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     // 2.2. e1.type = R and e2.type = O
     else if (s1s2 == RO) {
       calculateSampleCost_R_O<num_states>(*seq1_region, *seq2_region, blength,
-                                          aln->ref_seq[end_pos], lh_cost,
+                                          aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos], lh_cost,
                                           total_factor, model);
     }
     // 2.3. e1.type = R and e2.type = A/C/G/T
@@ -6252,7 +6252,7 @@ template <void (cmaple::Tree::*task)(RealNumType&,
 RealNumType cmaple::Tree::performDFS() {
   // dummy variables
   RealNumType total_lh = 0;
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   // start from root
   Index node_index = Index(root_vector_index, TOP);
@@ -6936,7 +6936,7 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
       parent.getNeighborIndex(parent_index.getFlipMiniIndex());
   PhyloNode& sibling = nodes[sibling_index.getVectorIndex()];
   PositionType sh_count{0};
-  const PositionType seq_length = aln->ref_seq.size();
+  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
   const NodeLh& nodelh = node_lhs[node.getNodelhIndex()];
   const RealNumType LT2 = LT1 + nodelh.getLhDiff2();
   const RealNumType LT3 = LT1 + nodelh.getLhDiff3();
@@ -6964,7 +6964,7 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
 
   // validate the results
   RealNumType lh_diff_2{0}, lh_diff_3{0};
-  for (PositionType j = 0; j < seq_length; ++j) {
+  for (std::vector<cmaple::StateType>::size_type j = 0; j < seq_length; ++j) {
     lh_diff_2 += site_lh_diff_2[j];
     lh_diff_2 += site_lh_root_diff_2[j];
 
@@ -6984,22 +6984,22 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
 #endif
 
     // init random generators
-    std::default_random_engine gen(params->ran_seed + thread_id);
-    std::uniform_int_distribution<> rng_distrib(0, seq_length - 1);
+    std::default_random_engine gen((uint) params->ran_seed + (uint) thread_id);
+    std::uniform_int_distribution<> rng_distrib(0, (int) seq_length - 1);
 #pragma omp for
     for (PositionType i = 0; i < params->aLRT_SH_replicates; ++i) {
       // reset all LTX*
       RealNumType LT1_star{0}, LT2_star{0}, LT3_star{0};
 
       // generate a vector of sampled sites
-      for (PositionType j = 0; j < seq_length; ++j)
+      for (std::vector<cmaple::StateType>::size_type j = 0; j < seq_length; ++j)
         selected_sites[j] = rng_distrib(gen);
 
       // compute LT1*, LT2*, LT3*
       // NOTES: LT2*, LT3* are now the lh differences between the actual LT2*,
       // LT3* and LT1*
-      for (PositionType j = 0; j < seq_length; ++j) {
-        const PositionType site_index = selected_sites[j];
+      for (std::vector<cmaple::StateType>::size_type j = 0; j < seq_length; ++j) {
+        const std::vector<cmaple::StateType>::size_type site_index = (std::vector<cmaple::StateType>::size_type) selected_sites[j];
 
         LT1_star += site_lh_contributions[site_index];
         LT1_star += site_lh_root[site_index];
@@ -7552,7 +7552,7 @@ bool cmaple::Tree::calculateNNILhNonRoot(
       node_lhs[parent.getNodelhIndex()].getLhContribution();
   // 7.3. other ancestors on the path from the new_parent to root (stop when the
   // change is insignificant)
-  const PositionType seq_length = aln->ref_seq.size();
+  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
 
   NumSeqsType node_vec = parent_index.getVectorIndex();
   std::unique_ptr<SeqRegions> new_lower_lh = std::move(new_parent_new_lower_lh);
@@ -7828,7 +7828,7 @@ void cmaple::Tree::replaceMLTreebyNNINonRoot(
       child_2.getPartialLh(TOP);
   const std::unique_ptr<SeqRegions>& sibling_lower_lh =
       sibling.getPartialLh(TOP);
-  const PositionType seq_length = aln->ref_seq.size();
+  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
 
   // move child_1 to parent
   child_1.setNeighborIndex(TOP, parent_index);
@@ -8069,7 +8069,7 @@ template <const StateType num_states>
 void cmaple::Tree::updateUpperLR(std::stack<Index>& node_stack,
                                  std::stack<Index>& node_stack_aLRT) {
   const RealNumType threshold_prob = params->threshold_prob;
-  const PositionType seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   while (!node_stack.empty()) {
     const Index node_index = node_stack.top();
@@ -8140,7 +8140,7 @@ RealNumType cmaple::Tree::calculateSiteLhs(
     std::vector<RealNumType>& site_lh_contributions,
     std::vector<RealNumType>& site_lh_root) {
   // initialize the total_lh by the likelihood from root
-  const PositionType seq_length = aln->ref_seq.size();
+  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
   const RealNumType threshold_prob = params->threshold_prob;
   if (site_lh_contributions.size() != seq_length) {
     site_lh_contributions.resize(seq_length, 0);
@@ -8219,7 +8219,7 @@ RealNumType cmaple::Tree::calculateSiteLhs(
               "calculateTreeLh(); old list, and children lists");
           // otherwise, everything is good -> update the lower lh of the
           // current node
-        } else if (new_lower_lh->areDiffFrom(node.getPartialLh(TOP), seq_length,
+        } else if (new_lower_lh->areDiffFrom(node.getPartialLh(TOP), (PositionType) seq_length,
                                              num_states, *params)) {
           // ("Strange, while calculating tree likelihood encountered
           // non-updated lower likelihood!"); non-updated lower
@@ -8255,12 +8255,12 @@ NumSeqsType cmaple::Tree::parseFile(
   // start with "(" -> an internal node
   if (ch == '(') {
     createAnInternalNode();
-    tmp_root_vec = nodes.size() - 1;
+    tmp_root_vec = (NumSeqsType) nodes.size() - 1;
   }
   // otherwise, it's a leaf
   else {
     createALeafNode(0);
-    tmp_root_vec = nodes.size() - 1;
+    tmp_root_vec = (NumSeqsType) nodes.size() - 1;
   }
 
   // start with "(" -> an internal node
@@ -8281,7 +8281,7 @@ NumSeqsType cmaple::Tree::parseFile(
 
         // create a new parent node
         createAnInternalNode();
-        const NumSeqsType new_tmp_root_vec = nodes.size() - 1;
+        const NumSeqsType new_tmp_root_vec = (NumSeqsType) nodes.size() - 1;
         // connect the current root node to the new parent node
         nodes[new_tmp_root_vec].setNeighborIndex(RIGHT,
                                                  Index(tmp_root_vec, TOP));
@@ -8376,7 +8376,7 @@ NumSeqsType cmaple::Tree::parseFile(
       tmp_root.setSeqNameIndex(sequence_index);
       tmp_root.setPartialLh(
           TOP, aln->data[sequence_index].getLowerLhVector(
-                   aln->ref_seq.size(), aln->num_states, aln->getSeqType()));
+                   (PositionType) aln->ref_seq.size(), aln->num_states, aln->getSeqType()));
 
       // mark the sequece as added (to the tree)
       sequence_added[sequence_index] = true;
@@ -8536,7 +8536,7 @@ void cmaple::Tree::remarkExistingSeqs() {
   resetSeqAdded();
 
   // browse all nodes to mark existing leave as added
-  for (auto i = 0; i < nodes.size(); ++i) {
+  for (std::vector<cmaple::PhyloNode>::size_type i = 0; i < nodes.size(); ++i) {
     // only consider leave
     if (!nodes[i].isInternal()) {
       PhyloNode& node = nodes[i];
@@ -8547,7 +8547,7 @@ void cmaple::Tree::remarkExistingSeqs() {
 
       // mark its less-info sequences
       std::vector<NumSeqsType>& less_info_seqs = node.getLessInfoSeqs();
-      for (auto j = 0; j < less_info_seqs.size(); ++j)
+      for (std::vector<NumSeqsType>::size_type j = 0; j < less_info_seqs.size(); ++j)
         less_info_seqs[j] =
             markAnExistingSeq(seq_names[less_info_seqs[j]], map_name_index);
     }
@@ -8930,7 +8930,7 @@ void cmaple::Tree::resetSPRFlags(const bool n_SPR_applied,
                                  const bool update_outdated,
                                  const bool n_outdated) {
   // browse all nodes
-  for (auto i = 0; i < nodes.size(); ++i) {
+  for (std::vector<cmaple::PhyloNode>::size_type i = 0; i < nodes.size(); ++i) {
     PhyloNode& node = nodes[i];
 
     // update SPR_applied
@@ -8946,7 +8946,7 @@ bool cmaple::Tree::isComplete() {
   // make sure aln is not null
   if (aln) {
     // browse sequences in the alignment one by one
-    for (auto i = 0; i < aln->data.size(); ++i) {
+    for (std::vector<bool>::size_type i = 0; i < aln->data.size(); ++i) {
       // if any of sequence has yet added -> this tree is incomplete
       if (!sequence_added[i]) {
         return false;
@@ -9013,7 +9013,7 @@ cmaple::Tree::TreeType cmaple::Tree::parseTreeType(
 
 void cmaple::Tree::computeCumulativeRate() {
   assert(aln && model);
-  const PositionType sequence_length = aln->ref_seq.size();
+  const std::vector<cmaple::StateType>::size_type sequence_length = aln->ref_seq.size();
 
   if (sequence_length <= 0) {
     throw std::logic_error("Reference genome is empty");
@@ -9032,7 +9032,7 @@ void cmaple::Tree::computeCumulativeRate() {
   // compute cumulative_base and cumulative_rate
   const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
   cmaple::RealNumType* const diagonal_mut_mat = model->diagonal_mut_mat;
-  for (PositionType i = 0; i < sequence_length; ++i) {
+  for (std::vector<cmaple::StateType>::size_type i = 0; i < sequence_length; ++i) {
     StateType state = ref_seq[i];
     cumulative_rate[i + 1] = cumulative_rate[i] + diagonal_mut_mat[state];
 
