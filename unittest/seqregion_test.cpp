@@ -18,7 +18,9 @@ TEST(SeqRegion, constructor_default)
 }
 
 /*
- Test SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation = -1, RealNumType n_plength_from_root = -1, LHPtrType n_likelihood = nullptr) constructor
+ Test SeqRegion(StateType n_type, PositionType n_position,
+ RealNumType n_plength_observation = -1, RealNumType n_plength_from_root = -1,
+ LHPtrType n_likelihood = nullptr) constructor
  */
 TEST(SeqRegion, constructor_1)
 {
@@ -84,7 +86,9 @@ TEST(SeqRegion, constructor_1)
 }
 
 /*
- Test SeqRegion(StateType n_type, PositionType n_position, RealNumType n_plength_observation, RealNumType n_plength_from_root, const LHType& n_likelihood) constructor
+ Test SeqRegion(StateType n_type, PositionType n_position,
+ RealNumType n_plength_observation, RealNumType n_plength_from_root,
+ const LHType& n_likelihood) constructor
  */
 TEST(SeqRegion, constructor_2)
 {

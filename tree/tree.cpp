@@ -3350,7 +3350,6 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
           0.5 * node.getUpperLength();  // node->length;
       RealNumType tmp_lh_diff = calculateSubTreePlacementCost<num_states>(
           node.getMidBranchLh(), subtree_regions, new_branch_length);
-      ;
 
       while (true) {
         // if better placement found -> record it
@@ -4857,7 +4856,7 @@ RealNumType cmaple::Tree::estimateBranchLength(
 
   // avoid reallocations
   coefficient_vec.reserve(parent_regions->countSharedSegments(
-      seq2_regions, static_cast<std::vector<cmaple::StateType>::size_type>(seq_length)));  // avoid realloc of vector data
+      seq2_regions, static_cast<std::vector<cmaple::StateType>::size_type>(seq_length)));
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -6359,7 +6358,6 @@ void cmaple::Tree::calculate_aRLT(const bool allow_replacing_ML_tree) {
   RealNumType tree_total_lh =
       lh_at_root +
       performDFS<&cmaple::Tree::computeLhContribution<num_states>>();
-  ;
 
   // traverse tree to calculate aLRT-SH for each internal branch
   PhyloNode& root = nodes[root_vector_index];

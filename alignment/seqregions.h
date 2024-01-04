@@ -1705,7 +1705,10 @@ void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions,
                                SeqRegions& merged_regions);
 
 template <const StateType num_states>
-inline void addSimplifyOAndCalSiteLh(std::vector<RealNumType>& site_lh_contributions, RealNumType& log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh, const PositionType end_pos, const Alignment* aln, const RealNumType threshold_prob, std::unique_ptr<SeqRegions>& merged_regions)
+inline void addSimplifyOAndCalSiteLh(std::vector<RealNumType>& site_lh_contributions,
+    RealNumType& log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh,
+    const PositionType end_pos, const Alignment* aln, const RealNumType threshold_prob,
+    std::unique_ptr<SeqRegions>& merged_regions)
 {
     // normalize the new partial likelihood
     normalize_arr(new_lh.data(), num_states, sum_lh);
@@ -1745,7 +1748,8 @@ bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions,
   // normalize the new partial likelihood
   // add simplify O
   // compute (site) lh contributions
-  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh, new_lh, sum_lh, end_pos, aln, threshold_prob, merged_regions);
+  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh,
+        new_lh, sum_lh, end_pos, aln, threshold_prob, merged_regions);
 
   // no error
   return true;
@@ -1781,7 +1785,8 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions,
   // normalize the new partial likelihood
   // add simplify O
   // compute (site) lh contributions
-  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh, new_lh, sum_lh, end_pos, aln, threshold_prob, merged_regions);
+  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh, new_lh,
+            sum_lh, end_pos, aln, threshold_prob, merged_regions);
   } else {
     if (new_lh[seq2_state] == 0) {
       merged_regions = nullptr;
@@ -1875,7 +1880,8 @@ bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions,
   // normalize the new partial likelihood
   // add simplify O
   // compute (site) lh contributions
-  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh, new_lh, sum_lh, end_pos, aln, threshold_prob, merged_regions);
+  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh,
+        new_lh, sum_lh, end_pos, aln, threshold_prob, merged_regions);
 
   // no error
   return true;
@@ -1911,7 +1917,8 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions,
   // normalize the new partial likelihood
   // add simplify O
   // compute (site) lh contributions
-  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh, new_lh, sum_lh, end_pos, aln, threshold_prob, merged_regions);
+  addSimplifyOAndCalSiteLh<num_states>(site_lh_contributions, log_lh,
+                new_lh, sum_lh, end_pos, aln, threshold_prob, merged_regions);
   } else {
     // add a new region and try to merge consecutive R regions together
     cmaple::SeqRegions::addNonConsecutiveRRegion(

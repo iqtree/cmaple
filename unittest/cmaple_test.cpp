@@ -8,7 +8,8 @@ TEST(CMapleTest, GetVersionTest) {
     std::string version = cmaple::getVersion();
 
     // Check the result
-    EXPECT_EQ(version, "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "." + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH);
+    EXPECT_EQ(version, "CMAPLE " + convertIntToString(cmaple_VERSION_MAJOR) + "."
+        + convertIntToString(cmaple_VERSION_MINOR) + cmaple_VERSION_PATCH);
 }
 
 TEST(CMapleTest, GetCitationsTest) {
@@ -40,5 +41,5 @@ TEST(CMapleTest, checkMapleSuitability) {
     
     aln.read(example_dir + "input.phy");
     // Check the result
-    EXPECT_FALSE(cmaple::checkMapleSuitability(aln));;
+    EXPECT_FALSE(cmaple::checkMapleSuitability(aln));
 }

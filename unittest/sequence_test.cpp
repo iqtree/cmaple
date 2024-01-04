@@ -99,7 +99,8 @@ TEST(Sequence, getLowerLhVector)
     EXPECT_EQ(seqregion0.likelihood, nullptr);
     
     Alignment aln(example_dir + "test_5K.maple");
-    std::unique_ptr<SeqRegions> seqregions2 = aln.data[2].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+    std::unique_ptr<SeqRegions> seqregions2 = aln.data[2]
+        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     EXPECT_EQ(seqregions2->size(), 11);
     EXPECT_EQ(seqregions2->data()[0].type, TYPE_R);
     EXPECT_EQ(seqregions2->data()[1].position, 240);

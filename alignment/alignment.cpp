@@ -320,14 +320,11 @@ void cmaple::Alignment::readFasta(std::istream& in,
       }
       size_t pos = remain_seq_names[i].find_first_of(" \t");
       if (pos == string::npos) {
-        new_seq_names[i] +=
-          remain_seq_names[i];
+        new_seq_names[i] += remain_seq_names[i];
         remain_seq_names[i] = "";
       } else {
-        new_seq_names[i] +=
-          remain_seq_names[i].substr(0, pos);
-        remain_seq_names[i] = "_" +
-          remain_seq_names[i].substr(pos + 1);
+        new_seq_names[i] += remain_seq_names[i].substr(0, pos);
+        remain_seq_names[i] = "_" + remain_seq_names[i].substr(pos + 1);
       }
       if (!duplicated) {
         // add the shortened name for sequence i to the

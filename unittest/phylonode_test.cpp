@@ -310,7 +310,7 @@ TEST(PhyloNode, TestExportString)
     std::vector<std::string> seq_names;
     // init NUM_SEQS
     seq_names.reserve(NUM_SEQS);
-    for (int i =0 ; i < NUM_SEQS; ++i)
+    for (int i =0; i < NUM_SEQS; ++i)
     {
         seq_names.emplace_back("sequence " + convertIntToString(i));
     }
@@ -335,8 +335,10 @@ TEST(PhyloNode, TestExportString)
     node2.addLessInfoSeqs(6);
     node2.addLessInfoSeqs(8);
     node2.setUpperLength(0.5);
-    EXPECT_EQ(node2.exportString(true, seq_names, false), "(((sequence 1:0,sequence 3:0):0,sequence 6:0):0,sequence 8:0):0.5");
-    EXPECT_EQ(node2.exportString(false, seq_names, false), "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
+    EXPECT_EQ(node2.exportString(true, seq_names, false),
+        "(((sequence 1:0,sequence 3:0):0,sequence 6:0):0,sequence 8:0):0.5");
+    EXPECT_EQ(node2.exportString(false, seq_names, false),
+        "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
 }
 
 /*
@@ -354,30 +356,39 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
     
-    std::unique_ptr<SeqRegions> seqregions1 = aln.data[0].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
-    std::unique_ptr<SeqRegions> seqregions2 = aln.data[10].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
-    std::unique_ptr<SeqRegions> seqregions3 = aln.data[100].getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+    std::unique_ptr<SeqRegions> seqregions1 = aln.data[0]
+        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+    std::unique_ptr<SeqRegions> seqregions2 = aln.data[10]
+        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+    std::unique_ptr<SeqRegions> seqregions3 = aln.data[100]
+        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
     
     // test on a root
     std::unique_ptr<SeqRegions> merge_regions1 = nullptr;
-    seqregions1->mergeTwoLowers<4>(merge_regions1, 1e-5, *seqregions2, 123e-3, tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
+    seqregions1->mergeTwoLowers<4>(merge_regions1, 1e-5, *seqregions2, 123e-3, tree.aln,
+            tree.model, tree.cumulative_rate, params->threshold_prob);
     PhyloNode neighbor((InternalNode()));
     PhyloNode node1((InternalNode()));
     std::unique_ptr<SeqRegions> total_lh = nullptr;
     node1.setPartialLh(TOP, cmaple::make_unique<SeqRegions>(std::move(merge_regions1)));
-    node1.computeTotalLhAtNode<4>(total_lh, neighbor, tree.aln, tree.model, params->threshold_prob, true); // deafault blength = -1
+    node1.computeTotalLhAtNode<4>(total_lh, neighbor, tree.aln,
+        tree.model, params->threshold_prob, true); // deafault blength = -1
     EXPECT_EQ(total_lh->size(), 13);
     EXPECT_EQ(total_lh->at(0).type, TYPE_R);
     EXPECT_EQ(total_lh->at(1).position, 240);
     EXPECT_EQ(total_lh->at(2).plength_observation2root, -1);
     EXPECT_EQ(total_lh->at(4).plength_observation2node, -1);
     EXPECT_EQ(total_lh->at(4).likelihood, nullptr);
-    SeqRegion::LHType lh_value{0.00007791197759195882027640628342268769301881548017,0.99990842564971482708813255158020183444023132324219,0.00000303392141268825073045778406566341800498776138,0.00001062845128063864023817020748596817725228902418};
+    SeqRegion::LHType lh_value{0.00007791197759195882027640628342268769301881548017,
+        0.99990842564971482708813255158020183444023132324219,
+        0.00000303392141268825073045778406566341800498776138,
+        0.00001062845128063864023817020748596817725228902418};
     EXPECT_EQ(*total_lh->at(3).likelihood, lh_value);
     
     // test on a non-root node
     std::unique_ptr<SeqRegions> merge_regions2 = nullptr;
-    seqregions1->mergeTwoLowers<4>(merge_regions2, 14e-6, *seqregions3, 22e-5, tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
+    seqregions1->mergeTwoLowers<4>(merge_regions2, 14e-6, *seqregions3, 22e-5,
+            tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
     const MiniIndex parent_mini = RIGHT;
     neighbor.setPartialLh(parent_mini, cmaple::make_unique<SeqRegions>(std::move(merge_regions2)));
     node1.setNeighborIndex(TOP, Index(0, parent_mini));
@@ -389,7 +400,10 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     EXPECT_EQ(total_lh->at(2).plength_observation2root, -1);
     EXPECT_EQ(total_lh->at(3).plength_observation2node, 0);
     EXPECT_EQ(total_lh->at(4).likelihood, nullptr);
-    SeqRegion::LHType lh_value1{0.00000017075294482921272644353357077900978922002651, 0.99997870393335785976773877337109297513961791992188, 0.00000016973979605241345684048996731579928010091862,0.00002095557390147909605977206981552996012396761216};
+    SeqRegion::LHType lh_value1{0.00000017075294482921272644353357077900978922002651,
+        0.99997870393335785976773877337109297513961791992188,
+        0.00000016973979605241345684048996731579928010091862,
+        0.00002095557390147909605977206981552996012396761216};
     EXPECT_EQ(*total_lh->at(5).likelihood, lh_value1);
     
     // default blength
@@ -401,7 +415,10 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     EXPECT_EQ(total_lh->at(2).plength_observation2root, -1);
     EXPECT_EQ(total_lh->at(3).plength_observation2node, 0);
     EXPECT_EQ(total_lh->at(5).likelihood, nullptr);
-    SeqRegion::LHType lh_value2{0.00000005304243814999847067991444317207327951990692,0.99999984718379919534925193147500976920127868652344,0.00000000314931216745035814445441008362514684337796,0.00000009662445065181004761007619837179238864166564};
+    SeqRegion::LHType lh_value2{0.00000005304243814999847067991444317207327951990692,
+        0.99999984718379919534925193147500976920127868652344,
+        0.00000000314931216745035814445441008362514684337796,
+        0.00000009662445065181004761007619837179238864166564};
     EXPECT_EQ(*total_lh->at(3).likelihood, lh_value2);
 }
 

@@ -2127,7 +2127,6 @@ void cmaple::Tree::seekSamplePlacement(
   // branches.
   best_down_lh_diff = MIN_NEGATIVE;
   best_child_index = Index();
-  ;
 
   // if best position so far is the descendant of a node -> explore further at
   // its children

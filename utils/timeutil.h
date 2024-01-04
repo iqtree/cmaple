@@ -279,7 +279,8 @@ __inline uint64_t getMemorySize( )
 
 
 #define HOW_LONG(x) \
-{ std::cout.precision(6); double startTime = getRealTime(); \
+{ std::cout.precision(6); \
+double startTime = getRealTime(); \
 x; \
 std::cout << #x << " took " << (getRealTime()-startTime) << std::endl;  }
 

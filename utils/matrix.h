@@ -86,7 +86,8 @@ inline double horiz_sum(simde__m256d v) {
 // Compute dot product of float vectors
 template <cmaple::StateType length, typename RealType>
 inline RealType dotProduct(const RealType* p1, const RealType* p2)
-{ // this is the default and 'fine' for DNA etc, when the number of operations is small. For AA's (length==20) there are specialized versions available.
+{ // this is the default and 'fine' for DNA etc, when the number of operations is small.
+  // For AA's (length==20) there are specialized versions available.
   RealType result{ 0 };
   for (cmaple::StateType j = 0; j < length; ++j)
   {
@@ -185,8 +186,11 @@ cmaple::RealNumType matrixEvolveRoot(const cmaple::RealNumType* const vec2,
     for (cmaple::StateType i = 0; i < length; ++i, mutation_mat_row += length)
   {
     // NHANLT NOTE: UNSURE
-    // tot2: likelihood that we can observe seq1_state elvoving from i (from root) (account for the fact that the observation might have occurred on the other side of the phylogeny with respect to the root)
-    // tot2 = root_freqs[seq1_state] * (1 + mut[seq1_state,seq1_state] * plength_observation2node) + root_freqs[i] * mut[i,seq1_state] * plength_observation2node
+    // tot2: likelihood that we can observe seq1_state elvoving from i (from root)
+    // (account for the fact that the observation might have occurred on
+    // the other side of the phylogeny with respect to the root)
+    // tot2 = root_freqs[seq1_state] * (1 + mut[seq1_state,seq1_state] *
+    // plength_observation2node) + root_freqs[i] * mut[i,seq1_state] * plength_observation2node
       cmaple::RealNumType tot2;
 
     if (seq1_state == i)
@@ -232,7 +236,10 @@ void setVecWithState(cmaple::RealNumType* const set_vec, const cmaple::StateType
 }
 
 template <cmaple::StateType length>
-void updateCoeffs(cmaple::RealNumType* const root_freqs, cmaple::RealNumType* const transposed_mut_mat_row, cmaple::RealNumType* const likelihood, cmaple::RealNumType* const mutation_mat_row, const cmaple::RealNumType factor, cmaple::RealNumType& coeff0, cmaple::RealNumType& coeff1)
+void updateCoeffs(cmaple::RealNumType* const root_freqs,
+        cmaple::RealNumType* const transposed_mut_mat_row, cmaple::RealNumType* const likelihood,
+        cmaple::RealNumType* const mutation_mat_row, const cmaple::RealNumType factor,
+        cmaple::RealNumType& coeff0, cmaple::RealNumType& coeff1)
 {
     for (cmaple::StateType i = 0; i < length; ++i)
     {
@@ -242,7 +249,8 @@ void updateCoeffs(cmaple::RealNumType* const root_freqs, cmaple::RealNumType* co
 }
 
 template <cmaple::StateType length>
-void setVecByProduct(cmaple::RealNumType* const set_vec, const cmaple::RealNumType* const vec1, const cmaple::RealNumType* const vec2)
+void setVecByProduct(cmaple::RealNumType* const set_vec,
+    const cmaple::RealNumType* const vec1, const cmaple::RealNumType* const vec2)
 {
     for (cmaple::StateType j = 0; j < length; ++j)
         set_vec[j] = vec1[j] * vec2[j];
@@ -257,7 +265,8 @@ void resetVec(cmaple::RealNumType* const set_vec)
 }
 
 template <cmaple::StateType length>
-cmaple::RealNumType resetLhVecExceptState(cmaple::RealNumType* const set_vec, const cmaple::StateType state, const cmaple::RealNumType state_lh)
+cmaple::RealNumType resetLhVecExceptState(cmaple::RealNumType* const set_vec,
+        const cmaple::StateType state, const cmaple::RealNumType state_lh)
 {
     resetVec<length>(set_vec);
     

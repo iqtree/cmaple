@@ -20,7 +20,8 @@ namespace cmaple
 
     /*! \brief Check if an alignment is suitable for using [C]Maple method
      * @param[in] aln an alignment
-     * @return TRUE if the alignment is suitable for using [C]Maple method; otherwise, classical methods (e.g., IQ-TREE, RAXML) are recommended.
+     * @return TRUE if the alignment is suitable for using [C]Maple method;
+     * otherwise, classical methods (e.g., IQ-TREE, RAXML) are recommended.
      * @throw std::invalid\_argument if the input alignment is empty or invalid
      */
     bool checkMapleSuitability(const Alignment& aln);
