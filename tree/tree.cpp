@@ -6777,7 +6777,7 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
 
     // if the new lower lh is different from the old one -> traverse upward
     // further
-    if (node.getPartialLh(TOP)->areDiffFrom(new_lower_lh, seq_length,
+    if (node.getPartialLh(TOP)->areDiffFrom(new_lower_lh, (PositionType) seq_length,
                                             num_states, *params) ||
         fabs(prev_lh_diff) > threshold_prob) {
       // update lh_diff
@@ -7552,7 +7552,7 @@ bool cmaple::Tree::calculateNNILhNonRoot(
       node_lhs[parent.getNodelhIndex()].getLhContribution();
   // 7.3. other ancestors on the path from the new_parent to root (stop when the
   // change is insignificant)
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   NumSeqsType node_vec = parent_index.getVectorIndex();
   std::unique_ptr<SeqRegions> new_lower_lh = std::move(new_parent_new_lower_lh);
@@ -7828,7 +7828,7 @@ void cmaple::Tree::replaceMLTreebyNNINonRoot(
       child_2.getPartialLh(TOP);
   const std::unique_ptr<SeqRegions>& sibling_lower_lh =
       sibling.getPartialLh(TOP);
-  const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
+  const PositionType seq_length = (PositionType) aln->ref_seq.size();
 
   // move child_1 to parent
   child_1.setNeighborIndex(TOP, parent_index);
@@ -8813,7 +8813,7 @@ void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
 
   // dummy variables
   std::unique_ptr<SeqRegions> lower_regions =
-      aln->data[seq_name_index].getLowerLhVector(aln->ref_seq.size(),
+      aln->data[seq_name_index].getLowerLhVector((PositionType) aln->ref_seq.size(),
                                                  num_states, aln->getSeqType());
   const std::unique_ptr<SeqRegions>& upper_left_right_regions =
       getPartialLhAtNode(parent_index);
@@ -8919,7 +8919,7 @@ void cmaple::Tree::addLessInfoSeqReplacingMLTree(
   computeLhContribution<num_states>(
       lh_diff, new_lower_lh, new_internal, node.getPartialLh(TOP),
       sibling.getPartialLh(TOP), node_index, node, sibling_index, sibling,
-      aln->ref_seq.size());
+      (PositionType) aln->ref_seq.size());
 
   // add newly created internal node to the queue to compute the aLRT later
   new_internal.setOutdated(true);
