@@ -153,7 +153,7 @@ class Alignment {
    */
   inline cmaple::SeqRegion::SeqType getSeqType() const { 
     return seq_type_; 
-  };
+  }
 
   /**
    * Set seq_type
@@ -161,7 +161,7 @@ class Alignment {
   inline void setSeqType(cmaple::SeqRegion::SeqType seq_type) {
     seq_type_ = seq_type;
     updateNumStates();
-  };
+  }
 
   /**
    Read a reference genome from an alignment file in FASTA or PHYLIP format

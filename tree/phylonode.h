@@ -22,10 +22,10 @@ class PhyloNode {
     MyVariant() = delete;  ///< not needed (would incur overhead)
 
     /** constructor */
-    MyVariant(LeafNode&& leaf) : leaf_(std::move(leaf)){};
+    MyVariant(LeafNode&& leaf) : leaf_(std::move(leaf)){}
 
     /** constructor */
-    MyVariant(InternalNode&& internal) : internal_(std::move(internal)){};
+    MyVariant(InternalNode&& internal) : internal_(std::move(internal)){}
 
     /** move-like constructor */
     MyVariant(MyVariant&& myvariant, const bool is_internal) {
@@ -36,14 +36,14 @@ class PhyloNode {
         new (&internal_) InternalNode(std::move(myvariant.internal_));
       else
         new (&leaf_) LeafNode(std::move(myvariant.leaf_));
-    };
+    }
 
     /**
      destructor
      the compiler complains if I don't explicitly declare this function, it's
      required by the constructor/destructor of PhyloNode
      */
-    ~MyVariant(){};
+    ~MyVariant(){}
   };
 
   // total_lh and mid_branch_lh
@@ -78,14 +78,14 @@ class PhyloNode {
       : is_internal_{false},
         outdated_{true},
         spr_count_{0},
-        data_(std::move(leaf)){};
+        data_(std::move(leaf)){}
 
   /** constructor */
   PhyloNode(InternalNode&& internal) noexcept
       : is_internal_{true},
         outdated_{true},
         spr_count_{0},
-        data_(std::move(internal)){};
+        data_(std::move(internal)){}
 
   /** move constructor */
   PhyloNode(PhyloNode&& node) noexcept
@@ -94,7 +94,7 @@ class PhyloNode {
         other_lh_(std::move(node.other_lh_)),
         outdated_(node.outdated_),
         spr_count_(node.spr_count_),
-        length_(node.length_){};
+        length_(node.length_){}
 
   /** destructor */
   ~PhyloNode() {
@@ -328,7 +328,7 @@ struct NodeLh {
    Constructor
    */
   NodeLh(cmaple::RealNumType lh_contribution)
-      : lh_contribution_(lh_contribution){};
+      : lh_contribution_(lh_contribution){}
 
  private:
   /*

@@ -48,7 +48,7 @@ class UpdatingNode : public cmaple::TraversingNode {
         incoming_regions_(std::move(incoming_regions)),
         incoming_regions_ref_(incoming_regions_ref),
         branch_length_(branch_length),
-        need_updating_(need_updating){};
+        need_updating_(need_updating){}
 
   /**
    Get Incoming_regions_[ref_]

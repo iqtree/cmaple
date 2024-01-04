@@ -286,7 +286,7 @@ class ModelBase {
    Init the mutation rate matrix from a model
    @throw std::logic\_error if the substitution model is unknown/unsupported
    */
-  virtual void initMutationMat(){};
+  virtual void initMutationMat(){}
 
   /**
    Update the mutation matrix periodically from the empirical count of mutations
