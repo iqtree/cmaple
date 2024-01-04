@@ -675,7 +675,6 @@ class Tree {
   template <const cmaple::StateType num_states>
   void addChildSeekSubtreePlacement(
       const cmaple::Index child_1_index,
-      const cmaple::Index child_2_index,
       PhyloNode& child_1,
       PhyloNode& child_2,
       const cmaple::RealNumType& lh_diff_at_node,
@@ -1714,12 +1713,10 @@ class Tree {
 
   /**
    Reset the SPR flags
-   @param n_SPR_applied the new value of SPR_applied
    @param update_outdated TRUE to update outdated
    @param n_outdated the new value of outdated
    */
-  void resetSPRFlags(const bool n_SPR_applied,
-                     const bool update_outdated,
+  void resetSPRFlags(const bool update_outdated,
                      const bool n_outdated);
 
   /**
@@ -1861,6 +1858,17 @@ class Tree {
   template <
       void (Tree::*task)(PhyloNode&, const cmaple::Index, const cmaple::Index)>
   void performDFSAtLeave();
+   
+  /**
+   Check if we should traverse further down
+  */
+  bool keepTraversing(const RealNumType& best_lh_diff,
+                        const RealNumType& lh_diff_at_node,
+                        const bool& strict_stop_seeking_placement_subtree,
+                        const std::unique_ptr<UpdatingNode>& updating_node,
+                        const int& failure_limit_subtree,
+                        const RealNumType& thresh_log_lh_subtree,
+                              const bool able2traverse = true);
 
   // NHANLT: Debug aLRT
   // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
@@ -2344,7 +2352,6 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
                       // model, threshold_prob);
 
       // now try different lengths for the new branch
-      RealNumType new_branch_length_lh = best_parent_lh;
       RealNumType best_length = default_blength;
       estimateLengthNewBranch<
           &cmaple::Tree::calculateSamplePlacementCost<num_states>>(

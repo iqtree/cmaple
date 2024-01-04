@@ -173,8 +173,12 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
     case cmaple::SeqRegion::SEQ_PROTEIN:
       resetVec<20>(root_freqs);
       break;
-
-    default:  // dna
+    case cmaple::SeqRegion::SEQ_DNA:
+      resetVec<4>(root_freqs);
+      break;
+    case cmaple::SeqRegion::SEQ_AUTO:
+    case cmaple::SeqRegion::SEQ_UNKNOWN:
+    default:  // may throw an error instead
       resetVec<4>(root_freqs);
       break;
   }
@@ -292,7 +296,7 @@ ModelsBlock* cmaple::ModelBase::readModelsDefinition(
 
 void cmaple::ModelBase::readRates(istream& in, const bool is_reversible) {
   StateType row = 1, col = 0;
-  StateType row_index = num_states_;
+  StateType row_id = num_states_;
   if (is_reversible) {
     const StateType nrates = 190;
     // since states for protein is stored in lower-triangle, special treatment
@@ -301,13 +305,13 @@ void cmaple::ModelBase::readRates(istream& in, const bool is_reversible) {
       if (col == row) {
         row++;
         col = 0;
-        row_index += num_states_;
+        row_id += num_states_;
       }
       // switch col and row
       // int id = col * (2 * num_states - col - 1) / 2 + (row - col - 1);
 
       // don't switch the row and col
-      int id = row_index + col;
+      int id = row_id + col;
       /*if (id >= nrates) {
           cout << row << " " << col << endl;
       }
@@ -558,14 +562,14 @@ cmaple::SeqRegion::SeqType cmaple::ModelBase::getSeqType() {
   switch (num_states_) {
     case 20:
       return cmaple::SeqRegion::SEQ_PROTEIN;
-      break;
+      // break;
     case 4:
       return cmaple::SeqRegion::SEQ_DNA;
-      break;
+      // break;
 
     default:  // unkown
       return cmaple::SeqRegion::SEQ_UNKNOWN;
-      break;
+      // break;
   }
 }
 

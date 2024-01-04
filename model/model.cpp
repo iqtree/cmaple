@@ -34,12 +34,14 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model,
         n_sub_model = ModelBase::LG;
         break;
       }
+      case SeqRegion::SEQ_AUTO:
+      case SeqRegion::SEQ_UNKNOWN:
       default: {
         n_sub_model = ModelBase::UNKNOWN;
         throw std::invalid_argument(
             "Unable to select a substitution model from an unknown/auto-detect "
             "seqtype");
-        break;
+        // break;
       }
     }
   }
@@ -60,9 +62,11 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model,
       model_base = new ModelDNA(n_sub_model);
       break;
     }
+    case SeqRegion::SEQ_AUTO:
+    case SeqRegion::SEQ_UNKNOWN:
     default: {
       throw std::invalid_argument("Unknown/Unsupported model");
-      break;
+      // break;
     }
   }
 }

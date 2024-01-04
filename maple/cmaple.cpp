@@ -140,7 +140,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         
         // Infer a phylogenetic tree
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
-        std::ostream null_stream(0);
+        std::ostream null_stream(nullptr);
         std::ostream& out_stream = cmaple::verbose_mode >= cmaple::VB_MED ? std::cout : null_stream;
         tree.autoProceedMAPLE(tree_search_type, params.shallow_tree_search, out_stream);
 
@@ -173,9 +173,9 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             tree.makeTreeInOutConsistent();
             
             // Overwrite the normal tree file
-            ofstream out = ofstream(output_treefile);
-            out << tree.exportNewick(tree_format);
-            out.close();
+            ofstream overwrite_out = ofstream(output_treefile);
+            overwrite_out << tree.exportNewick(tree_format);
+            overwrite_out.close();
         }
         
         // output log-likelihood of the tree
@@ -227,6 +227,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
 void cmaple::testing(cmaple::Params& params)
 {
     cmaple::verbose_mode = VB_DEBUG;
+    std::cout << params.aln_path << std::endl;
     
     // -------- Test write and read tree -----------
    /* Alignment aln10("test_100.maple");
