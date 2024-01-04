@@ -526,7 +526,7 @@ void cmaple::ModelBase::updatePesudoCount(const Alignment* aln,
     size_t iseq1 = 0;
     size_t iseq2 = 0;
     const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
-    const PositionType seq_length = (PositionType) ref_seq.size();
+    const PositionType seq_length = static_cast<PositionType>(ref_seq.size());
 
     while (pos < seq_length) {
       PositionType end_pos;
@@ -541,11 +541,12 @@ void cmaple::ModelBase::updatePesudoCount(const Alignment* aln,
           (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) &&
           (seq2_region->type < num_states_ || seq2_region->type == TYPE_R)) {
         if (seq1_region->type == TYPE_R) {
-          pseu_mutation_count[row_index[ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos]] +
-                              seq2_region->type] += 1;
+          pseu_mutation_count[row_index[ref_seq[static_cast<std::vector<cmaple
+                ::StateType>::size_type>(end_pos)]] + seq2_region->type] += 1;
         } else if (seq2_region->type == TYPE_R) {
           pseu_mutation_count[row_index[seq1_region->type] +
-                              ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos]] += 1;
+                              ref_seq[static_cast<std::vector<cmaple::StateType>
+                                        ::size_type>(end_pos)]] += 1;
         } else {
           pseu_mutation_count[row_index[seq1_region->type] +
                               seq2_region->type] += 1;

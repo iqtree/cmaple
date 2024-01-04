@@ -159,9 +159,9 @@ inline void _my_assert(const char* expression,
                        const char* func,
                        const char* file,
                        int line) {
-  char* sfile = (char*)strrchr(file, '/');
+  char* sfile = const_cast<char*>(strrchr(file, '/'));
   if (!sfile)
-    sfile = (char*)file;
+    sfile = const_cast<char*>(file);
   else
     sfile++;
   std::cerr << sfile << ":" << line << ": " << func << ": Assertion `"
@@ -275,7 +275,7 @@ struct Index {
       constructor
       it's required by the constructor of LeafNode
    */
-  Index() : vector_index_(0), mini_index_(UNDEFINED){};
+    Index() : vector_index_(0), mini_index_(UNDEFINED){};
 
   /**
       constructor

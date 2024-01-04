@@ -93,7 +93,7 @@ __inline double getCPUTime() {
 #ifdef HAVE_GETRUSAGE
 	struct rusage usage;
 	getrusage(RUSAGE_SELF, &usage);
-	return (usage.ru_utime.tv_sec + (double)usage.ru_utime.tv_usec / 1.0e6);
+	return (usage.ru_utime.tv_sec + static_cast<double>(usage.ru_utime.tv_usec) / 1.0e6);
 #elif (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
 	/* Fill in the ru_utime and ru_stime members.  */
 	FILETIME creation_time;
@@ -133,7 +133,7 @@ struct timeval tv;
 gettimeofday(&tv, nullptr);
 //Tung: the if statement below causes compiling error because gettimeofday() return void not boolean
 //if (gettimeofday(&tv, NULL)) return -1.0; /* error */
-return (tv.tv_sec + (double)tv.tv_usec / 1.0e6);
+return (tv.tv_sec + static_cast<double>(tv.tv_usec) / 1.0e6);
 }
 /*
 #if defined _WIN32 || defined __WIN32__ || defined WIN32
@@ -239,7 +239,7 @@ __inline uint64_t getMemorySize( )
 	uint64_t size = 0;               /* 64-bit */
 	size_t len = sizeof( size );
 	if ( sysctl( mib, 2, &size, &len, nullptr, 0 ) == 0 )
-		return (uint64_t)size;
+		return static_cast<uint64_t>(size);
 	return 0L;			/* Failed? */
 
 #elif defined(_SC_AIX_REALMEM)

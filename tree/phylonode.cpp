@@ -49,7 +49,7 @@ void cmaple::PhyloNode::setSPRCount(uint8_t spr_count) {
 }
 
 auto cmaple::PhyloNode::getUpperLength() const -> RealNumType {
-  return (RealNumType) length_;
+  return static_cast<RealNumType>(length_);
 }
 
 void cmaple::PhyloNode::setUpperLength(const double new_length) {
@@ -67,7 +67,7 @@ auto cmaple::PhyloNode::getCorrespondingLength(
   }
 
   // by default, return the length of the upper branch
-  return (RealNumType) length_;
+  return static_cast<RealNumType>(length_);
 }
 
 void cmaple::PhyloNode::setCorrespondingLength(const MiniIndex mini_index,

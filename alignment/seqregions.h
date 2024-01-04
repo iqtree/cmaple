@@ -728,7 +728,7 @@ void merge_O_ORACGT(const SeqRegion& seq1_region,
   else {
     StateType seq2_state = seq2_region.type;
     if (seq2_state == TYPE_R) {
-      seq2_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+      seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
     }
 
     if (total_blength_2 > 0) {
@@ -792,7 +792,7 @@ void merge_RACGT_RACGT(const SeqRegion& seq2_region,
   StateType seq2_state = seq2_region.type;
 
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   // TODO: this seems a weird operation on `new_lh_value` (since it was just
@@ -834,7 +834,7 @@ void merge_RACGT_ORACGT(const SeqRegion& seq1_region,
     
   StateType seq1_state = seq1_region.type;
   if (seq1_state == TYPE_R) {
-    seq1_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq1_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   auto new_lh =
@@ -903,7 +903,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
   const SeqRegions& seq2_regions = lower_regions;
   size_t iseq1 = 0;
   size_t iseq2 = 0;
-  const PositionType seq_length = (PositionType) aln->ref_seq.size();
+  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
 
   // init merged_regions
   if (merged_regions) {
@@ -914,7 +914,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
-      seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
+      seq2_regions, static_cast<size_t>(seq_length)));  // avoid realloc of vector data
 #ifdef DEBUG
   const size_t max_elements =
       merged_regions
@@ -1087,7 +1087,7 @@ auto merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
     
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   if (total_blength_2 > 0) {
@@ -1224,7 +1224,7 @@ auto merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
     
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   if (total_blength_2 > 0) {
@@ -1274,7 +1274,7 @@ auto merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
     
   StateType seq1_state = seq1_region.type;
   if (seq1_state == TYPE_R) {
-    seq1_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq1_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   auto new_lh =
@@ -1395,7 +1395,7 @@ RealNumType SeqRegions::mergeTwoLowers(
   const SeqRegions& seq2_regions = regions2;
   size_t iseq1 = 0;
   size_t iseq2 = 0;
-  const PositionType seq_length = (PositionType) aln->ref_seq.size();
+  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
 
   // init merged_regions
   if (merged_regions) {
@@ -1406,7 +1406,7 @@ RealNumType SeqRegions::mergeTwoLowers(
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
-      seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
+      seq2_regions, static_cast<size_t>(seq_length)));  // avoid realloc of vector data
 #ifdef DEBUG
   const size_t max_elements =
       merged_regions
@@ -1503,10 +1503,8 @@ auto SeqRegions::computeAbsoluteLhAtRoot(
     if (region.type == TYPE_R) {
       for (StateType i = 0; i < num_states; ++i) {
         log_lh += model->root_log_freqs[i] *
-                  (cumulative_base[(std::vector<std::vector<PositionType>>
-                                    ::size_type) region.position + 1][i] -
-                   cumulative_base[(std::vector<std::vector<PositionType>>
-                                    ::size_type) start_pos][i]);
+                  (cumulative_base[static_cast<size_t>(region.position) + 1][i] -
+                   cumulative_base[static_cast<size_t>(start_pos)][i]);
       }
     }
     // type ACGT
@@ -1562,21 +1560,17 @@ RealNumType SeqRegions::computeSiteLhAtRoot(
     if (region.type == TYPE_R) {
       for (StateType i = 0; i < num_states; ++i) {
         log_lh += model->root_log_freqs[i] *
-                  (cumulative_base[(std::vector<std::vector<PositionType>>
-                                    ::size_type) region.position + 1][i] -
-                   cumulative_base[(std::vector<std::vector<PositionType>>
-                                    ::size_type) start_pos][i]);
+                  (cumulative_base[static_cast<size_t>(region.position) + 1][i] -
+                   cumulative_base[static_cast<size_t>(start_pos)][i]);
       }
 
       // calculate site lhs
       for (PositionType pos = start_pos; pos < region.position + 1; ++pos) {
         for (StateType i = 0; i < num_states; ++i) {
-          site_lh_contributions[(std::vector<RealNumType>::size_type) pos] +=
+          site_lh_contributions[static_cast<std::vector<RealNumType>::size_type>(pos)] +=
               model->root_log_freqs[i] *
-              (cumulative_base[(std::vector<std::vector<PositionType>>
-                                    ::size_type) pos + 1][i] -
-               cumulative_base[(std::vector<std::vector<PositionType>>
-                                    ::size_type) pos][i]);
+              (cumulative_base[static_cast<size_t>(pos) + 1][i] -
+               cumulative_base[static_cast<size_t>(pos)][i]);
         }
       }
     }
@@ -1586,7 +1580,8 @@ RealNumType SeqRegions::computeSiteLhAtRoot(
       log_lh += lh_contribution;
 
       // calculate site lhs
-      site_lh_contributions[(std::vector<RealNumType>::size_type) start_pos] += lh_contribution;
+      site_lh_contributions[static_cast<std::vector<RealNumType>
+                            ::size_type>(start_pos)] += lh_contribution;
     }
     // type O
     else if (region.type == TYPE_O) {
@@ -1596,7 +1591,8 @@ RealNumType SeqRegions::computeSiteLhAtRoot(
       log_factor *= tot;
 
       // calculate site lhs
-      site_lh_contributions[(std::vector<RealNumType>::size_type) start_pos] += log(tot);
+      site_lh_contributions[static_cast<std::vector<RealNumType>
+                            ::size_type>(start_pos)] += log(tot);
     }
 
     // maintain start_pos
@@ -1719,7 +1715,8 @@ inline void addSimplifyOAndCalSiteLh(std::vector<RealNumType>& site_lh_contribut
     // compute (site) lh contributions
     RealNumType lh_contribution = log(sum_lh);
     log_lh += lh_contribution;
-    site_lh_contributions[(std::vector<RealNumType>::size_type) end_pos] += lh_contribution;
+    site_lh_contributions[static_cast<std::vector<RealNumType>
+                        ::size_type>(end_pos)] += lh_contribution;
 }
 
 template <const StateType num_states>
@@ -1772,7 +1769,7 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions,
     
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   if (total_blength_2 > 0) {
@@ -1798,7 +1795,8 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions,
     // compute (site) lh contributions
     RealNumType lh_contribution = log(new_lh[seq2_state]);
     log_lh += lh_contribution;
-    site_lh_contributions[(std::vector<RealNumType>::size_type) end_pos] += lh_contribution;
+    site_lh_contributions[static_cast<std::vector<RealNumType>
+                        ::size_type>(end_pos)] += lh_contribution;
   }
 
   // no error
@@ -1901,7 +1899,7 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions,
     
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   if (total_blength_2 > 0) {
@@ -1922,7 +1920,8 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions,
     // compute (site) lh contributions
     RealNumType lh_contribution = log(new_lh[seq2_state]);
     log_lh += lh_contribution;
-    site_lh_contributions[(std::vector<RealNumType>::size_type) end_pos] += lh_contribution;
+    site_lh_contributions[static_cast<std::vector<RealNumType>
+                            ::size_type>(end_pos)] += lh_contribution;
   }
 
   // no error
@@ -1948,7 +1947,7 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions,
     
   StateType seq1_state = seq1_region.type;
   if (seq1_state == TYPE_R) {
-    seq1_state = aln->ref_seq[(std::vector<cmaple::StateType>::size_type) end_pos];
+    seq1_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
   }
 
   auto new_lh =
@@ -2070,7 +2069,7 @@ RealNumType SeqRegions::calculateSiteLhContributions(
   const SeqRegions& seq2_regions = regions2;
   size_t iseq1 = 0;
   size_t iseq2 = 0;
-  const PositionType seq_length = (PositionType) aln->ref_seq.size();
+  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
   assert(site_lh_contributions.size() == seq_length);
 
   // init merged_regions
@@ -2082,7 +2081,7 @@ RealNumType SeqRegions::calculateSiteLhContributions(
 
   // avoid realloc of vector data (minimize memory footprint)
   merged_regions->reserve(countSharedSegments(
-      seq2_regions, (size_t) seq_length));  // avoid realloc of vector data
+      seq2_regions, static_cast<size_t>(seq_length)));  // avoid realloc of vector data
 #ifdef DEBUG
   const size_t max_elements =
       merged_regions

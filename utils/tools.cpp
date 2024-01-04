@@ -124,7 +124,7 @@ std::istream& cmaple::safeGetline(std::istream& is, std::string& t) {
         }
         return is;
       default:
-        t += (char)c;
+        t += static_cast<char>(c);
     }
   }
 }
@@ -162,7 +162,7 @@ std::string cmaple::convertDoubleToString(RealNumType number,
 }
 
 auto cmaple::iEquals(const string& a, const string& b) -> bool {
-  unsigned int sz = (unsigned int) a.size();
+  unsigned int sz = static_cast<unsigned int>(a.size());
   if (b.size() != sz) {
     return false;
   }
@@ -219,7 +219,7 @@ auto cmaple::fileExists(const string& strFilename) -> bool {
 
 auto cmaple::convert_int(const char* str, int& end_pos) -> int {
   char* endptr;
-  int i = (int) strtol(str, &endptr, 10);
+  int i = static_cast<int>(strtol(str, &endptr, 10));
 
   if ((i == 0 && endptr == str) || abs(i) == HUGE_VALL) {
     string err = "Expecting integer, but found \"";
@@ -227,13 +227,13 @@ auto cmaple::convert_int(const char* str, int& end_pos) -> int {
     err += "\" instead";
     throw std::invalid_argument(err);
   }
-  end_pos = (int) (endptr - str);
+  end_pos = static_cast<int>(endptr - str);
   return i;
 }
 
 auto cmaple::convert_int(const char* str) -> int {
   char* endptr;
-  int i = (int) strtol(str, &endptr, 10);
+  int i = static_cast<int>(strtol(str, &endptr, 10));
 
   if ((i == 0 && endptr == str) || abs(i) == HUGE_VALL || *endptr != 0) {
     string err = "Expecting integer, but found \"";
@@ -247,7 +247,7 @@ auto cmaple::convert_int(const char* str) -> int {
 
 auto cmaple::convert_positiontype(const char* str) -> PositionType {
   char* endptr;
-  auto i = (PositionType)strtol(str, &endptr, 10);
+  auto i = static_cast<PositionType>(strtol(str, &endptr, 10));
 
   if ((i == 0 && endptr == str) || i == HUGE_VALL || *endptr != 0) {
     string err = "Expecting integer, but found \"";
@@ -263,7 +263,7 @@ void cmaple::convert_int_vec(const char* str, IntVector& vec) {
   char *beginptr = (char*)str, *endptr;
   vec.clear();
   do {
-    int i = (int) strtol(beginptr, &endptr, 10);
+    int i = static_cast<int>(strtol(beginptr, &endptr, 10));
 
     if ((i == 0 && endptr == beginptr) || abs(i) == HUGE_VALL) {
       string err = "Expecting integer, but found \"";
@@ -281,9 +281,9 @@ void cmaple::convert_int_vec(const char* str, IntVector& vec) {
 
 auto cmaple::convert_int64(const char* str) -> int64_t {
   char* endptr;
-  auto i = (int64_t)strtoll(
+  auto i = static_cast<int64_t>(strtoll(
       str, &endptr,
-      10);  // casted because 'long long' may be larger than int64_t
+      10));  // casted because 'long long' may be larger than int64_t
 
   if ((i == 0 && endptr == str) || abs(i) == HUGE_VALL || *endptr != 0) {
     string err = "Expecting large integer , but found \"";
@@ -297,9 +297,9 @@ auto cmaple::convert_int64(const char* str) -> int64_t {
 
 auto cmaple::convert_int64(const char* str, int& end_pos) -> int64_t {
   char* endptr;
-  auto i = (int64_t)strtoll(
+  auto i = static_cast<int64_t>(strtoll(
       str, &endptr,
-      10);  // casted because 'long long' may be larger than int64_t
+      10));  // casted because 'long long' may be larger than int64_t
 
   if ((i == 0 && endptr == str) || abs(i) == HUGE_VALL) {
     string err = "Expecting large integer, but found \"";
@@ -307,14 +307,14 @@ auto cmaple::convert_int64(const char* str, int& end_pos) -> int64_t {
     err += "\" instead";
     throw std::invalid_argument(err);
   }
-  end_pos = (int) (endptr - str);
+  end_pos = static_cast<int>(endptr - str);
   return i;
 }
 
 auto cmaple::convert_real_number(const char* str) -> RealNumType {
   char* endptr;
   RealNumType d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF || *endptr != 0) {
+  if ((d == 0.0 && endptr == str) || fabs(d) == static_cast<double>(HUGE_VALF) || *endptr != 0) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
     err += "\" instead";
@@ -326,22 +326,22 @@ auto cmaple::convert_real_number(const char* str) -> RealNumType {
 auto cmaple::convert_real_number(const char* str, int& end_pos) -> RealNumType {
   char* endptr;
   RealNumType d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF) {
+  if ((d == 0.0 && endptr == str) || fabs(d) == static_cast<double>(HUGE_VALF)) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
     err += "\" instead";
     throw std::invalid_argument(err);
   }
-  end_pos = (int) (endptr - str);
+  end_pos = static_cast<int>(endptr - str);
   return d;
 }
 
 void cmaple::convert_real_numbers(RealNumType*& arr, string input_str) {
   // count the number of input real_numbers
-  int number_count = (int) count(input_str.begin(), input_str.end(), ' ') + 1;
+  int number_count = static_cast<int>(count(input_str.begin(), input_str.end(), ' ')) + 1;
 
   // init array
-  arr = new RealNumType[(unsigned long) number_count];
+  arr = new RealNumType[static_cast<unsigned long>(number_count)];
 
   // parse rates
   stringstream ss(input_str);
@@ -360,7 +360,7 @@ void cmaple::convert_real_number_vec(const char* str,
   do {
     RealNumType d = strtod(beginptr, &endptr);
 
-    if ((d == 0.0 && endptr == beginptr) || fabs(d) == (double) HUGE_VALF) {
+    if ((d == 0.0 && endptr == beginptr) || fabs(d) == static_cast<double>(HUGE_VALF)) {
       string err = "Expecting floating-point number, but found \"";
       err += beginptr;
       err += "\" instead";
@@ -391,7 +391,7 @@ void cmaple::convert_range(const char* str,
   char* endptr;
 
   // parse the lower bound of the range
-  int d = (int) strtol(str, &endptr, 10);
+  int d = static_cast<int>(strtol(str, &endptr, 10));
   if ((d == 0 && endptr == str) || abs(d) == HUGE_VALL ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting integer, but found \"";
@@ -408,7 +408,7 @@ void cmaple::convert_range(const char* str,
 
   // parse the upper bound of the range
   str = endptr + 1;
-  d = (int) strtol(str, &endptr, 10);
+  d = static_cast<int>(strtol(str, &endptr, 10));
   if ((d == 0 && endptr == str) || abs(d) == HUGE_VALL ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting integer, but found \"";
@@ -425,7 +425,7 @@ void cmaple::convert_range(const char* str,
 
   // parse the step size of the range
   str = endptr + 1;
-  d = (int) strtol(str, &endptr, 10);
+  d = static_cast<int>(strtol(str, &endptr, 10));
   if ((d == 0 && endptr == str) || abs(d) == HUGE_VALL || *endptr != 0) {
     string err = "Expecting integer, but found \"";
     err += str;
@@ -443,7 +443,7 @@ void cmaple::convert_range(const char* str,
 
   // parse the lower bound of the range
   RealNumType d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF ||
+  if ((d == 0.0 && endptr == str) || fabs(d) == static_cast<double>(HUGE_VALF) ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
@@ -460,7 +460,7 @@ void cmaple::convert_range(const char* str,
   // parse the upper bound of the range
   str = endptr + 1;
   d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF ||
+  if ((d == 0.0 && endptr == str) || fabs(d) == static_cast<double>(HUGE_VALF) ||
       (*endptr != 0 && *endptr != ':')) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
@@ -477,7 +477,7 @@ void cmaple::convert_range(const char* str,
   // parse the step size of the range
   str = endptr + 1;
   d = strtod(str, &endptr);
-  if ((d == 0.0 && endptr == str) || fabs(d) == (double) HUGE_VALF || *endptr != 0) {
+  if ((d == 0.0 && endptr == str) || fabs(d) == static_cast<double>(HUGE_VALF) || *endptr != 0) {
     string err = "Expecting floating-point number, but found \"";
     err += str;
     err += "\" instead";
@@ -517,7 +517,7 @@ void cmaple::convert_string_vec(const char* str,
       vec.push_back(elem);
       return;
     }
-    elem.assign(beginptr, (unsigned long) (endptr - beginptr));
+    elem.assign(beginptr, static_cast<unsigned long>(endptr - beginptr));
     vec.push_back(elem);
     beginptr = endptr + 1;
   } while (*endptr != 0);
@@ -602,7 +602,7 @@ cmaple::Params::Params() {
   struct timezone tz;
   gettimeofday(&tv, &tz);
   // ran_seed = (unsigned) (tv.tv_sec+tv.tv_usec);
-  ran_seed = (uint64_t) (tv.tv_usec);
+  ran_seed = static_cast<uint64_t>(tv.tv_usec);
 }
 
 cmaple::ParamsBuilder::ParamsBuilder() : params_ptr(new Params()) {}
@@ -1079,7 +1079,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         }
 
         try {
-          params.ran_seed = (uint64_t) abs(convert_int(argv[cnt]));
+          params.ran_seed = static_cast<uint64_t>(abs(convert_int(argv[cnt])));
         } catch (std::invalid_argument e) {
           outError(e.what());
         }
@@ -1095,7 +1095,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           params.num_threads = 0;
         } else {
           try {
-            params.num_threads = (uint32_t) convert_int(argv[cnt]);
+            params.num_threads = static_cast<uint32_t>(convert_int(argv[cnt]));
           } catch (std::invalid_argument e) {
             outError(e.what());
           }

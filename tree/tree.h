@@ -2037,7 +2037,7 @@ void cmaple::Tree::seekSamplePlacement(
   // dummy variables
   RealNumType lh_diff_mid_branch = 0;
   RealNumType lh_diff_at_node = 0;
-  PositionType seq_length = (PositionType) aln->ref_seq.size();
+  PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
   // stack of nodes to examine positions
   std::stack<TraversingNode> extended_node_stack;
   extended_node_stack.push(TraversingNode(start_node_index, 0, MIN_NEGATIVE));
