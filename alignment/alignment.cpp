@@ -1171,7 +1171,7 @@ auto cmaple::Alignment::computeSeqDistance(Sequence& sequence,
   }
 
   // calculate and record the distance of the current sequence
-  return ((PositionType) num_diffs * hamming_weight) + num_ambiguities;
+  return ((PositionType) (num_diffs * hamming_weight)) + num_ambiguities;
 }
 
 void cmaple::Alignment::sortSeqsByDistances() {
@@ -1182,12 +1182,12 @@ void cmaple::Alignment::sortSeqsByDistances() {
   auto* sequence_indexes = new PositionType[num_seqs];
 
   // calculate the distances of each sequence
-  for (PositionType i = 0; i < num_seqs; ++i) {
+  for (std::vector<cmaple::Sequence>::size_type i = 0; i < num_seqs; ++i) {
     // dummy variables
-    sequence_indexes[i] = i;
+    sequence_indexes[i] = (PositionType) i;
 
     // calculate and record the distance of the current sequence
-    distances[i] = computeSeqDistance(data[(std::vector<cmaple::Sequence>::size_type) i], hamming_weight);
+    distances[i] = computeSeqDistance(data[i], hamming_weight);
 
     // NHANLT: debug
     // distances[i] *= 1000;
@@ -1196,12 +1196,12 @@ void cmaple::Alignment::sortSeqsByDistances() {
   // NHANLT: debug
 
   // sort distances
-  quicksort(distances, 0, num_seqs - 1, sequence_indexes);
+  quicksort(distances, 0, (PositionType) num_seqs - 1, sequence_indexes);
 
   // re-order sequences by distances
   vector<Sequence> tmp_sequences(std::move(data));
   data.reserve(num_seqs);
-  for (PositionType i = 0; i < num_seqs; ++i) {
+  for (std::vector<cmaple::Sequence>::size_type i = 0; i < num_seqs; ++i) {
     data.push_back(std::move(tmp_sequences[(std::vector<cmaple::Sequence>::size_type) sequence_indexes[i]]));
   }
 
@@ -1233,9 +1233,9 @@ std::string cmaple::Alignment::getSeqString(const std::string& ref_seq_str,
         cmaple::Alignment::convertState2Char(mutation->type, seq_type_);
 
     // replace characters in sequence_str
-    for (std::basic_string<char>::size_type pos = mutation->position;
+    for (PositionType pos = mutation->position;
          pos < mutation->position + mutation->getLength(); ++pos) {
-      sequence_str[pos] = state;
+      sequence_str[(std::basic_string<char>::size_type) pos] = state;
     }
   }
 
