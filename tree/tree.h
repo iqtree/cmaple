@@ -1914,7 +1914,7 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
   // dummy variables
   RealNumType total_improvement = 0;
   PositionType num_nodes = 0;
-  NumSeqsType count_node_1K = 0;
+  PositionType count_node_1K = 0;
 
   // traverse downward the tree
   while (!node_stack.empty()) {
@@ -1979,7 +1979,7 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
          total_improvement << std::endl;*/
 
       // Show log every 1000 nodes
-      num_nodes += 1;
+      ++num_nodes;
       if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000) {
         std::cout << "Processed topology for " << convertIntToString(num_nodes)
              << " nodes." << std::endl;
@@ -2029,6 +2029,7 @@ void cmaple::Tree::seekSamplePlacement(
   // dummy variables
   RealNumType lh_diff_mid_branch = 0;
   RealNumType lh_diff_at_node = 0;
+  PositionType seq_length = (PositionType) aln->ref_seq.size();
   // stack of nodes to examine positions
   std::stack<TraversingNode> extended_node_stack;
   extended_node_stack.push(TraversingNode(start_node_index, 0, MIN_NEGATIVE));
@@ -2056,7 +2057,7 @@ void cmaple::Tree::seekSamplePlacement(
     // node + stop seeking the placement
     if ((!is_internal) &&
         (current_node.getPartialLh(TOP)->compareWithSample(
-             *sample_regions, aln->ref_seq.size(), aln) == 1)) {
+             *sample_regions, seq_length, aln) == 1)) {
       current_node.addLessInfoSeqs(seq_name_index);
       selected_node_index = Index();
       return;
