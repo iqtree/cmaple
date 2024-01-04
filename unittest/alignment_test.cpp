@@ -72,12 +72,14 @@ TEST(Alignment, readRef)
 
 /*
  extractMutations() -> was moved to private
- Test extractMutations(StrVector &sequences, StrVector &seq_names, std::string ref_sequence, std::ofstream &out, bool only_extract_diff)
+ Test extractMutations(StrVector &sequences, StrVector &seq_names,
+ std::string ref_sequence, std::ofstream &out, bool only_extract_diff)
  Also test outputMutation()
  */
 /*TEST(Alignment, extractMutations)
 {
-    // Don't need to test empty inputs (sequences, seq_names, ref_sequence); we have ASSERT to check them in extractMutations()
+    // Don't need to test empty inputs (sequences, seq_names, ref_sequence);
+    // we have ASSERT to check them in extractMutations()
     // ----- test on input.fa; generate ref_sequence -----
     Alignment aln;
     StrVector sequences, seq_names;
@@ -136,7 +138,8 @@ TEST(Alignment, readRef)
     EXPECT_EQ(aln.ref_seq.size(), 20);
     // ----- test on input.fa; read ref_sequence -----
     
-    // ----- Test to invalid data , violating assert(str_sequences.size() == seq_names.size() && str_sequences.size() > 0 && out)
+    // ----- Test to invalid data , violating assert(str_sequences.size() == seq_names.size()
+    // && str_sequences.size() > 0 && out)
  #ifdef DEBUG
     // str_sequences.size() != seq_names.size()
     sequences.pop_back();

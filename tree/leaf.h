@@ -15,8 +15,10 @@ namespace cmaple
         // a quick improvement would be to implement our own vector
         // which only takes 16 bytes (8 bytes for a pointer to heap memory + 4byte for size + 4 byte for capacity)
         
-        /// however we can quickly optimize the seq_name to just a char* and store sequence names as a really long contatenated global string
-        // and we can do even better when just storing an index into a combined string or a vector<string> (which would need to be provided externally)
+        /// however we can quickly optimize the seq_name to just a char* and
+        /// store sequence names as a really long contatenated global string
+        // and we can do even better when just storing an index into a combined string
+        // or a vector<string> (which would need to be provided externally)
         cmaple::NumSeqsType seq_name_index_;
         
         // index to connect to its neighbor node
