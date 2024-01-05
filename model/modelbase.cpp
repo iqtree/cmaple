@@ -295,7 +295,8 @@ ModelsBlock* cmaple::ModelBase::readModelsDefinition(
 }
 
 void cmaple::ModelBase::readRates(istream& in, const bool is_reversible) {
-  StateType row = 1, col = 0;
+  StateType row = 1;
+  StateType col = 0;
   StateType row_id = num_states_;
   if (is_reversible) {
     const StateType nrates = 190;

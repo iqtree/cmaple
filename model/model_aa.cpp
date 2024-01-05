@@ -27,7 +27,7 @@ cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model)
 }
 
 cmaple::ModelAA::~ModelAA() {
-  if (model_block) {
+  if (model_block != nullptr) {
     delete model_block;
   }
 }
@@ -53,11 +53,11 @@ void cmaple::ModelAA::initMutationMat() {
   bool reversible;
   assert(num_states_ == 20);
   model_block = readModelsDefinition(builtin_prot_models);
-  if (!model_block) {
+  if (model_block == nullptr) {
     throw std::logic_error("model_block uninitialized");
   }
   NxsModel* nxs_model = model_block->findModel(name_upper);
-  if (nxs_model) {
+  if (nxs_model != nullptr) {
     if (nxs_model->flag != NM_ATOMIC) {
       throw std::logic_error("Invalid protein model name " + name_upper);
     }

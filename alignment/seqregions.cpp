@@ -45,7 +45,7 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
   const StateType num_states = aln->num_states;
 
   while (pos < seq_length && (!seq1_more_info || !seq2_more_info)) {
-    PositionType end_pos;
+    PositionType end_pos = 0;
 
     // get the next shared segment in the two sequences
     cmaple::SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions,
@@ -137,7 +137,7 @@ auto cmaple::SeqRegions::areDiffFrom(
 
   // compare each pair of regions
   while (pos < seq_length) {
-    PositionType end_pos;
+    PositionType end_pos = 0;
 
     // get the next shared segment in the two sequences
     cmaple::SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions,

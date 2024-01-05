@@ -101,7 +101,7 @@ void cmaple::SeqRegion::convertAmbiguiousStateDNA(int max_num_states) {
   if (type < max_num_states || type == TYPE_N || type == TYPE_R) {
     return;
   }
-
+  const StateType EIGHT = 8;
   switch (type) {
     case TYPE_DEL:  // convert '-' into type_N
       type = TYPE_N;
@@ -113,14 +113,14 @@ void cmaple::SeqRegion::convertAmbiguiousStateDNA(int max_num_states) {
       computeLhAmbiguity(entries);
       break;
     }
-    case 2 + 8 +
+    case 2 + EIGHT +
         3:  // 'Y' -> C or T, Pyrimidine
     {
       static constexpr LHType entries{0, 0.5, 0, 0.5};
       computeLhAmbiguity(entries);
       break;
     }
-    case 1 + 8 +
+    case 1 + EIGHT +
         3:  // 'W' -> A or T, Weak
     {
       static constexpr LHType entries{0.5, 0, 0, 0.5};
@@ -141,28 +141,28 @@ void cmaple::SeqRegion::convertAmbiguiousStateDNA(int max_num_states) {
       computeLhAmbiguity(entries);
       break;
     }
-    case 4 + 8 +
+    case 4 + EIGHT +
         3:  // 'K' -> G or T, Keto
     {
       static constexpr LHType entries{0, 0, 0.5, 0.5};
       computeLhAmbiguity(entries);
       break;
     }
-    case 2 + 4 + 8 +
+    case 2 + 4 + EIGHT +
         3:  // 'B' -> C or G or T
     {
       static constexpr LHType entries{0, 1.0 / 3, 1.0 / 3, 1.0 / 3};
       computeLhAmbiguity(entries);
       break;
     }
-    case 1 + 2 + 8 +
+    case 1 + 2 + EIGHT +
         3:  // 'H' -> A or C or T
     {
       static constexpr LHType entries{1.0 / 3, 1.0 / 3, 0, 1.0 / 3};
       computeLhAmbiguity(entries);
       break;
     }
-    case 1 + 4 + 8 +
+    case 1 + 4 + EIGHT +
         3:  // 'D' -> A or G or T
     {
       static constexpr LHType entries{1.0 / 3, 0, 1.0 / 3, 1.0 / 3};

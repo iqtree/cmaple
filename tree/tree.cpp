@@ -6975,7 +6975,8 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
                             parent_index);
 
   // validate the results
-  RealNumType lh_diff_2{0}, lh_diff_3{0};
+  RealNumType lh_diff_2{0};
+  RealNumType lh_diff_3{0};
   for (std::vector<cmaple::StateType>::size_type j = 0; j < seq_length; ++j) {
     lh_diff_2 += site_lh_diff_2[j];
     lh_diff_2 += site_lh_root_diff_2[j];
@@ -8568,7 +8569,7 @@ void cmaple::Tree::remarkExistingSeqs() {
   }
 }
 
-bool cmaple::Tree::readTree(std::istream& in) {
+bool cmaple::Tree::readTree(std::istream& tree_stream) {
   // Flag to check whether the tree contains missing branch length
   bool missing_blengths = false;
 
@@ -8586,15 +8587,15 @@ bool cmaple::Tree::readTree(std::istream& in) {
 
   try {
     char ch;
-    ch = readNextChar(in, in_line, in_column);
+    ch = readNextChar(tree_stream, in_line, in_column);
     if (ch != '(') {
-      cout << in.rdbuf() << endl;
+      cout << tree_stream.rdbuf() << endl;
       throw "Tree file does not start with an opening-bracket '('";
     }
 
     RealNumType branch_len;
     const NumSeqsType tmp_node_vec =
-        parseFile(in, ch, branch_len, in_line, in_column, map_seqname_index,
+        parseFile(tree_stream, ch, branch_len, in_line, in_column, map_seqname_index,
                   missing_blengths);
 
     // set root
@@ -8637,7 +8638,7 @@ bool cmaple::Tree::readTree(std::istream& in) {
     // make sure that root is a leaf
     assert(root->isLeaf());*/
 
-    if (in.eof() || ch != ';') {
+    if (tree_stream.eof() || ch != ';') {
       throw "Tree file must be ended with a semi-colon ';'";
     }
   } catch (bad_alloc) {

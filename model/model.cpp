@@ -72,14 +72,14 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model,
 }
 
 cmaple::Model::~Model() {
-  if (model_base) {
+  if (model_base != nullptr) {
     delete model_base;
     model_base = nullptr;
   }
 }
 
 void cmaple::Model::fixParameters(const bool& n_fixed_model_params) {
-  if (model_base) {
+  if (model_base != nullptr) {
     model_base->fixed_params = n_fixed_model_params;
   }
 }
@@ -89,7 +89,7 @@ auto cmaple::Model::getParams() -> cmaple::Model::ModelParams {
   ModelParams model_params = {"", "", ""};
 
   // Handle cases when model is not yet initialized
-  if (model_base) {
+  if (model_base != nullptr) {
     // model_name
     model_params.model_name = model_base->getModelName();
 

@@ -158,8 +158,10 @@ void genTestData1(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqR
  */
 TEST(SeqRegions, getNextSharedSegment)
 {
-    PositionType current_pos{0}, end_pos;
-    size_t i1{0}, i2{0};
+    PositionType current_pos{0};
+    PositionType end_pos{0};
+    size_t i1{0};
+    size_t i2{0};
     std::unique_ptr<SeqRegions> seqregions1 = nullptr;
     std::unique_ptr<SeqRegions> seqregions2 = nullptr;
     genTestData1(seqregions1, seqregions2);

@@ -99,7 +99,7 @@ void cmaple::Alignment::read(std::istream& aln_stream,
           "Protein data. Please use the version for Protein data (*-aa) "
           "instead.");
     }
-  } catch (std::logic_error e) {
+  } catch (std::logic_error& e) {
     throw std::invalid_argument(e.what());
   }
 }
@@ -118,7 +118,7 @@ void cmaple::Alignment::read(const std::string& aln_filename,
   try {
     aln_stream.exceptions(ios::failbit | ios::badbit);
     aln_stream.open(aln_filename);
-  } catch (ios::failure) {
+  } catch (ios::failure& e) {
     std::string err_msg(ERR_READ_INPUT);
     throw ios::failure(err_msg + aln_filename);
   }
@@ -188,8 +188,8 @@ void cmaple::Alignment::write(const std::string& aln_filename,
   aln_stream.close();
 }
 
-std::ostream& cmaple::operator<<(std::ostream& out_stream,
-                                 cmaple::Alignment& aln) {
+auto cmaple::operator<<(std::ostream& out_stream,
+                        cmaple::Alignment& aln) -> std::ostream& {
   assert(aln.data.size() > 0);
     
   // write the alignment to the stream in MAPLE format
@@ -199,8 +199,8 @@ std::ostream& cmaple::operator<<(std::ostream& out_stream,
   return out_stream;
 }
 
-std::istream& cmaple::operator>>(std::istream& in_stream,
-                                 cmaple::Alignment& aln) {
+auto cmaple::operator>>(std::istream& in_stream,
+                                 cmaple::Alignment& aln) -> std::istream& {
   // go back to the beginning og the stream
   in_stream.clear();
   in_stream.seekg(0);
@@ -255,22 +255,22 @@ void cmaple::Alignment::processSeq(string& sequence,
   }
 }
 
-void cmaple::Alignment::readFasta(std::istream& in,
+void cmaple::Alignment::readFasta(std::istream& aln_stream,
                                   StrVector& sequences,
                                   StrVector& seq_names,
                                   bool check_min_seqs) {
-  ostringstream err_str;
+  ostringstream err_str(ios_base::out);
   PositionType line_num = 1;
   string line;
 
   // set the failbit and badbit
-  in.exceptions(ios::failbit | ios::badbit);
+  aln_stream.exceptions(ios::failbit | ios::badbit);
   // remove the failbit
-  in.exceptions(ios::badbit);
+  aln_stream.exceptions(ios::badbit);
 
   {
-    for (; !in.eof(); ++line_num) {
-      safeGetline(in, line);
+    for (; !aln_stream.eof(); ++line_num) {
+      safeGetline(aln_stream, line);
       if (line == "") {
         continue;
       }
@@ -294,9 +294,9 @@ void cmaple::Alignment::readFasta(std::istream& in,
   }
 
   // set the failbit again
-  in.exceptions(ios::failbit | ios::badbit);
+  aln_stream.exceptions(ios::failbit | ios::badbit);
   // reset the stream
-  resetStream(in);
+  resetStream(aln_stream);
 
   if (sequences.size() < MIN_NUM_TAXA && check_min_seqs) {
     throw std::logic_error("There must be at least " +
@@ -304,9 +304,10 @@ void cmaple::Alignment::readFasta(std::istream& in,
   }
 
   // now try to cut down sequence name if possible
-  std::vector<std::string>::size_type i;
+  std::vector<std::string>::size_type i = 0;
   PositionType step = 0;
-  StrVector new_seq_names, remain_seq_names;
+  StrVector new_seq_names(0);
+  StrVector remain_seq_names(0);
   new_seq_names.resize(seq_names.size());
   remain_seq_names = seq_names;
 
@@ -351,7 +352,7 @@ void cmaple::Alignment::readFasta(std::istream& in,
   seq_names = new_seq_names;
 }
 
-void cmaple::Alignment::readPhylip(std::istream& in,
+void cmaple::Alignment::readPhylip(std::istream& aln_stream,
                                    StrVector& sequences,
                                    StrVector& seq_names,
                                    bool check_min_seqs) {
@@ -359,17 +360,17 @@ void cmaple::Alignment::readPhylip(std::istream& in,
   PositionType line_num = 1;
 
   // set the failbit and badbit
-  in.exceptions(ios::failbit | ios::badbit);
+  aln_stream.exceptions(ios::failbit | ios::badbit);
   std::vector<std::string>::size_type seq_id = 0;
   std::vector<std::string>::size_type nseq = 0;
   std::vector<std::string>::size_type nsite = 0;
   string line;
 
   // remove the failbit
-  in.exceptions(ios::badbit);
+  aln_stream.exceptions(ios::badbit);
 
-  for (; !in.eof(); ++line_num) {
-    safeGetline(in, line);
+  for (; !aln_stream.eof(); ++line_num) {
+    safeGetline(aln_stream, line);
     line = line.substr(0, line.find_first_of("\n\r"));
     if (line == "") {
       continue;
@@ -431,10 +432,10 @@ void cmaple::Alignment::readPhylip(std::istream& in,
   }
 
   // set the failbit again
-  in.exceptions(ios::failbit | ios::badbit);
+  aln_stream.exceptions(ios::failbit | ios::badbit);
 
   // reset the stream
-  resetStream(in);
+  resetStream(aln_stream);
 }
 
 void cmaple::Alignment::readSequences(std::istream& aln_stream,
@@ -554,14 +555,14 @@ auto cmaple::Alignment::readRefSeq(const std::string& ref_filename,
   if (cmaple::verbose_mode >= cmaple::VB_MAX) {
     cout << "Reading a reference sequence from an alignment file..." << endl;
   }
-  StrVector str_sequences;
-  StrVector seq_names;
+  StrVector str_sequences(0);
+  StrVector seq_names(0);
   // Create a stream from the input alignment
   ifstream ref_stream;
   try {
     ref_stream.exceptions(ios::failbit | ios::badbit);
     ref_stream.open(ref_filename);
-  } catch (ios::failure) {
+  } catch (ios::failure& e) {
     std::string err_msg(ERR_READ_INPUT);
     throw std::logic_error(err_msg + ref_filename);
   }
@@ -759,7 +760,7 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence) {
   }
 }
 
-void cmaple::Alignment::readMaple(std::istream& in) {
+void cmaple::Alignment::readMaple(std::istream& aln_stream) {
   // init dummy variables
   string seq_name;
   vector<Mutation> mutations;
@@ -767,17 +768,17 @@ void cmaple::Alignment::readMaple(std::istream& in) {
   string line;
 
   // set the failbit and badbit
-  in.exceptions(ios::failbit | ios::badbit);
+  aln_stream.exceptions(ios::failbit | ios::badbit);
   // remove the failbit
-  in.exceptions(ios::badbit);
+  aln_stream.exceptions(ios::badbit);
 
   if (cmaple::verbose_mode >= cmaple::VB_MAX) {
     cout << "Reading an alignment in MAPLE format from a stream" << endl;
   }
 
   // extract reference sequence first
-  for (; !in.eof(); ++line_num) {
-    safeGetline(in, line);
+  for (; !aln_stream.eof(); ++line_num) {
+    safeGetline(aln_stream, line);
     if (line == "") {
       continue;
     }
@@ -827,8 +828,8 @@ void cmaple::Alignment::readMaple(std::istream& in) {
   }
 
   // extract sequences of other taxa one by one
-  for (; !in.eof(); ++line_num) {
-    safeGetline(in, line);
+  for (; !aln_stream.eof(); ++line_num) {
+    safeGetline(aln_stream, line);
     if (line == "") {
       continue;
     }
@@ -927,7 +928,7 @@ void cmaple::Alignment::readMaple(std::istream& in) {
                            convertIntToString(MIN_NUM_TAXA));
   }
 
-  resetStream(in);
+  resetStream(aln_stream);
 }
 
 auto cmaple::Alignment::convertState2Char(
@@ -940,6 +941,7 @@ auto cmaple::Alignment::convertState2Char(
     return '?';
   }
 
+  const StateType EIGHT = 8;
   switch (seqtype) {
     /*case cmaple::SeqRegion::SEQ_BINARY:
         switch (state) {
@@ -962,21 +964,21 @@ auto cmaple::Alignment::convertState2Char(
           return 'T';
         case 1 + 4 + 3:
           return 'R';  // A or G, Purine
-        case 2 + 8 + 3:
+        case 2 + EIGHT + 3:
           return 'Y';  // C or T, Pyrimidine
-        case 1 + 8 + 3:
+        case 1 + EIGHT + 3:
           return 'W';  // A or T, Weak
         case 2 + 4 + 3:
           return 'S';  // G or C, Strong
         case 1 + 2 + 3:
           return 'M';  // A or C, Amino
-        case 4 + 8 + 3:
+        case 4 + EIGHT + 3:
           return 'K';  // G or T, Keto
-        case 2 + 4 + 8 + 3:
+        case 2 + 4 + EIGHT + 3:
           return 'B';  // C or G or T
-        case 1 + 2 + 8 + 3:
+        case 1 + 2 + EIGHT + 3:
           return 'H';  // A or C or T
-        case 1 + 4 + 8 + 3:
+        case 1 + 4 + EIGHT + 3:
           return 'D';  // A or G or T
         case 1 + 2 + 4 + 3:
           return 'V';  // A or G or C
@@ -993,7 +995,7 @@ auto cmaple::Alignment::convertState2Char(
         return 'Z';
       } else if (state == 22) {
         return 'J';
-        //        else if (state == 4+8+19) return 'B';
+        //        else if (state == 4+EIGHT+19) return 'B';
         //        else if (state == 32+64+19) return 'Z';
       } else {
         return '-';
@@ -1020,8 +1022,8 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
     return TYPE_N;
   }
 
-  char* loc;
-
+  char* loc = nullptr;
+  const StateType EIGHT = 8;
   switch (getSeqType()) {
     /*case SEQ_BINARY:
         switch (state) {
@@ -1048,31 +1050,30 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
         case 'G':
           return 2;
         case 'T':
-          return 3;
         case 'U':
           return 3;
         case 'R':
           return 1 + 4 + 3;  // A or G, Purine
         case 'Y':
-          return 2 + 8 + 3;  // C or T, Pyrimidine
+          return 2 + EIGHT + 3;  // C or T, Pyrimidine
         case 'O':
         case 'N':
         case 'X':
           return TYPE_N;
         case 'W':
-          return 1 + 8 + 3;  // A or T, Weak
+          return 1 + EIGHT + 3;  // A or T, Weak
         case 'S':
           return 2 + 4 + 3;  // G or C, Strong
         case 'M':
           return 1 + 2 + 3;  // A or C, Amino
         case 'K':
-          return 4 + 8 + 3;  // G or T, Keto
+          return 4 + EIGHT + 3;  // G or T, Keto
         case 'B':
-          return 2 + 4 + 8 + 3;  // C or G or T
+          return 2 + 4 + EIGHT + 3;  // C or G or T
         case 'H':
-          return 1 + 2 + 8 + 3;  // A or C or T
+          return 1 + 2 + EIGHT + 3;  // A or C or T
         case 'D':
-          return 1 + 4 + 8 + 3;  // A or G or T
+          return 1 + 4 + EIGHT + 3;  // A or G or T
         case 'V':
           return 1 + 2 + 4 + 3;  // A or G or C
         default: {
@@ -1085,7 +1086,7 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
       }
       // return (StateType) state;
     case cmaple::SeqRegion::SEQ_PROTEIN:  // Protein
-      //        if (state == 'B') return 4+8+19;
+      //        if (state == 'B') return 4+EIGHT+19;
       //        if (state == 'Z') return 32+64+19;
       if (state == 'B') {
         return 20;
@@ -1107,7 +1108,7 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
       }
       loc = strchr(symbols_protein, state);
 
-      if (!loc) {
+      if (loc == nullptr) {
         string invalid_state_msg = "Invalid state ";
         invalid_state_msg += state;
         invalid_state_msg += ". Please check and try again!";
@@ -1218,7 +1219,7 @@ void cmaple::Alignment::sortSeqsByDistances() {
   delete[] sequence_indexes;
 }
 
-std::string cmaple::Alignment::getRefSeqStr() {
+auto cmaple::Alignment::getRefSeqStr() -> std::string {
   const std::basic_string<char>::size_type seq_length = ref_seq.size();
   std::string ref_sequence(seq_length, ' ');
   for (std::vector<cmaple::StateType>::size_type i = 0; i < seq_length; ++i) {
@@ -1230,8 +1231,8 @@ std::string cmaple::Alignment::getRefSeqStr() {
   return ref_sequence;
 }
 
-std::string cmaple::Alignment::getSeqString(const std::string& ref_seq_str,
-                                            Sequence* sequence) {
+auto cmaple::Alignment::getSeqString(const std::string& ref_seq_str,
+                                            Sequence* sequence) -> std::string {
   // clone the sequence
   std::string sequence_str = ref_seq_str;
   // apply mutations in sequence_str
@@ -1250,35 +1251,35 @@ std::string cmaple::Alignment::getSeqString(const std::string& ref_seq_str,
   return sequence_str;
 }
 
-void cmaple::Alignment::writeMAPLE(std::ostream& out) {
+void cmaple::Alignment::writeMAPLE(std::ostream& aln_stream) {
   assert(data.size() > 0);
     
   // write reference sequence to the output file
-  out << ">" << REF_NAME << endl;
-  out << getRefSeqStr() << endl;
+  aln_stream << ">" << REF_NAME << endl;
+  aln_stream << getRefSeqStr() << endl;
 
   // Write sequences one by one
   const std::vector<cmaple::Sequence>::size_type num_seqs = data.size();
   Sequence* sequence = &data.front();
   for (std::vector<cmaple::Sequence>::size_type i = 0; i < num_seqs; ++i, ++sequence) {
     // write the sequence name
-    out << ">" << sequence->seq_name << endl;
+    aln_stream << ">" << sequence->seq_name << endl;
 
     // write mutations
     Mutation* mutation = &sequence->front();
     for (std::vector<cmaple::Mutation>::size_type j = 0; j < sequence->size(); ++j, ++mutation) {
       const StateType type = mutation->type;
-      out << cmaple::Alignment::convertState2Char(type, seq_type_) << "\t"
+      aln_stream << cmaple::Alignment::convertState2Char(type, seq_type_) << "\t"
           << (mutation->position + 1);
       if (type == TYPE_N || type == TYPE_DEL) {
-        out << "\t" << mutation->getLength();
+          aln_stream << "\t" << mutation->getLength();
       }
-      out << endl;
+      aln_stream << endl;
     }
   }
 }
 
-void cmaple::Alignment::writeFASTA(std::ostream& out) {
+void cmaple::Alignment::writeFASTA(std::ostream& aln_stream) {
   assert(data.size() > 0);
     
   // Get reference sequence
@@ -1289,20 +1290,20 @@ void cmaple::Alignment::writeFASTA(std::ostream& out) {
   Sequence* sequence = &data.front();
   for (std::vector<cmaple::Sequence>::size_type i = 0; i < num_seqs; ++i, ++sequence) {
     // write the sequence name
-    out << ">" << sequence->seq_name << endl;
+    aln_stream << ">" << sequence->seq_name << endl;
 
     // write the sequence
-    out << getSeqString(ref_sequence, sequence) << std::endl;
+    aln_stream << getSeqString(ref_sequence, sequence) << std::endl;
   }
 }
 
-void cmaple::Alignment::writePHYLIP(std::ostream& out) {
+void cmaple::Alignment::writePHYLIP(std::ostream& aln_stream) {
   assert(data.size() > 0);
     
   // Write the header <num_seqs> <seq_length>
   const std::vector<cmaple::StateType>::size_type seq_length = ref_seq.size();
   const std::vector<cmaple::Sequence>::size_type num_seqs = data.size();
-  out << num_seqs << "\t" << seq_length << std::endl;
+  aln_stream << num_seqs << "\t" << seq_length << std::endl;
 
   // Get reference sequence
   const std::string ref_sequence = getRefSeqStr();
@@ -1325,10 +1326,10 @@ void cmaple::Alignment::writePHYLIP(std::ostream& out) {
     // write the sequence name
     std::string seq_name = sequence->seq_name;
     seq_name.resize(max_name_length, ' ');
-    out << seq_name;
+    aln_stream << seq_name;
 
     // write the sequence
-    out << getSeqString(ref_sequence, sequence) << std::endl;
+    aln_stream << getSeqString(ref_sequence, sequence) << std::endl;
   }
 }
 
@@ -1371,11 +1372,7 @@ void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream,
   // generate reference sequence from the input sequences
   string ref_sequence;
   // read the reference sequence from file (if the user supplies it)
-  if (n_ref_seq.length()) {
-    ref_sequence = n_ref_seq;
-  } else {
-    ref_sequence = generateRef(sequences);
-  }
+  ref_sequence = n_ref_seq.length() ? n_ref_seq : generateRef(sequences);
 
   // parse ref_sequence into vector of states
   parseRefSeq(ref_sequence);
@@ -1474,19 +1471,19 @@ void cmaple::Alignment::updateNumStates() {
   }
 }
 
-auto cmaple::Alignment::detectMAPLEorFASTA(std::istream& in)
+auto cmaple::Alignment::detectMAPLEorFASTA(std::istream& aln_stream)
     -> cmaple::Alignment::InputType {
   PositionType num_taxa = 0;
   string line;
 
   // set the failbit and badbit
-  in.exceptions(ios::failbit | ios::badbit);
+  aln_stream.exceptions(ios::failbit | ios::badbit);
   // remove the failbit
-  in.exceptions(ios::badbit);
+  aln_stream.exceptions(ios::badbit);
 
   // extract reference sequence first
-  for (; !in.eof();) {
-    safeGetline(in, line);
+  for (; !aln_stream.eof();) {
+    safeGetline(aln_stream, line);
     if (line == "") {
       continue;
     }
@@ -1507,11 +1504,11 @@ auto cmaple::Alignment::detectMAPLEorFASTA(std::istream& in)
         if ((pos_tab != string::npos && pos_tab < last_index) ||
             (pos_space != string::npos && pos_space < last_index)) {
           // reset aln_stream
-          resetStream(in);
+          resetStream(aln_stream);
           return cmaple::Alignment::IN_MAPLE;
         } else {
           // reset aln_stream
-          resetStream(in);
+          resetStream(aln_stream);
 
           return cmaple::Alignment::IN_FASTA;
         }
@@ -1520,28 +1517,28 @@ auto cmaple::Alignment::detectMAPLEorFASTA(std::istream& in)
   }
 
   // reset aln_stream
-  resetStream(in);
+  resetStream(aln_stream);
 
   return cmaple::Alignment::IN_FASTA;
 }
 
-auto cmaple::Alignment::detectInputFile(std::istream& in)
+auto cmaple::Alignment::detectInputFile(std::istream& aln_stream)
     -> cmaple::Alignment::InputType {
   unsigned char ch = ' ';
   unsigned char ch2 = ' ';
   int count = 0;
   do {
-    in >> ch;
-  } while (ch <= 32 && !in.eof() && count++ < 20);
-  in >> ch2;
+      aln_stream >> ch;
+  } while (ch <= 32 && !aln_stream.eof() && count++ < 20);
+  aln_stream >> ch2;
   // reset aln_stream
-  resetStream(in);
+  resetStream(aln_stream);
   switch (ch) {
     // case '#': return IN_NEXUS;
     // case '(': return IN_NEWICK;
     // case '[': return IN_NEWICK;
     case '>':
-      return detectMAPLEorFASTA(in);
+      return detectMAPLEorFASTA(aln_stream);
     /*case 'C': if (ch2 == 'L') return IN_CLUSTAL;
               else if (ch2 == 'O') return IN_COUNTS;
               else return IN_OTHER;

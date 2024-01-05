@@ -210,15 +210,15 @@ void cmaple::runCMAPLE(cmaple::Params &params)
           cout << "Runtime: " << end - start << "s" << endl;
         }
     }
-    catch (std::invalid_argument e)
+    catch (std::invalid_argument& e)
     {
         outError(e.what());
     }
-    catch (std::logic_error e)
+    catch (std::logic_error& e)
     {
         outError(e.what());
     }
-    catch (ios::failure e)
+    catch (ios::failure& e)
     {
         outError(e.what());
     }

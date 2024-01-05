@@ -166,14 +166,14 @@ class Alignment {
   /**
    Read a reference genome from an alignment file in FASTA or PHYLIP format
    @param ref_filename Name of an alignment file
-   @param seq_name Name of the reference sequence
+   @param ref_name Name of the reference sequence
    @return a reference genome
    @throw std::invalid\_argument if seq\_name is empty
    @throw ios::failure if ref\_filename is not found
    @throw std::logic\_error if the alignment is empty or in an incorrect format
    */
-  std::string readRefSeq(const std::string& ref_filename,
-                         const std::string& seq_name);
+  auto readRefSeq(const std::string& ref_filename,
+                         const std::string& ref_name) -> std::string;
 
   /**
    Convert a state ID, indexed from 0, to a raw character
@@ -396,12 +396,12 @@ class Alignment {
   /**
    Get reference sequence in string
    */
-  std::string getRefSeqStr();
+  auto getRefSeqStr() -> std::string;
 
   /**
    Get a sequence in string
    */
-  std::string getSeqString(const std::string& ref_seq_str, Sequence* sequence);
+  auto getSeqString(const std::string& ref_seq_str, Sequence* sequence) -> std::string;
 
   /**
   Detect the format of input file in MAPLE or FASTA format
@@ -434,11 +434,11 @@ class Alignment {
 /** \brief Customized << operator to output the alignment (in MAPLE format) to a
  * stream
  */
-std::ostream& operator<<(std::ostream& out_stream, cmaple::Alignment& aln);
+auto operator<<(std::ostream& out_stream, cmaple::Alignment& aln) -> std::ostream&;
 
 /** \brief Customized >> operator to read an alignment from a stream
  */
-std::istream& operator>>(std::istream& in_stream, cmaple::Alignment& aln);
+auto operator>>(std::istream& in_stream, cmaple::Alignment& aln) -> std::istream&;
 
 /*! @} End of Doxygen Groups*/
 

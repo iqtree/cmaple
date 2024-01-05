@@ -43,11 +43,11 @@ class ModelDNA : public ModelBase {
   /**
    Update pseudocounts from new sample to improve the estimate of the
    substitution rates
-   @param node_regions the genome list at the node where the appending happens;
-   @param sample_regions the genome list for the new sample.
+   @param regions1 the genome list at the node where the appending happens;
+   @param regions2 the genome list for the new sample.
    */
   virtual void updatePesudoCount(const Alignment* aln,
-                                 const SeqRegions& node_regions,
-                                 const SeqRegions& sample_regions);
+                                 const SeqRegions& regions1,
+                                 const SeqRegions& regions2);
 };
 }  // namespace cmaple
