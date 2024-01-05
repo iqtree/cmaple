@@ -57,52 +57,52 @@ cmaple::ModelBase::ModelBase(const cmaple::ModelBase::SubModel n_sub_model,
     : num_states_(num_states), sub_model(n_sub_model) {}
 
 cmaple::ModelBase::~ModelBase() {
-  if (mutation_mat) {
+  if (mutation_mat != nullptr) {
     delete[] mutation_mat;
     mutation_mat = nullptr;
   }
 
-  if (diagonal_mut_mat) {
+  if (diagonal_mut_mat != nullptr) {
     delete[] diagonal_mut_mat;
     diagonal_mut_mat = nullptr;
   }
 
-  if (transposed_mut_mat) {
+  if (transposed_mut_mat != nullptr) {
     delete[] transposed_mut_mat;
     transposed_mut_mat = nullptr;
   }
 
-  if (freqi_freqj_qij) {
+  if (freqi_freqj_qij != nullptr) {
     delete[] freqi_freqj_qij;
     freqi_freqj_qij = nullptr;
   }
 
-  if (freq_j_transposed_ij) {
+  if (freq_j_transposed_ij != nullptr) {
     delete[] freq_j_transposed_ij;
     freq_j_transposed_ij = nullptr;
   }
 
-  if (root_freqs) {
+  if (root_freqs != nullptr) {
     delete[] root_freqs;
     root_freqs = nullptr;
   }
 
-  if (root_log_freqs) {
+  if (root_log_freqs != nullptr) {
     delete[] root_log_freqs;
     root_log_freqs = nullptr;
   }
 
-  if (inverse_root_freqs) {
+  if (inverse_root_freqs != nullptr) {
     delete[] inverse_root_freqs;
     inverse_root_freqs = nullptr;
   }
 
-  if (row_index) {
+  if (row_index != nullptr) {
     delete[] row_index;
     row_index = nullptr;
   }
 
-  if (pseu_mutation_count) {
+  if (pseu_mutation_count != nullptr) {
     delete[] pseu_mutation_count;
     pseu_mutation_count = nullptr;
   }
@@ -110,13 +110,13 @@ cmaple::ModelBase::~ModelBase() {
 
 void cmaple::ModelBase::initEqualStateFreqs() {
   // init variables
-  if (!root_freqs) {
+  if (root_freqs ==  nullptr) {
     root_freqs = new RealNumType[num_states_];
   }
-  if (!root_log_freqs) {
+  if (root_log_freqs ==  nullptr) {
     root_log_freqs = new RealNumType[num_states_];
   }
-  if (!inverse_root_freqs) {
+  if (inverse_root_freqs ==  nullptr) {
     inverse_root_freqs = new RealNumType[num_states_];
   }
 
@@ -143,13 +143,13 @@ void cmaple::ModelBase::extractRefInfo(const Alignment* aln) {
     
   if (!fixed_params) {
     // init variables
-    if (!root_freqs) {
+    if (root_freqs ==  nullptr) {
       root_freqs = new RealNumType[num_states_];
     }
-    if (!root_log_freqs) {
+    if (root_log_freqs ==  nullptr) {
       root_log_freqs = new RealNumType[num_states_];
     }
-    if (!inverse_root_freqs) {
+    if (inverse_root_freqs ==  nullptr) {
       inverse_root_freqs = new RealNumType[num_states_];
     }
 
@@ -200,7 +200,7 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
 
 std::string cmaple::ModelBase::exportRootFrequenciesStr() {
   // Handle cases when root_freqs is null
-  if (!root_freqs) {
+  if (root_freqs  ==  nullptr) {
     return "\n \n";
   }
 
@@ -221,7 +221,7 @@ std::string cmaple::ModelBase::exportRootFrequenciesStr() {
 
 std::string cmaple::ModelBase::exportQMatrixStr() {
   // Handle cases when mutation_mat is null
-  if (!mutation_mat) {
+  if (mutation_mat ==  nullptr) {
     return "\n";
   }
 
@@ -435,13 +435,13 @@ void cmaple::ModelBase::initPointers() {
 
   // init root_freqs, root_log_freqs, inverse_root_freqs if they have not yet
   // been initialized
-  if (!root_freqs) {
+  if (root_freqs ==  nullptr) {
     root_freqs = new RealNumType[num_states_];
   }
-  if (!root_log_freqs) {
+  if (root_log_freqs ==  nullptr) {
     root_log_freqs = new RealNumType[num_states_];
   }
-  if (!inverse_root_freqs) {
+  if (inverse_root_freqs ==  nullptr) {
     inverse_root_freqs = new RealNumType[num_states_];
   }
 

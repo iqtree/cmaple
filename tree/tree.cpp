@@ -19,7 +19,7 @@ void cmaple::Tree::initTree(Alignment* n_aln,
   }
 
   // Validate input model
-  if (!n_model) {
+  if (n_model ==  nullptr) {
     throw std::invalid_argument("Model is null!");
   }
 
@@ -82,7 +82,7 @@ cmaple::Tree::~Tree() {
   // Don't delete aln, model -> tree does NOT own the alignment & model
 
   // delete cumulative_rate
-  if (cumulative_rate) {
+  if (cumulative_rate !=  nullptr) {
     delete[] cumulative_rate;
   }
 }
@@ -260,10 +260,10 @@ void cmaple::Tree::attachAlnModel(Alignment* n_aln, ModelBase* n_model) {
   assert(n_model);
     
   // Validate inputs
-  if (!n_aln) {
+  if (n_aln  ==  nullptr) {
     throw std::invalid_argument("The alignment is null");
   }
-  if (!n_model) {
+  if (n_model ==  nullptr) {
     throw std::invalid_argument("The model is null");
   }
 
@@ -8958,7 +8958,7 @@ void cmaple::Tree::resetSPRFlags(const bool update_outdated,
 
 bool cmaple::Tree::isComplete() {
   // make sure aln is not null
-  if (aln) {
+  if (aln != nullptr) {
     // browse sequences in the alignment one by one
     for (std::vector<bool>::size_type i = 0; i < aln->data.size(); ++i) {
       // if any of sequence has yet added -> this tree is incomplete
@@ -9035,7 +9035,7 @@ void cmaple::Tree::computeCumulativeRate() {
   }
 
   // init cumulative_rate
-  if (!cumulative_rate) {
+  if (cumulative_rate ==  nullptr) {
     cumulative_rate = new RealNumType[sequence_length + 1];
   }
 
