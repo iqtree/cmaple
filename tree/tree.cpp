@@ -767,8 +767,8 @@ void cmaple::Tree::applySPRTemplate(
         cmaple::verbose_mode > cmaple::VB_QUIET) {
       outWarning(
           "A shallow tree search will be followed by a "
-          "MORE_ACCURATE_TREE_SEARCH instead of a NORMAL_TREE_SEARCH");
-      tree_search_type = MORE_ACCURATE_TREE_SEARCH;
+          "ACCURATE_TREE_SEARCH instead of a NORMAL_TREE_SEARCH");
+      tree_search_type = ACCURATE_TREE_SEARCH;
     }
 
     // apply short-range SPR search
@@ -8984,8 +8984,8 @@ cmaple::Tree::TreeSearchType cmaple::Tree::parseTreeSearchType(
   if (tree_search_type == "NORMAL") {  // || tree_search_type == "PARTIAL")
     return cmaple::Tree::NORMAL_TREE_SEARCH;
   }
-  if (tree_search_type == "MORE_ACCURATE") {  // tree_search_type == "COMPLETE")
-    return cmaple::Tree::MORE_ACCURATE_TREE_SEARCH;
+  if (tree_search_type == "ACCURATE") {  // tree_search_type == "COMPLETE")
+    return cmaple::Tree::ACCURATE_TREE_SEARCH;
   }
   return UNKNOWN_TREE_SEARCH;
 }
@@ -8999,8 +8999,8 @@ std::string cmaple::Tree::getTreeSearchStr(
     case cmaple::Tree::NORMAL_TREE_SEARCH:
       return "NORMAL";
       // break;
-    case cmaple::Tree::MORE_ACCURATE_TREE_SEARCH:
-      return "MORE_ACCURATE";
+    case cmaple::Tree::ACCURATE_TREE_SEARCH:
+      return "ACCURATE";
       // break;
     case cmaple::Tree::UNKNOWN_TREE_SEARCH:
     default:
