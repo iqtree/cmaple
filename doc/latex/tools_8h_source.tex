@@ -163,9 +163,9 @@
 \DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ func,}
 \DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,}
 \DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ line)\ \{}
-\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{char}*\ sfile\ =\ (\textcolor{keywordtype}{char}*)strrchr(file,\ \textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{char}*\ sfile\ =\ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(strrchr(file,\ \textcolor{charliteral}{'/'}));}
 \DoxyCodeLine{00163\ \ \ \textcolor{keywordflow}{if}\ (!sfile)}
-\DoxyCodeLine{00164\ \ \ \ \ sfile\ =\ (\textcolor{keywordtype}{char}*)file;}
+\DoxyCodeLine{00164\ \ \ \ \ sfile\ =\ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(file);}
 \DoxyCodeLine{00165\ \ \ \textcolor{keywordflow}{else}}
 \DoxyCodeLine{00166\ \ \ \ \ sfile++;}
 \DoxyCodeLine{00167\ \ \ std::cerr\ <<\ sfile\ <<\ \textcolor{stringliteral}{"{}:"{}}\ <<\ line\ <<\ \textcolor{stringliteral}{"{}:\ "{}}\ <<\ func\ <<\ \textcolor{stringliteral}{"{}:\ Assertion\ \`{}"{}}}
@@ -219,7 +219,7 @@
 \DoxyCodeLine{00266\ }
 \DoxyCodeLine{00267\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ NODE's\ INDEX\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
 \DoxyCodeLine{00273\ \textcolor{keyword}{struct\ }Index\ \{}
-\DoxyCodeLine{00278\ \ \ Index()\ :\ vector\_index\_(0),\ mini\_index\_(UNDEFINED)\{\};}
+\DoxyCodeLine{00278\ \ \ \ \ Index()\ :\ vector\_index\_(0),\ mini\_index\_(UNDEFINED)\{\};}
 \DoxyCodeLine{00279\ }
 \DoxyCodeLine{00283\ \ \ Index(NumSeqsType\ vec\_index,\ MiniIndex\ mini\_index)}
 \DoxyCodeLine{00284\ \ \ \ \ \ \ :\ vector\_index\_(vec\_index),\ mini\_index\_(mini\_index)\{\};}

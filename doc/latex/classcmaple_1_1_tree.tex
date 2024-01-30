@@ -9,7 +9,7 @@
 \item 
 enum \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} \{ \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43a782a94a0336018d3a43f5e71e76e0bc6}{FAST\+\_\+\+TREE\+\_\+\+SEARCH}}
 , \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}
-, \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2}{MORE\+\_\+\+ACCURATE\+\_\+\+TREE\+\_\+\+SEARCH}}
+, \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8}{ACCURATE\+\_\+\+TREE\+\_\+\+SEARCH}}
 , \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5}{UNKNOWN\+\_\+\+TREE\+\_\+\+SEARCH}}
  \}
 \item 
@@ -70,8 +70,8 @@ FAST\+\_\+\+TREE\+\_\+\+SEARCH&No tree search (placement only) \\
 NORMAL\+\_\+\+TREE\+\_\+\+SEARCH&Consider pruning branches only at newly-\/added nodes when seeking SPR moves \\
 \hline
 
-\raisebox{\heightof{T}}[0pt][0pt]{\index{MORE\_ACCURATE\_TREE\_SEARCH@{MORE\_ACCURATE\_TREE\_SEARCH}!cmaple::Tree@{cmaple::Tree}}\index{cmaple::Tree@{cmaple::Tree}!MORE\_ACCURATE\_TREE\_SEARCH@{MORE\_ACCURATE\_TREE\_SEARCH}}}\Hypertarget{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2}\label{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2} 
-MORE\+\_\+\+ACCURATE\+\_\+\+TREE\+\_\+\+SEARCH&Consider all nodes when seeking SPR moves \\
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ACCURATE\_TREE\_SEARCH@{ACCURATE\_TREE\_SEARCH}!cmaple::Tree@{cmaple::Tree}}\index{cmaple::Tree@{cmaple::Tree}!ACCURATE\_TREE\_SEARCH@{ACCURATE\_TREE\_SEARCH}}}\Hypertarget{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8}\label{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8} 
+ACCURATE\+\_\+\+TREE\+\_\+\+SEARCH&Consider all nodes when seeking SPR moves \\
 \hline
 
 \raisebox{\heightof{T}}[0pt][0pt]{\index{UNKNOWN\_TREE\_SEARCH@{UNKNOWN\_TREE\_SEARCH}!cmaple::Tree@{cmaple::Tree}}\index{cmaple::Tree@{cmaple::Tree}!UNKNOWN\_TREE\_SEARCH@{UNKNOWN\_TREE\_SEARCH}}}\Hypertarget{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5}\label{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5} 
@@ -417,7 +417,7 @@ Infer a phylogenetic tree by executing \doxylink{classcmaple_1_1_tree_a072d53937
 \item optimizes all branch lengths
 \end{DoxyItemize}
 \item If users already supplied a complete tree, this function, by default, does neither placement nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed\+\_\+blengths = true when initializing the tree (by Tree() constructor);
-\item If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree\+\_\+search\+\_\+type = MORE\+\_\+\+ACCURATE
+\item If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree\+\_\+search\+\_\+type = ACCURATE
 \end{DoxyItemize}
 
 

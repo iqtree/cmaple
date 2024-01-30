@@ -60,15 +60,15 @@
 \DoxyCodeLine{00149\ }
 \DoxyCodeLine{00154\ \ \ \textcolor{keyword}{inline}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ getSeqType()\textcolor{keyword}{\ const\ }\{\ }
 \DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordflow}{return}\ seq\_type\_;\ }
-\DoxyCodeLine{00156\ \ \ \};}
+\DoxyCodeLine{00156\ \ \ \}}
 \DoxyCodeLine{00157\ }
 \DoxyCodeLine{00161\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ setSeqType(\mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seq\_type)\ \{}
 \DoxyCodeLine{00162\ \ \ \ \ seq\_type\_\ =\ seq\_type;}
 \DoxyCodeLine{00163\ \ \ \ \ updateNumStates();}
-\DoxyCodeLine{00164\ \ \ \};}
+\DoxyCodeLine{00164\ \ \ \}}
 \DoxyCodeLine{00165\ }
-\DoxyCodeLine{00175\ \ \ std::string\ readRefSeq(\textcolor{keyword}{const}\ std::string\&\ ref\_filename,}
-\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ seq\_name);}
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{auto}\ readRefSeq(\textcolor{keyword}{const}\ std::string\&\ ref\_filename,}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_name)\ -\/>\ std::string;}
 \DoxyCodeLine{00177\ }
 \DoxyCodeLine{00184\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}\ convertState2Char(\textcolor{keyword}{const}\ cmaple::StateType\&\ state,}
 \DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\&\ seqtype);}
@@ -146,9 +146,9 @@
 \DoxyCodeLine{00389\ }
 \DoxyCodeLine{00394\ \ \ \textcolor{keywordtype}{void}\ writePHYLIP(std::ostream\&\ aln\_stream);}
 \DoxyCodeLine{00395\ }
-\DoxyCodeLine{00399\ \ \ std::string\ getRefSeqStr();}
+\DoxyCodeLine{00399\ \ \ \textcolor{keyword}{auto}\ getRefSeqStr()\ -\/>\ std::string;}
 \DoxyCodeLine{00400\ }
-\DoxyCodeLine{00404\ \ \ std::string\ getSeqString(\textcolor{keyword}{const}\ std::string\&\ ref\_seq\_str,\ Sequence*\ sequence);}
+\DoxyCodeLine{00404\ \ \ \textcolor{keyword}{auto}\ getSeqString(\textcolor{keyword}{const}\ std::string\&\ ref\_seq\_str,\ Sequence*\ sequence)\ -\/>\ std::string;}
 \DoxyCodeLine{00405\ }
 \DoxyCodeLine{00413\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectMAPLEorFASTA(std::istream\&\ aln\_stream);}
 \DoxyCodeLine{00414\ }
@@ -156,9 +156,9 @@
 \DoxyCodeLine{00425\ \ \ \ \ }
 \DoxyCodeLine{00427\ \};}
 \DoxyCodeLine{00428\ }
-\DoxyCodeLine{00437\ std::ostream\&\ \mbox{\hyperlink{group__cmaple_gabf49c77ec0934b4d8750f61dd3ac6d71}{operator<<}}(std::ostream\&\ out\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln);}
+\DoxyCodeLine{00437\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{group__cmaple_gabf49c77ec0934b4d8750f61dd3ac6d71}{operator<<}}(std::ostream\&\ out\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln)\ -\/>\ std::ostream\&;}
 \DoxyCodeLine{00438\ }
-\DoxyCodeLine{00441\ std::istream\&\ \mbox{\hyperlink{group__cmaple_ga9f041909a438d7173dc9f15dcf20762d}{operator>>}}(std::istream\&\ in\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln);}
+\DoxyCodeLine{00441\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{group__cmaple_ga9f041909a438d7173dc9f15dcf20762d}{operator>>}}(std::istream\&\ in\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln)\ -\/>\ std::istream\&;}
 \DoxyCodeLine{00442\ }
 \DoxyCodeLine{00447\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_protein[];}
 \DoxyCodeLine{00448\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_dna[];}

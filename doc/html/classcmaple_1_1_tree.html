@@ -88,7 +88,7 @@ $(function() {
 Public Types</h2></td></tr>
 <tr class="memitem:a39bd3bfce400c9222e8b77c584d26d43"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> { <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43a782a94a0336018d3a43f5e71e76e0bc6">FAST_TREE_SEARCH</a>
 , <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1">NORMAL_TREE_SEARCH</a>
-, <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2">MORE_ACCURATE_TREE_SEARCH</a>
+, <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8">ACCURATE_TREE_SEARCH</a>
 , <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5">UNKNOWN_TREE_SEARCH</a>
  }</td></tr>
 <tr class="separator:a39bd3bfce400c9222e8b77c584d26d43"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,7 +162,7 @@ Public Member Functions</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1" name="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1"></a>NORMAL_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider pruning branches only at newly-added nodes when seeking SPR moves </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2" name="a39bd3bfce400c9222e8b77c584d26d43ae452d25b3b1a6060c8f156d0a35566d2"></a>MORE_ACCURATE_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider all nodes when seeking SPR moves </p>
+<tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8" name="a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8"></a>ACCURATE_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider all nodes when seeking SPR moves </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5" name="a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5"></a>UNKNOWN_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Unknown (not specified) </p>
 </td></tr>
@@ -715,7 +715,7 @@ Public Member Functions</h2></td></tr>
 </ul>
 </li>
 <li>If users already supplied a complete tree, this function, by default, does neither placement nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
-<li>If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree_search_type = MORE_ACCURATE</li>
+<li>If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree_search_type = ACCURATE</li>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
