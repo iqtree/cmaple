@@ -62,9 +62,9 @@ One can specify an input tree (e.g., `tree.nwk`) in the NEWICK format using the 
 
 	    cmaple -aln example.maple -t tree.nwk -blfix
 
-To use the input (complete/incomplete) tree as a starting tree to perform placements (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, one can add `-tree-search MORE_ACCURATE` to the command.
+To use the input (complete/incomplete) tree as a starting tree to perform placements (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, one can add `-search ACCURATE` to the command.
 
-	    cmaple -aln example.maple -t tree.nwk -tree-search MORE_ACCURATE
+	    cmaple -aln example.maple -t tree.nwk -search ACCURATE
         
 ### 4. Set the tree search type
 
@@ -74,17 +74,17 @@ We implemented three types of tree search:
 |------------------------|---------------------------------------------------------------|
 | FAST      | No tree search (placement only) |
 | NORMAL    | Consider pruning branches only at newly-added nodes when seeking SPR moves |
-| MORE\_ACCURATE | Consider all nodes when seeking SPR moves |
+| ACCURATE | Consider all nodes when seeking SPR moves |
 
-If users don't specify an input tree, `NORMAL` and `MORE_ACCURATE` perform the same behaviors since all taxa from the alignment are first added to the tree then SPR moves are considered at all those (newly-added) nodes during the tree search.
+If users don't specify an input tree, `NORMAL` and `ACCURATE` perform the same behaviors since all taxa from the alignment are first added to the tree then SPR moves are considered at all those (newly-added) nodes during the tree search.
 
 If users input a complete tree, both `FAST` and `NORMAL` do nothing since no new taxa is added to the tree.
 
 If users input an incomplete tree, those tree search types have completely different behaviors as described in the above table. The runtime and the accuracy increase, in general, when changing the tree search type from the top to the bottom ones. 
 
-By default, CMAPLE applies the `NORMAL` tree search. One can change it to, e.g, the `FAST` tree search by using the `-tree-search` option.
+By default, CMAPLE applies the `NORMAL` tree search. One can change it to, e.g, the `FAST` tree search by using the `-search` option.
 
-    cmaple -aln example.maple -t tree.nwk -tree-search FAST
+    cmaple -aln example.maple -t tree.nwk -search FAST
 
     
 ### 5. Assess branch supports with aLRT-SH
@@ -212,7 +212,7 @@ All the options available in CMAPLE are shown below:
 | `-format <FORMAT>`  | Set the alignment format as either of PHYLIP, FASTA, [MAPLE][MAPLE_FORMAT], or AUTO. *DEFAULT: auto-detect from the alignment* |
 | `-t <TREE_FILE>`   | Specify a file containing a starting tree for tree search. Note: the starting tree is not mandatory to consist all taxa in the input alignment. |
 | `-blfix`   | Keep the branch lengths of the input tree unchanged (only applicable if the input tree consists all the taxa in the alignment). |
-| `-tree-search <TYPE>`   | Specify a [tree search type][TREE_SEARCH] as either of `FAST`, `NORMAL`, or `MORE_ACCURATE`. *DEFAULT: `NORMAL`* |
+| `-search <TYPE>`   | Specify a [tree search type][TREE_SEARCH] as either of `FAST`, `NORMAL`, or `ACCURATE`. *DEFAULT: `NORMAL`* |
 | `-shallow-search`   | Enable a shallow tree search before a deeper tree search. *DEFAULT: No shallow search* |
 | `-branch-support`   | Compute branch supports (aLRT-SH) of the tree. |
 | `--replicates <NUM>`   | Set the number of replicates for computing branch supports (aLRT-SH). *DEFAULT: 1000* |
