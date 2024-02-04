@@ -44,29 +44,29 @@ In your project directory, run
 
     	#include “cmaple.h”
     	
-    	// Create an alignment from a file
-    	cmaple::Alignment aln("alignment.maple");
+    	// Read an alignment from a FASTA file
+    	cmaple::Alignment aln("alignment.fasta");
     	
-    	// Check if the input alignment is suitable for using [C]Maple method
-    	if (cmaple::checkMapleSuitability(aln))
+    	// Check if the [C]Maple algorithm is effective to analyse the input alignment
+    	if (cmaple::isEffective(aln))
     	{
-    		// Create a default model according to the data type from the alignment (i.e., GTR for DNA, and LG for protein data)
-    		cmaple::Model model(cmaple::ModelBase::DEFAULT, aln.getSeqType());
+    		// Initialise a substitution model as GTR
+    		cmaple::Model model(cmaple::ModelBase::GTR);
     	
-    		// Create a tree, attach the alignment and model to the tree
-    		cmaple::Tree tree(&aln, &model);
+    		// Declare a tree, attaching it to the alignment and model 
+			cmaple::Tree tree(&aln, &model);
     	
-    		// Infer a phylogenetic tree from the alignment and the model using [C]Maple algorithm
-    		tree.autoProceedMAPLE();
+    		// Infer a maximum likelihood tree
+    		tree.infer();
     	
-    		// Compute the branch supports for the inferred tree
-    		tree.computeBranchSupport();
+    		// Compute aLRT-SH branch supports of the inferred tree
+			tree.computeBranchSupport();
     	
     		// Compute the likelihood of the tree
-    		cout << "- Tree log likelihood: " << tree.computeLh() << endl;
+    		cout << "Log-likelihood: " << tree.computeLh() << endl;
     	
-    		// Export the tree (with branch supports) in NEWICK format
-    		cout << "- Tree: " << tree.exportNewick("cmaple::Tree::BIN_TREE, true) << endl;
+    		// Export the tree in NEWICK format
+    		cout << "Tree: " << tree.exportNewick() << endl;
     	}
     	else
     	{
