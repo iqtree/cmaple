@@ -18,13 +18,13 @@ namespace cmaple
      */
     std::string getCitations();
 
-    /*! \brief Check if an alignment is suitable for using [C]Maple method
+    /*! \brief Check if the [C]Maple algorithm is effective to analyse an input alignment
      * @param[in] aln an alignment
-     * @return TRUE if the alignment is suitable for using [C]Maple method;
+     * @return TRUE if the [C]Maple algorithm is effective to analyse the alignment;
      * otherwise, classical methods (e.g., IQ-TREE, RAXML) are recommended.
      * @throw std::invalid\_argument if the input alignment is empty or invalid
      */
-    bool checkMapleSuitability(const Alignment& aln);
+    bool isEffective(const Alignment& aln);
 
     /*! @} End of Doxygen Groups*/
 

@@ -143,7 +143,7 @@ void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
   (this->*optimizeBranchPtr)(out_stream);
 }
 
-void cmaple::Tree::autoProceedMAPLE(
+void cmaple::Tree::infer(
     const TreeSearchType tree_search_type,
     const bool shallow_tree_search, std::ostream& out_stream) {
   assert(doInferencePtr);
@@ -164,13 +164,20 @@ std::string cmaple::Tree::exportNewick(const TreeType tree_type,
                                        const bool show_branch_supports) {
   assert(aln);
   assert(model);
+    
+  // if branch supports have not been computed -> don't output them
+  bool branch_support_computed = node_lhs.size() >= 3 && node_lhs[nodes[root_vector_index].getNodelhIndex()].get_aLRT_SH() != -1;
+  bool show_branch_supports_checked = show_branch_supports;
+  if (show_branch_supports_checked && !branch_support_computed)
+    show_branch_supports_checked = false;
+    
   // output the tree according to its type
   switch (tree_type) {
     case BIN_TREE:
-      return exportNewick(true, show_branch_supports);
+      return exportNewick(true, show_branch_supports_checked);
       // break;
     case MUL_TREE:
-      return exportNewick(false, show_branch_supports);
+      return exportNewick(false, show_branch_supports_checked);
       // break;
     case UNKNOWN_TREE:
     default:

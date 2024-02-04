@@ -193,7 +193,7 @@ class Tree {
    */
   void optimizeBranch(std::ostream& out_stream = std::cout);
 
-  /*! \brief Infer a phylogenetic tree by executing doPlacement(), applySPR(),
+  /*! \brief Infer a maximum likelihood tree by executing doPlacement(), applySPR(),
    * and optimizeBranch()
    * - If users didn't supply an input tree or supplied an incomplete tree
    * (which doesn't contain all the taxa in the alignment) when initializing the
@@ -221,7 +221,7 @@ class Tree {
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  void autoProceedMAPLE(
+  void infer(
       const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH,
       const bool shallow_tree_search = false, std::ostream& out_stream = std::cout);
 
@@ -271,11 +271,9 @@ class Tree {
    * @return A tree string in NEWICK format
    * @throw std::invalid\_argument if any of the following situations occur.
    * - tree\_type is unknown
-   * - show\_branch\_supports = true but branch support values have yet been
-   * computed
    */
   std::string exportNewick(const TreeType tree_type = BIN_TREE,
-                           const bool show_branch_supports = false);
+                           const bool show_branch_supports = true);
 
   // ----------------- END OF PUBLIC APIs ------------------------------------
   // //
@@ -1602,8 +1600,6 @@ class Tree {
 
   /**
    Export tree std::string in Newick format
-   @throw std::invalid\_argument if show\_branch\_supports = true but branch
-   support values have yet been computed
    */
   std::string exportNewick(const bool binary, const bool show_branch_supports);
 

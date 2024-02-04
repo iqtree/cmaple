@@ -20,7 +20,7 @@ TEST(CMapleTest, GetCitationsTest) {
     EXPECT_TRUE(citations.length() > 0);
 }
 
-TEST(CMapleTest, checkMapleSuitability) {
+TEST(CMapleTest, isEffective) {
     
     // detect the path to the example directory
     std::string example_dir = "../../example/";
@@ -29,17 +29,17 @@ TEST(CMapleTest, checkMapleSuitability) {
     
     Alignment aln(example_dir + "test_100.maple");
     // Check the result
-    EXPECT_TRUE(cmaple::checkMapleSuitability(aln));
+    EXPECT_TRUE(cmaple::isEffective(aln));
     
     aln.read(example_dir + "test_5K.maple");
     // Check the result
-    EXPECT_TRUE(cmaple::checkMapleSuitability(aln));
+    EXPECT_TRUE(cmaple::isEffective(aln));
     
     aln.read(example_dir + "input.fa");
     // Check the result
-    EXPECT_FALSE(cmaple::checkMapleSuitability(aln));
+    EXPECT_FALSE(cmaple::isEffective(aln));
     
     aln.read(example_dir + "input.phy");
     // Check the result
-    EXPECT_FALSE(cmaple::checkMapleSuitability(aln));
+    EXPECT_FALSE(cmaple::isEffective(aln));
 }
