@@ -1165,7 +1165,7 @@ void cmaple::quickStartGuide() {
       << "To show all available options: run 'cmaple -h'" << endl
       << endl
       << "For more information, please have a look at user manual" << endl
-      << "     https://github.com/trongnhanuit/cmaple" << endl
+      << "     https://github.com/iqtree/cmaple" << endl
       << endl;
   exit(0);
 }
