@@ -734,7 +734,7 @@ void cmaple::Alignment::extractMutations(const StrVector& str_sequences,
   }
 }
 
-void cmaple::Alignment::parseRefSeq(string& ref_sequence) {
+void cmaple::Alignment::parseRefSeq(string& ref_sequence, bool throw_error) {
   assert(ref_sequence.length() > 0);
     
   ref_seq.resize(ref_sequence.length());
@@ -749,12 +749,16 @@ void cmaple::Alignment::parseRefSeq(string& ref_sequence) {
 
     // validate the ref state
     if (ref_seq[i] >= num_states) {
-      ref_sequence[i] = DEFAULT_CHAR;
-      if (cmaple::verbose_mode > cmaple::VB_QUIET) {
-        outWarning("Invalid reference state found at site " +
-                   convertPosTypeToString(static_cast<PositionType>(i)) +
-                   " was replaced by a default state " + DEFAULT_CHAR);
+      if (throw_error) {
+          string error_msg = "Invalid reference state ";
+          error_msg += ref_sequence[i];
+          error_msg += " found at site "
+          + convertPosTypeToString(static_cast<PositionType>(i + 1))
+          + ". Ambiguous/unrecognized characters are invalid for the reference sequence.";
+          throw std::logic_error(error_msg);
       }
+        
+      ref_sequence[i] = DEFAULT_CHAR;
       ref_seq[i] = 0;
     }
   }
@@ -817,7 +821,7 @@ void cmaple::Alignment::readMaple(std::istream& aln_stream) {
       }
 
       // parse the reference sequence into vector of state
-      parseRefSeq(line);
+      parseRefSeq(line, true);
 
       // reset the seq_name
       seq_name = "";
@@ -1375,7 +1379,7 @@ void cmaple::Alignment::readFastaOrPhylip(std::istream& aln_stream,
   ref_sequence = n_ref_seq.length() ? n_ref_seq : generateRef(sequences);
 
   // parse ref_sequence into vector of states
-  parseRefSeq(ref_sequence);
+  parseRefSeq(ref_sequence, false);
     
   assert(ref_sequence.length() > 0);
 

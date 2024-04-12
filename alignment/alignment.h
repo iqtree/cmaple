@@ -303,9 +303,10 @@ class Alignment {
   /**
    Parse the reference sequence into vector of state
    @param ref_sequence reference genome in string
+   @param throw_error TRUE to throw an error if invalid character found
    @throw std::logic\_error if ref\_sequence contains invalid states
    */
-  void parseRefSeq(std::string& ref_sequence);
+  void parseRefSeq(std::string& ref_sequence, bool throw_error);
 
   /**
    Read alignment file in FASTA format
