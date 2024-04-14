@@ -51,6 +51,9 @@ void cmaple::ModelAA::initMutationMat() {
 
   // Get the model_name
   string name_upper = getModelName();
+    
+  // init the normalized factor
+  normalized_factor = 1.0;
 
   // read model params from string/file
   bool reversible;
@@ -176,6 +179,9 @@ void cmaple::ModelAA::rescaleLowerDiagonalRates() {
 
   const RealNumType AA_SCALE = 10.0;
   RealNumType scaler = AA_SCALE / max_rate;
+    
+  // record sum as the normalized factor
+  normalized_factor /= scaler;
 
   /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
 
@@ -203,6 +209,9 @@ void cmaple::ModelAA::rescaleAllRates() {
 
   const RealNumType AA_SCALE = 10.0;
   RealNumType scaler = AA_SCALE / max_rate;
+    
+  // record sum as the normalized factor
+  normalized_factor /= scaler;
 
   /* SCALING HAS BEEN RE-INTRODUCED TO RESOLVE NUMERICAL  PROBLEMS */
   mutation_mat_row = mutation_mat;

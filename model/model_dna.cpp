@@ -83,6 +83,9 @@ void cmaple::ModelDNA::initMutationMat() {
   assert(freqi_freqj_qij);
   assert(freq_j_transposed_ij);
 
+  // init the normalized factor
+  normalized_factor = 1.0;
+
   // for JC model
   if (sub_model == JC) {
     initMutationMatJC();

@@ -254,6 +254,11 @@ class ModelBase {
    the starting index of row i: i * num_states
    */
   cmaple::StateType* row_index = nullptr;
+    
+  /**
+  the normalized factor (to output the original R maxtrix)
+  */
+  cmaple::RealNumType normalized_factor = 1.0;
 
   /**
    TRUE to keep the model parameters unchanged
@@ -332,6 +337,9 @@ void cmaple::ModelBase::updateMutationMat() {
   // compute the total rate regarding the root freqs
   RealNumType total_rate = 0;
   total_rate -= dotProduct<num_states>(root_freqs, diagonal_mut_mat);
+    
+  // record sum as the normalized factor
+  normalized_factor = total_rate;
 
   // inverse total_rate
   total_rate = 1.0 / total_rate;

@@ -242,9 +242,21 @@ std::string cmaple::ModelBase::exportQMatrixStr() {
   for (StateType i = 0; i < num_states_; ++i, mut_mat_row += num_states_) {
     output += cmaple::Alignment::convertState2Char(i, seqtype);
     output += "\t";
-
-    for (StateType j = 0; j < num_states_; ++j) {
-      output += convertDoubleToString(mut_mat_row[j]) + "\t";
+    
+    // restore the original rates (before normalizing by taking into account the state freqs)
+    // cases when no normalization was taken
+    if (normalized_factor == 1)
+    {
+        for (StateType j = 0; j < num_states_; ++j) {
+            output += convertDoubleToString(mut_mat_row[j]) + "\t";
+        }
+    }
+    // cases when no normalization was taken
+    else
+    {
+        for (StateType j = 0; j < num_states_; ++j) {
+            output += convertDoubleToString(mut_mat_row[j] * normalized_factor) + "\t";
+        }
     }
 
     output += "\n";
@@ -413,6 +425,9 @@ void cmaple::ModelBase::normalizeQMatrix() {
   if (sum == 0.0) {
     throw std::logic_error("Empty Q matrix");
   }
+    
+  // record sum as the normalized factor
+  normalized_factor *= sum;
 
   double delta = 1.0 / sum;
 
