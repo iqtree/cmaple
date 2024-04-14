@@ -13,9 +13,12 @@ using namespace cmaple;
    The actual data is pulled in via #include to avoid a thousand lines of 'code'
    here (which will also upset the linter)
 */
-const char* cmaple::builtin_prot_models = R"(
+const char* cmaple::builtin_prot_models =
+#include "model_aa.nexus"
+;
+/*R"(
 #include <model_aa.nexus>
-)";
+)";*/
 
 cmaple::ModelAA::ModelAA(const cmaple::ModelBase::SubModel sub_model)
     : ModelBase(sub_model, 20) {
