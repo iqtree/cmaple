@@ -1134,7 +1134,6 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
 void cmaple::quickStartGuide() {
   cmaple::printCopyright(cout);
-  printCopyright(cout);
   cout
       << "Command-line examples (replace 'cmaple ...' by the actual path to "
          "executable):"
