@@ -762,30 +762,27 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           strcmp(argv[cnt], "-out-aln") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError(
-              "Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> "
-              "could be MAPLE, PHYLIP, or FASTA");
+          outError("Use -out-aln <ALN_FILENAME>");
         }
 
         // parse inputs
-        std::string inputs = argv[cnt];
-        std::string delimiter = ",";
-        size_t pos = inputs.find(delimiter);
-        if (pos != std::string::npos) {
-          params.output_aln = inputs.substr(0, pos);
-          // validate output_aln
-          if (!params.output_aln.length()) {
-            outError("<ALN_FILENAME> is empty!");
-          }
-          inputs.erase(0, pos + delimiter.length());
-          params.output_aln_format_str = inputs;
-        } else {
-          outError(
-              "Use -out-aln <ALN_FILENAME>,<ALN_FORMAT>. Note <ALN_FORMAT> "
-              "could be MAPLE, PHYLIP, FASTA, or AUTO");
-        }
+        params.output_aln = argv[cnt];
 
         continue;
+      }
+      if (strcmp(argv[cnt], "--output-format") == 0 ||
+            strcmp(argv[cnt], "-out-format") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError(
+                "Use -out-format <ALN_FORMAT>. Note <ALN_FORMAT> "
+                "could be MAPLE, PHYLIP, or FASTA");
+          }
+
+          // parse inputs
+          params.output_aln_format_str = argv[cnt];
+
+          continue;
       }
       if (strcmp(argv[cnt], "-st") == 0 ||
           strcmp(argv[cnt], "--seqtype") == 0) {
@@ -1157,10 +1154,10 @@ void cmaple::quickStartGuide() {
       << endl
       << "     cmaple -aln example.maple -branch-support -nt 4" << endl
       << endl
-      << "5. Convert an alignment (example.maple) to a different format (e.g., "
-         "PHYLIP format):"
+      << "5. Convert an alignment (aln.phy) to a different format (e.g., "
+         "FASTA format):"
       << endl
-      << "     cmaple -aln example.maple -out-aln aln.phy,PHYLIP" << endl
+      << "     cmaple -aln aln.phy -out-aln aln.fa -out-format FASTA" << endl
       << endl
       << "To show all available options: run 'cmaple -h'" << endl
       << endl
@@ -1212,9 +1209,10 @@ void cmaple::usage_cmaple() {
       << endl
       << "  -overwrite           Overwrite output files if existing." << endl
       << "  -ref <FILE>,<SEQ>    Specify the reference genome." << endl
-      << "  -out-aln <FILE>,<FORMAT> Write the input alignment to a file in a"
-      << endl
-      << "                       specific format (PHYLIP/FASTA/MAPLE)." << endl
+      << "  -out-aln <FILE>      Write the input alignment to a file in " << endl
+      << "                       MAPLE (default), PHYLIP, or FASTA format." << endl
+      << "  -out-format <FORMAT> Specify the format (MAPLE/PHYLIP/FASTA) " << endl
+      << "                       to output the alignment with `-out-aln`." << endl
       << "  --min-blength <NUM>  Set the minimum branch length." << endl
       << "  --threshold-prob <NUM> Specify a parameter for approximations."
       << endl
