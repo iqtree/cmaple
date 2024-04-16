@@ -18,7 +18,7 @@ class Tree {
     FAST_TREE_SEARCH,   /*!< No tree search (placement only) */
     NORMAL_TREE_SEARCH, /*!< Consider pruning branches only at newly-added nodes
                            when seeking SPR moves */
-    ACCURATE_TREE_SEARCH, /*!< Consider all nodes when seeking SPR moves */
+    EXHAUSTIVE_TREE_SEARCH, /*!< Consider all nodes when seeking SPR moves */
     UNKNOWN_TREE_SEARCH,       /*!< Unknown (not specified) */
   };
 
@@ -210,7 +210,7 @@ class Tree {
    * - If users want to use the input (complete/incomplete) tree as a starting
    * tree to perform placement (for an incomplete tree), then consider SPR moves
    * on all nodes, and optimize branch lengths, they can set tree_search_type
-   * = ACCURATE
+   * = EXHAUSTIVE
    *
    * @param[in] tree_search_type A type of tree search (optional)
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before

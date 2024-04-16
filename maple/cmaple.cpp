@@ -453,7 +453,7 @@ void cmaple::testing(cmaple::Params& params)
     tree_stream.close();
     std::cout << tree.doInference("FAST", true) << std::endl;
     
-    std::cout << tree.doInference("accurate") << std::endl;
+    std::cout << tree.doInference("EXHAUSTIVE") << std::endl;
 
     // std::cout << tree.exportNewick("BIN", true) << std::endl;
     //Tree tree(aln, model, "");

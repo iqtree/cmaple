@@ -898,7 +898,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           strcmp(argv[cnt], "-search") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError("Use -search <FAST|NORMAL|ACCURATE>");
+          outError("Use -search <FAST|NORMAL|EXHAUSTIVE>");
         }
 
         params.tree_search_type_str = argv[cnt];
@@ -1186,8 +1186,7 @@ void cmaple::usage_cmaple() {
       << "  -t <TREE_FILE>       Specify a starting tree for tree search."
       << endl
       << "  -blfix               Keep branch lengths unchanged. " << endl
-      << "  -search <TYPE>  Set tree search type "
-         "(FAST/NORMAL/ACCURATE)."
+      << "  -search <TYPE>       Set tree search type (FAST/NORMAL/EXHAUSTIVE)."
       << endl
       << "  -shallow-search      Perform a shallow tree search" << endl
       << "                       before a deeper tree search." << endl
