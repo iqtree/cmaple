@@ -1,4 +1,9 @@
-# What's CMAPLE?
+#CMAPLE
+
+[![License (GPL v2.0)](https://img.shields.io/badge/GPL%20v2.0-gnu?logo=gnu&label=gnu)](https://opensource.org/license/gpl-2-0)
+
+
+## What's CMAPLE?
 
 
 CMAPLE is a C++ reimplementation of [MAPLE][MAPLE_FORMAT] - a novel likelihood-based phylogenetic inference method for pandemic-scale epidemiological genomic data. CMAPLE is highly optimized for performance and scalability with many new features.
@@ -6,19 +11,27 @@ CMAPLE is a C++ reimplementation of [MAPLE][MAPLE_FORMAT] - a novel likelihood-b
 Apart from a standalone software, we also provide a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods. For more detail, please see <TBU>**API_Documentation**.
 
 
-# How to cite CMAPLE?
+## How to cite CMAPLE?
 
 <TBU>To be updated...
 
 
-# How to use CMAPLE?
+## How to use CMAPLE?
 
 
 Please refer to our [Wiki page](https://github.com/iqtree/cmaple/wiki) for installation instructions and usage examples of CMAPLE.  
 
 
+## Contributing - Get Involved!
 
-# Acknowledgment
+See [CONTRIBUTING](CONTRIBUTING) file.
+
+## Code of Conduct
+
+CMaple is governed by some rules, which serve to protect our community and its individuals. See [CODE_OF_CONDUCT](CODE_OF_CONDUCT) for details.
+
+
+## Acknowledgment
 CMAPLE relies on the following third-party libraries:
 
 - **[ncl](https://github.com/mtholder/ncl)** (version 2.0) - Licensed under the [GNU General Public License](https://github.com/mtholder/ncl/blob/master/COPYING).
