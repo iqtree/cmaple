@@ -24,11 +24,11 @@ Please refer to our [Wiki page](https://github.com/iqtree/cmaple/wiki) for insta
 
 ## Contributing - Get Involved!
 
-See [CONTRIBUTING](CONTRIBUTING) file.
+See [CONTRIBUTING](CONTRIBUTING.md) file.
 
 ## Code of Conduct
 
-CMaple is governed by some rules, which serve to protect our community and its individuals. See [CODE_OF_CONDUCT](CODE_OF_CONDUCT) for details.
+CMaple is governed by some rules, which serve to protect our community and its individuals. See [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md) for details.
 
 
 ## Acknowledgment
