@@ -1,4 +1,4 @@
-#CMAPLE
+# CMAPLE
 
 [![License (GPL v2.0)](https://img.shields.io/badge/GPL%20v2.0-License?logo=gnu&label=License)](https://opensource.org/license/gpl-2-0)
 
