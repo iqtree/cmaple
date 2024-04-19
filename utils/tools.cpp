@@ -1081,7 +1081,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           strcmp(argv[cnt], "-rep") == 0) {
         ++cnt;
         if (cnt >= argc) {
-          outError("Use --replicates <NUM_REPLICATES>");
+          outError("Use -rep <NUM_REPLICATES>");
         }
 
         try {
@@ -1231,7 +1231,7 @@ void cmaple::usage_cmaple() {
       << "  -shallow-search      Perform a shallow tree search" << endl
       << "                       before a deeper tree search." << endl
       << "  -branch-support      Compute branch supports (aLRT-SH)." << endl
-      << "  --replicates <NUM>   Set the number of replicates for computing"
+      << "  -rep <NUM>           Set the number of replicates for computing"
       << endl
       << "                       branch supports (aLRT-SH)." << endl
       << "  -eps <NUM>           Set the epsilon value for computing" << endl
@@ -1251,8 +1251,8 @@ void cmaple::usage_cmaple() {
       << "                       MAPLE (default), PHYLIP, or FASTA format." << endl
       << "  -out-format <FORMAT> Specify the format (MAPLE/PHYLIP/FASTA) " << endl
       << "                       to output the alignment with `-out-aln`." << endl
-      << "  --min-blength <NUM>  Set the minimum branch length." << endl
-      << "  --threshold-prob <NUM> Specify a parameter for approximations."
+      << "  -min-bl <NUM>        Set the minimum branch length." << endl
+      << "  -thresh-prob <NUM>   Specify a parameter for approximations."
       << endl
       << "  -mut-update <NUM>    Set the period to update the substitution "
          "rates."
