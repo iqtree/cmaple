@@ -623,6 +623,16 @@ class Params {
    * TRUE to make the processes of outputting->re-inputting a tree consistent
    */
   bool make_consistent;
+    
+  /**
+   * the maximum number of substitution per sites that CMAPLE is effective
+  */
+  RealNumType max_subs_per_site;
+    
+  /**
+   * the mean number of substitution per sites that CMAPLE is effective
+  */
+  RealNumType mean_subs_per_site;
 
   /*
       TRUE to log debugging

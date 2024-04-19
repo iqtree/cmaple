@@ -576,6 +576,8 @@ cmaple::Params::Params() {
   max_blength_factor = 40;
   thresh_diff_update = 1e-7;
   thresh_diff_fold_update = 1.001;
+  max_subs_per_site = 0.067;
+  mean_subs_per_site = 0.02;
   output_aln = "";
   output_aln_format_str = "MAPLE";
   num_tree_improvement = 1;
@@ -944,6 +946,44 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--max-subs") == 0 ||
+            strcmp(argv[cnt], "-max-subs") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError("Use -max-subs <NUM>");
+          }
+
+          try {
+            params.max_subs_per_site = convert_real_number(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.max_subs_per_site <= 0) {
+            outError("The maximum number of substitutions per sites <NUM> must be positive!");
+          }
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--mean-subs") == 0 ||
+            strcmp(argv[cnt], "-mean-subs") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError("Use -mean-subs <NUM>");
+          }
+
+          try {
+            params.mean_subs_per_site = convert_real_number(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.mean_subs_per_site <= 0) {
+            outError("The mean number of substitutions per sites <NUM> must be positive!");
+          }
+
+          continue;
+        }
       if (strcmp(argv[cnt], "--mutation-update") == 0 ||
           strcmp(argv[cnt], "-mut-update") == 0) {
         ++cnt;
@@ -1216,6 +1256,12 @@ void cmaple::usage_cmaple() {
       << endl
       << "  -mut-update <NUM>    Set the period to update the substitution "
          "rates."
+      << endl
+      << "  -max-subs <NUM>      Specify the maximum #substitutions per site" << endl
+      << "                       that CMAPLE is effective. Default: 0.067."
+      << endl
+      << "  -mean-subs <NUM>     Specify the mean #substitutions per site" << endl
+      << "                       that CMAPLE is effective. Default: 0.02."
       << endl
       << "  -seed <NUM>          Set a seed number for random generators."
       << endl

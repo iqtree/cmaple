@@ -12,7 +12,9 @@ std::string cmaple::getCitations()
     return "To be updated...";
 }
 
-auto cmaple::isEffective(const Alignment &aln) -> bool {
+auto cmaple::isEffective(const Alignment &aln,
+                         const double max_subs_per_site,
+                         const double mean_subs_per_site) -> bool {
   // validate the input
   const auto seq_length = aln.ref_seq.size();
   const auto num_seqs = aln.data.size();
@@ -23,16 +25,21 @@ auto cmaple::isEffective(const Alignment &aln) -> bool {
     throw std::invalid_argument(
         "Empty alignment or the number of sequences is less than 3!");
   }
+  if (max_subs_per_site < mean_subs_per_site) {
+    throw std::invalid_argument(
+        "max_subs_per_site must not be fewer than mean_subs_per_site!");
+  }
+        
     
   assert(seq_length > 0);
   assert(num_seqs > 0);
 
   // Get the sequence length
-  const auto max_mutations = seq_length * MAX_SUBS_PER_SITE;
-  auto max_sum_mutations = seq_length * MEAN_SUBS_PER_SITE * num_seqs;
+  const auto max_mutations = seq_length * max_subs_per_site;
+  auto max_sum_mutations = seq_length * mean_subs_per_site * num_seqs;
     
   assert(max_mutations > 0);
-  assert(max_sum_mutations > max_mutations);
+  assert(max_subs_per_site >= mean_subs_per_site);
 
   // check the thresholds:
   // (1) The number of mutations per sequence is no greater then <max_mutations>
@@ -101,7 +108,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         Alignment aln(params.aln_path, ref_seq, aln_format, seq_type);
         
         // check if CMAPLE is suitable for the input alignment
-        if (!isEffective(aln)) {
+        if (!isEffective(aln, params.max_subs_per_site, params.mean_subs_per_site)) {
           outWarning("Look like the input sequences are too divergent from "
                      "each other, which makes CMAPLE very slow. We highly "
                      "recommend users to use other methods (e.g., IQ-TREE) to "
