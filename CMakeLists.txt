@@ -85,14 +85,19 @@ option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 option(INSTALL_CMAPLE "Enable installation of CMAPLE. (Projects integrating CMAPLE may want to turn this OFF.)" ON)
 
 ##################################################################
-# check existence of a few basic functions
+# check existence of a few basic functions and headers
 ##################################################################
-include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
+include (CheckFunctionExists)
 check_function_exists (gettimeofday HAVE_GETTIMEOFDAY)
 check_function_exists (getrusage HAVE_GETRUSAGE)
 check_function_exists (GlobalMemoryStatusEx HAVE_GLOBALMEMORYSTATUSEX)
 check_function_exists (strndup HAVE_STRNDUP)
 check_function_exists (strtok_r HAVE_STRTOK_R)
+## find optional headers
+include (CheckIncludeFile)
+CHECK_INCLUDE_FILE("unistd.h" CMAPLE_HAS_UNISTDH)
+
+
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")

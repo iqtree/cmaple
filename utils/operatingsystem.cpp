@@ -8,10 +8,10 @@
 #include "operatingsystem.h"
 #include <sstream>
 #include <string>
-#if defined(WIN32) || defined(WIN64)
-#include <io.h>  //for _isatty
-#else
+#if defined(CMAPLE_HAS_UNISTDH)
 #include <unistd.h>  //for isatty
+#else
+#include <io.h>  //for _isatty
 #endif
 
 auto getOSName() -> std::string {
@@ -32,9 +32,9 @@ auto getOSName() -> std::string {
 }
 
 auto isStandardOutputATerminal() -> bool {
-#if defined(WIN32) || defined(WIN64)
-  return _isatty(fileno(stdout));
-#else
+#if defined(CMAPLE_HAS_UNISTDH)
   return isatty(fileno(stdout));
+#else
+  return _isatty(fileno(stdout));
 #endif
 }

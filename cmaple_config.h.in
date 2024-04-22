@@ -15,5 +15,7 @@
 #cmakedefine HAVE_STRNDUP
 #cmakedefine HAVE_STRTOK_R
 
+#cmakedefine CMAPLE_HAS_UNISTDH
+
 /* does the platform provide backtrace functions? */
 #cmakedefine Backtrace_FOUND
