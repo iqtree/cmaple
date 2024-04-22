@@ -63,8 +63,13 @@ set(GCC_MIN_VERSION "5")
 ##############################################################
 # Clang-tidy
 ##############################################################
-message("Setup clang-tidy")
-#set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-header-filter=.;-checks=performance-*")
+if (USE_CLANG_TIDY)
+  message("Setup clang-tidy (USE_CLANG_TIDY=ON)")
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-header-filter=.;-checks=performance-*")
+else()
+  message("No clang-tidy (USE_CLANG_TIDY=OFF)")
+endif()
+
 
 project(cmaple)
 add_definitions(-DCMAPLE)
