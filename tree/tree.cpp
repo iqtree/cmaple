@@ -6991,8 +6991,10 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
     lh_diff_3 += site_lh_diff_3[j];
     lh_diff_3 += site_lh_root_diff_3[j];
   }
+#ifdef DEBUG
   assert(isinf(lh_diff_2) || fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-3);
   assert(isinf(lh_diff_3) || fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
+#endif
 
 // iterate a number of replicates
 #pragma omp parallel reduction(+ : sh_count)
