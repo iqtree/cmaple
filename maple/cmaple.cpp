@@ -150,11 +150,6 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         std::ostream null_stream(nullptr);
         std::ostream& out_stream = cmaple::verbose_mode >= cmaple::VB_MED ? std::cout : null_stream;
         tree.infer(tree_search_type, params.shallow_tree_search, out_stream);
-
-        // Write the normal tree file
-        ofstream out = ofstream(output_treefile);
-        out << tree.exportNewick(tree_format);
-        out.close();
         
         // Compute branch supports (if users want to do so)
         if (params.compute_aLRT_SH)
@@ -169,10 +164,15 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             tree.computeBranchSupport(static_cast<int>(params.num_threads), params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree, out_stream);
 
             // write the tree file with branch supports
-            ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
+            /*ofstream out_tree_branch_supports = ofstream(prefix + ".aLRT_SH.treefile");
             out_tree_branch_supports << tree.exportNewick(tree_format, true);
-            out_tree_branch_supports.close();
+            out_tree_branch_supports.close();*/
         }
+        
+        // Write the normal tree file
+        ofstream out = ofstream(output_treefile);
+        out << tree.exportNewick(tree_format);
+        out.close();
         
         // If needed, apply some minor changes (collapsing zero-branch leaves into less-info sequences, re-estimating model parameters) to make the processes of outputting then re-inputting a tree result in a consistent tree
         if (params.make_consistent)
@@ -205,10 +205,10 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         // Show information about output files
         std::cout << "Analysis results written to:" << std::endl;
         std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
-        if (params.compute_aLRT_SH) {
+        /*if (params.compute_aLRT_SH) {
           std::cout << "Tree with aLRT-SH values:      "
                     << prefix + ".aLRT_SH.treefile" << std::endl;
-        }
+        }*/
         std::cout << "Screen log file:               " << prefix + ".log" << std::endl << std::endl;
         
         // show runtime
