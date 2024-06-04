@@ -169,21 +169,14 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             out_tree_branch_supports.close();*/
         }
         
+        // If needed, apply some minor changes (collapsing zero-branch leaves into less-info sequences, re-estimating model parameters) to make the processes of outputting then re-inputting a tree result in a consistent tree
+        if (params.make_consistent)
+            tree.makeTreeInOutConsistent();
+        
         // Write the normal tree file
         ofstream out = ofstream(output_treefile);
         out << tree.exportNewick(tree_format);
         out.close();
-        
-        // If needed, apply some minor changes (collapsing zero-branch leaves into less-info sequences, re-estimating model parameters) to make the processes of outputting then re-inputting a tree result in a consistent tree
-        if (params.make_consistent)
-        {
-            tree.makeTreeInOutConsistent();
-            
-            // Overwrite the normal tree file
-            ofstream overwrite_out = ofstream(output_treefile);
-            overwrite_out << tree.exportNewick(tree_format);
-            overwrite_out.close();
-        }
         
         // output log-likelihood of the tree
         if (cmaple::verbose_mode > cmaple::VB_QUIET) {
