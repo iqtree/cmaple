@@ -137,6 +137,42 @@ else()
     message("Target OS     : Unknown and untested yet")
 endif()
 
+# NHANLT: Note: to build a static version, we have to link
+# the static OpenMP library manually here instead of the dynamic one
+##################################################################
+# configure OpenMP to build a static version
+##################################################################
+if (NOT CMAPLE_FLAGS MATCHES "single")
+    message("OpenMP        : Yes")
+
+    if(APPLE)
+        if(OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac_m1)
+        else()
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac)
+        endif()
+    elseif (WIN32 OR UNIX)
+        if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib32)
+        else()
+            link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib)
+        endif()
+    endif()
+
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if (APPLE OR WIN32)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lomp")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+        endif()
+    endif()
+else()
+    message("OpenMP        : NONE")
+endif()
+
 ##################################################################
 # Setup compiler flags
 ##################################################################
@@ -251,21 +287,6 @@ endif(Backtrace_FOUND)
 
 target_link_libraries(cmaple PUBLIC maple cmaple_tree cmaple_alignment cmaple_model ncl nclextra cmaple_utils)
 target_link_libraries(cmaple-aa PUBLIC maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils)
-
-##################################################################
-# configure OpenMP to build a static version
-##################################################################
-if (NOT CMAPLE_FLAGS MATCHES "single")
-    message("OpenMP        : Yes")
-
-    find_package(OpenMP)
-    if(OpenMP_CXX_FOUND)
-      target_link_libraries(cmaple PUBLIC OpenMP::OpenMP_CXX)
-      target_link_libraries(cmaple-aa PUBLIC OpenMP::OpenMP_CXX)
-    endif()
-else()
-    message("OpenMP        : NONE")
-endif()
 
 
 ##############################################################
