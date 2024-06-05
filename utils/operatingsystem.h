@@ -9,6 +9,7 @@
 #define operatingsystem_h
 
 #include <string>
+#include <cmaple_config.h>
 
 std::string getOSName();
 bool isStandardOutputATerminal();
