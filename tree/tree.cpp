@@ -6991,8 +6991,10 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
     lh_diff_3 += site_lh_diff_3[j];
     lh_diff_3 += site_lh_root_diff_3[j];
   }
+#ifdef DEBUG
   assert(isinf(lh_diff_2) || fabs(lh_diff_2 - nodelh.getLhDiff2()) < 1e-3);
   assert(isinf(lh_diff_3) || fabs(lh_diff_3 - nodelh.getLhDiff3()) < 1e-3);
+#endif
 
 // iterate a number of replicates
 #pragma omp parallel reduction(+ : sh_count)
@@ -8848,8 +8850,17 @@ void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
   // add a new node representing the less-info-seq
   // the default min_blength in CMAPLE is not small enough -> I set it at
   // min_blength * 0.1 for a higher accuracy when calculating aLRT-SH
-  const RealNumType new_min_blength =
+  RealNumType new_min_blength =
       (params->fixed_min_blength == -1) ? min_blength * 0.1 : min_blength;
+    
+ // if the two sequences are identical set the new blength at 0
+    if (lower_regions->compareWithSample(*node.getPartialLh(TOP),
+        static_cast<PositionType>(aln->ref_seq.size()), aln) == 1 &&
+        node.getPartialLh(TOP)->compareWithSample(*lower_regions,
+        static_cast<PositionType>(aln->ref_seq.size()), aln) == 1)
+         new_min_blength = 0;
+    
+  // connect the new node to the tree
   connectNewSample2Branch<num_states>(
       lower_regions, seq_name_index, node_index, node, top_distance, 0,
       new_min_blength, best_child_regions, upper_left_right_regions);

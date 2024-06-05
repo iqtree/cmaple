@@ -881,8 +881,8 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           outError(e.what());
         }
 
-        if (params.fixed_min_blength <= 0) {
-          outError("<NUMBER> following -min-bl must be positive!");
+        if (params.fixed_min_blength <= 1e-12) {
+          outError("<NUMBER> following -min-bl must be at least 1e-12!");
         }
 
         continue;

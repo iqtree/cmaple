@@ -875,7 +875,15 @@ void cmaple::Alignment::readMaple(std::istream& aln_stream) {
 
       // extract <Type>
       ssin >> tmp;
-      StateType state = convertChar2State(toupper(tmp[0]));
+      StateType state;
+      try
+      {
+        state = convertChar2State(toupper(tmp[0]));
+      }
+      catch(std::invalid_argument& e)
+      {
+        throw std::invalid_argument("Line " + convertIntToString(line_num + 1) + ": " + e.what());
+      }
 
       // extract <Position>
       ssin >> tmp;
@@ -1037,9 +1045,8 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
             return 1;
         default:
             {
-                string invalid_state_msg = "Invalid state ";
+                string invalid_state_msg = "Unrecognized character ";
                 invalid_state_msg += state;
-                invalid_state_msg += ". Please check and try again!";
                 throw std::invalid_argument(invalid_state_msg);
                 return TYPE_INVALID;
             }
@@ -1081,9 +1088,8 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
         case 'V':
           return 1 + 2 + 4 + 3;  // A or G or C
         default: {
-          string invalid_state_msg = "Invalid state ";
+          string invalid_state_msg = "Unrecognized character ";
           invalid_state_msg += state;
-          invalid_state_msg += ". Please check and try again!";
           throw std::invalid_argument(invalid_state_msg);
           // return TYPE_INVALID;  // unrecognize character
         }
@@ -1113,9 +1119,8 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
       loc = strchr(symbols_protein, state);
 
       if (loc == nullptr) {
-        string invalid_state_msg = "Invalid state ";
+        string invalid_state_msg = "Unrecognized character ";
         invalid_state_msg += state;
-        invalid_state_msg += ". Please check and try again!";
         throw std::invalid_argument(invalid_state_msg);
         // return TYPE_INVALID;  // unrecognize character
       }
@@ -1130,9 +1135,8 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
 
         if (!loc)
         {
-            string invalid_state_msg = "Invalid state ";
+            string invalid_state_msg = "Unrecognized character ";
             invalid_state_msg += state;
-            invalid_state_msg += ". Please check and try again!";
             throw std::invalid_argument(invalid_state_msg);
             return TYPE_INVALID; // unrecognize character
         }
@@ -1141,9 +1145,8 @@ auto cmaple::Alignment::convertChar2State(char state) -> StateType {
     case cmaple::SeqRegion::SEQ_AUTO:
     case cmaple::SeqRegion::SEQ_UNKNOWN:
     default: {
-      string invalid_state_msg = "Invalid state ";
+      string invalid_state_msg = "Unrecognized character ";
       invalid_state_msg += state;
-      invalid_state_msg += ". Please check and try again!";
       throw std::invalid_argument(invalid_state_msg);
       // return TYPE_INVALID;
     }
