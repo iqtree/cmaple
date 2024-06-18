@@ -79,7 +79,7 @@ inline double horiz_sum(simde__m256d v) {
   vlow = simde_mm_add_pd(vlow, vhigh);     // reduce down to 128
 
   simde__m128d high64 = simde_mm_unpackhi_pd(vlow, vlow);
-  return  simde_mm_cvtsd_f64(_mm_add_sd(vlow, high64));  // reduce to scalar
+  return  simde_mm_cvtsd_f64(simde_mm_add_sd(vlow, high64));  // reduce to scalar
 }
 
 
