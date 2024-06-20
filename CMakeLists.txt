@@ -1,6 +1,6 @@
 ##################################################################
 # CMAPLE cmake build definition
-# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh 
+# Copyright (c) 2022 Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh
 ##################################################################
 
 # Windows example usages:
@@ -72,7 +72,13 @@ endif()
 project(cmaple)
 add_definitions(-DCMAPLE)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # Enable IPO (LTO) by default
+
+if (((${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch") AND (NOT APPLE AND UNIX))
+    OR WIN32)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE) # Disable IPO (LTO) for Linux ARM
+else()
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # Enable IPO (LTO) by default
+endif()
 
 # The version number.
 set (cmaple_VERSION_MAJOR 1)
@@ -146,13 +152,13 @@ if (NOT CMAPLE_FLAGS MATCHES "single")
     message("OpenMP        : Yes")
 
     if(APPLE)
-        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch")
             link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac_m1)
         else()
             link_directories(${PROJECT_SOURCE_DIR}/libraries/static/libmac)
         endif()
     elseif (UNIX AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
-      if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+      if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch")
         link_directories(${PROJECT_SOURCE_DIR}/libraries/static/liblinux_arm)
       else()
         link_directories(${PROJECT_SOURCE_DIR}/libraries/static/lib)
@@ -185,16 +191,20 @@ endif()
 
 ## enable 'SSE/AVX' on x86-64, 'neon' on arm to achive faster computations (mainly the Matrix::dotProduct())
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86")
     add_compile_options(-msse -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -mavx) # needed for simde instructions
-  elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+  elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch")
     # NHANLT: Because the option "-neon" is not found,
     # I changed it to "-march=native"
     #add_compile_options(-neon)
-    add_compile_options(-march=native)
+    if (NOT APPLE AND UNIX)
+        add_compile_options(-march=armv8-a)
+    else()
+        add_compile_options(-march=native)
+    endif()
   endif()
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86") 
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86")
     add_compile_options(/arch:AVX2) ## not really needed, but may be beneficial in other places when in Release mode (i.e. with optimizations turned on)
   endif()
 endif()
@@ -263,13 +273,13 @@ FetchContent_MakeAvailable(googletest)
 ##################################################################
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 if (NOT TARGET ncl)
-	add_subdirectory(libraries/ncl)
-endif() 
+    add_subdirectory(libraries/ncl)
+endif()
 if (NOT TARGET nclextra)
-	add_subdirectory(libraries/nclextra)
-endif() 
+    add_subdirectory(libraries/nclextra)
+endif()
 add_subdirectory(utils)
-add_subdirectory(libraries/SIMDe) 
+add_subdirectory(libraries/SIMDe)
 target_include_directories(cmaple_utils PUBLIC ${SIMDE_INCLUDE_DIRECTORY})
 add_subdirectory(model)
 add_subdirectory(alignment)
@@ -345,14 +355,14 @@ set (SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     if (IQTREE_FLAGS MATCHES "oldmac")
         set (SYSTEM_NAME "macOS10.5")
-    elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+    elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch")
         set (SYSTEM_NAME "macOS-arm")
     else()
         set (SYSTEM_NAME "macOS-intel")
     endif()
 endif()
 if (NOT APPLE AND UNIX)
-    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch")
         set (SYSTEM_NAME "Linux-arm")
     else()
         set (SYSTEM_NAME "Linux-intel")
