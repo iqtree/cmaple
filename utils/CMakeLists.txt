@@ -7,6 +7,14 @@ matrix.h
 logstream.h logstream.cpp
 )
 
+if(CLANG AND WIN32)
+    if (BINARY32)
+        target_link_libraries(cmaple_utils ${PROJECT_SOURCE_DIR}/libraries/static/lib32/libiomp5md.dll)
+    else()
+        target_link_libraries(cmaple_utils ${PROJECT_SOURCE_DIR}/libraries/static/lib/libiomp5md.dll)
+    endif()
+endif()
+
 #find_package(OpenMP)
 #if(OpenMP_CXX_FOUND)
 #    if(ZLIB_FOUND)
