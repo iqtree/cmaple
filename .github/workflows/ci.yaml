@@ -25,6 +25,7 @@ jobs:
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
             file $exe
             $exe
             $exe --help
@@ -53,6 +54,7 @@ jobs:
             make -j
             ls -alht
             for exe in "./cmaple" "./cmaple-aa"; do
+              chmod +x $exe
               file $exe
               $exe
               $exe --help
@@ -101,10 +103,18 @@ jobs:
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
             file $exe
             $exe
             $exe --help
           done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
   build-macos-14:
     runs-on: macos-14
     steps:
@@ -131,6 +141,14 @@ jobs:
           cxx-compiler: clang++
           c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
           cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
+            file $exe
+            $exe
+            $exe --help
+          done
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -138,13 +156,6 @@ jobs:
           path: |
             build/cmaple
             build/cmaple-aa
-      - name: Simple test
-        run: |
-          for exe in "./build/cmaple" "./build/cmaple-aa"; do
-            file $exe
-            $exe
-            $exe --help
-          done
   build-windows:
     runs-on: windows-2019
     steps:
