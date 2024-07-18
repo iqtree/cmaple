@@ -84,7 +84,7 @@ jobs:
             echo $var=${!var}
             echo $var=${!var} >> "$GITHUB_OUTPUT"
           done
-          ls -alht ${PREFIX}/
+          ls -alht ${PREFIX}
           ls -alht ${PREFIX}/lib
           ls -alht ${PREFIX}/include
       - name: Setup Ninja
