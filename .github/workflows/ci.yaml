@@ -3,7 +3,7 @@ on:
   push:
   workflow_dispatch:
 jobs:
-  build-ubuntu:
+  build-ubuntu-x86-64:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
@@ -28,6 +28,40 @@ jobs:
             $exe
             $exe --help
           done
+  build-ubuntu-aarch64:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build on Linux ARM64
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+          githubToken: ${{ github.token }}
+          dockerRunArgs: |
+            --volume "${PWD}:/cmaple"
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y cmake gcc g++ file ninja-build
+          run: |
+            cd /cmaple
+            mkdir build
+            cd build
+            cmake ..
+            make -j
+            for exe in "./build/cmaple" "./build/cmaple-aa"; do
+              file $exe
+              $exe
+              $exe --help
+            done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
   build-macos-12:
     #runs-on: [ubuntu-20.04, macos-12, macos-14, windows-2019]
     runs-on: macos-12
