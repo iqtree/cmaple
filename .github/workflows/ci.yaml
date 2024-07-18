@@ -94,10 +94,10 @@ jobs:
           cxx-compiler: clang++
           c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
           cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
-          options: 
-            - CMAPLE_FLAGS=static
-            - CMAKE_EXE_LINKER_FLAGS='-lomp'
-            - CMAKE_STATIC_LINKER_FLAGS='-lomp'
+          options: | 
+            CMAPLE_FLAGS=static
+            CMAKE_EXE_LINKER_FLAGS='-lomp'
+            CMAKE_STATIC_LINKER_FLAGS='-lomp'
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
