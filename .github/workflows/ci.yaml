@@ -40,9 +40,11 @@ jobs:
       - name: Construct flags
         id: libomp-prefix
         run: |
-          PREFIX=$(brew --prefix libomp) # >> "$GITHUB_OUTPUT"
+          PREFIX=$(brew --prefix libomp)
+          echo PREFIX=${PREFIX} >> "$GITHUB_OUTPUT"
           echo 'CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
           echo 'CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
+          echo $GITHUB_OUTPUT
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
@@ -76,9 +78,11 @@ jobs:
       - name: Construct flags
         id: libomp-prefix
         run: |
-          PREFIX=$(brew --prefix libomp) # >> "$GITHUB_OUTPUT"
+          PREFIX=$(brew --prefix libomp)
+          echo PREFIX=${PREFIX} >> "$GITHUB_OUTPUT"
           echo 'CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
           echo 'CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
+          echo $GITHUB_OUTPUT
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
