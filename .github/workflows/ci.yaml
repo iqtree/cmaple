@@ -93,13 +93,6 @@ jobs:
           cxx-compiler: clang++
           c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
           cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: |
-            build/cmaple
-            build/cmaple-aa
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
