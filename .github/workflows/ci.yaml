@@ -34,9 +34,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-#      - name: Install dependencies
-#        run: |
-#          brew update && brew install libomp
+        #      - name: Install dependencies
+        #        run: |
+        #          brew update && brew install libomp
+      - name: Construct flags
+        id: libomp-prefix
+        run: |
+          PREFIX=$(brew --prefix libomp) # >> "$GITHUB_OUTPUT"
+          echo 'CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
+          echo 'CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
@@ -45,6 +51,8 @@ jobs:
           generator: Ninja
           c-compiler: clang
           cxx-compiler: clang++
+          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
           options: CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -65,9 +73,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-#      - name: Install dependencies
-#        run: |
-#          brew update && brew install libomp
+      - name: Construct flags
+        id: libomp-prefix
+        run: |
+          PREFIX=$(brew --prefix libomp) # >> "$GITHUB_OUTPUT"
+          echo 'CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
+          echo 'CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
@@ -76,6 +87,8 @@ jobs:
           generator: Ninja
           c-compiler: clang
           cxx-compiler: clang++
+          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
           options: CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
