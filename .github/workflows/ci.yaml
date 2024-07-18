@@ -14,6 +14,7 @@ jobs:
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
+          options: CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -48,7 +49,7 @@ jobs:
             cd /cmaple
             mkdir build
             cd build
-            cmake ..
+            cmake .. -DCMAPLE_FLAGS=static
             make -j
             ls -alht
             for exe in "./cmaple" "./cmaple-aa"; do
@@ -59,7 +60,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-${{ runner.arch }}-build
+          name: ${{ runner.os }}-aarch64-build
           path: |
             build/cmaple
             build/cmaple-aa
@@ -76,8 +77,8 @@ jobs:
         id: libomp-prefix
         run: |
           PREFIX=$(brew --prefix libomp)
-          CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"
-          CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"
+          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
           for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
             echo $var=${!var}
             echo $var=${!var} >> "$GITHUB_OUTPUT"
@@ -90,7 +91,6 @@ jobs:
           cxx-compiler: clang++
           c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
           cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
-          options: CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -117,17 +117,12 @@ jobs:
         id: libomp-prefix
         run: |
           PREFIX=$(brew --prefix libomp)
-          CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"
-          CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"
+          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
           for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
             echo $var=${!var}
             echo $var=${!var} >> "$GITHUB_OUTPUT"
           done
-          ls -alht ${PREFIX}
-          ls -alht ${PREFIX}/lib
-          ls -alht ${PREFIX}/include
-      - name: Setup Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
@@ -136,8 +131,6 @@ jobs:
           cxx-compiler: clang++
           c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
           cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
-          options: | 
-            CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
