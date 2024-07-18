@@ -45,7 +45,6 @@ jobs:
           generator: Ninja
           c-compiler: clang
           cxx-compiler: clang++
-          cxx-compiler: clang++
           options: CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -76,7 +75,6 @@ jobs:
         with:
           generator: Ninja
           c-compiler: clang
-          cxx-compiler: clang++
           cxx-compiler: clang++
           options: CMAPLE_FLAGS=static
       - name: Upload artifact
