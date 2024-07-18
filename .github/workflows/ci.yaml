@@ -35,7 +35,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: brew install libomp
+        run: |
+          brew install libomp
+          brew link --force --overwrite libomp
       - name: Construct flags
         id: libomp-prefix
         run: |
@@ -77,7 +79,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: brew install libomp
+        run: |
+          brew install libomp
+          brew link --force --overwrite libomp
       - name: Construct flags
         id: libomp-prefix
         run: |
