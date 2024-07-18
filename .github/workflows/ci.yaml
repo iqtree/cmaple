@@ -17,7 +17,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-build
+          name: ${{ runner.os }}-${{ runner.arch }}-build
           path: |
             build/cmaple
             build/cmaple-aa
@@ -37,7 +37,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install libomp
-          brew link --force --overwrite libomp
       - name: Construct flags
         id: libomp-prefix
         run: |
@@ -62,7 +61,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-build
+          name: ${{ runner.os }}-${{ runner.arch }}-build
           path: |
             build/cmaple
             build/cmaple-aa
@@ -81,7 +80,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install libomp
-          brew link --force --overwrite libomp
       - name: Construct flags
         id: libomp-prefix
         run: |
@@ -110,7 +108,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-build
+          name: ${{ runner.os }}-${{ runner.arch }}-build
           path: |
             build/cmaple
             build/cmaple-aa
@@ -135,7 +133,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-build
+          name: ${{ runner.os }}-${{ runner.arch }}-build
           path: |
             build\cmaple
             build\cmaple-aa
