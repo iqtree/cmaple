@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: [ubuntu-20.04, macos-12, macos-14, windows-2019]
+    #runs-on: [ubuntu-20.04, macos-12, macos-14, windows-2019]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
