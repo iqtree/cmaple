@@ -3,9 +3,8 @@ on:
   push:
   workflow_dispatch:
 jobs:
-  build:
-    #runs-on: [ubuntu-20.04, macos-12, macos-14, windows-2019]
-    runs-on: [ubuntu-latest, macos-latest]
+  build-ubuntu:
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,6 +23,82 @@ jobs:
             build/cmaple-aa
       - name: Simple test
         run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            file $exe
+            $exe
+            $exe --help
+          done
+  build-macos-12:
+    #runs-on: [ubuntu-20.04, macos-12, macos-14, windows-2019]
+    runs-on: macos-12
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v4
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            file $exe
+            $exe
+            $exe --help
+          done
+  build-macos-14:
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v4
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            file $exe
+            $exe
+            $exe --help
+          done
+  build-windows:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v4
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+      - name: Simple test
+        run: |-
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
             file $exe
             $exe
