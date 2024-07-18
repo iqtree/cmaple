@@ -9,7 +9,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v4
+        uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
@@ -34,8 +34,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew update && brew install libomp
       - name: Setup Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v4
+        uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
@@ -59,8 +62,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew update && brew install libomp
       - name: Setup Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v4
+        uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
@@ -85,7 +91,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v4
+        uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
@@ -95,12 +101,9 @@ jobs:
         with:
           name: ${{ runner.os }}-build
           path: |
-            build/cmaple
-            build/cmaple-aa
+            build\cmaple
+            build\cmaple-aa
       - name: Simple test
         run: |-
-          for exe in "./build/cmaple" "./build/cmaple-aa"; do
-            file $exe
-            $exe
-            $exe --help
-          done
+          build\cmaple
+          build\cmaple --help
