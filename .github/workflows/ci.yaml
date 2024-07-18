@@ -1,0 +1,16 @@
+name: Build and test
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: [ubuntu-20.04, macos-12, macos-14, windows-2019]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v4
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
