@@ -10,8 +10,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          apt-get update -q -y
-          apt-get install -q -y cmake gcc g++ file ninja-build
+          sudo apt-get update -q -y
+          sudo apt-get install -q -y cmake gcc g++ file ninja-build
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
