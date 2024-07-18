@@ -41,10 +41,12 @@ jobs:
         id: libomp-prefix
         run: |
           PREFIX=$(brew --prefix libomp)
-          echo PREFIX=${PREFIX} >> "$GITHUB_OUTPUT"
-          echo 'CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
-          echo 'CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"' >> "$GITHUB_OUTPUT"
-          echo $GITHUB_OUTPUT
+          CMAKE_C_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"
+          CMAKE_CXX_FLAGS="-Xpreprocessor -fopenmp -I${PREFIX}/include -L${PREFIX}/lib -lomp"
+          for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
+            echo $var=${!var}
+            echo $var=${!var} >> "$GITHUB_OUTPUT"
+          done
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
