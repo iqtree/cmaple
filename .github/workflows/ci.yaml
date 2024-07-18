@@ -34,15 +34,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          brew update && brew install libomp
+#      - name: Install dependencies
+#        run: |
+#          brew update && brew install libomp
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
+          c-compiler: clang
+          cxx-compiler: clang++
+          cxx-compiler: clang++
+          options: CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -62,15 +66,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          brew update && brew install libomp
+#      - name: Install dependencies
+#        run: |
+#          brew update && brew install libomp
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
+          c-compiler: clang
+          cxx-compiler: clang++
+          cxx-compiler: clang++
+          options: CMAPLE_FLAGS=static
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
