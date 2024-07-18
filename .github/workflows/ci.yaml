@@ -160,9 +160,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: |
-            build\cmaple
-            build\cmaple-aa
+          path: build\cmaple
       - name: Simple test
         run: |-
           build\cmaple
