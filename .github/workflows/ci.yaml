@@ -50,7 +50,8 @@ jobs:
             cd build
             cmake ..
             make -j
-            for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            ls -alht
+            for exe in "./cmaple" "./cmaple-aa"; do
               file $exe
               $exe
               $exe --help
