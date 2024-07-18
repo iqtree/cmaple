@@ -8,20 +8,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v5
+      - name: Install dependencies
+        run: |
+          apt-get update -q -y
+          apt-get install -q -y cmake gcc g++ file ninja-build
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
           options: CMAPLE_FLAGS=static
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: |
-            build/cmaple
-            build/cmaple-aa
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
@@ -30,6 +25,13 @@ jobs:
             $exe
             $exe --help
           done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
   build-ubuntu-aarch64:
     runs-on: ubuntu-20.04
     steps:
@@ -67,14 +69,13 @@ jobs:
             build/cmaple
             build/cmaple-aa
   build-macos-12:
-    #runs-on: [ubuntu-20.04, macos-12, macos-14, windows-2019]
     runs-on: macos-12
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          brew update && brew install libomp make cmake ninja
+          brew update && brew install libomp ninja
       - name: Construct flags
         id: libomp-prefix
         run: |
@@ -115,7 +116,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          brew update && brew install libomp make cmake ninja
+          brew update && brew install libomp ninja
       - name: Construct flags
         id: libomp-prefix
         run: |
