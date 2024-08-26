@@ -648,6 +648,9 @@ class Tree {
       const cmaple::RealNumType removed_blength,
       const cmaple::Index top_node_index,
       std::unique_ptr<SeqRegions>& bottom_regions,
+      RealNumType& opt_appending_blength,
+      RealNumType& opt_mid_top_blength,
+      RealNumType& opt_mid_bottom_blength,
       std::vector<RealNumType>& alt_spr_lh_diffs);
 
   /**
@@ -882,6 +885,9 @@ class Tree {
                              PhyloNode& subtree,
                              const std::unique_ptr<SeqRegions>& subtree_regions,
                              const cmaple::RealNumType new_branch_length,
+                             const cmaple::RealNumType opt_appending_blength,
+                             const cmaple::RealNumType opt_mid_top_blength,
+                             const cmaple::RealNumType opt_mid_bottom_blength,
                              const cmaple::RealNumType new_lh);
 
   /**
@@ -1198,6 +1204,9 @@ class Tree {
   template <const cmaple::StateType num_states>
   void checkAndApplySPR(const cmaple::RealNumType best_lh_diff,
                         const cmaple::RealNumType best_blength,
+                        const cmaple::RealNumType opt_appending_blength,
+                        const cmaple::RealNumType opt_mid_top_blength,
+                        const cmaple::RealNumType opt_mid_bottom_blength,
                         const cmaple::RealNumType best_lh,
                         const cmaple::Index node_index,
                         PhyloNode& node,
@@ -1663,9 +1672,10 @@ class Tree {
       cmaple::Index& best_child_index,
       const bool short_range_search,
       const cmaple::Index child_node_index,
-      cmaple::RealNumType&
-          removed_blength);  //, bool search_subtree_placement = true,
-                             // SeqRegions* sample_regions = NULL);
+      cmaple::RealNumType& removed_blength,
+      cmaple::RealNumType& opt_appending_blength,
+      cmaple::RealNumType& opt_mid_top_blength,
+      cmaple::RealNumType& opt_mid_bottom_blength); 
 
   /**
    Place a new sample at a mid-branch point
@@ -1704,6 +1714,9 @@ class Tree {
                    const cmaple::Index best_node_index,
                    const bool is_mid_branch,
                    const cmaple::RealNumType branch_length,
+                   const cmaple::RealNumType opt_appending_blength,
+                   const cmaple::RealNumType opt_mid_top_blength,
+                   const cmaple::RealNumType opt_mid_bottom_blength,
                    const cmaple::RealNumType best_lh_diff);
 
   /**

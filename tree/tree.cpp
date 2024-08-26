@@ -1899,6 +1899,9 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     const RealNumType removed_blength,
     const Index top_node_index,
     std::unique_ptr<SeqRegions>& bottom_regions,
+    RealNumType& opt_appending_blength,
+    RealNumType& opt_mid_top_blength,
+    RealNumType& opt_mid_bottom_blength,
     std::vector<RealNumType>& alt_spr_lh_diffs) {
     
   const bool top_node_exists = (top_node_index.getMiniIndex() != UNDEFINED);
@@ -2015,16 +2018,17 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     
     // if computing SPRTA, record the likelihood of the alternative SPR
     // if its lh_diff is not too worse than the best_lh_diff by a threshold
+    RealNumType best_appending_blength;
+    RealNumType best_mid_top_blength;
+    RealNumType best_mid_bottom_blength;
     if (params->compute_SPRTA && lh_diff_mid_branch
         >= best_lh_diff - params->thresh_loglh_optimal_diff)
     {
         // optimize 3 branches: appending, top, bottom
         // optimize the appending branch
-        RealNumType best_appending_blength =
+        best_appending_blength =
             estimateBranchLength<num_states>(mid_branch_regions, subtree_regions);
         // optimize the mid_top and mid_bottom branches
-        RealNumType best_mid_top_blength;
-        RealNumType best_mid_bottom_blength;
         // case when crawling up from child to parent
         if (top_node_exists) {
             // optimize the mid_top blength
@@ -2089,6 +2093,12 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     best_lh_diff = lh_diff_mid_branch;
     is_mid_branch = true;
     updating_node->setFailureCount(0);
+      
+    // record the optmized blengths
+      opt_appending_blength = best_appending_blength;
+      opt_mid_top_blength = best_mid_top_blength;
+      opt_mid_bottom_blength = best_mid_bottom_blength;
+      
     if (top_node_exists) {
       best_down_lh_diff = lh_diff_at_node;  // only update in case when crawling
                                             // up from child to parent
@@ -2521,8 +2531,10 @@ void cmaple::Tree::seekSubTreePlacement(
     Index& best_child_index,
     const bool short_range_search,
     const Index child_node_index,
-    RealNumType& removed_blength)  //, bool search_subtree_placement,
-                                   // SeqRegions* sample_regions)
+    RealNumType& removed_blength,
+    RealNumType& opt_appending_blength,
+    RealNumType& opt_mid_top_blength,
+    RealNumType& opt_mid_bottom_blength)
 {
   assert(aln);
   assert(model);
@@ -2647,7 +2659,9 @@ void cmaple::Tree::seekSubTreePlacement(
                   best_node_index, current_node, best_lh_diff, is_mid_branch,
                   lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                   best_down_lh_diff, updating_node, subtree_regions,
-                  threshold_prob, removed_blength, Index(), bottom_regions, alt_spr_lh_diffs))
+                  threshold_prob, removed_blength, Index(), bottom_regions,
+                  opt_appending_blength, opt_mid_top_blength,
+                  opt_mid_bottom_blength, alt_spr_lh_diffs))
           {
             continue;
           }
@@ -2743,7 +2757,8 @@ void cmaple::Tree::seekSubTreePlacement(
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
                 threshold_prob, removed_blength, top_node_index,
-                bottom_regions, alt_spr_lh_diffs)) {
+                bottom_regions, opt_appending_blength, opt_mid_top_blength,
+                opt_mid_bottom_blength, alt_spr_lh_diffs)) {
           continue;
         }
       }
@@ -2904,6 +2919,9 @@ void cmaple::Tree::applyOneSPR(const Index subtree_index,
                                const Index best_node_index,
                                const bool is_mid_branch,
                                const RealNumType branch_length,
+                               const RealNumType opt_appending_blength,
+                               const RealNumType opt_mid_top_blength,
+                               const RealNumType opt_mid_bottom_blength,
                                const RealNumType best_lh_diff) {
   // record the SPR applied at this subtree
   subtree.setSPRCount(subtree.getSPRCount() + 1);
@@ -3029,8 +3047,8 @@ void cmaple::Tree::applyOneSPR(const Index subtree_index,
   // try to place the new sample as a descendant of a mid-branch point
   if (is_mid_branch && root_vector_index != best_node_index.getVectorIndex()) {
     placeSubTreeMidBranch<num_states>(best_node_index, subtree_index, subtree,
-                                      subtree_lower_regions, branch_length,
-                                      best_lh_diff);
+        subtree_lower_regions, branch_length, opt_appending_blength,
+        opt_mid_top_blength, opt_mid_bottom_blength, best_lh_diff);
     // otherwise, best lk so far is for appending directly to existing node
   } else {
     placeSubTreeAtNode<num_states>(best_node_index, subtree_index, subtree,
@@ -3250,64 +3268,86 @@ void cmaple::Tree::placeSubTreeMidBranch(
     PhyloNode& subtree,
     const std::unique_ptr<SeqRegions>& subtree_regions,
     const RealNumType new_branch_length,
+    const cmaple::RealNumType opt_appending_blength,
+    const cmaple::RealNumType opt_mid_top_blength,
+    const cmaple::RealNumType opt_mid_bottom_blength,
     const RealNumType new_lh) {
-  PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
-  const std::unique_ptr<SeqRegions>& upper_left_right_regions =
-      getPartialLhAtNode(selected_node.getNeighborIndex(
-          TOP));  // selected_node->neighbor->getPartialLhAtNode(aln,
-                  // model, threshold_prob);
-  // RealNumType best_split = 0.5;
-  RealNumType best_blength_split = selected_node.getUpperLength() * 0.5;
-  RealNumType best_split_lh = new_lh;
-  // RealNumType new_split = 0.25;
-  std::unique_ptr<SeqRegions> best_child_regions =
-      nullptr;  // cmaple::make_unique<SeqRegions>(SeqRegions(selected_node.getMidBranchLh()));
-  const std::unique_ptr<SeqRegions>& lower_regions =
-      selected_node.getPartialLh(TOP);
-
-  // try different positions on the existing branch
-  bool found_new_split = tryShorterBranch<
-      num_states, &cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
-      selected_node.getUpperLength(), best_child_regions, subtree_regions,
-      upper_left_right_regions, lower_regions, best_split_lh,
-      best_blength_split, new_branch_length, true);
-
-  if (!found_new_split) {
-    found_new_split = tryShorterBranch<
-        num_states, &cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
-        selected_node.getUpperLength(), best_child_regions, subtree_regions,
-        upper_left_right_regions, lower_regions, best_split_lh,
-        best_blength_split, new_branch_length, false);
-
-    if (found_new_split) {
-      best_blength_split = selected_node.getUpperLength() - best_blength_split;
+    
+    // variables
+    PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
+    const std::unique_ptr<SeqRegions>& lower_regions =
+    selected_node.getPartialLh(TOP);
+    const std::unique_ptr<SeqRegions>& upper_left_right_regions =
+    getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
+    std::unique_ptr<SeqRegions> best_child_regions = nullptr;
+    
+    // don't need to optimize blengths if they're already optmized when computing SPRTA
+    if (params->compute_SPRTA && opt_appending_blength != -1)
+    {
+        // re-compute the new mid-branch regions
+        upper_left_right_regions->mergeUpperLower<num_states>(best_child_regions,
+            opt_mid_top_blength, *lower_regions, opt_mid_bottom_blength,
+            aln, model, params->threshold_prob);
+        
+        // attach subtree to the branch above the selected node
+        RealNumType best_blength = opt_appending_blength;
+        connectSubTree2Branch<num_states, &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
+            subtree_regions, nullptr, subtree_index, subtree, selected_node_index,
+            selected_node, opt_mid_top_blength,
+            opt_mid_bottom_blength, best_blength,
+            std::move(best_child_regions), upper_left_right_regions);
     }
-  }
-
-  // Delay cloning SeqRegions
-  if (!best_child_regions) {
-    best_child_regions = cmaple::make_unique<SeqRegions>(
-        SeqRegions(selected_node.getMidBranchLh()));
-  }
-
-  // now try different lengths for the new branch
-  RealNumType best_blength = new_branch_length;
-  estimateLengthNewBranch<
-      &cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
-      best_split_lh, best_child_regions, subtree_regions, best_blength,
-      max_blength, double_min_blength, (new_branch_length <= 0));
-
-  // attach subtree to the branch above the selected node
-  connectSubTree2Branch<num_states,
-                        &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
-      subtree_regions, nullptr, subtree_index, subtree, selected_node_index,
-      selected_node, best_blength_split,
-      selected_node.getUpperLength() - best_blength_split, best_blength,
-      std::move(best_child_regions), upper_left_right_regions);
-
-  // delete best_child_regions
-  /*if (best_child_regions)
-      delete best_child_regions;*/
+    // otherwise, optimize blengths using the old algorithm
+    else
+    {
+        // RealNumType best_split = 0.5;
+        RealNumType best_blength_split = selected_node.getUpperLength() * 0.5;
+        RealNumType best_split_lh = new_lh;
+        
+        // try different positions on the existing branch
+        bool found_new_split = tryShorterBranch<
+        num_states, &cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
+            selected_node.getUpperLength(), best_child_regions, subtree_regions,
+            upper_left_right_regions, lower_regions, best_split_lh,
+            best_blength_split, new_branch_length, true);
+        
+        if (!found_new_split) {
+            found_new_split = tryShorterBranch<
+            num_states, &cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
+            selected_node.getUpperLength(), best_child_regions, subtree_regions,
+            upper_left_right_regions, lower_regions, best_split_lh,
+            best_blength_split, new_branch_length, false);
+            
+            if (found_new_split) {
+                best_blength_split = selected_node.getUpperLength() - best_blength_split;
+            }
+        }
+        
+        // Delay cloning SeqRegions
+        if (!best_child_regions) {
+            best_child_regions = cmaple::make_unique<SeqRegions>(
+                SeqRegions(selected_node.getMidBranchLh()));
+        }
+        
+        // now try different lengths for the new branch
+        RealNumType best_blength = new_branch_length;
+        estimateLengthNewBranch<
+        &cmaple::Tree::calculateSubTreePlacementCost<num_states>>(
+            best_split_lh, best_child_regions, subtree_regions, best_blength,
+            max_blength, double_min_blength, (new_branch_length <= 0));
+        
+        // attach subtree to the branch above the selected node
+        connectSubTree2Branch<num_states,
+        &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
+            subtree_regions, nullptr, subtree_index, subtree, selected_node_index,
+            selected_node, best_blength_split,
+            selected_node.getUpperLength() - best_blength_split, best_blength,
+            std::move(best_child_regions), upper_left_right_regions);
+        
+        // delete best_child_regions
+        /*if (best_child_regions)
+         delete best_child_regions;*/
+    }
 }
 
 template <const StateType num_states>
@@ -5158,6 +5198,9 @@ void cmaple::Tree::optimizeBlengthBeforeSeekingSPR(
 template <const StateType num_states>
 void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
                                     const RealNumType best_blength,
+                                    const cmaple::RealNumType opt_appending_blength,
+                                    const cmaple::RealNumType opt_mid_top_blength,
+                                    const cmaple::RealNumType opt_mid_bottom_blength,
                                     const RealNumType best_lh,
                                     const Index node_index,
                                     PhyloNode& node,
@@ -5225,7 +5268,8 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
 
       // apply an SPR move
       applyOneSPR<num_states>(node_index, node, best_node_index, is_mid_node,
-                              best_blength, best_lh_diff);
+         best_blength, opt_appending_blength, opt_mid_top_blength,
+         opt_mid_bottom_blength, best_lh_diff);
 
       topology_updated = true;
     }
@@ -5280,12 +5324,16 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       RealNumType best_up_lh_diff = MIN_NEGATIVE;
       RealNumType best_down_lh_diff = MIN_NEGATIVE;
       Index best_child_index;
+      RealNumType opt_appending_blength = -1;
+      RealNumType opt_mid_top_blength = -1;
+      RealNumType opt_mid_bottom_blength = -1;
 
       // seek a new placement for the subtree
       seekSubTreePlacement<num_states>(node_index,
           best_node_index, best_lh_diff, is_mid_node, best_up_lh_diff,
           best_down_lh_diff, best_child_index, short_range_search, node_index,
-          best_blength);  // , true, NULL);
+          best_blength, opt_appending_blength, opt_mid_top_blength,
+                                       opt_mid_bottom_blength); 
 
       // validate the new placement cost
       if (best_lh_diff > params->threshold_prob2) {
@@ -5299,10 +5347,11 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
 
       if (best_lh_diff + thresh_placement_cost > best_lh) {
         // check and apply SPR move
-        checkAndApplySPR<num_states>(best_lh_diff, best_blength, best_lh,
-                                     node_index, node, best_node_index,
-                                     parent_index, is_mid_node,
-                                     total_improvement, topology_updated);
+        checkAndApplySPR<num_states>(best_lh_diff, best_blength,
+            opt_appending_blength, opt_mid_top_blength,
+            opt_mid_bottom_blength, best_lh, node_index, node,
+            best_node_index, parent_index, is_mid_node,
+            total_improvement, topology_updated);
 
         if (!topology_updated && blength_changed) {
           handleBlengthChanged<num_states>(node, node_index, best_blength);
