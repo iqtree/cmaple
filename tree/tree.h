@@ -2426,7 +2426,56 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
   assert(aln);
   assert(model);
   assert(cumulative_rate);
+  
+// Use new method to optimize blengths
+    // optmize the branch lengths
+    RealNumType best_appending_blength;
+    RealNumType best_mid_top_blength;
+    RealNumType best_mid_bottom_blength;
+    const RealNumType threshold_prob = params->threshold_prob;
+    PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
     
+    // optimize the appending branch
+    best_appending_blength =
+        estimateBranchLength<num_states>(selected_node.getMidBranchLh(), sample);
+        
+    // optimize the mid_top blength
+    const std::unique_ptr<SeqRegions>& upper_lr_regions =
+        getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
+    const std::unique_ptr<SeqRegions>& lower_regions =
+        selected_node.getPartialLh(TOP);
+    const RealNumType mid_branch_length =
+        selected_node.getUpperLength() * 0.5;
+    std::unique_ptr<SeqRegions> two_lower_regions = nullptr;
+    lower_regions->mergeTwoLowers<num_states>(two_lower_regions, mid_branch_length,
+        *sample, best_appending_blength,
+        aln, model, cumulative_rate, threshold_prob);
+    best_mid_top_blength =
+        estimateBranchLength<num_states>(upper_lr_regions, two_lower_regions);
+        
+    // optimize the mid_bottom blength
+    std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
+    upper_lr_regions->mergeUpperLower<num_states>(
+        tmp_upper_lr_regions, best_mid_top_blength, *sample,
+        best_appending_blength, aln, model, threshold_prob);
+    best_mid_bottom_blength =
+        estimateBranchLength<num_states>(tmp_upper_lr_regions, lower_regions);
+        
+    // compute new mid-branch regions
+    std::unique_ptr<SeqRegions> new_mid_branch_regions = nullptr;
+    upper_lr_regions->mergeUpperLower<num_states>(
+        new_mid_branch_regions, best_mid_top_blength, *lower_regions,
+        best_mid_bottom_blength, aln, model, threshold_prob);
+    
+    // create new internal node and append child to it
+    connectNewSample2Branch<num_states>(
+        sample, seq_name_index, selected_node_index, selected_node,
+        best_mid_top_blength,
+        best_mid_bottom_blength, best_appending_blength,
+        new_mid_branch_regions, upper_lr_regions);
+        
+    
+    /** Old method to optimize blengths -> comment out
   PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
   const std::unique_ptr<SeqRegions>& upper_left_right_regions =
       getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
@@ -2480,6 +2529,7 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
       best_branch_length_split,
       selected_node_blength - best_branch_length_split, best_blength,
       best_child_regions, upper_left_right_regions);
+     */
 }
 /*! \endcond */
 }  // namespace cmaple

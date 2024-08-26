@@ -1635,8 +1635,7 @@ void cmaple::Tree::examineSamplePlacementMidBranch(
     
   // compute the placement cost
   lh_diff_mid_branch = calculateSamplePlacementCost<num_states>(
-      nodes[current_extended_node.getIndex().getVectorIndex()].getMidBranchLh(),
-      sample_regions, default_blength);
+      mid_branch_lh, sample_regions, default_blength);
 
   // record the best_lh_diff if lh_diff_mid_branch is greater than the
   // best_lh_diff ever
