@@ -326,6 +326,11 @@ class Tree {
    Vector of likelihood contributions of internal nodes
    */
   std::vector<NodeLh> node_lhs;
+    
+    /**
+     Vector of the SPRTA scores
+     */
+    std::vector<RealNumType> sprta_scores;
 
   /**
    (vector) Index of root in the vector of phylonodes
@@ -642,7 +647,8 @@ class Tree {
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
       const cmaple::Index top_node_index,
-      std::unique_ptr<SeqRegions>& bottom_regions);
+      std::unique_ptr<SeqRegions>& bottom_regions,
+      std::vector<RealNumType>& alt_spr_lh_diffs);
 
   /**
    Examine placing a subtree as a descendant of an existing node
@@ -663,7 +669,8 @@ class Tree {
       const std::unique_ptr<SeqRegions>& subtree_regions,
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
-      const cmaple::Index top_node_index);
+      const cmaple::Index top_node_index,
+      std::vector<RealNumType>& alt_spr_lh_diffs);
 
   /**
    Add a child node for downwards traversal when seeking a new subtree placement
@@ -1647,6 +1654,7 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void seekSubTreePlacement(
+      const cmaple::Index& subtree_root_index,
       cmaple::Index& best_node_index,
       cmaple::RealNumType& best_lh_diff,
       bool& is_mid_branch,

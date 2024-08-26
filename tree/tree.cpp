@@ -751,6 +751,16 @@ void cmaple::Tree::applySPRTemplate(
   if (aln->attached_trees.find(this) == aln->attached_trees.end()) {
     changeAln(aln);
   }
+    
+    // initialize variables for computing the SPRTA scores, if necessary
+    if (params->compute_SPRTA)
+    {
+        // initialize the threshold for determining whether an SPR is close enough to the optimal one
+        params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * std::log(aln->ref_seq.size());
+        
+        // initialize the vector to store all SPRTA scores
+        sprta_scores.resize(nodes.size(), 555555.0);
+    }
 
   // show information
   if (tree_search_type == FAST_TREE_SEARCH &&
@@ -1206,6 +1216,18 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
     branch_support =
         convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
   }
+  
+    // add SPRTA scores (if any)
+    if (params->compute_SPRTA)
+    {
+        // incorporate existing branch support (if any)
+        if (branch_support.length())
+            branch_support += "/" + convertDoubleToString(sprta_scores[node_vec_index] * 100);
+        // otherwise, only show sprta score
+        else
+            branch_support = convertDoubleToString(sprta_scores[node_vec_index] * 100);
+    }
+    
   string length = node.getUpperLength() <= 0
                       ? "0"
                       : convertDoubleToString(node.getUpperLength(), 12);
@@ -1876,7 +1898,8 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     const RealNumType threshold_prob,
     const RealNumType removed_blength,
     const Index top_node_index,
-    std::unique_ptr<SeqRegions>& bottom_regions) {
+    std::unique_ptr<SeqRegions>& bottom_regions,
+    std::vector<RealNumType>& alt_spr_lh_diffs) {
     
   const bool top_node_exists = (top_node_index.getMiniIndex() != UNDEFINED);
   const Index updating_node_index = updating_node->getIndex();
@@ -1989,6 +2012,76 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
                           // in case when crawling up from child to parent
     best_up_lh_diff = lh_diff_mid_branch;
   }
+    
+    // if computing SPRTA, record the likelihood of the alternative SPR
+    // if its lh_diff is not too worse than the best_lh_diff by a threshold
+    if (params->compute_SPRTA && lh_diff_mid_branch
+        >= best_lh_diff - params->thresh_loglh_optimal_diff)
+    {
+        // optimize 3 branches: appending, top, bottom
+        // optimize the appending branch
+        RealNumType best_appending_blength =
+            estimateBranchLength<num_states>(mid_branch_regions, subtree_regions);
+        // optimize the mid_top and mid_bottom branches
+        RealNumType best_mid_top_blength;
+        RealNumType best_mid_bottom_blength;
+        // case when crawling up from child to parent
+        if (top_node_exists) {
+            // optimize the mid_top blength
+            const std::unique_ptr<SeqRegions>& upper_lr_regions =
+                getPartialLhAtNode(at_node.getNeighborIndex(TOP));
+            std::unique_ptr<SeqRegions> two_lower_regions = nullptr;
+            const RealNumType mid_branch_length = at_node.getUpperLength() * 0.5;
+            bottom_regions->mergeTwoLowers<num_states>(two_lower_regions,
+                mid_branch_length, *subtree_regions, best_appending_blength,
+                aln, model, cumulative_rate, threshold_prob);
+            best_mid_top_blength = estimateBranchLength<num_states>(upper_lr_regions, two_lower_regions);
+            
+            // optimize the mid_bottom blength
+            std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
+            upper_lr_regions->mergeUpperLower<num_states>(
+                tmp_upper_lr_regions, best_mid_top_blength, *subtree_regions,
+                best_appending_blength, aln, model, threshold_prob);
+            best_mid_bottom_blength = estimateBranchLength<num_states>(tmp_upper_lr_regions, bottom_regions);
+            
+            // re-compute the mid-branch regions
+            upper_lr_regions->mergeUpperLower<num_states>(
+                new_mid_branch_regions, best_mid_top_blength, *bottom_regions,
+                best_mid_bottom_blength, aln, model, threshold_prob);
+            
+        }
+        // case we are moving from a parent to a child
+        else {
+            
+            // optimize the mid_top blength
+            const std::unique_ptr<SeqRegions>& lower_regions =
+                current_node.getPartialLh(TOP);
+            std::unique_ptr<SeqRegions> two_lower_regions = nullptr;
+            const RealNumType mid_branch_length =
+                updating_node->getBranchLength() * 0.5;
+            lower_regions->mergeTwoLowers<num_states>(two_lower_regions, mid_branch_length,
+                                                      *subtree_regions, best_appending_blength, aln, model, cumulative_rate, threshold_prob);
+            best_mid_top_blength = estimateBranchLength<num_states>(updating_node->getIncomingRegions(), two_lower_regions);
+            
+            // optimize the mid_bottom blength
+            std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
+            updating_node->getIncomingRegions()->mergeUpperLower<num_states>(
+                tmp_upper_lr_regions, best_mid_top_blength, *subtree_regions,
+                best_appending_blength, aln, model, threshold_prob);
+            best_mid_bottom_blength = estimateBranchLength<num_states>(tmp_upper_lr_regions, lower_regions);
+            
+            // re-compute the mid-branch regions
+            updating_node->getIncomingRegions()->mergeUpperLower<num_states>(
+                new_mid_branch_regions, best_mid_top_blength, *lower_regions,
+                best_mid_bottom_blength, aln, model, threshold_prob);
+        }
+        
+        // re-compute the placement cost
+        lh_diff_mid_branch = calculateSubTreePlacementCost<num_states>(
+            new_mid_branch_regions, subtree_regions, best_appending_blength);
+        
+        alt_spr_lh_diffs.push_back(lh_diff_mid_branch);
+    }
 
   // if this position is better than the best position found so far -> record it
   if (lh_diff_mid_branch > best_lh_diff) {
@@ -2028,7 +2121,8 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
     const std::unique_ptr<SeqRegions>& subtree_regions,
     const RealNumType threshold_prob,
     const RealNumType removed_blength,
-    const Index top_node_index) {
+    const Index top_node_index,
+    std::vector<RealNumType>& alt_spr_lh_diffs) {
     
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
 
@@ -2085,6 +2179,11 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
   // else
   // lh_diff_at_node = calculateSamplePlacementCost(at_node_regions,
   // subtree_regions, removed_blength);
+    
+    // Temporarily not record the results when examining placement at nodes because considering placement at mid-branch positions with a well-optmized blengths might be good enough
+    // if computing SPRTA, record the likelihood of the alternative SPR if its lh_diff is not too worse than the best_lh_diff by a threshold
+    /*if (params->compute_SPRTA && lh_diff_at_node >= best_lh_diff - params->thresh_loglh_optimal_diff && at_node_index.getVectorIndex() != root_vector_index)
+        alt_spr_lh_diffs.push_back(lh_diff_at_node);*/
 
   // if this position is better than the best position found so far -> record it
   if (lh_diff_at_node > best_lh_diff) {
@@ -2413,7 +2512,8 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
 
 template <const StateType num_states>
 void cmaple::Tree::seekSubTreePlacement(
-    Index& best_node_index,
+    const cmaple::Index& subtree_root_index,
+    cmaple::Index& best_node_index,
     RealNumType& best_lh_diff,
     bool& is_mid_branch,
     RealNumType& best_up_lh_diff,
@@ -2453,6 +2553,9 @@ void cmaple::Tree::seekSubTreePlacement(
   // const std::unique_ptr<SeqRegions>& parent_upper_lr_regions =
   // root_vector_index == vec_index ? null_seqregions_ptr :
   // getPartialLhAtNode(node.getNeighborIndex(TOP));
+    
+    // for computing SPRTA scores
+    std::vector<RealNumType> alt_spr_lh_diffs;
 
   // get/init approximation params
   bool strict_stop_seeking_placement_subtree =
@@ -2525,7 +2628,8 @@ void cmaple::Tree::seekSubTreePlacement(
     PhyloNode& current_node = nodes[current_node_vec];
 
     // consider the case we are moving from a parent to a child
-    if (current_node_index.getMiniIndex() == TOP) {
+    if (current_node_index.getMiniIndex() == TOP)
+    {
       if (current_node.getUpperLength() >
           0)  // updating_node->node->length > 0)
       {
@@ -2543,7 +2647,8 @@ void cmaple::Tree::seekSubTreePlacement(
                   best_node_index, current_node, best_lh_diff, is_mid_branch,
                   lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                   best_down_lh_diff, updating_node, subtree_regions,
-                  threshold_prob, removed_blength, Index(), bottom_regions)) {
+                  threshold_prob, removed_blength, Index(), bottom_regions, alt_spr_lh_diffs))
+          {
             continue;
           }
         }
@@ -2559,7 +2664,8 @@ void cmaple::Tree::seekSubTreePlacement(
                 best_node_index, current_node, best_lh_diff, is_mid_branch,
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
-                threshold_prob, removed_blength, Index())) {
+                threshold_prob, removed_blength, Index(), alt_spr_lh_diffs))
+        {
           continue;
         }
       }
@@ -2613,7 +2719,7 @@ void cmaple::Tree::seekSubTreePlacement(
                 best_node_index, current_node, best_lh_diff, is_mid_branch,
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
-                threshold_prob, removed_blength, top_node_index)) {
+                threshold_prob, removed_blength, top_node_index, alt_spr_lh_diffs)) {
           continue;
         }
       }
@@ -2637,7 +2743,7 @@ void cmaple::Tree::seekSubTreePlacement(
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
                 threshold_prob, removed_blength, top_node_index,
-                bottom_regions)) {
+                bottom_regions, alt_spr_lh_diffs)) {
           continue;
         }
       }
@@ -2672,6 +2778,30 @@ void cmaple::Tree::seekSubTreePlacement(
     // delete updating_node
     // delete updating_node;
   }
+    
+    // compute SPRTA (if needed)
+    if (params->compute_SPRTA)
+    {
+        // filter out lhs of SPRs that are not close enough to the optimal one
+        const RealNumType lower_bound_lhs = best_lh_diff - params->thresh_loglh_optimal_diff;
+        alt_spr_lh_diffs.erase(std::remove_if(
+            alt_spr_lh_diffs.begin(), alt_spr_lh_diffs.end(),
+            [&lower_bound_lhs](RealNumType value)
+            { return value < lower_bound_lhs; }),
+            alt_spr_lh_diffs.end());
+        
+        // compute the SPRTA score
+        if (!alt_spr_lh_diffs.size())
+            sprta_scores[subtree_root_index.getVectorIndex()] = 1.0;
+        else
+        {
+            const RealNumType raw_best_lh_diff =  std::exp(best_lh_diff);
+            RealNumType total_spr_lhs = std::accumulate(alt_spr_lh_diffs.begin(),
+                alt_spr_lh_diffs.end(), raw_best_lh_diff, [](double sum, double value) {
+                return sum + std::exp(value); });
+            sprta_scores[subtree_root_index.getVectorIndex()] = raw_best_lh_diff / total_spr_lhs;
+        }
+    }
 
   // ############ KEEP this section DISABLE/COMMENTED OUT ############
   // exploration of the tree is finished, and we are left with the node found so
@@ -5152,7 +5282,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       Index best_child_index;
 
       // seek a new placement for the subtree
-      seekSubTreePlacement<num_states>(
+      seekSubTreePlacement<num_states>(node_index,
           best_node_index, best_lh_diff, is_mid_node, best_up_lh_diff,
           best_down_lh_diff, best_child_index, short_range_search, node_index,
           best_blength);  // , true, NULL);

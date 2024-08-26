@@ -624,6 +624,26 @@ class Params {
    */
   bool make_consistent;
     
+    /**
+     * TRUE to compute the SPRTA branch supports
+     */
+    bool compute_SPRTA;
+    
+    /**
+     * A factor determines SPRs
+     * are close to the optimal one when computing SPRTA.
+     * This factor is relative to the reference length.
+     * Default: 1.0
+     */
+    RealNumType thresh_loglh_optimal_diff_fac;
+    
+    /**
+     * A loglh threshold determines SPRs
+     * are close to the optimal one when computing SPRTA.
+     * It is computed from thresh_loglh_optimal_diff_fac.
+     */
+    RealNumType thresh_loglh_optimal_diff;
+    
   /**
    * the maximum number of substitution per sites that CMAPLE is effective
   */

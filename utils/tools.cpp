@@ -598,6 +598,8 @@ cmaple::Params::Params() {
   seq_type_str = "AUTO";
   tree_search_type_str = "NORMAL";
   make_consistent = false;
+    compute_SPRTA = false;
+    thresh_loglh_optimal_diff_fac = 1.0;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -946,6 +948,26 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--thresh-opt-diff-fac") == 0 ||
+            strcmp(argv[cnt], "-thresh-opt-diff-fac") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError("Use -thresh-opt-diff-fac <THRESH_FACTOR>");
+          }
+
+          try {
+            params.thresh_loglh_optimal_diff_fac = convert_real_number(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.thresh_loglh_optimal_diff_fac <= 0) {
+            outError("<THRESH_FACTOR> must be positive!");
+          }
+
+          continue;
+        }
+        
         if (strcmp(argv[cnt], "--max-subs") == 0 ||
             strcmp(argv[cnt], "-max-subs") == 0) {
           ++cnt;
@@ -1077,6 +1099,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--sprta") == 0 ||
+            strcmp(argv[cnt], "-sprta") == 0) {
+          params.compute_SPRTA = true;
+
+          continue;
+        }
       if (strcmp(argv[cnt], "--replicates") == 0 ||
           strcmp(argv[cnt], "-rep") == 0) {
         ++cnt;
