@@ -2039,27 +2039,54 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
         // optimize the mid_top and mid_bottom branches
         // case when crawling up from child to parent
         if (top_node_exists) {
-            // optimize the mid_top blength
-            const std::unique_ptr<SeqRegions>& upper_lr_regions =
+            // compute bottem_regions (if necessary)
+            if (updating_node->needUpdate())
+            {
+                const Index other_child_index =
+                    current_node.getNeighborIndex(updating_node_index.getFlipMiniIndex());
+                PhyloNode& other_child = nodes
+                    [other_child_index.getVectorIndex()];
+                const std::unique_ptr<SeqRegions>& other_child_lower_regions =
+                    other_child.getPartialLh(TOP);
+                other_child_lower_regions->mergeTwoLowers<num_states>(
+                    bottom_regions, other_child.getUpperLength(),
+                    *updating_node->getIncomingRegions(),
+                    updating_node->getBranchLength(), aln, model, cumulative_rate,
+                    threshold_prob);
+            }
+            
+            // if bottom_regions is null (inconsistent) -> we can't optimize blengths
+            if (!bottom_regions) {
+                best_appending_blength = removed_blength;
+                best_mid_top_blength = at_node.getUpperLength() * 0.5;
+                best_mid_bottom_blength = best_mid_top_blength;
+            }
+            // otherwise, optimize blengths
+            else
+            {
+                // optimize the mid_top blength
+                const std::unique_ptr<SeqRegions>& upper_lr_regions =
                 getPartialLhAtNode(at_node.getNeighborIndex(TOP));
-            std::unique_ptr<SeqRegions> two_lower_regions = nullptr;
-            const RealNumType mid_branch_length = at_node.getUpperLength() * 0.5;
-            bottom_regions->mergeTwoLowers<num_states>(two_lower_regions,
-                mid_branch_length, *subtree_regions, best_appending_blength,
-                aln, model, cumulative_rate, threshold_prob);
-            best_mid_top_blength = estimateBranchLength<num_states>(upper_lr_regions, two_lower_regions);
-            
-            // optimize the mid_bottom blength
-            std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
-            upper_lr_regions->mergeUpperLower<num_states>(
-                tmp_upper_lr_regions, best_mid_top_blength, *subtree_regions,
-                best_appending_blength, aln, model, threshold_prob);
-            best_mid_bottom_blength = estimateBranchLength<num_states>(tmp_upper_lr_regions, bottom_regions);
-            
-            // re-compute the mid-branch regions
-            upper_lr_regions->mergeUpperLower<num_states>(
-                new_mid_branch_regions, best_mid_top_blength, *bottom_regions,
-                best_mid_bottom_blength, aln, model, threshold_prob);
+                std::unique_ptr<SeqRegions> two_lower_regions = nullptr;
+                const RealNumType mid_branch_length = at_node.getUpperLength() * 0.5;
+                bottom_regions->mergeTwoLowers<num_states>(two_lower_regions,
+                    mid_branch_length, *subtree_regions, best_appending_blength,
+                    aln, model, cumulative_rate, threshold_prob);
+                best_mid_top_blength = estimateBranchLength<num_states>(upper_lr_regions, two_lower_regions);
+                
+                // optimize the mid_bottom blength
+                std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
+                upper_lr_regions->mergeUpperLower<num_states>(
+                    tmp_upper_lr_regions, best_mid_top_blength, *subtree_regions,
+                    best_appending_blength, aln, model, threshold_prob);
+                best_mid_bottom_blength = estimateBranchLength<num_states>
+                    (tmp_upper_lr_regions, bottom_regions);
+                
+                // re-compute the mid-branch regions
+                upper_lr_regions->mergeUpperLower<num_states>(
+                    new_mid_branch_regions, best_mid_top_blength, *bottom_regions,
+                    best_mid_bottom_blength, aln, model, threshold_prob);
+            }
             
         }
         // case we are moving from a parent to a child
