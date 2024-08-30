@@ -543,7 +543,8 @@ class Tree {
    operations
    */
   template <const cmaple::StateType num_states>
-  void optimizeTreeTopology(bool short_range_search = false);
+  void optimizeTreeTopology(const TreeSearchType tree_search_type,
+                            bool short_range_search = false);
 
   /**
    Traverse the intial tree from root to re-calculate all non-lower likelihoods
@@ -563,6 +564,7 @@ class Tree {
   template <const cmaple::StateType num_states>
   cmaple::RealNumType improveSubTree(const cmaple::Index index,
                                      PhyloNode& node,
+                                     const TreeSearchType tree_search_type,
                                      bool short_range_search);
 
   /**
@@ -1743,7 +1745,8 @@ class Tree {
    operations
    */
   template <const cmaple::StateType num_states>
-  cmaple::RealNumType improveEntireTree(bool short_range_search);
+  cmaple::RealNumType improveEntireTree(const TreeSearchType tree_search_type,
+                                        bool short_range_search);
 
   /**
    Try to optimize branch lengths of the tree by one round of tree traversal
@@ -1926,7 +1929,8 @@ void cmaple::Tree::refreshAllLhs(bool avoid_using_upper_lr_lhs) {
 }
 
 template <const StateType num_states>
-RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
+RealNumType cmaple::Tree::improveEntireTree(const TreeSearchType tree_search_type,
+                                            bool short_range_search) {
   assert(aln);
   assert(model);
   assert(cumulative_rate);
@@ -1975,7 +1979,8 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
 
       // do SPR moves to improve the tree
       RealNumType improvement =
-          improveSubTree<num_states>(index, node, short_range_search);
+          improveSubTree<num_states>(index, node,
+                                     tree_search_type, short_range_search);
 
       // if checkEachSPR:
       //          #print(" apparent improvement "+str(improvement))
@@ -2005,7 +2010,8 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
 
       // Show log every 1000 nodes
       ++num_nodes;
-      if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000) {
+      if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000
+          && tree_search_type != FAST_TREE_SEARCH) {
         std::cout << "Processed topology for " << convertIntToString(num_nodes)
              << " nodes." << std::endl;
         count_node_1K = num_nodes;

@@ -789,7 +789,7 @@ void cmaple::Tree::applySPRTemplate(
     }
 
     // apply short-range SPR search
-    optimizeTreeTopology<num_states>(true);
+    optimizeTreeTopology<num_states>(tree_search_type, true);
     // exportOutput(output_file + "_short_search.treefile");
 
     // reset the SPR flags so that we can start a deeper SPR search later
@@ -819,8 +819,10 @@ void cmaple::Tree::applySPRTemplate(
   }
 
   // run a normal search for tree topology improvement
-  if (tree_search_type != FAST_TREE_SEARCH) {
-    if (cmaple::verbose_mode >= cmaple::VB_MED) {
+  if (tree_search_type != FAST_TREE_SEARCH
+      || params->compute_SPRTA) {
+    if (cmaple::verbose_mode >= cmaple::VB_MED
+        && tree_search_type != FAST_TREE_SEARCH) {
       std::string tree_search_str = getTreeSearchStr(tree_search_type);
       transform(tree_search_str.begin(), tree_search_str.end(),
                 tree_search_str.begin(), ::tolower);
@@ -828,7 +830,7 @@ void cmaple::Tree::applySPRTemplate(
                 << std::endl;
     }
 
-    optimizeTreeTopology<num_states>();
+    optimizeTreeTopology<num_states>(tree_search_type);
     // exportOutput(output_file + "_topo.treefile");
   }
 
@@ -907,7 +909,8 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate() {
 }
 
 template <const StateType num_states>
-void cmaple::Tree::optimizeTreeTopology(bool short_range_search) {
+void cmaple::Tree::optimizeTreeTopology(const TreeSearchType tree_search_type,
+                                        bool short_range_search) {
   assert(aln->ref_seq.size() > 0);
   assert(nodes.size() > 0);
     
@@ -920,9 +923,15 @@ void cmaple::Tree::optimizeTreeTopology(bool short_range_search) {
     // first, set all nodes outdated
     // no need to do so anymore as new nodes were already marked as outdated
     // resetSPRFlags(true, true);
+    // if only compute SPRTA (~ tree search type = FAST), reset all SPRFlags
+      resetSPRFlags(true, true);
 
     // traverse the tree from root to try improvements on the entire tree
-    RealNumType improvement = improveEntireTree<num_states>(short_range_search);
+    RealNumType improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
+      
+    // if only compute SPRTA (~ tree search type = FAST), stop searching further, one round is enough
+    if (tree_search_type == FAST_TREE_SEARCH)
+        break;
 
     // stop trying if the improvement is so small
     if (improvement < params->thresh_entire_tree_improvement) {
@@ -938,7 +947,7 @@ void cmaple::Tree::optimizeTreeTopology(bool short_range_search) {
       // forget SPR_applied flag to allow new SPR moves
       resetSPRFlags(false, true);
 
-      improvement = improveEntireTree<num_states>(short_range_search);
+      improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
       if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
         cout << "Tree was improved by " + convertDoubleToString(improvement) +
                     " at subround " + convertIntToString(j + 1)
@@ -2567,6 +2576,7 @@ void cmaple::Tree::seekSubTreePlacement(
     
     // for computing SPRTA scores
     std::vector<RealNumType> alt_spr_lh_diffs;
+    const RealNumType ori_best_lh_diff = best_lh_diff;
 
   // get/init approximation params
   bool strict_stop_seeking_placement_subtree =
@@ -2809,11 +2819,11 @@ void cmaple::Tree::seekSubTreePlacement(
             sprta_scores[subtree_root_index.getVectorIndex()] = 1.0;
         else
         {
-            const RealNumType raw_best_lh_diff =  std::exp(best_lh_diff);
+            const RealNumType raw_ori_lh_diff =  std::exp(ori_best_lh_diff);
             RealNumType total_spr_lhs = std::accumulate(alt_spr_lh_diffs.begin(),
-                alt_spr_lh_diffs.end(), raw_best_lh_diff, [](double sum, double value) {
+                alt_spr_lh_diffs.end(), raw_ori_lh_diff, [](double sum, double value) {
                 return sum + std::exp(value); });
-            sprta_scores[subtree_root_index.getVectorIndex()] = raw_best_lh_diff / total_spr_lhs;
+            sprta_scores[subtree_root_index.getVectorIndex()] = raw_ori_lh_diff / total_spr_lhs;
         }
     }
 
@@ -5278,6 +5288,7 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
 template <const StateType num_states>
 RealNumType cmaple::Tree::improveSubTree(const Index node_index,
                                          PhyloNode& node,
+                                         const TreeSearchType tree_search_type,
                                          bool short_range_search) {
   // dummy variables
   assert(node_index.getMiniIndex() == TOP);
@@ -5301,7 +5312,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
         parent_upper_lr_lh, lower_lh, best_blength);
 
     // optimize branch length
-    if (best_lh < thresh_placement_cost) {
+    if (best_lh < thresh_placement_cost && !fixed_blengths) {
       optimizeBlengthBeforeSeekingSPR<num_states>(node, best_blength, best_lh,
                                                   blength_changed,
                                                   parent_upper_lr_lh, lower_lh);
@@ -5344,7 +5355,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
             "MAPLE file");
       }
 
-      if (best_lh_diff + thresh_placement_cost > best_lh) {
+      if (best_lh_diff + thresh_placement_cost > best_lh && tree_search_type != FAST_TREE_SEARCH) {
         // check and apply SPR move
         checkAndApplySPR<num_states>(best_lh_diff, best_blength,
             opt_appending_blength, opt_mid_top_blength,
