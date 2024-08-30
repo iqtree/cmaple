@@ -759,7 +759,7 @@ void cmaple::Tree::applySPRTemplate(
         params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * std::log(aln->ref_seq.size());
         
         // initialize the vector to store all SPRTA scores
-        sprta_scores.resize(nodes.size(), 555555.0);
+        sprta_scores.resize(nodes.size(), 1.0);
     }
 
   // show information
@@ -1231,10 +1231,10 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
     {
         // incorporate existing branch support (if any)
         if (branch_support.length())
-            branch_support += "/" + convertDoubleToString(sprta_scores[node_vec_index] * 100);
+            branch_support += "/" + convertDoubleToString(sprta_scores[node_vec_index]);
         // otherwise, only show sprta score
         else
-            branch_support = convertDoubleToString(sprta_scores[node_vec_index] * 100);
+            branch_support = convertDoubleToString(sprta_scores[node_vec_index]);
     }
     
   string length = node.getUpperLength() <= 0
