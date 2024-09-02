@@ -1894,16 +1894,18 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
     const cmaple::Index ori_parent_index,
     const cmaple::Index new_placement_index,
     const cmaple::RealNumType best_mid_top_blength,
-    const cmaple::RealNumType best_mid_bottom_blength)
+    const cmaple::RealNumType best_mid_bottom_blength,
+    bool& is_root_considered)
 {
     // place at the same parent
     NumSeqsType parent_vec = ori_parent_index.getVectorIndex();
-    if (new_placement_index.getVectorIndex() == parent_vec)
+    const NumSeqsType new_placement_vec = new_placement_index.getVectorIndex();
+    if (new_placement_vec == parent_vec)
         return false;
     
     // place at the other child
     Index other_child_index = nodes[parent_vec].getNeighborIndex(ori_parent_index.getFlipMiniIndex());
-    if (new_placement_index.getVectorIndex() == other_child_index.getVectorIndex())
+    if (new_placement_vec == other_child_index.getVectorIndex())
         return false;
     
     // placement in a polytomy
@@ -1924,9 +1926,37 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
             return false;
     }
     
-    // redundant placement: if (best_mid_top_blength <= 0), it can be represented by another placement
+    // redundant placement:
+    // if (best_mid_top_blength <= 0),
+    // if the new placement is not at root, it can be represented by another placement
     if (best_mid_top_blength <= 0)
+    {
+        // check if it is the placement at root
+        if (!is_root_considered)
+        {
+            // move to the top of the polytomy (if any)
+            NumSeqsType new_placement_parent_vec = nodes[new_placement_vec]
+                .getNeighborIndex(TOP).getVectorIndex();
+            while (new_placement_parent_vec != root_vector_index)
+            {
+                PhyloNode& new_placement_parent_node = nodes[new_placement_parent_vec];
+                if (new_placement_parent_node.getUpperLength() <= 0)
+                    new_placement_parent_vec = new_placement_parent_node.getNeighborIndex(TOP).getVectorIndex();
+                else
+                    break;
+            }
+            
+            // if the new placement top node is root -> record this placement
+            if (new_placement_parent_vec == root_vector_index)
+            {
+                is_root_considered = true;
+                return true;
+            }
+            
+        }
+        // otherwise, the new placement is a redundant placement
         return false;
+    }
 }
 
 // NOTE: top_node != null <=> case when crawling up from child to parent
@@ -1951,7 +1981,8 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     RealNumType& opt_appending_blength,
     RealNumType& opt_mid_top_blength,
     RealNumType& opt_mid_bottom_blength,
-    std::vector<RealNumType>& alt_spr_lh_diffs) {
+    std::vector<RealNumType>& alt_spr_lh_diffs,
+    bool& is_root_considered) {
     
   const bool top_node_exists = (top_node_index.getMiniIndex() != UNDEFINED);
   const Index updating_node_index = updating_node->getIndex();
@@ -2157,7 +2188,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
         }
         
         // check if the new placement is sufficiently different from the original one
-        if (isDiffFromOrigPlacement<num_states>(ori_parent_index, at_node_index, best_mid_top_blength, best_mid_bottom_blength))
+        if (isDiffFromOrigPlacement<num_states>(ori_parent_index, at_node_index, best_mid_top_blength, best_mid_bottom_blength, is_root_considered))
         {
             // re-compute the placement cost
             lh_diff_mid_branch = calculateSubTreePlacementCost<num_states>(
@@ -2648,6 +2679,7 @@ void cmaple::Tree::seekSubTreePlacement(
     // for computing SPRTA scores
     std::vector<RealNumType> alt_spr_lh_diffs;
     const RealNumType ori_best_lh_diff = best_lh_diff;
+    bool is_root_considered = false; // whether we already consider the placement at root or not
 
   // get/init approximation params
   bool strict_stop_seeking_placement_subtree =
@@ -2741,7 +2773,7 @@ void cmaple::Tree::seekSubTreePlacement(
                   best_down_lh_diff, updating_node, subtree_regions,
                   threshold_prob, removed_blength, Index(), node_index, bottom_regions,
                   opt_appending_blength, opt_mid_top_blength,
-                  opt_mid_bottom_blength, alt_spr_lh_diffs))
+                  opt_mid_bottom_blength, alt_spr_lh_diffs, is_root_considered))
           {
             continue;
           }
@@ -2838,7 +2870,7 @@ void cmaple::Tree::seekSubTreePlacement(
                 best_down_lh_diff, updating_node, subtree_regions,
                 threshold_prob, removed_blength, top_node_index, node_index,
                 bottom_regions, opt_appending_blength, opt_mid_top_blength,
-                opt_mid_bottom_blength, alt_spr_lh_diffs)) {
+                opt_mid_bottom_blength, alt_spr_lh_diffs, is_root_considered)) {
           continue;
         }
       }

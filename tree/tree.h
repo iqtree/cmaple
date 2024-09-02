@@ -625,7 +625,8 @@ bool isDiffFromOrigPlacement(
     const cmaple::Index ori_parent_index,
     const cmaple::Index new_placement_index,
     const cmaple::RealNumType best_mid_top_blength,
-    const cmaple::RealNumType best_mid_bottom_blength);
+    const cmaple::RealNumType best_mid_bottom_blength,
+    bool& is_root_considered);
 
   /**
    Add start nodes for seeking a placement for a subtree
@@ -664,7 +665,8 @@ bool isDiffFromOrigPlacement(
       RealNumType& opt_appending_blength,
       RealNumType& opt_mid_top_blength,
       RealNumType& opt_mid_bottom_blength,
-      std::vector<RealNumType>& alt_spr_lh_diffs);
+      std::vector<RealNumType>& alt_spr_lh_diffs,
+      bool& is_root_considered);
 
   /**
    Examine placing a subtree as a descendant of an existing node
