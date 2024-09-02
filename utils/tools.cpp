@@ -599,6 +599,7 @@ cmaple::Params::Params() {
   tree_search_type_str = "NORMAL";
   make_consistent = false;
     compute_SPRTA = false;
+    compute_SPRTA_zero_length_branches = false;
     thresh_loglh_optimal_diff_fac = 1.0;
 
   // initialize random seed based on current time
@@ -1102,6 +1103,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         if (strcmp(argv[cnt], "--sprta") == 0 ||
             strcmp(argv[cnt], "-sprta") == 0) {
           params.compute_SPRTA = true;
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--zero-branch-supp") == 0 ||
+            strcmp(argv[cnt], "---zero-branch-supp") == 0) {
+          params.compute_SPRTA_zero_length_branches = true;
 
           continue;
         }

@@ -630,6 +630,11 @@ class Params {
     bool compute_SPRTA;
     
     /**
+     * TRUE to compute the SPRTA for zero-length branches
+     */
+    bool compute_SPRTA_zero_length_branches;
+    
+    /**
      * A factor determines SPRs
      * are close to the optimal one when computing SPRTA.
      * This factor is relative to the reference length.

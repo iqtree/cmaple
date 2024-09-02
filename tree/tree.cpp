@@ -5422,7 +5422,9 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
     }
 
     // find new placement
-    if (best_lh < thresh_placement_cost) {
+    if ((best_lh < thresh_placement_cost && tree_search_type != FAST_TREE_SEARCH)
+        || node.getUpperLength() > 0
+        || (params->compute_SPRTA && params->compute_SPRTA_zero_length_branches)){
       // now find the best place on the tree where to re-attach the subtree
       // rooted at "node" but to do that we need to consider new vector
       // probabilities after removing the node that we want to replace this is
