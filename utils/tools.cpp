@@ -582,7 +582,7 @@ cmaple::Params::Params() {
   output_aln_format_str = "MAPLE";
   num_tree_improvement = 1;
   thresh_entire_tree_improvement = 1;
-  thresh_placement_cost = -1e-5;
+  thresh_placement_cost = -0.1;
   thresh_placement_cost_short_search = -1;
   tree_format_str = "BIN";
   shallow_tree_search = false;
