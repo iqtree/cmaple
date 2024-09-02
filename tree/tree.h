@@ -616,6 +616,16 @@ class Tree {
       cmaple::RealNumType& best_down_lh_diff,
       cmaple::Index& best_child_index,
       const std::unique_ptr<SeqRegions>& sample_regions);
+    
+/**
+ Check if the new placement is sufficiently different from the original one
+*/
+template <const cmaple::StateType num_states>
+bool isDiffFromOrigPlacement(
+    const cmaple::Index ori_parent_index,
+    const cmaple::Index new_placement_index,
+    const cmaple::RealNumType best_mid_top_blength,
+    const cmaple::RealNumType best_mid_bottom_blength);
 
   /**
    Add start nodes for seeking a placement for a subtree
@@ -649,6 +659,7 @@ class Tree {
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
       const cmaple::Index top_node_index,
+      const cmaple::Index ori_parent_index,
       std::unique_ptr<SeqRegions>& bottom_regions,
       RealNumType& opt_appending_blength,
       RealNumType& opt_mid_top_blength,
@@ -1665,7 +1676,6 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void seekSubTreePlacement(
-      const cmaple::Index& subtree_root_index,
       cmaple::Index& best_node_index,
       cmaple::RealNumType& best_lh_diff,
       bool& is_mid_branch,
