@@ -2120,8 +2120,8 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
         // optimize the mid_top and mid_bottom branches
         // case when crawling up from child to parent
         if (top_node_exists) {
-            // compute bottem_regions (if necessary)
-            if (updating_node->needUpdate())
+            // compute bottem_regions (if it has NOT been computed)
+            if (!updating_node->needUpdate())
             {
                 const Index other_child_index =
                     current_node.getNeighborIndex(updating_node_index.getFlipMiniIndex());
