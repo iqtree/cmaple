@@ -1957,6 +1957,9 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
         // otherwise, the new placement is a redundant placement
         return false;
     }
+    
+    // by default return true
+    return true;
 }
 
 // NOTE: top_node != null <=> case when crawling up from child to parent
