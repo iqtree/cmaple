@@ -1992,6 +1992,8 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
   PhyloNode& at_node = top_node_exists ? nodes[at_node_vec] : current_node;
 
   std::unique_ptr<SeqRegions> new_mid_branch_regions = nullptr;
+  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+    
   // get or recompute the lh regions at the mid-branch position
   if (updating_node->needUpdate()) {
     // recompute mid_branch_regions in case when crawling up from child to
@@ -2064,6 +2066,13 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
           new_mid_branch_regions, mid_branch_length, *lower_regions,
           mid_branch_length, aln, model, threshold_prob);
     }
+      
+      // stop updating if the difference between the new and old regions is
+      // insignificant
+      if (!new_mid_branch_regions->areDiffFrom(at_node.getMidBranchLh(),
+              seq_length, num_states, *params)) {
+        updating_node->setUpdate(false);
+      }
   }
 
   std::unique_ptr<SeqRegions>& mid_branch_regions =
@@ -2285,10 +2294,10 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
     // stop updating if the difference between the new and old regions is
     // insignificant assert(params.has_value());
     assert(params);
-    if (!new_at_node_regions->areDiffFrom(at_node.getTotalLh(), seq_length,
+    /*if (!new_at_node_regions->areDiffFrom(at_node.getTotalLh(), seq_length,
                                           num_states, *params)) {
       updating_node->setUpdate(false);
-    }
+    }*/
   }
   // else
   const std::unique_ptr<SeqRegions>& at_node_regions =
