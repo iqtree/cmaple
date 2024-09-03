@@ -9024,12 +9024,12 @@ void cmaple::Tree::collapseAllZeroLeave() {
           // only consider collapsing zero-branch-length leave into its
           // sibling's less-info-seqs if they're both leave
           if (!neighbor_1.isInternal() && !neighbor_2.isInternal()) {
-            if (root_vector_index == node_index.getVectorIndex() ||
-                node.getUpperLength() <= 0) {
+            /* if (root_vector_index == node_index.getVectorIndex() ||
+                node.getUpperLength() <= 0) { */
               collapseOneZeroLeaf(node, node_index, neighbor_1,
                                   neighbor_1_index, neighbor_2);
               ++num_collapsed_nodes;
-            }
+            //}
           }
           // NHANLT - temporarily solution to keep writing and re-reading tree
           // consistently - need more testing
