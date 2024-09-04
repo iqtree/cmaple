@@ -245,7 +245,7 @@ void cmaple::Tree::setupBlengthThresh() {
                     : params->fixed_min_blength;
   max_blength = params->max_blength_factor * default_blength;
   min_blength_mid = params->min_blength_mid_factor * default_blength;
-  min_blength_sensitivity = min_blength * 1e-5;
+  min_blength_sensitivity = default_blength * 1e-3;
   half_min_blength_mid = min_blength_mid * 0.5;
   half_max_blength = max_blength * 0.5;
   double_min_blength = min_blength + min_blength;
@@ -5095,31 +5095,62 @@ RealNumType cmaple::Tree::estimateBlengthFromCoeffs(
       max_coefficient = coefficient_i;
     }
   }
+    
+    // added in MAPLE v0.6.8
+    if (min_coefficient < 0.0)
+        return 0.1;
+    
 
   RealNumType num_coefficients_over_coefficient =
       num_coefficients / coefficient;
-  RealNumType tDown = num_coefficients_over_coefficient - min_coefficient;
+    
+  // update in MAPLE v0.6.8
+  // RealNumType tDown = num_coefficients_over_coefficient - min_coefficient;
+  RealNumType tDown = min(0.1, num_coefficients_over_coefficient - min_coefficient);
+    
   if (tDown <= 0) {
     return 0;
   }
   RealNumType derivative_tDown = calculateDerivative(coefficient_vec, tDown);
 
-  RealNumType tUp = num_coefficients_over_coefficient - max_coefficient;
-  if (tUp < 0) {
-    if (min_coefficient > 0) {
-      tUp = 0;
-    } else {
-      tUp = min_blength_sensitivity;
+    // update in MAPLE v0.6.8
+  // RealNumType tUp = num_coefficients_over_coefficient - max_coefficient;
+    RealNumType tUp = min(0.1, num_coefficients_over_coefficient - max_coefficient);
+    
+    // update in MAPLE v0.6.8
+    /*if (tUp < 0) {
+        if (min_coefficient > 0) {
+          tUp = 0;
+        } else {
+          tUp = min_blength_sensitivity;
+        }
+    }*/
+    if (tUp >= 0.1)
+        return 0.1;
+    if (tUp <= min_blength_sensitivity)
+    {
+        if (min_coefficient > 0)
+            tUp = 0.0;
+        else
+            tUp = min_blength_sensitivity;
     }
-  }
+    
   RealNumType derivative_tUp = calculateDerivative(coefficient_vec, tUp);
 
   if ((derivative_tDown > coefficient + min_blength_sensitivity) ||
       (derivative_tUp < coefficient - min_blength_sensitivity)) {
     if ((derivative_tUp < coefficient - min_blength_sensitivity) &&
         (tUp == 0)) {
-      return 0;
+        // update in MAPLE v0.6.8
+        // return 0;
+        return -1;
     }
+      // added in MAPLE v0.6.8
+      if ((derivative_tDown > coefficient + min_blength_sensitivity) &&
+          (tDown >= 0.1))
+      {
+          return 0.1;
+      }
   }
 
   while (tDown - tUp > min_blength_sensitivity) {
