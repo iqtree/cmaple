@@ -9249,10 +9249,6 @@ void cmaple::Tree::performDFSAtLeave() {
 template <
     void (Tree::*task)(PhyloNode&, const cmaple::Index, const cmaple::Index)>
 void cmaple::Tree::performDFSv2() {
-  // dummy variables
-  RealNumType total_lh = 0;
-  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
-
   // start from root
   Index node_index = Index(root_vector_index, TOP);
   Index last_node_index;
@@ -9306,8 +9302,6 @@ void cmaple::Tree::performDFSv2() {
       }
     }
   }
-
-  return total_lh;
 }
 
 template <const StateType num_states>
