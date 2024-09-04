@@ -1876,6 +1876,14 @@ bool isDiffFromOrigPlacement(
                                PhyloNode&,
                                const cmaple::PositionType&)>
   cmaple::RealNumType performDFS();
+    
+    /**
+     Employ Depth First Search to do a task at internal nodes
+     The template is different from performDFS
+     */
+    template <void (Tree::*task)(PhyloNode&,
+            const cmaple::Index, const cmaple::Index)>
+    void performDFSv2();
 
   /**
    Update model parameters from an alignment and a tree
@@ -2039,9 +2047,9 @@ void cmaple::Tree::updateModelParams() {
   assert(aln);
   assert(model);
     
-  // perform a DFS -> at each leaf, update the pesudoCount of the model based on
-  // the sequence of that leaf
-  performDFSAtLeave<&cmaple::Tree::updatePesudoCountModel<num_states>>();
+  // perform a DFS -> at each node, update the pesudoCount of the model based on
+  // the sequence of that node
+  performDFSv2<&cmaple::Tree::updatePesudoCountModel<num_states>>();
 
   // update model params based on the pseudo count
   if (model->updateMutationMatEmpirical()) {

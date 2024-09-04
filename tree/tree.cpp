@@ -9215,6 +9215,70 @@ void cmaple::Tree::performDFSAtLeave() {
   }
 }
 
+template <
+    void (Tree::*task)(PhyloNode&, const cmaple::Index, const cmaple::Index)>
+void cmaple::Tree::performDFSv2() {
+  // dummy variables
+  RealNumType total_lh = 0;
+  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+
+  // start from root
+  Index node_index = Index(root_vector_index, TOP);
+  Index last_node_index;
+
+  // traverse to the deepest tip, calculate the likelihoods upward from the tips
+  while (node_index.getMiniIndex() != UNDEFINED)  // node)
+  {
+    PhyloNode& node = nodes[node_index.getVectorIndex()];
+    // we reach a top node by a downward traversing
+    if (node_index.getMiniIndex() == TOP)  // node->is_top)
+    {
+      // if the current node is a leaf -> we reach the deepest tip -> traversing
+      // upward to calculate the lh of its parent
+      if (!node.isInternal())  // node->isLeave())
+      {
+        /*last_node = node;
+         node = node->neighbor;*/
+        last_node_index = node_index;
+        node_index = node.getNeighborIndex(TOP);
+      }
+      // otherwise, keep traversing downward to find the deepest tip
+      else {
+        // node = node->next->neighbor;
+        node_index = node.getNeighborIndex(RIGHT);
+      }
+    }
+    // we reach the current node by an upward traversing from its children
+    else {
+      // if we reach the current node by an upward traversing from its first
+      // children -> traversing downward to its second children
+      if (node.getNeighborIndex(RIGHT) ==
+          last_node_index)  // node->getTopNode()->next->neighbor == last_node)
+      {
+        // node = node->getTopNode()->next->next->neighbor;
+        node_index = node.getNeighborIndex(LEFT);
+      }
+      // otherwise, all children of the current node are updated -> update the
+      // lower lh of the current node
+      else {
+        // calculate the new lower lh of the current node from its children
+        Index neighbor_1_index = node.getNeighborIndex(RIGHT);
+        Index neighbor_2_index = node.getNeighborIndex(LEFT);
+        PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
+        PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
+
+        (this->*task)(neighbor_1, neighbor_1_index, neighbor_1.getNeighborIndex(TOP));
+        (this->*task)(neighbor_2, neighbor_2_index, neighbor_2.getNeighborIndex(TOP));
+
+        last_node_index = Index(node_index.getVectorIndex(), TOP);
+        node_index = node.getNeighborIndex(TOP);
+      }
+    }
+  }
+
+  return total_lh;
+}
+
 template <const StateType num_states>
 void cmaple::Tree::updateBlengthReplaceMLTree(
     std::stack<Index>& node_stack_aLRT,
