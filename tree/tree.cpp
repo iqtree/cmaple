@@ -2462,11 +2462,12 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
   assert(other_child_index.getMiniIndex() == TOP);
   PhyloNode& other_child = nodes[other_child_index.getVectorIndex()];
   const Index updating_node_index = updating_node->getIndex();
-  const MiniIndex updating_node_mini = updating_node_index.getMiniIndex();
+  const MiniIndex updating_node_mini_flip = updating_node_index.getFlipMiniIndex();
 
   // keep crawling up into parent and sibling node
   // case the node is not the root
-  if (root_vector_index != updating_node_index.getVectorIndex()) {
+  if (root_vector_index != updating_node_index.getVectorIndex())
+  {
     // first pass the crawling down the other child (sibling)
 
     // get or recompute the upper left/right regions of the sibling node
@@ -2503,7 +2504,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
       }
     } else {
       std::unique_ptr<SeqRegions>& upper_lr_regions =
-          current_node.getPartialLh(updating_node_mini);
+          current_node.getPartialLh(updating_node_mini_flip);
 
       if (!upper_lr_regions)  // updating_node->node->partial_lh)
       {
@@ -2621,7 +2622,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
           lh_diff_at_node, updating_node->getFailureCount())));
     } else {
       std::unique_ptr<SeqRegions>& upper_lr_regions = current_node.getPartialLh(
-          updating_node_mini);  // updating_node->node->getPartialLhAtNode(aln,
+          updating_node_mini_flip);  // updating_node->node->getPartialLhAtNode(aln,
                                 // model, threshold_prob);
 
       std::unique_ptr<SeqRegions> null_seqregions_ptr = nullptr;
