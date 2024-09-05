@@ -925,6 +925,15 @@ void cmaple::Tree::optimizeTreeTopology(const TreeSearchType tree_search_type,
     // resetSPRFlags(true, true);
     // if only compute SPRTA (~ tree search type = FAST), reset all SPRFlags
       resetSPRFlags(true, true);
+      
+      // added in MAPLE v0.6.8
+      // Preliminarily optimize branch lengths (if needed)
+      if (!fixed_blengths) {
+        optimizeBranch(cout);
+          
+        // reset all SPR flags
+        resetSPRFlags(true, true);
+      }
 
     // traverse the tree from root to try improvements on the entire tree
     RealNumType improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
