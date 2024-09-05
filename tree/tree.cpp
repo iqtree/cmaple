@@ -5871,6 +5871,10 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
   size_t iseq1 = 0;
   size_t iseq2 = 0;
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+    
+    // update to match MAPLE v0.6.8
+    if (blength > 0)
+        lh_cost = -blength * seq_length;
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -5913,8 +5917,9 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
 
     // 2.1. e1.type = R and e2.type = R
     if (s1s2 == RR) [[likely]] {
-      calculateSubtreeCost_R_R(*seq1_region, cumulative_rate, total_blength,
-                               pos, end_pos, lh_cost);
+        // update to match MAPLE v0.6.8 -> do nothing
+      // calculateSubtreeCost_R_R(*seq1_region, cumulative_rate, total_blength,
+                               // pos, end_pos, lh_cost);
     }
     // 2.2. e1.type = R and e2.type = O
     else if (s1s2 == RO) {
