@@ -2125,6 +2125,8 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     if (params->compute_SPRTA && lh_diff_mid_branch
         >= best_lh_diff - params->thresh_loglh_optimal_diff)
     {
+        // compensate for the likelihood changes due to blength change
+        RealNumType lh_compensation = 0;
         // optimize 3 branches: appending, top, bottom
         // optimize the appending branch
         best_appending_blength =
@@ -2179,6 +2181,20 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
                 upper_lr_regions->mergeUpperLower<num_states>(
                     new_mid_branch_regions, best_mid_top_blength, *bottom_regions,
                     best_mid_bottom_blength, aln, model, threshold_prob);
+                
+                // compute the likelihood compensation if the blength changes
+                // note that the original distance must be positive
+                RealNumType ori_blength = at_node.getUpperLength();
+                RealNumType new_total_blength = (best_mid_top_blength < 0 ? 0 : best_mid_top_blength) +
+                    (best_mid_bottom_blength < 0 ? 0 : best_mid_bottom_blength);
+                if (abs(ori_blength - new_total_blength) > threshold_prob)
+                {
+                    RealNumType ori_lh_contribution = calculateSubTreePlacementCost<num_states>(
+                        upper_lr_regions, bottom_regions, ori_blength);
+                    RealNumType new_lh_contribution = calculateSubTreePlacementCost<num_states>(
+                        upper_lr_regions, bottom_regions, new_total_blength);
+                    lh_compensation = new_lh_contribution - ori_lh_contribution;
+                }
             }
             
         }
@@ -2206,6 +2222,20 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             updating_node->getIncomingRegions()->mergeUpperLower<num_states>(
                 new_mid_branch_regions, best_mid_top_blength, *lower_regions,
                 best_mid_bottom_blength, aln, model, threshold_prob);
+            
+            // compute the likelihood compensation if the blength changes
+            // note that the original distance must be positive
+            RealNumType ori_blength = updating_node->getBranchLength();
+            RealNumType new_total_blength = (best_mid_top_blength < 0 ? 0 : best_mid_top_blength) +
+                (best_mid_bottom_blength < 0 ? 0 : best_mid_bottom_blength);
+            if (abs(ori_blength - new_total_blength) > threshold_prob)
+            {
+                RealNumType ori_lh_contribution = calculateSubTreePlacementCost<num_states>(
+                    updating_node->getIncomingRegions(), lower_regions, ori_blength);
+                RealNumType new_lh_contribution = calculateSubTreePlacementCost<num_states>(
+                    updating_node->getIncomingRegions(), lower_regions, new_total_blength);
+                lh_compensation = new_lh_contribution - ori_lh_contribution;
+            }
         }
         
         // check if the new placement is sufficiently different from the original one
@@ -2215,7 +2245,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             lh_diff_mid_branch = calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
-            alt_spr_lh_diffs.push_back(lh_diff_mid_branch);
+            alt_spr_lh_diffs.push_back(lh_diff_mid_branch + lh_compensation);
         }
     }
 
