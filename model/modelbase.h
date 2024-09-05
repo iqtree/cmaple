@@ -206,6 +206,13 @@ class ModelBase {
   const cmaple::StateType num_states_ = 0;
 
   /**
+   TRUE to keep the model parameters unchanged
+   */
+  bool fixed_params = false;
+
+protected:
+
+  /**
    Pseudo mutation count
    */
   cmaple::RealNumType* pseu_mutation_count = nullptr;
@@ -260,15 +267,83 @@ class ModelBase {
   */
   cmaple::RealNumType normalized_factor = 1.0;
 
-  /**
-   TRUE to keep the model parameters unchanged
-   */
-  bool fixed_params = false;
+public:
 
   /**
    Get the model name
    */
   std::string getModelName() const;
+
+  /**
+   Get pointer to the mutation matrix at genome position i.
+   This function is overridden in rate variation models.
+   */
+  virtual inline const cmaple::RealNumType *const getMutationMatrix(PositionType i = 0) const {
+    return mutation_mat;
+  }; 
+
+  virtual inline const cmaple::RealNumType *const getMutationMatrixRow(StateType row, PositionType i = 0) const {
+    return mutation_mat + row_index[row];
+  }; 
+
+  virtual inline const cmaple::RealNumType *const getTransposedMutationMatrix(PositionType i = 0) const {
+    return transposed_mut_mat;
+  }; 
+
+  virtual inline const cmaple::RealNumType *const getTransposedMutationMatrixRow(StateType row, PositionType i = 0) const {
+    return transposed_mut_mat + row_index[row];
+  }; 
+
+  virtual inline cmaple::RealNumType getRootFreq(StateType i) const {
+    return root_freqs[i];
+  }
+
+  virtual inline const cmaple::RealNumType *const getRootFreqs() const {
+    return root_freqs;
+  }
+
+  template <const StateType num_states> 
+  cmaple::RealNumType getDotProductWithMutationMatrixRow( StateType row, 
+                                                          const RealNumType* vector,
+                                                          bool transposed = false,
+                                                          PositionType i = 0) const {
+    RealNumType* mat_row = transposed ? transposed_mut_mat : mutation_mat;
+    mat_row += row_index[row];
+    return dotProduct<num_states>(vector, mat_row);
+  }
+
+  /**
+   Get  mutation matrix value for row/column at genome position i.
+   This function is overridden in rate variation models.
+   */
+  virtual inline cmaple::RealNumType getMutationMatrixEntry(StateType row, StateType column, PositionType i = 0) const {
+    return mutation_mat[row_index[row] + column];
+  }
+
+  virtual inline cmaple::RealNumType getTransposedMutationMatrixEntry(StateType row, StateType column, PositionType i = 0) const {
+    return transposed_mut_mat[row_index[row] + column];
+  }
+
+  virtual inline cmaple::RealNumType getRootLogFreq(StateType i) const {
+    return root_log_freqs[i];
+  }
+
+  virtual inline cmaple::RealNumType getInverseRootFreq(StateType i) const {
+    return inverse_root_freqs[i];
+  }
+
+  //is this necessary?
+  virtual inline cmaple::RealNumType getDiagonalMutationMatrixEntry(StateType i) const {
+    return diagonal_mut_mat[i];
+  }
+
+  virtual inline cmaple::RealNumType getFreqiFreqjQij(StateType i, StateType j) const {
+    return freqi_freqj_qij[row_index[i] + j];
+  }
+
+  virtual inline const cmaple::RealNumType* const getFreqjTransposedijRow(StateType i) const {
+    return freqi_freqj_qij + row_index[i];
+  }
 
   /**
    Export state frequencies at root

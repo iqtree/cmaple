@@ -555,36 +555,33 @@ auto updateLHwithModel(const ModelBase* model,
                        SeqRegion::LHType& posterior,
                        const RealNumType total_blength) -> RealNumType {
   assert(model);
-    
   RealNumType sum_lh = 0;
-  RealNumType* mutation_mat_row = model->mutation_mat;
-  for (StateType i = 0; i < num_states; ++i, mutation_mat_row += num_states) {
+  for (StateType i = 0; i < num_states; ++i) {
     RealNumType tot = 0;
     if (total_blength > 0)  // TODO: avoid
     {
-      tot += dotProduct<num_states>(&(prior)[0], mutation_mat_row);
+      tot += model->getDotProductWithMutationMatrixRow<num_states>(i, &(prior)[0]);
 
       tot *= total_blength;
     }
 
     tot += prior[i];
-    posterior[i] = tot * model->root_freqs[i];
+    posterior[i] = tot * model->getRootFreq(i);
     sum_lh += posterior[i];
   }
   return sum_lh;
 }
 
 template <const StateType num_states>
-auto updateLHwithMat(const RealNumType* mat_row,
+auto updateLHwithMat(const ModelBase* model,
                      const SeqRegion::LHType& prior,
                      SeqRegion::LHType& posterior,
-                     const RealNumType total_blength) -> RealNumType {
-  assert(mat_row);
-    
+                     const RealNumType total_blength,
+                     bool transposed = false) -> RealNumType {
   RealNumType sum_lh = 0;
-  for (StateType i = 0; i < num_states; ++i, mat_row += num_states) {
+  for (StateType i = 0; i < num_states; ++i) {
     RealNumType tot = 0;
-    tot += dotProduct<num_states>(&(prior)[0], mat_row);
+    tot += model->getDotProductWithMutationMatrixRow<num_states>(i, &(prior)[0], transposed);
 
     tot *= total_blength;
     tot += prior[i];
@@ -595,18 +592,16 @@ auto updateLHwithMat(const RealNumType* mat_row,
 }
 
 template <const StateType num_states>
-auto updateMultLHwithMat(const RealNumType* mat_row,
+auto updateMultLHwithMat(const ModelBase* model,
                          const SeqRegion::LHType& prior,
                          SeqRegion::LHType& posterior,
                          const RealNumType total_blength) -> RealNumType {
-  assert(mat_row);
-    
   RealNumType sum_lh = 0;
-  for (StateType i = 0; i < num_states; ++i, mat_row += num_states) {
+  for (StateType i = 0; i < num_states; ++i) {
     RealNumType tot = 0;
     if (total_blength > 0)  // TODO: avoid
     {
-      tot += dotProduct<num_states>(&(prior)[0], mat_row);
+      tot += model->getDotProductWithMutationMatrixRow<num_states>(i, &(prior)[0]);
 
       tot *= total_blength;
     }
@@ -674,7 +669,7 @@ void merge_O_N(const SeqRegion& reg_o,
     auto new_lh = cmaple::make_unique<SeqRegion::LHType>();  // = new
     // RealNumType[num_states];
     RealNumType sum_lh = updateLHwithMat<num_states>(
-        model->transposed_mut_mat, *(reg_o.likelihood), *new_lh, total_blength);
+        model, *(reg_o.likelihood), *new_lh, total_blength, true);
 
     // normalize the new partial likelihood
     normalize_arr(new_lh->data(), num_states, sum_lh);
@@ -708,9 +703,9 @@ void merge_O_ORACGT(const SeqRegion& seq1_region,
 
   // if total_blength_1 > 0 => compute new partial likelihood
   if (total_blength_1 > 0) {
-    updateLHwithMat<num_states>(model->transposed_mut_mat,
+    updateLHwithMat<num_states>(model,
                                 *(seq1_region.likelihood), *new_lh,
-                                total_blength_1);
+                                total_blength_1, true);
     // otherwise, clone the partial likelihood from seq1
   } else {
     *new_lh = *seq1_region.likelihood;
@@ -720,7 +715,7 @@ void merge_O_ORACGT(const SeqRegion& seq1_region,
 
   // seq1 = seq2 = O
   if (seq2_region.type == TYPE_O) {
-    sum_new_lh = updateMultLHwithMat<num_states>(model->mutation_mat,
+    sum_new_lh = updateMultLHwithMat<num_states>(model,
                                                  *(seq2_region.likelihood),
                                                  *new_lh, total_blength_2);
   }
@@ -732,10 +727,8 @@ void merge_O_ORACGT(const SeqRegion& seq1_region,
     }
 
     if (total_blength_2 > 0) {
-      RealNumType* transposed_mut_mat_row =
-          model->transposed_mut_mat + model->row_index[seq2_state];
       sum_new_lh += updateVecWithState<num_states>(
-          new_lh_value.data(), seq2_state, transposed_mut_mat_row,
+          new_lh_value.data(), seq2_state, model->getTransposedMutationMatrixRow(seq2_state),
           total_blength_2);
     } else {
       sum_new_lh += resetLhVecExceptState<num_states>(
@@ -768,7 +761,7 @@ void merge_RACGT_O(const SeqRegion& seq2_region,
   assert(aln);
     
   RealNumType sum_new_lh = updateMultLHwithMat<num_states>(
-      model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
+      model, *(seq2_region.likelihood), new_lh, total_blength_2);
 
   // normalize the new partial likelihood
   normalize_arr(new_lh.data(), num_states, sum_new_lh);
@@ -800,10 +793,8 @@ void merge_RACGT_RACGT(const SeqRegion& seq2_region,
   // NHANLT: new_lh_value or new_lh is already initialized or updated in the
   // section "init or update new_lh/new_lh_value" above
   if (total_blength_2 > 0) {
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq2_state];
     sum_new_lh = updateVecWithState<num_states>(
-        new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
+        new_lh.data(), seq2_state, model->getTransposedMutationMatrixRow(seq2_state), total_blength_2);
   } else {
     sum_new_lh = resetLhVecExceptState<num_states>(new_lh.data(), seq2_state,
                                                    new_lh[seq2_state]);
@@ -848,21 +839,18 @@ void merge_RACGT_ORACGT(const SeqRegion& seq1_region,
       length_to_root += upper_plength;
     }
     SeqRegion::LHType root_vec;
-    memcpy(root_vec.data(), model->root_freqs,
+    memcpy(root_vec.data(), model->getRootFreqs(),
            sizeof(RealNumType) * num_states);
 
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq1_state];
     updateVecWithState<num_states>(root_vec.data(), seq1_state,
-                                   transposed_mut_mat_row,
+                                    model->getTransposedMutationMatrixRow(seq1_state),
                                    seq1_region.plength_observation2node);
 
-    updateLHwithMat<num_states>(model->transposed_mut_mat, root_vec, *new_lh,
-                                length_to_root);
+    updateLHwithMat<num_states>(model, root_vec, *new_lh,
+                                length_to_root, true);
   } else {
     if (total_blength_1 > 0) {
-      RealNumType* mutation_mat_row =
-          model->mutation_mat + model->row_index[seq1_state];
+      const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state);
       setVecWithState<num_states>(new_lh_value.data(), seq1_state,
                                   mutation_mat_row, total_blength_1);
     } else {
@@ -1049,7 +1037,7 @@ auto merge_O_O_TwoLowers(const SeqRegion& seq2_region,
   assert(aln);
     
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
-      model->mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
+      model, *seq2_region.likelihood, new_lh, total_blength_2);
 
   if (sum_lh == 0) {
     merged_regions = nullptr;
@@ -1091,10 +1079,8 @@ auto merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
   }
 
   if (total_blength_2 > 0) {
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq2_state];
     sum_lh = updateVecWithState<num_states>(
-        new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
+        new_lh.data(), seq2_state,  model->getTransposedMutationMatrixRow(seq2_state), total_blength_2);
 
     // normalize new partial lh
     // normalize the new partial likelihood
@@ -1146,7 +1132,7 @@ auto merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region,
   RealNumType sum_lh = 0;
 
   if (total_blength_1 > 0) {
-    updateLHwithMat<num_states>(model->mutation_mat, *(seq1_region.likelihood),
+    updateLHwithMat<num_states>(model, *(seq1_region.likelihood),
                                 *new_lh, total_blength_1);
     // otherwise, clone the partial likelihood from seq1
   } else {
@@ -1186,7 +1172,7 @@ auto merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
   assert(aln);
     
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
-      model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
+      model, *(seq2_region.likelihood), new_lh, total_blength_2);
 
   if (sum_lh == 0) {
     merged_regions = nullptr;
@@ -1228,10 +1214,8 @@ auto merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
   }
 
   if (total_blength_2 > 0) {
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq2_state];
     sum_lh += updateVecWithState<num_states>(
-        new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
+        new_lh.data(), seq2_state,  model->getTransposedMutationMatrixRow(seq2_state), total_blength_2);
 
     // normalize the new partial likelihood
     normalize_arr(new_lh.data(), num_states, sum_lh);
@@ -1283,10 +1267,8 @@ auto merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
   RealNumType sum_lh = 0;
 
   if (total_blength_1 > 0) {
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq1_state];
     setVecWithState<num_states>(new_lh->data(), seq1_state,
-                                transposed_mut_mat_row, total_blength_1);
+                                 model->getTransposedMutationMatrixRow(seq1_state), total_blength_1);
   } else {
     resetLhVecExceptState<num_states>(new_lh->data(), seq1_state, 1);
   }
@@ -1502,19 +1484,19 @@ auto SeqRegions::computeAbsoluteLhAtRoot(
     // type R
     if (region.type == TYPE_R) {
       for (StateType i = 0; i < num_states; ++i) {
-        log_lh += model->root_log_freqs[i] *
+        log_lh += model->getRootLogFreq(i) *
                   (cumulative_base[static_cast<size_t>(region.position) + 1][i] -
                    cumulative_base[static_cast<size_t>(start_pos)][i]);
       }
     }
     // type ACGT
     else if (region.type < num_states) {
-      log_lh += model->root_log_freqs[region.type];
+      log_lh += model->getRootLogFreq(region.type);
       // type O
     } else if (region.type == TYPE_O) {
       RealNumType tot = 0;
       tot +=
-          dotProduct<num_states>(&(*region.likelihood)[0], model->root_freqs);
+          dotProduct<num_states>(&(*region.likelihood)[0], model->getRootFreqs());
       log_factor *= tot;
     }
 
@@ -1559,7 +1541,7 @@ RealNumType SeqRegions::computeSiteLhAtRoot(
     // type R
     if (region.type == TYPE_R) {
       for (StateType i = 0; i < num_states; ++i) {
-        log_lh += model->root_log_freqs[i] *
+        log_lh += model->getRootLogFreq(i) *
                   (cumulative_base[static_cast<size_t>(region.position) + 1][i] -
                    cumulative_base[static_cast<size_t>(start_pos)][i]);
       }
@@ -1568,7 +1550,7 @@ RealNumType SeqRegions::computeSiteLhAtRoot(
       for (PositionType pos = start_pos; pos < region.position + 1; ++pos) {
         for (StateType i = 0; i < num_states; ++i) {
           site_lh_contributions[static_cast<std::vector<RealNumType>::size_type>(pos)] +=
-              model->root_log_freqs[i] *
+              model->getRootLogFreq(i) *
               (cumulative_base[static_cast<size_t>(pos) + 1][i] -
                cumulative_base[static_cast<size_t>(pos)][i]);
         }
@@ -1576,7 +1558,7 @@ RealNumType SeqRegions::computeSiteLhAtRoot(
     }
     // type ACGT
     else if (region.type < num_states) {
-      RealNumType lh_contribution = model->root_log_freqs[region.type];
+      RealNumType lh_contribution = model->getRootLogFreq(region.type);
       log_lh += lh_contribution;
 
       // calculate site lhs
@@ -1587,7 +1569,7 @@ RealNumType SeqRegions::computeSiteLhAtRoot(
     else if (region.type == TYPE_O) {
       RealNumType tot = 0;
       tot +=
-          dotProduct<num_states>(&(*region.likelihood)[0], model->root_freqs);
+          dotProduct<num_states>(&(*region.likelihood)[0], model->getRootFreqs());
       log_factor *= tot;
 
       // calculate site lhs
@@ -1738,7 +1720,7 @@ bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions,
   assert(model);
     
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
-      model->mutation_mat, *seq2_region.likelihood, new_lh, total_blength_2);
+      model, *seq2_region.likelihood, new_lh, total_blength_2);
 
   if (sum_lh == 0) {
     merged_regions = nullptr;
@@ -1777,10 +1759,8 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions,
   }
 
   if (total_blength_2 > 0) {
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq2_state];
     sum_lh = updateVecWithState<num_states>(
-        new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
+        new_lh.data(), seq2_state,  model->getTransposedMutationMatrixRow(seq2_state), total_blength_2);
 
   // normalize the new partial likelihood
   // add simplify O
@@ -1830,7 +1810,7 @@ bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions,
   RealNumType sum_lh = 0;
 
   if (total_blength_1 > 0) {
-    updateLHwithMat<num_states>(model->mutation_mat, *(seq1_region.likelihood),
+    updateLHwithMat<num_states>(model, *(seq1_region.likelihood),
                                 *new_lh, total_blength_1);
     // otherwise, clone the partial likelihood from seq1
   } else {
@@ -1870,7 +1850,7 @@ bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions,
   assert(model);
     
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
-      model->mutation_mat, *(seq2_region.likelihood), new_lh, total_blength_2);
+      model, *(seq2_region.likelihood), new_lh, total_blength_2);
 
   if (sum_lh == 0) {
     merged_regions = nullptr;
@@ -1909,10 +1889,8 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions,
   }
 
   if (total_blength_2 > 0) {
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq2_state];
     sum_lh += updateVecWithState<num_states>(
-        new_lh.data(), seq2_state, transposed_mut_mat_row, total_blength_2);
+        new_lh.data(), seq2_state,  model->getTransposedMutationMatrixRow(seq2_state), total_blength_2);
 
   // normalize the new partial likelihood
   // add simplify O
@@ -1963,10 +1941,8 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions,
   RealNumType sum_lh = 0;
 
   if (total_blength_1 > 0) {
-    RealNumType* transposed_mut_mat_row =
-        model->transposed_mut_mat + model->row_index[seq1_state];
     setVecWithState<num_states>(new_lh->data(), seq1_state,
-                                transposed_mut_mat_row, total_blength_1);
+                                 model->getTransposedMutationMatrixRow(seq1_state), total_blength_1);
   } else {
     resetLhVecExceptState<num_states>(new_lh->data(), seq1_state, 1);
   }
