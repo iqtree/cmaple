@@ -5149,7 +5149,8 @@ RealNumType cmaple::Tree::estimateBlengthFromCoeffs(
   RealNumType tDown = min(0.1, num_coefficients_over_coefficient - min_coefficient);
     
   if (tDown <= 0) {
-    return 0;
+    // update in MAPLE v0.6.8
+    return -1;
   }
   RealNumType derivative_tDown = calculateDerivative(coefficient_vec, tDown);
 
@@ -9102,8 +9103,8 @@ void cmaple::Tree::collapseAllZeroLeave() {
       // otherwise, all children of the current node are updated
       else {
         // calculate the new lower lh of the current node from its children
-        Index neighbor_1_index = node.getNeighborIndex(RIGHT);
-        Index neighbor_2_index = node.getNeighborIndex(LEFT);
+        Index neighbor_1_index = node.getNeighborIndex(LEFT);
+        Index neighbor_2_index = node.getNeighborIndex(RIGHT);
         PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
         PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
 
