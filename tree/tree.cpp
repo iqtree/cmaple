@@ -9063,6 +9063,9 @@ bool cmaple::Tree::readTree(std::istream& tree_stream) {
 }
 
 void cmaple::Tree::collapseAllZeroLeave() {
+    // dummy variables
+    PositionType seq_length = (PositionType) aln->ref_seq.size();
+    
   // count the number of collapsed nodes -> to make sure we have reseved enough
   // space to store all nodes when we expand (i.e., adding less-informative
   // sequences back to) the tree
@@ -9115,8 +9118,19 @@ void cmaple::Tree::collapseAllZeroLeave() {
           if (!neighbor_1.isInternal() && !neighbor_2.isInternal()) {
             /* if (root_vector_index == node_index.getVectorIndex() ||
                 node.getUpperLength() <= 0) { */
-              collapseOneZeroLeaf(node, node_index, neighbor_1,
-                                  neighbor_1_index, neighbor_2);
+              // determine the less info leaf
+              // if leaf 1 is less informative than leaf 2 -> collapse leaf 1 into leaf 2
+              if (neighbor_1.getPartialLh(TOP)->compareWithSample(*(neighbor_2.getPartialLh(TOP)), seq_length, aln) == -1)
+              {
+                  collapseOneZeroLeaf(node, node_index, neighbor_2,
+                                      neighbor_2_index, neighbor_1);
+              }
+              // otherwise, collapse leaf 2 into leaf 1
+              else
+              {
+                  collapseOneZeroLeaf(node, node_index, neighbor_1,
+                                      neighbor_1_index, neighbor_2);
+              }
               ++num_collapsed_nodes;
             //}
           }
