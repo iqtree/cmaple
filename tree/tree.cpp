@@ -1244,6 +1244,10 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
         // otherwise, only show sprta score
         else
             branch_support = convertDoubleToString(sprta_scores[node_vec_index]);
+        
+        // debug
+        // add internal name
+        // branch_support += "/" + convertIntToString(node_vec_index);
     }
     
   string length = node.getUpperLength() <= 0
@@ -2802,6 +2806,10 @@ void cmaple::Tree::seekSubTreePlacement(
     const Index current_node_index = updating_node->getIndex();
     const NumSeqsType current_node_vec = current_node_index.getVectorIndex();
     PhyloNode& current_node = nodes[current_node_vec];
+      
+      // debug
+      /*if (current_node_index.getVectorIndex() == 625)
+          std::cout << "fsdfds" << std::endl;*/
 
     // consider the case we are moving from a parent to a child
     if (current_node_index.getMiniIndex() == TOP)
@@ -5526,6 +5534,10 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       RealNumType opt_appending_blength = -1;
       RealNumType opt_mid_top_blength = -1;
       RealNumType opt_mid_bottom_blength = -1;
+        
+        // debug
+        /*if (node_index.getVectorIndex() == 594)
+            std::cout << "fsdfds" << std::endl;*/
 
       // seek a new placement for the subtree
       seekSubTreePlacement<num_states>(
@@ -9106,8 +9118,8 @@ void cmaple::Tree::collapseAllZeroLeave() {
       // otherwise, all children of the current node are updated
       else {
         // calculate the new lower lh of the current node from its children
-        Index neighbor_1_index = node.getNeighborIndex(LEFT);
-        Index neighbor_2_index = node.getNeighborIndex(RIGHT);
+        Index neighbor_1_index = node.getNeighborIndex(RIGHT);
+        Index neighbor_2_index = node.getNeighborIndex(LEFT);
         PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
         PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
 
