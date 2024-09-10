@@ -9118,8 +9118,8 @@ void cmaple::Tree::collapseAllZeroLeave() {
       // otherwise, all children of the current node are updated
       else {
         // calculate the new lower lh of the current node from its children
-        Index neighbor_1_index = node.getNeighborIndex(RIGHT);
-        Index neighbor_2_index = node.getNeighborIndex(LEFT);
+        Index neighbor_1_index = node.getNeighborIndex(LEFT);
+        Index neighbor_2_index = node.getNeighborIndex(RIGHT);
         PhyloNode& neighbor_1 = nodes[neighbor_1_index.getVectorIndex()];
         PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
 
@@ -9130,20 +9130,25 @@ void cmaple::Tree::collapseAllZeroLeave() {
           if (!neighbor_1.isInternal() && !neighbor_2.isInternal()) {
             /* if (root_vector_index == node_index.getVectorIndex() ||
                 node.getUpperLength() <= 0) { */
-              // determine the less info leaf
-              // if leaf 1 is less informative than leaf 2 -> collapse leaf 1 into leaf 2
-              if (neighbor_1.getPartialLh(TOP)->compareWithSample(*(neighbor_2.getPartialLh(TOP)), seq_length, aln) == -1)
+              // compare two leaves
+              int seq2_less_info = neighbor_1.getPartialLh(TOP)->compareWithSample(*(neighbor_2.getPartialLh(TOP)), seq_length, aln);
+              //  only handle cases when two leaves are comparable
+              if (seq2_less_info)
               {
-                  collapseOneZeroLeaf(node, node_index, neighbor_2,
-                                      neighbor_2_index, neighbor_1);
+                  // if leaf 1 is less informative than leaf 2 -> collapse leaf 1 into leaf 2
+                  if (seq2_less_info == -1)
+                  {
+                      collapseOneZeroLeaf(node, node_index, neighbor_2,
+                                          neighbor_2_index, neighbor_1);
+                  }
+                  // otherwise, collapse leaf 2 into leaf 1
+                  else
+                  {
+                      collapseOneZeroLeaf(node, node_index, neighbor_1,
+                                          neighbor_1_index, neighbor_2);
+                  }
+                  ++num_collapsed_nodes;
               }
-              // otherwise, collapse leaf 2 into leaf 1
-              else
-              {
-                  collapseOneZeroLeaf(node, node_index, neighbor_1,
-                                      neighbor_1_index, neighbor_2);
-              }
-              ++num_collapsed_nodes;
             //}
           }
           // NHANLT - temporarily solution to keep writing and re-reading tree
