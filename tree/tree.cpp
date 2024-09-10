@@ -2852,7 +2852,9 @@ void cmaple::Tree::seekSubTreePlacement(
                 best_down_lh_diff, updating_node, subtree_regions,
                 threshold_prob, removed_blength, Index(), alt_spr_lh_diffs))
         {
-          continue;
+            // update to match MAPLE v0.6.8
+            // keep examining mid-branch
+            // continue;
         }
       }
       // set the placement cost at the current node position at the most
@@ -2906,7 +2908,9 @@ void cmaple::Tree::seekSubTreePlacement(
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
                 threshold_prob, removed_blength, top_node_index, alt_spr_lh_diffs)) {
-          continue;
+            // update to match MAPLE v0.6.8
+            // keep examining mid-branch
+            // continue;
         }
       }
       // if placement cost at new position gets worse -> restore to the
