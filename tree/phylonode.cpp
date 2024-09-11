@@ -216,7 +216,8 @@ same as those in the previous implementation of pointers switch (mini_index)
 const std::string cmaple::PhyloNode::exportString(
     const bool binary,
     const std::vector<std::string>& seq_names,
-    const bool show_branch_supports) {
+    const bool show_branch_supports,
+    const std::string& annotation_str) {
   if (!isInternal()) {
     string length_str = getUpperLength() <= 0
                             ? "0"
@@ -226,7 +227,7 @@ const std::string cmaple::PhyloNode::exportString(
     std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
     const std::vector<NumSeqsType>::size_type num_less_info_seqs = less_info_seqs.size();
     if (num_less_info_seqs == 0) {
-      return seq_names[getSeqNameIndex()] + ":" + length_str;
+      return seq_names[getSeqNameIndex()] + annotation_str + ":" + length_str;
       // with minor sequences -> return minor sequences' names with zero
       // branch lengths
     } else {
@@ -246,7 +247,7 @@ const std::string cmaple::PhyloNode::exportString(
           output += branch_support + ":0," + seq_names[less_info_seqs[i]] + ":0)";
         }
         
-        output += branch_support + ":" + length_str;
+        output += branch_support + annotation_str + ":" + length_str;
       }
       // export less informative sequences in mutifurcating tree format
       else {
@@ -256,7 +257,7 @@ const std::string cmaple::PhyloNode::exportString(
           output += "," + seq_names[minor_seq_name_index] + ":0";
         }
         
-        output += ")" + branch_support + ":" + length_str;
+        output += ")" + branch_support + annotation_str + ":" + length_str;
       }
       return output;
     }

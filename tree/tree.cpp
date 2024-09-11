@@ -1199,10 +1199,20 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
                                            const bool show_branch_supports) {
   PhyloNode& node = nodes[node_vec_index];
   string output = "(";
+    
+    // proceed annotations
+    string annotation_str = "";
+    // add sprta score (if computed)
+    if (params->compute_SPRTA)
+    {
+        annotation_str = "[&sprta=" +
+        convertDoubleToString(sprta_scores[node_vec_index]) + "]";
+    }
+    
 
   // if it's a leaf
   if (!node.isInternal()) {
-    return node.exportString(binary, seq_names, show_branch_supports);
+    return node.exportString(binary, seq_names, show_branch_supports, annotation_str);
     // if it's an internal node
   } else {
     /*bool add_comma = false;
@@ -1253,7 +1263,7 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
   string length = node.getUpperLength() <= 0
                       ? "0"
                       : convertDoubleToString(node.getUpperLength(), 12);
-  output += ")" + branch_support + ":" + length;
+  output += ")" + branch_support + annotation_str + ":" + length;
 
   return output;
 }
