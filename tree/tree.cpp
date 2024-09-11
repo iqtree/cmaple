@@ -5367,7 +5367,8 @@ void cmaple::Tree::optimizeBlengthBeforeSeekingSPR(
     bool& blength_changed,
     const std::unique_ptr<SeqRegions>& parent_upper_lr_lh,
     const std::unique_ptr<SeqRegions>& lower_lh) {
-  RealNumType original_lh = best_lh;
+  // update optimizeBlengthBeforeSeekingSPR to match MAPLE v0.6.8
+  /* RealNumType original_lh = best_lh;
 
   // try different branch lengths for the current node placement (just in case
   // branch length can be improved, in which case it counts both as tree
@@ -5400,7 +5401,31 @@ void cmaple::Tree::optimizeBlengthBeforeSeekingSPR(
 
   if (node.getUpperLength() <= 0 && original_lh > best_lh) {
     best_lh = original_lh;
-  }
+  }*/
+    
+  // MAPLE v0.6.8
+    RealNumType original_lh = best_lh;
+    best_blength = estimateBranchLength<num_states>(parent_upper_lr_lh, lower_lh);
+    if (best_blength > 0 || node.getUpperLength() > 0)
+    {
+        // re-compute the lh contribution according to the new blength
+        best_lh = calculateSubTreePlacementCost<num_states>(parent_upper_lr_lh,
+                                                            lower_lh, best_blength);
+        
+        // reverse the change if the new one is worse than the old one
+        if (best_lh < original_lh)
+        {
+            best_blength = node.getUpperLength();
+            best_lh = original_lh;
+        }
+        // otherwise, update blength if the best one is sufficiently different from the current one
+        else if ((best_blength <= 0)
+                 || (node.getUpperLength() <= 0)
+                 || (abs(node.getUpperLength() - best_blength) > (0.1 * best_blength)))
+        {
+            blength_changed = true;
+        }
+    }
 }
 
 template <const StateType num_states>
@@ -5511,7 +5536,9 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
         parent_upper_lr_lh, lower_lh, best_blength);
 
     // optimize branch length
-    if (best_lh < thresh_placement_cost && !fixed_blengths) {
+    if ((!fixed_blengths)
+        && ((best_lh < thresh_placement_cost)
+            || (params->compute_SPRTA && params->compute_SPRTA_zero_length_branches))) {
       optimizeBlengthBeforeSeekingSPR<num_states>(node, best_blength, best_lh,
                                                   blength_changed,
                                                   parent_upper_lr_lh, lower_lh);
