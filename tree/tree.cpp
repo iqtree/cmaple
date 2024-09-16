@@ -403,7 +403,9 @@ void cmaple::Tree::updateModelLhAfterLoading() {
    tree.showModelParams();*/
 
   // refresh all lower after updating model params
-  performDFS<&Tree::updateLowerLh<num_states>>();
+  // performDFS<&Tree::updateLowerLh<num_states>>();
+  // refresh all lower, upper left/right likelihoods after updating model params
+  refreshAllLhs<num_states>();
 }
 
 template <const cmaple::StateType num_states>
