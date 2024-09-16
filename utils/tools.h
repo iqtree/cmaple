@@ -623,6 +623,11 @@ class Params {
    * TRUE to make the processes of outputting->re-inputting a tree consistent
    */
   bool make_consistent;
+
+  /**
+   * TRUE to allow rates to vary by genomic site.
+   */
+  bool rate_variation;
     
   /**
    * the maximum number of substitution per sites that CMAPLE is effective

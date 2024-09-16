@@ -275,6 +275,11 @@ class Tree {
   std::string exportNewick(const TreeType tree_type = BIN_TREE,
                            const bool show_branch_supports = true);
 
+  /**
+   Get partial_lh at a node by its index
+   */
+  std::unique_ptr<SeqRegions>& getPartialLhAtNode(const cmaple::Index index);
+
   // ----------------- END OF PUBLIC APIs ------------------------------------
   // //
 
@@ -1212,11 +1217,6 @@ class Tree {
     nodes.emplace_back(LeafNode(
         new_seq_name_index));  //(PhyloNode(std::move(LeafNode(new_seq_name_index))));
   }
-
-  /**
-   Get partial_lh at a node by its index
-   */
-  std::unique_ptr<SeqRegions>& getPartialLhAtNode(const cmaple::Index index);
 
   /**
    Calculate the likelihood of an NNI neighbor

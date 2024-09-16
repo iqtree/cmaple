@@ -598,6 +598,7 @@ cmaple::Params::Params() {
   seq_type_str = "AUTO";
   tree_search_type_str = "NORMAL";
   make_consistent = false;
+  rate_variation = false;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1140,6 +1141,11 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
             outError("At least 1 thread please");
           }
         }
+        continue;
+      }
+      if (strcmp(argv[cnt], "--rate-variation") == 0 ||
+          strcmp(argv[cnt], "-rv") == 0) {
+        params.rate_variation = true;
         continue;
       }
 

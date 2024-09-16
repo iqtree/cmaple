@@ -522,6 +522,9 @@ void cmaple::Tree::doInferenceTemplate(
   // 1. Do placement to build an initial tree
   doPlacement(out_stream);
 
+  // 1.5 Calculate rates if rate variation
+  model->estimateRates(this);
+
   // 2. Optimize the tree with SPR if there is any new nodes added to the tree
   applySPR(tree_search_type, shallow_tree_search, out_stream);
 
@@ -4544,15 +4547,18 @@ void cmaple::Tree::estimateBlength_R_O(
     const PositionType end_pos,
     RealNumType& coefficient,
     std::vector<RealNumType>& coefficient_vec) {
+
   const StateType seq1_state = aln->ref_seq[static_cast<std::vector<
                                 cmaple::StateType>::size_type>(end_pos)];
+  const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state, end_pos);
+
   RealNumType coeff0 = seq2_region.getLH(seq1_state);
   RealNumType coeff1 = 0;
 
   if (seq1_region.plength_observation2root >= 0) {
     coeff0 *= model->getRootFreq(seq1_state);   
-    updateCoeffs<num_states>(model->getRootFreqs(), model->getTransposedMutationMatrixRow(seq1_state),
-                             &(*seq2_region.likelihood)[0], model->getMutationMatrixRow(seq1_state),
+    updateCoeffs<num_states>(model->getRootFreqs(), model->getTransposedMutationMatrixRow(seq1_state, end_pos),
+                             &(*seq2_region.likelihood)[0], mutation_mat_row,
                              seq1_region.plength_observation2node, coeff0, coeff1);
 
     coeff1 *= model->getRootFreqs()[seq1_state];
@@ -4562,7 +4568,7 @@ void cmaple::Tree::estimateBlength_R_O(
     // l = log(1 + q_xx * t + sum(q_xy * t)
     // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
     // coeff1 = numerator = q_xx + sum(q_xy)
-    coeff1 += model->getDotProductWithMutationMatrixRow<num_states>(seq1_state, &(*seq2_region.likelihood)[0]);
+    coeff1 += dotProduct<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
   }
 
   // NHANLT NOTES:
@@ -4593,11 +4599,11 @@ void cmaple::Tree::estimateBlength_R_ACGT(
                             cmaple::StateType>::size_type>(end_pos)];
 
     RealNumType coeff1 =
-        model->getRootFreqs()[seq1_state] * model->getMutationMatrixEntry(seq1_state, seq2_state);
+        model->getRootFreqs()[seq1_state] * model->getMutationMatrixEntry(seq1_state, seq2_state, end_pos);
 
     RealNumType coeff0 =
         model->getRootFreqs()[seq2_state] *
-        model->getMutationMatrixEntry(seq2_state, seq1_state) *
+        model->getMutationMatrixEntry(seq2_state, seq1_state, end_pos) *
         seq1_region.plength_observation2node;
 
     if (total_blength > 0) {
@@ -4630,7 +4636,7 @@ void cmaple::Tree::estimateBlength_O_X(
 
   // 3.1. e1.type = O and e2.type = O
   if (seq2_region.type == TYPE_O) {
-    const RealNumType* mutation_mat_row = model->getMutationMatrix();
+    const RealNumType* mutation_mat_row = model->getMutationMatrix(end_pos);
 
     // NHANLT NOTES:
     // l = log(sum_x(1 + q_xx * t + sum_y(q_xy * t)))
@@ -4662,8 +4668,10 @@ void cmaple::Tree::estimateBlength_O_X(
     // l' = [q_yy + sum_x(q_xy))]/[1 + q_xx * t + sum_y(q_xy * t)]
     // coeff1 = numerator = q_yy + sum_x(q_xy))
     // coeff0 = denominator = 1 + q_xx * t + sum_y(q_xy * t)
-    coeff1 += model->getDotProductWithMutationMatrixRow<num_states>(seq2_state, 
-      &(*seq1_region.likelihood)[0], true);
+    const RealNumType* transposed_mut_mat_row =
+        model->getTransposedMutationMatrixRow(seq2_state, end_pos);
+    coeff1 += dotProduct<num_states>(&(*seq1_region.likelihood)[0],
+                                     transposed_mut_mat_row);
   }
 
   if (total_blength > 0) {
@@ -4687,14 +4695,19 @@ void cmaple::Tree::estimateBlength_ACGT_O(
     RealNumType& coefficient,
     std::vector<RealNumType>& coefficient_vec) {
   StateType seq1_state = seq1_region.type;
+  PositionType pos = seq1_region.position;
+  assert(seq1_region.position == seq2_region.position);
+
+  const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state, pos);
+
   RealNumType coeff0 = seq2_region.getLH(seq1_state);
   RealNumType coeff1 = 0;
 
   if (seq1_region.plength_observation2root >= 0) {
     coeff0 *= model->getRootFreq(seq1_state);
 
-    updateCoeffs<num_states>(model->getRootFreqs(), model->getTransposedMutationMatrixRow(seq1_state),
-                             &(*seq2_region.likelihood)[0], model->getMutationMatrixRow(seq1_state),
+    updateCoeffs<num_states>(model->getRootFreqs(), model->getTransposedMutationMatrixRow(seq1_state, pos),
+                             &(*seq2_region.likelihood)[0], mutation_mat_row,
                              seq1_region.plength_observation2node, coeff0, coeff1);
 
     coeff1 *= model->getRootFreq(seq1_state);
@@ -4704,7 +4717,7 @@ void cmaple::Tree::estimateBlength_ACGT_O(
     // l = log(1 + q_xx * t + sum(q_xy * t)
     // l' = [q_xx + sum(q_xy)]/[1 + q_xx * t + sum(q_xy * t)]
     // coeff1 = numerator = q_xx + sum(q_xy)
-    coeff1 += model->getDotProductWithMutationMatrixRow<num_states>(seq1_state, &(*seq2_region.likelihood)[0]);
+    coeff1 += dotProduct<num_states>(&(*seq2_region.likelihood)[0], mutation_mat_row);
   }
 
   // NHANLT NOTES:
@@ -4740,11 +4753,11 @@ void cmaple::Tree::estimateBlength_ACGT_RACGT(
 
   if (seq1_region.plength_observation2root >= 0) {
     coeff0 = model->getRootFreqs()[seq2_state] *
-             model->getMutationMatrixEntry(seq2_state, seq1_state) *
+             model->getMutationMatrixEntry(seq2_state, seq1_state, end_pos) *
              seq1_region.plength_observation2node;
     RealNumType coeff1 =
         model->getRootFreqs()[seq1_state] *
-        model->getMutationMatrixEntry(seq1_state, seq2_state);
+        model->getMutationMatrixEntry(seq1_state, seq2_state, end_pos);
 
     if (total_blength > 0) {
       coeff0 += coeff1 * total_blength;
@@ -4915,7 +4928,7 @@ RealNumType cmaple::Tree::estimateBranchLength(
     // l = log(1 + q_xx * t) ~ q_xx * t
     // => l' = q_xx
     else if (seq1_region->type == seq2_region->type) {
-      coefficient += model->getDiagonalMutationMatrixEntry(seq1_region->type);
+      coefficient += model->getDiagonalMutationMatrixEntry(seq1_region->type, end_pos);
       // e1.type = A/C/G/T and e2.type = O/A/C/G/T
       // 4.2. e1.type = A/C/G/T and e2.type = O
     } else if (seq2_region->type == TYPE_O) {
@@ -5197,9 +5210,9 @@ void calculateSubtreeCost_R_O(const SeqRegion& seq1_region,
                               RealNumType& total_factor,
                               const ModelBase* model) {
   RealNumType tot = 0;
-
+  PositionType pos = seq1_region.position;
   if (seq1_region.plength_observation2root >= 0) {
-    const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq1_state);
+    //const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq1_state);
 
     for (StateType i = 0; i < num_states; ++i) {
       // NHANLT NOTE: UNSURE
@@ -5210,7 +5223,7 @@ void calculateSubtreeCost_R_O(const SeqRegion& seq1_region,
       // plength_observation2node) + root_freqs[i] * mut[i,seq1_state] *
       // plength_observation2node
       RealNumType tot2 =  model->getRootFreqs()[i] * 
-                          model->getTransposedMutationMatrixEntry(seq1_state, i) *
+                          model->getTransposedMutationMatrixEntry(seq1_state, i, pos) *
                           seq1_region.plength_observation2node +
                           (seq1_state == i ? model->getRootFreqs()[i] : 0);
 
@@ -5218,10 +5231,10 @@ void calculateSubtreeCost_R_O(const SeqRegion& seq1_region,
       // tot3: likelihood of i evolves to j
       // tot3 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] *
       // total_blength * lh(seq2,j)
+      const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i, pos);
       RealNumType tot3 =
           total_blength > 0
-              ? (total_blength * 
-              model->getDotProductWithMutationMatrixRow<num_states>(i, &((*seq2_region.likelihood)[0])))
+              ? (total_blength * dotProduct<num_states>(mutation_mat_row, &((*seq2_region.likelihood)[0])))
               : 0;
 
       // NHANLT NOTE:
@@ -5238,7 +5251,8 @@ void calculateSubtreeCost_R_O(const SeqRegion& seq1_region,
     // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) +
     // mut[seq1_state,j] * total_blength * lh(seq2,j)
     if (total_blength > 0) {
-      tot += model->getDotProductWithMutationMatrixRow<num_states>(seq1_state, &((*seq2_region.likelihood)[0]));
+      const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state, pos);
+      tot += dotProduct<num_states>(mutation_mat_row, &((*seq2_region.likelihood)[0]));
       tot *= total_blength;
     }
     tot += seq2_region.getLH(seq1_state);
@@ -5252,6 +5266,7 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
                                  const StateType seq2_state,
                                  RealNumType& total_factor,
                                  const ModelBase* model) {
+  PositionType pos = seq1_region.position;
   if (seq1_region.plength_observation2root >= 0) {
     if (total_blength > 0) {
       // NHANLT NOTE: UNSURE
@@ -5262,9 +5277,9 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
       // total_blength (2) = (1.0 + model->diagonal_mut_mat[seq1_state] *
       // seq1_region.plength_observation2node)
       RealNumType seq1_state_evolves_seq2_state =
-          model->getMutationMatrixEntry(seq1_state, seq2_state) * 
+          model->getMutationMatrixEntry(seq1_state, seq2_state, pos) * 
           total_blength *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state) *
+          (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
                      seq1_region.plength_observation2node);
 
       // NHANLT NOTE: UNCLEAR
@@ -5278,7 +5293,7 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
       RealNumType seq2_state_evolves_seq1_state =
           model->getFreqiFreqjQij(seq2_state, seq1_state) *
           seq1_region.plength_observation2node *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state) * total_blength);
+          (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * total_blength);
 
       total_factor *=
           seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
@@ -5297,7 +5312,7 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
   // mut[seq1_state,seq2_state] * total_blength
   else if (total_blength > 0) {
     total_factor *=
-        model->getMutationMatrixEntry(seq1_state, seq2_state) *
+        model->getMutationMatrixEntry(seq1_state, seq2_state, pos) *
         total_blength;
   } else {
     return false;  // return MIN_NEGATIVE;
@@ -5314,9 +5329,10 @@ void calculateSubtreeCost_O_O(const SeqRegion& seq1_region,
                               RealNumType& total_factor,
                               const ModelBase* model) {
   if (total_blength > 0) {
+    PositionType pos = seq1_region.position;
     total_factor *= matrixEvolve<num_states>(
         &((*seq1_region.likelihood)[0]), &((*seq2_region.likelihood)[0]),
-        model->getMutationMatrix(), total_blength);
+        model->getMutationMatrix(pos), total_blength);
   }
   // NHANLT NOTE:
   // the same as above but total_blength = 0 then we simplify the formula to
@@ -5346,8 +5362,8 @@ void calculateSubtreeCost_O_RACGT(const SeqRegion& seq1_region,
     // tot2: likelihood of i evolves to seq2_state
     // tot2 = (1 + mut[seq2_state,seq2_state] * total_blength) *
     // lh(seq1,seq2_state) + lh(seq1,i) * mut[i,seq2_state] * total_blength
-    RealNumType tot2 = model->getDotProductWithMutationMatrixRow<num_states>(seq2_state,
-        &((*seq1_region.likelihood)[0]), true);
+    const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq2_state, end_pos);
+    RealNumType tot2 = dotProduct<num_states>(&((*seq1_region.likelihood)[0]), transposed_mut_mat_row);
     total_factor *= seq1_region.getLH(seq2_state) + total_blength * tot2;
   }
   // NHANLT NOTE:
@@ -5369,7 +5385,7 @@ void calculateSubtreeCost_identicalACGT(const SeqRegion& seq1_region,
   // NHANLT NOTE:
   // the likelihood that seq1_state unchanges
   if (total_blength > 0) {
-    lh_cost += model->getDiagonalMutationMatrixEntry(seq1_region.type) * total_blength;
+    lh_cost += model->getDiagonalMutationMatrixEntry(seq1_region.type, seq1_region.position) * total_blength;
   }
 }
 
@@ -5380,25 +5396,25 @@ void calculateSubtreeCost_ACGT_O(const SeqRegion& seq1_region,
                                  RealNumType& total_factor,
                                  const ModelBase* model) {
   StateType seq1_state = seq1_region.type;
+  PositionType pos = seq1_region.position;
   if (seq1_region.plength_observation2root >= 0) {
     RealNumType tot = matrixEvolveRoot<num_states>(
         &((*seq2_region.likelihood)[0]), seq1_state, model->getRootFreqs(),
-        model->getTransposedMutationMatrixRow(seq1_state), 
-        model->getMutationMatrix(), total_blength,
+        model->getTransposedMutationMatrixRow(seq1_state, pos), 
+        model->getMutationMatrixRow(0, pos), total_blength,
         seq1_region.plength_observation2node);
     // NHANLT NOTE: UNCLEAR
     // why we need to divide tot by root_freqs[seq1_state]
     // total_factor *= (tot / model->root_freqs[seq1_state]);
     total_factor *= (tot * model->getInverseRootFreq(seq1_state));
   } else {
-
+    const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state, pos); 
 
     // NHANLT NOTE:
     // tot = the likelihood of seq1_state evolving to j
     // (1 + mut[seq1_state,seq1_state] * total_blength) * lh(seq2,seq1_state) +
     // mut[seq1_state,j] * total_blength * lh(seq2,j)
-    RealNumType tot = model->getDotProductWithMutationMatrixRow<num_states>(
-                        seq1_state, &((*seq2_region.likelihood)[0]));
+    RealNumType tot = dotProduct<num_states>(mutation_mat_row, &((*seq2_region.likelihood)[0]));
     tot = total_blength > 0 ? tot * total_blength : 0;
     tot += seq2_region.getLH(seq1_state);
     total_factor *= tot;
@@ -5414,6 +5430,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
                                      const ModelBase* model) {
   StateType seq1_state = seq1_region.type;
   StateType seq2_state = seq2_region.type;
+  PositionType pos = seq1_region.position;
   if (seq2_state == TYPE_R) {
     seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
                                 ::size_type>(end_pos)];
@@ -5429,9 +5446,9 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
       // total_blength (2) = (1.0 + model->diagonal_mut_mat[seq1_state] *
       // seq1_region.plength_observation2node)
       RealNumType seq1_state_evolves_seq2_state =
-          model->getMutationMatrixEntry(seq1_state, seq2_state) * 
+          model->getMutationMatrixEntry(seq1_state, seq2_state, pos) * 
           total_blength *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state) *
+          (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
                      seq1_region.plength_observation2node);
 
       // NHANLT NOTE: UNCLEAR
@@ -5445,7 +5462,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
       RealNumType seq2_state_evolves_seq1_state =
           model->getFreqiFreqjQij(seq2_state, seq1_state) *
           seq1_region.plength_observation2node *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state) * total_blength);
+          (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * total_blength);
 
       total_factor *=
           seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
@@ -5463,7 +5480,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
   // add the likelihood that seq1_state evoles to seq2_state =
   // mut[seq1_state,seq2_state] * total_blength
   else if (total_blength > 0) {
-    total_factor *= model->getMutationMatrixEntry(seq1_state, seq2_state) *
+    total_factor *= model->getMutationMatrixEntry(seq1_state, seq2_state, pos) *
         total_blength;
   } else {
     return false;  // return MIN_NEGATIVE;
@@ -5642,6 +5659,8 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
                              RealNumType& lh_cost,
                              RealNumType& total_factor,
                              const ModelBase* model) {
+  PositionType pos = seq1_region.position;
+  assert(seq1_region.position == seq2_region.position);
   if (seq1_region.plength_observation2root >= 0) {
     RealNumType total_blength = seq1_region.plength_observation2root + blength;
 
@@ -5649,13 +5668,13 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
       total_blength += seq1_region.plength_observation2node;
 
       // here contribution from root frequency can also be also ignored
-      lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state) * total_blength;
+      lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state, pos) * total_blength;
     } else {
       RealNumType tot = 0;
       const RealNumType* const freq_j_transposed_ij_row = model->getFreqjTransposedijRow(seq1_state);
 
       for (StateType i = 0; i < num_states; ++i) {
-        const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i);
+        const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i, pos);
         RealNumType tot2 =
             freq_j_transposed_ij_row[i] * seq1_region.plength_observation2node +
             ((seq1_state == i) ? model->getRootFreq(i) : 0);
@@ -5672,14 +5691,14 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
   } else {
     if (seq2_region.getLH(seq1_state) > 0.1) {
       if (seq1_region.plength_observation2node >= 0) {
-        lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state) *
+        lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
                    (blength + seq1_region.plength_observation2node);
       } else {
-        lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state) * blength;
+        lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state, pos) * blength;
       }
     } else {
       RealNumType tot = 0;
-      const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state);
+      const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state, pos);
       tot += sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0],
                                          mutation_mat_row);
 
@@ -5698,28 +5717,29 @@ void calculateSampleCost_R_ACGT(const SeqRegion& seq1_region,
                                 const StateType seq2_state,
                                 RealNumType& total_factor,
                                 const ModelBase* model) {
+  PositionType pos = seq1_region.position;
   if (seq1_region.plength_observation2root >= 0) {
     // TODO: can cache model->mutation_mat[model->row_index[seq1_state] *
     // model->diagonal_mut_mat[seq1_state]
     // TODO: can cache  model->freqi_freqj_qij[model->row_index[seq2_state] +
     // seq1_state] * model->diagonal_mut_mat[seq2_state]
     RealNumType seq1_state_evolves_seq2_state =
-        model->getMutationMatrixEntry(seq1_state, seq2_state) * 
+        model->getMutationMatrixEntry(seq1_state, seq2_state, pos) * 
         blength *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state) *
+        (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
                    seq1_region.plength_observation2node);
 
     RealNumType seq2_state_evolves_seq1_state =
         model->getFreqiFreqjQij(seq2_state, seq1_state) *
         seq1_region.plength_observation2node *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state) *
+        (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) *
                    (blength + seq1_region.plength_observation2root));
 
     total_factor *=
         seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
   } else {
     total_factor *=
-        model->getMutationMatrixEntry(seq1_state, seq2_state) *
+        model->getMutationMatrixEntry(seq1_state, seq2_state, pos) *
         (blength + (seq1_region.plength_observation2node < 0
                         ? 0
                         : seq1_region.plength_observation2node));
@@ -5733,6 +5753,8 @@ void calculateSampleCost_O_O(const SeqRegion& seq1_region,
                              RealNumType& total_factor,
                              const ModelBase* model) {
   RealNumType blength13 = blength;
+  PositionType pos = seq1_region.position;
+  assert(seq1_region.position == seq2_region.position);
   if (seq1_region.plength_observation2node >= 0) {
     blength13 = seq1_region.plength_observation2node;
     if (blength > 0) {
@@ -5743,7 +5765,7 @@ void calculateSampleCost_O_O(const SeqRegion& seq1_region,
   RealNumType tot = 0;
 
   for (StateType i = 0; i < num_states; ++i) {
-    const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i);
+    const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i, pos);
     RealNumType tot2 =
         blength13 * sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0],
                                                 mutation_mat_row);
@@ -5775,9 +5797,8 @@ void calculateSampleCost_O_RACGT(const SeqRegion& seq1_region,
     seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
                                 ::size_type>(end_pos)];
   }
-
-  RealNumType tot2 = model->getDotProductWithMutationMatrixRow<num_states>(seq2_state,
-    &((*seq1_region.likelihood)[0]), true);
+  const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq2_state, end_pos);
+  RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region.likelihood)[0]));
   total_factor *= seq1_region.getLH(seq2_state) + blength13 * tot2;
 }
 
@@ -5793,7 +5814,7 @@ void calculateSampleCost_identicalACGT(const SeqRegion& seq1_region,
                         ? 0
                         : seq1_region.plength_observation2root);
 
-  lh_cost += model->getDiagonalMutationMatrixEntry(seq1_region.type) * total_blength;
+  lh_cost += model->getDiagonalMutationMatrixEntry(seq1_region.type, seq1_region.position) * total_blength;
 }
 
 template <const StateType num_states>
@@ -5804,19 +5825,21 @@ void calculateSampleCost_ACGT_O(const SeqRegion& seq1_region,
                                 RealNumType& total_factor,
                                 const ModelBase* model) {
   StateType seq1_state = seq1_region.type;
+  PositionType pos = seq1_region.position;
+  assert(seq1_region.position == seq2_region.position);
   RealNumType tot = 0.0;
 
   if (seq1_region.plength_observation2root >= 0) {
     RealNumType blength15 = blength + seq1_region.plength_observation2root;
 
     if (seq2_region.getLH(seq1_state) > 0.1) {
-      lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state) *
+      lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
                  (blength15 + seq1_region.plength_observation2node);
     } else {
       
       const RealNumType* const freq_j_transposed_ij_row = model->getFreqjTransposedijRow(seq1_state);
       for (StateType i = 0; i < num_states; ++i) {
-        const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i);
+        const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i, pos);
         RealNumType tot2 =
             freq_j_transposed_ij_row[i] * seq1_region.plength_observation2node +
             ((seq1_state == i) ? model->getRootFreq(i) : 0);
@@ -5837,9 +5860,9 @@ void calculateSampleCost_ACGT_O(const SeqRegion& seq1_region,
                        ? 0
                        : seq1_region.plength_observation2node);
     if (seq2_region.getLH(seq1_state) > 0.1) {
-      lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state) * tmp_blength;
+      lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state, pos) * tmp_blength;
     } else {
-      const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state);
+      const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state, pos);
       tot += sumMutationByLh<num_states>(&(*seq2_region.likelihood)[0],
                                          mutation_mat_row);
 
@@ -5865,15 +5888,15 @@ void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region,
   if (seq1_region.plength_observation2root >= 0) {
     // here we ignore contribution of non-parsimonious mutational histories
     RealNumType seq1_state_evoloves_seq2_state =
-        model->getMutationMatrixEntry(seq1_state, seq2_state) * 
+        model->getMutationMatrixEntry(seq1_state, seq2_state, end_pos) * 
         (blength + seq1_region.plength_observation2root) *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state) *
+        (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, end_pos) *
                    seq1_region.plength_observation2node);
 
     RealNumType seq2_state_evolves_seq1_state =
         model->getFreqiFreqjQij(seq2_state, seq1_state) *
         seq1_region.plength_observation2node *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state) *
+        (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, end_pos) *
                    (blength + seq1_region.plength_observation2root));
 
     total_factor *=
@@ -5885,7 +5908,7 @@ void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region,
              : blength + seq1_region.plength_observation2node);
 
     total_factor *=
-        model->getMutationMatrixEntry(seq1_state, seq2_state) *
+        model->getMutationMatrixEntry(seq1_state, seq2_state, end_pos) *
         tmp_blength;
   }
 }
@@ -6062,7 +6085,7 @@ void cmaple::Tree::updateZeroBlength(const Index index,
 }
 
 std::unique_ptr<SeqRegions>& cmaple::Tree::getPartialLhAtNode(
-    const Index index) {
+    const Index index)  {
   // may need assert(index.getVectorIndex() < nodes.size());
   return nodes[index.getVectorIndex()].getPartialLh(index.getMiniIndex());
 }
@@ -6189,7 +6212,6 @@ void cmaple::Tree::computeLhContribution(
       neighbor_2.getUpperLength(), aln, model, cumulative_rate,
       params->threshold_prob, true);
   total_lh += lh_contribution;
-
   // record the likelihood contribution at this node
   // if likelihood contribution of this node has not yet existed -> add a new
   // one
@@ -9027,9 +9049,10 @@ void cmaple::Tree::computeCumulativeRate() {
   const std::vector<cmaple::StateType>& ref_seq = aln->ref_seq;
   for (std::vector<cmaple::StateType>::size_type i = 0; i < sequence_length; ++i) {
     StateType state = ref_seq[i];
-    cumulative_rate[i + 1] = cumulative_rate[i] + model->getDiagonalMutationMatrixEntry(state);
-
+    cumulative_rate[i + 1] = cumulative_rate[i] + model->getDiagonalMutationMatrixEntry(state, i);
+    //std::cout << cumulative_rate[i + 1] << " ";
     cumulative_base[i + 1] = cumulative_base[i];
     cumulative_base[i + 1][state] = cumulative_base[i][state] + 1;
   }
+  //std::cout << std::endl;
 }

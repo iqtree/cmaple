@@ -122,7 +122,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
           throw std::invalid_argument("Unknown Model " + params.sub_model_str);
         }
         assert(sub_model != cmaple::ModelBase::UNKNOWN);
-        Model model(sub_model, aln.getSeqType());
+        Model model(aln.ref_seq.size(), params.rate_variation, sub_model, aln.getSeqType());
         
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())
