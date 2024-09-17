@@ -600,6 +600,7 @@ cmaple::Params::Params() {
   make_consistent = false;
     compute_SPRTA = false;
     compute_SPRTA_zero_length_branches = false;
+    print_SPRTA_less_info_seqs = false;
     thresh_loglh_optimal_diff_fac = 1.0;
 
   // initialize random seed based on current time
@@ -1107,8 +1108,14 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           continue;
         }
         if (strcmp(argv[cnt], "--zero-branch-supp") == 0 ||
-            strcmp(argv[cnt], "---zero-branch-supp") == 0) {
+            strcmp(argv[cnt], "-zero-branch-supp") == 0) {
           params.compute_SPRTA_zero_length_branches = true;
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--sprta-less-info-seqs") == 0 ||
+            strcmp(argv[cnt], "-sprta-less-info-seqs") == 0) {
+          params.print_SPRTA_less_info_seqs = true;
 
           continue;
         }
@@ -1205,6 +1212,14 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
   if (!params.aln_path.length()) {
     outError("Please supply an alignment file via -aln <ALN_FILENAME>");
   }
+    
+    // check dependent options
+    if (params.print_SPRTA_less_info_seqs && !params.compute_SPRTA)
+    {
+        outError("Unable to print SPRTA supports for less-informative "
+                 "sequences if SPRTA is not computed. Please use "
+                 "`--sprta` if you want to compute SPRTA.");
+    }
 }
 
 void cmaple::quickStartGuide() {

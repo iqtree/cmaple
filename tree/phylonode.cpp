@@ -217,6 +217,7 @@ const std::string cmaple::PhyloNode::exportString(
     const bool binary,
     const std::vector<std::string>& seq_names,
     const bool show_branch_supports,
+    const bool print_sprta_less_info_seq,
     const std::string& annotation_str) {
   if (!isInternal()) {
     string length_str = getUpperLength() <= 0
@@ -234,27 +235,28 @@ const std::string cmaple::PhyloNode::exportString(
       string branch_support = show_branch_supports ? "0" : "";
 
       string output = "";
+      string sprta_less_info = print_sprta_less_info_seq ? annotation_str : "";
       // export less informative sequences in binary tree format
       if (binary) {
         output.resize(num_less_info_seqs, '(');
-        output += seq_names[getSeqNameIndex()];
+        output += seq_names[getSeqNameIndex()] + sprta_less_info;
         
         // add the first less-info-seq
-        output += ":0," + seq_names[less_info_seqs[0]] + ":0)";
+        output += ":0," + seq_names[less_info_seqs[0]] + sprta_less_info + ":0)";
         
         // add the remaining less-info-seqs
         for (std::vector<NumSeqsType>::size_type  i = 1; i < less_info_seqs.size(); ++i) {
-          output += branch_support + ":0," + seq_names[less_info_seqs[i]] + ":0)";
+          output += branch_support + ":0," + seq_names[less_info_seqs[i]] + sprta_less_info + ":0)";
         }
         
         output += branch_support + annotation_str + ":" + length_str;
       }
       // export less informative sequences in mutifurcating tree format
       else {
-        output = "(" + seq_names[getSeqNameIndex()] + ":0";
+        output = "(" + seq_names[getSeqNameIndex()] + sprta_less_info + ":0";
         
         for (auto minor_seq_name_index : less_info_seqs) {
-          output += "," + seq_names[minor_seq_name_index] + ":0";
+          output += "," + seq_names[minor_seq_name_index] + sprta_less_info + ":0";
         }
         
         output += ")" + branch_support + annotation_str + ":" + length_str;

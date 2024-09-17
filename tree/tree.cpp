@@ -1214,7 +1214,7 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
 
   // if it's a leaf
   if (!node.isInternal()) {
-    return node.exportString(binary, seq_names, show_branch_supports, annotation_str);
+    return node.exportString(binary, seq_names, show_branch_supports, params->print_SPRTA_less_info_seqs, annotation_str);
     // if it's an internal node
   } else {
     /*bool add_comma = false;

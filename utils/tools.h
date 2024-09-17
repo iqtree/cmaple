@@ -635,6 +635,11 @@ class Params {
     bool compute_SPRTA_zero_length_branches;
     
     /**
+     * TRUE to print SPRTA supports for less-infomative seqs
+     */
+    bool print_SPRTA_less_info_seqs;
+    
+    /**
      * A factor determines SPRs
      * are close to the optimal one when computing SPRTA.
      * This factor is relative to the reference length.
