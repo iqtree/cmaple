@@ -1205,7 +1205,10 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
     // proceed annotations
     string annotation_str = "";
     // add sprta score (if computed)
-    if (params->compute_SPRTA)
+    // only output the supports of zero-length branches (if requested)
+    if (params->compute_SPRTA
+        && (node.getUpperLength() > 0
+            || params->compute_SPRTA_zero_length_branches))
     {
         annotation_str = "[&sprta=" +
         convertDoubleToString(sprta_scores[node_vec_index]) + "]";
