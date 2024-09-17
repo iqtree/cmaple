@@ -2078,6 +2078,8 @@ void cmaple::Tree::seekSamplePlacement(
   // output variables
   selected_node_index = start_node_index;
   // dummy variables
+  const bool collapse_only_ident_seqs = params->compute_SPRTA &&
+    params->compute_SPRTA_zero_length_branches;
   RealNumType lh_diff_mid_branch = 0;
   RealNumType lh_diff_at_node = 0;
   PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
@@ -2108,7 +2110,8 @@ void cmaple::Tree::seekSamplePlacement(
     // node + stop seeking the placement
     if ((!is_internal) &&
         (current_node.getPartialLh(TOP)->compareWithSample(
-             *sample_regions, seq_length, aln) == 1)) {
+             *sample_regions, seq_length, aln,
+            collapse_only_ident_seqs) == 1)) {
       current_node.addLessInfoSeqs(seq_name_index);
       selected_node_index = Index();
       return;

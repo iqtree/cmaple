@@ -1110,6 +1110,10 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         if (strcmp(argv[cnt], "--zero-branch-supp") == 0 ||
             strcmp(argv[cnt], "-zero-branch-supp") == 0) {
           params.compute_SPRTA_zero_length_branches = true;
+          // also print supports for identical sequences
+          // to make sure we print supports of
+          // all branches with a length of zero
+          params.print_SPRTA_less_info_seqs = true;
 
           continue;
         }
@@ -1214,6 +1218,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
   }
     
     // check dependent options
+    if (params.compute_SPRTA_zero_length_branches && !params.compute_SPRTA)
+    {
+        outError("Unable to compute SPRTA supports for branches with a length "
+                 "of zero if SPRTA is not computed. Please use "
+                 "`--sprta` if you want to compute SPRTA.");
+    }
     if (params.print_SPRTA_less_info_seqs && !params.compute_SPRTA)
     {
         outError("Unable to print SPRTA supports for less-informative "

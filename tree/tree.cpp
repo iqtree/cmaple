@@ -9123,6 +9123,8 @@ bool cmaple::Tree::readTree(std::istream& tree_stream) {
 void cmaple::Tree::collapseAllZeroLeave() {
     // dummy variables
     PositionType seq_length = (PositionType) aln->ref_seq.size();
+    const bool collapse_only_ident_seqs = params->compute_SPRTA &&
+      params->compute_SPRTA_zero_length_branches;
     
   // count the number of collapsed nodes -> to make sure we have reseved enough
   // space to store all nodes when we expand (i.e., adding less-informative
@@ -9177,7 +9179,8 @@ void cmaple::Tree::collapseAllZeroLeave() {
             /* if (root_vector_index == node_index.getVectorIndex() ||
                 node.getUpperLength() <= 0) { */
               // compare two leaves
-              int seq2_less_info = neighbor_1.getPartialLh(TOP)->compareWithSample(*(neighbor_2.getPartialLh(TOP)), seq_length, aln);
+              int seq2_less_info = neighbor_1.getPartialLh(TOP)->compareWithSample(
+                *(neighbor_2.getPartialLh(TOP)), seq_length, aln, collapse_only_ident_seqs);
               //  only handle cases when two leaves are comparable
               if (seq2_less_info)
               {
@@ -9315,9 +9318,7 @@ void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
     
  // if the two sequences are identical set the new blength at 0
     if (lower_regions->compareWithSample(*node.getPartialLh(TOP),
-        static_cast<PositionType>(aln->ref_seq.size()), aln) == 1 &&
-        node.getPartialLh(TOP)->compareWithSample(*lower_regions,
-        static_cast<PositionType>(aln->ref_seq.size()), aln) == 1)
+        static_cast<PositionType>(aln->ref_seq.size()), aln, true) == 1)
          new_min_blength = 0;
     
   // connect the new node to the tree
