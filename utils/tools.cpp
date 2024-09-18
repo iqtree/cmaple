@@ -1096,7 +1096,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         continue;
       }
       if (strcmp(argv[cnt], "--branch-support") == 0 ||
-          strcmp(argv[cnt], "-branch-support") == 0) {
+          strcmp(argv[cnt], "-branch-support") == 0
+          || strcmp(argv[cnt], "--alrt") == 0
+          || strcmp(argv[cnt], "-alrt") == 0) {
         params.compute_aLRT_SH = true;
 
         continue;
