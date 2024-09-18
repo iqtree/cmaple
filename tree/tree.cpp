@@ -1249,21 +1249,6 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
     branch_support =
         convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
   }
-  
-    // add SPRTA scores (if any)
-    if (params->compute_SPRTA)
-    {
-        // incorporate existing branch support (if any)
-        if (branch_support.length())
-            branch_support += "/" + convertDoubleToString(sprta_scores[node_vec_index]);
-        // otherwise, only show sprta score
-        else
-            branch_support = convertDoubleToString(sprta_scores[node_vec_index]);
-        
-        // debug
-        // add internal name
-        // branch_support += "/" + convertIntToString(node_vec_index);
-    }
     
   string length = node.getUpperLength() <= 0
                       ? "0"
