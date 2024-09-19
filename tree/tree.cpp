@@ -1375,6 +1375,8 @@ std::string cmaple::Tree::exportNexus(const bool binary,
     "\ttree TREE1 = [&R] ";
     const string post_output = "\nend;\n";
     
+    // generate internal names
+    genIntNames();
     
     // list of leaves
     string list_leaf_names = "";
@@ -1424,9 +1426,6 @@ std::string cmaple::Tree::exportNexus(const bool binary,
             }
         }
     }
-    
-    // generate internal names
-    genIntNames();
     
   return pre_output + convertIntToString(seq_names.size() + num_internal) + mid_output_1
     + list_leaf_names + list_internal_names + mid_output_2
