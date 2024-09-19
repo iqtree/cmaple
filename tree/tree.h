@@ -1,6 +1,7 @@
 #include "../alignment/alignment.h"
 #include "../model/model.h"
 #include "updatingnode.h"
+#include "altbranch.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -268,11 +269,13 @@ class Tree {
    * (bifurcating tree), MUL_TREE (multifurcating tree)
    * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
    * values)
+   * @param[in] print_internal_id TRUE to print the id of internal nodes
    * @return A tree string in NEWICK format
    * @throw std::invalid\_argument if any of the following situations occur.
    * - tree\_type is unknown
    */
   std::string exportNewick(const TreeType tree_type = BIN_TREE,
+                           const bool print_internal_id = false,
                            const bool show_branch_supports = true);
 
   // ----------------- END OF PUBLIC APIs ------------------------------------
@@ -331,6 +334,16 @@ class Tree {
      Vector of the SPRTA scores
      */
     std::vector<RealNumType> sprta_scores;
+    
+    /**
+     Vector of alternative branches (when computing SPRTA)
+     */
+    std::vector<std::vector<cmaple::Index>> sprta_alt_branches;
+    
+    /**
+     Vector of internal node names
+     */
+    std::vector<NumSeqsType> internal_names;
 
   /**
    (vector) Index of root in the vector of phylonodes
@@ -665,7 +678,7 @@ bool isDiffFromOrigPlacement(
       RealNumType& opt_appending_blength,
       RealNumType& opt_mid_top_blength,
       RealNumType& opt_mid_bottom_blength,
-      std::vector<RealNumType>& alt_spr_lh_diffs,
+      std::vector<AltBranch>& alt_branches,
       bool& is_root_considered);
 
   /**
@@ -687,8 +700,7 @@ bool isDiffFromOrigPlacement(
       const std::unique_ptr<SeqRegions>& subtree_regions,
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
-      const cmaple::Index top_node_index,
-      std::vector<RealNumType>& alt_spr_lh_diffs);
+      const cmaple::Index top_node_index);
 
   /**
    Add a child node for downwards traversal when seeking a new subtree placement
@@ -1555,6 +1567,7 @@ bool isDiffFromOrigPlacement(
    */
   std::string exportNodeString(const bool binary,
                                const cmaple::NumSeqsType node_vec_index,
+                               const bool print_internal_id,
                                const bool show_branch_supports);
 
   /**
@@ -1632,7 +1645,8 @@ bool isDiffFromOrigPlacement(
   /**
    Export tree std::string in Newick format
    */
-  std::string exportNewick(const bool binary, const bool show_branch_supports);
+  std::string exportNewick(const bool binary, const bool print_internal_id,
+                           const bool show_branch_supports);
 
   /**
    Increase the length of a 0-length branch (connecting this node to its parent)
@@ -1909,6 +1923,11 @@ bool isDiffFromOrigPlacement(
                         const int& failure_limit_subtree,
                         const RealNumType& thresh_log_lh_subtree,
                               const bool able2traverse = true);
+    
+    /**
+        Generate internal names
+    */
+    void genIntNames();
 
   // NHANLT: Debug aLRT
   // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);

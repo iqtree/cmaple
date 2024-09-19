@@ -598,9 +598,11 @@ cmaple::Params::Params() {
   seq_type_str = "AUTO";
   tree_search_type_str = "NORMAL";
   make_consistent = false;
+  print_internal_ids = false;
     compute_SPRTA = false;
     compute_SPRTA_zero_length_branches = false;
     print_SPRTA_less_info_seqs = false;
+    output_network = false;
     thresh_loglh_optimal_diff_fac = 1.0;
 
   // initialize random seed based on current time
@@ -790,6 +792,14 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
       }
+        if (strcmp(argv[cnt], "--out-internal") == 0 ||
+              strcmp(argv[cnt], "-out-int") == 0) {
+
+            // parse inputs
+            params.print_internal_ids = true;
+
+            continue;
+        }
       if (strcmp(argv[cnt], "-st") == 0 ||
           strcmp(argv[cnt], "--seqtype") == 0) {
         cnt++;
@@ -1125,6 +1135,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
         }
+        if (strcmp(argv[cnt], "--output-network") == 0 ||
+            strcmp(argv[cnt], "-out-nwk") == 0) {
+          params.output_network = true;
+
+          continue;
+        }
       if (strcmp(argv[cnt], "--replicates") == 0 ||
           strcmp(argv[cnt], "-rep") == 0) {
         ++cnt;
@@ -1230,6 +1246,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
     {
         outError("Unable to print SPRTA supports for less-informative "
                  "sequences if SPRTA is not computed. Please use "
+                 "`--sprta` if you want to compute SPRTA.");
+    }
+    if (params.output_network && !params.compute_SPRTA)
+    {
+        outError("Unable to output alternative branches (network)"
+                 "if SPRTA is not computed. Please use "
                  "`--sprta` if you want to compute SPRTA.");
     }
 }

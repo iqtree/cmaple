@@ -216,6 +216,7 @@ same as those in the previous implementation of pointers switch (mini_index)
 const std::string cmaple::PhyloNode::exportString(
     const bool binary,
     const std::vector<std::string>& seq_names,
+    const bool print_internal_id,
     const bool show_branch_supports,
     const bool print_sprta_less_info_seq,
     const std::string& annotation_str) {
@@ -232,14 +233,20 @@ const std::string cmaple::PhyloNode::exportString(
       // with minor sequences -> return minor sequences' names with zero
       // branch lengths
     } else {
-      string branch_support = show_branch_supports ? "0" : "";
-
+      const string branch_support = show_branch_supports ? "0" : "";
       string output = "";
       string sprta_less_info = print_sprta_less_info_seq ? annotation_str : "";
+        
+        // initialize the internal name (if necessary)
+        const string seq_name = seq_names[getSeqNameIndex()];
+        const string internal_name = print_internal_id
+            ? seq_name + "_MinorSeqsClade" + (show_branch_supports? "/" : "")
+            : "";
+        
       // export less informative sequences in binary tree format
       if (binary) {
         output.resize(num_less_info_seqs, '(');
-        output += seq_names[getSeqNameIndex()] + sprta_less_info;
+        output += seq_name + sprta_less_info;
         
         // add the first less-info-seq
         output += ":0," + seq_names[less_info_seqs[0]] + sprta_less_info + ":0)";
@@ -249,17 +256,17 @@ const std::string cmaple::PhyloNode::exportString(
           output += branch_support + ":0," + seq_names[less_info_seqs[i]] + sprta_less_info + ":0)";
         }
         
-        output += branch_support + annotation_str + ":" + length_str;
+        output += internal_name + branch_support + annotation_str + ":" + length_str;
       }
       // export less informative sequences in mutifurcating tree format
       else {
-        output = "(" + seq_names[getSeqNameIndex()] + sprta_less_info + ":0";
+        output = "(" + seq_name + sprta_less_info + ":0";
         
         for (auto minor_seq_name_index : less_info_seqs) {
           output += "," + seq_names[minor_seq_name_index] + sprta_less_info + ":0";
         }
         
-        output += ")" + branch_support + annotation_str + ":" + length_str;
+        output += ")" + internal_name + branch_support + annotation_str + ":" + length_str;
       }
       return output;
     }

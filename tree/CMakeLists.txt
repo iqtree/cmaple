@@ -6,6 +6,7 @@ traversingnode.h traversingnode.cpp
 phylonode.h phylonode.cpp
 leaf.h
 internal.h
+altbranch.h
 )
 target_link_libraries(cmaple_tree cmaple_model cmaple_alignment cmaple_utils)
 
@@ -17,5 +18,6 @@ traversingnode.h traversingnode.cpp
 phylonode.h phylonode.cpp
 leaf.h
 internal.h
+altbranch.h
 )
 target_link_libraries(cmaple_tree-aa cmaple_model-aa cmaple_alignment-aa cmaple_utils)

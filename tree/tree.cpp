@@ -161,6 +161,7 @@ void cmaple::Tree::makeTreeInOutConsistent() {
 }
 
 std::string cmaple::Tree::exportNewick(const TreeType tree_type,
+                                       const bool print_internal_id,
                                        const bool show_branch_supports) {
   assert(aln);
   assert(model);
@@ -174,10 +175,10 @@ std::string cmaple::Tree::exportNewick(const TreeType tree_type,
   // output the tree according to its type
   switch (tree_type) {
     case BIN_TREE:
-      return exportNewick(true, show_branch_supports_checked);
+      return exportNewick(true, print_internal_id, show_branch_supports_checked);
       // break;
     case MUL_TREE:
-      return exportNewick(false, show_branch_supports_checked);
+      return exportNewick(false, print_internal_id, show_branch_supports_checked);
       // break;
     case UNKNOWN_TREE:
     default:
@@ -762,6 +763,10 @@ void cmaple::Tree::applySPRTemplate(
         
         // initialize the vector to store all SPRTA scores
         sprta_scores.resize(nodes.size(), 1.0);
+        
+        // initialize the vector to store alternative branches (if needed)
+        if (params->output_network)
+            sprta_alt_branches.resize(nodes.size());
     }
 
   // show information
@@ -1198,7 +1203,9 @@ void cmaple::Tree::computeBranchSupportTemplate(
 
 std::string cmaple::Tree::exportNodeString(const bool binary,
                                            const NumSeqsType node_vec_index,
+                                           const bool print_internal_id,
                                            const bool show_branch_supports) {
+  string internal_name = "";
   PhyloNode& node = nodes[node_vec_index];
   string output = "(";
     
@@ -1211,15 +1218,63 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
             || params->compute_SPRTA_zero_length_branches))
     {
         annotation_str = "[&sprta=" +
-        convertDoubleToString(sprta_scores[node_vec_index]) + "]";
+        convertDoubleToString(sprta_scores[node_vec_index]);
+        
+        // add alternative placements (if needed)
+        /*if (params->output_network)
+        {
+            annotation_str += "/alternativePlacements={";
+            
+            std::vector<cmaple::Index>& alt_branches = sprta_alt_branches[node_vec_index];
+            
+            // add the first one
+            if (alt_branches.size() > 0)
+            {
+                // extract the corresponding node
+                const NumSeqsType alt_node_id = alt_branches[0].getVectorIndex();
+                const PhyloNode& aln_node = nodes[alt_node_id];
+                
+                // generate internal node name
+                if (aln_node.isInternal())
+                    annotation_str += "in" + convertIntToString(alt_node_id);
+                // or extract the leaf name
+                else
+                    annotation_str += seq_names[aln_node.getSeqNameIndex()];
+            }
+            
+            // add the remainder
+            for (auto i = 1; i < alt_branches.size(); ++i)
+            {
+                // extract the corresponding node
+                const NumSeqsType alt_node_id = alt_branches[i].getVectorIndex();
+                const PhyloNode& aln_node = nodes[alt_node_id];
+                
+                // generate internal node name
+                if (aln_node.isInternal())
+                    annotation_str += "/in" + convertIntToString(alt_node_id);
+                // or extract the leaf name
+                else
+                    annotation_str += "/" + seq_names[aln_node.getSeqNameIndex()];
+            }
+            
+            // close the bracket
+            annotation_str += "}";
+        }*/
+        
+        // close the square bracket
+        annotation_str += "]";
     }
     
 
   // if it's a leaf
   if (!node.isInternal()) {
-    return node.exportString(binary, seq_names, show_branch_supports, params->print_SPRTA_less_info_seqs, annotation_str);
+    return node.exportString(binary, seq_names, print_internal_id, show_branch_supports, params->print_SPRTA_less_info_seqs, annotation_str);
     // if it's an internal node
   } else {
+      // init internal name (if necessary)
+      if (print_internal_id)
+          internal_name = "in" + convertIntToString(internal_names[node_vec_index]);
+      
     /*bool add_comma = false;
      for (Index neighbor_index:node.getNeighborIndexes(TOP))
      {
@@ -1231,11 +1286,11 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
      }*/
     output +=
         exportNodeString(binary, node.getNeighborIndex(RIGHT).getVectorIndex(),
-                         show_branch_supports);
+                         print_internal_id, show_branch_supports);
     output += ",";
     output +=
         exportNodeString(binary, node.getNeighborIndex(LEFT).getVectorIndex(),
-                         show_branch_supports);
+                         print_internal_id, show_branch_supports);
   }
 
   string branch_support = "";
@@ -1248,25 +1303,36 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
 
     branch_support =
         convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
+      
+    // add "/" to separate name and branch support (if necessary)
+      if (print_internal_id)
+          internal_name += "/";
   }
     
   string length = node.getUpperLength() <= 0
                       ? "0"
                       : convertDoubleToString(node.getUpperLength(), 12);
-  output += ")" + branch_support + annotation_str + ":" + length;
+  output += ")" + internal_name + branch_support + annotation_str + ":" + length;
 
   return output;
 }
 
 std::string cmaple::Tree::exportNewick(const bool binary,
+                                       const bool print_internal_id,
                                        const bool show_branch_supports) {
   // make sure tree is not empty
   if (nodes.size() < 3) {
     return "";
   }
 
-  return exportNodeString(binary, root_vector_index, show_branch_supports) +
-         ";";
+  // we must output the internal names if outputting network (i.e., alternative branches)
+  const bool output_internal_name = print_internal_id || params->output_network;
+    
+    // generate internal names (if needed)
+    if (output_internal_name)
+        genIntNames();
+    
+  return exportNodeString(binary, root_vector_index, output_internal_name, show_branch_supports) + ";";
 }
 
 template <const StateType num_states>
@@ -1997,7 +2063,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     RealNumType& opt_appending_blength,
     RealNumType& opt_mid_top_blength,
     RealNumType& opt_mid_bottom_blength,
-    std::vector<RealNumType>& alt_spr_lh_diffs,
+    std::vector<AltBranch>& alt_branches,
     bool& is_root_considered) {
     
   const bool top_node_exists = (top_node_index.getMiniIndex() != UNDEFINED);
@@ -2249,7 +2315,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             lh_diff_mid_branch = calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
-            alt_spr_lh_diffs.push_back(lh_diff_mid_branch + lh_compensation);
+            alt_branches.push_back(AltBranch(lh_diff_mid_branch + lh_compensation, at_node_index));
         }
     }
 
@@ -2297,8 +2363,7 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
     const std::unique_ptr<SeqRegions>& subtree_regions,
     const RealNumType threshold_prob,
     const RealNumType removed_blength,
-    const Index top_node_index,
-    std::vector<RealNumType>& alt_spr_lh_diffs) {
+    const Index top_node_index) {
     
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
 
@@ -2355,11 +2420,6 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
   // else
   // lh_diff_at_node = calculateSamplePlacementCost(at_node_regions,
   // subtree_regions, removed_blength);
-    
-    // Temporarily not record the results when examining placement at nodes because considering placement at mid-branch positions with a well-optmized blengths might be good enough
-    // if computing SPRTA, record the likelihood of the alternative SPR if its lh_diff is not too worse than the best_lh_diff by a threshold
-    /*if (params->compute_SPRTA && lh_diff_at_node >= best_lh_diff - params->thresh_loglh_optimal_diff && at_node_index.getVectorIndex() != root_vector_index)
-        alt_spr_lh_diffs.push_back(lh_diff_at_node);*/
 
   // if this position is better than the best position found so far -> record it
   if (lh_diff_at_node > best_lh_diff) {
@@ -2733,7 +2793,7 @@ void cmaple::Tree::seekSubTreePlacement(
   // getPartialLhAtNode(node.getNeighborIndex(TOP));
     
     // for computing SPRTA scores
-    std::vector<RealNumType> alt_spr_lh_diffs;
+    std::vector<AltBranch> alt_branches;
     const RealNumType ori_best_lh_diff = best_lh_diff;
     bool is_root_considered = false; // whether we already consider the placement at root or not
 
@@ -2833,7 +2893,7 @@ void cmaple::Tree::seekSubTreePlacement(
                   best_down_lh_diff, updating_node, subtree_regions,
                   threshold_prob, removed_blength, Index(), node_index, bottom_regions,
                   opt_appending_blength, opt_mid_top_blength,
-                  opt_mid_bottom_blength, alt_spr_lh_diffs, is_root_considered))
+                  opt_mid_bottom_blength, alt_branches, is_root_considered))
           {
             continue;
           }
@@ -2850,7 +2910,7 @@ void cmaple::Tree::seekSubTreePlacement(
                 best_node_index, current_node, best_lh_diff, is_mid_branch,
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
-                threshold_prob, removed_blength, Index(), alt_spr_lh_diffs))
+                threshold_prob, removed_blength, Index()))
         {
             // update to match MAPLE v0.6.8
             // keep examining mid-branch
@@ -2907,7 +2967,7 @@ void cmaple::Tree::seekSubTreePlacement(
                 best_node_index, current_node, best_lh_diff, is_mid_branch,
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
-                threshold_prob, removed_blength, top_node_index, alt_spr_lh_diffs)) {
+                threshold_prob, removed_blength, top_node_index)) {
             // update to match MAPLE v0.6.8
             // keep examining mid-branch
             // continue;
@@ -2934,7 +2994,7 @@ void cmaple::Tree::seekSubTreePlacement(
                 best_down_lh_diff, updating_node, subtree_regions,
                 threshold_prob, removed_blength, top_node_index, node_index,
                 bottom_regions, opt_appending_blength, opt_mid_top_blength,
-                opt_mid_bottom_blength, alt_spr_lh_diffs, is_root_considered)) {
+                opt_mid_bottom_blength, alt_branches, is_root_considered)) {
           continue;
         }
       }
@@ -2975,22 +3035,36 @@ void cmaple::Tree::seekSubTreePlacement(
     {
         // filter out lhs of SPRs that are not close enough to the optimal one
         const RealNumType lower_bound_lhs = best_lh_diff - params->thresh_loglh_optimal_diff;
-        alt_spr_lh_diffs.erase(std::remove_if(
-            alt_spr_lh_diffs.begin(), alt_spr_lh_diffs.end(),
-            [&lower_bound_lhs](RealNumType value)
-            { return value < lower_bound_lhs; }),
-            alt_spr_lh_diffs.end());
+        alt_branches.erase(std::remove_if(
+            alt_branches.begin(), alt_branches.end(),
+            [&lower_bound_lhs](AltBranch alt_branch)
+            { return alt_branch.lh < lower_bound_lhs; }),
+            alt_branches.end());
         
         // compute the SPRTA score
-        if (!alt_spr_lh_diffs.size())
+        if (!alt_branches.size())
             sprta_scores[child_node_index.getVectorIndex()] = 1.0;
         else
         {
             const RealNumType raw_ori_lh_diff =  std::exp(ori_best_lh_diff);
-            RealNumType total_spr_lhs = std::accumulate(alt_spr_lh_diffs.begin(),
-                alt_spr_lh_diffs.end(), raw_ori_lh_diff, [](double sum, double value) {
-                return sum + std::exp(value); });
+            RealNumType total_spr_lhs = std::accumulate(alt_branches.begin(),
+                alt_branches.end(), raw_ori_lh_diff, [](double sum, AltBranch alt_branch) {
+                return sum + std::exp(alt_branch.lh); });
             sprta_scores[child_node_index.getVectorIndex()] = raw_ori_lh_diff / total_spr_lhs;
+        }
+        
+        // store alternative branches (if needed)
+        if (params->output_network)
+        {
+            // reset the vector of alternative branches
+            std::vector<cmaple::Index>& alt_branches_at_node =
+                sprta_alt_branches[child_node_index.getVectorIndex()];
+            alt_branches_at_node.clear();
+            
+            // copy alt branches
+            alt_branches_at_node.resize(alt_branches.size());
+            for (auto i = 0; i < alt_branches.size(); ++i)
+                alt_branches_at_node[i] = alt_branches[i].branch_id;
         }
     }
 
@@ -9576,4 +9650,37 @@ void cmaple::Tree::computeCumulativeRate() {
     cumulative_base[i + 1] = cumulative_base[i];
     cumulative_base[i + 1][state] = cumulative_base[i][state] + 1;
   }
+}
+
+void cmaple::Tree::genIntNames()
+{
+    NumSeqsType current_name_id = seq_names.size();
+    internal_names.resize(nodes.size());
+    stack<NumSeqsType> node_stack;
+    
+    // start at the root
+    node_stack.push(root_vector_index);
+
+    // browse the tree
+    while (!node_stack.empty()) {
+        // extract the corresponding node
+        const NumSeqsType node_index = node_stack.top();
+        node_stack.pop();
+        PhyloNode& node = nodes[node_index];
+        
+        // If it is an internal node
+        if (node.isInternal())
+        {
+            // generate a name for this node
+            internal_names[node_index] = current_name_id++;
+            
+            // extract its children
+            const NumSeqsType child_1_index = node.getNeighborIndex(RIGHT).getVectorIndex();
+            const NumSeqsType child_2_index = node.getNeighborIndex(LEFT).getVectorIndex();
+            
+            // add its children to node_stack for further traversal
+            node_stack.push(child_1_index);
+            node_stack.push(child_2_index);
+        }
+    }
 }

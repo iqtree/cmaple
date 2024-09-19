@@ -625,6 +625,11 @@ class Params {
   bool make_consistent;
     
     /**
+     * TRUE to print ids of internal nodes in the newick tree
+     */
+    bool print_internal_ids;
+    
+    /**
      * TRUE to compute the SPRTA branch supports
      */
     bool compute_SPRTA;
@@ -638,6 +643,11 @@ class Params {
      * TRUE to print SPRTA supports for less-infomative seqs
      */
     bool print_SPRTA_less_info_seqs;
+    
+    /**
+     * TRUE to output the alternative branches with their supports in the tree
+     */
+    bool output_network;
     
     /**
      * A factor determines SPRs

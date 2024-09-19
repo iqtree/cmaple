@@ -175,7 +175,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         
         // Write the normal tree file
         ofstream out = ofstream(output_treefile);
-        out << tree.exportNewick(tree_format);
+        out << tree.exportNewick(tree_format, params.print_internal_ids);
         out.close();
         
         // output log-likelihood of the tree
