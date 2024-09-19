@@ -599,6 +599,7 @@ cmaple::Params::Params() {
   tree_search_type_str = "NORMAL";
   make_consistent = false;
   print_internal_ids = false;
+  output_NEXUS = false;
     compute_SPRTA = false;
     compute_SPRTA_zero_length_branches = false;
     print_SPRTA_less_info_seqs = false;
@@ -792,6 +793,13 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
       }
+        if (strcmp(argv[cnt], "--out-nexus") == 0 ||
+              strcmp(argv[cnt], "-out-nexus") == 0) {
+
+            params.output_NEXUS = true;
+
+            continue;
+        }
         if (strcmp(argv[cnt], "--out-internal") == 0 ||
               strcmp(argv[cnt], "-out-int") == 0) {
 

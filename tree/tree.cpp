@@ -188,6 +188,33 @@ std::string cmaple::Tree::exportNewick(const TreeType tree_type,
   }
 }
 
+std::string cmaple::Tree::exportNexus(const TreeType tree_type,
+                                       const bool show_branch_supports) {
+  assert(aln);
+  assert(model);
+    
+  // if branch supports have not been computed -> don't output them
+  bool branch_support_computed = node_lhs.size() >= 3 && node_lhs[nodes[root_vector_index].getNodelhIndex()].get_aLRT_SH() != -1;
+  bool show_branch_supports_checked = show_branch_supports;
+  if (show_branch_supports_checked && !branch_support_computed)
+    show_branch_supports_checked = false;
+    
+  // output the tree according to its type
+  switch (tree_type) {
+    case BIN_TREE:
+      return exportNexus(true, show_branch_supports_checked);
+      // break;
+    case MUL_TREE:
+      return exportNexus(false, show_branch_supports_checked);
+      // break;
+    case UNKNOWN_TREE:
+    default:
+      throw std::invalid_argument(
+          "Unknown tree type. Please use BIN_TREE or MUL_TREE");
+      // break;
+  }
+}
+
 std::ostream& cmaple::operator<<(std::ostream& out_stream, cmaple::Tree& tree) {
   out_stream << tree.exportNewick();
   return out_stream;
@@ -1201,7 +1228,24 @@ void cmaple::Tree::computeBranchSupportTemplate(
   cout.rdbuf(src_cout);
 }
 
-std::string cmaple::Tree::exportNodeString(const bool binary,
+std::string cmaple::Tree::exportStringAltBranch(const AltBranch& alt_branch)
+{
+    assert(internal_names.size());
+    
+    // extract the corresponding node
+    const NumSeqsType alt_node_id = alt_branch.branch_id.getVectorIndex();
+    const PhyloNode& alt_node = nodes[alt_node_id];
+    
+    // generate a string of alternative branch for an internal node
+    if (alt_node.isInternal())
+        return "in" + convertIntToString(internal_names[alt_node_id]) + ":" + convertDoubleToString(alt_branch.lh, 5);
+
+    // by default, generate a string of alternative branch for a leaf
+    return seq_names[alt_node.getSeqNameIndex()] + ":" + convertDoubleToString(alt_branch.lh, 5);
+}
+
+std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
+                                           const bool binary,
                                            const NumSeqsType node_vec_index,
                                            const bool print_internal_id,
                                            const bool show_branch_supports) {
@@ -1211,55 +1255,41 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
     
     // proceed annotations
     string annotation_str = "";
+    // only generate annotations if NEXUS format is used
     // add sprta score (if computed)
     // only output the supports of zero-length branches (if requested)
-    if (params->compute_SPRTA
+    if (!is_newick_format
+        && params->compute_SPRTA
         && (node.getUpperLength() > 0
             || params->compute_SPRTA_zero_length_branches))
     {
         annotation_str = "[&sprta=" +
-        convertDoubleToString(sprta_scores[node_vec_index]);
+        convertDoubleToString(sprta_scores[node_vec_index], 5);
         
         // add alternative placements (if needed)
-        /*if (params->output_network)
+        if (params->output_network)
         {
-            annotation_str += "/alternativePlacements={";
+            annotation_str += ",alternativePlacements={";
             
-            std::vector<cmaple::Index>& alt_branches = sprta_alt_branches[node_vec_index];
+            std::vector<cmaple::AltBranch>& alt_branches = sprta_alt_branches[node_vec_index];
             
             // add the first one
             if (alt_branches.size() > 0)
             {
                 // extract the corresponding node
-                const NumSeqsType alt_node_id = alt_branches[0].getVectorIndex();
-                const PhyloNode& aln_node = nodes[alt_node_id];
-                
-                // generate internal node name
-                if (aln_node.isInternal())
-                    annotation_str += "in" + convertIntToString(alt_node_id);
-                // or extract the leaf name
-                else
-                    annotation_str += seq_names[aln_node.getSeqNameIndex()];
+                annotation_str += exportStringAltBranch(alt_branches[0]);
             }
             
             // add the remainder
             for (auto i = 1; i < alt_branches.size(); ++i)
             {
                 // extract the corresponding node
-                const NumSeqsType alt_node_id = alt_branches[i].getVectorIndex();
-                const PhyloNode& aln_node = nodes[alt_node_id];
-                
-                // generate internal node name
-                if (aln_node.isInternal())
-                    annotation_str += "/in" + convertIntToString(alt_node_id);
-                // or extract the leaf name
-                else
-                    annotation_str += "/" + seq_names[aln_node.getSeqNameIndex()];
+                annotation_str += "," + exportStringAltBranch(alt_branches[i]);
             }
             
             // close the bracket
             annotation_str += "}";
-        }*/
+        }
         
         // close the square bracket
         annotation_str += "]";
@@ -1275,21 +1305,12 @@ std::string cmaple::Tree::exportNodeString(const bool binary,
       if (print_internal_id)
           internal_name = "in" + convertIntToString(internal_names[node_vec_index]);
       
-    /*bool add_comma = false;
-     for (Index neighbor_index:node.getNeighborIndexes(TOP))
-     {
-     if (!add_comma)
-     add_comma = true;
-     else
-     output += ",";
-     output += exportNodeString(binary, neighbor_index.getVectorIndex());
-     }*/
     output +=
-        exportNodeString(binary, node.getNeighborIndex(RIGHT).getVectorIndex(),
+        exportNodeString(is_newick_format, binary, node.getNeighborIndex(RIGHT).getVectorIndex(),
                          print_internal_id, show_branch_supports);
     output += ",";
     output +=
-        exportNodeString(binary, node.getNeighborIndex(LEFT).getVectorIndex(),
+        exportNodeString(is_newick_format, binary, node.getNeighborIndex(LEFT).getVectorIndex(),
                          print_internal_id, show_branch_supports);
   }
 
@@ -1332,7 +1353,85 @@ std::string cmaple::Tree::exportNewick(const bool binary,
     if (output_internal_name)
         genIntNames();
     
-  return exportNodeString(binary, root_vector_index, output_internal_name, show_branch_supports) + ";";
+  return exportNodeString(true, binary, root_vector_index, output_internal_name, show_branch_supports) + ";";
+}
+
+std::string cmaple::Tree::exportNexus(const bool binary,
+                                       const bool show_branch_supports) {
+  // make sure tree is not empty
+  if (nodes.size() < 3) {
+    return "";
+  }
+    
+    // generate the prefix, middle, and post of the output
+    const string pre_output = "#NEXUS\n"
+    "begin taxa;\n"
+    "\tdimensions ntax=";
+    const string mid_output_1 = ";\n"
+    "\ttaxlabels\n";
+    const string mid_output_2 = ";\n"
+    "end;\n"
+    "begin trees;\n"
+    "\ttree TREE1 = [&R] ";
+    const string post_output = "\nend;\n";
+    
+    
+    // list of leaves
+    string list_leaf_names = "";
+    
+    // list of internal nodes
+    string list_internal_names = "";
+    
+    // traverse the tree from the root to extract the names of nodes
+    NumSeqsType num_internal = 0;
+    stack<NumSeqsType> node_stack;
+    node_stack.push(root_vector_index);
+
+    // browse the tree
+    while (!node_stack.empty()) {
+        // extract the corresponding node
+        const NumSeqsType node_index = node_stack.top();
+        node_stack.pop();
+        PhyloNode& node = nodes[node_index];
+        
+        // If it is an internal node
+        if (node.isInternal())
+        {
+            // extract its name
+            list_internal_names += "\tin" + convertIntToString(internal_names[node_index]) + "\n";
+            
+            // increase the internal count
+            ++num_internal;
+            
+            // extract its children
+            const NumSeqsType child_1_index = node.getNeighborIndex(RIGHT).getVectorIndex();
+            const NumSeqsType child_2_index = node.getNeighborIndex(LEFT).getVectorIndex();
+            
+            // add its children to node_stack for further traversal
+            node_stack.push(child_1_index);
+            node_stack.push(child_2_index);
+        }
+        // otherwise, extract the leaf name
+        else
+        {
+            list_leaf_names += "\t" + seq_names[node.getSeqNameIndex()] + "\n";
+            
+            // also add less-info seqs
+            if (node.getLessInfoSeqs().size())
+            {
+                for (auto& seq_name_index: node.getLessInfoSeqs())
+                    list_leaf_names += "\t" + seq_names[seq_name_index] + "\n";
+            }
+        }
+    }
+    
+    // generate internal names
+    genIntNames();
+    
+  return pre_output + convertIntToString(seq_names.size() + num_internal) + mid_output_1
+    + list_leaf_names + list_internal_names + mid_output_2
+    + exportNodeString(false, binary, root_vector_index, true, show_branch_supports)
+    + ";" + post_output;
 }
 
 template <const StateType num_states>
@@ -1971,7 +2070,7 @@ void cmaple::Tree::addStartingNodes(
 template <const StateType num_states>
 bool cmaple::Tree::isDiffFromOrigPlacement(
     const cmaple::Index ori_parent_index,
-    const cmaple::Index new_placement_index,
+    cmaple::Index& new_placement_index,
     const cmaple::RealNumType best_mid_top_blength,
     const cmaple::RealNumType best_mid_bottom_blength,
     bool& is_root_considered)
@@ -2029,6 +2128,7 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
             if (new_placement_parent_vec == root_vector_index)
             {
                 is_root_considered = true;
+                new_placement_index = Index(root_vector_index, UNDEFINED);
                 return true;
             }
             
@@ -2309,13 +2409,14 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
         }
         
         // check if the new placement is sufficiently different from the original one
-        if (isDiffFromOrigPlacement<num_states>(ori_parent_index, at_node_index, best_mid_top_blength, best_mid_bottom_blength, is_root_considered))
+        cmaple::Index new_placement_index = at_node_index;
+        if (isDiffFromOrigPlacement<num_states>(ori_parent_index, new_placement_index, best_mid_top_blength, best_mid_bottom_blength, is_root_considered))
         {
             // re-compute the placement cost
             lh_diff_mid_branch = calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
-            alt_branches.push_back(AltBranch(lh_diff_mid_branch + lh_compensation, at_node_index));
+            alt_branches.push_back(AltBranch(lh_diff_mid_branch + lh_compensation, new_placement_index));
         }
     }
 
@@ -3043,28 +3144,42 @@ void cmaple::Tree::seekSubTreePlacement(
         
         // compute the SPRTA score
         if (!alt_branches.size())
+        {
             sprta_scores[child_node_index.getVectorIndex()] = 1.0;
+            
+            // clear the vector of alternative branches
+            if (params->output_network)
+                sprta_alt_branches[child_node_index.getVectorIndex()].clear();
+        }
         else
         {
             const RealNumType raw_ori_lh_diff =  std::exp(ori_best_lh_diff);
-            RealNumType total_spr_lhs = std::accumulate(alt_branches.begin(),
-                alt_branches.end(), raw_ori_lh_diff, [](double sum, AltBranch alt_branch) {
-                return sum + std::exp(alt_branch.lh); });
-            sprta_scores[child_node_index.getVectorIndex()] = raw_ori_lh_diff / total_spr_lhs;
-        }
-        
-        // store alternative branches (if needed)
-        if (params->output_network)
-        {
-            // reset the vector of alternative branches
-            std::vector<cmaple::Index>& alt_branches_at_node =
-                sprta_alt_branches[child_node_index.getVectorIndex()];
-            alt_branches_at_node.clear();
+            RealNumType total_spr_lhs = raw_ori_lh_diff;
             
-            // copy alt branches
-            alt_branches_at_node.resize(alt_branches.size());
-            for (auto i = 0; i < alt_branches.size(); ++i)
-                alt_branches_at_node[i] = alt_branches[i].branch_id;
+            // compute the raw lh of other alternative branches
+            for (AltBranch& branch : alt_branches)
+            {
+                branch.lh = std::exp(branch.lh);
+                
+                // update the total lh
+                total_spr_lhs += branch.lh;
+            }
+            
+            // compute the current sprta score
+            sprta_scores[child_node_index.getVectorIndex()] = raw_ori_lh_diff / total_spr_lhs;
+            
+            // store alternative branches (if needed)
+            if (params->output_network)
+            {
+                // compute the spr scores for other alternative branches
+                const RealNumType total_spr_lhs_inverse = 1.0 / total_spr_lhs;
+                for (AltBranch& alt_branch : alt_branches)
+                    alt_branch.lh *= total_spr_lhs_inverse;
+                    
+                // store the vector of alternative branches
+                sprta_alt_branches[child_node_index.getVectorIndex()] =
+                    std::move(alt_branches);
+            }
         }
     }
 

@@ -338,7 +338,7 @@ class Tree {
     /**
      Vector of alternative branches (when computing SPRTA)
      */
-    std::vector<std::vector<cmaple::Index>> sprta_alt_branches;
+    std::vector<std::vector<cmaple::AltBranch>> sprta_alt_branches;
     
     /**
      Vector of internal node names
@@ -393,6 +393,18 @@ class Tree {
    * @return a TreeType
    */
   static TreeType parseTreeType(const std::string& tree_type_str);
+    
+    /*! \brief Export the phylogenetic tree  to a string in NEXUS format.
+     * @param[in] tree_type The type of the output tree (optional): BIN_TREE
+     * (bifurcating tree), MUL_TREE (multifurcating tree)
+     * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
+     * values)
+     * @return A tree string in NEXUS format
+     * @throw std::invalid\_argument if any of the following situations occur.
+     * - tree\_type is unknown
+     */
+    std::string exportNexus(const TreeType tree_type = BIN_TREE,
+                             const bool show_branch_supports = true);
     
   /*! \endcond */
 
@@ -636,7 +648,7 @@ class Tree {
 template <const cmaple::StateType num_states>
 bool isDiffFromOrigPlacement(
     const cmaple::Index ori_parent_index,
-    const cmaple::Index new_placement_index,
+    cmaple::Index& new_placement_index,
     const cmaple::RealNumType best_mid_top_blength,
     const cmaple::RealNumType best_mid_bottom_blength,
     bool& is_root_considered);
@@ -1565,10 +1577,16 @@ bool isDiffFromOrigPlacement(
    @throw std::invalid\_argument if show\_branch\_supports = true but branch
    support values have yet been computed
    */
-  std::string exportNodeString(const bool binary,
+  std::string exportNodeString(const bool is_newick_format,
+                               const bool binary,
                                const cmaple::NumSeqsType node_vec_index,
                                const bool print_internal_id,
                                const bool show_branch_supports);
+    
+    /**
+     Export string of an alternative branch (for SPRTA)
+     */
+    std::string exportStringAltBranch(const AltBranch& alt_branch);
 
   /**
    Read an input tree from a stream
@@ -1647,6 +1665,12 @@ bool isDiffFromOrigPlacement(
    */
   std::string exportNewick(const bool binary, const bool print_internal_id,
                            const bool show_branch_supports);
+    
+    /**
+     Export tree std::string in NEXUS format
+     */
+    std::string exportNexus(const bool binary,
+                             const bool show_branch_supports);
 
   /**
    Increase the length of a 0-length branch (connecting this node to its parent)

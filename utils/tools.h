@@ -630,6 +630,11 @@ class Params {
     bool print_internal_ids;
     
     /**
+     * TRUE to also output tree in NEXUS format
+     */
+    bool output_NEXUS;
+    
+    /**
      * TRUE to compute the SPRTA branch supports
      */
     bool compute_SPRTA;
