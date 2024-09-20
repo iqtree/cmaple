@@ -1433,6 +1433,42 @@ std::string cmaple::Tree::exportNexus(const bool binary,
     + ";" + post_output;
 }
 
+std::string cmaple::Tree::exportTSV()
+{
+    // SPRTA must be already computed before exporting the TSV file
+    if (!(params->compute_SPRTA && sprta_scores.size() && params->output_network))
+        throw std::logic_error(
+            "To export a TSV file, SPRTA must be computed ('--sprta')"
+            " and network output must be selected ('--output-network')!");
+    
+    // the header
+    const string header = "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n";
+    
+    // compute the number of descendants for all nodes
+    computeNumDescendantsTree();
+    
+    // compute sprta_support_list - highlighting which nodes could be placed
+    // (with probability above threshold) on the branch above the current node
+    sprta_support_list.clear();
+    sprta_support_list.resize(sprta_alt_branches.size());
+    vector<AltBranch>* alt_branch_vec_ptr = &sprta_alt_branches[0];
+    // loop over all nodes
+    for (auto i = 0; i < sprta_alt_branches.size(); ++i, ++alt_branch_vec_ptr)
+    {
+        AltBranch* alt_branch = alt_branch_vec_ptr->data();
+        
+        // loop over the vector of alternative branches of each node
+        for (auto j = 0; j < alt_branch_vec_ptr->size(); ++j, ++alt_branch)
+        {
+            sprta_support_list[alt_branch->branch_id.getVectorIndex()]
+                .push_back(AltBranch(alt_branch->lh, Index(i, TOP)));
+        }
+    }
+    
+    // return the full content
+    return header + exportTsvContent();
+}
+
 template <const StateType num_states>
 void cmaple::Tree::updateMidBranchLh(
     const Index node_index,
@@ -9451,6 +9487,35 @@ void cmaple::Tree::updatePesudoCountModel(PhyloNode& node,
   }
 }
 
+void cmaple::Tree::computeNumDescendantsOfNode(PhyloNode& node,
+                                          const Index node_index,
+                                          const Index parent_index) {
+    assert(num_descendants.size() > 0);
+    // accumulate the number of descendants of a child node into its parent node
+    if (node.isInternal())
+        num_descendants[parent_index.getVectorIndex()] +=
+            num_descendants[node_index.getVectorIndex()];
+    // if the child node is a leaf, count itself and its less-info sequences
+    else
+    {
+        ++num_descendants[parent_index.getVectorIndex()];
+        
+        // also count the less-info sequences
+        num_descendants[parent_index.getVectorIndex()] += node.getLessInfoSeqs().size();
+    }
+}
+
+void cmaple::Tree::computeNumDescendantsTree()
+{
+    // initialize the vector of num_descendants
+    num_descendants = std::vector<NumSeqsType>(nodes.size(), 0);
+    
+    // perform a DFS -> at each internal node, update its number of
+    // descendants
+    performDFSv2<&cmaple::Tree::computeNumDescendantsOfNode>();
+
+}
+
 template <const StateType num_states>
 void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
                                               const Index node_index,
@@ -9797,4 +9862,96 @@ void cmaple::Tree::genIntNames()
             node_stack.push(child_2_index);
         }
     }
+}
+
+string cmaple::Tree::exportTsvContent()
+{
+    assert(num_descendants.size() == nodes.size());
+    assert(sprta_support_list.size() == nodes.size());
+    
+    string content = "";
+    
+    // traverse the tree from the root to extract the names of nodes
+    stack<NumSeqsType> node_stack;
+    node_stack.push(root_vector_index);
+
+    // browse the tree
+    while (!node_stack.empty()) {
+        // extract the corresponding node
+        const NumSeqsType node_index = node_stack.top();
+        node_stack.pop();
+        PhyloNode& node = nodes[node_index];
+        
+        // classify the support
+        string support_class = "";
+        const RealNumType support_score = sprta_scores[node_index];
+        if (support_score < 0.5)
+            support_class = "support<0.5";
+        else if (support_score < 0.9)
+            support_class = "support<0.9";
+        
+        // generate the list of nodes could be placed
+        // (with probability above threshold) on the branch above the current node
+        string support_to = "";
+        for (AltBranch& alt_branch : sprta_support_list[node_index])
+        {
+            // extract the node name
+            const NumSeqsType support_node_id = alt_branch.branch_id.getVectorIndex();
+            PhyloNode& support_node = nodes[support_node_id];
+            if (support_node.isInternal())
+                support_to += "in" + convertIntToString(internal_names[support_node_id]);
+            else
+                support_to += seq_names[support_node.getSeqNameIndex()];
+            
+            // add ":"
+            support_to += ":";
+            
+            // add the support score
+            support_to += convertDoubleToString(alt_branch.lh, 5) + ";";
+        }
+            
+        
+        // If it is an internal node
+        if (node.isInternal())
+        {
+            // extract content for an internal node
+            // "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n"
+            content += "in" + convertIntToString(internal_names[node_index])
+                + "\t\t" + convertDoubleToString(support_score, 5)
+                + "\trootSupport\t" + support_class + "\t" + convertIntToString(num_descendants[node_index])
+                + "\t" + support_to + "\n";
+            
+            // extract its children
+            const NumSeqsType child_1_index = node.getNeighborIndex(RIGHT).getVectorIndex();
+            const NumSeqsType child_2_index = node.getNeighborIndex(LEFT).getVectorIndex();
+            
+            // add its children to node_stack for further traversal
+            node_stack.push(child_1_index);
+            node_stack.push(child_2_index);
+        }
+        // otherwise, extract the leaf name
+        else
+        {
+            // extract content for a leaf
+            const string seq_name = seq_names[node.getSeqNameIndex()];
+            const string support_str = convertDoubleToString(support_score, 5);
+            // "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n"
+            content += seq_name
+                + "\t\t" + support_str
+                + "\trootSupport\t" + support_class + "\t0\t" + support_to + "\n";
+            
+            // also add less-info seqs
+            if (node.getLessInfoSeqs().size())
+            {
+                for (auto& seq_name_index: node.getLessInfoSeqs())
+                {
+                    content += seq_names[seq_name_index]
+                        + "\t" + seq_name + "_MinorSeqsClade\t" + support_str
+                        + "\t\t" + support_class + "\t0\t" + support_to + "\n";
+                }
+            }
+        }
+    }
+    
+    return content;
 }

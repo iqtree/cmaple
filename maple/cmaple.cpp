@@ -186,6 +186,14 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             out.close();
         }
         
+        // export a TSV file if SPRTA is computed and we output a network
+        if (params.compute_SPRTA && params.output_network)
+        {
+            ofstream out = ofstream(output_treefile + ".tsv");
+            out << tree.exportTSV();
+            out.close();
+        }
+        
         // output log-likelihood of the tree
         if (cmaple::verbose_mode > cmaple::VB_QUIET) {
           std::cout << std::setprecision(10)

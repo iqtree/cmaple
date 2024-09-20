@@ -341,6 +341,17 @@ class Tree {
     std::vector<std::vector<cmaple::AltBranch>> sprta_alt_branches;
     
     /**
+     The inverse of sprta_alt_branches
+     highlight which nodes could be placed (with probability above threshold) on the branch above the current node
+     */
+    std::vector<std::vector<cmaple::AltBranch>> sprta_support_list;
+    
+    /**
+     Vector of number of descendants of nodes
+     */
+    std::vector<NumSeqsType> num_descendants;
+    
+    /**
      Vector of internal node names
      */
     std::vector<NumSeqsType> internal_names;
@@ -405,6 +416,11 @@ class Tree {
      */
     std::string exportNexus(const TreeType tree_type = BIN_TREE,
                              const bool show_branch_supports = true);
+    
+    /**
+     Export a TSV file that contains useful information from SPRTA
+     */
+    std::string exportTSV();
     
   /*! \endcond */
 
@@ -1532,6 +1548,19 @@ bool isDiffFromOrigPlacement(
   void updatePesudoCountModel(PhyloNode& node,
                               const cmaple::Index node_index,
                               const cmaple::Index parent_index);
+    
+    /**
+     Compute the number of descendants of a node
+     */
+    void computeNumDescendantsOfNode(PhyloNode& node,
+                                const cmaple::Index node_index,
+                                const cmaple::Index parent_index);
+    
+    /**
+     Compute the number of descendants of all nodes
+     */
+    void computeNumDescendantsTree();
+
 
   /**
    Expand the tree by placing one less-info-seq
@@ -1671,6 +1700,11 @@ bool isDiffFromOrigPlacement(
      */
     std::string exportNexus(const bool binary,
                              const bool show_branch_supports);
+    
+    /**
+     Traverse the tree to export TSV content
+     */
+    std::string exportTsvContent();
 
   /**
    Increase the length of a 0-length branch (connecting this node to its parent)
