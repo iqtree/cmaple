@@ -890,6 +890,13 @@ std::string convertDoubleToString(RealNumType number);
 std::string convertDoubleToString(RealNumType number, uint8_t precision);
 
 /**
+ Replace the first subtring, found in a string, by a new one
+ */
+void replaceSubStr(std::string& input_str,
+                   const std::string& old_sub_str,
+                   const std::string& new_sub_str);
+
+/**
  Case-insensitive comparison between two strings
  @return true if two strings are equal.
  */

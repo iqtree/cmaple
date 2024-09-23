@@ -331,6 +331,11 @@ class Tree {
   std::vector<NodeLh> node_lhs;
     
     /**
+     Vector of the annotations of nodes
+     */
+    std::vector<std::string> annotations;
+    
+    /**
      Vector of the SPRTA scores
      */
     std::vector<RealNumType> sprta_scores;
@@ -1508,6 +1513,7 @@ bool isDiffFromOrigPlacement(
   const char readNextChar(std::istream& in,
                           cmaple::PositionType& in_line,
                           cmaple::PositionType& in_column,
+                          std::string& in_comment,
                           const char& current_ch = 0) const;
 
   /**
@@ -1522,6 +1528,7 @@ bool isDiffFromOrigPlacement(
       cmaple::RealNumType& branch_len,
       cmaple::PositionType& in_line,
       cmaple::PositionType& in_column,
+      std::string& in_comment,
       const std::map<std::string, cmaple::NumSeqsType>& map_seqname_index,
       bool& missing_blengths);
 

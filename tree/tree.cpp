@@ -727,6 +727,9 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
                  "sequence has been added!"
               << std::endl;
   }
+    
+    // resize the annotations to match the number of nodes
+    annotations.resize(nodes.size());
 
   // show the runtime for building an initial tree
   auto end = getRealTime();
@@ -1291,6 +1294,22 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
             annotation_str += "}";
         }
         
+        // add existing annotation from the input tree (if any)
+        if (!annotations[node_vec_index].empty())
+        {
+            string ext_atn = annotations[node_vec_index];
+            
+            // replace sprta (if existed)
+            replaceSubStr(ext_atn, "sprta=", "input_sprta=");
+            
+            // replace alternativePlacements (if existed)
+            replaceSubStr(ext_atn, "alternativePlacements=",
+                          "input_alternativePlacements=");
+            
+            // add the exist annotation into the output
+            annotation_str += "," + ext_atn;
+        }
+        
         // close the square bracket
         annotation_str += "]";
     }
@@ -1341,6 +1360,8 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
 std::string cmaple::Tree::exportNewick(const bool binary,
                                        const bool print_internal_id,
                                        const bool show_branch_supports) {
+    assert(annotations.size() == nodes.size());
+    
   // make sure tree is not empty
   if (nodes.size() < 3) {
     return "";
@@ -1358,6 +1379,8 @@ std::string cmaple::Tree::exportNewick(const bool binary,
 
 std::string cmaple::Tree::exportNexus(const bool binary,
                                        const bool show_branch_supports) {
+    assert(annotations.size() == nodes.size());
+    
   // make sure tree is not empty
   if (nodes.size() < 3) {
     return "";
@@ -8922,6 +8945,7 @@ NumSeqsType cmaple::Tree::parseFile(
     RealNumType& branch_len,
     PositionType& in_line,
     PositionType& in_column,
+    std::string& in_comment,
     const std::map<std::string, NumSeqsType>& map_seqname_index,
     bool& missing_blengths) {
   int maxlen = 1000;
@@ -8946,10 +8970,10 @@ NumSeqsType cmaple::Tree::parseFile(
   if (ch == '(') {
     MiniIndex child_mini = RIGHT;
 
-    ch = readNextChar(infile, in_line, in_column);
+    ch = readNextChar(infile, in_line, in_column, in_comment);
     while (ch != ')' && !infile.eof()) {
       const NumSeqsType tmp_node_vec =
-          parseFile(infile, ch, brlen, in_line, in_column, map_seqname_index,
+          parseFile(infile, ch, brlen, in_line, in_column, in_comment, map_seqname_index,
                     missing_blengths);
 
       if (child_mini == UNDEFINED) {
@@ -8986,6 +9010,13 @@ NumSeqsType cmaple::Tree::parseFile(
         missing_blengths = true;
       }
       node.setUpperLength(brlen);
+        
+        // set the annotation (if any)
+        if (in_comment.length() > 0)
+        {
+            annotations.resize(nodes.size());
+            annotations[tmp_node_vec] = std::move(in_comment);
+        }
 
       // change to the second child
       child_mini = (child_mini == RIGHT) ? LEFT : UNDEFINED;
@@ -8994,7 +9025,7 @@ NumSeqsType cmaple::Tree::parseFile(
         throw "Expecting ')', but end of file instead";
       }
       if (ch == ',') {
-        ch = readNextChar(infile, in_line, in_column);
+        ch = readNextChar(infile, in_line, in_column, in_comment);
       } else if (ch != ')') {
         string err = "Expecting ')', but found '";
         err += ch;
@@ -9003,7 +9034,7 @@ NumSeqsType cmaple::Tree::parseFile(
       }
     }
     if (!infile.eof()) {
-      ch = readNextChar(infile, in_line, in_column);
+      ch = readNextChar(infile, in_line, in_column, in_comment);
     }
   }
 
@@ -9032,7 +9063,7 @@ NumSeqsType cmaple::Tree::parseFile(
     }
   }
   if ((controlchar(ch) || ch == '[' || ch == end_ch) && !infile.eof()) {
-    ch = readNextChar(infile, in_line, in_column, ch);
+    ch = readNextChar(infile, in_line, in_column, in_comment, ch);
   }
   if (seqlen == maxlen) {
     throw "Too long name ( > 1000)";
@@ -9072,10 +9103,10 @@ NumSeqsType cmaple::Tree::parseFile(
   }
   // parse branch length
   if (ch == ':') {
-    // string saved_comment = in_comment;
-    ch = readNextChar(infile, in_line, in_column);
-    /*if (in_comment.empty())
-        in_comment = saved_comment;*/
+    string saved_comment = in_comment;
+    ch = readNextChar(infile, in_line, in_column, in_comment);
+    if (in_comment.empty())
+        in_comment = saved_comment;
     seqlen = 0;
     seqname = "";
     while (!is_newick_token(ch) && !controlchar(ch) && !infile.eof() &&
@@ -9087,7 +9118,7 @@ NumSeqsType cmaple::Tree::parseFile(
       in_column++;
     }
     if ((controlchar(ch) || ch == '[') && !infile.eof()) {
-      ch = readNextChar(infile, in_line, in_column, ch);
+      ch = readNextChar(infile, in_line, in_column, in_comment, ch);
     }
     if (seqlen == maxlen || infile.eof()) {
       throw "branch length format error.";
@@ -9109,6 +9140,7 @@ NumSeqsType cmaple::Tree::parseFile(
 const char cmaple::Tree::readNextChar(std::istream& in,
                                       PositionType& in_line,
                                       PositionType& in_column,
+                                      std::string& in_comment,
                                       const char& current_ch) const {
   char ch;
   if (current_ch == '[') {
@@ -9132,7 +9164,7 @@ const char cmaple::Tree::readNextChar(std::istream& in,
       in_column = 1;
     }
   }
-  string in_comment = "";
+  in_comment = "";
   // ignore comment
   while (ch == '[' && !in.eof()) {
     while (ch != ']' && !in.eof()) {
@@ -9163,9 +9195,9 @@ const char cmaple::Tree::readNextChar(std::istream& in,
         in_column = 1;
       }
     }
-    if (in_comment.length() && cmaple::verbose_mode > cmaple::VB_QUIET) {
+    /*if (in_comment.length() && cmaple::verbose_mode > cmaple::VB_QUIET) {
       std::cout << "Ignore [" + in_comment + "]" << std::endl;
-    }
+    }*/
   }
   return ch;
 }
@@ -9247,11 +9279,11 @@ bool cmaple::Tree::readTree(std::istream& tree_stream) {
   // Read tree from the stream
   PositionType in_line = 1;
   PositionType in_column = 1;
-  // std::string in_comment{};
+  std::string in_comment = "";
 
   try {
     char ch;
-    ch = readNextChar(tree_stream, in_line, in_column);
+    ch = readNextChar(tree_stream, in_line, in_column, in_comment);
     if (ch != '(') {
       cout << tree_stream.rdbuf() << endl;
       throw "Tree file does not start with an opening-bracket '('";
@@ -9259,19 +9291,34 @@ bool cmaple::Tree::readTree(std::istream& tree_stream) {
 
     RealNumType branch_len;
     const NumSeqsType tmp_node_vec =
-        parseFile(tree_stream, ch, branch_len, in_line, in_column, map_seqname_index,
-                  missing_blengths);
+        parseFile(tree_stream, ch, branch_len, in_line, in_column, in_comment,
+                  map_seqname_index, missing_blengths);
+      
+      // make sure the vector of annotations has the same size as the vector of nodes
+      annotations.resize(nodes.size());
+      annotations[tmp_node_vec] = std::move(in_comment);
+      // remove the first character "&" in annotations
+      for (auto& annotation : annotations)
+      {
+          // Check if the string starts with '&'
+          if (!annotation.empty() && annotation[0] == '&') {
+              // Remove the '&' character
+              annotation = annotation.substr(1);
+          }
+      }
 
     // set root
     if (nodes[tmp_node_vec].isInternal()) {
       root_vector_index = tmp_node_vec;
     } else {
+        // TODO: update the tree after re-rooting
       for (NumSeqsType i = 0; i < nodes.size(); ++i)
         if (nodes[i].isInternal()) {
           root_vector_index = i;
           break;
         }
     }
+    
     // 2018-01-05: assuming rooted tree if root node has two children
     /*if (is_rooted || (branch_len != 0.0) || node->degree() == 2) {
         if (branch_len == -1.0) branch_len = 0.0;

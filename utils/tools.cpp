@@ -161,6 +161,19 @@ std::string cmaple::convertDoubleToString(RealNumType number,
   return ss.str();  // return a string with the contents of the stream
 }
 
+void cmaple::replaceSubStr(std::string& input_str,
+                   const std::string& old_sub_str,
+                   const std::string& new_sub_str)
+{
+    // find the old sub string in the input string
+    size_t pos = input_str.find(old_sub_str);
+    
+    // If the substring is found, replace it
+    if (pos != std::string::npos) {
+        input_str.replace(pos, old_sub_str.length(), new_sub_str);
+    }
+}
+
 auto cmaple::iEquals(const string& a, const string& b) -> bool {
   unsigned int sz = static_cast<unsigned int>(a.size());
   if (b.size() != sz) {
