@@ -1634,7 +1634,19 @@ bool isDiffFromOrigPlacement(
 
    @throw std::bad\_alloc if failing to allocate memory to store the tree
    */
-  bool readTree(std::istream& tree_stream);
+  bool readTree(std::istream& tree_stream, PositionType& in_line);
+    
+    /**
+     Read an input tree (in Nexus format) from a stream
+     @return TRUE if the tree contains any branch without a length
+     @throw std::invalid\_argument if the tree in an incorrect format
+     @throw std::logic\_error if any of the following situations occur.
+     - any taxa in the tree is not found in the alignment
+     - unexpected values/behaviors found during the operations
+
+     @throw std::bad\_alloc if failing to allocate memory to store the tree
+     */
+    bool readNexusTree(std::istream& tree_stream, PositionType& in_line);
 
   /**
    Check if the current tree is complete (i.e., containing all sequences from

@@ -374,7 +374,8 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
   resetSeqAdded();
 
   // read tree from the input treefile
-  bool missing_blength = readTree(tree_stream);
+  PositionType in_line = 1;
+  bool missing_blength = readTree(tree_stream, in_line);
 
   // make sure users can only keep the blengths fixed if they input a complete
   // tree with branch lengths
@@ -9265,7 +9266,81 @@ void cmaple::Tree::remarkExistingSeqs() {
   }
 }
 
-bool cmaple::Tree::readTree(std::istream& tree_stream) {
+bool cmaple::Tree::readNexusTree(std::istream& tree_stream, PositionType& in_line) {
+    std::string line;
+    bool first_line = true;
+    bool begin_tree_found = false;
+
+    // Read the stream line by line return
+    while (tree_stream.peek() != EOF &&  std::getline(tree_stream, line))
+    {
+        // first line must be NEXUS
+        if (first_line)
+        {
+            // transform line into uppercase
+            transform(line.begin(), line.end(), line.begin(), ::toupper);
+            
+            // check if it's nexus
+            // could be improved further to handle redundant charaters,
+            // e.g., spaces, tabs, etc
+            if (line != "NEXUS")
+                throw "NEXUS treefile must start with #NEXUS";
+            
+            // update first_line flag
+            first_line = false;
+        }
+        // look for the key word "begin trees;"
+        else if (!begin_tree_found)
+        {
+            // transform line into uppercase
+            transform(line.begin(), line.end(), line.begin(), ::toupper);
+            
+            // check the key word
+            // could be improved further to handle redundant charaters,
+            // e.g., spaces, tabs, etc
+            if (line == "BEGIN TREES;")
+                begin_tree_found = true;
+        }
+        else if (begin_tree_found)
+        {
+            // ignore empty line
+            if (line.length() > 0)
+            {
+                // remove the prefix "tree TREE1 = [&R] " -> start at "("
+                // find "(" in the line content
+                size_t pos = line.find("(");
+                
+                // If "(" is found, parse the tree
+                if (pos != std::string::npos)
+                {
+                    line = line.substr(pos);
+                    
+                    // parse the newick string
+                    std::istringstream nwk_str(line);
+                    return readTree(nwk_str, in_line);
+                    
+                }
+                // otherwise, throw an error
+                else
+                {
+                    throw "Couldn't find a Newick string "
+                    "starting with '(' after 'Begin trees;'";
+                }
+            }
+        }
+        
+        // update the line count
+        ++in_line;
+    }
+
+    // default return, we shouldn't reach this line
+    // unless we coudn't find the newick string
+    throw "Couldn't find a Newick string (after 'Begin trees;')";
+    return false;
+}
+
+bool cmaple::Tree::readTree(std::istream& tree_stream,
+                            PositionType& in_line) {
   // Flag to check whether the tree contains missing branch length
   bool missing_blengths = false;
 
@@ -9277,7 +9352,6 @@ bool cmaple::Tree::readTree(std::istream& tree_stream) {
   }
 
   // Read tree from the stream
-  PositionType in_line = 1;
   PositionType in_column = 1;
   std::string in_comment = "";
 
@@ -9285,8 +9359,18 @@ bool cmaple::Tree::readTree(std::istream& tree_stream) {
     char ch;
     ch = readNextChar(tree_stream, in_line, in_column, in_comment);
     if (ch != '(') {
-      cout << tree_stream.rdbuf() << endl;
-      throw "Tree file does not start with an opening-bracket '('";
+        // if starting with "#", assume that it's a nexus file
+        if (ch == '#')
+        {
+            cout << "Assuming input tree in NEXUS format" << endl;
+            return readNexusTree(tree_stream, in_line);
+        }
+        // otherwise, throw an error
+        else
+        {
+            cout << tree_stream.rdbuf() << endl;
+            throw "Tree file does not start with an opening-bracket '('";
+        }
     }
 
     RealNumType branch_len;
