@@ -3209,11 +3209,16 @@ void cmaple::Tree::seekSubTreePlacement(
                 // compute the spr scores for other alternative branches
                 const RealNumType total_spr_lhs_inverse = 1.0 / total_spr_lhs;
                 for (AltBranch& alt_branch : alt_branches)
+                {
                     alt_branch.lh *= total_spr_lhs_inverse;
                     
-                // store the vector of alternative branches
-                sprta_alt_branches[child_node_index.getVectorIndex()] =
-                    std::move(alt_branches);
+                    // store the vector of alternative branches
+                    // only consider alternative branches
+                    // with supports no less than the min branch support
+                    if (alt_branch.lh >= params->min_support_alt_branches)
+                        sprta_alt_branches[child_node_index.getVectorIndex()]
+                        .push_back(std::move(alt_branch));
+                }
             }
         }
     }
@@ -9907,7 +9912,7 @@ string cmaple::Tree::exportTsvContent()
             support_to += ":";
             
             // add the support score
-            support_to += convertDoubleToString(alt_branch.lh, 5) + ";";
+            support_to += convertDoubleToString(alt_branch.lh, 5) + ",";
         }
             
         

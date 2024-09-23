@@ -655,6 +655,12 @@ class Params {
     bool output_network;
     
     /**
+     * The minimum SPRTA support to be considered as
+     * an alternative branches (for outputting a network)
+     */
+    RealNumType min_support_alt_branches;
+    
+    /**
      * A factor determines SPRs
      * are close to the optimal one when computing SPRTA.
      * This factor is relative to the reference length.

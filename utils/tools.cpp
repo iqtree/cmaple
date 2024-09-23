@@ -604,6 +604,7 @@ cmaple::Params::Params() {
     compute_SPRTA_zero_length_branches = false;
     print_SPRTA_less_info_seqs = false;
     output_network = false;
+    min_support_alt_branches = 0.01;
     thresh_loglh_optimal_diff_fac = 1.0;
 
   // initialize random seed based on current time
@@ -1146,6 +1147,25 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         if (strcmp(argv[cnt], "--output-network") == 0 ||
             strcmp(argv[cnt], "-out-nwk") == 0) {
           params.output_network = true;
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--min-support-alt") == 0 ||
+            strcmp(argv[cnt], "-min-sup-alt") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError("Use --min-support-alt <MIN_SUPPORT>");
+          }
+
+          try {
+            params.min_support_alt_branches = convert_real_number(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.min_support_alt_branches <= 0) {
+            outError("<MIN_SUPPORT> must be positive!");
+          }
 
           continue;
         }
