@@ -1,6 +1,7 @@
 #include "../alignment/alignment.h"
 #include "../model/model.h"
 #include "updatingnode.h"
+#include "rootcandidate.h"
 #include "altbranch.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -685,6 +686,37 @@ bool isDiffFromOrigPlacement(
                         const cmaple::Index& other_child_node_index,
                         const cmaple::RealNumType best_lh_diff,
                         std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
+    
+    /**
+     Add start nodes for root assessment
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    void addStartingRootCandidate(const NumSeqsType& node_vec_id,
+                                  std::stack<std::unique_ptr<RootCandidate>>& node_stack);
+    
+    /**
+     Add nodes for root assessment
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    void addChildrenAsRootCandidate(const std::unique_ptr<SeqRegions>& incoming_regions_ref,
+                          const cmaple::RealNumType branch_length,
+                          const cmaple::RealNumType lh_deducted,
+                          const cmaple::RealNumType lh_diff,
+                          const short int failure_count,
+                          PhyloNode& parent_node,
+                          std::stack<std::unique_ptr<RootCandidate>>& node_stack);
+    
+    /**
+     Reroot the current tree
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    void reroot(const NumSeqsType& new_root_vec_id);
 
   /**
    Examine placing a subtree at a mid-branch point
@@ -1781,6 +1813,14 @@ bool isDiffFromOrigPlacement(
       cmaple::RealNumType& opt_appending_blength,
       cmaple::RealNumType& opt_mid_top_blength,
       cmaple::RealNumType& opt_mid_bottom_blength); 
+    
+    /**
+     Seek the best root position
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    NumSeqsType seekBestRoot();
 
   /**
    Place a new sample at a mid-branch point
@@ -1996,7 +2036,7 @@ bool isDiffFromOrigPlacement(
   bool keepTraversing(const RealNumType& best_lh_diff,
                         const RealNumType& lh_diff_at_node,
                         const bool& strict_stop_seeking_placement_subtree,
-                        const std::unique_ptr<UpdatingNode>& updating_node,
+                        const short int& failure_count,
                         const int& failure_limit_subtree,
                         const RealNumType& thresh_log_lh_subtree,
                               const bool able2traverse = true);

@@ -808,6 +808,35 @@ void cmaple::Tree::applySPRTemplate(
   // tree.params->debug = true;
   // string output_file(params->output_prefix);
   // exportOutput(output_file + "_init.treefile");
+    
+    // seek a better root (if allowed or we need to compute root assessment scores)
+    if (tree_search_type != FAST_TREE_SEARCH
+        || params->compute_SPRTA)
+    {
+        if (cmaple::verbose_mode >= cmaple::VB_MED)
+        {
+            std::cout << "Assessing root position" << std::endl;
+        }
+        
+        // seek the best root
+        const NumSeqsType best_root_vec_id = seekBestRoot<num_states>();
+        
+        // if found a better root and we're allowed to reroot the tree
+        // -> do it
+        if (best_root_vec_id != root_vector_index)
+        {
+            if (cmaple::verbose_mode >= cmaple::VB_MED)
+                std::cout << "Better root found." << std::endl;
+            
+            // reroot the tree (if allowed)
+            if (tree_search_type != FAST_TREE_SEARCH)
+            {
+                if (cmaple::verbose_mode >= cmaple::VB_MED)
+                    std::cout << "Rerooting the tree." << std::endl;
+                reroot<num_states>(best_root_vec_id);
+            }
+        }
+    }
 
   // run a shallow (short range) search for tree topology improvement (if
   // neccessary) Don't apply shallow tree search if users chose no tree search
@@ -2618,20 +2647,20 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
 bool cmaple::Tree::keepTraversing(const RealNumType& best_lh_diff,
                     const RealNumType& lh_diff_at_node,
                     const bool& strict_stop_seeking_placement_subtree,
-                    const std::unique_ptr<UpdatingNode>& updating_node,
+                    const short int& failure_count,
                     const int& failure_limit_subtree,
                     const RealNumType& thresh_log_lh_subtree,
                     const bool able2traverse) {
   // if (search_subtree_placement)
   //{
   if (strict_stop_seeking_placement_subtree) {
-    if (updating_node->getFailureCount() <= failure_limit_subtree &&
+    if (failure_count <= failure_limit_subtree &&
         lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree) &&
         able2traverse) {
       return true;
     }
   } else {
-    if ((updating_node->getFailureCount() <= failure_limit_subtree ||
+    if ((failure_count <= failure_limit_subtree ||
          lh_diff_at_node > (best_lh_diff - thresh_log_lh_subtree)) &&
         able2traverse) {
       return true;
@@ -3089,7 +3118,7 @@ void cmaple::Tree::seekSubTreePlacement(
       // further down to the children
       if (keepTraversing(
               best_lh_diff, lh_diff_at_node,
-              strict_stop_seeking_placement_subtree, updating_node,
+              strict_stop_seeking_placement_subtree, updating_node->getFailureCount(),
               failure_limit_subtree, thresh_log_lh_subtree,
               current_node.isInternal()))  // updating_node->node->next))
       {
@@ -3167,7 +3196,7 @@ void cmaple::Tree::seekSubTreePlacement(
       // check stop rule of the traversal process
       // keep traversing upwards
       if (keepTraversing(best_lh_diff, lh_diff_at_node,
-                         strict_stop_seeking_placement_subtree, updating_node,
+                         strict_stop_seeking_placement_subtree, updating_node->getFailureCount(),
                          failure_limit_subtree, thresh_log_lh_subtree)) {
         // if(!addNeighborsSeekSubtreePlacement(top_node_index,
         // other_child_index, parent_upper_lr_regions, bottom_regions,
@@ -9395,12 +9424,12 @@ bool cmaple::Tree::readTree(std::istream& tree_stream,
     if (nodes[tmp_node_vec].isInternal()) {
       root_vector_index = tmp_node_vec;
     } else {
-        // TODO: update the tree after re-rooting
-      for (NumSeqsType i = 0; i < nodes.size(); ++i)
+        throw "root is not an internal node";
+      /*for (NumSeqsType i = 0; i < nodes.size(); ++i)
         if (nodes[i].isInternal()) {
           root_vector_index = i;
           break;
-        }
+        }*/
     }
     
     // 2018-01-05: assuming rooted tree if root node has two children
@@ -9447,7 +9476,9 @@ bool cmaple::Tree::readTree(std::istream& tree_stream,
     throw std::invalid_argument(str + " (line " + convertIntToString(in_line) +
                                 " column " + convertIntToString(in_column - 1) +
                                 ")");
-  } catch (...) {
+  } catch (std::invalid_argument const& ex){
+      throw ex;
+  }catch (...) {
     // anything else
     std::string err_msg(ERR_READ_ANY);
     throw std::invalid_argument(err_msg + " (line " +
@@ -10090,4 +10121,357 @@ string cmaple::Tree::exportTsvContent()
     }
     
     return content;
+}
+
+template <const StateType num_states>
+NumSeqsType cmaple::Tree::seekBestRoot()
+{
+    assert(aln);
+    assert(model);
+    assert(aln->ref_seq.size() > 0);
+    assert(nodes.size() > 2);
+    
+    // if the current root is not an internal node
+    // select its parent as the new root
+    if (!nodes[root_vector_index].isInternal())
+    {
+        // get the current root node
+        PhyloNode& old_root_node = nodes[root_vector_index];
+        
+        // change the root to its parent
+        root_vector_index = old_root_node.getNeighborIndex(TOP).getVectorIndex();
+    }
+    
+    // init variables
+    cmaple::NumSeqsType best_node_vec_index = root_vector_index;
+    RealNumType best_lh_diff = 0;
+    const RealNumType threshold_prob = params->threshold_prob;
+    // stack of nodes to examine the root position
+    stack<std::unique_ptr<RootCandidate>> node_stack;
+    PositionType candidate_count = 0;
+    PositionType candidate_count_1K = 0;
+    
+    // get/init approximation params
+    bool strict_stop_seeking_placement_subtree =
+    params->strict_stop_seeking_placement_subtree;
+    int failure_limit_subtree = params->failure_limit_subtree;
+    RealNumType thresh_log_lh_subtree = params->thresh_log_lh_subtree;
+    
+    // add starting nodes to start the root assessment
+    addStartingRootCandidate<num_states>(root_vector_index, node_stack);
+    
+    // examine each node in the node stack to seek the "best" root
+    while (!node_stack.empty())
+    {
+        // extract root candidate from stack
+        std::unique_ptr<RootCandidate> root_candidate = std::move(node_stack.top());
+        node_stack.pop();
+        
+        const Index candidate_index = root_candidate->getIndex();
+        const NumSeqsType candidate_vec_id = candidate_index.getVectorIndex();
+        PhyloNode& candidate_node = nodes[candidate_vec_id];
+        const RealNumType half_blength = candidate_node.getUpperLength() * 0.5;
+        
+        // compute the likelihood contribution when merging this node and the passing subtree
+        std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
+        const RealNumType lh_contribution_by_merging = candidate_node.getPartialLh(TOP)
+            ->mergeTwoLowers<num_states>(lower_regions_merged, half_blength,
+                *(root_candidate->getIncomingRegions()), half_blength, aln,
+                model, cumulative_rate, threshold_prob, true);
+        
+        // compute the likelihood contribution by merging the total lh with the state freqs
+        const RealNumType lh_contribution_at_root = lower_regions_merged
+            ->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
+        
+        // compute the total score, taking into account the likelihood deduction and contribution
+        const RealNumType score = lh_contribution_by_merging + lh_contribution_at_root
+                                    - root_candidate->getLhDeducted();
+       
+        // check wheter we find a better root
+        if (score > best_lh_diff)
+        {
+            best_lh_diff = score;
+            best_node_vec_index = candidate_vec_id;
+            root_candidate->setFailureCount(0);
+        }
+        // otherwise, if the new score is worser than the last found by a certain amount
+        // -> count it as a failure
+        else if (score < root_candidate->getLhDiff() - params->thresh_log_lh_failure)
+        {
+            root_candidate->increaseFailureCount();
+        }
+            
+        // keep crawling down into children nodes unless the stop criteria for the
+        // traversal are satisfied. check the stop criteria keep traversing
+        // further down to the children
+        if (keepTraversing(
+                           best_lh_diff, score,
+                           strict_stop_seeking_placement_subtree, root_candidate->getFailureCount(),
+                           failure_limit_subtree, thresh_log_lh_subtree, true))
+        {
+            addChildrenAsRootCandidate<num_states>(root_candidate->getIncomingRegions(),
+                            candidate_node.getUpperLength(), root_candidate->getLhDeducted(),
+                            score, root_candidate->getFailureCount(), candidate_node, node_stack);
+        }
+        
+        // Show log every 1000 nodes
+        ++candidate_count;
+        if (cmaple::verbose_mode >= cmaple::VB_MED
+            && candidate_count - candidate_count_1K >= 1000) {
+            std::cout << "Processed " << convertIntToString(candidate_count)
+               << " nodes for root assessment." << std::endl;
+            candidate_count_1K = candidate_count;
+        }
+    }
+        
+        // compute SPRTA (if needed)
+        /*if (params->compute_SPRTA)
+         {
+         // filter out lhs of SPRs that are not close enough to the optimal one
+         const RealNumType lower_bound_lhs = best_lh_diff - params->thresh_loglh_optimal_diff;
+         alt_branches.erase(std::remove_if(
+         alt_branches.begin(), alt_branches.end(),
+         [&lower_bound_lhs](AltBranch alt_branch)
+         { return alt_branch.lh < lower_bound_lhs; }),
+         alt_branches.end());
+         
+         // compute the SPRTA score
+         if (!alt_branches.size())
+         {
+         sprta_scores[child_node_index.getVectorIndex()] = 1.0;
+         
+         // clear the vector of alternative branches
+         if (params->output_network)
+         sprta_alt_branches[child_node_index.getVectorIndex()].clear();
+         }
+         else
+         {
+         const RealNumType raw_ori_lh_diff =  std::exp(ori_best_lh_diff);
+         RealNumType total_spr_lhs = raw_ori_lh_diff;
+         
+         // compute the raw lh of other alternative branches
+         for (AltBranch& branch : alt_branches)
+         {
+         branch.lh = std::exp(branch.lh);
+         
+         // update the total lh
+         total_spr_lhs += branch.lh;
+         }
+         
+         // compute the current sprta score
+         sprta_scores[child_node_index.getVectorIndex()] = raw_ori_lh_diff / total_spr_lhs;
+         
+         // store alternative branches (if needed)
+         if (params->output_network)
+         {
+         // compute the spr scores for other alternative branches
+         const RealNumType total_spr_lhs_inverse = 1.0 / total_spr_lhs;
+         for (AltBranch& alt_branch : alt_branches)
+         {
+         alt_branch.lh *= total_spr_lhs_inverse;
+         
+         // store the vector of alternative branches
+         // only consider alternative branches
+         // with supports no less than the min branch support
+         if (alt_branch.lh >= params->min_support_alt_branches)
+         sprta_alt_branches[child_node_index.getVectorIndex()]
+         .push_back(std::move(alt_branch));
+         }
+         }
+         }
+         }*/
+    
+    // return the best root found
+    return best_node_vec_index;
+}
+ 
+template <const StateType num_states>
+void cmaple::Tree::addStartingRootCandidate(
+    const NumSeqsType& node_vec_id,
+    std::stack<std::unique_ptr<RootCandidate>>& node_stack)
+{
+    PhyloNode& node = nodes[node_vec_id];
+    assert(node.isInternal() && "The initial root must be an internal node");
+    const Index child_1_index = node.getNeighborIndex(LEFT);
+    const Index child_2_index = node.getNeighborIndex(RIGHT);
+    PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
+    PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
+    std::unique_ptr<SeqRegions>& lower_regions_child_1 =
+        child_1.getPartialLh(TOP);
+    std::unique_ptr<SeqRegions>& lower_regions_child_2 =
+        child_2.getPartialLh(TOP);
+    const RealNumType total_blength = child_1.getUpperLength()
+        + child_2.getUpperLength();
+    
+    // compute the current likelihood contribution by merging likelihood
+    // at root with the state frequencies
+    RealNumType lh_contribution_at_root =
+        node.getPartialLh(TOP)->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
+    
+    // compute the likelihood contribution
+    // by merging two lower regions from the two children
+    std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
+    lh_contribution_at_root +=
+        lower_regions_child_1->mergeTwoLowers<num_states>(lower_regions_merged,
+        child_1.getUpperLength(), *lower_regions_child_2, child_2.getUpperLength(),
+        aln, model, cumulative_rate, params->threshold_prob, true);
+    
+    // add child 1 (if it's an internal node)
+    if (child_1.isInternal())
+    {
+        addChildrenAsRootCandidate<num_states>(lower_regions_child_2,
+                         total_blength, lh_contribution_at_root,
+                         0, 0, child_1, node_stack);
+    }
+    
+    // add child 2 (if it's an internal node)
+    if (child_2.isInternal())
+    {
+        addChildrenAsRootCandidate<num_states>(lower_regions_child_1,
+                         total_blength, lh_contribution_at_root,
+                         0, 0, child_2, node_stack);
+    }
+}
+
+template <const StateType num_states>
+void cmaple::Tree::addChildrenAsRootCandidate(
+    const std::unique_ptr<SeqRegions>& incoming_regions_ref,
+    const cmaple::RealNumType branch_length,
+    const cmaple::RealNumType lh_deducted,
+    const cmaple::RealNumType last_lh,
+    const short int failure_count,
+    PhyloNode& parent_node,
+    std::stack<std::unique_ptr<RootCandidate>>& node_stack)
+{
+    // only consider adding children if the current parent node is an internal
+    if (parent_node.isInternal())
+    {
+        // extract the two children
+        const Index child_1_index = parent_node.getNeighborIndex(LEFT);
+        const Index child_2_index = parent_node.getNeighborIndex(RIGHT);
+        PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
+        PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
+        std::unique_ptr<SeqRegions>& lower_regions_child_1 =
+            child_1.getPartialLh(TOP);
+        std::unique_ptr<SeqRegions>& lower_regions_child_2 =
+            child_2.getPartialLh(TOP);
+        
+        // compute the likelihood we need to deduct when we un-merge the two children
+        std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
+        const RealNumType new_lh_deducted = lh_deducted + lower_regions_child_1->mergeTwoLowers<num_states>(lower_regions_merged, child_1.getUpperLength(), *lower_regions_child_2, child_2.getUpperLength(), aln, model, cumulative_rate, params->threshold_prob);
+        
+        // add child 1 as a new candidate
+        // compute the likelihood contribution when merging the other child and the remaining subtree
+        std::unique_ptr<SeqRegions> upper_regions_merged = nullptr;
+        const  RealNumType lh_deducted_child_1 = new_lh_deducted - lower_regions_child_2->mergeTwoLowers<num_states>(upper_regions_merged, child_2.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob);
+        
+        node_stack.push(cmaple::make_unique<RootCandidate>(
+            RootCandidate(child_1_index, std::move(upper_regions_merged), child_1.getUpperLength(),
+                          lh_deducted_child_1, last_lh, failure_count)));
+        
+        // add child 2 as a new candidate
+        // compute the likelihood contribution when merging the other child and the remaining subtree
+        upper_regions_merged = nullptr;
+        const  RealNumType lh_deducted_child_2 = new_lh_deducted - lower_regions_child_1->mergeTwoLowers<num_states>(upper_regions_merged, child_1.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob);
+        
+        node_stack.push(cmaple::make_unique<RootCandidate>(
+            RootCandidate(child_2_index, std::move(upper_regions_merged), child_2.getUpperLength(),
+                          lh_deducted_child_2, last_lh, failure_count)));
+        
+    }
+}
+
+template <const StateType num_states>
+void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
+{
+    // only reroot if the selected node is not the current root
+    if (new_root_vec_id != root_vector_index)
+    {
+        PhyloNode& selected_node = nodes[new_root_vec_id];
+        
+        // remember the parent of the selected node
+        const Index parent_selected_node_index =
+            selected_node.getNeighborIndex(TOP);
+        
+        // don't reroot if the selected node is a child of the current root
+        if (parent_selected_node_index.getVectorIndex() == root_vector_index)
+            return;
+        
+        // start from the parent of the selected node
+        Index node_index = parent_selected_node_index;
+        // remember the length of the upper branch of the considered node
+        PhyloNode& considered_node = nodes[node_index.getVectorIndex()];
+        RealNumType upper_blength = considered_node.getUpperLength();
+        // remember the parent of the considered node
+        Index old_parent_index = considered_node.getNeighborIndex(TOP);
+
+        // traverse upward until we reach the child of the current root
+        while (old_parent_index.getVectorIndex() != root_vector_index)
+        {
+            PhyloNode& node = nodes[node_index.getVectorIndex()];
+            const NumSeqsType old_parent_vec_id = old_parent_index.getVectorIndex();
+            PhyloNode& old_parent_node = nodes[old_parent_vec_id];
+            
+            // remember the length of the upper branch of the old parent
+            RealNumType old_parent_upper_blength = old_parent_node.getUpperLength();
+            // remember the current parent of the old parent
+            Index parent_old_parent_index = old_parent_node.getNeighborIndex(TOP);
+            
+            // the old parent becomes the child of the considered node
+            node.setNeighborIndex(node_index.getMiniIndex(), Index(old_parent_vec_id, TOP));
+            
+            // the considered node becomes the parent node of the old parent
+            old_parent_node.setNeighborIndex(TOP, node_index);
+            old_parent_node.setUpperLength(upper_blength);
+            
+            // move upward one node
+            node_index = old_parent_index;
+            upper_blength = old_parent_upper_blength;
+            old_parent_index = parent_old_parent_index;
+        }
+        
+        // we must be at the child of the current root
+        assert(old_parent_index.getVectorIndex() == root_vector_index);
+        
+        // get the current consider node
+        PhyloNode& node = nodes[node_index.getVectorIndex()];
+        // get the old parent node, i.e., the current root
+        PhyloNode& old_parent_node = nodes[old_parent_index.getVectorIndex()];
+        // get the sibling of the considered node
+        const Index sibling_index = old_parent_node
+            .getNeighborIndex(old_parent_index.getFlipMiniIndex());
+        const NumSeqsType sibling_vec_id = sibling_index.getVectorIndex();
+        PhyloNode& sibling_node = nodes[sibling_vec_id];
+        
+        // the sibling becomes a child of the considered node
+        node.setNeighborIndex(node_index.getMiniIndex(), Index(sibling_vec_id, TOP));
+        
+        // the considered node becomes the parent of its sibling
+        sibling_node.setNeighborIndex(TOP, node_index);
+        sibling_node.setUpperLength(sibling_node.getUpperLength() + upper_blength);
+        
+        // finally, connect the selected node and its parent to the root
+        // now the selected node and its parent becomes siblings
+        // get the root node
+        PhyloNode& root_node = nodes[root_vector_index];
+        assert(root_node.isInternal() && "Root must be an internal node");
+        // compute the length of the two branches connecting to root
+        const RealNumType half_rooted_blength = selected_node.getUpperLength() * 0.5;
+        // connect the selected node to the root
+        const MiniIndex selected_node_side = parent_selected_node_index.getMiniIndex();
+        root_node.setNeighborIndex(selected_node_side, Index(new_root_vec_id, TOP));
+        selected_node.setNeighborIndex(TOP, Index(root_vector_index, selected_node_side));
+        selected_node.setUpperLength(half_rooted_blength);
+        // connect the old parent of the selected node to the root
+        const MiniIndex old_parent_selected_side = parent_selected_node_index.getFlipMiniIndex();
+        const NumSeqsType old_parent_selected_vec_id = parent_selected_node_index.getVectorIndex();
+        PhyloNode& old_parent_selected_node = nodes[old_parent_selected_vec_id];
+        root_node.setNeighborIndex(old_parent_selected_side, Index(old_parent_selected_vec_id, TOP));
+        old_parent_selected_node.setNeighborIndex(TOP,
+                                    Index(root_vector_index, old_parent_selected_side));
+        old_parent_selected_node.setUpperLength(half_rooted_blength);
+        
+        // refresh the likelihoods of the tree
+        refreshAllLhs<num_states>();
+    }
 }
