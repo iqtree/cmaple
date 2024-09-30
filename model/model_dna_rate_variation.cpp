@@ -139,4 +139,11 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree){
             diagonalMutationMatrices[i * num_states_ + j] *= rates[i];
         }
     }
+
+    for(int j = 0; j < num_states_; j++) {
+        delete[] totals[j];
+    }
+    delete[] totals;
+    delete[] numSubstitutions;
+
 }
