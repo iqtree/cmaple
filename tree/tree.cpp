@@ -10230,7 +10230,8 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         const Index candidate_index = root_candidate->getIndex();
         const NumSeqsType candidate_vec_id = candidate_index.getVectorIndex();
         PhyloNode& candidate_node = nodes[candidate_vec_id];
-        const RealNumType half_blength = candidate_node.getUpperLength() * 0.5;
+        const RealNumType half_blength = candidate_node.getUpperLength() > 0 ?
+            (candidate_node.getUpperLength() * 0.5) : 0;
         
         // compute the likelihood contribution when merging this node and the passing subtree
         std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
@@ -10240,8 +10241,12 @@ NumSeqsType cmaple::Tree::seekBestRoot()
                 model, cumulative_rate, threshold_prob, true);
         
         // compute the likelihood contribution by merging the total lh with the state freqs
-        const RealNumType lh_contribution_at_root = lower_regions_merged
+        RealNumType lh_contribution_at_root = MIN_NEGATIVE;
+        if (lower_regions_merged)
+        {
+            lh_contribution_at_root = lower_regions_merged
             ->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
+        }
         
         // compute the total score, taking into account the likelihood deduction and contribution
         const RealNumType score = lh_contribution_by_merging + lh_contribution_at_root
@@ -10597,7 +10602,9 @@ void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
         PhyloNode& root_node = nodes[root_vector_index];
         assert(root_node.isInternal() && "Root must be an internal node");
         // compute the length of the two branches connecting to root
-        const RealNumType half_rooted_blength = selected_node.getUpperLength() * 0.5;
+        const RealNumType half_rooted_blength =
+            selected_node.getUpperLength() > 0
+            ? selected_node.getUpperLength() * 0.5 : 0;
         // connect the selected node to the root
         const MiniIndex selected_node_side = parent_selected_node_index.getMiniIndex();
         root_node.setNeighborIndex(selected_node_side, Index(new_root_vec_id, TOP));
