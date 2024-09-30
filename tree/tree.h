@@ -342,6 +342,11 @@ class Tree {
     std::vector<RealNumType> sprta_scores;
     
     /**
+     Vector of root supports
+     */
+    std::vector<RealNumType> root_supports;
+    
+    /**
      Vector of alternative branches (when computing SPRTA)
      */
     std::vector<std::vector<cmaple::AltBranch>> sprta_alt_branches;
@@ -1812,7 +1817,7 @@ bool isDiffFromOrigPlacement(
       cmaple::RealNumType& removed_blength,
       cmaple::RealNumType& opt_appending_blength,
       cmaple::RealNumType& opt_mid_top_blength,
-      cmaple::RealNumType& opt_mid_bottom_blength); 
+      cmaple::RealNumType& opt_mid_bottom_blength);
     
     /**
      Seek the best root position

@@ -613,6 +613,7 @@ cmaple::Params::Params() {
   make_consistent = false;
   print_internal_ids = false;
   output_NEXUS = false;
+    allow_rerooting = true;
     compute_SPRTA = false;
     compute_SPRTA_zero_length_branches = false;
     print_SPRTA_less_info_seqs = false;
@@ -942,6 +943,11 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         params.tree_search_type_str = argv[cnt];
         continue;
       }
+        if (strcmp(argv[cnt], "-no-reroot") == 0 ||
+            strcmp(argv[cnt], "--no-reroot") == 0) {
+          params.allow_rerooting = false;
+          continue;
+        }
       if (strcmp(argv[cnt], "-blfix") == 0 ||
           strcmp(argv[cnt], "-fixbr") == 0 ||
           strcmp(argv[cnt], "--fixed-blength") == 0) {

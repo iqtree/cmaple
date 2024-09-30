@@ -403,6 +403,11 @@ class Params {
       TRUE to fixed the branch lengths in the input tree
    */
   bool fixed_blengths;
+    
+    /**
+        TRUE to allow CMAPLE to reroot the tree
+     */
+    bool allow_rerooting;
 
   /**
    * A relative probability threshold, which is used to ignore possible states

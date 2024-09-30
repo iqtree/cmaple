@@ -731,6 +731,59 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
     
     // resize the annotations to match the number of nodes
     annotations.resize(nodes.size());
+    
+    // don't keep the rooting position if users don't supply an input tree
+    if (!from_input_tree && !params->allow_rerooting)
+    {
+        outWarning("Disable the option to keep the root position "
+                   "because no input tree is supplied!");
+        params->allow_rerooting = true;
+    }
+    
+    // seek a better root (if allowed or we need to compute root assessment scores)
+    if (params->allow_rerooting || params->compute_SPRTA)
+    {
+        if (cmaple::verbose_mode >= cmaple::VB_MED)
+        {
+            std::cout << "Assessing root position" << std::endl;
+        }
+        
+        // seek the best root
+        const NumSeqsType best_root_vec_id = seekBestRoot<num_states>();
+        
+        // if found a better root and we're allowed to reroot the tree
+        // -> do it
+        if (best_root_vec_id != root_vector_index)
+        {
+            if (cmaple::verbose_mode >= cmaple::VB_MED)
+                std::cout << "Better root found." << std::endl;
+            
+            // reroot the tree (if allowed)
+            if (params->allow_rerooting)
+            {
+                // show info for debugging
+                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                {
+                    std::cout << std::setprecision(10)
+                    << "Tree log likelihood (before re-rooting): "
+                    << computeLh() << std::endl;
+                }
+                
+                // reroot
+                if (cmaple::verbose_mode >= cmaple::VB_MED)
+                    std::cout << "Rerooting the tree." << std::endl;
+                reroot<num_states>(best_root_vec_id);
+                
+                // show info for debugging
+                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                {
+                    std::cout << std::setprecision(10)
+                    << "Tree log likelihood (after re-rooting): "
+                    << computeLh() << std::endl;
+                }
+            }
+        }
+    }
 
   // show the runtime for building an initial tree
   auto end = getRealTime();
@@ -820,52 +873,6 @@ void cmaple::Tree::applySPRTemplate(
   // tree.params->debug = true;
   // string output_file(params->output_prefix);
   // exportOutput(output_file + "_init.treefile");
-    
-    // seek a better root (if allowed or we need to compute root assessment scores)
-    if (tree_search_type != FAST_TREE_SEARCH
-        || params->compute_SPRTA)
-    {
-        if (cmaple::verbose_mode >= cmaple::VB_MED)
-        {
-            std::cout << "Assessing root position" << std::endl;
-        }
-        
-        // seek the best root
-        const NumSeqsType best_root_vec_id = seekBestRoot<num_states>();
-        
-        // if found a better root and we're allowed to reroot the tree
-        // -> do it
-        if (best_root_vec_id != root_vector_index)
-        {
-            if (cmaple::verbose_mode >= cmaple::VB_MED)
-                std::cout << "Better root found." << std::endl;
-            
-            // reroot the tree (if allowed)
-            if (tree_search_type != FAST_TREE_SEARCH)
-            {
-                // show info for debugging
-                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-                {
-                    std::cout << std::setprecision(10)
-                    << "Tree log likelihood (before re-rooting): "
-                    << computeLh() << std::endl;
-                }
-                
-                // reroot
-                if (cmaple::verbose_mode >= cmaple::VB_MED)
-                    std::cout << "Rerooting the tree." << std::endl;
-                reroot<num_states>(best_root_vec_id);
-                
-                // show info for debugging
-                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-                {
-                    std::cout << std::setprecision(10)
-                    << "Tree log likelihood (after re-rooting): "
-                    << computeLh() << std::endl;
-                }
-            }
-        }
-    }
 
   // run a shallow (short range) search for tree topology improvement (if
   // neccessary) Don't apply shallow tree search if users chose no tree search
@@ -1325,8 +1332,16 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
         && (node.getUpperLength() > 0
             || params->compute_SPRTA_zero_length_branches))
     {
-        annotation_str = "[&sprta=" +
-        convertDoubleToString(sprta_scores[node_vec_index], 5);
+        annotation_str = "[&";
+        
+        // root support
+        if (root_supports.size() > node_vec_index && root_supports[node_vec_index] > 0)
+            annotation_str += "rootSupport=" +
+                convertDoubleToString(root_supports[node_vec_index], 5) + ",";
+        
+        // sprta score
+        annotation_str += "sprta=" +
+            convertDoubleToString(sprta_scores[node_vec_index], 5);
         
         // add alternative placements (if needed)
         if (params->output_network)
@@ -10078,6 +10093,11 @@ string cmaple::Tree::exportTsvContent()
         node_stack.pop();
         PhyloNode& node = nodes[node_index];
         
+        // extract root supports (if computed)
+        string root_support = "";
+        if (root_supports.size() > node_index && root_supports[node_index] > 0)
+            root_support = convertDoubleToString(root_supports[node_index], 5);
+        
         // classify the support
         string support_class = "";
         const RealNumType support_score = sprta_scores[node_index];
@@ -10114,7 +10134,8 @@ string cmaple::Tree::exportTsvContent()
             // "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n"
             content += "in" + convertIntToString(internal_names[node_index])
                 + "\t\t" + convertDoubleToString(support_score, 5)
-                + "\trootSupport\t" + support_class + "\t" + convertIntToString(num_descendants[node_index])
+                + "\t" + root_support + "\t" + support_class + "\t"
+                + convertIntToString(num_descendants[node_index])
                 + "\t" + support_to + "\n";
             
             // extract its children
@@ -10134,7 +10155,7 @@ string cmaple::Tree::exportTsvContent()
             // "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n"
             content += seq_name
                 + "\t\t" + support_str
-                + "\trootSupport\t" + support_class + "\t0\t" + support_to + "\n";
+                + "\t" + root_support + "\t" + support_class + "\t0\t" + support_to + "\n";
             
             // also add less-info seqs
             if (node.getLessInfoSeqs().size())
@@ -10179,6 +10200,16 @@ NumSeqsType cmaple::Tree::seekBestRoot()
     stack<std::unique_ptr<RootCandidate>> node_stack;
     PositionType candidate_count = 0;
     PositionType candidate_count_1K = 0;
+    
+    // variables for computing root support
+    std::vector<AltBranch> alt_roots;
+    alt_roots.push_back(AltBranch(best_lh_diff, Index(best_node_vec_index, UNDEFINED)));
+    root_supports.clear();
+    if (params->compute_SPRTA)
+        root_supports.resize(nodes.size(), -1);
+        
+    // initialize the threshold for determining whether an SPR is close enough to the optimal one
+    params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * std::log(aln->ref_seq.size());
     
     // get/init approximation params
     bool strict_stop_seeking_placement_subtree =
@@ -10229,6 +10260,12 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         {
             root_candidate->increaseFailureCount();
         }
+        // if the new candidate is not too worse than the best found (by a certain threshold)
+        // record it to compute the root support
+        else if (score >= best_lh_diff - params->thresh_loglh_optimal_diff)
+        {
+            alt_roots.push_back(AltBranch(score, candidate_index));
+        }
             
         // keep crawling down into children nodes unless the stop criteria for the
         // traversal are satisfied. check the stop criteria keep traversing
@@ -10253,62 +10290,131 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         }
     }
         
-        // compute SPRTA (if needed)
-        /*if (params->compute_SPRTA)
-         {
-         // filter out lhs of SPRs that are not close enough to the optimal one
-         const RealNumType lower_bound_lhs = best_lh_diff - params->thresh_loglh_optimal_diff;
-         alt_branches.erase(std::remove_if(
-         alt_branches.begin(), alt_branches.end(),
+    // compute root support/SPRTA (if needed)
+    if (params->compute_SPRTA)
+    {
+        // filter out candidates that are not close enough to the optimal one
+        const RealNumType lower_bound_lhs = best_lh_diff - params->thresh_loglh_optimal_diff;
+         alt_roots.erase(std::remove_if(alt_roots.begin(), alt_roots.end(),
          [&lower_bound_lhs](AltBranch alt_branch)
          { return alt_branch.lh < lower_bound_lhs; }),
-         alt_branches.end());
+         alt_roots.end());
+        
+        // if new best root found and we're allowed to reroot the tree, then
+        // 1. add a lh diff of 0 for the child of the current root
+        // 2. move the root lk diffs of saved candidates
+        //    (on the path from the best node to the root)
+        //    to their parents (due to rerooting)
+        // 3. transfer the lh diff of the best node found to the root (due to rerooting)
+        if (best_node_vec_index != root_vector_index && params->allow_rerooting)
+        {
+            // 1. add a lh diff of 0 for the child of the current root
+            // start from the best found candidate
+            Index child_root_index = Index(best_node_vec_index, UNDEFINED);
+            
+            // move upward to reach the root
+            while (child_root_index.getVectorIndex() != root_vector_index)
+            {
+                PhyloNode& tmp_child_root_node = nodes[child_root_index.getVectorIndex()];
+                
+                // move upward
+                child_root_index = tmp_child_root_node.getNeighborIndex(TOP);
+            }
+            
+            // determine the other child of the current root
+            Index other_child_root_index = nodes[root_vector_index]
+                .getNeighborIndex(child_root_index.getFlipMiniIndex());
+            
+            // add the other child of the current root as the root candidate
+            // with a likelihood diff of zero
+            alt_roots.push_back(AltBranch(0, other_child_root_index));
+            
+            // 2. move the root lk diffs of saved candidates
+            //    (on the path from the best node to the root)
+            //    to their parents (due to rerooting)
+            
+            // traverse the tree from the best node to the root,
+            // at each node, create a pair of that node and its parent
+            std::vector<std::pair<Index, Index>> node_parent_pairs;
+            // start from the parent of the best found candidate
+            Index node_index = nodes[best_node_vec_index].getNeighborIndex(TOP);
+            
+            // move upward to reach the root
+            while (node_index.getVectorIndex() != root_vector_index)
+            {
+                PhyloNode& tmp_node = nodes[node_index.getVectorIndex()];
+                
+                // get the parent id
+                Index parent_index = tmp_node.getNeighborIndex(TOP);
+                
+                // record the current node and its parent
+                node_parent_pairs.push_back(pair<Index, Index>(node_index, parent_index));
+                
+                // move upward
+                node_index = parent_index;
+            }
+            
+            // loop over the saved candidates, update the branch/node id to its parent id
+            // if it's on the path between the best node and the root
+            for (AltBranch& branch : alt_roots)
+            {
+                // check if the candidate is in the path between the best node and the root
+                for (std::pair<Index, Index>& node_parent_pair : node_parent_pairs)
+                    if (node_parent_pair.first.getVectorIndex() == branch.branch_id.getVectorIndex())
+                    {
+                        // update the branch/node id to its parent id
+                        branch.branch_id = node_parent_pair.second;
+                        
+                        break;
+                    }
+            }
+            
+            
+            // 3. transfer the lh diff of the best node found to the root (due to rerooting)
+            for (AltBranch& branch : alt_roots)
+            {
+                // check if the branch is connected to the best node
+                if (branch.branch_id.getVectorIndex() == best_node_vec_index)
+                {
+                    // set the new branch id (after rerooting)
+                    branch.branch_id = Index(root_vector_index, UNDEFINED);
+                    
+                    // don't need to search further
+                    break;
+                }
+            }
+        }
+        
+         // compute the raw lh of all candidates
+        RealNumType total_spr_lhs = 0;
+        for (AltBranch& branch : alt_roots)
+        {
+            branch.lh = std::exp(branch.lh);
          
-         // compute the SPRTA score
-         if (!alt_branches.size())
-         {
-         sprta_scores[child_node_index.getVectorIndex()] = 1.0;
+            // update the total lh
+            total_spr_lhs += branch.lh;
+        }
          
-         // clear the vector of alternative branches
-         if (params->output_network)
-         sprta_alt_branches[child_node_index.getVectorIndex()].clear();
-         }
-         else
-         {
-         const RealNumType raw_ori_lh_diff =  std::exp(ori_best_lh_diff);
-         RealNumType total_spr_lhs = raw_ori_lh_diff;
-         
-         // compute the raw lh of other alternative branches
-         for (AltBranch& branch : alt_branches)
-         {
-         branch.lh = std::exp(branch.lh);
-         
-         // update the total lh
-         total_spr_lhs += branch.lh;
-         }
-         
-         // compute the current sprta score
-         sprta_scores[child_node_index.getVectorIndex()] = raw_ori_lh_diff / total_spr_lhs;
-         
-         // store alternative branches (if needed)
-         if (params->output_network)
-         {
-         // compute the spr scores for other alternative branches
+         // compute the spr scores for all candidates
          const RealNumType total_spr_lhs_inverse = 1.0 / total_spr_lhs;
-         for (AltBranch& alt_branch : alt_branches)
+         for (AltBranch& alt_branch : alt_roots)
          {
-         alt_branch.lh *= total_spr_lhs_inverse;
-         
-         // store the vector of alternative branches
-         // only consider alternative branches
-         // with supports no less than the min branch support
-         if (alt_branch.lh >= params->min_support_alt_branches)
-         sprta_alt_branches[child_node_index.getVectorIndex()]
-         .push_back(std::move(alt_branch));
+             alt_branch.lh *= total_spr_lhs_inverse;
          }
-         }
-         }
-         }*/
+        
+        // filter out candidates that are less than the min branch support
+        const RealNumType min_support_alt_branches = params->min_support_alt_branches;
+        alt_roots.erase(std::remove_if(alt_roots.begin(), alt_roots.end(),
+                                       [&min_support_alt_branches](AltBranch alt_branch)
+                                       { return alt_branch.lh < min_support_alt_branches; }),
+                        alt_roots.end());
+        
+        // extract the root supports
+        for (AltBranch& alt_branch : alt_roots)
+        {
+            root_supports[alt_branch.branch_id.getVectorIndex()] = alt_branch.lh;
+        }
+    }
     
     // show infor
     if (cmaple::verbose_mode >= cmaple::VB_MED) {
