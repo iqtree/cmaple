@@ -805,6 +805,18 @@ void cmaple::Tree::applySPRTemplate(
       cmaple::verbose_mode >= cmaple::VB_MED) {
     std::cout << "No tree search is invoked." << std::endl;
   }
+    
+    // disable blength fixed if involving tree search
+    if (fixed_blengths && tree_search_type != FAST_TREE_SEARCH)
+    {
+        if (cmaple::verbose_mode > cmaple::VB_QUIET) {
+            outWarning(
+                       "Disable the option to keep the branch lengths fixed because "
+                       "we are now performing tree search.");
+        }
+        
+        fixed_blengths = false;
+    }
   // tree.params->debug = true;
   // string output_file(params->output_prefix);
   // exportOutput(output_file + "_init.treefile");
@@ -831,9 +843,26 @@ void cmaple::Tree::applySPRTemplate(
             // reroot the tree (if allowed)
             if (tree_search_type != FAST_TREE_SEARCH)
             {
+                // show info for debugging
+                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                {
+                    std::cout << std::setprecision(10)
+                    << "Tree log likelihood (before re-rooting): "
+                    << computeLh() << std::endl;
+                }
+                
+                // reroot
                 if (cmaple::verbose_mode >= cmaple::VB_MED)
                     std::cout << "Rerooting the tree." << std::endl;
                 reroot<num_states>(best_root_vec_id);
+                
+                // show info for debugging
+                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                {
+                    std::cout << std::setprecision(10)
+                    << "Tree log likelihood (after re-rooting): "
+                    << computeLh() << std::endl;
+                }
             }
         }
     }
@@ -10281,6 +10310,12 @@ NumSeqsType cmaple::Tree::seekBestRoot()
          }
          }*/
     
+    // show infor
+    if (cmaple::verbose_mode >= cmaple::VB_MED) {
+        std::cout << "Nodes visited looking for the best rooting: "
+            << convertIntToString(candidate_count) << std::endl;
+    }
+    
     // return the best root found
     return best_node_vec_index;
 }
@@ -10358,12 +10393,12 @@ void cmaple::Tree::addChildrenAsRootCandidate(
         
         // compute the likelihood we need to deduct when we un-merge the two children
         std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
-        const RealNumType new_lh_deducted = lh_deducted + lower_regions_child_1->mergeTwoLowers<num_states>(lower_regions_merged, child_1.getUpperLength(), *lower_regions_child_2, child_2.getUpperLength(), aln, model, cumulative_rate, params->threshold_prob);
+        const RealNumType new_lh_deducted = lh_deducted + lower_regions_child_1->mergeTwoLowers<num_states>(lower_regions_merged, child_1.getUpperLength(), *lower_regions_child_2, child_2.getUpperLength(), aln, model, cumulative_rate, params->threshold_prob, true);
         
         // add child 1 as a new candidate
         // compute the likelihood contribution when merging the other child and the remaining subtree
         std::unique_ptr<SeqRegions> upper_regions_merged = nullptr;
-        const  RealNumType lh_deducted_child_1 = new_lh_deducted - lower_regions_child_2->mergeTwoLowers<num_states>(upper_regions_merged, child_2.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob);
+        const  RealNumType lh_deducted_child_1 = new_lh_deducted - lower_regions_child_2->mergeTwoLowers<num_states>(upper_regions_merged, child_2.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob, true);
         
         node_stack.push(cmaple::make_unique<RootCandidate>(
             RootCandidate(child_1_index, std::move(upper_regions_merged), child_1.getUpperLength(),
@@ -10372,7 +10407,7 @@ void cmaple::Tree::addChildrenAsRootCandidate(
         // add child 2 as a new candidate
         // compute the likelihood contribution when merging the other child and the remaining subtree
         upper_regions_merged = nullptr;
-        const  RealNumType lh_deducted_child_2 = new_lh_deducted - lower_regions_child_1->mergeTwoLowers<num_states>(upper_regions_merged, child_1.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob);
+        const  RealNumType lh_deducted_child_2 = new_lh_deducted - lower_regions_child_1->mergeTwoLowers<num_states>(upper_regions_merged, child_1.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob, true);
         
         node_stack.push(cmaple::make_unique<RootCandidate>(
             RootCandidate(child_2_index, std::move(upper_regions_merged), child_2.getUpperLength(),
