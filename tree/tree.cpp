@@ -10173,6 +10173,133 @@ string cmaple::Tree::exportTsvContent()
     return content;
 }
 
+void cmaple::Tree::computeRootSupports(const NumSeqsType& best_node_vec_index,
+                                       const RealNumType& best_lh_diff,
+                                       std::vector<AltBranch>& alt_roots)
+{
+    // filter out candidates that are not close enough to the optimal one
+    const RealNumType lower_bound_lhs = best_lh_diff - params->thresh_loglh_optimal_diff;
+     alt_roots.erase(std::remove_if(alt_roots.begin(), alt_roots.end(),
+     [&lower_bound_lhs](AltBranch alt_branch)
+     { return alt_branch.lh < lower_bound_lhs; }),
+     alt_roots.end());
+    
+    // if new best root found and we're allowed to reroot the tree, then
+    // 1. add a lh diff of 0 for the child of the current root
+    // 2. move the root lk diffs of saved candidates
+    //    (on the path from the best node to the root)
+    //    to their parents (due to rerooting)
+    // 3. transfer the lh diff of the best node found to the root (due to rerooting)
+    if (best_node_vec_index != root_vector_index && params->allow_rerooting)
+    {
+        // 1. add a lh diff of 0 for the child of the current root
+        // start from the best found candidate
+        Index child_root_index = Index(best_node_vec_index, UNDEFINED);
+        
+        // move upward to reach the root
+        while (child_root_index.getVectorIndex() != root_vector_index)
+        {
+            PhyloNode& tmp_child_root_node = nodes[child_root_index.getVectorIndex()];
+            
+            // move upward
+            child_root_index = tmp_child_root_node.getNeighborIndex(TOP);
+        }
+        
+        // determine the other child of the current root
+        Index other_child_root_index = nodes[root_vector_index]
+            .getNeighborIndex(child_root_index.getFlipMiniIndex());
+        
+        // add the other child of the current root as the root candidate
+        // with a likelihood diff of zero
+        alt_roots.push_back(AltBranch(0, other_child_root_index));
+        
+        // 2. move the root lk diffs of saved candidates
+        //    (on the path from the best node to the root)
+        //    to their parents (due to rerooting)
+        
+        // traverse the tree from the best node to the root,
+        // at each node, create a pair of that node and its parent
+        std::vector<std::pair<Index, Index>> node_parent_pairs;
+        // start from the parent of the best found candidate
+        Index node_index = nodes[best_node_vec_index].getNeighborIndex(TOP);
+        
+        // move upward to reach the root
+        while (node_index.getVectorIndex() != root_vector_index)
+        {
+            PhyloNode& tmp_node = nodes[node_index.getVectorIndex()];
+            
+            // get the parent id
+            Index parent_index = tmp_node.getNeighborIndex(TOP);
+            
+            // record the current node and its parent
+            node_parent_pairs.push_back(pair<Index, Index>(node_index, parent_index));
+            
+            // move upward
+            node_index = parent_index;
+        }
+        
+        // loop over the saved candidates, update the branch/node id to its parent id
+        // if it's on the path between the best node and the root
+        for (AltBranch& branch : alt_roots)
+        {
+            // check if the candidate is in the path between the best node and the root
+            for (std::pair<Index, Index>& node_parent_pair : node_parent_pairs)
+                if (node_parent_pair.first.getVectorIndex() == branch.branch_id.getVectorIndex())
+                {
+                    // update the branch/node id to its parent id
+                    branch.branch_id = node_parent_pair.second;
+                    
+                    break;
+                }
+        }
+        
+        
+        // 3. transfer the lh diff of the best node found to the root (due to rerooting)
+        for (AltBranch& branch : alt_roots)
+        {
+            // check if the branch is connected to the best node
+            if (branch.branch_id.getVectorIndex() == best_node_vec_index)
+            {
+                // set the new branch id (after rerooting)
+                branch.branch_id = Index(root_vector_index, UNDEFINED);
+                
+                // don't need to search further
+                break;
+            }
+        }
+    }
+    
+     // compute the raw lh of all candidates
+    RealNumType total_spr_lhs = 0;
+    for (AltBranch& branch : alt_roots)
+    {
+        branch.lh = std::exp(branch.lh);
+     
+        // update the total lh
+        total_spr_lhs += branch.lh;
+    }
+     
+     // compute the spr scores for all candidates
+     const RealNumType total_spr_lhs_inverse = 1.0 / total_spr_lhs;
+     for (AltBranch& alt_branch : alt_roots)
+     {
+         alt_branch.lh *= total_spr_lhs_inverse;
+     }
+    
+    // filter out candidates that are less than the min branch support
+    const RealNumType min_support_alt_branches = params->min_support_alt_branches;
+    alt_roots.erase(std::remove_if(alt_roots.begin(), alt_roots.end(),
+                                   [&min_support_alt_branches](AltBranch alt_branch)
+                                   { return alt_branch.lh < min_support_alt_branches; }),
+                    alt_roots.end());
+    
+    // extract the root supports
+    for (AltBranch& alt_branch : alt_roots)
+    {
+        root_supports[alt_branch.branch_id.getVectorIndex()] = alt_branch.lh;
+    }
+}
+
 template <const StateType num_states>
 NumSeqsType cmaple::Tree::seekBestRoot()
 {
@@ -10298,127 +10425,7 @@ NumSeqsType cmaple::Tree::seekBestRoot()
     // compute root support/SPRTA (if needed)
     if (params->compute_SPRTA)
     {
-        // filter out candidates that are not close enough to the optimal one
-        const RealNumType lower_bound_lhs = best_lh_diff - params->thresh_loglh_optimal_diff;
-         alt_roots.erase(std::remove_if(alt_roots.begin(), alt_roots.end(),
-         [&lower_bound_lhs](AltBranch alt_branch)
-         { return alt_branch.lh < lower_bound_lhs; }),
-         alt_roots.end());
-        
-        // if new best root found and we're allowed to reroot the tree, then
-        // 1. add a lh diff of 0 for the child of the current root
-        // 2. move the root lk diffs of saved candidates
-        //    (on the path from the best node to the root)
-        //    to their parents (due to rerooting)
-        // 3. transfer the lh diff of the best node found to the root (due to rerooting)
-        if (best_node_vec_index != root_vector_index && params->allow_rerooting)
-        {
-            // 1. add a lh diff of 0 for the child of the current root
-            // start from the best found candidate
-            Index child_root_index = Index(best_node_vec_index, UNDEFINED);
-            
-            // move upward to reach the root
-            while (child_root_index.getVectorIndex() != root_vector_index)
-            {
-                PhyloNode& tmp_child_root_node = nodes[child_root_index.getVectorIndex()];
-                
-                // move upward
-                child_root_index = tmp_child_root_node.getNeighborIndex(TOP);
-            }
-            
-            // determine the other child of the current root
-            Index other_child_root_index = nodes[root_vector_index]
-                .getNeighborIndex(child_root_index.getFlipMiniIndex());
-            
-            // add the other child of the current root as the root candidate
-            // with a likelihood diff of zero
-            alt_roots.push_back(AltBranch(0, other_child_root_index));
-            
-            // 2. move the root lk diffs of saved candidates
-            //    (on the path from the best node to the root)
-            //    to their parents (due to rerooting)
-            
-            // traverse the tree from the best node to the root,
-            // at each node, create a pair of that node and its parent
-            std::vector<std::pair<Index, Index>> node_parent_pairs;
-            // start from the parent of the best found candidate
-            Index node_index = nodes[best_node_vec_index].getNeighborIndex(TOP);
-            
-            // move upward to reach the root
-            while (node_index.getVectorIndex() != root_vector_index)
-            {
-                PhyloNode& tmp_node = nodes[node_index.getVectorIndex()];
-                
-                // get the parent id
-                Index parent_index = tmp_node.getNeighborIndex(TOP);
-                
-                // record the current node and its parent
-                node_parent_pairs.push_back(pair<Index, Index>(node_index, parent_index));
-                
-                // move upward
-                node_index = parent_index;
-            }
-            
-            // loop over the saved candidates, update the branch/node id to its parent id
-            // if it's on the path between the best node and the root
-            for (AltBranch& branch : alt_roots)
-            {
-                // check if the candidate is in the path between the best node and the root
-                for (std::pair<Index, Index>& node_parent_pair : node_parent_pairs)
-                    if (node_parent_pair.first.getVectorIndex() == branch.branch_id.getVectorIndex())
-                    {
-                        // update the branch/node id to its parent id
-                        branch.branch_id = node_parent_pair.second;
-                        
-                        break;
-                    }
-            }
-            
-            
-            // 3. transfer the lh diff of the best node found to the root (due to rerooting)
-            for (AltBranch& branch : alt_roots)
-            {
-                // check if the branch is connected to the best node
-                if (branch.branch_id.getVectorIndex() == best_node_vec_index)
-                {
-                    // set the new branch id (after rerooting)
-                    branch.branch_id = Index(root_vector_index, UNDEFINED);
-                    
-                    // don't need to search further
-                    break;
-                }
-            }
-        }
-        
-         // compute the raw lh of all candidates
-        RealNumType total_spr_lhs = 0;
-        for (AltBranch& branch : alt_roots)
-        {
-            branch.lh = std::exp(branch.lh);
-         
-            // update the total lh
-            total_spr_lhs += branch.lh;
-        }
-         
-         // compute the spr scores for all candidates
-         const RealNumType total_spr_lhs_inverse = 1.0 / total_spr_lhs;
-         for (AltBranch& alt_branch : alt_roots)
-         {
-             alt_branch.lh *= total_spr_lhs_inverse;
-         }
-        
-        // filter out candidates that are less than the min branch support
-        const RealNumType min_support_alt_branches = params->min_support_alt_branches;
-        alt_roots.erase(std::remove_if(alt_roots.begin(), alt_roots.end(),
-                                       [&min_support_alt_branches](AltBranch alt_branch)
-                                       { return alt_branch.lh < min_support_alt_branches; }),
-                        alt_roots.end());
-        
-        // extract the root supports
-        for (AltBranch& alt_branch : alt_roots)
-        {
-            root_supports[alt_branch.branch_id.getVectorIndex()] = alt_branch.lh;
-        }
+        computeRootSupports(best_node_vec_index, best_lh_diff, alt_roots);
     }
     
     // show infor

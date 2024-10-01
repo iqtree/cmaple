@@ -1833,6 +1833,15 @@ bool isDiffFromOrigPlacement(
      */
     template <const cmaple::StateType num_states>
     NumSeqsType seekBestRoot();
+    
+    /**
+     Compute the root supports
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    void computeRootSupports(const NumSeqsType& best_node_vec_index,
+                             const RealNumType& best_lh_diff,
+                             std::vector<AltBranch>& alt_roots);
 
   /**
    Place a new sample at a mid-branch point
