@@ -10533,12 +10533,63 @@ void cmaple::Tree::addChildrenAsRootCandidate(
     }
 }
 
+void cmaple::Tree::transferAnnotations(const NumSeqsType& new_root_vec_id)
+{
+    assert(new_root_vec_id != root_vector_index);
+    assert(annotations.size() == nodes.size());
+    // if new best root found and we're allowed to reroot the tree, then
+    // 0. we must loose the annotation at one child of the current root
+    // however, we conserve the annotation at the other child of the current root
+    // and at the best node found for the new root
+    // 1. move the annotations of each node
+    //    (on the path from the best node to the root)
+    //    to their parents
+    // 2. clear the annotation at the current root
+
+    // 1. move the annotations of each node
+    //    (on the path from the best node to the root)
+    //    to their parents
+        
+    // traverse the tree from the best node to the root,
+    // at each node, move the annotation to the parent node
+    // start from the parent of the best found candidate
+    NumSeqsType node_vec_id = nodes[new_root_vec_id].getNeighborIndex(TOP)
+                                                    .getVectorIndex();
+    string ant_from_child = annotations[node_vec_id];
+        
+    // move upward to reach the root
+    while (node_vec_id != root_vector_index)
+    {
+        PhyloNode& tmp_node = nodes[node_vec_id];
+            
+        // get the parent id
+        NumSeqsType parent_vec_id = tmp_node.getNeighborIndex(TOP)
+                                        .getVectorIndex();
+            
+        // backup the annotation of the parent
+        string parent_ant = annotations[parent_vec_id];
+        
+        // transfer the annotation of the children to the parent
+        annotations[parent_vec_id] = ant_from_child;
+            
+        // move upward
+        node_vec_id = parent_vec_id;
+        ant_from_child = parent_ant;
+    }
+    
+    // 2. clear the annotation at the current root
+    annotations[root_vector_index] = "";
+}
+
 template <const StateType num_states>
 void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
 {
     // only reroot if the selected node is not the current root
     if (new_root_vec_id != root_vector_index)
     {
+        // transfer the annotations from affected children to their parents
+        transferAnnotations(new_root_vec_id);
+        
         PhyloNode& selected_node = nodes[new_root_vec_id];
         
         // remember the parent of the selected node

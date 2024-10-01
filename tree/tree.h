@@ -722,6 +722,13 @@ bool isDiffFromOrigPlacement(
      */
     template <const cmaple::StateType num_states>
     void reroot(const NumSeqsType& new_root_vec_id);
+    
+    /**
+     Transfer annotations due to rerooting
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    void transferAnnotations(const NumSeqsType& new_root_vec_id);
 
   /**
    Examine placing a subtree at a mid-branch point
