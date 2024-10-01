@@ -10230,8 +10230,8 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         const Index candidate_index = root_candidate->getIndex();
         const NumSeqsType candidate_vec_id = candidate_index.getVectorIndex();
         PhyloNode& candidate_node = nodes[candidate_vec_id];
-        const RealNumType half_blength = candidate_node.getUpperLength() > 0 ?
-            (candidate_node.getUpperLength() * 0.5) : 0;
+        const RealNumType half_blength = candidate_node.getUpperLength() >= 0 ?
+            (candidate_node.getUpperLength() * 0.5) : -1;
         
         // compute the likelihood contribution when merging this node and the passing subtree
         std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
@@ -10252,8 +10252,8 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         const RealNumType score = lh_contribution_by_merging + lh_contribution_at_root
                                     - root_candidate->getLhDeducted();
        
-        // check wheter we find a better root
-        if (score > best_lh_diff)
+        // check wheter we find a better root by at least a certain amount (to avoid precision problem)
+        if (score > best_lh_diff + threshold_prob)
         {
             best_lh_diff = score;
             best_node_vec_index = candidate_vec_id;
@@ -10511,18 +10511,24 @@ void cmaple::Tree::addChildrenAsRootCandidate(
         std::unique_ptr<SeqRegions> upper_regions_merged = nullptr;
         const  RealNumType lh_deducted_child_1 = new_lh_deducted - lower_regions_child_2->mergeTwoLowers<num_states>(upper_regions_merged, child_2.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob, true);
         
-        node_stack.push(cmaple::make_unique<RootCandidate>(
-            RootCandidate(child_1_index, std::move(upper_regions_merged), child_1.getUpperLength(),
-                          lh_deducted_child_1, last_lh, failure_count)));
+        if (upper_regions_merged)
+        {
+            node_stack.push(cmaple::make_unique<RootCandidate>(
+                RootCandidate(child_1_index, std::move(upper_regions_merged), child_1.getUpperLength(),
+                                lh_deducted_child_1, last_lh, failure_count)));
+        }
         
         // add child 2 as a new candidate
         // compute the likelihood contribution when merging the other child and the remaining subtree
         upper_regions_merged = nullptr;
         const  RealNumType lh_deducted_child_2 = new_lh_deducted - lower_regions_child_1->mergeTwoLowers<num_states>(upper_regions_merged, child_1.getUpperLength(), *incoming_regions_ref, branch_length, aln, model, cumulative_rate, params->threshold_prob, true);
         
-        node_stack.push(cmaple::make_unique<RootCandidate>(
-            RootCandidate(child_2_index, std::move(upper_regions_merged), child_2.getUpperLength(),
-                          lh_deducted_child_2, last_lh, failure_count)));
+        if (upper_regions_merged)
+        {
+            node_stack.push(cmaple::make_unique<RootCandidate>(
+                RootCandidate(child_2_index, std::move(upper_regions_merged), child_2.getUpperLength(),
+                    lh_deducted_child_2, last_lh, failure_count)));
+        }
         
     }
 }
