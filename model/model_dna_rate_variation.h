@@ -14,10 +14,12 @@ class ModelDNARateVariation : public ModelDNA {
 public:
     ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize);
     ~ModelDNARateVariation();
-   
-    void expectationMaximizationCalculationRates(const cmaple::Tree* tree, bool trackMutations=false);
 
     virtual void estimateRates(cmaple::Tree* tree) override;
+
+    void estimateRatesWithEM(cmaple::Tree* tree);
+
+    void expectationMaximizationCalculationRates(const cmaple::Tree* tree, bool trackMutations=false);
 
     virtual inline const cmaple::RealNumType *const getMutationMatrix(PositionType i) const override {
         return mutationMatrices + (i * matSize);
@@ -57,6 +59,8 @@ public:
   virtual bool updateMutationMatEmpirical() override;
 
 private:
+
+    void printMatrix(RealNumType* matrix);
 
     cmaple::PositionType genomeSize;
     /**
