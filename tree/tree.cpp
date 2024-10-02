@@ -9693,7 +9693,7 @@ void cmaple::Tree::updatePesudoCountModel(PhyloNode& node,
   std::unique_ptr<SeqRegions>& upper_lr_regions =
       getPartialLhAtNode(parent_index);
   std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
-  if (upper_lr_regions && lower_regions) {
+  if (node.getUpperLength() > 0 && upper_lr_regions && lower_regions) {
     model->updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
   }
 }
