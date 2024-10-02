@@ -186,8 +186,8 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             out.close();
         }
         
-        // export a TSV file if SPRTA is computed and we output a network
-        if (params.compute_SPRTA && params.output_network)
+        // export a TSV file if SPRTA is computed and we output alternative SPRs
+        if (params.compute_SPRTA && params.output_alternative_spr)
         {
             ofstream out = ofstream(output_treefile + ".tsv");
             out << tree.exportTSV();

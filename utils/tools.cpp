@@ -617,7 +617,7 @@ cmaple::Params::Params() {
     compute_SPRTA = false;
     compute_SPRTA_zero_length_branches = false;
     print_SPRTA_less_info_seqs = false;
-    output_network = false;
+    output_alternative_spr = false;
     min_support_alt_branches = 0.01;
     thresh_loglh_optimal_diff_fac = 1.0;
 
@@ -1163,9 +1163,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
         }
-        if (strcmp(argv[cnt], "--output-network") == 0 ||
-            strcmp(argv[cnt], "-out-nwk") == 0) {
-          params.output_network = true;
+        if (strcmp(argv[cnt], "--output-alternative-spr") == 0 ||
+            strcmp(argv[cnt], "-out-alternative-spr") == 0) {
+          params.output_alternative_spr = true;
 
           continue;
         }
@@ -1295,9 +1295,9 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
                  "sequences if SPRTA is not computed. Please use "
                  "`--sprta` if you want to compute SPRTA.");
     }
-    if (params.output_network && !params.compute_SPRTA)
+    if (params.output_alternative_spr && !params.compute_SPRTA)
     {
-        outError("Unable to output alternative branches (network)"
+        outError("Unable to output alternative SPRs"
                  "if SPRTA is not computed. Please use "
                  "`--sprta` if you want to compute SPRTA.");
     }

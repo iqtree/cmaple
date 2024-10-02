@@ -848,8 +848,8 @@ void cmaple::Tree::applySPRTemplate(
         // initialize the vector to store all SPRTA scores
         sprta_scores.resize(nodes.size(), 1.0);
         
-        // initialize the vector to store alternative branches (if needed)
-        if (params->output_network)
+        // initialize the vector to store alternative SPRs (if needed)
+        if (params->output_alternative_spr)
             sprta_alt_branches.resize(nodes.size());
     }
 
@@ -1343,8 +1343,8 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
         annotation_str += "sprta=" +
             convertDoubleToString(sprta_scores[node_vec_index], 5);
         
-        // add alternative placements (if needed)
-        if (params->output_network)
+        // add alternative SPRs (if needed)
+        if (params->output_alternative_spr)
         {
             annotation_str += ",alternativePlacements={";
             
@@ -1441,8 +1441,8 @@ std::string cmaple::Tree::exportNewick(const bool binary,
     return "";
   }
 
-  // we must output the internal names if outputting network (i.e., alternative branches)
-  const bool output_internal_name = print_internal_id || params->output_network;
+  // we must output the internal names if outputting alternative SPRs
+  const bool output_internal_name = print_internal_id || params->output_alternative_spr;
     
     // generate internal names (if needed)
     if (output_internal_name)
@@ -1533,7 +1533,7 @@ std::string cmaple::Tree::exportNexus(const bool binary,
 std::string cmaple::Tree::exportTSV()
 {
     // SPRTA must be already computed before exporting the TSV file
-    if (!(params->compute_SPRTA && sprta_scores.size() && params->output_network))
+    if (!(params->compute_SPRTA && sprta_scores.size() && params->output_alternative_spr))
         throw std::logic_error(
             "To export a TSV file, SPRTA must be computed ('--sprta')"
             " and network output must be selected ('--output-network')!");
@@ -3279,8 +3279,8 @@ void cmaple::Tree::seekSubTreePlacement(
         {
             sprta_scores[child_node_index.getVectorIndex()] = 1.0;
             
-            // clear the vector of alternative branches
-            if (params->output_network)
+            // clear the vector of alternative SPRs
+            if (params->output_alternative_spr)
                 sprta_alt_branches[child_node_index.getVectorIndex()].clear();
         }
         else
@@ -3300,8 +3300,8 @@ void cmaple::Tree::seekSubTreePlacement(
             // compute the current sprta score
             sprta_scores[child_node_index.getVectorIndex()] = raw_ori_lh_diff / total_spr_lhs;
             
-            // store alternative branches (if needed)
-            if (params->output_network)
+            // store alternative SPRs (if needed)
+            if (params->output_alternative_spr)
             {
                 // compute the spr scores for other alternative branches
                 const RealNumType total_spr_lhs_inverse = 1.0 / total_spr_lhs;

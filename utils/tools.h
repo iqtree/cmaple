@@ -655,9 +655,9 @@ class Params {
     bool print_SPRTA_less_info_seqs;
     
     /**
-     * TRUE to output the alternative branches with their supports in the tree
+     * TRUE to output the alternative SPRs with their supports in the tree
      */
-    bool output_network;
+    bool output_alternative_spr;
     
     /**
      * The minimum SPRTA support to be considered as
