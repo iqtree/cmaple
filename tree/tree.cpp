@@ -10151,20 +10151,28 @@ string cmaple::Tree::exportTsvContent()
         {
             // extract content for a leaf
             const string seq_name = seq_names[node.getSeqNameIndex()];
+            const string minor_seqs_clade = node.getLessInfoSeqs().size() ?
+                seq_name + "_MinorSeqsClade" : "";
             const string support_str = convertDoubleToString(support_score, 5);
             // "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n"
             content += seq_name
-                + "\t\t" + support_str
+                + "\t" + minor_seqs_clade + "\t" + support_str
                 + "\t" + root_support + "\t" + support_class + "\t0\t" + support_to + "\n";
             
             // also add less-info seqs
             if (node.getLessInfoSeqs().size())
             {
+                // add one more row for the minor_seqs_clade
+                content += minor_seqs_clade
+                    + "\t\t" + support_str
+                    + "\t" + root_support + "\t" + support_class + "\t0\t" + support_to + "\n";
+                
+                // add a row for each less-info seq
                 for (auto& seq_name_index: node.getLessInfoSeqs())
                 {
                     content += seq_names[seq_name_index]
-                        + "\t" + seq_name + "_MinorSeqsClade\t" + support_str
-                        + "\t\t" + support_class + "\t0\t" + support_to + "\n";
+                        + "\t" + minor_seqs_clade + "\t" + support_str
+                        + "\t" + root_support + "\t" + support_class + "\t0\t" + support_to + "\n";
                 }
             }
         }
