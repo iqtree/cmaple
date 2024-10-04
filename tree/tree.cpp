@@ -10392,9 +10392,10 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         {
             root_candidate->increaseFailureCount();
         }
+        
         // if the new candidate is not too worse than the best found (by a certain threshold)
         // record it to compute the root support
-        else if (score >= best_lh_diff - params->thresh_loglh_optimal_diff)
+        if (score >= best_lh_diff - params->thresh_loglh_optimal_diff)
         {
             alt_roots.push_back(AltBranch(score, candidate_index));
         }

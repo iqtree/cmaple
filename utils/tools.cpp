@@ -1163,7 +1163,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
         }
-        if (strcmp(argv[cnt], "--output-alternative-spr") == 0 ||
+        if (strcmp(argv[cnt], "--out-alternative-spr") == 0 ||
             strcmp(argv[cnt], "-out-alternative-spr") == 0) {
           params.output_alternative_spr = true;
 
