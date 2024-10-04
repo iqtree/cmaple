@@ -216,6 +216,8 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
         if (params.output_NEXUS || params.compute_SPRTA)
             std::cout << "Tree in NEXUS format:          " << output_treefile + ".nexus" << std::endl;
+        if (params.compute_SPRTA && params.output_alternative_spr)
+            std::cout << "Meta data in TSV format:       " << output_treefile + ".tsv" << std::endl;
         /*if (params.compute_aLRT_SH) {
           std::cout << "Tree with aLRT-SH values:      "
                     << prefix + ".aLRT_SH.treefile" << std::endl;
