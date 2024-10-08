@@ -1348,44 +1348,49 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
     // add sprta score (if computed)
     // only output the supports of zero-length branches (if requested)
     if (!is_newick_format
-        && params->compute_SPRTA
-        && (node.getUpperLength() > 0
-            || params->compute_SPRTA_zero_length_branches))
+        && params->compute_SPRTA)
     {
-        annotation_str = "[&";
-        
         // root support
         if (root_supports.size() > node_vec_index && root_supports[node_vec_index] > 0)
             annotation_str += "rootSupport=" +
-                convertDoubleToString(root_supports[node_vec_index], 5) + ",";
+                convertDoubleToString(root_supports[node_vec_index], 5);
         
-        // sprta score
-        annotation_str += "sprta=" +
-            convertDoubleToString(sprta_scores[node_vec_index], 5);
-        
-        // add alternative SPRs (if needed)
-        if (params->output_alternative_spr)
+        if ((node.getUpperLength() > 0
+            || params->compute_SPRTA_zero_length_branches))
         {
-            annotation_str += ",alternativePlacements={";
             
-            std::vector<cmaple::AltBranch>& alt_branches = sprta_alt_branches[node_vec_index];
+            // add comma if necessary
+            if (annotation_str.length())
+                annotation_str += ",";
             
-            // add the first one
-            if (alt_branches.size() > 0)
+            // sprta score
+            annotation_str += "sprta=" +
+            convertDoubleToString(sprta_scores[node_vec_index], 5);
+            
+            // add alternative SPRs (if needed)
+            if (params->output_alternative_spr)
             {
-                // extract the corresponding node
-                annotation_str += exportStringAltBranch(alt_branches[0]);
+                annotation_str += ",alternativePlacements={";
+                
+                std::vector<cmaple::AltBranch>& alt_branches = sprta_alt_branches[node_vec_index];
+                
+                // add the first one
+                if (alt_branches.size() > 0)
+                {
+                    // extract the corresponding node
+                    annotation_str += exportStringAltBranch(alt_branches[0]);
+                }
+                
+                // add the remainder
+                for (auto i = 1; i < alt_branches.size(); ++i)
+                {
+                    // extract the corresponding node
+                    annotation_str += "," + exportStringAltBranch(alt_branches[i]);
+                }
+                
+                // close the bracket
+                annotation_str += "}";
             }
-            
-            // add the remainder
-            for (auto i = 1; i < alt_branches.size(); ++i)
-            {
-                // extract the corresponding node
-                annotation_str += "," + exportStringAltBranch(alt_branches[i]);
-            }
-            
-            // close the bracket
-            annotation_str += "}";
         }
         
         // add existing annotation from the input tree (if any)
@@ -1404,11 +1409,16 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
             replaceSubStr(ext_atn, "rootSupport=", "input_rootSupport=");
             
             // add the exist annotation into the output
-            annotation_str += "," + ext_atn;
+            if (annotation_str.length())
+                annotation_str += ",";
+            annotation_str += ext_atn;
         }
         
-        // close the square bracket
-        annotation_str += "]";
+        if (annotation_str.length())
+        {
+            // add the open and close brackets
+            annotation_str = "[&" + annotation_str + "]";
+        }
     }
     
 
