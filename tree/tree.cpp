@@ -781,6 +781,9 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
                     << "Tree log likelihood (after re-rooting): "
                     << computeLh() << std::endl;
                 }
+                
+                // update model parameters after rerooting the tree
+                updateModelLhAfterLoading<num_states>();
             }
         }
     }
@@ -1000,7 +1003,6 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate() {
     // force update
     model->fixed_params = false;
 
-    model->initMutationMat();
     updateModelParams<num_states>();
 
     // retore fixed_params
@@ -1379,6 +1381,9 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
             // replace alternativePlacements (if existed)
             replaceSubStr(ext_atn, "alternativePlacements=",
                           "input_alternativePlacements=");
+            
+            // replace rootSupport (if existed)
+            replaceSubStr(ext_atn, "rootSupport=", "input_rootSupport=");
             
             // add the exist annotation into the output
             annotation_str += "," + ext_atn;
