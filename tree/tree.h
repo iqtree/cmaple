@@ -2204,6 +2204,9 @@ void cmaple::Tree::updateModelParams() {
   assert(aln);
   assert(model);
     
+    // reset the pseudo count
+    model->initMutationMat();
+    
   // perform a DFS -> at each node, update the pesudoCount of the model based on
   // the sequence of that node
   performDFSv2<&cmaple::Tree::updatePesudoCountModel<num_states>>();
