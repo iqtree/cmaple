@@ -748,42 +748,60 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
             std::cout << "Assessing root position" << std::endl;
         }
         
-        // seek the best root
-        const NumSeqsType best_root_vec_id = seekBestRoot<num_states>();
-        
-        // if found a better root and we're allowed to reroot the tree
-        // -> do it
-        if (best_root_vec_id != root_vector_index)
+        // allow for rerooting up to 3 times
+        int root_seeking_count = 0;
+        bool need_seeking_new_root = true;
+        while (need_seeking_new_root && (root_seeking_count < 3))
         {
-            if (cmaple::verbose_mode >= cmaple::VB_MED)
-                std::cout << "Better root found." << std::endl;
+            // show info
+            if (root_seeking_count > 0
+                && cmaple::verbose_mode >= cmaple::VB_MED)
+                std::cout << "Re-try seeking a better root" << std::endl;
             
-            // reroot the tree (if allowed)
-            if (params->allow_rerooting)
+            // update the stop condition
+            ++root_seeking_count;
+            need_seeking_new_root = false;
+            
+            // seek the best root
+            const NumSeqsType best_root_vec_id = seekBestRoot<num_states>();
+            
+            // if found a better root and we're allowed to reroot the tree
+            // -> do it
+            if (best_root_vec_id != root_vector_index)
             {
-                // show info for debugging
-                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
-                {
-                    std::cout << std::setprecision(10)
-                    << "Tree log likelihood (before re-rooting): "
-                    << computeLh() << std::endl;
-                }
-                
-                // reroot
                 if (cmaple::verbose_mode >= cmaple::VB_MED)
-                    std::cout << "Rerooting the tree." << std::endl;
-                reroot<num_states>(best_root_vec_id);
+                    std::cout << "Better root found." << std::endl;
                 
-                // show info for debugging
-                if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                // reroot the tree (if allowed)
+                if (params->allow_rerooting)
                 {
-                    std::cout << std::setprecision(10)
-                    << "Tree log likelihood (after re-rooting): "
-                    << computeLh() << std::endl;
+                    // show info for debugging
+                    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                    {
+                        std::cout << std::setprecision(10)
+                        << "Tree log likelihood (before re-rooting): "
+                        << computeLh() << std::endl;
+                    }
+                    
+                    // reroot
+                    if (cmaple::verbose_mode >= cmaple::VB_MED)
+                        std::cout << "Rerooting the tree." << std::endl;
+                    reroot<num_states>(best_root_vec_id);
+                    
+                    // show info for debugging
+                    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                    {
+                        std::cout << std::setprecision(10)
+                        << "Tree log likelihood (after re-rooting): "
+                        << computeLh() << std::endl;
+                    }
+                    
+                    // update model parameters after rerooting the tree
+                    updateModelLhAfterLoading<num_states>();
+                    
+                    // need to re-seek a new root
+                    need_seeking_new_root = true;
                 }
-                
-                // update model parameters after rerooting the tree
-                updateModelLhAfterLoading<num_states>();
             }
         }
     }
