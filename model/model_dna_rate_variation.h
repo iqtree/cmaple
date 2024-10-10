@@ -15,11 +15,9 @@ public:
     ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize);
     ~ModelDNARateVariation();
 
-    virtual void estimateRates(cmaple::Tree* tree) override;
+    void estimateRatesPerSite(cmaple::Tree* tree);
 
-    void estimateRatesWithEM(cmaple::Tree* tree);
-
-    void expectationMaximizationCalculationRates(const cmaple::Tree* tree, bool trackMutations=false);
+    void estimateRatesPerSitePerEntry(cmaple::Tree* tree);
 
     virtual inline const cmaple::RealNumType *const getMutationMatrix(PositionType i) const override {
         return mutationMatrices + (i * matSize);
@@ -58,9 +56,15 @@ public:
    */
   virtual bool updateMutationMatEmpirical() override;
 
+  void printMatrix(const RealNumType* matrix, std::ostream* outStream);
+
 private:
 
-    void printMatrix(RealNumType* matrix);
+    void updateCountsAndWaitingTimesAcrossRoot( PositionType start, PositionType end, 
+                                                StateType parentState, StateType childState,
+                                                RealNumType distToRoot, RealNumType distToObserved,
+                                                RealNumType** waitingTimes, RealNumType** counts,
+                                                RealNumType weight = 1.);
 
     cmaple::PositionType genomeSize;
     /**
