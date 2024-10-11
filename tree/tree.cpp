@@ -280,6 +280,19 @@ void cmaple::Tree::setupBlengthThresh() {
 
   // compute thresholds for approximations
   params->threshold_prob2 = params->threshold_prob * params->threshold_prob;
+    
+    const RealNumType log_seq_length = std::log(aln->ref_seq.size());
+    params->thresh_log_lh_sample = params->thresh_log_lh_sample_factor * log_seq_length;
+    params->thresh_log_lh_subtree = params->thresh_log_lh_subtree_factor * log_seq_length;
+    params->thresh_log_lh_subtree_short_search =
+        params->thresh_log_lh_subtree_short_search_factor * log_seq_length;
+    
+    // initialize the threshold for determining whether an SPR is close enough to the optimal one
+    params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * log_seq_length;
+    
+    // initialize the threshold for determining whether an SPR is close enough to the optimal one
+    params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * log_seq_length;
+    
 }
 
 void cmaple::Tree::resetSeqAdded() {
@@ -476,6 +489,9 @@ void cmaple::Tree::changeAlnTemplate(Alignment* n_aln) {
 
   // update model according to the data in the new alignment
   updateModelByAln();
+    
+    // re-init params & thresholds
+    setupBlengthThresh();
 
   // make sure users can only keep the blengths fixed if they input a complete
   // tree with branch lengths
@@ -863,9 +879,6 @@ void cmaple::Tree::applySPRTemplate(
     // initialize variables for computing the SPRTA scores, if necessary
     if (params->compute_SPRTA)
     {
-        // initialize the threshold for determining whether an SPR is close enough to the optimal one
-        params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * std::log(aln->ref_seq.size());
-        
         // initialize the vector to store all SPRTA scores
         sprta_scores.resize(nodes.size(), 1.0);
         
@@ -1430,6 +1443,15 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
       // init internal name (if necessary)
       if (print_internal_id)
           internal_name = "in" + convertIntToString(internal_names[node_vec_index]);
+      
+      // debug
+      /*if (internal_names[node_vec_index] == 357)
+      {
+          std::cout << "357" << std::endl;
+          std::cout << "176: " << seq_names[nodes[176].getSeqNameIndex()] << std::endl;
+          std::cout << "177: " << internal_names[177] << std::endl;
+          std::cout << "182: " << seq_names[nodes[182].getSeqNameIndex()] << std::endl;
+      }*/
       
     output +=
         exportNodeString(is_newick_format, binary, node.getNeighborIndex(RIGHT).getVectorIndex(),
@@ -3134,6 +3156,10 @@ void cmaple::Tree::seekSubTreePlacement(
   //  neighbor_node->length, false, down_lh, 0));
   //}
   //}
+    
+    // debug
+    /*if (child_node_index.getVectorIndex() == 105)
+        std::cout << "105" << std::endl;*/
 
   // examine each node in the node stack to seek the "best" placement
   while (!node_stack.empty()) {
@@ -10386,9 +10412,6 @@ NumSeqsType cmaple::Tree::seekBestRoot()
     root_supports.clear();
     if (params->compute_SPRTA)
         root_supports.resize(nodes.size(), -1);
-        
-    // initialize the threshold for determining whether an SPR is close enough to the optimal one
-    params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * std::log(aln->ref_seq.size());
     
     // get/init approximation params
     bool strict_stop_seeking_placement_subtree =

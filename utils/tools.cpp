@@ -580,9 +580,9 @@ cmaple::Params::Params() {
   strict_stop_seeking_placement_sample = true;
   strict_stop_seeking_placement_subtree = false;
   strict_stop_seeking_placement_subtree_short_search = true;
-  thresh_log_lh_sample = 200;
-  thresh_log_lh_subtree = 160;
-  thresh_log_lh_subtree_short_search = 40;
+  thresh_log_lh_sample_factor = 18;
+  thresh_log_lh_subtree_factor = 14;
+  thresh_log_lh_subtree_short_search_factor = 6;
   thresh_log_lh_failure = 0.01;
   min_blength_factor = 0.2;
   min_blength_mid_factor = 4.1;

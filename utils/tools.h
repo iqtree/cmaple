@@ -452,18 +452,36 @@ class Params {
   (short range search)
    */
   bool strict_stop_seeking_placement_subtree_short_search;
+    
+    /**
+    *  Factor to compute the threshold of loglh to continue explore the subtree
+     to seek a placement for a sample
+    */
+    RealNumType thresh_log_lh_sample_factor;
 
   /**
   *  Threshold of loglh to continue explore the subtree to seek a placement for
   a sample
   */
   RealNumType thresh_log_lh_sample;
+    
+    /**
+    * Factor to compute the threshold of loglh to continue explore the subtree
+     to seek a placement for a subtree
+    */
+    RealNumType thresh_log_lh_subtree_factor;
 
   /**
   *  Threshold of loglh to continue explore the subtree to seek a placement for
   a subtree
   */
   RealNumType thresh_log_lh_subtree;
+    
+    /**
+    *  Factor to compute the threshold of loglh to continue explore the subtree
+     to seek a placement for a subtree (short range search)
+    */
+    RealNumType thresh_log_lh_subtree_short_search_factor;
 
   /**
   *  Threshold of loglh to continue explore the subtree to seek a placement for
