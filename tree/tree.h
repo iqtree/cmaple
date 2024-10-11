@@ -740,6 +740,7 @@ bool isDiffFromOrigPlacement(
       cmaple::Index& best_node_index,
       PhyloNode& current_node,
       cmaple::RealNumType& best_lh_diff,
+      cmaple::RealNumType& best_lh_diff_before_bl_opt,
       bool& is_mid_branch,
       cmaple::RealNumType& lh_diff_at_node,
       cmaple::RealNumType& lh_diff_mid_branch,

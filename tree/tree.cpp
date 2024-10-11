@@ -2313,6 +2313,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     Index& best_node_index,
     PhyloNode& current_node,
     RealNumType& best_lh_diff,
+    RealNumType& best_lh_diff_before_bl_opt,
     bool& is_mid_branch,
     RealNumType& lh_diff_at_node,
     RealNumType& lh_diff_mid_branch,
@@ -2452,13 +2453,20 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     best_up_lh_diff = lh_diff_mid_branch;
   }
     
+    // keep track of the best lh diff (before blength optimization)
+    // to make it consistent with MAPLE
+    if (lh_diff_mid_branch > best_lh_diff_before_bl_opt)
+    {
+        best_lh_diff_before_bl_opt = lh_diff_mid_branch;
+    }
+    
     // if computing SPRTA, record the likelihood of the alternative SPR
     // if its lh_diff is not too worse than the best_lh_diff by a threshold
     RealNumType best_appending_blength;
     RealNumType best_mid_top_blength;
     RealNumType best_mid_bottom_blength;
     if (params->compute_SPRTA && lh_diff_mid_branch
-        >= best_lh_diff - params->thresh_loglh_optimal_diff)
+        >= best_lh_diff_before_bl_opt - params->thresh_loglh_optimal_diff)
     {
         // compensate for the likelihood changes due to blength change
         RealNumType lh_compensation = 0;
@@ -3062,6 +3070,9 @@ void cmaple::Tree::seekSubTreePlacement(
     std::vector<AltBranch> alt_branches;
     const RealNumType ori_best_lh_diff = best_lh_diff;
     bool is_root_considered = false; // whether we already consider the placement at root or not
+    // keep track of the best lh diff (before blength optimization)
+    // to make it consistent with MAPLE
+    RealNumType best_lh_diff_before_bl_opt = best_lh_diff;
 
   // get/init approximation params
   bool strict_stop_seeking_placement_subtree =
@@ -3154,8 +3165,8 @@ void cmaple::Tree::seekSubTreePlacement(
         {
           std::unique_ptr<SeqRegions> bottom_regions = nullptr;
           if (!examineSubtreePlacementMidBranch<num_states>(
-                  best_node_index, current_node, best_lh_diff, is_mid_branch,
-                  lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
+                  best_node_index, current_node, best_lh_diff, best_lh_diff_before_bl_opt,
+                  is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                   best_down_lh_diff, updating_node, subtree_regions,
                   threshold_prob, removed_blength, Index(), node_index, bottom_regions,
                   opt_appending_blength, opt_mid_top_blength,
@@ -3255,8 +3266,8 @@ void cmaple::Tree::seekSubTreePlacement(
               current_node_vec)  // top_node->length > 0 && top_node != root)
       {
         if (!examineSubtreePlacementMidBranch<num_states>(
-                best_node_index, current_node, best_lh_diff, is_mid_branch,
-                lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
+                best_node_index, current_node, best_lh_diff, best_lh_diff_before_bl_opt,
+                is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
                 threshold_prob, removed_blength, top_node_index, node_index,
                 bottom_regions, opt_appending_blength, opt_mid_top_blength,
