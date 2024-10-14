@@ -995,7 +995,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
             strcmp(argv[cnt], "-thresh-opt-diff-fac") == 0) {
           ++cnt;
           if (cnt >= argc || argv[cnt][0] == '-') {
-            outError("Use -thresh-opt-diff-fac <THRESH_FACTOR>");
+            outError("Use --thresh-opt-diff-fac <THRESH_FACTOR>");
           }
 
           try {
@@ -1172,11 +1172,11 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
         }
-        if (strcmp(argv[cnt], "--min-support-alt") == 0 ||
+        if (strcmp(argv[cnt], "--min-sup-alt") == 0 ||
             strcmp(argv[cnt], "-min-sup-alt") == 0) {
           ++cnt;
           if (cnt >= argc || argv[cnt][0] == '-') {
-            outError("Use --min-support-alt <MIN_SUPPORT>");
+            outError("Use --min-sup-alt <MIN_SUPPORT>");
           }
 
           try {
@@ -1327,7 +1327,11 @@ void cmaple::quickStartGuide() {
       << endl
       << "     cmaple -aln example.maple --alrt -nt 4" << endl
       << endl
-      << "5. Convert an alignment (aln.phy) to a different format (e.g., "
+      << "5. Assess branch supports with SPRTA scores:"
+      << endl
+      << "     cmaple -aln example.maple --sprta" << endl
+      << endl
+      << "6. Convert an alignment (aln.phy) to a different format (e.g., "
          "FASTA format):"
       << endl
       << "     cmaple -aln aln.phy --out-aln aln.fa --out-format FASTA" << endl
@@ -1359,6 +1363,8 @@ void cmaple::usage_cmaple() {
       << endl
       << "  -t <TREE_FILE>       Specify a starting tree for tree search."
       << endl
+      << "  --no-reroot          Do not reroot the input tree."
+      << endl
       << "  --blfix              Keep branch lengths unchanged. " << endl
       << "  --search <TYPE>      Set tree search type (FAST/NORMAL/EXHAUSTIVE)."
       << endl
@@ -1378,6 +1384,8 @@ void cmaple::usage_cmaple() {
       << "  --replace-intree     Allow CMAPLE to replace the input tree" << endl
       << "                       when computing branch supports." << endl
       << "  --out-mul-tree       Output the tree in multifurcating format."
+      << endl
+      << "  --out-internal       Output IDs of internal nodes."
       << endl
       << "  --overwrite          Overwrite output files if existing." << endl
       << "  -ref <FILE>,<SEQ>    Specify the reference genome." << endl
@@ -1401,6 +1409,22 @@ void cmaple::usage_cmaple() {
       << endl
       << "  -v <MODE>            Set the verbose mode "
          "(QUIET/MIN/MED/MAX/DEBUG)."
+      << endl
+      << endl
+      << "ASSESSING SPRTA SUPPORTS:" << endl
+      << "  --sprta               Compute SPRTA supports."
+      << endl
+      << "  --thresh-opt-diff-fac <NUM> A relative factor to determine whether "
+      << endl
+      << "                              SPRs are close to the optimal one."
+      << endl
+      << "  --zero-branch-supp    Compute supports for zero-length branches."
+      << endl
+      << "  --out-alternative-spr Output alternative SPRs and their supports."
+      << endl
+      << "  --min-sup-alt <MIN>   The min support to be outputted as "
+      << endl
+      << "                        alternative SPRs."
       << endl
       << endl;
 
