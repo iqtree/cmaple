@@ -2494,7 +2494,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     RealNumType best_appending_blength;
     RealNumType best_mid_top_blength;
     RealNumType best_mid_bottom_blength;
-    if (params->compute_SPRTA && lh_diff_mid_branch
+    if (lh_diff_mid_branch
         >= best_lh_diff_before_bl_opt - params->thresh_loglh_optimal_diff)
     {
         // compensate for the likelihood changes due to blength change
@@ -2618,30 +2618,31 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             lh_diff_mid_branch = calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
-            alt_branches.push_back(AltBranch(lh_diff_mid_branch + lh_compensation, new_placement_index));
+            if (params->compute_SPRTA)
+                alt_branches.push_back(AltBranch(lh_diff_mid_branch + lh_compensation, new_placement_index));
+            
+            // if this position is better than the best position found so far -> record it
+            if (lh_diff_mid_branch > best_lh_diff) {
+              best_node_index = at_node_index;
+              best_lh_diff = lh_diff_mid_branch;
+              is_mid_branch = true;
+              updating_node->setFailureCount(0);
+                
+              // record the optmized blengths
+                opt_appending_blength = best_appending_blength;
+                opt_mid_top_blength = best_mid_top_blength;
+                opt_mid_bottom_blength = best_mid_bottom_blength;
+                
+              if (top_node_exists) {
+                best_down_lh_diff = lh_diff_at_node;  // only update in case when crawling
+                                                      // up from child to parent
+              }
+            } else if (top_node_exists &&
+                       lh_diff_at_node >= (best_lh_diff - threshold_prob)) {
+              best_up_lh_diff = lh_diff_mid_branch;
+            }
         }
     }
-
-  // if this position is better than the best position found so far -> record it
-  if (lh_diff_mid_branch > best_lh_diff) {
-    best_node_index = at_node_index;
-    best_lh_diff = lh_diff_mid_branch;
-    is_mid_branch = true;
-    updating_node->setFailureCount(0);
-      
-    // record the optmized blengths
-      opt_appending_blength = best_appending_blength;
-      opt_mid_top_blength = best_mid_top_blength;
-      opt_mid_bottom_blength = best_mid_bottom_blength;
-      
-    if (top_node_exists) {
-      best_down_lh_diff = lh_diff_at_node;  // only update in case when crawling
-                                            // up from child to parent
-    }
-  } else if (top_node_exists &&
-             lh_diff_at_node >= (best_lh_diff - threshold_prob)) {
-    best_up_lh_diff = lh_diff_mid_branch;
-  }
 
   // delete mid_branch_regions
   // if (updating_node->need_updating) delete mid_branch_regions;
@@ -3879,7 +3880,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     
     // don't need to optimize blengths if they're already optmized when computing SPRTA
-    if (params->compute_SPRTA && opt_appending_blength != -1)
+    if (opt_appending_blength != -1)
     {
         // re-compute the new mid-branch regions
         upper_left_right_regions->mergeUpperLower<num_states>(best_child_regions,
