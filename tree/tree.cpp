@@ -2481,6 +2481,13 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     {
         best_lh_diff_before_bl_opt = lh_diff_mid_branch;
     }
+    // placement at current node is considered failed if placement likelihood is
+    // not improved by a certain margin compared to best placement so far for
+    // the nodes above it.
+    else if (lh_diff_mid_branch <
+             (updating_node->getLhDiff() - params->thresh_log_lh_failure)) {
+      updating_node->increaseFailureCount();
+    }
     
     // if computing SPRTA, record the likelihood of the alternative SPR
     // if its lh_diff is not too worse than the best_lh_diff by a threshold
@@ -3209,7 +3216,7 @@ void cmaple::Tree::seekSubTreePlacement(
         }
 
         // now try appending exactly at node
-        if (!examineSubTreePlacementAtNode<num_states>(
+        /*if (!examineSubTreePlacementAtNode<num_states>(
                 best_node_index, current_node, best_lh_diff, is_mid_branch,
                 lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
                 best_down_lh_diff, updating_node, subtree_regions,
@@ -3218,20 +3225,23 @@ void cmaple::Tree::seekSubTreePlacement(
             // update to match MAPLE v0.6.8
             // keep examining mid-branch
             // continue;
-        }
+        }*/
       }
       // set the placement cost at the current node position at the most
       // negative value if branch length is zero -> we can't place the
       // subtree on that branch
       else {
-        lh_diff_at_node = updating_node->getLhDiff();
+        // lh_diff_at_node = updating_node->getLhDiff();
+          
+          // added to ignore examine placing a subtree at a node
+          lh_diff_mid_branch = updating_node->getLhDiff();
       }
 
       // keep crawling down into children nodes unless the stop criteria for the
       // traversal are satisfied. check the stop criteria keep traversing
       // further down to the children
-      if (keepTraversing(
-              best_lh_diff, lh_diff_at_node,
+      // if (keepTraversing(best_lh_diff, lh_diff_at_node,
+        if (keepTraversing(best_lh_diff, lh_diff_mid_branch,
               strict_stop_seeking_placement_subtree, updating_node->getFailureCount(),
               failure_limit_subtree, thresh_log_lh_subtree,
               current_node.isInternal()))  // updating_node->node->next))
@@ -3245,7 +3255,7 @@ void cmaple::Tree::seekSubTreePlacement(
         PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
         PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
 
-        // add child_1 to node_stack
+        /*// add child_1 to node_stack
         addChildSeekSubtreePlacement<num_states>(
             child_1_index, child_1, child_2, lh_diff_at_node,
             updating_node, node_stack, threshold_prob);
@@ -3253,7 +3263,16 @@ void cmaple::Tree::seekSubTreePlacement(
         // add child_2 to node_stack
         addChildSeekSubtreePlacement<num_states>(
             child_2_index, child_2, child_1, lh_diff_at_node,
-            updating_node, node_stack, threshold_prob);
+            updating_node, node_stack, threshold_prob);*/
+          // add child_1 to node_stack
+          addChildSeekSubtreePlacement<num_states>(
+              child_1_index, child_1, child_2, lh_diff_mid_branch,
+              updating_node, node_stack, threshold_prob);
+
+          // add child_2 to node_stack
+          addChildSeekSubtreePlacement<num_states>(
+              child_2_index, child_2, child_1, lh_diff_mid_branch,
+              updating_node, node_stack, threshold_prob);
       }
     }
     // case when crawling up from child to parent
@@ -3262,7 +3281,7 @@ void cmaple::Tree::seekSubTreePlacement(
       const Index top_node_index = Index(current_node_vec, TOP);
 
       // append directly at the node
-      if (current_node.getUpperLength() > 0 ||
+      /*if (current_node.getUpperLength() > 0 ||
           root_vector_index ==
               current_node_vec)  // top_node->length > 0 || top_node == root)
       {
@@ -3280,7 +3299,7 @@ void cmaple::Tree::seekSubTreePlacement(
       // old one
       else {
         lh_diff_at_node = updating_node->getLhDiff();
-      }
+      }*/
 
       // try appending mid-branch
       const Index other_child_index = current_node.getNeighborIndex(
@@ -3309,18 +3328,24 @@ void cmaple::Tree::seekSubTreePlacement(
 
       // check stop rule of the traversal process
       // keep traversing upwards
-      if (keepTraversing(best_lh_diff, lh_diff_at_node,
+      // if (keepTraversing(best_lh_diff, lh_diff_at_node,
+        if (keepTraversing(best_lh_diff, lh_diff_mid_branch,
                          strict_stop_seeking_placement_subtree, updating_node->getFailureCount(),
                          failure_limit_subtree, thresh_log_lh_subtree)) {
         // if(!addNeighborsSeekSubtreePlacement(top_node_index,
         // other_child_index, parent_upper_lr_regions, bottom_regions,
         // lh_diff_at_node, updating_node, node_stack, threshold_prob))
         // continue;
-        if (!addNeighborsSeekSubtreePlacement<num_states>(
+        /*if (!addNeighborsSeekSubtreePlacement<num_states>(
                 current_node, other_child_index, std::move(bottom_regions),
                 lh_diff_at_node, updating_node, node_stack, threshold_prob)) {
           continue;
-        }
+        }*/
+            if (!addNeighborsSeekSubtreePlacement<num_states>(
+                    current_node, other_child_index, std::move(bottom_regions),
+                    lh_diff_mid_branch, updating_node, node_stack, threshold_prob)) {
+              continue;
+            }
       }
       /*else
       {
