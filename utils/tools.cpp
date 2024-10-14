@@ -1355,49 +1355,49 @@ void cmaple::usage_cmaple() {
       << "                       or MAPLE format." << endl
       << "  -m <MODEL>           Specify a model name." << endl
       << "  -st <SEQ_TYPE>       Specify a sequence type (DNA/AA)." << endl
-      << "  --format <FORMAT>     Set the alignment format (PHYLIP/FASTA/MAPLE)."
+      << "  --format <FORMAT>    Set the alignment format (PHYLIP/FASTA/MAPLE)."
       << endl
       << "  -t <TREE_FILE>       Specify a starting tree for tree search."
       << endl
-      << "  --blfix               Keep branch lengths unchanged. " << endl
-      << "  --search <TYPE>       Set tree search type (FAST/NORMAL/EXHAUSTIVE)."
+      << "  --blfix              Keep branch lengths unchanged. " << endl
+      << "  --search <TYPE>      Set tree search type (FAST/NORMAL/EXHAUSTIVE)."
       << endl
-      << "  --shallow-search      Perform a shallow tree search" << endl
+      << "  --shallow-search     Perform a shallow tree search" << endl
       << "                       before a deeper tree search." << endl
-      << "  --alrt      Compute branch supports (aLRT-SH)." << endl
-      << "  --replicates <NUM>           Set the number of replicates for computing"
+      << "  --alrt               Compute branch supports (aLRT-SH)." << endl
+      << "  --replicates <NUM>   Set the number of replicates for computing"
       << endl
       << "                       branch supports (aLRT-SH)." << endl
-      << "  --epsilon <NUM>           Set the epsilon value for computing" << endl
+      << "  --epsilon <NUM>      Set the epsilon value for computing" << endl
       << "                       branch supports (aLRT-SH)." << endl
       << "  -nt <NUM_THREADS>    Set the number of threads for computing"
       << endl
       << "                       branch supports. Use `-nt AUTO` " << endl
       << "                       to employ all available CPU cores." << endl
-      << "  --prefix <PREFIX>        Specify a prefix for all output files." << endl
-      << "  --replace-intree            Allow CMAPLE to replace the input tree" << endl
+      << "  --prefix <PREFIX>    Specify a prefix for all output files." << endl
+      << "  --replace-intree     Allow CMAPLE to replace the input tree" << endl
       << "                       when computing branch supports." << endl
-      << "  --out-mul-tree        Output the tree in multifurcating format."
+      << "  --out-mul-tree       Output the tree in multifurcating format."
       << endl
-      << "  --overwrite           Overwrite output files if existing." << endl
+      << "  --overwrite          Overwrite output files if existing." << endl
       << "  -ref <FILE>,<SEQ>    Specify the reference genome." << endl
-      << "  --out-aln <FILE>      Write the input alignment to a file in " << endl
+      << "  --out-aln <FILE>     Write the input alignment to a file in " << endl
       << "                       MAPLE (default), PHYLIP, or FASTA format." << endl
       << "  --out-format <FORMAT> Specify the format (MAPLE/PHYLIP/FASTA) " << endl
       << "                       to output the alignment with `--out-aln`." << endl
-      << "  --min-blength <NUM>        Set the minimum branch length." << endl
-      << "  --thresh-prob <NUM>   Specify a parameter for approximations."
+      << "  --min-blength <NUM>  Set the minimum branch length." << endl
+      << "  --thresh-prob <NUM>  Specify a parameter for approximations."
       << endl
-      << "  --mut-update <NUM>    Set the period to update the substitution "
+      << "  --mut-update <NUM>   Set the period to update the substitution "
          "rates."
       << endl
-      << "  --max-subs <NUM>      Specify the maximum #substitutions per site" << endl
+      << "  --max-subs <NUM>     Specify the maximum #substitutions per site" << endl
       << "                       that CMAPLE is effective. Default: 0.067."
       << endl
-      << "  --mean-subs <NUM>     Specify the mean #substitutions per site" << endl
+      << "  --mean-subs <NUM>    Specify the mean #substitutions per site" << endl
       << "                       that CMAPLE is effective. Default: 0.02."
       << endl
-      << "  --seed <NUM>          Set a seed number for random generators."
+      << "  --seed <NUM>         Set a seed number for random generators."
       << endl
       << "  -v <MODE>            Set the verbose mode "
          "(QUIET/MIN/MED/MAX/DEBUG)."
