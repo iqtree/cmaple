@@ -3880,8 +3880,8 @@ void cmaple::Tree::placeSubTreeMidBranch(
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     
     // don't need to optimize blengths if they're already optmized when computing SPRTA
-    if (opt_appending_blength != -1)
-    {
+    /*if (opt_appending_blength != -1)
+    {*/
         // re-compute the new mid-branch regions
         upper_left_right_regions->mergeUpperLower<num_states>(best_child_regions,
             opt_mid_top_blength, *lower_regions, opt_mid_bottom_blength,
@@ -3894,7 +3894,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
             selected_node, opt_mid_top_blength,
             opt_mid_bottom_blength, best_blength,
             std::move(best_child_regions), upper_left_right_regions);
-    }
+    /*}
     // otherwise, optimize blengths using the old algorithm
     else
     {
@@ -3940,12 +3940,12 @@ void cmaple::Tree::placeSubTreeMidBranch(
             subtree_regions, nullptr, subtree_index, subtree, selected_node_index,
             selected_node, best_blength_split,
             selected_node.getUpperLength() - best_blength_split, best_blength,
-            std::move(best_child_regions), upper_left_right_regions);
+            std::move(best_child_regions), upper_left_right_regions);*/
         
         // delete best_child_regions
         /*if (best_child_regions)
          delete best_child_regions;*/
-    }
+    //}
 }
 
 template <const StateType num_states>
