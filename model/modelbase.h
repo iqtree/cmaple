@@ -328,12 +328,12 @@ public:
     return diagonal_mut_mat[j];
   }
 
-  virtual inline cmaple::RealNumType getFreqiFreqjQij(StateType i, StateType j) const {
-    return freqi_freqj_qij[row_index[i] + j];
+  virtual inline cmaple::RealNumType getFreqiFreqjQij(StateType row, StateType column, PositionType i) const {
+    return freqi_freqj_qij[row_index[row] + column];
   }
 
-  virtual inline const cmaple::RealNumType* const getFreqjTransposedijRow(StateType i) const {
-    return freq_j_transposed_ij + row_index[i];
+  virtual inline const cmaple::RealNumType* const getFreqjTransposedijRow(StateType row, PositionType i) const {
+    return freq_j_transposed_ij + row_index[row];
   }
 
   /**
