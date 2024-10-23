@@ -293,6 +293,9 @@ void cmaple::Tree::setupBlengthThresh() {
     // initialize the threshold for determining whether an SPR is close enough to the optimal one
     params->thresh_loglh_optimal_diff = params->thresh_loglh_optimal_diff_fac * log_seq_length;
     
+    // initialize the threshold for determining close2zero blength
+    params->thresh_zero_blength = 0.1 * default_blength;
+    
 }
 
 void cmaple::Tree::resetSeqAdded() {
@@ -880,7 +883,7 @@ void cmaple::Tree::applySPRTemplate(
     if (params->compute_SPRTA)
     {
         // initialize the vector to store all SPRTA scores
-        sprta_scores.resize(nodes.size(), 1.0);
+        sprta_scores.resize(nodes.size(), -1);
         
         // initialize the vector to store alternative SPRs (if needed)
         if (params->output_alternative_spr)
@@ -1368,8 +1371,9 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
             annotation_str += "rootSupport=" +
                 convertDoubleToString(root_supports[node_vec_index], 5);
         
-        if ((node.getUpperLength() > 0
-            || params->compute_SPRTA_zero_length_branches))
+        if ((node.getUpperLength() > params->thresh_zero_blength
+            || params->compute_SPRTA_zero_length_branches)
+            && sprta_scores[node_vec_index] >= 0)
         {
             
             // add comma if necessary
@@ -2262,6 +2266,8 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
     const cmaple::RealNumType best_mid_bottom_blength,
     bool& is_root_considered)
 {
+    const RealNumType thresh_zero_blength = params->thresh_zero_blength;
+    
     // place at the same parent
     NumSeqsType parent_vec = ori_parent_index.getVectorIndex();
     const NumSeqsType new_placement_vec = new_placement_index.getVectorIndex();
@@ -2280,7 +2286,7 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
         while (parent_vec != root_vector_index)
         {
             PhyloNode& parent_node = nodes[parent_vec];
-            if (parent_node.getUpperLength() <= 0)
+            if (parent_node.getUpperLength() <= thresh_zero_blength)
                 parent_vec = parent_node.getNeighborIndex(TOP).getVectorIndex();
             else
                 break;
@@ -2290,6 +2296,11 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
         if (new_placement_index.getVectorIndex() == parent_vec)
             return false;
     }
+    
+    // don't consider placing at a too short (i.e., close2zero) branch
+    PhyloNode& new_placement_node = nodes[new_placement_vec];
+    if (new_placement_node.getUpperLength() <= thresh_zero_blength)
+        return false;
     
     // redundant placement:
     // if (best_mid_top_blength <= 0),
@@ -2305,7 +2316,7 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
             while (new_placement_parent_vec != root_vector_index)
             {
                 PhyloNode& new_placement_parent_node = nodes[new_placement_parent_vec];
-                if (new_placement_parent_node.getUpperLength() <= 0)
+                if (new_placement_parent_node.getUpperLength() <= thresh_zero_blength)
                     new_placement_parent_vec = new_placement_parent_node.getNeighborIndex(TOP).getVectorIndex();
                 else
                     break;
@@ -10197,10 +10208,20 @@ string cmaple::Tree::exportTsvContent()
         // classify the support
         string support_class = "";
         const RealNumType support_score = sprta_scores[node_index];
-        if (support_score < 0.5)
-            support_class = "support<0.5";
-        else if (support_score < 0.9)
-            support_class = "support<0.9";
+        if (support_score >= 0)
+        {
+            if (support_score < 0.5)
+                support_class = "support<0.5";
+            else if (support_score < 0.9)
+                support_class = "support<0.9";
+        }
+        
+        // generate support_score string
+        string support_score_str = "";
+        if (support_score >= 0
+            && (node.getUpperLength() > params->thresh_zero_blength
+                || params->compute_SPRTA_zero_length_branches))
+            support_score_str = convertDoubleToString(support_score, 5);
         
         // generate the list of nodes could be placed
         // (with probability above threshold) on the branch above the current node
@@ -10229,7 +10250,7 @@ string cmaple::Tree::exportTsvContent()
             // extract content for an internal node
             // "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n"
             content += "in" + convertIntToString(internal_names[node_index])
-                + "\t\t" + convertDoubleToString(support_score, 5)
+                + "\t\t" + support_score_str
                 + "\t" + root_support + "\t" + support_class + "\t"
                 + convertIntToString(num_descendants[node_index])
                 + "\t" + support_to + "\n";
@@ -10249,10 +10270,9 @@ string cmaple::Tree::exportTsvContent()
             const string seq_name = seq_names[node.getSeqNameIndex()];
             const string minor_seqs_clade = node.getLessInfoSeqs().size() ?
                 seq_name + "_MinorSeqsClade" : "";
-            const string support_str = convertDoubleToString(support_score, 5);
             // "strain\tcollapsedTo\tsupport\trootSupport\tsupportGroup\tnumDescendants\tsupportTo\n"
             content += seq_name
-                + "\t" + minor_seqs_clade + "\t" + support_str
+                + "\t" + minor_seqs_clade + "\t" + support_score_str
                 + "\t" + root_support + "\t" + support_class + "\t0\t" + support_to + "\n";
             
             // also add less-info seqs
@@ -10260,14 +10280,14 @@ string cmaple::Tree::exportTsvContent()
             {
                 // add one more row for the minor_seqs_clade
                 content += minor_seqs_clade
-                    + "\t\t" + support_str
+                    + "\t\t" + support_score_str
                     + "\t" + root_support + "\t" + support_class + "\t0\t" + support_to + "\n";
                 
                 // add a row for each less-info seq
                 for (auto& seq_name_index: node.getLessInfoSeqs())
                 {
                     content += seq_names[seq_name_index]
-                        + "\t" + minor_seqs_clade + "\t" + support_str
+                        + "\t" + minor_seqs_clade + "\t" + support_score_str
                         + "\t" + root_support + "\t" + support_class + "\t0\t" + support_to + "\n";
                 }
             }

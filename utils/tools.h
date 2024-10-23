@@ -684,6 +684,12 @@ class Params {
     RealNumType min_support_alt_branches;
     
     /**
+     * A threshold to consider a "too short" branch as a zero-length branch
+     * when computing SPRTA.
+     */
+    RealNumType thresh_zero_blength;
+    
+    /**
      * A factor determines SPRs
      * are close to the optimal one when computing SPRTA.
      * This factor is relative to the reference length.
