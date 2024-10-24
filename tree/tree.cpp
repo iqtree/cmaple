@@ -1100,6 +1100,8 @@ void cmaple::Tree::optimizeTreeTopology(const TreeSearchType tree_search_type,
         cout << "Tree was improved by " + convertDoubleToString(improvement) +
                     " at subround " + convertIntToString(j + 1)
              << endl;
+        std::cout << std::setprecision(10)
+            << "Tree log likelihood: " << computeLh() << std::endl;
       }
 
       // stop trying if the improvement is so small
@@ -1145,6 +1147,9 @@ void cmaple::Tree::optimizeBranchTemplate(std::ostream& out_stream) {
 
   if (cmaple::verbose_mode >= cmaple::VB_MED) {
     cout << "Optimizing branch lengths" << endl;
+    std::cout << std::setprecision(10)
+      << "Tree log likelihood (before optimizing branch lengths): "
+      << computeLh() << std::endl;
   }
 
   // first, set all nodes outdated
@@ -1179,6 +1184,10 @@ void cmaple::Tree::optimizeBranchTemplate(std::ostream& out_stream) {
 
   // Output the tree after optimizing blengths for debugging
   if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
+      std::cout << std::setprecision(10)
+        << "Tree log likelihood (after optimizing branch lengths): "
+        << computeLh() << std::endl;
+      
     const std::string prefix =
         params ? (params->output_prefix.length() ? params->output_prefix
                                                  : params->aln_path)
@@ -2626,11 +2635,11 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
         if (isDiffFromOrigPlacement<num_states>(ori_parent_index, new_placement_index, best_mid_top_blength, best_mid_bottom_blength, is_root_considered))
         {
             // re-compute the placement cost
-            lh_diff_mid_branch = calculateSubTreePlacementCost<num_states>(
+            lh_diff_mid_branch = lh_compensation + calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
             if (params->compute_SPRTA)
-                alt_branches.push_back(AltBranch(lh_diff_mid_branch + lh_compensation, new_placement_index));
+                alt_branches.push_back(AltBranch(lh_diff_mid_branch, new_placement_index));
             
             // if this position is better than the best position found so far -> record it
             if (lh_diff_mid_branch > best_lh_diff) {
@@ -5924,12 +5933,14 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
       parent_top_polytomy_vec =
           nodes[parent_top_polytomy_vec].getNeighborIndex(TOP).getVectorIndex();
 
-    if (!(parent_top_polytomy_vec == top_polytomy_vec && !is_mid_node)) {
+    if (parent_top_polytomy_vec != top_polytomy_vec || is_mid_node) {
       total_improvement = best_lh_diff - best_lh;
 
       if (verbose_mode == VB_DEBUG) {
         cout << "In improveSubTree() found SPR move with improvement "
              << total_improvement << endl;
+          std::cout << std::setprecision(10)
+              << "Tree log likelihood: " << computeLh() << std::endl;
       }
 
       // apply an SPR move
