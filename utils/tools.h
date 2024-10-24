@@ -648,6 +648,11 @@ class Params {
   bool make_consistent;
     
     /**
+     * TRUE to ignore annotations from the input tree
+     */
+    bool ignore_input_annotations;
+    
+    /**
      * TRUE to print ids of internal nodes in the newick tree
      */
     bool print_internal_ids;

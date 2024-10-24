@@ -613,6 +613,7 @@ cmaple::Params::Params() {
   make_consistent = false;
   print_internal_ids = false;
   output_NEXUS = false;
+    ignore_input_annotations = false;
     allow_rerooting = true;
     compute_SPRTA = false;
     compute_SPRTA_zero_length_branches = false;
@@ -821,6 +822,14 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
             // parse inputs
             params.print_internal_ids = true;
+
+            continue;
+        }
+        if (strcmp(argv[cnt], "--ignore-annotation") == 0 ||
+              strcmp(argv[cnt], "-ignore-annotation") == 0) {
+
+            // parse inputs
+            params.ignore_input_annotations = true;
 
             continue;
         }
@@ -1366,6 +1375,7 @@ void cmaple::usage_cmaple() {
       << "  --no-reroot          Do not reroot the input tree."
       << endl
       << "  --blfix              Keep branch lengths unchanged. " << endl
+      << "  --ignore-annotation  Ignore annotations from the input tree. " << endl
       << "  --search <TYPE>      Set tree search type (FAST/NORMAL/EXHAUSTIVE)."
       << endl
       << "  --shallow-search     Perform a shallow tree search" << endl

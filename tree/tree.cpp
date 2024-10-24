@@ -9193,7 +9193,7 @@ NumSeqsType cmaple::Tree::parseFile(
       node.setUpperLength(brlen);
         
         // set the annotation (if any)
-        if (in_comment.length() > 0)
+        if (in_comment.length() > 0 && !params->ignore_input_annotations)
         {
             annotations.resize(nodes.size());
             annotations[tmp_node_vec] = std::move(in_comment);
@@ -9560,7 +9560,9 @@ bool cmaple::Tree::readTree(std::istream& tree_stream,
       
       // make sure the vector of annotations has the same size as the vector of nodes
       annotations.resize(nodes.size());
-      annotations[tmp_node_vec] = std::move(in_comment);
+      // set the annotation (if any)
+      if (in_comment.length() > 0 && !params->ignore_input_annotations)
+          annotations[tmp_node_vec] = std::move(in_comment);
       // remove the first character "&" in annotations
       for (auto& annotation : annotations)
       {
