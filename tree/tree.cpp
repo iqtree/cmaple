@@ -10549,7 +10549,7 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         
         // Show log every 1000 nodes
         ++candidate_count;
-        if (cmaple::verbose_mode >= cmaple::VB_MED
+        if (cmaple::verbose_mode >= cmaple::VB_DEBUG
             && candidate_count - candidate_count_1K >= 1000) {
             std::cout << "Processed " << convertIntToString(candidate_count)
                << " nodes for root assessment." << std::endl;
