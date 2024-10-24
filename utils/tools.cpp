@@ -1380,16 +1380,6 @@ void cmaple::usage_cmaple() {
       << endl
       << "  --shallow-search     Perform a shallow tree search" << endl
       << "                       before a deeper tree search." << endl
-      << "  --alrt               Compute branch supports (aLRT-SH)." << endl
-      << "  --replicates <NUM>   Set the number of replicates for computing"
-      << endl
-      << "                       branch supports (aLRT-SH)." << endl
-      << "  --epsilon <NUM>      Set the epsilon value for computing" << endl
-      << "                       branch supports (aLRT-SH)." << endl
-      << "  -nt <NUM_THREADS>    Set the number of threads for computing"
-      << endl
-      << "                       branch supports. Use `-nt AUTO` " << endl
-      << "                       to employ all available CPU cores." << endl
       << "  --prefix <PREFIX>    Specify a prefix for all output files." << endl
       << "  --replace-intree     Allow CMAPLE to replace the input tree" << endl
       << "                       when computing branch supports." << endl
@@ -1421,12 +1411,24 @@ void cmaple::usage_cmaple() {
          "(QUIET/MIN/MED/MAX/DEBUG)."
       << endl
       << endl
-      << "ASSESSING SPRTA SUPPORTS:" << endl
+      << "ASSESSING SH-aLRT BRANCH SUPPORTS:" << endl
+      << "  --alrt               Compute branch supports (aLRT-SH)." << endl
+      << "  --replicates <NUM>   Set the number of replicates for computing"
+      << endl
+      << "                       branch supports (aLRT-SH)." << endl
+      << "  --epsilon <NUM>      Set the epsilon value for computing" << endl
+      << "                       branch supports (aLRT-SH)." << endl
+      << "  -nt <NUM_THREADS>    Set the number of threads for computing"
+      << endl
+      << "                       branch supports. Use `-nt AUTO` " << endl
+      << "                       to employ all available CPU cores." << endl
+      << endl
+      << "ASSESSING SPRTA BRANCH SUPPORTS:" << endl
       << "  --sprta               Compute SPRTA supports."
       << endl
       << "  --thresh-opt-diff-fac <NUM> A relative factor to determine whether "
       << endl
-      << "                              SPRs are close to the optimal one."
+      << "                        SPRs are close to the optimal one."
       << endl
       << "  --zero-branch-supp    Compute supports for zero-length branches."
       << endl
