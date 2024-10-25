@@ -1147,9 +1147,10 @@ void cmaple::Tree::optimizeBranchTemplate(std::ostream& out_stream) {
 
   if (cmaple::verbose_mode >= cmaple::VB_MED) {
     cout << "Optimizing branch lengths" << endl;
-    std::cout << std::setprecision(10)
-      << "Tree log likelihood (before optimizing branch lengths): "
-      << computeLh() << std::endl;
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+        std::cout << std::setprecision(10)
+        << "Tree log likelihood (before optimizing branch lengths): "
+        << computeLh() << std::endl;
   }
 
   // first, set all nodes outdated
@@ -2638,7 +2639,12 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             lh_diff_mid_branch = lh_compensation + calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
-            if (params->compute_SPRTA)
+            // handle an invalid placement
+            if (lh_diff_mid_branch > params->threshold_prob2 && best_appending_blength < 0)
+            {
+                lh_diff_mid_branch = MIN_NEGATIVE;
+            }
+            else if (params->compute_SPRTA)
                 alt_branches.push_back(AltBranch(lh_diff_mid_branch, new_placement_index));
             
             // if this position is better than the best position found so far -> record it
