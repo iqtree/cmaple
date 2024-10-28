@@ -2636,15 +2636,17 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
         if (isDiffFromOrigPlacement<num_states>(ori_parent_index, new_placement_index, best_mid_top_blength, best_mid_bottom_blength, is_root_considered))
         {
             // re-compute the placement cost
+            const RealNumType bk_lh_diff_mid_branch = lh_diff_mid_branch;
             lh_diff_mid_branch = lh_compensation + calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
-            // handle an invalid placement
+            // handle an invalid placement -> restore the initial branch lengths
             if (lh_diff_mid_branch > params->threshold_prob2 && best_appending_blength < 0)
             {
-                lh_diff_mid_branch = MIN_NEGATIVE;
+                lh_diff_mid_branch = bk_lh_diff_mid_branch;
             }
-            else if (params->compute_SPRTA)
+            
+            if (params->compute_SPRTA)
                 alt_branches.push_back(AltBranch(lh_diff_mid_branch, new_placement_index));
             
             // if this position is better than the best position found so far -> record it
@@ -3906,8 +3908,8 @@ void cmaple::Tree::placeSubTreeMidBranch(
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     
     // don't need to optimize blengths if they're already optmized when computing SPRTA
-    /*if (opt_appending_blength != -1)
-    {*/
+    if (opt_appending_blength != -1)
+    {
         // re-compute the new mid-branch regions
         upper_left_right_regions->mergeUpperLower<num_states>(best_child_regions,
             opt_mid_top_blength, *lower_regions, opt_mid_bottom_blength,
@@ -3920,7 +3922,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
             selected_node, opt_mid_top_blength,
             opt_mid_bottom_blength, best_blength,
             std::move(best_child_regions), upper_left_right_regions);
-    /*}
+    }
     // otherwise, optimize blengths using the old algorithm
     else
     {
@@ -3966,12 +3968,12 @@ void cmaple::Tree::placeSubTreeMidBranch(
             subtree_regions, nullptr, subtree_index, subtree, selected_node_index,
             selected_node, best_blength_split,
             selected_node.getUpperLength() - best_blength_split, best_blength,
-            std::move(best_child_regions), upper_left_right_regions);*/
+            std::move(best_child_regions), upper_left_right_regions);
         
         // delete best_child_regions
         /*if (best_child_regions)
          delete best_child_regions;*/
-    //}
+    }
 }
 
 template <const StateType num_states>
