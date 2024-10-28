@@ -2640,10 +2640,16 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             lh_diff_mid_branch = lh_compensation + calculateSubTreePlacementCost<num_states>(
                 new_mid_branch_regions, subtree_regions, best_appending_blength);
             
-            // handle an invalid placement -> restore the initial branch lengths
-            if (lh_diff_mid_branch > params->threshold_prob2 && best_appending_blength < 0)
+            // if the new lh after branch length optimization is worse then the original
+            // -> restore the the original
+            if (lh_diff_mid_branch < bk_lh_diff_mid_branch)
             {
                 lh_diff_mid_branch = bk_lh_diff_mid_branch;
+                
+                // set best_appending_blength = -1 for a manual branch length optimization later
+                best_appending_blength = -1;
+                best_mid_top_blength = -1;
+                best_mid_bottom_blength = -1;
             }
             
             if (params->compute_SPRTA)
@@ -3908,7 +3914,9 @@ void cmaple::Tree::placeSubTreeMidBranch(
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     
     // don't need to optimize blengths if they're already optmized when computing SPRTA
-    if (opt_appending_blength != -1)
+    if (opt_appending_blength != -1
+        || opt_mid_top_blength != -1
+        || opt_mid_bottom_blength != -1)
     {
         // re-compute the new mid-branch regions
         upper_left_right_regions->mergeUpperLower<num_states>(best_child_regions,
@@ -6030,9 +6038,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
                                        opt_mid_bottom_blength); 
 
       // validate the new placement cost
-      if (best_lh_diff > params->threshold_prob2) {
-        throw std::logic_error("Strange, lh cost is positive");
-      } else if (best_lh_diff < -1e50) {
+      if (best_lh_diff < -1e50) {
         throw std::logic_error(
             "Likelihood cost is very heavy, this might mean that the "
             "reference used is not the same used to generate the input "
