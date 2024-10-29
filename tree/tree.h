@@ -325,6 +325,11 @@ class Tree {
    Vector of phylonodes
    */
   std::vector<PhyloNode> nodes;
+    
+    /**
+     Number of existing nodes before sample placement
+     */
+    NumSeqsType num_exiting_nodes;
 
   /**
    Vector of likelihood contributions of internal nodes

@@ -32,6 +32,7 @@ void cmaple::Tree::initTree(Alignment* n_aln,
   model = nullptr;
   cumulative_rate = nullptr;
   fixed_blengths = false;
+    num_exiting_nodes = 0;
   // bug fixed: don't use the first element to store node_lh because
   // node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
   node_lhs.clear();
@@ -428,6 +429,9 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
   // set outdated = false at all nodes to avoid considering SPR moves at those
   // nodes
   resetSPRFlags(true, false);
+    
+    // record the number of existing nodes
+    num_exiting_nodes = (NumSeqsType) nodes.size();
 }
 
 template <const cmaple::StateType num_states>
@@ -653,6 +657,15 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
 
   // iteratively place other samples (sequences)
   for (; i < num_seqs; ++i, ++sequence) {
+      // show progress
+      if (cmaple::verbose_mode >= cmaple::VB_MED) {
+        if (i + 1 - count_every_1K >= 1000)
+        {
+            std::cout << "Processed " << i + 1 << " samples" << std::endl;
+            count_every_1K = i + 1;
+        }
+      }
+      
     // don't add sequence that was already added in the input tree
     if (from_input_tree && sequence_added[i]) {
       --num_new_sequences;
@@ -721,14 +734,6 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
     // exportOutput(output_file + "_init.treefile");
     // exit(0);
     //}
-    // show progress
-    if (cmaple::verbose_mode >= cmaple::VB_MED) {
-      if (i - count_every_1K >= 1000)
-      {
-        std::cout << "Added " << i << " samples" << std::endl;
-        count_every_1K = i;
-      }
-    }
   }
 
   // flag denotes whether there is any new nodes added
@@ -919,15 +924,6 @@ void cmaple::Tree::applySPRTemplate(
       std::cout << "Applying a shallow tree search" << std::endl;
     }
 
-    // show a warning if applying a shallow tree search will follow by a full
-    if (tree_search_type == NORMAL_TREE_SEARCH &&
-        cmaple::verbose_mode > cmaple::VB_QUIET) {
-      outWarning(
-          "A shallow tree search will be followed by a "
-          "EXHAUSTIVE_TREE_SEARCH instead of a NORMAL_TREE_SEARCH");
-      tree_search_type = EXHAUSTIVE_TREE_SEARCH;
-    }
-
     // apply short-range SPR search
     optimizeTreeTopology<num_states>(tree_search_type, true);
     // exportOutput(output_file + "_short_search.treefile");
@@ -966,8 +962,18 @@ void cmaple::Tree::applySPRTemplate(
       std::string tree_search_str = getTreeSearchStr(tree_search_type);
       transform(tree_search_str.begin(), tree_search_str.end(),
                 tree_search_str.begin(), ::tolower);
-      std::cout << "Applying a " + tree_search_str + " tree search"
+      std::cout << "Applying a(n) " + tree_search_str + " tree search"
                 << std::endl;
+        
+        // if computing SPRTA, normal tree search will act
+        // as an exhaustive tree search
+        if (tree_search_type == NORMAL_TREE_SEARCH
+            && params->compute_SPRTA)
+            outWarning("When computing SPRTA, a NORMAL tree search "
+                "will act as an EXHAUSTIVE tree search - considering "
+                "applying SPRs at all nodes in the tree. If one "
+                "wants to keep the topology unchanged, please use "
+                "a FAST tree search.");
     }
 
     optimizeTreeTopology<num_states>(tree_search_type);
@@ -1062,16 +1068,29 @@ void cmaple::Tree::optimizeTreeTopology(const TreeSearchType tree_search_type,
     // first, set all nodes outdated
     // no need to do so anymore as new nodes were already marked as outdated
     // resetSPRFlags(true, true);
-    // if only compute SPRTA (~ tree search type = FAST), reset all SPRFlags
-      resetSPRFlags(true, true);
       
       // added in MAPLE v0.6.8
       // Preliminarily optimize branch lengths (if needed)
       if (!fixed_blengths) {
-        optimizeBranch(cout);
           
-        // reset all SPR flags
+      // if only compute SPRTA (~ tree search type = FAST), reset all SPRFlags
         resetSPRFlags(true, true);
+          
+        optimizeBranch(cout);
+      }
+      
+      // reset all SPR Flags
+      resetSPRFlags(true, true);
+      
+      // if not compute SPRTA and not apply an exhaustive tree search
+      // don't consider applying SPRs at existing nodes (before sample placement)
+      if (!params->compute_SPRTA && tree_search_type != EXHAUSTIVE_TREE_SEARCH)
+      {
+          for (auto i = 0; i < num_exiting_nodes; ++i)
+          {
+              PhyloNode& node = nodes[i];
+              node.setOutdated(false);
+          }
       }
 
     // traverse the tree from root to try improvements on the entire tree

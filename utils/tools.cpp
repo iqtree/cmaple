@@ -1309,7 +1309,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
     }
     if (params.output_alternative_spr && !params.compute_SPRTA)
     {
-        outError("Unable to output alternative SPRs"
+        outError("Unable to output alternative SPRs "
                  "if SPRTA is not computed. Please use "
                  "`--sprta` if you want to compute SPRTA.");
     }
