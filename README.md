@@ -13,7 +13,7 @@ Apart from a standalone software, we also provide a set of APIs, which allow use
 
 ## How to cite CMAPLE?
 
-<TBU>To be updated...
+Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh, "CMAPLE: Efficient Phylogenetic Inference in the Pandemic Era", *Molecular Biology and Evolution*, Volume 41, Issue 7, July 2024, msae134, [https://doi.org/10.1093/molbev/msae134](https://doi.org/10.1093/molbev/msae134).
 
 
 ## How to use CMAPLE?
