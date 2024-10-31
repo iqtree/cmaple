@@ -1,6 +1,8 @@
 # CMAPLE
 
 [![License (GPL v2.0)](https://img.shields.io/badge/GPL%20v2.0-License?logo=gnu&label=License)](https://opensource.org/license/gpl-2-0)
+[![Bioconda downloads](https://img.shields.io/conda/dn/bioconda/cmaple.svg?label=Bioconda%20installs)](https://anaconda.org/bioconda/cmaple)
+[![Bioconda platforms](https://img.shields.io/conda/pn/bioconda/cmaple.svg?&label=Bioconda%20platforms)](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/cmaple)
 
 
 ## What's CMAPLE?
