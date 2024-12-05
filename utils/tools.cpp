@@ -613,14 +613,15 @@ cmaple::Params::Params() {
   make_consistent = false;
   print_internal_ids = false;
   output_NEXUS = false;
-    ignore_input_annotations = false;
-    allow_rerooting = true;
-    compute_SPRTA = false;
-    compute_SPRTA_zero_length_branches = false;
-    print_SPRTA_less_info_seqs = false;
-    output_alternative_spr = false;
-    min_support_alt_branches = 0.01;
-    thresh_loglh_optimal_diff_fac = 1.0;
+  ignore_input_annotations = false;
+  allow_rerooting = true;
+  compute_SPRTA = false;
+  compute_SPRTA_zero_length_branches = false;
+  print_SPRTA_less_info_seqs = false;
+  output_alternative_spr = false;
+  min_support_alt_branches = 0.01;
+  thresh_loglh_optimal_diff_fac = 1.0;
+  rate_variation = false;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1263,6 +1264,11 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
             outError("At least 1 thread please");
           }
         }
+        continue;
+      }
+      if (strcmp(argv[cnt], "--rate-variation") == 0 ||
+          strcmp(argv[cnt], "-rv") == 0) {
+        params.rate_variation = true;
         continue;
       }
 
