@@ -1,0 +1,173 @@
+name: Build and test
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build-ubuntu-x86-64:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q -y
+          sudo apt-get install -q -y cmake gcc g++ file ninja-build
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+          options: CMAPLE_FLAGS=static
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
+            file $exe
+            $exe
+            $exe --help
+          done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+  build-ubuntu-aarch64:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build on Linux ARM64
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+          githubToken: ${{ github.token }}
+          dockerRunArgs: |
+            --volume "${PWD}:/cmaple"
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y cmake gcc g++ file ninja-build
+          run: |
+            cd /cmaple
+            mkdir build
+            cd build
+            cmake .. -DCMAPLE_FLAGS=static
+            make -j
+            ls -alht
+            for exe in "./cmaple" "./cmaple-aa"; do
+              chmod +x $exe
+              file $exe
+              $exe
+              $exe --help
+            done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-aarch64-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+  build-macos-12:
+    runs-on: macos-12
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew update && brew install libomp ninja
+      - name: Construct flags
+        id: libomp-prefix
+        run: |
+          PREFIX=$(brew --prefix libomp)
+          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
+          for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
+            echo $var=${!var}
+            echo $var=${!var} >> "$GITHUB_OUTPUT"
+          done
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+          c-compiler: clang
+          cxx-compiler: clang++
+          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
+            file $exe
+            $exe
+            $exe --help
+          done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+  build-macos-14:
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew update && brew install libomp ninja
+      - name: Construct flags
+        id: libomp-prefix
+        run: |
+          PREFIX=$(brew --prefix libomp)
+          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
+          for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
+            echo $var=${!var}
+            echo $var=${!var} >> "$GITHUB_OUTPUT"
+          done
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+          c-compiler: clang
+          cxx-compiler: clang++
+          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
+            file $exe
+            $exe
+            $exe --help
+          done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+  build-windows:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ runner.arch }}-build
+          path: build\cmaple.exe
+      - name: Simple test
+        run: |-
+          ls
+          build\cmaple
+          build\cmaple --help
