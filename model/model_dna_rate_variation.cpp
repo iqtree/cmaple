@@ -87,8 +87,8 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree){
 
             if(seq1_region->type == TYPE_R && seq2_region->type == TYPE_R) {
                 // both states are type REF
+                auto state = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
                 for(int i = pos; i <= end_pos; i++) {
-                    int state = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(i)];
                     totals[state][i] += blength;
                 }
             }  else if(seq1_region->type == seq2_region->type && seq1_region->type < TYPE_R) {
@@ -109,7 +109,7 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree){
     RealNumType rateCount = 0;
     for(int i = 0; i < genomeSize; i++) {
         if(numSubstitutions[i] == 0) {
-            rates[i] = 0.001;
+            rates[i] = 0.01;
         } else {
             RealNumType expectedRateNoSubstitution = 0;
             for(int j = 0; j < num_states_; j++) {
@@ -117,7 +117,7 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree){
                 expectedRateNoSubstitution += summand;
             }
             if(expectedRateNoSubstitution == 0) {
-                rates[i] = 1.;
+                rates[i] = 0.01;
             } else {
                 rates[i] = numSubstitutions[i] / expectedRateNoSubstitution;
             }
