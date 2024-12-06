@@ -68,47 +68,6 @@ jobs:
           path: |
             build/cmaple
             build/cmaple-aa
-  build-macos-12:
-    runs-on: macos-12
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          brew update && brew install libomp ninja
-      - name: Construct flags
-        id: libomp-prefix
-        run: |
-          PREFIX=$(brew --prefix libomp)
-          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
-            echo $var=${!var}
-            echo $var=${!var} >> "$GITHUB_OUTPUT"
-          done
-      - name: Configure and Build Project
-        uses: threeal/cmake-action@main
-        with:
-          generator: Ninja
-          c-compiler: clang
-          cxx-compiler: clang++
-          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
-          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
-      - name: Simple test
-        run: |
-          for exe in "./build/cmaple" "./build/cmaple-aa"; do
-            chmod +x $exe
-            file $exe
-            $exe
-            $exe --help
-          done
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: |
-            build/cmaple
-            build/cmaple-aa
   build-macos-14:
     runs-on: macos-14
     steps:
