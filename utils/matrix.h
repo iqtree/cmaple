@@ -236,9 +236,9 @@ void setVecWithState(cmaple::RealNumType* const set_vec, const cmaple::StateType
 }
 
 template <cmaple::StateType length>
-void updateCoeffs(const cmaple::RealNumType* const root_freqs,
-        const cmaple::RealNumType* const transposed_mut_mat_row, cmaple::RealNumType* const likelihood,
-        const cmaple::RealNumType* const mutation_mat_row, const cmaple::RealNumType factor,
+void updateCoeffs(cmaple::RealNumType* const root_freqs,
+        cmaple::RealNumType* const transposed_mut_mat_row, cmaple::RealNumType* const likelihood,
+        cmaple::RealNumType* const mutation_mat_row, const cmaple::RealNumType factor,
         cmaple::RealNumType& coeff0, cmaple::RealNumType& coeff1)
 {
     for (cmaple::StateType i = 0; i < length; ++i)
