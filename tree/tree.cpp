@@ -1,5 +1,4 @@
 #include "tree.h"
-#include "../model/model_dna_rate_variation.h"
 
 #include <utils/matrix.h>
 #include <cassert>
@@ -134,11 +133,6 @@ void cmaple::Tree::doPlacement(std::ostream& out_stream) {
   (this->*doPlacementPtr)(out_stream);
 }
 
-void cmaple::Tree::doRateEstimation(std::ostream& out_stream) {
-  assert(doRateEstimationPtr);
-  (this->*doRateEstimationPtr)(out_stream);
-}
-
 void cmaple::Tree::applySPR(const TreeSearchType tree_search_type,
                                    const bool shallow_tree_search, std::ostream& out_stream) {
   assert(applySPRPtr);
@@ -246,7 +240,6 @@ void cmaple::Tree::setupFuncPtrs() {
       changeAlnPtr = &Tree::changeAlnTemplate<4>;
       changeModelPtr = &Tree::changeModelTemplate<4>;
       doPlacementPtr = &Tree::doPlacementTemplate<4>;
-      doRateEstimationPtr = &Tree::doRateEstimationTemplate<4>;
       applySPRPtr = &Tree::applySPRTemplate<4>;
       optimizeBranchPtr = &Tree::optimizeBranchTemplate<4>;
       doInferencePtr = &Tree::doInferenceTemplate<4>;
@@ -259,7 +252,6 @@ void cmaple::Tree::setupFuncPtrs() {
       changeAlnPtr = &Tree::changeAlnTemplate<20>;
       changeModelPtr = &Tree::changeModelTemplate<20>;
       doPlacementPtr = &Tree::doPlacementTemplate<20>;
-      doRateEstimationPtr = &Tree::doRateEstimationTemplate<20>;
       applySPRPtr = &Tree::applySPRTemplate<20>;
       optimizeBranchPtr = &Tree::optimizeBranchTemplate<20>;
       doInferencePtr = &Tree::doInferenceTemplate<20>;
@@ -585,7 +577,7 @@ void cmaple::Tree::doInferenceTemplate(
   doPlacement(out_stream);
 
   // 1.5 Calculate rates if rate variation
-  doRateEstimation(out_stream);
+  model->estimateRates(this);
 
   // 2. Optimize the tree with SPR if there is any new nodes added to the tree
   applySPR(tree_search_type, shallow_tree_search, out_stream);
@@ -1019,16 +1011,6 @@ void cmaple::Tree::applySPRTemplate(
 
   // Restore the source cout
   cout.rdbuf(src_cout);
-}
-
-template <const StateType num_states>
-void cmaple::Tree::doRateEstimationTemplate(std::ostream& out_stream) {
-
-  if(params->rate_variation) {
-    ModelDNARateVariation* rvModel = (ModelDNARateVariation*) model;
-    rvModel->estimateRatesWithEM(this);
-  }
-  
 }
 
 template <const cmaple::StateType num_states>
