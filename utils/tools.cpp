@@ -161,6 +161,19 @@ std::string cmaple::convertDoubleToString(RealNumType number,
   return ss.str();  // return a string with the contents of the stream
 }
 
+void cmaple::replaceSubStr(std::string& input_str,
+                   const std::string& old_sub_str,
+                   const std::string& new_sub_str)
+{
+    // find the old sub string in the input string
+    size_t pos = input_str.find(old_sub_str);
+    
+    // If the substring is found, replace it
+    if (pos != std::string::npos) {
+        input_str.replace(pos, old_sub_str.length(), new_sub_str);
+    }
+}
+
 auto cmaple::iEquals(const string& a, const string& b) -> bool {
   unsigned int sz = static_cast<unsigned int>(a.size());
   if (b.size() != sz) {
@@ -567,9 +580,9 @@ cmaple::Params::Params() {
   strict_stop_seeking_placement_sample = true;
   strict_stop_seeking_placement_subtree = false;
   strict_stop_seeking_placement_subtree_short_search = true;
-  thresh_log_lh_sample = 200;
-  thresh_log_lh_subtree = 160;
-  thresh_log_lh_subtree_short_search = 40;
+  thresh_log_lh_sample_factor = 18;
+  thresh_log_lh_subtree_factor = 14;
+  thresh_log_lh_subtree_short_search_factor = 6;
   thresh_log_lh_failure = 0.01;
   min_blength_factor = 0.2;
   min_blength_mid_factor = 4.1;
@@ -582,7 +595,7 @@ cmaple::Params::Params() {
   output_aln_format_str = "MAPLE";
   num_tree_improvement = 1;
   thresh_entire_tree_improvement = 1;
-  thresh_placement_cost = -1e-5;
+  thresh_placement_cost = -0.1;
   thresh_placement_cost_short_search = -1;
   tree_format_str = "BIN";
   shallow_tree_search = false;
@@ -598,6 +611,16 @@ cmaple::Params::Params() {
   seq_type_str = "AUTO";
   tree_search_type_str = "NORMAL";
   make_consistent = false;
+  print_internal_ids = false;
+  output_NEXUS = false;
+    ignore_input_annotations = false;
+    allow_rerooting = true;
+    compute_SPRTA = false;
+    compute_SPRTA_zero_length_branches = false;
+    print_SPRTA_less_info_seqs = false;
+    output_alternative_spr = false;
+    min_support_alt_branches = 0.01;
+    thresh_loglh_optimal_diff_fac = 1.0;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -726,7 +749,8 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
-      if (strcmp(argv[cnt], "--alignment") == 0 ||
+      if (strcmp(argv[cnt], "--aln") == 0 ||
+          strcmp(argv[cnt], "-s") == 0 ||
           strcmp(argv[cnt], "-aln") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
@@ -753,18 +777,18 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           strcmp(argv[cnt], "-pre") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError("Use -pre <OUTPUT_PREFIX>");
+          outError("Use --prefix <OUTPUT_PREFIX>");
         }
 
         params.output_prefix = argv[cnt];
 
         continue;
       }
-      if (strcmp(argv[cnt], "--output-aln") == 0 ||
+      if (strcmp(argv[cnt], "--out-aln") == 0 ||
           strcmp(argv[cnt], "-out-aln") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError("Use -out-aln <ALN_FILENAME>");
+          outError("Use --out-aln <ALN_FILENAME>");
         }
 
         // parse inputs
@@ -772,12 +796,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
-      if (strcmp(argv[cnt], "--output-format") == 0 ||
+      if (strcmp(argv[cnt], "--out-format") == 0 ||
             strcmp(argv[cnt], "-out-format") == 0) {
           ++cnt;
           if (cnt >= argc || argv[cnt][0] == '-') {
             outError(
-                "Use -out-format <ALN_FORMAT>. Note <ALN_FORMAT> "
+                "Use --out-format <ALN_FORMAT>. Note <ALN_FORMAT> "
                 "could be MAPLE, PHYLIP, or FASTA");
           }
 
@@ -786,6 +810,29 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
       }
+        if (strcmp(argv[cnt], "--out-nexus") == 0 ||
+              strcmp(argv[cnt], "-out-nexus") == 0) {
+
+            params.output_NEXUS = true;
+
+            continue;
+        }
+        if (strcmp(argv[cnt], "--out-internal") == 0 ||
+              strcmp(argv[cnt], "-out-int") == 0) {
+
+            // parse inputs
+            params.print_internal_ids = true;
+
+            continue;
+        }
+        if (strcmp(argv[cnt], "--ignore-annotation") == 0 ||
+              strcmp(argv[cnt], "-ignore-annotation") == 0) {
+
+            // parse inputs
+            params.ignore_input_annotations = true;
+
+            continue;
+        }
       if (strcmp(argv[cnt], "-st") == 0 ||
           strcmp(argv[cnt], "--seqtype") == 0) {
         cnt++;
@@ -821,10 +868,10 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         continue;
       }
       if (strcmp(argv[cnt], "-format") == 0 ||
-          strcmp(argv[cnt], "--aln-format") == 0) {
+          strcmp(argv[cnt], "--format") == 0) {
         cnt++;
         if (cnt >= argc) {
-          outError("Use -format MAPLE, PHYLIP, FASTA, or AUTO");
+          outError("Use --format MAPLE, PHYLIP, FASTA, or AUTO");
         }
         params.aln_format_str = argv[cnt];
 
@@ -873,7 +920,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           strcmp(argv[cnt], "-min-bl") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError("Use -min-bl <NUMBER>");
+          outError("Use --min-blength <NUMBER>");
         }
         try {
           params.fixed_min_blength = convert_real_number(argv[cnt]);
@@ -882,7 +929,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         }
 
         if (params.fixed_min_blength <= 1e-12) {
-          outError("<NUMBER> following -min-bl must be at least 1e-12!");
+          outError("<NUMBER> following --min-blength must be at least 1e-12!");
         }
 
         continue;
@@ -900,14 +947,21 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           strcmp(argv[cnt], "-search") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError("Use -search <FAST|NORMAL|EXHAUSTIVE>");
+          outError("Use --search <FAST|NORMAL|EXHAUSTIVE>");
         }
 
         params.tree_search_type_str = argv[cnt];
         continue;
       }
+        if (strcmp(argv[cnt], "-no-reroot") == 0 ||
+            strcmp(argv[cnt], "--no-reroot") == 0) {
+          params.allow_rerooting = false;
+          continue;
+        }
       if (strcmp(argv[cnt], "-blfix") == 0 ||
           strcmp(argv[cnt], "-fixbr") == 0 ||
+          strcmp(argv[cnt], "--blfix") == 0 ||
+          strcmp(argv[cnt], "--fixbr") == 0 ||
           strcmp(argv[cnt], "--fixed-blength") == 0) {
         params.fixed_blengths = true;
         continue;
@@ -922,16 +976,16 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         params.make_consistent = true;
         continue;
       }
-      if (strcmp(argv[cnt], "--replace-input-tree") == 0 ||
-          strcmp(argv[cnt], "-rep-tree") == 0) {
+      if (strcmp(argv[cnt], "--replace-intree") == 0 ||
+          strcmp(argv[cnt], "-repl-tree") == 0) {
         params.allow_replace_input_tree = true;
         continue;
       }
-      if (strcmp(argv[cnt], "--threshold-prob") == 0 ||
+      if (strcmp(argv[cnt], "--thresh-prob") == 0 ||
           strcmp(argv[cnt], "-thresh-prob") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError("Use -thresh-prob <PROB_THRESH>");
+          outError("Use --thresh-prob <PROB_THRESH>");
         }
 
         try {
@@ -946,11 +1000,31 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--thresh-opt-diff-fac") == 0 ||
+            strcmp(argv[cnt], "-thresh-opt-diff-fac") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError("Use --thresh-opt-diff-fac <THRESH_FACTOR>");
+          }
+
+          try {
+            params.thresh_loglh_optimal_diff_fac = convert_real_number(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.thresh_loglh_optimal_diff_fac <= 0) {
+            outError("<THRESH_FACTOR> must be positive!");
+          }
+
+          continue;
+        }
+        
         if (strcmp(argv[cnt], "--max-subs") == 0 ||
             strcmp(argv[cnt], "-max-subs") == 0) {
           ++cnt;
           if (cnt >= argc || argv[cnt][0] == '-') {
-            outError("Use -max-subs <NUM>");
+            outError("Use --max-subs <NUM>");
           }
 
           try {
@@ -969,7 +1043,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
             strcmp(argv[cnt], "-mean-subs") == 0) {
           ++cnt;
           if (cnt >= argc || argv[cnt][0] == '-') {
-            outError("Use -mean-subs <NUM>");
+            outError("Use --mean-subs <NUM>");
           }
 
           try {
@@ -984,11 +1058,11 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
         }
-      if (strcmp(argv[cnt], "--mutation-update") == 0 ||
+      if (strcmp(argv[cnt], "--mut-update") == 0 ||
           strcmp(argv[cnt], "-mut-update") == 0) {
         ++cnt;
         if (cnt >= argc || argv[cnt][0] == '-') {
-          outError("Use -mut-update <NUMBER>");
+          outError("Use --mut-update <NUMBER>");
         }
 
         try {
@@ -1047,13 +1121,13 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
-      if (strcmp(argv[cnt], "--output-multifurcating-tree") == 0 ||
+      if (strcmp(argv[cnt], "--out-mul-tree") == 0 ||
           strcmp(argv[cnt], "-out-mul-tree") == 0) {
         params.tree_format_str = "MUL";
 
         continue;
       }
-      if (strcmp(argv[cnt], "--shallow-tree-search") == 0 ||
+      if (strcmp(argv[cnt], "--shallow-search") == 0 ||
           strcmp(argv[cnt], "-shallow-search") == 0) {
         params.shallow_tree_search = true;
 
@@ -1072,16 +1146,65 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         continue;
       }
       if (strcmp(argv[cnt], "--branch-support") == 0 ||
-          strcmp(argv[cnt], "-branch-support") == 0) {
+          strcmp(argv[cnt], "-branch-support") == 0
+          || strcmp(argv[cnt], "--alrt") == 0
+          || strcmp(argv[cnt], "-alrt") == 0) {
         params.compute_aLRT_SH = true;
 
         continue;
       }
+        if (strcmp(argv[cnt], "--sprta") == 0 ||
+            strcmp(argv[cnt], "-sprta") == 0) {
+          params.compute_SPRTA = true;
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--zero-branch-supp") == 0 ||
+            strcmp(argv[cnt], "-zero-branch-supp") == 0) {
+          params.compute_SPRTA_zero_length_branches = true;
+          // also print supports for identical sequences
+          // to make sure we print supports of
+          // all branches with a length of zero
+          params.print_SPRTA_less_info_seqs = true;
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--sprta-less-info-seqs") == 0 ||
+            strcmp(argv[cnt], "-sprta-less-info-seqs") == 0) {
+          params.print_SPRTA_less_info_seqs = true;
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--out-alternative-spr") == 0 ||
+            strcmp(argv[cnt], "-out-alternative-spr") == 0) {
+          params.output_alternative_spr = true;
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--min-sup-alt") == 0 ||
+            strcmp(argv[cnt], "-min-sup-alt") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError("Use --min-sup-alt <MIN_SUPPORT>");
+          }
+
+          try {
+            params.min_support_alt_branches = convert_real_number(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.min_support_alt_branches <= 0) {
+            outError("<MIN_SUPPORT> must be positive!");
+          }
+
+          continue;
+        }
       if (strcmp(argv[cnt], "--replicates") == 0 ||
           strcmp(argv[cnt], "-rep") == 0) {
         ++cnt;
         if (cnt >= argc) {
-          outError("Use -rep <NUM_REPLICATES>");
+          outError("Use --replicates <NUM_REPLICATES>");
         }
 
         try {
@@ -1112,7 +1235,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "-seed") == 0 || strcmp(argv[cnt], "--seed") == 0) {
         cnt++;
         if (cnt >= argc) {
-          outError("Use -seed <random_seed>");
+          outError("Use --seed <random_seed>");
         }
 
         try {
@@ -1170,6 +1293,26 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
   if (!params.aln_path.length()) {
     outError("Please supply an alignment file via -aln <ALN_FILENAME>");
   }
+    
+    // check dependent options
+    if (params.compute_SPRTA_zero_length_branches && !params.compute_SPRTA)
+    {
+        outError("Unable to compute SPRTA supports for branches with a length "
+                 "of zero if SPRTA is not computed. Please use "
+                 "`--sprta` if you want to compute SPRTA.");
+    }
+    if (params.print_SPRTA_less_info_seqs && !params.compute_SPRTA)
+    {
+        outError("Unable to print SPRTA supports for less-informative "
+                 "sequences if SPRTA is not computed. Please use "
+                 "`--sprta` if you want to compute SPRTA.");
+    }
+    if (params.output_alternative_spr && !params.compute_SPRTA)
+    {
+        outError("Unable to output alternative SPRs "
+                 "if SPRTA is not computed. Please use "
+                 "`--sprta` if you want to compute SPRTA.");
+    }
 }
 
 void cmaple::quickStartGuide() {
@@ -1191,12 +1334,16 @@ void cmaple::quickStartGuide() {
       << endl
       << "4. Assess branch supports with aLRT-SH (with, e.g., 4 threads):"
       << endl
-      << "     cmaple -aln example.maple -branch-support -nt 4" << endl
+      << "     cmaple -aln example.maple --alrt -nt 4" << endl
       << endl
-      << "5. Convert an alignment (aln.phy) to a different format (e.g., "
+      << "5. Assess branch supports with SPRTA scores:"
+      << endl
+      << "     cmaple -aln example.maple --sprta" << endl
+      << endl
+      << "6. Convert an alignment (aln.phy) to a different format (e.g., "
          "FASTA format):"
       << endl
-      << "     cmaple -aln aln.phy -out-aln aln.fa -out-format FASTA" << endl
+      << "     cmaple -aln aln.phy --out-aln aln.fa --out-format FASTA" << endl
       << endl
       << "To show all available options: run 'cmaple -h'" << endl
       << endl
@@ -1221,52 +1368,75 @@ void cmaple::usage_cmaple() {
       << "                       or MAPLE format." << endl
       << "  -m <MODEL>           Specify a model name." << endl
       << "  -st <SEQ_TYPE>       Specify a sequence type (DNA/AA)." << endl
-      << "  -format <FORMAT>     Set the alignment format (PHYLIP/FASTA/MAPLE)."
+      << "  --format <FORMAT>    Set the alignment format (PHYLIP/FASTA/MAPLE)."
       << endl
       << "  -t <TREE_FILE>       Specify a starting tree for tree search."
       << endl
-      << "  -blfix               Keep branch lengths unchanged. " << endl
-      << "  -search <TYPE>       Set tree search type (FAST/NORMAL/EXHAUSTIVE)."
+      << "  --no-reroot          Do not reroot the input tree."
       << endl
-      << "  -shallow-search      Perform a shallow tree search" << endl
+      << "  --blfix              Keep branch lengths unchanged. " << endl
+      << "  --ignore-annotation  Ignore annotations from the input tree. " << endl
+      << "  --search <TYPE>      Set tree search type (FAST/NORMAL/EXHAUSTIVE)."
+      << endl
+      << "  --shallow-search     Perform a shallow tree search" << endl
       << "                       before a deeper tree search." << endl
-      << "  -branch-support      Compute branch supports (aLRT-SH)." << endl
-      << "  -rep <NUM>           Set the number of replicates for computing"
+      << "  --prefix <PREFIX>    Specify a prefix for all output files." << endl
+      << "  --replace-intree     Allow CMAPLE to replace the input tree" << endl
+      << "                       when computing branch supports." << endl
+      << "  --out-mul-tree       Output the tree in multifurcating format."
+      << endl
+      << "  --out-internal       Output IDs of internal nodes."
+      << endl
+      << "  --overwrite          Overwrite output files if existing." << endl
+      << "  -ref <FILE>,<SEQ>    Specify the reference genome." << endl
+      << "  --out-aln <FILE>     Write the input alignment to a file in " << endl
+      << "                       MAPLE (default), PHYLIP, or FASTA format." << endl
+      << "  --out-format <FORMAT> Specify the format (MAPLE/PHYLIP/FASTA) " << endl
+      << "                       to output the alignment with `--out-aln`." << endl
+      << "  --min-blength <NUM>  Set the minimum branch length." << endl
+      << "  --thresh-prob <NUM>  Specify a parameter for approximations."
+      << endl
+      << "  --mut-update <NUM>   Set the period to update the substitution "
+         "rates."
+      << endl
+      << "  --max-subs <NUM>     Specify the maximum #substitutions per site" << endl
+      << "                       that CMAPLE is effective. Default: 0.067."
+      << endl
+      << "  --mean-subs <NUM>    Specify the mean #substitutions per site" << endl
+      << "                       that CMAPLE is effective. Default: 0.02."
+      << endl
+      << "  --seed <NUM>         Set a seed number for random generators."
+      << endl
+      << "  -v <MODE>            Set the verbose mode "
+         "(QUIET/MIN/MED/MAX/DEBUG)."
+      << endl
+      << endl
+      << "ASSESSING SH-aLRT BRANCH SUPPORTS:" << endl
+      << "  --alrt               Compute branch supports (aLRT-SH)." << endl
+      << "  --replicates <NUM>   Set the number of replicates for computing"
       << endl
       << "                       branch supports (aLRT-SH)." << endl
-      << "  -eps <NUM>           Set the epsilon value for computing" << endl
+      << "  --epsilon <NUM>      Set the epsilon value for computing" << endl
       << "                       branch supports (aLRT-SH)." << endl
       << "  -nt <NUM_THREADS>    Set the number of threads for computing"
       << endl
       << "                       branch supports. Use `-nt AUTO` " << endl
       << "                       to employ all available CPU cores." << endl
-      << "  -pre <PREFIX>        Specify a prefix for all output files." << endl
-      << "  -rep-tree            Allow CMAPLE to replace the input tree" << endl
-      << "                       when computing branch supports." << endl
-      << "  -out-mul-tree        Output the tree in multifurcating format."
       << endl
-      << "  -overwrite           Overwrite output files if existing." << endl
-      << "  -ref <FILE>,<SEQ>    Specify the reference genome." << endl
-      << "  -out-aln <FILE>      Write the input alignment to a file in " << endl
-      << "                       MAPLE (default), PHYLIP, or FASTA format." << endl
-      << "  -out-format <FORMAT> Specify the format (MAPLE/PHYLIP/FASTA) " << endl
-      << "                       to output the alignment with `-out-aln`." << endl
-      << "  -min-bl <NUM>        Set the minimum branch length." << endl
-      << "  -thresh-prob <NUM>   Specify a parameter for approximations."
+      << "ASSESSING SPRTA BRANCH SUPPORTS:" << endl
+      << "  --sprta               Compute SPRTA supports."
       << endl
-      << "  -mut-update <NUM>    Set the period to update the substitution "
-         "rates."
+      << "  --thresh-opt-diff-fac <NUM> A relative factor to determine whether "
       << endl
-      << "  -max-subs <NUM>      Specify the maximum #substitutions per site" << endl
-      << "                       that CMAPLE is effective. Default: 0.067."
+      << "                        SPRs are close to the optimal one."
       << endl
-      << "  -mean-subs <NUM>     Specify the mean #substitutions per site" << endl
-      << "                       that CMAPLE is effective. Default: 0.02."
+      << "  --zero-branch-supp    Compute supports for zero-length branches."
       << endl
-      << "  -seed <NUM>          Set a seed number for random generators."
+      << "  --out-alternative-spr Output alternative SPRs and their supports."
       << endl
-      << "  -v <MODE>            Set the verbose mode "
-         "(QUIET/MIN/MED/MAX/DEBUG)."
+      << "  --min-sup-alt <MIN>   The min support to be outputted as "
+      << endl
+      << "                        alternative SPRs."
       << endl
       << endl;
 

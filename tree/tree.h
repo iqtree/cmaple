@@ -1,6 +1,8 @@
 #include "../alignment/alignment.h"
 #include "../model/model.h"
 #include "updatingnode.h"
+#include "rootcandidate.h"
+#include "altbranch.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -268,11 +270,13 @@ class Tree {
    * (bifurcating tree), MUL_TREE (multifurcating tree)
    * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
    * values)
+   * @param[in] print_internal_id TRUE to print the id of internal nodes
    * @return A tree string in NEWICK format
    * @throw std::invalid\_argument if any of the following situations occur.
    * - tree\_type is unknown
    */
   std::string exportNewick(const TreeType tree_type = BIN_TREE,
+                           const bool print_internal_id = false,
                            const bool show_branch_supports = true);
 
   // ----------------- END OF PUBLIC APIs ------------------------------------
@@ -321,11 +325,52 @@ class Tree {
    Vector of phylonodes
    */
   std::vector<PhyloNode> nodes;
+    
+    /**
+     Number of existing nodes before sample placement
+     */
+    NumSeqsType num_exiting_nodes;
 
   /**
    Vector of likelihood contributions of internal nodes
    */
   std::vector<NodeLh> node_lhs;
+    
+    /**
+     Vector of the annotations of nodes
+     */
+    std::vector<std::string> annotations;
+    
+    /**
+     Vector of the SPRTA scores
+     */
+    std::vector<RealNumType> sprta_scores;
+    
+    /**
+     Vector of root supports
+     */
+    std::vector<RealNumType> root_supports;
+    
+    /**
+     Vector of alternative branches (when computing SPRTA)
+     */
+    std::vector<std::vector<cmaple::AltBranch>> sprta_alt_branches;
+    
+    /**
+     The inverse of sprta_alt_branches
+     highlight which nodes could be placed (with probability above threshold) on the branch above the current node
+     */
+    std::vector<std::vector<cmaple::AltBranch>> sprta_support_list;
+    
+    /**
+     Vector of number of descendants of nodes
+     */
+    std::vector<NumSeqsType> num_descendants;
+    
+    /**
+     Vector of internal node names
+     */
+    std::vector<NumSeqsType> internal_names;
 
   /**
    (vector) Index of root in the vector of phylonodes
@@ -375,6 +420,23 @@ class Tree {
    * @return a TreeType
    */
   static TreeType parseTreeType(const std::string& tree_type_str);
+    
+    /*! \brief Export the phylogenetic tree  to a string in NEXUS format.
+     * @param[in] tree_type The type of the output tree (optional): BIN_TREE
+     * (bifurcating tree), MUL_TREE (multifurcating tree)
+     * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
+     * values)
+     * @return A tree string in NEXUS format
+     * @throw std::invalid\_argument if any of the following situations occur.
+     * - tree\_type is unknown
+     */
+    std::string exportNexus(const TreeType tree_type = BIN_TREE,
+                             const bool show_branch_supports = true);
+    
+    /**
+     Export a TSV file that contains useful information from SPRTA
+     */
+    std::string exportTSV();
     
   /*! \endcond */
 
@@ -538,7 +600,8 @@ class Tree {
    operations
    */
   template <const cmaple::StateType num_states>
-  void optimizeTreeTopology(bool short_range_search = false);
+  void optimizeTreeTopology(const TreeSearchType tree_search_type,
+                            bool short_range_search = false);
 
   /**
    Traverse the intial tree from root to re-calculate all non-lower likelihoods
@@ -558,6 +621,7 @@ class Tree {
   template <const cmaple::StateType num_states>
   cmaple::RealNumType improveSubTree(const cmaple::Index index,
                                      PhyloNode& node,
+                                     const TreeSearchType tree_search_type,
                                      bool short_range_search);
 
   /**
@@ -609,6 +673,17 @@ class Tree {
       cmaple::RealNumType& best_down_lh_diff,
       cmaple::Index& best_child_index,
       const std::unique_ptr<SeqRegions>& sample_regions);
+    
+/**
+ Check if the new placement is sufficiently different from the original one
+*/
+template <const cmaple::StateType num_states>
+bool isDiffFromOrigPlacement(
+    const cmaple::Index ori_parent_index,
+    cmaple::Index& new_placement_index,
+    const cmaple::RealNumType best_mid_top_blength,
+    const cmaple::RealNumType best_mid_bottom_blength,
+    bool& is_root_considered);
 
   /**
    Add start nodes for seeking a placement for a subtree
@@ -621,6 +696,44 @@ class Tree {
                         const cmaple::Index& other_child_node_index,
                         const cmaple::RealNumType best_lh_diff,
                         std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
+    
+    /**
+     Add start nodes for root assessment
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    void addStartingRootCandidate(const NumSeqsType& node_vec_id,
+                                  std::stack<std::unique_ptr<RootCandidate>>& node_stack);
+    
+    /**
+     Add nodes for root assessment
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    void addChildrenAsRootCandidate(const std::unique_ptr<SeqRegions>& incoming_regions_ref,
+                          const cmaple::RealNumType branch_length,
+                          const cmaple::RealNumType lh_deducted,
+                          const cmaple::RealNumType lh_diff,
+                          const short int failure_count,
+                          PhyloNode& parent_node,
+                          std::stack<std::unique_ptr<RootCandidate>>& node_stack);
+    
+    /**
+     Reroot the current tree
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    void reroot(const NumSeqsType& new_root_vec_id);
+    
+    /**
+     Transfer annotations due to rerooting
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    void transferAnnotations(const NumSeqsType& new_root_vec_id);
 
   /**
    Examine placing a subtree at a mid-branch point
@@ -632,6 +745,7 @@ class Tree {
       cmaple::Index& best_node_index,
       PhyloNode& current_node,
       cmaple::RealNumType& best_lh_diff,
+      cmaple::RealNumType& best_lh_diff_before_bl_opt,
       bool& is_mid_branch,
       cmaple::RealNumType& lh_diff_at_node,
       cmaple::RealNumType& lh_diff_mid_branch,
@@ -642,7 +756,13 @@ class Tree {
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
       const cmaple::Index top_node_index,
-      std::unique_ptr<SeqRegions>& bottom_regions);
+      const cmaple::Index ori_parent_index,
+      std::unique_ptr<SeqRegions>& bottom_regions,
+      RealNumType& opt_appending_blength,
+      RealNumType& opt_mid_top_blength,
+      RealNumType& opt_mid_bottom_blength,
+      std::vector<AltBranch>& alt_branches,
+      bool& is_root_considered);
 
   /**
    Examine placing a subtree as a descendant of an existing node
@@ -875,6 +995,9 @@ class Tree {
                              PhyloNode& subtree,
                              const std::unique_ptr<SeqRegions>& subtree_regions,
                              const cmaple::RealNumType new_branch_length,
+                             const cmaple::RealNumType opt_appending_blength,
+                             const cmaple::RealNumType opt_mid_top_blength,
+                             const cmaple::RealNumType opt_mid_bottom_blength,
                              const cmaple::RealNumType new_lh);
 
   /**
@@ -1191,6 +1314,9 @@ class Tree {
   template <const cmaple::StateType num_states>
   void checkAndApplySPR(const cmaple::RealNumType best_lh_diff,
                         const cmaple::RealNumType best_blength,
+                        const cmaple::RealNumType opt_appending_blength,
+                        const cmaple::RealNumType opt_mid_top_blength,
+                        const cmaple::RealNumType opt_mid_bottom_blength,
                         const cmaple::RealNumType best_lh,
                         const cmaple::Index node_index,
                         PhyloNode& node,
@@ -1437,6 +1563,7 @@ class Tree {
   const char readNextChar(std::istream& in,
                           cmaple::PositionType& in_line,
                           cmaple::PositionType& in_column,
+                          std::string& in_comment,
                           const char& current_ch = 0) const;
 
   /**
@@ -1451,6 +1578,7 @@ class Tree {
       cmaple::RealNumType& branch_len,
       cmaple::PositionType& in_line,
       cmaple::PositionType& in_column,
+      std::string& in_comment,
       const std::map<std::string, cmaple::NumSeqsType>& map_seqname_index,
       bool& missing_blengths);
 
@@ -1477,6 +1605,19 @@ class Tree {
   void updatePesudoCountModel(PhyloNode& node,
                               const cmaple::Index node_index,
                               const cmaple::Index parent_index);
+    
+    /**
+     Compute the number of descendants of a node
+     */
+    void computeNumDescendantsOfNode(PhyloNode& node,
+                                const cmaple::Index node_index,
+                                const cmaple::Index parent_index);
+    
+    /**
+     Compute the number of descendants of all nodes
+     */
+    void computeNumDescendantsTree();
+
 
   /**
    Expand the tree by placing one less-info-seq
@@ -1522,9 +1663,16 @@ class Tree {
    @throw std::invalid\_argument if show\_branch\_supports = true but branch
    support values have yet been computed
    */
-  std::string exportNodeString(const bool binary,
+  std::string exportNodeString(const bool is_newick_format,
+                               const bool binary,
                                const cmaple::NumSeqsType node_vec_index,
+                               const bool print_internal_id,
                                const bool show_branch_supports);
+    
+    /**
+     Export string of an alternative branch (for SPRTA)
+     */
+    std::string exportStringAltBranch(const AltBranch& alt_branch);
 
   /**
    Read an input tree from a stream
@@ -1536,7 +1684,19 @@ class Tree {
 
    @throw std::bad\_alloc if failing to allocate memory to store the tree
    */
-  bool readTree(std::istream& tree_stream);
+  bool readTree(std::istream& tree_stream, PositionType& in_line);
+    
+    /**
+     Read an input tree (in Nexus format) from a stream
+     @return TRUE if the tree contains any branch without a length
+     @throw std::invalid\_argument if the tree in an incorrect format
+     @throw std::logic\_error if any of the following situations occur.
+     - any taxa in the tree is not found in the alignment
+     - unexpected values/behaviors found during the operations
+
+     @throw std::bad\_alloc if failing to allocate memory to store the tree
+     */
+    bool readNexusTree(std::istream& tree_stream, PositionType& in_line);
 
   /**
    Check if the current tree is complete (i.e., containing all sequences from
@@ -1601,7 +1761,19 @@ class Tree {
   /**
    Export tree std::string in Newick format
    */
-  std::string exportNewick(const bool binary, const bool show_branch_supports);
+  std::string exportNewick(const bool binary, const bool print_internal_id,
+                           const bool show_branch_supports);
+    
+    /**
+     Export tree std::string in NEXUS format
+     */
+    std::string exportNexus(const bool binary,
+                             const bool show_branch_supports);
+    
+    /**
+     Traverse the tree to export TSV content
+     */
+    std::string exportTsvContent();
 
   /**
    Increase the length of a 0-length branch (connecting this node to its parent)
@@ -1655,9 +1827,27 @@ class Tree {
       cmaple::Index& best_child_index,
       const bool short_range_search,
       const cmaple::Index child_node_index,
-      cmaple::RealNumType&
-          removed_blength);  //, bool search_subtree_placement = true,
-                             // SeqRegions* sample_regions = NULL);
+      cmaple::RealNumType& removed_blength,
+      cmaple::RealNumType& opt_appending_blength,
+      cmaple::RealNumType& opt_mid_top_blength,
+      cmaple::RealNumType& opt_mid_bottom_blength);
+    
+    /**
+     Seek the best root position
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    NumSeqsType seekBestRoot();
+    
+    /**
+     Compute the root supports
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    void computeRootSupports(const NumSeqsType& best_node_vec_index,
+                             const RealNumType& best_lh_diff,
+                             std::vector<AltBranch>& alt_roots);
 
   /**
    Place a new sample at a mid-branch point
@@ -1696,6 +1886,9 @@ class Tree {
                    const cmaple::Index best_node_index,
                    const bool is_mid_branch,
                    const cmaple::RealNumType branch_length,
+                   const cmaple::RealNumType opt_appending_blength,
+                   const cmaple::RealNumType opt_mid_top_blength,
+                   const cmaple::RealNumType opt_mid_bottom_blength,
                    const cmaple::RealNumType best_lh_diff);
 
   /**
@@ -1722,7 +1915,8 @@ class Tree {
    operations
    */
   template <const cmaple::StateType num_states>
-  cmaple::RealNumType improveEntireTree(bool short_range_search);
+  cmaple::RealNumType improveEntireTree(const TreeSearchType tree_search_type,
+                                        bool short_range_search);
 
   /**
    Try to optimize branch lengths of the tree by one round of tree traversal
@@ -1840,6 +2034,14 @@ class Tree {
                                PhyloNode&,
                                const cmaple::PositionType&)>
   cmaple::RealNumType performDFS();
+    
+    /**
+     Employ Depth First Search to do a task at internal nodes
+     The template is different from performDFS
+     */
+    template <void (Tree::*task)(PhyloNode&,
+            const cmaple::Index, const cmaple::Index)>
+    void performDFSv2();
 
   /**
    Update model parameters from an alignment and a tree
@@ -1861,10 +2063,15 @@ class Tree {
   bool keepTraversing(const RealNumType& best_lh_diff,
                         const RealNumType& lh_diff_at_node,
                         const bool& strict_stop_seeking_placement_subtree,
-                        const std::unique_ptr<UpdatingNode>& updating_node,
+                        const short int& failure_count,
                         const int& failure_limit_subtree,
                         const RealNumType& thresh_log_lh_subtree,
                               const bool able2traverse = true);
+    
+    /**
+        Generate internal names
+    */
+    void genIntNames();
 
   // NHANLT: Debug aLRT
   // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
@@ -1905,7 +2112,8 @@ void cmaple::Tree::refreshAllLhs(bool avoid_using_upper_lr_lhs) {
 }
 
 template <const StateType num_states>
-RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
+RealNumType cmaple::Tree::improveEntireTree(const TreeSearchType tree_search_type,
+                                            bool short_range_search) {
   assert(aln);
   assert(model);
   assert(cumulative_rate);
@@ -1954,7 +2162,8 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
 
       // do SPR moves to improve the tree
       RealNumType improvement =
-          improveSubTree<num_states>(index, node, short_range_search);
+          improveSubTree<num_states>(index, node,
+                                     tree_search_type, short_range_search);
 
       // if checkEachSPR:
       //          #print(" apparent improvement "+str(improvement))
@@ -1984,7 +2193,8 @@ RealNumType cmaple::Tree::improveEntireTree(bool short_range_search) {
 
       // Show log every 1000 nodes
       ++num_nodes;
-      if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000) {
+      if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000
+          && tree_search_type != FAST_TREE_SEARCH) {
         std::cout << "Processed topology for " << convertIntToString(num_nodes)
              << " nodes." << std::endl;
         count_node_1K = num_nodes;
@@ -2000,9 +2210,12 @@ void cmaple::Tree::updateModelParams() {
   assert(aln);
   assert(model);
     
-  // perform a DFS -> at each leaf, update the pesudoCount of the model based on
-  // the sequence of that leaf
-  performDFSAtLeave<&cmaple::Tree::updatePesudoCountModel<num_states>>();
+    // reset the pseudo count
+    model->initMutationMat();
+    
+  // perform a DFS -> at each node, update the pesudoCount of the model based on
+  // the sequence of that node
+  performDFSv2<&cmaple::Tree::updatePesudoCountModel<num_states>>();
 
   // update model params based on the pseudo count
   if (model->updateMutationMatEmpirical()) {
@@ -2031,6 +2244,8 @@ void cmaple::Tree::seekSamplePlacement(
   // output variables
   selected_node_index = start_node_index;
   // dummy variables
+  const bool collapse_only_ident_seqs = params->compute_SPRTA &&
+    params->compute_SPRTA_zero_length_branches;
   RealNumType lh_diff_mid_branch = 0;
   RealNumType lh_diff_at_node = 0;
   PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
@@ -2061,7 +2276,8 @@ void cmaple::Tree::seekSamplePlacement(
     // node + stop seeking the placement
     if ((!is_internal) &&
         (current_node.getPartialLh(TOP)->compareWithSample(
-             *sample_regions, seq_length, aln) == 1)) {
+             *sample_regions, seq_length, aln,
+            collapse_only_ident_seqs) == 1)) {
       current_node.addLessInfoSeqs(seq_name_index);
       selected_node_index = Index();
       return;
@@ -2405,7 +2621,56 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
   assert(aln);
   assert(model);
   assert(cumulative_rate);
+  
+// Use new method to optimize blengths
+    // optmize the branch lengths
+    RealNumType best_appending_blength;
+    RealNumType best_mid_top_blength;
+    RealNumType best_mid_bottom_blength;
+    const RealNumType threshold_prob = params->threshold_prob;
+    PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
     
+    // optimize the appending branch
+    best_appending_blength =
+        estimateBranchLength<num_states>(selected_node.getMidBranchLh(), sample);
+        
+    // optimize the mid_top blength
+    const std::unique_ptr<SeqRegions>& upper_lr_regions =
+        getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
+    const std::unique_ptr<SeqRegions>& lower_regions =
+        selected_node.getPartialLh(TOP);
+    const RealNumType mid_branch_length =
+        selected_node.getUpperLength() * 0.5;
+    std::unique_ptr<SeqRegions> two_lower_regions = nullptr;
+    lower_regions->mergeTwoLowers<num_states>(two_lower_regions, mid_branch_length,
+        *sample, best_appending_blength,
+        aln, model, cumulative_rate, threshold_prob);
+    best_mid_top_blength =
+        estimateBranchLength<num_states>(upper_lr_regions, two_lower_regions);
+        
+    // optimize the mid_bottom blength
+    std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
+    upper_lr_regions->mergeUpperLower<num_states>(
+        tmp_upper_lr_regions, best_mid_top_blength, *sample,
+        best_appending_blength, aln, model, threshold_prob);
+    best_mid_bottom_blength =
+        estimateBranchLength<num_states>(tmp_upper_lr_regions, lower_regions);
+        
+    // compute new mid-branch regions
+    std::unique_ptr<SeqRegions> new_mid_branch_regions = nullptr;
+    upper_lr_regions->mergeUpperLower<num_states>(
+        new_mid_branch_regions, best_mid_top_blength, *lower_regions,
+        best_mid_bottom_blength, aln, model, threshold_prob);
+    
+    // create new internal node and append child to it
+    connectNewSample2Branch<num_states>(
+        sample, seq_name_index, selected_node_index, selected_node,
+        best_mid_top_blength,
+        best_mid_bottom_blength, best_appending_blength,
+        new_mid_branch_regions, upper_lr_regions);
+        
+    
+    /** Old method to optimize blengths -> comment out
   PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
   const std::unique_ptr<SeqRegions>& upper_left_right_regions =
       getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
@@ -2459,6 +2724,7 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
       best_branch_length_split,
       selected_node_blength - best_branch_length_split, best_blength,
       best_child_regions, upper_left_right_regions);
+     */
 }
 /*! \endcond */
 }  // namespace cmaple

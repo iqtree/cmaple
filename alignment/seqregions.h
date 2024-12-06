@@ -98,14 +98,17 @@ class SeqRegions : public std::vector<SeqRegion> {
    information
    @param sequence2 the sequence to compare
    @param seq_length the sequence length
-   @param num_states the number of states
+   @param Alignment the alignment
+   @param check_ident_only TRUE if only checking whether two samples are identical or not
    @return 0: if the two sequences are incomparable; 1: if the current sequence
    is more or equally informative than/to sequence2; -1; if the current sequence
-   is less informative than sequence2
+   is less informative than sequence2; if check\_ident\_only is TRUE,
+   return 1 if two samples are identical, otherwise, return 0
    */
   int compareWithSample(const SeqRegions& sequence2,
                         cmaple::PositionType seq_length,
-                        const Alignment* aln) const;
+                        const Alignment* aln,
+                        const bool check_ident_only = false) const;
 
   /**
    Check if the current regions and regions2 represent the same partial

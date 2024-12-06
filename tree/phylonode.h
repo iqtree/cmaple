@@ -275,7 +275,10 @@ class PhyloNode {
    */
   const std::string exportString(const bool binary,
                                  const std::vector<std::string>& seq_names,
-                                 const bool show_branch_supports);
+                                 const bool print_internal_id,
+                                 const bool show_branch_supports,
+                                 const bool print_sprta_less_info_seq,
+                                 const std::string& annotation_str);
 };
 
 /** An intermediate data structure to store data for calculating aLRT-SH  */
