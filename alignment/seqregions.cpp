@@ -27,7 +27,8 @@ cmaple::SeqRegions::SeqRegions(const std::unique_ptr<SeqRegions>& n_regions) {
 
 auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
                                            PositionType seq_length,
-                                           const Alignment* aln) const -> int {
+                                           const Alignment* aln,
+                                           const bool check_ident_only) const -> int {
   assert(seq_length > 0);
   assert(sequence2.size() > 0);
   assert(size() > 0);
@@ -53,7 +54,12 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
     const auto* const seq1_region = &seq1_regions[iseq1];
     const auto* const seq2_region = &seq2_regions[iseq2];
     // The two regions have different types from each other
-    if (seq1_region->type != seq2_region->type) {
+    if (seq1_region->type != seq2_region->type)
+    {
+        // don't need to check further
+        if (check_ident_only)
+            return 0;
+            
       if (seq1_region->type == TYPE_N) {
         seq2_more_info = true;
       } else if (seq2_region->type == TYPE_N) {
@@ -86,6 +92,12 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
     // Both regions are type O
     else if (seq1_region->type == TYPE_O) {
       for (StateType i = 0; i < num_states; ++i) {
+          
+          // check if two sequences are identical
+          if (check_ident_only
+              && abs(seq2_region->getLH(i) - seq1_region->getLH(i)) > 1e-10)
+              return 0;
+              
         if (seq2_region->getLH(i) > 0.1 && seq1_region->getLH(i) < 0.1) {
           seq1_more_info = true;
         } else if (seq1_region->getLH(i) > 0.1 && seq2_region->getLH(i) < 0.1) {
@@ -403,11 +415,10 @@ void cmaple::merge_identicalRACGT_TwoLowers(
     }
 
     if (seq1_region.type == TYPE_R) {
-      auto prev_log_lh = log_lh;
       log_lh += (total_blength_1 + total_blength_2) *
                 (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
     } else {
-      log_lh += model->getDiagonalMutationMatrixEntry(seq1_region.type, end_pos) *
+      log_lh += model->diagonal_mut_mat[seq1_region.type] *
                 (total_blength_1 + total_blength_2);
     }
   }
@@ -453,11 +464,11 @@ void cmaple::calSiteLhs_identicalRACGT(std::vector<RealNumType>&site_lh_contribu
         * (cumulative_rate[i + 1] - cumulative_rate[i]);
     }
   } else {
-    log_lh += model->getDiagonalMutationMatrixEntry(seq1_region.type, pos) * total_blength;
+    log_lh += model->diagonal_mut_mat[seq1_region.type] * total_blength;
 
     // compute site lh contributions
     site_lh_contributions[static_cast<std::vector<RealNumType>::size_type>(pos)] +=
-        model->getDiagonalMutationMatrixEntry(seq1_region.type, pos) * total_blength;
+        model->diagonal_mut_mat[seq1_region.type] * total_blength;
   }
 }
 

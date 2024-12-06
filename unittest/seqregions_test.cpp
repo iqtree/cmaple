@@ -134,7 +134,7 @@ cmaple::Alignment loadAln5K()
 void genTestData1(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqRegions>& seqregions2)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Tree tree(&aln, &model);
     
@@ -314,7 +314,7 @@ TEST(SeqRegions, compareWithSample)
 TEST(SeqRegions, areDiffFrom)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -430,7 +430,7 @@ TEST(SeqRegions, simplifyO)
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Tree tree(&aln, &model);
     
@@ -479,7 +479,7 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     
@@ -568,7 +568,7 @@ TEST(SeqRegions, merge_N_O)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -706,7 +706,7 @@ TEST(SeqRegions, merge_N_O)
 TEST(SeqRegions, merge_N_RACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree(&aln, &model);
     
     // dummy variables
@@ -1046,7 +1046,7 @@ TEST(SeqRegions, merge_O_N)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1176,7 +1176,7 @@ TEST(SeqRegions, merge_RACGT_N)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1516,7 +1516,7 @@ TEST(SeqRegions, merge_Zero_Distance)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1642,7 +1642,7 @@ TEST(SeqRegions, merge_Zero_Distance)
 TEST(SeqRegions, merge_O_ORACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -1793,7 +1793,7 @@ TEST(SeqRegions, merge_O_ORACGT)
 TEST(SeqRegions, merge_RACGT_O)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -1905,7 +1905,7 @@ TEST(SeqRegions, merge_RACGT_O)
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -2091,7 +2091,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -2626,7 +2626,7 @@ void genTestData(std::unique_ptr<SeqRegions>& seqregions1,
 TEST(SeqRegions, mergeUpperLower)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -2893,7 +2893,7 @@ TEST(SeqRegions, mergeUpperLower)
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3011,7 +3011,7 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3352,7 +3352,7 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3447,7 +3447,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3633,7 +3633,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3791,7 +3791,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -4020,7 +4020,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -4253,7 +4253,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -4499,7 +4499,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -4703,7 +4703,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -5060,7 +5060,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
 TEST(SeqRegions, mergeTwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();

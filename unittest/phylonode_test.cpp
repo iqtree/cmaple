@@ -317,27 +317,27 @@ TEST(PhyloNode, TestExportString)
     
     // test on an internal node
     PhyloNode node1((InternalNode()));
-    EXPECT_EQ(node1.exportString(true, seq_names, false), ""); // internal node returns ""
-    EXPECT_EQ(node1.exportString(false, seq_names, false), ""); // internal node returns ""
+    EXPECT_EQ(node1.exportString(true, seq_names, false, false, false, ""), ""); // internal node returns ""
+    EXPECT_EQ(node1.exportString(false, seq_names, false, false, false, ""), ""); // internal node returns ""
     
     // test on a leaf
     PhyloNode node2(LeafNode(1));
-    EXPECT_EQ(node2.exportString(true, seq_names, false), "sequence 1:0");
-    EXPECT_EQ(node2.exportString(false, seq_names, false), "sequence 1:0");
+    EXPECT_EQ(node2.exportString(true, seq_names, false, false, false, ""), "sequence 1:0");
+    EXPECT_EQ(node2.exportString(false, seq_names, false, false, false, ""), "sequence 1:0");
     
     // add a lessinfoseq
     node2.addLessInfoSeqs(3);
     node2.setUpperLength(-1);
-    EXPECT_EQ(node2.exportString(true, seq_names, false), "(sequence 1:0,sequence 3:0):0");
-    EXPECT_EQ(node2.exportString(false, seq_names, false), "(sequence 1:0,sequence 3:0):0");
+    EXPECT_EQ(node2.exportString(true, seq_names, false, false, false, ""), "(sequence 1:0,sequence 3:0):0");
+    EXPECT_EQ(node2.exportString(false, seq_names, false, false, false, ""), "(sequence 1:0,sequence 3:0):0");
     
     // add two more lessinfoseqs
     node2.addLessInfoSeqs(6);
     node2.addLessInfoSeqs(8);
     node2.setUpperLength(0.5);
-    EXPECT_EQ(node2.exportString(true, seq_names, false),
+    EXPECT_EQ(node2.exportString(true, seq_names, false, false, false, ""),
         "(((sequence 1:0,sequence 3:0):0,sequence 6:0):0,sequence 8:0):0.5");
-    EXPECT_EQ(node2.exportString(false, seq_names, false),
+    EXPECT_EQ(node2.exportString(false, seq_names, false, false, false, ""),
         "(sequence 1:0,sequence 3:0,sequence 6:0,sequence 8:0):0.5");
 }
 
@@ -352,7 +352,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
         example_dir = "../example/";
     
     Alignment aln(example_dir + "test_5K.maple");
-    Model model(aln.ref_seq.size(), false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
     

@@ -122,7 +122,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
           throw std::invalid_argument("Unknown Model " + params.sub_model_str);
         }
         assert(sub_model != cmaple::ModelBase::UNKNOWN);
-        Model model(aln.ref_seq.size(), params.rate_variation, sub_model, aln.getSeqType());
+        Model model(sub_model, aln.getSeqType());
         
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())
@@ -175,8 +175,24 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         
         // Write the normal tree file
         ofstream out = ofstream(output_treefile);
-        out << tree.exportNewick(tree_format);
+        out << tree.exportNewick(tree_format, params.print_internal_ids);
         out.close();
+        
+        // Write tree file in NEXUS format (if needed)
+        if (params.output_NEXUS || params.compute_SPRTA)
+        {
+            ofstream out = ofstream(output_treefile + ".nexus");
+            out << tree.exportNexus(tree_format, params.print_internal_ids);
+            out.close();
+        }
+        
+        // export a TSV file if SPRTA is computed and we output alternative SPRs
+        if (params.compute_SPRTA && params.output_alternative_spr)
+        {
+            ofstream out = ofstream(output_treefile + ".tsv");
+            out << tree.exportTSV();
+            out.close();
+        }
         
         // output log-likelihood of the tree
         if (cmaple::verbose_mode > cmaple::VB_QUIET) {
@@ -198,6 +214,10 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         // Show information about output files
         std::cout << "Analysis results written to:" << std::endl;
         std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
+        if (params.output_NEXUS || params.compute_SPRTA)
+            std::cout << "Tree in NEXUS format:          " << output_treefile + ".nexus" << std::endl;
+        if (params.compute_SPRTA && params.output_alternative_spr)
+            std::cout << "Meta data in TSV format:       " << output_treefile + ".tsv" << std::endl;
         /*if (params.compute_aLRT_SH) {
           std::cout << "Tree with aLRT-SH values:      "
                     << prefix + ".aLRT_SH.treefile" << std::endl;

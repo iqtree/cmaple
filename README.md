@@ -1,6 +1,8 @@
 # CMAPLE
 
 [![License (GPL v2.0)](https://img.shields.io/badge/GPL%20v2.0-License?logo=gnu&label=License)](https://opensource.org/license/gpl-2-0)
+[![Bioconda downloads](https://img.shields.io/conda/dn/bioconda/cmaple.svg?label=Bioconda%20installs)](https://anaconda.org/bioconda/cmaple)
+[![Bioconda platforms](https://img.shields.io/conda/pn/bioconda/cmaple.svg?&label=Bioconda%20platforms)](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/cmaple)
 
 
 ## What's CMAPLE?
@@ -13,13 +15,19 @@ Apart from a standalone software, we also provide a set of APIs, which allow use
 
 ## How to cite CMAPLE?
 
-<TBU>To be updated...
+Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh, "CMAPLE: Efficient Phylogenetic Inference in the Pandemic Era", *Molecular Biology and Evolution*, Volume 41, Issue 7, July 2024, msae134, [https://doi.org/10.1093/molbev/msae134](https://doi.org/10.1093/molbev/msae134).
 
 
 ## How to use CMAPLE?
 
 
-Please refer to our [Wiki page](https://github.com/iqtree/cmaple/wiki) for installation instructions and usage examples of CMAPLE.  
+Please refer to our [User-Manual](https://github.com/iqtree/cmaple/wiki/User-Manual) for installation instructions and usage examples of CMAPLE.  
+
+
+## How to compile CMAPLE from source?
+
+
+For advanced users, if one wants to compile CMAPLE from source code, please refer to our [Compilation Guide](https://github.com/iqtree/cmaple/wiki/Compilation-Guide).  
 
 
 ## Contributing - Get Involved!

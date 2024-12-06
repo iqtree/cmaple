@@ -403,6 +403,11 @@ class Params {
       TRUE to fixed the branch lengths in the input tree
    */
   bool fixed_blengths;
+    
+    /**
+        TRUE to allow CMAPLE to reroot the tree
+     */
+    bool allow_rerooting;
 
   /**
    * A relative probability threshold, which is used to ignore possible states
@@ -447,18 +452,36 @@ class Params {
   (short range search)
    */
   bool strict_stop_seeking_placement_subtree_short_search;
+    
+    /**
+    *  Factor to compute the threshold of loglh to continue explore the subtree
+     to seek a placement for a sample
+    */
+    RealNumType thresh_log_lh_sample_factor;
 
   /**
   *  Threshold of loglh to continue explore the subtree to seek a placement for
   a sample
   */
   RealNumType thresh_log_lh_sample;
+    
+    /**
+    * Factor to compute the threshold of loglh to continue explore the subtree
+     to seek a placement for a subtree
+    */
+    RealNumType thresh_log_lh_subtree_factor;
 
   /**
   *  Threshold of loglh to continue explore the subtree to seek a placement for
   a subtree
   */
   RealNumType thresh_log_lh_subtree;
+    
+    /**
+    *  Factor to compute the threshold of loglh to continue explore the subtree
+     to seek a placement for a subtree (short range search)
+    */
+    RealNumType thresh_log_lh_subtree_short_search_factor;
 
   /**
   *  Threshold of loglh to continue explore the subtree to seek a placement for
@@ -623,11 +646,68 @@ class Params {
    * TRUE to make the processes of outputting->re-inputting a tree consistent
    */
   bool make_consistent;
-
-  /**
-   * TRUE to allow rates to vary by genomic site.
-   */
-  bool rate_variation;
+    
+    /**
+     * TRUE to ignore annotations from the input tree
+     */
+    bool ignore_input_annotations;
+    
+    /**
+     * TRUE to print ids of internal nodes in the newick tree
+     */
+    bool print_internal_ids;
+    
+    /**
+     * TRUE to also output tree in NEXUS format
+     */
+    bool output_NEXUS;
+    
+    /**
+     * TRUE to compute the SPRTA branch supports
+     */
+    bool compute_SPRTA;
+    
+    /**
+     * TRUE to compute the SPRTA for zero-length branches
+     */
+    bool compute_SPRTA_zero_length_branches;
+    
+    /**
+     * TRUE to print SPRTA supports for less-infomative seqs
+     */
+    bool print_SPRTA_less_info_seqs;
+    
+    /**
+     * TRUE to output the alternative SPRs with their supports in the tree
+     */
+    bool output_alternative_spr;
+    
+    /**
+     * The minimum SPRTA support to be considered as
+     * an alternative branches (for outputting a network)
+     */
+    RealNumType min_support_alt_branches;
+    
+    /**
+     * A threshold to consider a "too short" branch as a zero-length branch
+     * when computing SPRTA.
+     */
+    RealNumType thresh_zero_blength;
+    
+    /**
+     * A factor determines SPRs
+     * are close to the optimal one when computing SPRTA.
+     * This factor is relative to the reference length.
+     * Default: 1.0
+     */
+    RealNumType thresh_loglh_optimal_diff_fac;
+    
+    /**
+     * A loglh threshold determines SPRs
+     * are close to the optimal one when computing SPRTA.
+     * It is computed from thresh_loglh_optimal_diff_fac.
+     */
+    RealNumType thresh_loglh_optimal_diff;
     
   /**
    * the maximum number of substitution per sites that CMAPLE is effective
@@ -842,6 +922,13 @@ std::string convertInt64ToString(int64_t number);
 std::string convertDoubleToString(RealNumType number);
 
 std::string convertDoubleToString(RealNumType number, uint8_t precision);
+
+/**
+ Replace the first subtring, found in a string, by a new one
+ */
+void replaceSubStr(std::string& input_str,
+                   const std::string& old_sub_str,
+                   const std::string& new_sub_str);
 
 /**
  Case-insensitive comparison between two strings
