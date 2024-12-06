@@ -333,7 +333,7 @@ public:
   }
 
   virtual inline const cmaple::RealNumType* const getFreqjTransposedijRow(StateType i) const {
-    return freq_j_transposed_ij + row_index[i];
+    return freqi_freqj_qij + row_index[i];
   }
 
   virtual void estimateRates(cmaple::Tree* tree) {};
