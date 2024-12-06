@@ -21,7 +21,13 @@ Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh, "CMAPLE: Efficient 
 ## How to use CMAPLE?
 
 
-Please refer to our [Wiki page](https://github.com/iqtree/cmaple/wiki) for installation instructions and usage examples of CMAPLE.  
+Please refer to our [User-Manual](https://github.com/iqtree/cmaple/wiki/User-Manual) for installation instructions and usage examples of CMAPLE.  
+
+
+## How to compile CMAPLE from source?
+
+
+For advanced users, if one wants to compile CMAPLE from source code, please refer to our [Compilation Guide](https://github.com/iqtree/cmaple/wiki/Compilation-Guide).  
 
 
 ## Contributing - Get Involved!
