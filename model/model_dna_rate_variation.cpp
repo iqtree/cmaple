@@ -106,10 +106,9 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree){
         }
     }
 
-    RealNumType rateCount = 0;
     for(int i = 0; i < genomeSize; i++) {
         if(numSubstitutions[i] == 0) {
-            rates[i] = 0.01;
+            rates[i] = 1;
         } else {
             RealNumType expectedRateNoSubstitution = 0;
             for(int j = 0; j < num_states_; j++) {
@@ -122,13 +121,9 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree){
                 rates[i] = numSubstitutions[i] / expectedRateNoSubstitution;
             }
         }
-        rateCount += rates[i];
-    }
 
-    RealNumType averageRate = rateCount / genomeSize;
-    for(int i = 0; i < genomeSize; i++) {
-        rates[i] /= averageRate;
         //std::cout << rates[i] << " ";
+
         for(int j = 0; j < matSize; j++) {
             mutationMatrices[i * matSize + j] *= rates[i];
             transposedMutationMatrices[i * matSize + j] *= rates[i];
