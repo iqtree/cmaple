@@ -23,10 +23,10 @@ TEST(Model, initMutationMat)
     EXPECT_EQ(model_JC.getMutationMatrix(0)[10], -1);
     EXPECT_EQ(model_JC.getTransposedMutationMatrix(0)[0], -1);
     EXPECT_EQ(model_JC.getTransposedMutationMatrix(0)[15], -1);
-    EXPECT_EQ(model_JC.getFreqiFreqjQij(0, 5, 0), -1);
-    EXPECT_EQ(model_JC.getFreqiFreqjQij(0, 10, 0), -1);
-    EXPECT_EQ(model_JC.getFreqjTransposedijRow(0, 0)[0], -0.25);
-    EXPECT_EQ(model_JC.getFreqjTransposedijRow(3, 0)[3], -0.25);
+    EXPECT_EQ(model_JC.getFreqiFreqjQij(0, 5), -1);
+    EXPECT_EQ(model_JC.getFreqiFreqjQij(0,10), -1);
+    EXPECT_EQ(model_JC.getFreqjTransposedijRow(0)[0], -0.25);
+    EXPECT_EQ(model_JC.getFreqjTransposedijRow(0)[15], -0.25);
 }
 
 // NOT YET DONE

@@ -13,7 +13,7 @@ class Tree;
 class ModelDNARateVariation : public ModelDNA {
 public:
     ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize);
-    virtual ~ModelDNARateVariation();
+    ~ModelDNARateVariation();
 
     void estimateRatesPerSite(cmaple::Tree* tree);
 
@@ -47,18 +47,6 @@ public:
         return diagonalMutationMatrices[i * num_states_ + j];
     }
 
-    virtual inline cmaple::RealNumType getFreqiFreqjQij(StateType row, StateType column, PositionType i) const override {
-        return freqiFreqjQijs[i * matSize + row_index[row] + column];
-    }
-
-    virtual inline const cmaple::RealNumType* const getFreqjTransposedijRow(StateType row, PositionType i) const override {
-        return freqjTransposedijs + (i * matSize) + row_index[row];
-    }
-
-    const cmaple::RealNumType* const getOriginalRateMatrix() {
-        return mutation_mat;
-    }
-
     /**
    Update the mutation matrix periodically from the empirical count of mutations
    @return TRUE if the mutation matrix is updated
@@ -69,7 +57,6 @@ public:
   virtual bool updateMutationMatEmpirical() override;
 
   void printMatrix(const RealNumType* matrix, std::ostream* outStream);
-  void printCountsAndWaitingTimes(const RealNumType* counts, const RealNumType* waitingTImes, std::ostream* outStream);
 
 private:
 
@@ -87,8 +74,6 @@ private:
     cmaple::RealNumType* mutationMatrices = nullptr;
     cmaple::RealNumType* diagonalMutationMatrices = nullptr;
     cmaple::RealNumType* transposedMutationMatrices = nullptr;
-    cmaple::RealNumType* freqiFreqjQijs = nullptr;
-    cmaple::RealNumType* freqjTransposedijs = nullptr;
     uint16_t matSize;
 
 };

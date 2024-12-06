@@ -1026,7 +1026,6 @@ void cmaple::Tree::doRateEstimationTemplate(std::ostream& out_stream) {
 
   if(params->rate_variation) {
     ModelDNARateVariation* rvModel = (ModelDNARateVariation*) model;
-    //rvModel->estimateRatesPerSite(this);
 
     RealNumType oldLK = -std::numeric_limits<double>::infinity();
     RealNumType newLK = this->computeLh();
@@ -1035,15 +1034,15 @@ void cmaple::Tree::doRateEstimationTemplate(std::ostream& out_stream) {
       rvModel->estimateRatesPerSitePerEntry(this);
       oldLK = newLK;
       newLK = this->computeLh();
-    } 
+    }
 
     // Write out rate matrices to file
     if(cmaple::verbose_mode > VB_MIN) 
     {
+        // write out rate matrices to new file
         const std::string prefix = params->output_prefix.length() ? params->output_prefix : params->aln_path;
         //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
         std::ofstream outFile(prefix + ".rateMatrices.txt");
-        rvModel->printMatrix(rvModel->getOriginalRateMatrix(), &outFile);
         for(int i = 0; i < aln->ref_seq.size(); i++) {
             outFile << "Position: " << i << std::endl;
             outFile << "Rate Matrix: " << std::endl;
@@ -6231,7 +6230,7 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
       // seq1_state] * seq1_region.plength_observation2node (2) = (1.0 +
       // model->diagonal_mut_mat[seq2_state] * total_blength)
       RealNumType seq2_state_evolves_seq1_state =
-          model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
+          model->getFreqiFreqjQij(seq2_state, seq1_state) *
           seq1_region.plength_observation2node *
           (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * total_blength);
 
@@ -6243,7 +6242,7 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
     // to save the runtime (avoid multiplying with 0)
     else {
       total_factor *=
-          model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
+          model->getFreqiFreqjQij(seq2_state, seq1_state) *
           seq1_region.plength_observation2node;
     }
   }
@@ -6400,7 +6399,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
       // seq1_state] * seq1_region.plength_observation2node (2) = (1.0 +
       // model->diagonal_mut_mat[seq2_state] * total_blength)
       RealNumType seq2_state_evolves_seq1_state =
-          model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
+          model->getFreqiFreqjQij(seq2_state, seq1_state) *
           seq1_region.plength_observation2node *
           (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * total_blength);
 
@@ -6412,7 +6411,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
     // to save the runtime (avoid multiplying with 0)
     else {
       total_factor *=
-          model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
+          model->getFreqiFreqjQij(seq2_state, seq1_state) *
           seq1_region.plength_observation2node;
     }
   }
@@ -6616,7 +6615,7 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
       lh_cost += model->getDiagonalMutationMatrixEntry(seq1_state, pos) * total_blength;
     } else {
       RealNumType tot = 0;
-      const RealNumType* const freq_j_transposed_ij_row = model->getFreqjTransposedijRow(seq1_state, pos);
+      const RealNumType* const freq_j_transposed_ij_row = model->getFreqjTransposedijRow(seq1_state);
 
       for (StateType i = 0; i < num_states; ++i) {
         const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i, pos);
@@ -6675,7 +6674,7 @@ void calculateSampleCost_R_ACGT(const SeqRegion& seq1_region,
                    seq1_region.plength_observation2node);
 
     RealNumType seq2_state_evolves_seq1_state =
-        model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
+        model->getFreqiFreqjQij(seq2_state, seq1_state) *
         seq1_region.plength_observation2node *
         (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) *
                    (blength + seq1_region.plength_observation2root));
@@ -6782,7 +6781,7 @@ void calculateSampleCost_ACGT_O(const SeqRegion& seq1_region,
                  (blength15 + seq1_region.plength_observation2node);
     } else {
       
-      const RealNumType* const freq_j_transposed_ij_row = model->getFreqjTransposedijRow(seq1_state, pos);
+      const RealNumType* const freq_j_transposed_ij_row = model->getFreqjTransposedijRow(seq1_state);
       for (StateType i = 0; i < num_states; ++i) {
         const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i, pos);
         RealNumType tot2 =
@@ -6839,7 +6838,7 @@ void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region,
                    seq1_region.plength_observation2node);
 
     RealNumType seq2_state_evolves_seq1_state =
-        model->getFreqiFreqjQij(seq2_state, seq1_state, end_pos) *
+        model->getFreqiFreqjQij(seq2_state, seq1_state) *
         seq1_region.plength_observation2node *
         (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, end_pos) *
                    (blength + seq1_region.plength_observation2root));
