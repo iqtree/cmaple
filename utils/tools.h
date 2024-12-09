@@ -646,6 +646,11 @@ class Params {
    * TRUE to make the processes of outputting->re-inputting a tree consistent
    */
   bool make_consistent;
+
+  /**
+   * TRUE to allow rates to vary by genomic site.
+   */
+  bool rate_variation;
     
     /**
      * TRUE to ignore annotations from the input tree
