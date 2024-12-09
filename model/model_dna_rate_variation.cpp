@@ -14,6 +14,8 @@ ModelDNARateVariation::ModelDNARateVariation(const cmaple::ModelBase::SubModel s
     mutationMatrices = new RealNumType[matSize * genomeSize]();
     transposedMutationMatrices = new RealNumType[matSize * genomeSize]();
     diagonalMutationMatrices = new RealNumType[num_states_ * genomeSize]();
+    freqiFreqjQijs = new RealNumType[matSize * genomeSize]();
+    freqjTransposedijs = new RealNumType[matSize * genomeSize]();
 }
 
 ModelDNARateVariation::~ModelDNARateVariation() { 
@@ -21,6 +23,8 @@ ModelDNARateVariation::~ModelDNARateVariation() {
     delete[] mutationMatrices;
     delete[] transposedMutationMatrices;
     delete[] diagonalMutationMatrices;
+    delete[] freqiFreqjQijs;
+    delete[] freqjTransposedijs;
 }
 
 void ModelDNARateVariation::printMatrix(const RealNumType* matrix, std::ostream* outStream) {
@@ -34,12 +38,25 @@ void ModelDNARateVariation::printMatrix(const RealNumType* matrix, std::ostream*
     }
 }
 
+void ModelDNARateVariation::printCountsAndWaitingTimes(const RealNumType* counts, const RealNumType* waitingTImes, std::ostream* outStream) {
+    for(int j = 0; j < num_states_; j++) {
+        std::string line = "|";
+        for(int k = 0; k < num_states_; k++) {
+            line += "\t" + convertDoubleToString(counts[row_index[j] + k]);
+        }
+        line += "\t|\t" + convertDoubleToString(waitingTImes[j]) + "\t|";
+        (*outStream) << line << std::endl;
+    }
+}
+
 bool ModelDNARateVariation::updateMutationMatEmpirical() {
     bool val = ModelDNA::updateMutationMatEmpirical();
     for(int i = 0; i < genomeSize; i++) {
         for(int j = 0; j < matSize; j++) {
             mutationMatrices[i * matSize + j] = mutation_mat[j];
             transposedMutationMatrices[i * matSize + j] = transposed_mut_mat[j];
+            freqiFreqjQijs[i * matSize + j] = freqi_freqj_qij[j];
+            freqjTransposedijs[i * matSize + j] = freq_j_transposed_ij[j];
         }
         //std::cout << std::endl;
         for(int j = 0; j < num_states_; j++) {
@@ -74,15 +91,19 @@ void ModelDNARateVariation::estimateRatesPerSite(cmaple::Tree* tree){
         PhyloNode& node = tree->nodes[index.getVectorIndex()];
         RealNumType blength = node.getUpperLength();
 
-        Index parent_index = node.getNeighborIndex(TOP);
-        PhyloNode& parent_node = tree->nodes[parent_index.getVectorIndex()];
-        const std::unique_ptr<SeqRegions>& parentRegions = parent_node.getPartialLh(parent_index.getMiniIndex());
-        const std::unique_ptr<SeqRegions>& childRegions = node.getPartialLh(TOP);
-
         if (node.isInternal()) {
             nodeStack.push(node.getNeighborIndex(RIGHT));
             nodeStack.push(node.getNeighborIndex(LEFT));
         }
+
+        if(blength == 0.) {
+            continue;
+        }
+
+        Index parent_index = node.getNeighborIndex(TOP);
+        PhyloNode& parent_node = tree->nodes[parent_index.getVectorIndex()];
+        const std::unique_ptr<SeqRegions>& parentRegions = parent_node.getPartialLh(parent_index.getMiniIndex());
+        const std::unique_ptr<SeqRegions>& childRegions = node.getPartialLh(TOP);
 
         PositionType pos = 0;
         const SeqRegions& seq1_regions = *parentRegions;
@@ -141,14 +162,27 @@ void ModelDNARateVariation::estimateRatesPerSite(cmaple::Tree* tree){
     for(int i = 0; i < genomeSize; i++) {
         rates[i] /= averageRate;
         //std::cout << rates[i] << " ";
-        for(int j = 0; j < matSize; j++) {
-            mutationMatrices[i * matSize + j] *= rates[i];
-            transposedMutationMatrices[i * matSize + j] *= rates[i];
-            //std::cout << mutationMatrices[i * matSize + j] << " ";
-        }
-        //std::cout << std::endl;
-        for(int j = 0; j < num_states_; j++) {
-            diagonalMutationMatrices[i * num_states_ + j] *= rates[i];
+        for(int stateA = 0; stateA < num_states_; stateA++) {
+            RealNumType rowSum = 0;
+            for(int stateB = 0; stateB < num_states_; stateB++) {
+                if(stateA != stateB) {
+                    RealNumType val = mutationMatrices[i * matSize + (stateB + row_index[stateA])] * rates[i];
+                    mutationMatrices[i * matSize + (stateB + row_index[stateA])] = val;
+                    transposedMutationMatrices[i * matSize + (stateA + row_index[stateB])] = val;
+                    freqiFreqjQijs[i * matSize + (stateB + row_index[stateA])] = root_freqs[stateA] * inverse_root_freqs[stateB] * val;
+                    rowSum += val;
+                }
+            }
+            mutationMatrices[i * matSize + (stateA + row_index[stateA])] = -rowSum;
+            transposedMutationMatrices[i * matSize + (stateA + row_index[stateA])] = -rowSum;
+            diagonalMutationMatrices[i * num_states_ + stateA] = -rowSum;
+            freqiFreqjQijs[i * matSize + (stateA + row_index[stateA])] = -rowSum;
+
+            // pre-compute matrix to speedup
+            const RealNumType* transposed_mut_mat_row = getTransposedMutationMatrixRow(stateA, i);
+            RealNumType* freqjTransposedijsRow = freqjTransposedijs + (i * matSize) + row_index[stateA];
+            setVecByProduct<4>(freqjTransposedijsRow, root_freqs, transposed_mut_mat_row);
+        
         }
     }
 
@@ -170,9 +204,9 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         C[i] = new RealNumType[matSize];
         W[i] = new RealNumType[num_states_];
         for(int j = 0; j < num_states_; j++) {
-            W[i][j] = 0.001;
+            W[i][j] = 0.0001;
             for(int k = 0; k < num_states_; k++) {
-                C[i][row_index[j] + k] = 0.001;
+                C[i][row_index[j] + k] = 0;
             }
         }
     }
@@ -193,8 +227,12 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
             nodeStack.push(node.getNeighborIndex(LEFT));
         }
 
-        if(blength == 0.) {
+        if(blength <= 0.) {
             continue;
+        }
+
+        if(blength < 0) {
+            std::cout << blength << std::endl;
         }
 
         Index parent_index = node.getNeighborIndex(TOP);
@@ -346,65 +384,81 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                         }
                     }                
                 }
-            }
+            } 
             pos = end_pos + 1;
         }
     }
 
-    RealNumType* totalRates = new RealNumType[matSize];
-    for(int j  = 0; j < matSize; j++) {
-        totalRates[j] = 0;
-    }
+    RealNumType totalRate = 0;
 
     // Update mutation matrices with new rate estimation
-    // TODO: Update other matrices.
     for(int i = 0; i < genomeSize; i++) {
+        RealNumType* Ci = C[i];
+        RealNumType* Wi = W[i];
         for(int stateA = 0; stateA < num_states_; stateA++) {
             for(int stateB = 0; stateB < num_states_; stateB++) {
-                if(stateA != stateB) {             
-                    RealNumType newRate = C[i][stateB + row_index[stateA]] / W[i][stateA];          
+                if(stateA != stateB) { 
+                    RealNumType newRate;     
+                    if(Ci[stateB + row_index[stateA]] == 0) {
+                        newRate = 0.001;
+                    }  else if (Wi[stateA] <= 0.01) {
+                        newRate = 1.0;
+                    } else {
+                        newRate = Ci[stateB + row_index[stateA]] / Wi[stateA];
+                        newRate = MIN(100.0, MAX(0.0001, newRate));                 
+                    }
                     mutationMatrices[i * matSize + (stateB + row_index[stateA])] = newRate;
-                    totalRates[stateB + row_index[stateA]] += newRate;
+                    totalRate += newRate;
                 }
             }
         }
     }
 
-    /*
-    std::cout << "Counts matrix: " << std::endl;
-    this->printMatrix(C[1000], &std::cout);
-    std::cout << "Waiting times: " << std::endl;
-    for(int i = 0; i < num_states_; i ++) {
-        std::cout << convertDoubleToString(W[1000][i]) << "\t";
-    }
-    std::cout << std::endl << std::endl;
-    */
+    if(cmaple::verbose_mode > VB_MIN) 
+    {
+        const std::string prefix = tree->params->output_prefix.length() ? tree->params->output_prefix : tree->params->aln_path;
+        //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
+        std::ofstream outFile(prefix + ".countMatrices.txt");
+        for(int i = 0; i < genomeSize; i++) {
+            outFile << "Position: " << i << std::endl;
+            outFile << "Count Matrix: " << std::endl;
+            printCountsAndWaitingTimes(C[i], W[i], &outFile);
+            outFile << std::endl;
+        }
+        outFile.close();
+    }  
 
     // Normalise entries of mutation matrices
-   for(int j  = 0; j < matSize; j++) {
-        totalRates[j] /= genomeSize;
-    }
+    RealNumType averageRate = totalRate / genomeSize;
     for(int i = 0; i < genomeSize; i++) {
         for(int stateA = 0; stateA < num_states_; stateA++) {
             RealNumType rowSum = 0;
             for(int stateB = 0; stateB < num_states_; stateB++) {
                 if(stateA != stateB) {
                     RealNumType val = mutationMatrices[i * matSize + (stateB + row_index[stateA])];
-                    val /= totalRates[stateB + row_index[stateA]];
-                    val = MIN(100.0, MAX(0.001, val));  
+                    val /= averageRate;
+
                     mutationMatrices[i * matSize + (stateB + row_index[stateA])] = val;
                     transposedMutationMatrices[i * matSize + (stateA + row_index[stateB])] = val;
+                    freqiFreqjQijs[i * matSize + (stateB + row_index[stateA])] = root_freqs[stateA] * inverse_root_freqs[stateB] * val;
+
                     rowSum += val;
-                }
+                } 
             }
             mutationMatrices[i * matSize + (stateA + row_index[stateA])] = -rowSum;
             transposedMutationMatrices[i * matSize + (stateA + row_index[stateA])] = -rowSum;
             diagonalMutationMatrices[i * num_states_ + stateA] = -rowSum;
+            freqiFreqjQijs[i * matSize + (stateA + row_index[stateA])] = -rowSum;
+
+            // pre-compute matrix to speedup
+            const RealNumType* transposed_mut_mat_row = getTransposedMutationMatrixRow(stateA, i);
+            RealNumType* freqjTransposedijsRow = freqjTransposedijs + (i * matSize) + row_index[stateA];
+            setVecByProduct<4>(freqjTransposedijsRow, root_freqs, transposed_mut_mat_row);
+        
         }
     } 
 
     // Clean-up
-    delete[] totalRates;
     for(int i = 0; i < genomeSize; i++) {
         delete[] C[i];
         delete[] W[i];
