@@ -336,8 +336,6 @@ public:
     return freq_j_transposed_ij + row_index[i];
   }
 
-  virtual void estimateRates(cmaple::Tree* tree) {};
-
   /**
    Export state frequencies at root
    */
