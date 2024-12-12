@@ -8,6 +8,7 @@ using namespace cmaple;
 
 cmaple::Model::Model( cmaple::PositionType ref_genome_size,
                       bool _rate_variation,
+                      bool _siteRates,
                       const cmaple::ModelBase::SubModel sub_model,
                       const cmaple::SeqRegion::SeqType seqtype)
     : model_base(nullptr) {
@@ -64,7 +65,7 @@ cmaple::Model::Model( cmaple::PositionType ref_genome_size,
     }
     case cmaple::SeqRegion::SEQ_DNA: {
       if(rate_variation){
-        model_base = new ModelDNARateVariation(n_sub_model, ref_genome_size);
+        model_base = new ModelDNARateVariation(n_sub_model, ref_genome_size, _siteRates);
       } else {
         model_base = new ModelDNA(n_sub_model);
       }

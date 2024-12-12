@@ -648,10 +648,15 @@ class Params {
   bool make_consistent;
 
   /**
-   * TRUE to allow rates to vary by genomic site.
+   * TRUE to allow a rate multiplier for each genomic site.
    */
   bool rate_variation;
-    
+
+   /**
+   * TRUE to allow an independent rate matrix for each genomic site.
+   */ 
+  bool site_specific_rates;
+
     /**
      * TRUE to ignore annotations from the input tree
      */

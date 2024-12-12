@@ -1024,34 +1024,9 @@ void cmaple::Tree::applySPRTemplate(
 template <const StateType num_states>
 void cmaple::Tree::doRateEstimationTemplate(std::ostream& out_stream) {
 
-  if(params->rate_variation) {
+  if(params->rate_variation || params->site_specific_rates) {
     ModelDNARateVariation* rvModel = (ModelDNARateVariation*) model;
-    //rvModel->estimateRatesPerSite(this);
-
-    RealNumType oldLK = -std::numeric_limits<double>::infinity();
-    RealNumType newLK = this->computeLh();
-    int numSteps = 0;
-    while(newLK - oldLK > 1 && numSteps < 20) {
-      rvModel->estimateRatesPerSitePerEntry(this);
-      oldLK = newLK;
-      newLK = this->computeLh();
-    } 
-
-    // Write out rate matrices to file
-    if(cmaple::verbose_mode > VB_MIN) 
-    {
-        const std::string prefix = params->output_prefix.length() ? params->output_prefix : params->aln_path;
-        //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
-        std::ofstream outFile(prefix + ".rateMatrices.txt");
-        rvModel->printMatrix(rvModel->getOriginalRateMatrix(), &outFile);
-        for(int i = 0; i < aln->ref_seq.size(); i++) {
-            outFile << "Position: " << i << std::endl;
-            outFile << "Rate Matrix: " << std::endl;
-            rvModel->printMatrix(rvModel->getMutationMatrix(i), &outFile);
-            outFile << std::endl;
-        }
-        outFile.close();
-    }  
+    rvModel->estimateRates(this);
   }
 }
 

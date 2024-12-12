@@ -4,13 +4,13 @@
 
 using namespace cmaple;
 
-ModelDNARateVariation::ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize)
+ModelDNARateVariation::ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize, bool _useSiteRates)
     : ModelDNA(sub_model) {
     
     genomeSize = _genomeSize;
+    useSiteRates = _useSiteRates;
     matSize = row_index[num_states_];
 
-    rates = new cmaple::RealNumType[genomeSize]();
     mutationMatrices = new RealNumType[matSize * genomeSize]();
     transposedMutationMatrices = new RealNumType[matSize * genomeSize]();
     diagonalMutationMatrices = new RealNumType[num_states_ * genomeSize]();
@@ -19,7 +19,6 @@ ModelDNARateVariation::ModelDNARateVariation(const cmaple::ModelBase::SubModel s
 }
 
 ModelDNARateVariation::~ModelDNARateVariation() { 
-    delete[] rates; 
     delete[] mutationMatrices;
     delete[] transposedMutationMatrices;
     delete[] diagonalMutationMatrices;
@@ -66,9 +65,45 @@ bool ModelDNARateVariation::updateMutationMatEmpirical() {
     return val;
 }
 
-void ModelDNARateVariation::estimateRatesPerSite(cmaple::Tree* tree){
-    std::cout << "Estimating per site rates" << std::endl;
+void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
+    if(useSiteRates) {
+        estimateRatePerSite(tree);
+
+        //todo: write rates to file
+
+    } else {
+        RealNumType oldLK = -std::numeric_limits<double>::infinity();
+        RealNumType newLK = tree->computeLh();
+        int numSteps = 0;
+        while(newLK - oldLK > 1 && numSteps < 20) {
+            estimateRatesPerSitePerEntry(tree);
+            oldLK = newLK;
+            newLK = tree->computeLh();
+        }
+
+        // Write out rate matrices to file
+        if(cmaple::verbose_mode > VB_MIN) 
+        {
+            const std::string prefix = tree->params->output_prefix.length() ? 
+                tree->params->output_prefix : tree->params->aln_path;
+            //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
+            std::ofstream outFile(prefix + ".rateMatrices.txt");
+            printMatrix(getOriginalRateMatrix(), &outFile);
+            for(int i = 0; i < genomeSize; i++) {
+                outFile << "Position: " << i << std::endl;
+                outFile << "Rate Matrix: " << std::endl;
+                printMatrix(getMutationMatrix(i), &outFile);
+                outFile << std::endl;
+            }
+            outFile.close();
+        }   
+    }
+}
+
+void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
+    std::cout << "Estimating mutation rate per site..." << std::endl;
     RealNumType** totals = new RealNumType*[num_states_];
+    RealNumType* rates = new cmaple::RealNumType[genomeSize]();
     for(int j = 0; j < num_states_; j++) {
         totals[j] = new RealNumType[genomeSize];
     }
@@ -191,6 +226,7 @@ void ModelDNARateVariation::estimateRatesPerSite(cmaple::Tree* tree){
     }
     delete[] totals;
     delete[] numSubstitutions;
+    delete[] rates;
 
 }
 

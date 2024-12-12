@@ -48,6 +48,7 @@ class Model {
   Model(
       cmaple::PositionType ref_genome_size,
       bool _rate_variation,
+      bool _siteRates,
       const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::DEFAULT,
       const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
 
