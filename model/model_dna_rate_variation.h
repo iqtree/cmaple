@@ -12,10 +12,12 @@ class Tree;
 /** Class of DNA evolutionary models with rate variation */
 class ModelDNARateVariation : public ModelDNA {
 public:
-    ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize);
+    ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize, bool _useSiteRates);
     virtual ~ModelDNARateVariation();
 
-    void estimateRatesPerSite(cmaple::Tree* tree);
+    void estimateRates(cmaple::Tree* tree);
+
+    void estimateRatePerSite(cmaple::Tree* tree);
 
     void estimateRatesPerSitePerEntry(cmaple::Tree* tree);
 
@@ -80,16 +82,14 @@ private:
                                                 RealNumType weight = 1.);
 
     cmaple::PositionType genomeSize;
-    /**
-     Position rate multiplier for Mutation matrix
-    */
-    cmaple::RealNumType* rates = nullptr;
+
     cmaple::RealNumType* mutationMatrices = nullptr;
     cmaple::RealNumType* diagonalMutationMatrices = nullptr;
     cmaple::RealNumType* transposedMutationMatrices = nullptr;
     cmaple::RealNumType* freqiFreqjQijs = nullptr;
     cmaple::RealNumType* freqjTransposedijs = nullptr;
     uint16_t matSize;
+    bool useSiteRates = false;
 
 };
 }
