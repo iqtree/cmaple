@@ -910,16 +910,24 @@ void cmaple::Alignment::readMaple(std::istream& aln_stream) {
                 "sequence length (" +
                 convertPosTypeToString(static_cast<PositionType>(ref_seq.size())) + ")!");
           }
-        } else if (cmaple::verbose_mode >= cmaple::VB_MED) {
-          outWarning("Ignoring <Length> of " + tmp +
-                     ". <Length> is only appliable for 'N' or '-'.");
+          } else if (cmaple::verbose_mode >= cmaple::VB_MED) {
+            outWarning("Ignoring <Length> of " + tmp +
+                      ". <Length> is only appliable for 'N' or '-'.");
+          }
         }
-      }
 
       // add a new mutation into mutations
       if (state == TYPE_N || state == TYPE_DEL) {
         mutations.emplace_back(state, pos - 1, length);
       } else {
+        StateType refState = ref_seq[pos - 1];
+        if(refState == state)
+        {
+          throw std::logic_error(
+                "Mutation at position " + convertPosTypeToString(pos) +
+                " in sequence " + seq_name + 
+                " is equal to reference nucleotide. Check reference and alignment are correct.");
+        }
         mutations.emplace_back(state, pos - 1);
       }
     }
