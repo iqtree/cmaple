@@ -88,6 +88,7 @@ private:
     cmaple::RealNumType* transposedMutationMatrices = nullptr;
     cmaple::RealNumType* freqiFreqjQijs = nullptr;
     cmaple::RealNumType* freqjTransposedijs = nullptr;
+    cmaple::RealNumType* rates = nullptr;
     uint16_t matSize;
     bool useSiteRates = false;
 

@@ -16,6 +16,10 @@ ModelDNARateVariation::ModelDNARateVariation(const cmaple::ModelBase::SubModel s
     diagonalMutationMatrices = new RealNumType[num_states_ * genomeSize]();
     freqiFreqjQijs = new RealNumType[matSize * genomeSize]();
     freqjTransposedijs = new RealNumType[matSize * genomeSize]();
+
+    if(useSiteRates) {
+        rates = new cmaple::RealNumType[genomeSize]();
+    }
 }
 
 ModelDNARateVariation::~ModelDNARateVariation() { 
@@ -24,13 +28,19 @@ ModelDNARateVariation::~ModelDNARateVariation() {
     delete[] diagonalMutationMatrices;
     delete[] freqiFreqjQijs;
     delete[] freqjTransposedijs;
+    if(useSiteRates) {
+        delete[] rates;
+    }
 }
 
 void ModelDNARateVariation::printMatrix(const RealNumType* matrix, std::ostream* outStream) {
     for(int j = 0; j < num_states_; j++) {
         std::string line = "|";
         for(int k = 0; k < num_states_; k++) {
-            line += "\t" + convertDoubleToString(matrix[row_index[j] + k]);
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(5) << matrix[row_index[j] + k];
+            line += "\t" + oss.str();
+            //line += "\t" + convertDoubleToString(matrix[row_index[j] + k], 5);
         }
         line += "\t|";
         (*outStream) << line << std::endl;
@@ -79,31 +89,34 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
             estimateRatesPerSitePerEntry(tree);
             oldLK = newLK;
             newLK = tree->computeLh();
-        }
-
-        // Write out rate matrices to file
-        if(cmaple::verbose_mode > VB_MIN) 
-        {
-            const std::string prefix = tree->params->output_prefix.length() ? 
-                tree->params->output_prefix : tree->params->aln_path;
-            //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
-            std::ofstream outFile(prefix + ".rateMatrices.txt");
-            printMatrix(getOriginalRateMatrix(), &outFile);
-            for(int i = 0; i < genomeSize; i++) {
-                outFile << "Position: " << i << std::endl;
-                outFile << "Rate Matrix: " << std::endl;
-                printMatrix(getMutationMatrix(i), &outFile);
-                outFile << std::endl;
-            }
-            outFile.close();
-        }   
+        }  
     }
+
+    // Write out rate matrices to file
+    if(cmaple::verbose_mode > VB_MIN) 
+    {
+        const std::string prefix = tree->params->output_prefix.length() ? 
+            tree->params->output_prefix : tree->params->aln_path;
+        //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
+        std::ofstream outFile(prefix + ".rateMatrices.txt");
+        outFile << "Rate matrix for all sites: " << std::endl;
+        printMatrix(getOriginalRateMatrix(), &outFile);
+        for(int i = 0; i < genomeSize; i++) {
+            outFile << "Position: " << i << std::endl;
+            if(useSiteRates) {
+                outFile << "Rate: " << rates[i] << std::endl;
+            }
+            outFile << "Rate Matrix: " << std::endl;
+            printMatrix(getMutationMatrix(i), &outFile);
+            outFile << std::endl;
+        }
+        outFile.close();
+    } 
 }
 
 void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
     std::cout << "Estimating mutation rate per site..." << std::endl;
     RealNumType** totals = new RealNumType*[num_states_];
-    RealNumType* rates = new cmaple::RealNumType[genomeSize]();
     for(int j = 0; j < num_states_; j++) {
         totals[j] = new RealNumType[genomeSize];
     }
@@ -125,13 +138,14 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
         nodeStack.pop();
         PhyloNode& node = tree->nodes[index.getVectorIndex()];
         RealNumType blength = node.getUpperLength();
+        //std::cout << "blength: " << blength  << std::endl;
 
         if (node.isInternal()) {
             nodeStack.push(node.getNeighborIndex(RIGHT));
             nodeStack.push(node.getNeighborIndex(LEFT));
         }
 
-        if(blength == 0.) {
+        if(blength <= 0.) {
             continue;
         }
 
@@ -151,7 +165,6 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
             SeqRegions::getNextSharedSegment(pos, seq1_regions, seq2_regions, iseq1, iseq2, end_pos);
             const auto* seq1_region = &seq1_regions[iseq1];
             const auto* seq2_region = &seq2_regions[iseq2];
-            //std::cout << "blength: " << blength  << " ";
 
             if(seq1_region->type == TYPE_R && seq2_region->type == TYPE_R) {
                 // both states are type REF
@@ -181,13 +194,14 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
         } else {
             RealNumType expectedRateNoSubstitution = 0;
             for(int j = 0; j < num_states_; j++) {
-                RealNumType summand = totals[j][i] * diagonal_mut_mat[j];
+                RealNumType summand = totals[j][i] * abs(diagonal_mut_mat[j]);
                 expectedRateNoSubstitution += summand;
             }
-            if(expectedRateNoSubstitution == 0) {
+            if(expectedRateNoSubstitution <= 0.01) {
                 rates[i] = 1.;
             } else {
                 rates[i] = numSubstitutions[i] / expectedRateNoSubstitution;
+                rates[i] = MIN(100.0, MAX(0.0001, rates[i]));  
             }
         }
         rateCount += rates[i];
@@ -226,8 +240,6 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
     }
     delete[] totals;
     delete[] numSubstitutions;
-    delete[] rates;
-
 }
 
 void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
@@ -265,10 +277,6 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
 
         if(blength <= 0.) {
             continue;
-        }
-
-        if(blength < 0) {
-            std::cout << blength << std::endl;
         }
 
         Index parent_index = node.getNeighborIndex(TOP);
