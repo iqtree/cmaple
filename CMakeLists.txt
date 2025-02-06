@@ -73,6 +73,14 @@ project(cmaple)
 add_definitions(-DCMAPLE)
 set(CMAKE_CXX_STANDARD 20)
 
+# Add policy to avoid warnings
+cmake_policy(SET CMP0069 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+    set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
+endif()
+
 if (((${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch") AND (NOT APPLE AND UNIX))
     OR WIN32)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE) # Disable IPO (LTO) for Linux ARM
