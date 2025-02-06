@@ -851,8 +851,9 @@ void merge_RACGT_ORACGT(const SeqRegion& seq1_region,
       length_to_root += upper_plength;
     }
     SeqRegion::LHType root_vec;
-    memcpy(root_vec.data(), model->root_freqs,
-           sizeof(RealNumType) * num_states);
+    /*memcpy(root_vec.data(), model->root_freqs,
+           sizeof(RealNumType) * num_states);*/
+    memcpy(root_vec.data(), model->root_freqs, sizeof(SeqRegion::LHType));
 
     RealNumType* transposed_mut_mat_row =
         model->transposed_mut_mat + model->row_index[seq1_state];
