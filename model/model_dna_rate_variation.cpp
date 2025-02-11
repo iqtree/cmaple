@@ -536,3 +536,24 @@ void ModelDNARateVariation::updateCountsAndWaitingTimesAcrossRoot( PositionType 
         }      
     }
 }
+
+void ModelDNARateVariation::setAllMatricesToDefault() {
+    for(int i = 0; i < genomeSize; i++) {
+        for(int stateA = 0; stateA < num_states_; stateA++) {
+            RealNumType rowSum = 0;
+            for(int stateB = 0; stateB < num_states_; stateB++) {
+                mutationMatrices[i * matSize + (stateB + row_index[stateA])] = mutation_mat[stateB + row_index[stateA]];
+                transposedMutationMatrices[i * matSize + (stateB + row_index[stateA])] = transposed_mut_mat[stateB + row_index[stateA]];
+                freqiFreqjQijs[i * matSize + (stateB + row_index[stateA])] = freqi_freqj_qij[stateB + row_index[stateA]];
+            }
+
+            diagonalMutationMatrices[i * num_states_ + stateA] = diagonal_mut_mat[stateA];
+
+            // pre-compute matrix to speedup
+            const RealNumType* transposed_mut_mat_row = getTransposedMutationMatrixRow(stateA, i);
+            RealNumType* freqjTransposedijsRow = freqjTransposedijs + (i * matSize) + row_index[stateA];
+            setVecByProduct<4>(freqjTransposedijsRow, root_freqs, transposed_mut_mat_row);
+        
+        }
+    }  
+}

@@ -26,6 +26,7 @@ public:
     }; 
 
     virtual inline const cmaple::RealNumType *const getMutationMatrixRow(StateType row, PositionType i) const override {
+        assert(i < genomeSize);
         return mutationMatrices + (i * matSize) + row_index[row];
     }; 
 
@@ -69,6 +70,8 @@ public:
    - the reference genome is empty
    */
   virtual bool updateMutationMatEmpirical() override;
+
+  void setAllMatricesToDefault();
 
   void printMatrix(const RealNumType* matrix, std::ostream* outStream);
   void printCountsAndWaitingTimes(const RealNumType* counts, const RealNumType* waitingTImes, std::ostream* outStream);
