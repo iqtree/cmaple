@@ -107,7 +107,7 @@ check_function_exists (strndup HAVE_STRNDUP)
 check_function_exists (strtok_r HAVE_STRTOK_R)
 ## find optional headers
 include (CheckIncludeFile)
-CHECK_INCLUDE_FILE("unistd.h" CMAPLE_HAS_UNISTDH)
+CHECK_INCLUDE_FILE("unistd.h" HAVE_UNISTDH)
 
 
 
