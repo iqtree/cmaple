@@ -16,7 +16,7 @@ jobs:
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
-          options: CMAPLE_FLAGS=static
+          options: CMAPLE_FLAGS=static USE_CMAPLE_AA=ON
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
