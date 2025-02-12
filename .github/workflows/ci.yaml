@@ -126,9 +126,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: build\cmaple.exe
+          path: |
+            build\cmaple.exe
+            build\cmaple-aa.exe
       - name: Simple test
         run: |-
-          ls
+          ls build
           build\cmaple
           build\cmaple --help
+          build\cmaple-aa
+          build\cmaple-aa --help
