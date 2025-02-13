@@ -389,6 +389,12 @@ class Tree {
    not
    */
   std::vector<bool> sequence_added;
+    
+  /**
+   TRUE if branch support (i.e. aLRT-SH) computed
+  */
+  bool aLRT_SH_computed = false;
+
 
   /*!
    * Apply some minor changes (collapsing zero-branch leaves into less-info

@@ -32,6 +32,7 @@ void cmaple::Tree::initTree(Alignment* n_aln,
   model = nullptr;
   cumulative_rate = nullptr;
   fixed_blengths = false;
+    aLRT_SH_computed = false;
     num_exiting_nodes = 0;
   // bug fixed: don't use the first element to store node_lh because
   // node_lh_index is usigned int -> we use 0 for UNINITIALIZED node_lh
@@ -168,9 +169,8 @@ std::string cmaple::Tree::exportNewick(const TreeType tree_type,
   assert(model);
     
   // if branch supports have not been computed -> don't output them
-  bool branch_support_computed = node_lhs.size() >= 3 && node_lhs[nodes[root_vector_index].getNodelhIndex()].get_aLRT_SH() != -1;
   bool show_branch_supports_checked = show_branch_supports;
-  if (show_branch_supports_checked && !branch_support_computed)
+  if (show_branch_supports_checked && !aLRT_SH_computed)
     show_branch_supports_checked = false;
     
   // output the tree according to its type
@@ -195,9 +195,8 @@ std::string cmaple::Tree::exportNexus(const TreeType tree_type,
   assert(model);
     
   // if branch supports have not been computed -> don't output them
-  bool branch_support_computed = node_lhs.size() >= 3 && node_lhs[nodes[root_vector_index].getNodelhIndex()].get_aLRT_SH() != -1;
   bool show_branch_supports_checked = show_branch_supports;
-  if (show_branch_supports_checked && !branch_support_computed)
+  if (show_branch_supports_checked && !aLRT_SH_computed)
     show_branch_supports_checked = false;
     
   // output the tree according to its type
@@ -384,6 +383,7 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
   nodes.clear();
   nodes.reserve(num_seqs + num_seqs);
   // reset node_lhs
+  aLRT_SH_computed = false;
   node_lhs.clear();
   node_lhs.reserve(num_seqs);
   node_lhs.emplace_back(0);
@@ -1350,6 +1350,9 @@ void cmaple::Tree::computeBranchSupportTemplate(
 
   // refresh all non-lower likelihoods
   refreshAllNonLowerLhs<num_states>();
+    
+  // record that aLRT_SH has been computed
+  aLRT_SH_computed = true;
 
   // show the runtime for calculating branch supports
   auto end = getRealTime();
