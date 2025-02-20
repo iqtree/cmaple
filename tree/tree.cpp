@@ -1570,10 +1570,10 @@ std::string cmaple::Tree::exportNexus(const bool binary,
     string list_leaf_names = "";
     
     // list of internal nodes
-    string list_internal_names = "";
+    // string list_internal_names = "";
     
     // traverse the tree from the root to extract the names of nodes
-    NumSeqsType num_internal = 0;
+    // NumSeqsType num_internal = 0;
     stack<NumSeqsType> node_stack;
     node_stack.push(root_vector_index);
 
@@ -1588,10 +1588,10 @@ std::string cmaple::Tree::exportNexus(const bool binary,
         if (node.isInternal())
         {
             // extract its name
-            list_internal_names += "\tin" + convertIntToString(internal_names[node_index]) + "\n";
+            // list_internal_names += "\tin" + convertIntToString(internal_names[node_index]) + "\n";
             
             // increase the internal count
-            ++num_internal;
+            // ++num_internal;
             
             // extract its children
             const NumSeqsType child_1_index = node.getNeighborIndex(RIGHT).getVectorIndex();
@@ -1615,10 +1615,15 @@ std::string cmaple::Tree::exportNexus(const bool binary,
         }
     }
     
-  return pre_output + convertIntToString(seq_names.size() + num_internal) + mid_output_1
+  /*return pre_output + convertIntToString(seq_names.size() + num_internal) + mid_output_1
     + list_leaf_names + list_internal_names + mid_output_2
     + exportNodeString(false, binary, root_vector_index, true, show_branch_supports)
-    + ";" + post_output;
+    + ";" + post_output;*/
+    
+    return pre_output + convertIntToString(seq_names.size()) + mid_output_1
+      + list_leaf_names + mid_output_2
+      + exportNodeString(false, binary, root_vector_index, true, show_branch_supports)
+      + ";" + post_output;
 }
 
 std::string cmaple::Tree::exportTSV()
