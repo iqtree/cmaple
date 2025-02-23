@@ -1027,6 +1027,9 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate() {
   // 0. Traverse tree using DFS, at each non-zero-branch leaf -> expand the tree
   // by adding one less-info-seq
   performDFSAtLeave<&cmaple::Tree::expandTreeByOneLessInfoSeq<num_states>>();
+    
+  // Expand data vectors after tree expansion
+  expandVectorsAfterTreeExpansion();
 
   // NhanLT: re-estimate the model params
   if (aln->getSeqType() == cmaple::SeqRegion::SEQ_DNA) {
@@ -1326,6 +1329,9 @@ void cmaple::Tree::computeBranchSupportTemplate(
   // 0. Traverse tree using DFS, at each leaf -> expand the tree by adding one
   // less-info-seq to make sure all we compute the aLRT of all internal branches
   performDFSAtLeave<&cmaple::Tree::expandTreeByOneLessInfoSeq<num_states>>();
+    
+  // Expand data vectors after tree expansion
+  expandVectorsAfterTreeExpansion();
 
   // 1. calculate aLRT for each internal branches, replacing the ML tree if a
   // higher ML NNI neighbor was found
@@ -1389,59 +1395,89 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
   string internal_name = "";
   PhyloNode& node = nodes[node_vec_index];
   string output = "(";
+  string sh_alrt_str = "";
+    
+    // extract SH-aLRT support
+    if (show_branch_supports && node.isInternal()) {
+      // Make sure Branch supports have been computed
+      if (!node.getNodelhIndex() || !aLRT_SH_computed) {
+        throw std::logic_error(
+            "Branch supports is not available. Please compute them first!");
+      }
+
+      sh_alrt_str = convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
+    }
     
     // proceed annotations
     string annotation_str = "";
+    std::vector<std::string> annotation_vec;
     // only generate annotations if NEXUS format is used
     // add sprta score (if computed)
     // only output the supports of zero-length branches (if requested)
-    if (!is_newick_format
-        && params->compute_SPRTA)
+    if (!is_newick_format)
     {
-        // root support
-        if (root_supports.size() > node_vec_index && root_supports[node_vec_index] > 0)
-            annotation_str += "rootSupport=" +
-                convertDoubleToString(root_supports[node_vec_index], 5);
-        
-        if ((node.getUpperLength() > params->thresh_zero_blength
-            || params->compute_SPRTA_zero_length_branches)
-            && sprta_scores[node_vec_index] >= 0)
+        if (params->compute_SPRTA)
         {
+            // root support
+            if (root_supports.size() > node_vec_index && root_supports[node_vec_index] > 0)
+                /*annotation_str += "rootSupport=" +
+                convertDoubleToString(root_supports[node_vec_index], 5);*/
+                annotation_vec.push_back("rootSupport=" +
+                    convertDoubleToString(root_supports[node_vec_index], 5));
             
-            // add comma if necessary
-            if (annotation_str.length())
-                annotation_str += ",";
-            
-            // sprta score
-            annotation_str += "sprta=" +
-            convertDoubleToString(sprta_scores[node_vec_index], 5);
-            
-            // add alternative SPRs (if needed)
-            if (params->output_alternative_spr)
+            if ((node.getUpperLength() > params->thresh_zero_blength
+                 || params->compute_SPRTA_zero_length_branches)
+                && sprta_scores[node_vec_index] >= 0)
             {
-                annotation_str += ",alternativePlacements={";
                 
-                std::vector<cmaple::AltBranch>& alt_branches = sprta_alt_branches[node_vec_index];
+                // add comma if necessary
+                /*if (annotation_str.length())
+                    annotation_str += ",";*/
                 
-                // add the first one
-                if (alt_branches.size() > 0)
+                // sprta score
+                /*annotation_str += "sprta=" +
+                convertDoubleToString(sprta_scores[node_vec_index], 5);*/
+                annotation_vec.push_back("sprta=" +
+                    convertDoubleToString(sprta_scores[node_vec_index], 5));
+                
+                // add alternative SPRs (if needed)
+                if (params->output_alternative_spr)
                 {
-                    // extract the corresponding node
-                    annotation_str += exportStringAltBranch(alt_branches[0]);
+                    // annotation_str += ",alternativePlacements={";
+                    std::string alter_placements = "";
+                    
+                    std::vector<cmaple::AltBranch>& alt_branches = sprta_alt_branches[node_vec_index];
+                    
+                    // add the first one
+                    if (alt_branches.size() > 0)
+                    {
+                        // extract the corresponding node
+                        // annotation_str += exportStringAltBranch(alt_branches[0]);
+                        alter_placements += exportStringAltBranch(alt_branches[0]);
+                    }
+                    
+                    // add the remainder
+                    for (auto i = 1; i < alt_branches.size(); ++i)
+                    {
+                        // extract the corresponding node
+                        // annotation_str += "," + exportStringAltBranch(alt_branches[i]);
+                        alter_placements += "," + exportStringAltBranch(alt_branches[i]);
+                    }
+                    
+                    // close the bracket
+                    // annotation_str += "}";
+                    
+                    annotation_vec.push_back("alternativePlacements={"
+                                             + alter_placements + "}");
                 }
-                
-                // add the remainder
-                for (auto i = 1; i < alt_branches.size(); ++i)
-                {
-                    // extract the corresponding node
-                    annotation_str += "," + exportStringAltBranch(alt_branches[i]);
-                }
-                
-                // close the bracket
-                annotation_str += "}";
             }
         }
         
+        if (sh_alrt_str.length() > 0)
+        {
+            annotation_vec.push_back("sh_alrt=" + sh_alrt_str);
+        }
+            
         // add existing annotation from the input tree (if any)
         if (!annotations[node_vec_index].empty())
         {
@@ -1458,13 +1494,23 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
             replaceSubStr(ext_atn, "rootSupport=", "input_rootSupport=");
             
             // add the exist annotation into the output
-            if (annotation_str.length())
+            /*if (annotation_str.length())
                 annotation_str += ",";
-            annotation_str += ext_atn;
+            annotation_str += ext_atn;*/
+            annotation_vec.push_back(ext_atn);
         }
         
-        if (annotation_str.length())
+        // if (annotation_str.length())
+        if (annotation_vec.size())
         {
+            // join annotation strings
+            auto it = annotation_vec.begin();
+            annotation_str += *it;
+
+            for (++it; it != annotation_vec.end(); ++it) {
+                annotation_str +=  "," + (*it);
+            }
+            
             // add the open and close brackets
             annotation_str = "[&" + annotation_str + "]";
         }
@@ -1497,22 +1543,17 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
         exportNodeString(is_newick_format, binary, node.getNeighborIndex(LEFT).getVectorIndex(),
                          print_internal_id, show_branch_supports);
   }
-
-  string branch_support = "";
-  if (show_branch_supports) {
-    // Make sure Branch supports have been computed
-    if (!node.getNodelhIndex()) {
-      throw std::logic_error(
-          "Branch supports is not available. Please compute them first!");
+   
+    // output SH-aLRT in newick string
+    string branch_support = "";
+    if (is_newick_format && show_branch_supports)
+    {
+        branch_support = sh_alrt_str;
+        
+        // add "/" to separate name and branch support (if necessary)
+        if (print_internal_id)
+            internal_name += "/";
     }
-
-    branch_support =
-        convertDoubleToString(node_lhs[node.getNodelhIndex()].get_aLRT_SH());
-      
-    // add "/" to separate name and branch support (if necessary)
-      if (print_internal_id)
-          internal_name += "/";
-  }
     
   string length = node.getUpperLength() <= 0
                       ? "0"
@@ -10066,6 +10107,9 @@ void cmaple::Tree::addLessInfoSeqReplacingMLTree(
     const Index parent_index) {
   // add one less-info-seq of the current leaf into the tree
   expandTreeByOneLessInfoSeq<num_states>(node, node_index, parent_index);
+    
+  // Expand data vectors after tree expansion
+  expandVectorsAfterTreeExpansion();
 
   const Index new_internal_from_node_index = node.getNeighborIndex(TOP);
   const NumSeqsType new_internal_vec =
@@ -10862,4 +10906,14 @@ void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
         // refresh the likelihoods of the tree
         refreshAllLhs<num_states>();
     }
+}
+
+void Tree::expandVectorsAfterTreeExpansion()
+{
+    const auto num_nodes = nodes.size();
+    annotations.resize(num_nodes);
+    sprta_scores.resize(num_nodes, -1);
+    root_supports.resize(num_nodes, -1);
+    sprta_alt_branches.resize(num_nodes);
+    sprta_support_list.resize(num_nodes);
 }

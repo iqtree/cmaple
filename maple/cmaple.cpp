@@ -160,6 +160,9 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             if (params.input_treefile.length()) {
               allow_replacing_ML_tree = params.allow_replace_input_tree;
             }
+            // if SPRTA was computed, don't allow changing tree topology
+            if (params.compute_SPRTA)
+                allow_replacing_ML_tree = false;
 
             tree.computeBranchSupport(static_cast<int>(params.num_threads), params.aLRT_SH_replicates, params.aLRT_SH_half_epsilon + params.aLRT_SH_half_epsilon, allow_replacing_ML_tree, out_stream);
 
@@ -182,7 +185,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         if (params.output_NEXUS || params.compute_SPRTA)
         {
             ofstream out = ofstream(output_treefile + ".nexus");
-            out << tree.exportNexus(tree_format, params.print_internal_ids);
+            out << tree.exportNexus(tree_format);
             out.close();
         }
         

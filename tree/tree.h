@@ -617,6 +617,10 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void refreshAllNonLowerLhs();
+    
+  /*! Expand data vectors after tree expansion
+  */
+  void expandVectorsAfterTreeExpansion();
 
   /**
    Try to improve a subtree rooted at node with SPR moves
