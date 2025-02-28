@@ -341,13 +341,6 @@ if (INSTALL_CMAPLE)
     #        FILES_MATCHING # install only matched files
     #        PATTERN "*.h" # select header files
     #)
-
-    if (WIN32)
-        install (FILES "${BINARY_DIR}/cmaple${EXE_SUFFIX}-click.exe" DESTINATION bin)
-        if (USE_CMAPLE_AA)
-            install (FILES "${BINARY_DIR}/cmaple-aa${EXE_SUFFIX}-click.exe" DESTINATION bin)
-        endif()
-    endif()
 endif()
 
 ##############################################################
