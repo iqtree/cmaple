@@ -72,6 +72,7 @@ public:
   virtual bool updateMutationMatEmpirical() override;
 
   void setAllMatricesToDefault();
+  void setMatrixAtPosition(RealNumType* matrix, PositionType i);
 
   void printMatrix(const RealNumType* matrix, std::ostream* outStream);
   void printCountsAndWaitingTimes(const RealNumType* counts, const RealNumType* waitingTImes, std::ostream* outStream);
@@ -94,6 +95,7 @@ private:
     cmaple::RealNumType* rates = nullptr;
     uint16_t matSize;
     bool useSiteRates = false;
+    bool ratesEstimated = false;
 
 };
 }

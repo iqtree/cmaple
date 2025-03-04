@@ -1027,6 +1027,8 @@ void cmaple::Tree::doRateEstimationTemplate(std::ostream& out_stream) {
   if(params->rate_variation || params->site_specific_rates) {
     ModelDNARateVariation* rvModel = (ModelDNARateVariation*) model;
     rvModel->estimateRates(this);
+    //rvModel->setAllMatricesToDefault();
+    computeCumulativeRate();
   }
 }
 
@@ -1275,7 +1277,6 @@ RealNumType cmaple::Tree::computeLhTemplate() {
   // perform a DFS to add likelihood contributions from each internal nodes
   total_lh += performDFS<&cmaple::Tree::computeLhContribution<num_states>>();
 
-  // return total_lh
   return total_lh;
 }
 
@@ -5535,8 +5536,7 @@ void cmaple::Tree::estimateBlength_ACGT_O(
     RealNumType& coefficient,
     std::vector<RealNumType>& coefficient_vec) {
   StateType seq1_state = seq1_region.type;
-  PositionType pos = seq1_region.position;
-  assert(seq1_region.position == seq2_region.position);
+  PositionType pos = seq2_region.position;
 
   const RealNumType* mutation_mat_row = model->getMutationMatrixRow(seq1_state, pos);
 
@@ -5988,6 +5988,8 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
              << total_improvement << endl;
           std::cout << std::setprecision(10)
               << "Tree log likelihood: " << computeLh() << std::endl;
+          //std::cout << "New best likelihood: " << best_lh_diff << std::endl;
+          //std::cout << "Old best likelihood: " << best_lh << std::endl;
       }
 
       // apply an SPR move
@@ -6125,9 +6127,8 @@ void calculateSubtreeCost_R_O(const SeqRegion& seq1_region,
                               RealNumType& total_factor,
                               const ModelBase* model) {
   RealNumType tot = 0;
-  PositionType pos = seq1_region.position;
+  PositionType pos = seq2_region.position;
   if (seq1_region.plength_observation2root >= 0) {
-    //const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq1_state);
 
     for (StateType i = 0; i < num_states; ++i) {
       // NHANLT NOTE: UNSURE
@@ -6176,12 +6177,13 @@ void calculateSubtreeCost_R_O(const SeqRegion& seq1_region,
 }
 
 bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
+                                 const SeqRegion& seq2_region,
                                  const RealNumType total_blength,
                                  const StateType seq1_state,
                                  const StateType seq2_state,
                                  RealNumType& total_factor,
                                  const ModelBase* model) {
-  PositionType pos = seq1_region.position;
+  PositionType pos = seq2_region.position;
   if (seq1_region.plength_observation2root >= 0) {
     if (total_blength > 0) {
       // NHANLT NOTE: UNSURE
@@ -6191,11 +6193,16 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
       // model->mutation_mat[model->row_index[seq1_state] + seq2_state] *
       // total_blength (2) = (1.0 + model->diagonal_mut_mat[seq1_state] *
       // seq1_region.plength_observation2node)
+      RealNumType prob1 = (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
+      seq1_region.plength_observation2node);
+      if(prob1 < 0) {
+        std::cout << "[calculateSubtreeCost_R_ACGT] Warning: Probability negative..." << std::endl;
+        prob1 = 0.25;
+      }
       RealNumType seq1_state_evolves_seq2_state =
           model->getMutationMatrixEntry(seq1_state, seq2_state, pos) * 
           total_blength *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
-                     seq1_region.plength_observation2node);
+          prob1;
 
       // NHANLT NOTE: UNCLEAR
       // consider the inverse process of the above
@@ -6205,10 +6212,15 @@ bool calculateSubtreeCost_R_ACGT(const SeqRegion& seq1_region,
       // root_freqs[seq1_state] * mutation_mat[model->row_index[seq2_state] +
       // seq1_state] * seq1_region.plength_observation2node (2) = (1.0 +
       // model->diagonal_mut_mat[seq2_state] * total_blength)
+      RealNumType prob2 = (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * total_blength);
+      if(prob2 < 0) {
+        std::cout << "[calculateSubtreeCost_R_ACGT] Warning: Probability negative..." << std::endl;
+        prob2 = 0.25;
+      }     
       RealNumType seq2_state_evolves_seq1_state =
           model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
           seq1_region.plength_observation2node *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * total_blength);
+          prob2;
 
       total_factor *=
           seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
@@ -6290,9 +6302,10 @@ void calculateSubtreeCost_O_RACGT(const SeqRegion& seq1_region,
 }
 
 void calculateSubtreeCost_identicalACGT(const SeqRegion& seq1_region,
+                                        const SeqRegion& seq2_region,
                                         RealNumType& total_blength,
                                         RealNumType& lh_cost,
-                                        const ModelBase* model) {
+                                        const ModelBase* model) { 
   if (seq1_region.plength_observation2root >= 0) {
     total_blength += seq1_region.plength_observation2node;
   }
@@ -6311,12 +6324,12 @@ void calculateSubtreeCost_ACGT_O(const SeqRegion& seq1_region,
                                  RealNumType& total_factor,
                                  const ModelBase* model) {
   StateType seq1_state = seq1_region.type;
-  PositionType pos = seq1_region.position;
+  PositionType pos = seq2_region.position;
   if (seq1_region.plength_observation2root >= 0) {
     RealNumType tot = matrixEvolveRoot<num_states>(
         &((*seq2_region.likelihood)[0]), seq1_state, model->getRootFreqs(),
         model->getTransposedMutationMatrixRow(seq1_state, pos), 
-        model->getMutationMatrixRow(0, pos), total_blength,
+        model->getMutationMatrix(pos), total_blength,
         seq1_region.plength_observation2node);
     // NHANLT NOTE: UNCLEAR
     // why we need to divide tot by root_freqs[seq1_state]
@@ -6345,11 +6358,17 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
                                      const ModelBase* model) {
   StateType seq1_state = seq1_region.type;
   StateType seq2_state = seq2_region.type;
-  PositionType pos = seq1_region.position;
+  if(total_factor < 0) {
+    std::cout << "[calculateSubtreeCost_ACGT_RACGT] Warning: START total_factor negative!" << std::endl;
+  }
   if (seq2_state == TYPE_R) {
     seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
                                 ::size_type>(end_pos)];
   }
+
+  /*if(seq1_region.position != seq2_region.position) {
+    std::cout << "[calculateSubtreeCost_ACGT_RACGT] Positional assumption violated." << std::endl;
+  }*/
 
   if (seq1_region.plength_observation2root >= 0) {
     if (total_blength > 0) {
@@ -6360,11 +6379,15 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
       // model->mutation_mat[model->row_index[seq1_state] + seq2_state] *
       // total_blength (2) = (1.0 + model->diagonal_mut_mat[seq1_state] *
       // seq1_region.plength_observation2node)
+      RealNumType prob1 = (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, end_pos) * seq1_region.plength_observation2node);
+      if(prob1 < 0) {
+        std::cout << "[calculateSubtreeCost_ACGT_RACGT] Warning: Probability negative..." << std::endl;
+        prob1 = 0.25;
+      }
       RealNumType seq1_state_evolves_seq2_state =
-          model->getMutationMatrixEntry(seq1_state, seq2_state, pos) * 
+          model->getMutationMatrixEntry(seq1_state, seq2_state, end_pos) * 
           total_blength *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
-                     seq1_region.plength_observation2node);
+          prob1;
 
       // NHANLT NOTE: UNCLEAR
       // consider the inverse process of the above
@@ -6374,10 +6397,15 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
       // root_freqs[seq1_state] * mutation_mat[model->row_index[seq2_state] +
       // seq1_state] * seq1_region.plength_observation2node (2) = (1.0 +
       // model->diagonal_mut_mat[seq2_state] * total_blength)
+      RealNumType prob2 = (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, end_pos) * total_blength);
+      if(prob2 < 0) {
+        std::cout << "[calculateSubtreeCost_ACGT_RACGT] Warning: Probability negative..." << std::endl;
+        prob2 = 0.25;
+      }
       RealNumType seq2_state_evolves_seq1_state =
-          model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
+          model->getFreqiFreqjQij(seq2_state, seq1_state, end_pos) *
           seq1_region.plength_observation2node *
-          (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * total_blength);
+          prob2;
 
       total_factor *=
           seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
@@ -6387,7 +6415,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
     // to save the runtime (avoid multiplying with 0)
     else {
       total_factor *=
-          model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
+          model->getFreqiFreqjQij(seq2_state, seq1_state, end_pos) *
           seq1_region.plength_observation2node;
     }
   }
@@ -6395,7 +6423,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
   // add the likelihood that seq1_state evoles to seq2_state =
   // mut[seq1_state,seq2_state] * total_blength
   else if (total_blength > 0) {
-    total_factor *= model->getMutationMatrixEntry(seq1_state, seq2_state, pos) *
+    total_factor *= model->getMutationMatrixEntry(seq1_state, seq2_state, end_pos) *
         total_blength;
   } else {
     return false;  // return MIN_NEGATIVE;
@@ -6487,7 +6515,7 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
     }
     // 2.3. e1.type = R and e2.type = A/C/G/T
     else if (seq1_region->type == TYPE_R) {
-      if (!calculateSubtreeCost_R_ACGT(*seq1_region, total_blength,
+      if (!calculateSubtreeCost_R_ACGT(*seq1_region, *seq2_region, total_blength,
                                        aln->ref_seq[static_cast<
                 std::vector<cmaple::StateType>::size_type>(end_pos)],
                                        seq2_region->type,
@@ -6510,8 +6538,7 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
     // 4. e1.type = A/C/G/T
     // 4.1. e1.type =  e2.type
     else if (seq1_region->type == seq2_region->type) {
-      calculateSubtreeCost_identicalACGT(*seq1_region, total_blength, lh_cost,
-                                         model);
+      calculateSubtreeCost_identicalACGT(*seq1_region, *seq2_region, total_blength, lh_cost, model);
     }
     // e1.type = A/C/G/T and e2.type = O/A/C/G/T
     // 4.2. e1.type = A/C/G/T and e2.type = O
@@ -6579,7 +6606,7 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
                              RealNumType& lh_cost,
                              RealNumType& total_factor,
                              const ModelBase* model) {
-  PositionType pos = seq1_region.position;
+  PositionType pos = seq2_region.position;
   assert(seq1_region.position == seq2_region.position);
   if (seq1_region.plength_observation2root >= 0) {
     RealNumType total_blength = seq1_region.plength_observation2root + blength;
@@ -6632,28 +6659,37 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
 }
 
 void calculateSampleCost_R_ACGT(const SeqRegion& seq1_region,
+                                const SeqRegion& seq2_region,
                                 const RealNumType blength,
                                 const StateType seq1_state,
                                 const StateType seq2_state,
                                 RealNumType& total_factor,
                                 const ModelBase* model) {
-  PositionType pos = seq1_region.position;
+  PositionType pos = seq2_region.position;
   if (seq1_region.plength_observation2root >= 0) {
     // TODO: can cache model->mutation_mat[model->row_index[seq1_state] *
     // model->diagonal_mut_mat[seq1_state]
     // TODO: can cache  model->freqi_freqj_qij[model->row_index[seq2_state] +
     // seq1_state] * model->diagonal_mut_mat[seq2_state]
+    RealNumType prob1 = (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) * seq1_region.plength_observation2node);
+    if(prob1 < 0) {
+      std::cout << "Warning: Probability negative..." << std::endl;
+      prob1 = 0.25;
+    }
     RealNumType seq1_state_evolves_seq2_state =
         model->getMutationMatrixEntry(seq1_state, seq2_state, pos) * 
         blength *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, pos) *
-                   seq1_region.plength_observation2node);
+        prob1;
 
+    RealNumType prob2 = (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * (blength + seq1_region.plength_observation2root));
+    if(prob2 < 0){
+      std::cout << "Warning: Probability negative..." << std::endl;
+      prob2 = 0.25;
+    }
     RealNumType seq2_state_evolves_seq1_state =
         model->getFreqiFreqjQij(seq2_state, seq1_state, pos) *
         seq1_region.plength_observation2node *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) *
-                   (blength + seq1_region.plength_observation2root));
+        prob2;
 
     total_factor *=
         seq1_state_evolves_seq2_state + seq2_state_evolves_seq1_state;
@@ -6674,7 +6710,6 @@ void calculateSampleCost_O_O(const SeqRegion& seq1_region,
                              const ModelBase* model) {
   RealNumType blength13 = blength;
   PositionType pos = seq1_region.position;
-  assert(seq1_region.position == seq2_region.position);
   if (seq1_region.plength_observation2node >= 0) {
     blength13 = seq1_region.plength_observation2node;
     if (blength > 0) {
@@ -6718,12 +6753,13 @@ void calculateSampleCost_O_RACGT(const SeqRegion& seq1_region,
                                 ::size_type>(end_pos)];
   }
   const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq2_state, end_pos);
-  RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region.likelihood)[0]));
+  RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region.likelihood)[0]));;
   total_factor *= seq1_region.getLH(seq2_state) + blength13 * tot2;
 }
 
 void calculateSampleCost_identicalACGT(const SeqRegion& seq1_region,
                                        const RealNumType blength,
+                                       const RealNumType end_pos,
                                        RealNumType& lh_cost,
                                        const ModelBase* model) {
   RealNumType total_blength = blength;
@@ -6734,7 +6770,7 @@ void calculateSampleCost_identicalACGT(const SeqRegion& seq1_region,
                         ? 0
                         : seq1_region.plength_observation2root);
 
-  lh_cost += model->getDiagonalMutationMatrixEntry(seq1_region.type, seq1_region.position) * total_blength;
+  lh_cost += model->getDiagonalMutationMatrixEntry(seq1_region.type, end_pos) * total_blength;
 }
 
 template <const StateType num_states>
@@ -6745,8 +6781,7 @@ void calculateSampleCost_ACGT_O(const SeqRegion& seq1_region,
                                 RealNumType& total_factor,
                                 const ModelBase* model) {
   StateType seq1_state = seq1_region.type;
-  PositionType pos = seq1_region.position;
-  assert(seq1_region.position == seq2_region.position);
+  PositionType pos = seq2_region.position;
   RealNumType tot = 0.0;
 
   if (seq1_region.plength_observation2root >= 0) {
@@ -6807,17 +6842,25 @@ void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region,
 
   if (seq1_region.plength_observation2root >= 0) {
     // here we ignore contribution of non-parsimonious mutational histories
+    RealNumType prob1 = (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, end_pos) * seq1_region.plength_observation2node);
+    if(prob1 < 0) {
+      std::cout << "Warning: Probability negative..." << std::endl;
+      prob1 = 0.25;
+    }
     RealNumType seq1_state_evoloves_seq2_state =
         model->getMutationMatrixEntry(seq1_state, seq2_state, end_pos) * 
         (blength + seq1_region.plength_observation2root) *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq1_state, end_pos) *
-                   seq1_region.plength_observation2node);
+        prob1;
 
+    RealNumType prob2 = (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, end_pos) * (blength + seq1_region.plength_observation2root));
+    if(prob2 < 0) {
+      std::cout << "Warning: Probability negative..." << std::endl;
+      prob2 = 0.25;
+    }
     RealNumType seq2_state_evolves_seq1_state =
         model->getFreqiFreqjQij(seq2_state, seq1_state, end_pos) *
         seq1_region.plength_observation2node *
-        (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, end_pos) *
-                   (blength + seq1_region.plength_observation2root));
+        prob2;
 
     total_factor *=
         (seq1_state_evoloves_seq2_state + seq2_state_evolves_seq1_state);
@@ -6898,7 +6941,7 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     }
     // 2.3. e1.type = R and e2.type = A/C/G/T
     else if (seq1_region->type == TYPE_R) {
-      calculateSampleCost_R_ACGT(*seq1_region, blength,
+      calculateSampleCost_R_ACGT(*seq1_region, *seq2_region, blength,
                                  aln->ref_seq[static_cast<
                     std::vector<cmaple::StateType>::size_type>(end_pos)],
                                  seq2_region->type, total_factor, model);
@@ -6918,7 +6961,7 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     // 4. e1.type = A/C/G/T
     // 4.1. e1.type =  e2.type
     else if (seq1_region->type == seq2_region->type) {
-      calculateSampleCost_identicalACGT(*seq1_region, blength, lh_cost, model);
+      calculateSampleCost_identicalACGT(*seq1_region, blength, end_pos, lh_cost, model);
     }
     // e1.type = A/C/G/T and e2.type = O/A/C/G/T
     // 4.2. e1.type = A/C/G/T and e2.type = O

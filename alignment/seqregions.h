@@ -564,6 +564,7 @@ auto updateLHwithModel(const ModelBase* model,
     RealNumType tot = 0;
     if (total_blength > 0)  // TODO: avoid
     {
+
       const RealNumType* mutation_mat_row = model->getMutationMatrixRow(i, pos);
       tot += dotProduct<num_states>(&(prior)[0], mutation_mat_row);
 
@@ -630,7 +631,6 @@ void merge_N_O(const RealNumType lower_plength,
     total_blength = reg_o.plength_observation2node +
                     (lower_plength > 0 ? lower_plength : 0);
   }
-
   auto new_lh =
       cmaple::make_unique<SeqRegion::LHType>();  // = new RealNumType[num_states];
   RealNumType sum_lh = updateLHwithModel<num_states>(model, *reg_o.likelihood,
@@ -765,7 +765,7 @@ void merge_RACGT_O(const SeqRegion& seq2_region,
   assert(seq2_region.type == TYPE_O);
   assert(model);
   assert(aln);
-    
+
   RealNumType sum_new_lh = updateMultLHwithMat<num_states>(
       model->getMutationMatrix(end_pos), *(seq2_region.likelihood), new_lh, total_blength_2);
 
@@ -1043,7 +1043,7 @@ auto merge_O_O_TwoLowers(const SeqRegion& seq2_region,
   assert(seq2_region.type == TYPE_O);
   assert(model);
   assert(aln);
-    
+
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
       model->getMutationMatrix(end_pos), *seq2_region.likelihood, new_lh, total_blength_2);
 
@@ -1179,7 +1179,7 @@ auto merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
   assert(seq2_region.type == TYPE_O);
   assert(model);
   assert(aln);
-    
+
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
       model->getMutationMatrix(end_pos), *(seq2_region.likelihood), new_lh, total_blength_2);
 
@@ -1363,7 +1363,7 @@ auto merge_notN_notN_TwoLowers(const SeqRegion& seq1_region,
         aln, model, threshold_prob, log_lh, merged_regions, return_log_lh);
     return ret;
   }
-
+  
   // no error
   return true;
 }
@@ -1447,12 +1447,6 @@ RealNumType SeqRegions::mergeTwoLowers(
     }
     // neither seq1_entry nor seq2_entry = N
     else {
-      //RealNumType* vec = (&seq1_region->likelihood)[0];
-      /*if(!seq1_region->likelihood.get()) {
-        std::cout << "[mergeTwoLowers] Likelihood pointer: " << seq1_region->likelihood.get() << std::endl;
-        return MIN_NEGATIVE;
-      }*/
-      //std::cout << "[mergeTwoLowers] Prior: " << vec[0] << " " << vec[1] << " " << vec[2] << " " << vec[3] << std::endl;
       if (!merge_notN_notN_TwoLowers<num_states>(
               *seq1_region, *seq2_region, plength1, plength2, end_pos, pos, aln,
               model, cumulative_rate, threshold_prob, log_lh, merged_regions,
@@ -1480,7 +1474,6 @@ RealNumType SeqRegions::mergeTwoLowers(
          max_elements);  // ensure we did the correct reserve, otherwise it was
   // a pessimization
 #endif
-
   return log_lh;
 }
 
@@ -1505,7 +1498,7 @@ auto SeqRegions::computeAbsoluteLhAtRoot(
       for (StateType i = 0; i < num_states; ++i) {
         log_lh += model->getRootLogFreq(i) *
                   (cumulative_base[static_cast<size_t>(region.position) + 1][i] -
-                   cumulative_base[static_cast<size_t>(start_pos)][i]);
+                   cumulative_base[static_cast<size_t>(start_pos)][i]); 
       }
     }
     // type ACGT
@@ -1737,7 +1730,7 @@ bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions,
   assert(seq2_region.type == TYPE_O);
   assert(aln);
   assert(model);
-    
+
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
       model->getMutationMatrix(end_pos), *seq2_region.likelihood, new_lh, total_blength_2);
 
@@ -1869,7 +1862,6 @@ bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions,
   assert(seq2_region.type == TYPE_O);
   assert(aln);
   assert(model);
-    
   RealNumType sum_lh = updateMultLHwithMat<num_states>(
       model->getMutationMatrix(end_pos), *(seq2_region.likelihood), new_lh, total_blength_2);
 

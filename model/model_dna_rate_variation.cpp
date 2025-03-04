@@ -59,6 +59,9 @@ void ModelDNARateVariation::printCountsAndWaitingTimes(const RealNumType* counts
 }
 
 bool ModelDNARateVariation::updateMutationMatEmpirical() {
+    if(ratesEstimated) {
+        std::cout << "[ModelDNARateVariation] Warning: Overwriting estimated rate matrices with single empirical mutation matrix." << std::endl;
+    }
     bool val = ModelDNA::updateMutationMatEmpirical();
     for(int i = 0; i < genomeSize; i++) {
         for(int j = 0; j < matSize; j++) {
@@ -76,6 +79,7 @@ bool ModelDNARateVariation::updateMutationMatEmpirical() {
 }
 
 void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
+    ratesEstimated = true;
     if(useSiteRates) {
         estimateRatePerSite(tree);
 
@@ -109,6 +113,7 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
             outFile << "Rate Matrix: " << std::endl;
             printMatrix(getMutationMatrix(i), &outFile);
             outFile << std::endl;
+
         }
         outFile.close();
     } 
@@ -116,14 +121,14 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
 
 void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
     std::cout << "Estimating mutation rate per site..." << std::endl;
-    RealNumType** totals = new RealNumType*[num_states_];
+    RealNumType** waitingTimes = new RealNumType*[num_states_];
     for(int j = 0; j < num_states_; j++) {
-        totals[j] = new RealNumType[genomeSize];
+        waitingTimes[j] = new RealNumType[genomeSize];
     }
     RealNumType* numSubstitutions = new RealNumType[genomeSize];
     for(int i = 0; i < genomeSize; i++) {
         for(int j = 0; j < num_states_; j++) {
-            totals[j][i] = 0;
+            waitingTimes[j][i] = 0;
         }
         numSubstitutions[i] = 0;
     }
@@ -170,12 +175,12 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
                 // both states are type REF
                 for(int i = pos; i <= end_pos; i++) {
                     int state = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(i)];
-                    totals[state][i] += blength;
+                    waitingTimes[state][i] += blength;
                 }
             }  else if(seq1_region->type == seq2_region->type && seq1_region->type < TYPE_R) {
                 // both states are equal but not of type REF
                  for(int i = pos; i <= end_pos; i++) {
-                    totals[seq1_region->type][i] += blength;
+                    waitingTimes[seq1_region->type][i] += blength;
                 }               
             } else if(seq1_region->type <= TYPE_R && seq2_region->type <= TYPE_R) {
                 // both states are not equal
@@ -194,7 +199,7 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
         } else {
             RealNumType expectedRateNoSubstitution = 0;
             for(int j = 0; j < num_states_; j++) {
-                RealNumType summand = totals[j][i] * abs(diagonal_mut_mat[j]);
+                RealNumType summand = waitingTimes[j][i] * abs(diagonal_mut_mat[j]);
                 expectedRateNoSubstitution += summand;
             }
             if(expectedRateNoSubstitution <= 0.01) {
@@ -210,7 +215,6 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
     RealNumType averageRate = rateCount / genomeSize;
     for(int i = 0; i < genomeSize; i++) {
         rates[i] /= averageRate;
-        //std::cout << rates[i] << " ";
         for(int stateA = 0; stateA < num_states_; stateA++) {
             RealNumType rowSum = 0;
             for(int stateB = 0; stateB < num_states_; stateB++) {
@@ -236,9 +240,9 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
     }
 
     for(int j = 0; j < num_states_; j++) {
-        delete[] totals[j];
+        delete[] waitingTimes[j];
     }
-    delete[] totals;
+    delete[] waitingTimes;
     delete[] numSubstitutions;
 }
 
@@ -556,4 +560,14 @@ void ModelDNARateVariation::setAllMatricesToDefault() {
         
         }
     }  
+}
+
+void ModelDNARateVariation::setMatrixAtPosition(RealNumType* matrix, PositionType i) {
+    for(int stateA = 0; stateA < num_states_; stateA++) {
+        diagonalMutationMatrices[i * num_states_ + stateA] = matrix[stateA + row_index[stateA]];
+        for(int stateB = 0; stateB < num_states_; stateB++) {
+            mutationMatrices[i * matSize + (stateB + row_index[stateA])] = matrix[stateB + row_index[stateA]];
+            transposedMutationMatrices[i * matSize + (stateB + row_index[stateA])] = matrix[stateA + row_index[stateB]];
+        }
+    }
 }
