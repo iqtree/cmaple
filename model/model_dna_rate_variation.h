@@ -12,7 +12,8 @@ class Tree;
 /** Class of DNA evolutionary models with rate variation */
 class ModelDNARateVariation : public ModelDNA {
 public:
-    ModelDNARateVariation(const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize, bool _useSiteRates);
+    ModelDNARateVariation(  const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize, 
+                            bool _useSiteRates, cmaple::RealNumType _wtPseudocount);
     virtual ~ModelDNARateVariation();
 
     void estimateRates(cmaple::Tree* tree);
@@ -26,7 +27,6 @@ public:
     }; 
 
     virtual inline const cmaple::RealNumType *const getMutationMatrixRow(StateType row, PositionType i) const override {
-        assert(i < genomeSize);
         return mutationMatrices + (i * matSize) + row_index[row];
     }; 
 
@@ -83,7 +83,7 @@ private:
                                                 StateType parentState, StateType childState,
                                                 RealNumType distToRoot, RealNumType distToObserved,
                                                 RealNumType** waitingTimes, RealNumType** counts,
-                                                RealNumType weight = 1.);
+                                                RealNumType* globalCounts, RealNumType weight = 1.);
 
     cmaple::PositionType genomeSize;
 
@@ -96,6 +96,8 @@ private:
     uint16_t matSize;
     bool useSiteRates = false;
     bool ratesEstimated = false;
+
+    cmaple::RealNumType waitingTimePseudoCount;
 
 };
 }

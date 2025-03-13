@@ -623,6 +623,7 @@ cmaple::Params::Params() {
   thresh_loglh_optimal_diff_fac = 1.0;
   rate_variation = false;
   site_specific_rates = false;
+  wt_pseudocount = 0.1;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1275,6 +1276,19 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
       if (strcmp(argv[cnt], "--site-specific-rates") == 0 ||
           strcmp(argv[cnt], "-ssr") == 0) {
         params.site_specific_rates = true;
+        continue;
+      }
+
+      if (strcmp(argv[cnt], "--waiting-time-pseudocount") == 0) {
+        cnt++;
+        if (cnt >= argc) {
+          outError("Use --waiting-time-pseudocount <pseudocount>");
+        }
+        try {
+          params.wt_pseudocount = convert_real_number(argv[cnt]);
+        } catch (std::invalid_argument e) {
+          outError(e.what());
+        }
         continue;
       }
 

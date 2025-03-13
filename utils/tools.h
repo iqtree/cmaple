@@ -652,6 +652,11 @@ class Params {
    */
   bool rate_variation;
 
+  /**
+   * Pseudocount used for waiting times when estimating site-specific rate matrices.
+   */
+  RealNumType wt_pseudocount;
+
    /**
    * TRUE to allow an independent rate matrix for each genomic site.
    */ 
