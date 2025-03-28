@@ -1558,7 +1558,7 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
   string length = node.getUpperLength() <= 0
                       ? "0"
                       : convertDoubleToString(node.getUpperLength(), 12);
-  output += ")" + internal_name + branch_support + annotation_str + ":" + length;
+  output += ")" + internal_name + branch_support + ":" + length + annotation_str;
 
   return output;
 }
