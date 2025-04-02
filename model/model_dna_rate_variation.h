@@ -83,7 +83,7 @@ private:
                                                 StateType parentState, StateType childState,
                                                 RealNumType distToRoot, RealNumType distToObserved,
                                                 RealNumType** waitingTimes, RealNumType** counts,
-                                                RealNumType* globalCounts, RealNumType weight = 1.);
+                                                RealNumType weight = 1.);
 
     cmaple::PositionType genomeSize;
 

@@ -262,14 +262,6 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
             }
         }
     }
-
-    RealNumType* globalCounts = new RealNumType[matSize];
-    for(int i = 0; i < num_states_; i++) {
-        for(int j = 0; j < num_states_; j++) {
-            globalCounts[row_index[i] + j] = 0;
-        }
-    }   
-
     std::stack<Index> nodeStack;
     const PhyloNode& root = tree->nodes[tree->root_vector_index];
     nodeStack.push(root.getNeighborIndex(RIGHT));
@@ -350,7 +342,6 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                         W[i][stateA] += branchLengthToObservation/2;
                         W[i][stateB] += branchLengthToObservation/2;
                         C[i][stateB + row_index[stateA]] += 1;
-                        globalCounts[stateB + row_index[stateA]] += 1;
                     }
                 } else {
                     // Case 2: Last observation was the other side of the root.
@@ -358,7 +349,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     // We calculate the relative likelihood of each case and use this to weight waiting times etc.
                     RealNumType distToRoot = seqP_region->plength_observation2root + blength;
                     RealNumType distToObserved = seqP_region->plength_observation2node;
-                    updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, globalCounts);
+                    updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C);
                 }              
             } else if(seqP_region->type <= TYPE_R && seqC_region->type == TYPE_O) {
                 StateType stateA = seqP_region->type;
@@ -371,7 +362,6 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                         RealNumType prob = seqC_region->getLH(stateB);
                         if(stateB != stateA) {
                             C[end_pos][stateB + row_index[stateA]] += prob;
-                            globalCounts[stateB + row_index[stateA]] += prob;
 
                             W[end_pos][stateA] += prob * branchLengthToObservation/2;
                             W[end_pos][stateB] += prob * branchLengthToObservation/2;
@@ -385,7 +375,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType distToObserved = seqP_region->plength_observation2node;
                      for(StateType stateB = 0; stateB < num_states_; stateB++) {
                         RealNumType prob = seqC_region->getLH(stateB);
-                        updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, globalCounts, prob);
+                        updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, prob);
                      }
                 }
             } else if(seqP_region->type == TYPE_O && seqC_region->type <= TYPE_R) {
@@ -399,7 +389,6 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                         RealNumType prob = seqP_region->getLH(stateA);
                         if(stateB != stateA) {
                             C[end_pos][stateB + row_index[stateA]] += prob;
-                            globalCounts[stateB + row_index[stateA]] += prob;
 
                             W[end_pos][stateA] += prob * branchLengthToObservation/2;
                             W[end_pos][stateB] += prob * branchLengthToObservation/2;
@@ -413,7 +402,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType distToObserved = seqP_region->plength_observation2node;
                     for(StateType stateA = 0; stateA < num_states_; stateA++) {
                         RealNumType prob = seqP_region->getLH(stateA);
-                        updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, globalCounts, prob);
+                        updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, prob);
                     }                    
                 }
             } else if(seqP_region->type == TYPE_O && seqC_region->type == TYPE_O) {
@@ -425,7 +414,6 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                             RealNumType probB = seqC_region->getLH(stateB);
                             if(stateB != stateA) {
                                 C[end_pos][stateB + row_index[stateA]] += probA * probB;
-                                globalCounts[stateB + row_index[stateA]] += probA * probB;
 
                                 W[end_pos][stateA] +=  probA * probB * branchLengthToObservation/2;
                                 W[end_pos][stateB] +=  probA * probB * branchLengthToObservation/2;
@@ -442,7 +430,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                         RealNumType probA = seqP_region->getLH(stateA);
                         for(StateType stateB = 0; stateB < num_states_; stateB++) {
                             RealNumType probB = seqC_region->getLH(stateB);
-                            updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, globalCounts, probA * probB);
+                            updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, probA * probB);
                         }
                     }                
                 }
@@ -451,21 +439,69 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         }
     }
 
-    for(int j = 0; j < num_states_; j++) {
-        for(int k = 0; k < num_states_; k++) {
-            (globalCounts[row_index[j] + k] /= genomeSize);
+    // Get genome-wide average mutation counts and waiting times
+    RealNumType* globalCounts = new RealNumType[matSize];
+    RealNumType* globalWaitingTimes = new RealNumType[num_states_];
+    for(int i = 0; i < num_states_; i++) {
+        globalWaitingTimes[i] = 0;
+        for(int j = 0; j < num_states_; j++) {
+            globalCounts[row_index[i] + j] = 0;
         }
     }
 
-    printMatrix(globalCounts, &std::cout);
+    for(int i = 0; i < genomeSize; i++) {
+        for(int j = 0; j < num_states_; j++) {
+            globalWaitingTimes[j] += W[i][j];
+            for(int k = 0; k < num_states_; k++) {
+                globalCounts[row_index[j] + k] += C[i][row_index[j] + k];
+            }
+        }        
+    }
+
+    for(int j = 0; j < num_states_; j++) {
+        globalWaitingTimes[j] /= genomeSize;
+        for(int k = 0; k < num_states_; k++) {
+            globalCounts[row_index[j] + k] /= genomeSize;
+        }
+    }
+
     // add pseudocount of average rate across genome * waitingTime pseudocount for counts
     for(int i = 0; i < genomeSize; i++) {
         for(int j = 0; j < num_states_; j++) {
             for(int k = 0; k < num_states_; k++) {
-                C[i][row_index[j] + k] += globalCounts[row_index[j] + k] * waitingTimePseudoCount ;
+                C[i][row_index[j] + k] += globalCounts[row_index[j] + k] * waitingTimePseudoCount / globalWaitingTimes[j];
             }
         }
     }
+
+    if(cmaple::verbose_mode > VB_MIN) 
+    {
+        RealNumType* referenceFreqs = new RealNumType[num_states_];
+        for(int j = 0; j < num_states_; j++) {
+            referenceFreqs[j] = 0;
+        }
+        for(int i = 0; i < genomeSize; i++) {
+            referenceFreqs[tree->aln->ref_seq[i]]++;
+        }
+        for(int j = 0; j < num_states_; j++) {
+            referenceFreqs[j] /= genomeSize;
+        }
+
+        std::cout << "Genome-wide average waiting times:\t\t";
+        for(int j = 0; j < num_states_; j++) {
+            std::cout << globalWaitingTimes[j] << "\t" ;
+        }
+        std::cout << std::endl;
+        std::cout << "Reference nucleotide frequencies:\t\t";
+        for(int j = 0; j < num_states_; j++) {
+            std::cout << referenceFreqs[j] << "\t" ;
+        }
+        std::cout << std::endl;
+        delete[] referenceFreqs;
+    }
+
+    delete[] globalCounts;
+    delete[] globalWaitingTimes;
 
     RealNumType totalRate = 0;
     // Update mutation matrices with new rate estimation
@@ -478,7 +514,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
             for(int stateB = 0; stateB < num_states_; stateB++) {
                 if(stateA != stateB) { 
                     RealNumType newRate = Ci[stateB + row_index[stateA]] / Wi[stateA];
-                    newRate = MIN(250.0, MAX(0.01, newRate));                 
+                    newRate = MIN(250.0, MAX(0.001, newRate));                 
                     mutationMatrices[i * matSize + (stateB + row_index[stateA])] = newRate;
 
                     // Approximate total rate by considering rates from reference nucleotide
@@ -505,14 +541,16 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
     }  
 
     // Normalise entries of mutation matrices
-    RealNumType averageRate = totalRate / genomeSize;
+    totalRate /= genomeSize;
+    //RealNumType averageRate = totalRate / genomeSize;
     for(int i = 0; i < genomeSize; i++) {
         for(int stateA = 0; stateA < num_states_; stateA++) {
             RealNumType rowSum = 0;
             for(int stateB = 0; stateB < num_states_; stateB++) {
                 if(stateA != stateB) {
                     RealNumType val = mutationMatrices[i * matSize + (stateB + row_index[stateA])];
-                    val /= averageRate;
+                    //val /= averageRate;
+                    val /= totalRate;
 
                     mutationMatrices[i * matSize + (stateB + row_index[stateA])] = val;
                     transposedMutationMatrices[i * matSize + (stateA + row_index[stateB])] = val;
@@ -541,15 +579,13 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
     }
     delete[] C;
     delete[] W;
-    delete[] globalCounts;
-
 }
 
 void ModelDNARateVariation::updateCountsAndWaitingTimesAcrossRoot( PositionType start, PositionType end, 
                                                 StateType parentState, StateType childState,
                                                 RealNumType distToRoot, RealNumType distToObserved,
                                                 RealNumType** waitingTimes, RealNumType** counts,
-                                                RealNumType* globalCounts, RealNumType weight)
+                                                RealNumType weight)
 {
     if(parentState != childState) {
         for(int i = start; i <= end; i++) {
@@ -559,7 +595,6 @@ void ModelDNARateVariation::updateCountsAndWaitingTimesAcrossRoot( PositionType 
             waitingTimes[i][parentState] += weight * relativeRootIsStateParent * distToRoot/2;
             waitingTimes[i][childState] += weight * relativeRootIsStateParent * distToRoot/2;
             counts[i][childState + row_index[parentState]] += weight * relativeRootIsStateParent;
-            globalCounts[childState + row_index[parentState]] += weight * relativeRootIsStateParent;
 
             RealNumType relativeRootIsStateChild = 1 - relativeRootIsStateParent;
             waitingTimes[i][childState] += weight * relativeRootIsStateChild * distToRoot;
