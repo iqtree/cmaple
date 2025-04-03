@@ -621,6 +621,9 @@ cmaple::Params::Params() {
   output_alternative_spr = false;
   min_support_alt_branches = 0.01;
   thresh_loglh_optimal_diff_fac = 1.0;
+  rate_variation = false;
+  site_specific_rates = false;
+  wt_pseudocount = 0.1;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1265,6 +1268,29 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         }
         continue;
       }
+      if (strcmp(argv[cnt], "--rate-variation") == 0 ||
+          strcmp(argv[cnt], "-rv") == 0) {
+        params.rate_variation = true;
+        continue;
+      }
+      if (strcmp(argv[cnt], "--site-specific-rates") == 0 ||
+          strcmp(argv[cnt], "-ssr") == 0) {
+        params.site_specific_rates = true;
+        continue;
+      }
+
+      if (strcmp(argv[cnt], "--waiting-time-pseudocount") == 0) {
+        cnt++;
+        if (cnt >= argc) {
+          outError("Use --waiting-time-pseudocount <pseudocount>");
+        }
+        try {
+          params.wt_pseudocount = convert_real_number(argv[cnt]);
+        } catch (std::invalid_argument e) {
+          outError(e.what());
+        }
+        continue;
+      }
 
       // return invalid option
       string err = "Invalid \"";
@@ -1294,25 +1320,30 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
     outError("Please supply an alignment file via -aln <ALN_FILENAME>");
   }
     
-    // check dependent options
-    if (params.compute_SPRTA_zero_length_branches && !params.compute_SPRTA)
-    {
-        outError("Unable to compute SPRTA supports for branches with a length "
-                 "of zero if SPRTA is not computed. Please use "
-                 "`--sprta` if you want to compute SPRTA.");
-    }
-    if (params.print_SPRTA_less_info_seqs && !params.compute_SPRTA)
-    {
-        outError("Unable to print SPRTA supports for less-informative "
-                 "sequences if SPRTA is not computed. Please use "
-                 "`--sprta` if you want to compute SPRTA.");
-    }
-    if (params.output_alternative_spr && !params.compute_SPRTA)
-    {
-        outError("Unable to output alternative SPRs "
-                 "if SPRTA is not computed. Please use "
-                 "`--sprta` if you want to compute SPRTA.");
-    }
+  // check dependent options
+  if (params.compute_SPRTA_zero_length_branches && !params.compute_SPRTA)
+  {
+      outError("Unable to compute SPRTA supports for branches with a length "
+                "of zero if SPRTA is not computed. Please use "
+                "`--sprta` if you want to compute SPRTA.");
+  }
+  if (params.print_SPRTA_less_info_seqs && !params.compute_SPRTA)
+  {
+      outError("Unable to print SPRTA supports for less-informative "
+                "sequences if SPRTA is not computed. Please use "
+                "`--sprta` if you want to compute SPRTA.");
+  }
+  if (params.output_alternative_spr && !params.compute_SPRTA)
+  {
+      outError("Unable to output alternative SPRs "
+                "if SPRTA is not computed. Please use "
+                "`--sprta` if you want to compute SPRTA.");
+  }
+  if(params.rate_variation && params.site_specific_rates) {
+      outError("Unable to use rate variation and site-specific rate matrices.\n"
+                "Please choose either:\n\t \"--rate-variation\" for a rate multiplier at each genomic site, or \n"
+                "\t\"--site-specific-rates\" for an independent rate matrix at each genomic site.");    
+  }
 }
 
 void cmaple::quickStartGuide() {
