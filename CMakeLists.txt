@@ -320,9 +320,9 @@ endif(Backtrace_FOUND)
 # setup linking flags
 ##################################################################
 
-target_link_libraries(cmaple PUBLIC maple cmaple_tree cmaple_alignment cmaple_model ncl nclextra cmaple_utils)
+target_link_libraries(cmaple PUBLIC maple cmaple_tree cmaple_model ncl nclextra)
 if (USE_CMAPLE_AA)
-    target_link_libraries(cmaple-aa PUBLIC maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils)
+    target_link_libraries(cmaple-aa PUBLIC maple-aa cmaple_tree-aa cmaple_model-aa ncl nclextra)
 endif()
 
 ##############################################################
