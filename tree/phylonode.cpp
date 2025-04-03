@@ -229,7 +229,7 @@ const std::string cmaple::PhyloNode::exportString(
     std::vector<NumSeqsType>& less_info_seqs = getLessInfoSeqs();
     const std::vector<NumSeqsType>::size_type num_less_info_seqs = less_info_seqs.size();
     if (num_less_info_seqs == 0) {
-      return seq_names[getSeqNameIndex()] + annotation_str + ":" + length_str;
+      return seq_names[getSeqNameIndex()] + ":" + length_str + annotation_str;
       // with minor sequences -> return minor sequences' names with zero
       // branch lengths
     } else {
@@ -246,27 +246,27 @@ const std::string cmaple::PhyloNode::exportString(
       // export less informative sequences in binary tree format
       if (binary) {
         output.resize(num_less_info_seqs, '(');
-        output += seq_name + sprta_less_info;
+        output += seq_name;
         
         // add the first less-info-seq
-        output += ":0," + seq_names[less_info_seqs[0]] + sprta_less_info + ":0)";
+        output += ":0" + sprta_less_info + "," + seq_names[less_info_seqs[0]] + ":0" + sprta_less_info + ")";
         
         // add the remaining less-info-seqs
         for (std::vector<NumSeqsType>::size_type  i = 1; i < less_info_seqs.size(); ++i) {
-          output += branch_support + ":0," + seq_names[less_info_seqs[i]] + sprta_less_info + ":0)";
+          output += branch_support + ":0," + seq_names[less_info_seqs[i]] + ":0"  + sprta_less_info + ")";
         }
         
-        output += internal_name + branch_support + annotation_str + ":" + length_str;
+        output += internal_name + branch_support + ":" + length_str + annotation_str;
       }
       // export less informative sequences in mutifurcating tree format
       else {
-        output = "(" + seq_name + sprta_less_info + ":0";
+        output = "(" + seq_name + ":0" + sprta_less_info;
         
         for (auto minor_seq_name_index : less_info_seqs) {
-          output += "," + seq_names[minor_seq_name_index] + sprta_less_info + ":0";
+          output += "," + seq_names[minor_seq_name_index] + ":0" + sprta_less_info;
         }
         
-        output += ")" + internal_name + branch_support + annotation_str + ":" + length_str;
+        output += ")" + internal_name + branch_support + ":" + length_str + annotation_str;
       }
       return output;
     }

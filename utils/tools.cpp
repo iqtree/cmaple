@@ -1162,8 +1162,8 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
         }
-        if (strcmp(argv[cnt], "--zero-branch-supp") == 0 ||
-            strcmp(argv[cnt], "-zero-branch-supp") == 0) {
+        if (strcmp(argv[cnt], "--sprta-zero-branch") == 0 ||
+            strcmp(argv[cnt], "-sprta-zero-branch") == 0) {
           params.compute_SPRTA_zero_length_branches = true;
           // also print supports for identical sequences
           // to make sure we print supports of
@@ -1178,8 +1178,8 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           continue;
         }
-        if (strcmp(argv[cnt], "--out-alternative-spr") == 0 ||
-            strcmp(argv[cnt], "-out-alternative-spr") == 0) {
+        if (strcmp(argv[cnt], "--sprta-other-places") == 0 ||
+            strcmp(argv[cnt], "-sprta-other-places") == 0) {
           params.output_alternative_spr = true;
 
           continue;
@@ -1461,9 +1461,9 @@ void cmaple::usage_cmaple() {
       << endl
       << "                        SPRs are close to the optimal one."
       << endl
-      << "  --zero-branch-supp    Compute supports for zero-length branches."
+      << "  --sprta-zero-branch   Compute supports for zero-length branches."
       << endl
-      << "  --out-alternative-spr Output alternative SPRs and their supports."
+      << "  --sprta-other-places  Output alternative SPRs and their supports."
       << endl
       << "  --min-sup-alt <MIN>   The min support to be outputted as "
       << endl

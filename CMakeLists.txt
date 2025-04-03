@@ -52,7 +52,7 @@
 #
 
 
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 set(GCC_MIN_VERSION "5")
@@ -72,6 +72,14 @@ endif()
 project(cmaple)
 add_definitions(-DCMAPLE)
 set(CMAKE_CXX_STANDARD 20)
+
+# Add policy to avoid warnings
+cmake_policy(SET CMP0069 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+    set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
+endif()
 
 if (((${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch") AND (NOT APPLE AND UNIX))
     OR WIN32)
@@ -99,7 +107,7 @@ check_function_exists (strndup HAVE_STRNDUP)
 check_function_exists (strtok_r HAVE_STRTOK_R)
 ## find optional headers
 include (CheckIncludeFile)
-CHECK_INCLUDE_FILE("unistd.h" CMAPLE_HAS_UNISTDH)
+CHECK_INCLUDE_FILE("unistd.h" HAVE_UNISTDH)
 
 
 
@@ -175,8 +183,14 @@ if (NOT CMAPLE_FLAGS MATCHES "single")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if (APPLE OR WIN32)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp")
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lomp")
+            if (WIN32)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -openmp -pthread")
+            else()
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp -pthread")
+            endif()
+            if(NOT "${CMAKE_EXE_LINKER_FLAGS}" MATCHES "-lomp")
+    			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lomp")
+			endif()
         else()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
         endif()
@@ -238,7 +252,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 #include_directories("${PROJECT_BINARY_DIR}/zlib-1.2.7")
 
 
-if (NOT CMAPLE_FLAGS MATCHES "nozlib")
+if (NOT CMAPLE_FLAGS MATCHES "nozlib" AND NOT CMAPLE_FLAGS MATCHES "static")
     find_package(ZLIB)
 endif()
 
@@ -292,28 +306,35 @@ add_subdirectory(unittest)
 # the main executable
 ##################################################################
 add_executable(cmaple main/main.cpp)
-add_executable(cmaple-aa main/main.cpp)
+if (USE_CMAPLE_AA)
+    add_executable(cmaple-aa main/main.cpp)
+endif()
 
 if(Backtrace_FOUND)
   include_directories(${Backtrace_INCLUDE_DIR})
   target_link_libraries(cmaple PRIVATE ${Backtrace_LIBRARY})
-  target_link_libraries(cmaple-aa PRIVATE ${Backtrace_LIBRARY})
+    if (USE_CMAPLE_AA)
+      target_link_libraries(cmaple-aa PRIVATE ${Backtrace_LIBRARY})
+    endif()
 endif(Backtrace_FOUND)
 
 ##################################################################
 # setup linking flags
 ##################################################################
 
-target_link_libraries(cmaple PUBLIC maple cmaple_tree cmaple_alignment cmaple_model ncl nclextra cmaple_utils)
-target_link_libraries(cmaple-aa PUBLIC maple-aa cmaple_tree-aa cmaple_alignment-aa cmaple_model-aa ncl nclextra cmaple_utils)
-
+target_link_libraries(cmaple PUBLIC maple cmaple_tree cmaple_model ncl nclextra)
+if (USE_CMAPLE_AA)
+    target_link_libraries(cmaple-aa PUBLIC maple-aa cmaple_tree-aa cmaple_model-aa ncl nclextra)
+endif()
 
 ##############################################################
 # add the install targets
 ##############################################################
 if (INSTALL_CMAPLE)
     install (TARGETS cmaple DESTINATION bin)
-    install (TARGETS cmaple-aa DESTINATION bin)
+    if (USE_CMAPLE_AA)
+        install (TARGETS cmaple-aa DESTINATION bin)
+    endif()
     install (FILES "${PROJECT_SOURCE_DIR}/example/example.maple" DESTINATION .)
     install (FILES "${PROJECT_SOURCE_DIR}/example/tree.nwk" DESTINATION .)
     #install (FILES "${PROJECT_BINARY_DIR}/cmaple_config.h" DESTINATION "include")
@@ -322,11 +343,6 @@ if (INSTALL_CMAPLE)
     #        FILES_MATCHING # install only matched files
     #        PATTERN "*.h" # select header files
     #)
-
-    if (WIN32)
-        install (FILES "${BINARY_DIR}/cmaple${EXE_SUFFIX}-click.exe" DESTINATION bin)
-        install (FILES "${BINARY_DIR}/cmaple-aa${EXE_SUFFIX}-click.exe" DESTINATION bin)
-    endif()
 endif()
 
 ##############################################################

@@ -8,7 +8,7 @@
 #include "operatingsystem.h"
 #include <sstream>
 #include <string>
-#if defined(CMAPLE_HAS_UNISTDH)
+#if defined(HAVE_UNISTDH)
 #include <unistd.h>  //for isatty
 #else
 #include <io.h>  //for _isatty
@@ -32,7 +32,7 @@ auto getOSName() -> std::string {
 }
 
 auto isStandardOutputATerminal() -> bool {
-#if defined(CMAPLE_HAS_UNISTDH)
+#if defined(HAVE_UNISTDH)
   return isatty(fileno(stdout));
 #else
   return _isatty(fileno(stdout));

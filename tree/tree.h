@@ -403,6 +403,12 @@ class Tree {
    not
    */
   std::vector<bool> sequence_added;
+    
+  /**
+   TRUE if branch support (i.e. aLRT-SH) computed
+  */
+  bool aLRT_SH_computed = false;
+
 
   /*!
    * Apply some minor changes (collapsing zero-branch leaves into less-info
@@ -637,6 +643,10 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void refreshAllNonLowerLhs();
+    
+  /*! Expand data vectors after tree expansion
+  */
+  void expandVectorsAfterTreeExpansion();
 
   /**
    Try to improve a subtree rooted at node with SPR moves

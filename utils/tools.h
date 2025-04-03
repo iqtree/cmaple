@@ -52,7 +52,7 @@
 #include <omp.h> /* OpenMP */
 #endif
 
-#ifdef NDEBUG
+/*#ifdef NDEBUG
 #define ASSERT(EXPRESSION) ((void)0)
 #else
 #if defined(__GNUC__) || defined(__clang__)
@@ -66,7 +66,7 @@
        ? (void)0           \
        : cmaple::_my_assert(#EXPRESSION, __func__, __FILE__, __LINE__))
 #endif
-#endif
+#endif*/
 
 #define USE_HASH_MAP
 

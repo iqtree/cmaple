@@ -191,6 +191,16 @@ void cmaple::ModelBase::extractRootFreqs(const Alignment* aln) {
   // update root_freqs and root_log_freqs
   RealNumType inverse_seq_length = 1.0 / seq_length;
   for (StateType i = 0; i < num_states_; ++i) {
+      // validate root_freqs[i]
+      if (root_freqs[i] == 0)
+      {
+          // Get the seqtype
+          const cmaple::SeqRegion::SeqType seqtype = getSeqType();
+          std::string error_msg = "Root frequency of state ";
+          error_msg += cmaple::Alignment::convertState2Char(i, seqtype);
+          error_msg += " is zero!";
+          throw std::logic_error(error_msg);
+      }
     // root_freqs[i] /= seq_length;
     root_freqs[i] *= inverse_seq_length;
     inverse_root_freqs[i] = 1.0 / root_freqs[i];

@@ -16,7 +16,7 @@ jobs:
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
-          options: CMAPLE_FLAGS=static
+          options: CMAPLE_FLAGS=static USE_CMAPLE_AA=ON
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
@@ -52,7 +52,7 @@ jobs:
             cd /cmaple
             mkdir build
             cd build
-            cmake .. -DCMAPLE_FLAGS=static
+            cmake .. -DCMAPLE_FLAGS=static -DUSE_CMAPLE_AA=ON
             make -j
             ls -alht
             for exe in "./cmaple" "./cmaple-aa"; do
@@ -90,6 +90,7 @@ jobs:
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
+          options: USE_CMAPLE_AA=ON
           c-compiler: clang
           cxx-compiler: clang++
           c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
@@ -120,13 +121,18 @@ jobs:
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
+          options: USE_CMAPLE_AA=ON
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: build\cmaple.exe
+          path: |
+            build\cmaple.exe
+            build\cmaple-aa.exe
       - name: Simple test
         run: |-
-          ls
+          ls build
           build\cmaple
           build\cmaple --help
+          build\cmaple-aa
+          build\cmaple-aa --help

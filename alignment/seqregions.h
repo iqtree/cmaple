@@ -847,8 +847,11 @@ void merge_RACGT_ORACGT(const SeqRegion& seq1_region,
       length_to_root += upper_plength;
     }
     SeqRegion::LHType root_vec;
-    memcpy(root_vec.data(), model->getRootFreqs(),
-           sizeof(RealNumType) * num_states);
+    
+    /*memcpy(root_vec.data(), model->root_freqs,
+           sizeof(RealNumType) * num_states);*/
+    memcpy(root_vec.data(), model->root_freqs, sizeof(SeqRegion::LHType));
+
 
     updateVecWithState<num_states>(root_vec.data(), seq1_state,
                                     model->getTransposedMutationMatrixRow(seq1_state, end_pos),
