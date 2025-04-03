@@ -352,7 +352,7 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
         example_dir = "../example/";
     
     Alignment aln(example_dir + "test_5K.maple");
-    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
+    Model model(cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params> params = ParamsBuilder().build();
     

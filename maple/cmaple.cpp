@@ -122,8 +122,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
           throw std::invalid_argument("Unknown Model " + params.sub_model_str);
         }
         assert(sub_model != cmaple::ModelBase::UNKNOWN);
-        bool useRateVariationModel = params.rate_variation || params.site_specific_rates;
-        Model model(aln.ref_seq.size(), useRateVariationModel, params.rate_variation, params.wt_pseudocount, sub_model, aln.getSeqType());
+        Model model(sub_model, aln.getSeqType());
         
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())

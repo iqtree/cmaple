@@ -182,9 +182,8 @@ cmaple::RealNumType matrixEvolveRoot(const cmaple::RealNumType* const vec2,
                                      const cmaple::RealNumType total_blength,
                                      const cmaple::RealNumType seq1_region_plength_observation2node)
 {
-  static bool negativeProbWarning = false;
-  cmaple::RealNumType result{ 0 };
-  for(cmaple::StateType i = 0; i < length; ++i, mutation_mat_row += length)
+    cmaple::RealNumType result{ 0 };
+    for (cmaple::StateType i = 0; i < length; ++i, mutation_mat_row += length)
   {
     // NHANLT NOTE: UNSURE
     // tot2: likelihood that we can observe seq1_state elvoving from i (from root)
@@ -194,25 +193,15 @@ cmaple::RealNumType matrixEvolveRoot(const cmaple::RealNumType* const vec2,
     // plength_observation2node) + root_freqs[i] * mut[i,seq1_state] * plength_observation2node
       cmaple::RealNumType tot2;
 
-    if (seq1_state == i) {
-      cmaple::RealNumType prob = (1.0 + transposed_mut_mat_row[i] * seq1_region_plength_observation2node);
-      if(prob < 0) {
-        if(!negativeProbWarning) {
-          std::cout << "[matrixEvolveRoot] Warning: Negative probability calculated." << std::endl;
-          std::cout << "May result in inaccurate phylogenetic reconstruction." << std:: endl;
-          negativeProbWarning = true;
-        }
-        prob = 0.25;
-      }
-      tot2 = model_root_freqs[i] * prob;
-    }
+    if (seq1_state == i)
+      tot2 = model_root_freqs[i] * (1.0 + transposed_mut_mat_row[i] * seq1_region_plength_observation2node);
     else
       tot2 = model_root_freqs[i] * (transposed_mut_mat_row[i] * seq1_region_plength_observation2node);
 
     // NHANLT NOTE:
     // tot3: likelihood of i evolves to j
     // tot3 = (1 + mut[i,i] * total_blength) * lh(seq2,i) + mut[i,j] * total_blength * lh(seq2,j)
-    cmaple::RealNumType tot3 = dotProduct<length>(mutation_mat_row, vec2);
+      cmaple::RealNumType tot3 = dotProduct<length>(mutation_mat_row, vec2);
     result += tot2 * (vec2[i] + total_blength * tot3);
   }
   return result;
@@ -223,22 +212,11 @@ cmaple::RealNumType updateVecWithState(cmaple::RealNumType* const update_vec, co
                                const cmaple::RealNumType* const vec,
                                const cmaple::RealNumType factor)
 {
-  static bool negativeProbWarning = false;
-  cmaple::RealNumType result{0};
-  for(cmaple::StateType i = 0; i < length; ++i)
+    cmaple::RealNumType result{0};
+    for (cmaple::StateType i = 0; i < length; ++i)
   {
-    if(i == seq1_state){
-      cmaple::RealNumType prob = (1.0 + vec[i] * factor);
-      if(prob < 0) {
-        if(!negativeProbWarning) {
-          std::cout << "[updateVecWithState] Warning: Negative probability calculated." << std::endl;
-          std::cout << "May result in inaccurate phylogenetic reconstruction." << std:: endl;
-          negativeProbWarning = true;
-        }
-        prob = 0.25;
-      } 
-      update_vec[i] *= prob;
-    }
+    if (i == seq1_state)
+      update_vec[i] *= (1.0 + vec[i] * factor);
     else
       update_vec[i] *= vec[i] * factor;
     result += update_vec[i];
@@ -254,13 +232,13 @@ void setVecWithState(cmaple::RealNumType* const set_vec, const cmaple::StateType
   for (cmaple::StateType i = 0; i < length; ++i)
     set_vec[i] = vec[i] * factor;
 
-  set_vec[seq1_state] += 1.0;
+    set_vec[seq1_state] += 1.0;
 }
 
 template <cmaple::StateType length>
-void updateCoeffs(const cmaple::RealNumType* const root_freqs,
-        const cmaple::RealNumType* const transposed_mut_mat_row, cmaple::RealNumType* const likelihood,
-        const cmaple::RealNumType* const mutation_mat_row, const cmaple::RealNumType factor,
+void updateCoeffs(cmaple::RealNumType* const root_freqs,
+        cmaple::RealNumType* const transposed_mut_mat_row, cmaple::RealNumType* const likelihood,
+        cmaple::RealNumType* const mutation_mat_row, const cmaple::RealNumType factor,
         cmaple::RealNumType& coeff0, cmaple::RealNumType& coeff1)
 {
     for (cmaple::StateType i = 0; i < length; ++i)

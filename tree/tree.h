@@ -173,15 +173,6 @@ class Tree {
    */
   void doPlacement(std::ostream& out_stream = std::cout);
 
-  /*! \brief Do rate estimation either using EM or simple counting method.
-   * Currently only implemented for rate variation DNA model.
-   * @param[out] out_stream The output message stream (optional)
-   * @throw std::logic\_error if any of the following situations occur.
-   * - the attached substitution model is unknown/unsupported
-   * - unexpected values/behaviors found during the operations
-   */
-  void doRateEstimation(std::ostream& out_stream = std::cout);
-
   /*! \brief Apply SPR moves to optimize the tree.
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
@@ -287,11 +278,6 @@ class Tree {
   std::string exportNewick(const TreeType tree_type = BIN_TREE,
                            const bool print_internal_id = false,
                            const bool show_branch_supports = true);
-
-  /**
-   Get partial_lh at a node by its index
-   */
-  std::unique_ptr<SeqRegions>& getPartialLhAtNode(const cmaple::Index index);
 
   // ----------------- END OF PUBLIC APIs ------------------------------------
   // //
@@ -492,12 +478,6 @@ class Tree {
   typedef void (Tree::*DoPlacementPtrType)(std::ostream&);
   DoPlacementPtrType doPlacementPtr;
 
-   /**
-      Pointer  to doRateEstimation method
-   */
-  typedef void (Tree::*DoRateEstimationPtrType)(std::ostream&);
-  DoRateEstimationPtrType doRateEstimationPtr; 
-
   /**
       Pointer  to applySPR method
    */
@@ -557,12 +537,6 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void doPlacementTemplate(std::ostream& out_stream);
-
-  /*! Template of doRateEstimation()
-   */
-  template <const cmaple::StateType num_states>
-  void doRateEstimationTemplate(std::ostream& out_stream);
-
 
   /*! Template of applySPR()
    */
@@ -1374,6 +1348,11 @@ bool isDiffFromOrigPlacement(
     nodes.emplace_back(LeafNode(
         new_seq_name_index));  //(PhyloNode(std::move(LeafNode(new_seq_name_index))));
   }
+
+  /**
+   Get partial_lh at a node by its index
+   */
+  std::unique_ptr<SeqRegions>& getPartialLhAtNode(const cmaple::Index index);
 
   /**
    Calculate the likelihood of an NNI neighbor

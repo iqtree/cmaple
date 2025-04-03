@@ -646,22 +646,7 @@ class Params {
    * TRUE to make the processes of outputting->re-inputting a tree consistent
    */
   bool make_consistent;
-
-  /**
-   * TRUE to allow a rate multiplier for each genomic site.
-   */
-  bool rate_variation;
-
-  /**
-   * Pseudocount used for waiting times when estimating site-specific rate matrices.
-   */
-  RealNumType wt_pseudocount;
-
-   /**
-   * TRUE to allow an independent rate matrix for each genomic site.
-   */ 
-  bool site_specific_rates;
-
+    
     /**
      * TRUE to ignore annotations from the input tree
      */
