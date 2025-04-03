@@ -211,7 +211,7 @@ class ModelBase {
    */
   bool fixed_params = false;
 
-protected:
+public:
 
   /**
    Pseudo mutation count
