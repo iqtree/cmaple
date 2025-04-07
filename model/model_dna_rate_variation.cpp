@@ -256,7 +256,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         C[i] = new RealNumType[matSize];
         W[i] = new RealNumType[num_states_];
         for(int j = 0; j < num_states_; j++) {
-            W[i][j] = waitingTimePseudoCount;
+            W[i][j] = 0;
             for(int k = 0; k < num_states_; k++) {
                 C[i][row_index[j] + k] = 0;
             }
@@ -439,6 +439,20 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         }
     }
 
+    if(cmaple::verbose_mode > VB_MIN) 
+    {
+        const std::string prefix = tree->params->output_prefix.length() ? tree->params->output_prefix : tree->params->aln_path;
+        //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
+        std::ofstream outFile(prefix + ".countMatrices.txt");
+        for(int i = 0; i < genomeSize; i++) {
+            outFile << "Position: " << i << std::endl;
+            outFile << "Count Matrix: " << std::endl;
+            printCountsAndWaitingTimes(C[i], W[i], &outFile);
+            outFile << std::endl;
+        }
+        outFile.close();
+    }
+
     // Get genome-wide average mutation counts and waiting times
     RealNumType* globalCounts = new RealNumType[matSize];
     RealNumType* globalWaitingTimes = new RealNumType[num_states_];
@@ -465,10 +479,13 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         }
     }
 
-    // add pseudocount of average rate across genome * waitingTime pseudocount for counts
+    // Add pseudocounts
     for(int i = 0; i < genomeSize; i++) {
         for(int j = 0; j < num_states_; j++) {
+            // Add pseudocounts to waitingTimes
+            W[i][j] += waitingTimePseudoCount;
             for(int k = 0; k < num_states_; k++) {
+                // Add pseudocount of average rate across genome * waitingTime pseudocount for counts
                 C[i][row_index[j] + k] += globalCounts[row_index[j] + k] * waitingTimePseudoCount / globalWaitingTimes[j];
             }
         }
@@ -524,21 +541,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                 }
             }
         }
-    }
-
-    if(cmaple::verbose_mode > VB_MIN) 
-    {
-        const std::string prefix = tree->params->output_prefix.length() ? tree->params->output_prefix : tree->params->aln_path;
-        //std::cout << "Writing rate matrices to file " << prefix << ".rateMatrices.txt" << std::endl;
-        std::ofstream outFile(prefix + ".countMatrices.txt");
-        for(int i = 0; i < genomeSize; i++) {
-            outFile << "Position: " << i << std::endl;
-            outFile << "Count Matrix: " << std::endl;
-            printCountsAndWaitingTimes(C[i], W[i], &outFile);
-            outFile << std::endl;
-        }
-        outFile.close();
-    }  
+    } 
 
     // Normalise entries of mutation matrices
     totalRate /= genomeSize;
