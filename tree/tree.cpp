@@ -5130,7 +5130,7 @@ void cmaple::Tree::refreshUpperLR(const Index node_index,
                                   PhyloNode& node,
                                   const Index neighbor_index,
                                   std::unique_ptr<SeqRegions>& replaced_regions,
-                                  const SeqRegions& parent_upper_lr_lh) {
+                                  const std::unique_ptr<SeqRegions>& parent_upper_lr_lh) {
   // recalculate the upper left/right lh of the current node
   std::unique_ptr<SeqRegions> new_upper_lr_lh = nullptr;
   PhyloNode& neighbor = nodes[neighbor_index.getVectorIndex()];
@@ -5139,13 +5139,96 @@ void cmaple::Tree::refreshUpperLR(const Index node_index,
              // model, threshold_prob);
   // parent_upper_lr_lh.mergeUpperLower<num_states>(new_upper_lr_lh,
   // node->length, *lower_lh, next_node->length, aln, model, threshold_prob);
-  parent_upper_lr_lh.mergeUpperLower<num_states>(
+  parent_upper_lr_lh->mergeUpperLower<num_states>(
       new_upper_lr_lh, node.getUpperLength(), *lower_lh,
       neighbor.getUpperLength(), aln, model, params->threshold_prob);
 
   // if the upper left/right lh is null -> try to increase the branch length
   if (!new_upper_lr_lh) {
-    if (neighbor.getUpperLength() <= 0)  // next_node->length <= 0)
+      // update the latest version 0.7.1
+      if ((neighbor.getUpperLength() <= 0) && node.getUpperLength() <= 0)
+      {
+          stack<Index> node_stack;
+          stack<Index> node_stack_unused;
+          
+          // handle case where neighbor is the left child
+          if (node.getNeighborIndex(LEFT) == neighbor_index)
+          {
+              updateZeroBlength<num_states>(node_index, node, node_stack_unused);
+              
+              if (node.getUpperLength() <= 0)
+              {
+                  updateZeroBlength<num_states>(neighbor_index, neighbor, node_stack_unused);
+                  
+                  // update neighbor's side
+                  neighbor.setOutdated(true);
+                  node_stack.push(Index(neighbor_index.getVectorIndex(), TOP));
+              }
+              else
+              {
+                  // update vector of regions at mid-branch point
+                  bool update_blength = true;
+                  updateMidBranchLh<num_states>(node_index, node, parent_upper_lr_lh, node_stack_unused,
+                                                update_blength);
+                  
+                  // update parent's side
+                  const Index parent_index = node.getNeighborIndex(TOP);
+                  PhyloNode& parent_node = nodes[parent_index.getVectorIndex()];
+                  parent_node.setOutdated(true);
+                  node_stack.push(parent_index);
+              }
+          }
+          // handle case where neighbor is the right child
+          else
+          {
+              updateZeroBlength<num_states>(neighbor_index, neighbor, node_stack_unused);
+              
+              if (neighbor.getUpperLength() <= 0)
+              {
+                  updateZeroBlength<num_states>(node_index, node, node_stack_unused);
+                  
+                  // update parent's side
+                  const Index parent_index = node.getNeighborIndex(TOP);
+                  PhyloNode& parent_node = nodes[parent_index.getVectorIndex()];
+                  parent_node.setOutdated(true);
+                  node_stack.push(parent_index);
+                  
+                  // update vector of regions at mid-branch point
+                  bool update_blength = true;
+                  updateMidBranchLh<num_states>(node_index, node, parent_upper_lr_lh, node_stack_unused,
+                                                update_blength);
+                  
+                  // update partial lh up left/right of the current node which becomes outdated because the branch length of this node has changed
+                  const Index other_neighbor_index = node.getNeighborIndex(LEFT);
+                  PhyloNode& other_neighbor = nodes[other_neighbor_index.getVectorIndex()];
+                  const std::unique_ptr<SeqRegions>& other_neighbor_lower_lh = other_neighbor.getPartialLh(
+                      TOP);
+                  parent_upper_lr_lh->mergeUpperLower<num_states>(
+                      node.getPartialLh(RIGHT), node.getUpperLength(), *other_neighbor_lower_lh,
+                      other_neighbor.getUpperLength(), aln, model, params->threshold_prob);
+              }
+              else
+              {
+                  // update neighbor's side
+                  neighbor.setOutdated(true);
+                  node_stack.push(Index(neighbor_index.getVectorIndex(), TOP));
+                  
+              }
+          }
+          
+          // update partial lh up left/right of the current node
+          parent_upper_lr_lh->mergeUpperLower<num_states>(
+              replaced_regions, node.getUpperLength(), *lower_lh,
+              neighbor.getUpperLength(), aln, model, params->threshold_prob);
+          
+          updatePartialLh<num_states>(node_stack);
+      } else {
+          throw std::logic_error(
+              "Strange, inconsistent upper left/right lh "
+              "creation in refreshAllNonLowerLhs()");
+        }
+    // --- before 0.7.1 ---
+    /*if (neighbor.getUpperLength() <= 0)  // next_node->length <= 0)
     {
       stack<Index> node_stack;
       // updateZeroBlength<num_states>(next_node->neighbor, node_stack,
@@ -5162,7 +5245,8 @@ void cmaple::Tree::refreshUpperLR(const Index node_index,
       throw std::logic_error(
           "Strange, inconsistent upper left/right lh "
           "creation in refreshAllNonLowerLhs()");
-    }
+    }*/
+    // --- end before 0.7.1 ---
   }
   // otherwise, everything is good -> update upper left/right lh of the
   // current node
@@ -5230,13 +5314,13 @@ void cmaple::Tree::refreshNonLowerLhsFromParent(Index& node_index,
     // refreshUpperLR(node, next_node_2, next_node_1->partial_lh,
     // *parent_upper_lr_lh);
     refreshUpperLR<num_states>(node_index, node, neighbor_2_index,
-                               node.getPartialLh(RIGHT), *parent_upper_lr_lh);
+                               node.getPartialLh(RIGHT), parent_upper_lr_lh);
 
     // recalculate the SECOND upper left/right lh of the current node
     // refreshUpperLR(node, next_node_1, next_node_2->partial_lh,
     // *parent_upper_lr_lh);
     refreshUpperLR<num_states>(node_index, node, neighbor_1_index,
-                               node.getPartialLh(LEFT), *parent_upper_lr_lh);
+                               node.getPartialLh(LEFT), parent_upper_lr_lh);
 
     // NHANLT: LOGS FOR DEBUGGING
     /*if (params->debug)
