@@ -1256,7 +1256,7 @@ bool isDiffFromOrigPlacement(
                       PhyloNode& node,
                       const cmaple::Index neighbor_index,
                       std::unique_ptr<SeqRegions>& replaced_regions,
-                      const SeqRegions& parent_upper_lr_lh);
+                      const std::unique_ptr<SeqRegions>& parent_upper_lr_lh);
 
   /**
    Calculate coefficients when merging R with O to estimate a branch length
