@@ -4971,17 +4971,24 @@ void cmaple::Tree::estimateLengthNewBranchAtRoot(
     RealNumType new_root_lh = lower_regions->mergeTwoLowers<num_states>(
         new_root_lower_regions, fixed_blength, *sample, -1, aln, model,
         cumulative_rate, params->threshold_prob, true);
-    new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
-        model, cumulative_base);
-
-    if (new_root_lh > best_parent_lh) {
-      best_length = -1;
-      // replacePartialLH(best_parent_regions, new_root_lower_regions);
-      best_parent_regions = std::move(new_root_lower_regions);
-    }
-
-    // delete new_root_lower_regions
-    // if (new_root_lower_regions) delete new_root_lower_regions;
+      
+    // bug fix
+    // don't try zero blength if new_root_lower_regions is null
+    // it happens when the min blength is too large
+      if (new_root_lower_regions != nullptr)
+      {
+          new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
+                                                                                     model, cumulative_base);
+          
+          if (new_root_lh > best_parent_lh) {
+              best_length = -1;
+              // replacePartialLH(best_parent_regions, new_root_lower_regions);
+              best_parent_regions = std::move(new_root_lower_regions);
+          }
+          
+          // delete new_root_lower_regions
+          // if (new_root_lower_regions) delete new_root_lower_regions;
+      }
   }
 }
 
