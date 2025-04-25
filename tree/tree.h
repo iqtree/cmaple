@@ -4,7 +4,8 @@
 #include "rootcandidate.h"
 #include "altbranch.h"
 #ifdef _OPENMP
-#include <omp.h>
+//#include <omp.h>
+#include "/opt/homebrew/Cellar/libomp/18.1.8/include/omp.h" /* OpenMP */
 #endif
 
 #pragma once
