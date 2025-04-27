@@ -852,6 +852,7 @@ void cmaple::Alignment::readMaple(std::istream& aln_stream) {
       // Read new sequence name
       string::size_type pos = line.find_first_of("\n\r");
       seq_name = line.substr(1, pos - 1);
+      renameString(seq_name);
       if (!seq_name.length()) {
         throw std::logic_error("Empty sequence name found at line " +
                                convertIntToString(line_num) +
