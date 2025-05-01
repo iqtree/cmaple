@@ -586,6 +586,7 @@ cmaple::Params::Params() {
   thresh_log_lh_failure = 0.01;
   min_blength_factor = 0.2;
   min_blength_mid_factor = 4.1;
+  blength_scaling_factor = 1.0;
   max_blength_factor = 40;
   thresh_diff_update = 1e-7;
   thresh_diff_fold_update = 1.001;
@@ -1290,6 +1291,26 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           outError(e.what());
         }
         continue;
+      }
+
+      if (strcmp(argv[cnt], "--blength-scale-factor") == 0 ||
+            strcmp(argv[cnt], "-blength-scale-factor") == 0) {
+          ++cnt;
+          if (cnt >= argc || argv[cnt][0] == '-') {
+            outError("Use --blength-scale-factor <NUM>");
+          }
+
+          try {
+            params.blength_scaling_factor = convert_real_number(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.blength_scaling_factor  <= 0) {
+            outError("The branch length scaling factor MUST be positive!");
+          }
+
+          continue;
       }
 
       // return invalid option

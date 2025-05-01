@@ -521,6 +521,11 @@ class Params {
   RealNumType min_blength_mid_factor;
 
   /**
+  *  The value by which to rescale branch lengths on input trees. Default 1.0
+  */
+  RealNumType blength_scaling_factor;
+
+  /**
   *  Threshold to determine whether a changed partial is different from its
   former value
   */

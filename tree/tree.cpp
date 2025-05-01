@@ -402,6 +402,12 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
   PositionType in_line = 1;
   bool missing_blength = readTree(tree_stream, in_line);
 
+  if(params->blength_scaling_factor != 1.0) {
+    for(cmaple::PhyloNode& node : nodes) {
+      node.setUpperLength(node.getUpperLength() * params->blength_scaling_factor);
+    }
+  }
+
   // make sure users can only keep the blengths fixed if they input a complete
   // tree with branch lengths
   if (n_fixed_blengths && (!isComplete() || missing_blength)) {
