@@ -356,10 +356,30 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                 if(seqP_region->type == TYPE_R) {
                     stateA = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
                 }
+
+                // Calculate a weight vector giving the relative probabilities of observing
+                // each state at the O node.
+                std::vector<RealNumType> weightVector(num_states_);
+                RealNumType sum = 0.0;
+                for(StateType stateB = 0; stateB < num_states_; stateB++) {
+                    RealNumType likelihoodB = std::round(seqC_region->getLH(stateB) * 1000) / 1000.0;
+                    if(stateB != stateA) {
+                        RealNumType prob = likelihoodB * branchLengthToObservation * getMutationMatrixEntry(stateA, stateB, end_pos);
+                        weightVector[stateB] += prob;
+                        sum += prob;
+                    } else {
+                        RealNumType prob = likelihoodB * (1 - branchLengthToObservation * getMutationMatrixEntry(stateB, stateB, end_pos));
+                        weightVector[stateB] += prob;
+                        sum += prob; 
+                    }
+                }
+                // Normalise weight vector 
+                normalize_arr(weightVector.data(), num_states_, sum);
+
                 // Case 1: Last observation was this side of the root node
-                if(seqP_region->plength_observation2root <= 0) {
+                if(seqP_region->plength_observation2root < 0) {
                     for(StateType stateB = 0; stateB < num_states_; stateB++) {
-                        RealNumType prob = seqC_region->getLH(stateB);
+                        RealNumType prob = weightVector[stateB];
                         if(stateB != stateA) {
                             C[end_pos][stateB + row_index[stateA]] += prob;
 
@@ -374,7 +394,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType distToRoot = seqP_region->plength_observation2root + blength;
                     RealNumType distToObserved = seqP_region->plength_observation2node;
                      for(StateType stateB = 0; stateB < num_states_; stateB++) {
-                        RealNumType prob = seqC_region->getLH(stateB);
+                        RealNumType prob = weightVector[stateB];
                         updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, prob);
                      }
                 }
@@ -382,11 +402,31 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                 StateType stateB = seqC_region->type;
                 if(seqC_region->type == TYPE_R) {
                     stateB = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
-                } 
-                // Case 1: Last observation was this side of the root node
-                if(seqP_region->plength_observation2root <= 0) {
+                }
+
+                // Calculate a weight vector giving the relative probabilities of observing
+                // each state at the O node.
+                std::vector<RealNumType> weightVector(num_states_);
+                RealNumType sum = 0.0;
+                for(StateType stateA = 0; stateA < num_states_; stateA++) {
+                    RealNumType likelihoodA = std::round(seqP_region->getLH(stateA) * 1000)/1000.0;
+                    if(stateA != stateB) {
+                        RealNumType prob = likelihoodA * branchLengthToObservation * getMutationMatrixEntry(stateA, stateB, end_pos);
+                        weightVector[stateA] += prob;
+                        sum += prob;
+                    } else {
+                        RealNumType prob = likelihoodA * (1 - branchLengthToObservation * getMutationMatrixEntry(stateA, stateA, end_pos));
+                        weightVector[stateA] += prob;
+                        sum += prob;
+                    }
+                }
+                // Normalise weight vector 
+                normalize_arr(weightVector.data(), num_states_, sum);
+
+                // Case 1: Last observation was this side of the root node 
+                if(seqP_region->plength_observation2root < 0) {
                     for(StateType stateA = 0; stateA < num_states_; stateA++) {
-                        RealNumType prob = seqP_region->getLH(stateA);
+                        RealNumType prob = weightVector[stateA];
                         if(stateB != stateA) {
                             C[end_pos][stateB + row_index[stateA]] += prob;
 
@@ -401,24 +441,45 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType distToRoot = seqP_region->plength_observation2root + blength;
                     RealNumType distToObserved = seqP_region->plength_observation2node;
                     for(StateType stateA = 0; stateA < num_states_; stateA++) {
-                        RealNumType prob = seqP_region->getLH(stateA);
+                        RealNumType prob = weightVector[stateA];
                         updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, prob);
                     }                    
                 }
             } else if(seqP_region->type == TYPE_O && seqC_region->type == TYPE_O) {
-                // Case 1: Last observation was this side of the root node
-                if(seqP_region->plength_observation2root <= 0) {
-                    for(StateType stateA = 0; stateA < num_states_; stateA++) {
-                        RealNumType probA = seqP_region->getLH(stateA);
-                        for(StateType stateB = 0; stateB < num_states_; stateB++) {
-                            RealNumType probB = seqC_region->getLH(stateB);
-                            if(stateB != stateA) {
-                                C[end_pos][stateB + row_index[stateA]] += probA * probB;
+                // Calculate a weight vector giving the relative probabilities of observing
+                // each state at each of the O nodes.
+                std::vector<RealNumType> weightVector(num_states_ * num_states_);
+                RealNumType sum = 0.0;
+                for(StateType stateA = 0; stateA < num_states_; stateA++) {
+                    RealNumType likelihoodA = std::round(seqP_region->getLH(stateA) * 1000)/1000.0;
+                    for(StateType stateB = 0; stateB < num_states_; stateB++) {
+                        RealNumType likelihoodB = std::round(seqC_region->getLH(stateB)*1000)/1000.0;
+                        if(stateA != stateB) {
+                            RealNumType prob = likelihoodA * likelihoodB * branchLengthToObservation * getMutationMatrixEntry(stateA, stateB, end_pos);
+                            weightVector[row_index[stateA] + stateB] += prob;
+                            sum += prob;
+                        } else {
+                            RealNumType prob = likelihoodA * likelihoodB * (1 - branchLengthToObservation * getMutationMatrixEntry(stateA, stateA, end_pos));
+                            weightVector[row_index[stateA] + stateB] += prob;
+                            sum += prob;
+                        }
+                    }
+                }
+                // Normalise weight vector 
+                normalize_arr(weightVector.data(), num_states_*num_states_, sum);
 
-                                W[end_pos][stateA] +=  probA * probB * branchLengthToObservation/2;
-                                W[end_pos][stateB] +=  probA * probB * branchLengthToObservation/2;
+                // Case 1: Last observation was this side of the root node
+                if(seqP_region->plength_observation2root < 0) {
+                    for(StateType stateA = 0; stateA < num_states_; stateA++) {
+                        for(StateType stateB = 0; stateB < num_states_; stateB++) {
+                            RealNumType prob = weightVector[row_index[stateA] + stateB];
+                            if(stateB != stateA) {
+                                C[end_pos][stateB + row_index[stateA]] += prob;
+
+                                W[end_pos][stateA] +=  prob * branchLengthToObservation/2;
+                                W[end_pos][stateB] +=  prob * branchLengthToObservation/2;
                             } else {
-                                W[end_pos][stateA] +=  probA * probB * branchLengthToObservation;
+                                W[end_pos][stateA] +=  prob * branchLengthToObservation;
                             }
                         }
                     }
@@ -427,10 +488,9 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType distToRoot = seqP_region->plength_observation2root + blength;
                     RealNumType distToObserved = seqP_region->plength_observation2node;
                     for(StateType stateA = 0; stateA < num_states_; stateA++) {
-                        RealNumType probA = seqP_region->getLH(stateA);
                         for(StateType stateB = 0; stateB < num_states_; stateB++) {
-                            RealNumType probB = seqC_region->getLH(stateB);
-                            updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, probA * probB);
+                            RealNumType prob = weightVector[row_index[stateA] + stateB];
+                            updateCountsAndWaitingTimesAcrossRoot(pos, end_pos, stateA, stateB, distToRoot, distToObserved, W, C, prob);
                         }
                     }                
                 }
@@ -491,7 +551,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         }
     }
 
-    if(cmaple::verbose_mode > VB_MIN) 
+    /*if(cmaple::verbose_mode > VB_MIN) 
     {
         RealNumType* referenceFreqs = new RealNumType[num_states_];
         for(int j = 0; j < num_states_; j++) {
@@ -515,7 +575,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         }
         std::cout << std::endl;
         delete[] referenceFreqs;
-    }
+    }*/
 
     delete[] globalCounts;
     delete[] globalWaitingTimes;
