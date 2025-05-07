@@ -590,8 +590,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         for(int stateA = 0; stateA < num_states_; stateA++) {
             for(int stateB = 0; stateB < num_states_; stateB++) {
                 if(stateA != stateB) { 
-                    RealNumType newRate = Ci[stateB + row_index[stateA]] / Wi[stateA];
-                    newRate = MIN(250.0, MAX(0.001, newRate));                 
+                    RealNumType newRate = Ci[stateB + row_index[stateA]] / Wi[stateA];                
                     mutationMatrices[i * matSize + (stateB + row_index[stateA])] = newRate;
 
                     // Approximate total rate by considering rates from reference nucleotide
@@ -614,6 +613,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType val = mutationMatrices[i * matSize + (stateB + row_index[stateA])];
                     //val /= averageRate;
                     val /= totalRate;
+                    val = MIN(250.0, MAX(0.001, val)); 
 
                     mutationMatrices[i * matSize + (stateB + row_index[stateA])] = val;
                     transposedMutationMatrices[i * matSize + (stateA + row_index[stateB])] = val;
