@@ -207,8 +207,7 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
             if(expectedRateNoSubstitution <= 0.01) {
                 rates[i] = 1.;
             } else {
-                rates[i] = numSubstitutions[i] / expectedRateNoSubstitution;
-                rates[i] = MIN(100.0, MAX(0.0001, rates[i]));  
+                rates[i] = numSubstitutions[i] / expectedRateNoSubstitution; 
             }
         }
         rateCount += rates[i];
@@ -217,6 +216,7 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
     RealNumType averageRate = rateCount / genomeSize;
     for(int i = 0; i < genomeSize; i++) {
         rates[i] /= averageRate;
+        rates[i] = MIN(100.0, MAX(0.0001, rates[i])); 
         for(int stateA = 0; stateA < num_states_; stateA++) {
             RealNumType rowSum = 0;
             for(int stateB = 0; stateB < num_states_; stateB++) {
