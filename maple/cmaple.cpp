@@ -123,7 +123,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         }
         assert(sub_model != cmaple::ModelBase::UNKNOWN);
         bool useRateVariationModel = params.rate_variation || params.site_specific_rates;
-        Model model(aln.ref_seq.size(), useRateVariationModel, params.rate_variation, params.wt_pseudocount, sub_model, aln.getSeqType());
+        Model model(aln.ref_seq.size(), useRateVariationModel, params.rate_variation, params.wt_pseudocount, params.rates_filename, sub_model, aln.getSeqType());
         
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())

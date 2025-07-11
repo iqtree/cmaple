@@ -625,6 +625,7 @@ cmaple::Params::Params() {
   rate_variation = false;
   site_specific_rates = false;
   wt_pseudocount = 0.1;
+  rates_filename = "";
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1290,6 +1291,15 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         } catch (std::invalid_argument e) {
           outError(e.what());
         }
+        continue;
+      }
+
+      if (strcmp(argv[cnt], "--rates-filename") == 0) {
+        cnt++;
+        if (cnt >= argc) {
+          outError("Use --rates-filename <filename>");
+        }
+        params.rates_filename = argv[cnt];
         continue;
       }
 

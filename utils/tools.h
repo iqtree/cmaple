@@ -667,6 +667,13 @@ class Params {
    */ 
   bool site_specific_rates;
 
+   /**
+   * Name of file containing rates for each genomic site.
+   * Only used when site_specific_rates is true.
+   * Rates for tree inference will be those specified in the file and not inferred from data.
+   */ 
+  std::string rates_filename;
+
     /**
      * TRUE to ignore annotations from the input tree
      */

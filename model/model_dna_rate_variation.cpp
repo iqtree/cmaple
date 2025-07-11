@@ -5,13 +5,14 @@
 using namespace cmaple;
 
 ModelDNARateVariation::ModelDNARateVariation( const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize, 
-                                                bool _useSiteRates, cmaple::RealNumType _wtPseudocount)
+                                                bool _useSiteRates, cmaple::RealNumType _wtPseudocount, std::string _ratesFilename)
     : ModelDNA(sub_model) {
     
     genomeSize = _genomeSize;
     useSiteRates = _useSiteRates;
     matSize = row_index[num_states_];
     waitingTimePseudoCount = _wtPseudocount;
+    ratesFilename = _ratesFilename;
 
     mutationMatrices = new RealNumType[matSize * genomeSize]();
     transposedMutationMatrices = new RealNumType[matSize * genomeSize]();
@@ -88,14 +89,18 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
         //todo: write rates to file
 
     } else {
-        RealNumType oldLK = -std::numeric_limits<double>::infinity();
-        RealNumType newLK = tree->computeLh();
-        int numSteps = 0;
-        while(newLK - oldLK > 1 && numSteps < 20) {
-            estimateRatesPerSitePerEntry(tree);
-            oldLK = newLK;
-            newLK = tree->computeLh();
-        }  
+        if(ratesFilename.size() == 0) {
+            RealNumType oldLK = -std::numeric_limits<double>::infinity();
+            RealNumType newLK = tree->computeLh();
+            int numSteps = 0;
+            while(newLK - oldLK > 1 && numSteps < 20) {
+                estimateRatesPerSitePerEntry(tree);
+                oldLK = newLK;
+                newLK = tree->computeLh();
+            }  
+        } else {
+            this->readRatesFile();
+        }
     }
 
     // Write out rate matrices to file
@@ -697,5 +702,85 @@ void ModelDNARateVariation::setMatrixAtPosition(RealNumType* matrix, PositionTyp
             mutationMatrices[i * matSize + (stateB + row_index[stateA])] = matrix[stateB + row_index[stateA]];
             transposedMutationMatrices[i * matSize + (stateB + row_index[stateA])] = matrix[stateA + row_index[stateB]];
         }
+    }
+}
+
+void ModelDNARateVariation::readRatesFile() {
+    std::ifstream infile(ratesFilename);
+    std::string line;
+    if (infile.is_open()) {
+        PositionType genomePosition = 0;
+        while (std::getline(infile, line)) {
+            std::stringstream ss(line);
+            std::string field;
+            std::vector<std::string> fields;
+            while (std::getline(ss, field, ' ')) {
+                // Add the word to the vector
+                fields.push_back(field);
+            }
+
+            if(fields.size() != 12) {
+                std::cerr << "Error: Rate matrix file not in expected format." << std::endl;
+                std::cerr << "Expected exactly 12 entries." << std::endl;
+                continue;
+            }
+            RealNumType* rateMatrix = mutationMatrices + (genomePosition * matSize);
+            
+            // A row
+            rateMatrix[1] = std::stof(fields[0]);
+            rateMatrix[2] = std::stof(fields[1]);
+            rateMatrix[3] = std::stof(fields[2]);
+
+            // C row
+            rateMatrix[4] = std::stof(fields[3]);
+            rateMatrix[6] = std::stof(fields[4]);
+            rateMatrix[7] = std::stof(fields[5]);
+
+            // G row
+            rateMatrix[8] = std::stof(fields[6]);
+            rateMatrix[9] = std::stof(fields[7]);
+            rateMatrix[11] = std::stof(fields[8]);
+
+             // T row
+            rateMatrix[12] = std::stof(fields[9]);
+            rateMatrix[13] = std::stof(fields[10]);
+            rateMatrix[14] = std::stof(fields[11]);
+
+            genomePosition++;
+        }
+        infile.close();
+
+        if(genomePosition != genomeSize) {
+            std::cerr << "Error: Rate matrix file contained unexpected number of lines." << std::endl;
+            return;
+        }
+
+        for(int i = 0; i < genomeSize; i++) {
+            for(int stateA = 0; stateA < num_states_; stateA++) {
+                RealNumType rowSum = 0;
+                for(int stateB = 0; stateB < num_states_; stateB++) {
+                    if(stateA != stateB) {
+                        RealNumType val = mutationMatrices[i * matSize + (stateB + row_index[stateA])];
+                        mutationMatrices[i * matSize + (stateB + row_index[stateA])] = val;
+                        transposedMutationMatrices[i * matSize + (stateA + row_index[stateB])] = val;
+                        freqiFreqjQijs[i * matSize + (stateB + row_index[stateA])] = root_freqs[stateA] * inverse_root_freqs[stateB] * val;
+
+                        rowSum += val;
+                    } 
+                }
+                mutationMatrices[i * matSize + (stateA + row_index[stateA])] = -rowSum;
+                transposedMutationMatrices[i * matSize + (stateA + row_index[stateA])] = -rowSum;
+                diagonalMutationMatrices[i * num_states_ + stateA] = -rowSum;
+                freqiFreqjQijs[i * matSize + (stateA + row_index[stateA])] = -rowSum;
+
+                // pre-compute matrix to speedup
+                const RealNumType* transposed_mut_mat_row = getTransposedMutationMatrixRow(stateA, i);
+                RealNumType* freqjTransposedijsRow = freqjTransposedijs + (i * matSize) + row_index[stateA];
+                setVecByProduct<4>(freqjTransposedijsRow, root_freqs, transposed_mut_mat_row);      
+            }
+        } 
+    }
+    else {
+        std::cerr << "Unable to open rate matrix file " << ratesFilename << std::endl;
     }
 }

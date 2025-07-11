@@ -13,7 +13,7 @@ class Tree;
 class ModelDNARateVariation : public ModelDNA {
 public:
     ModelDNARateVariation(  const cmaple::ModelBase::SubModel sub_model, PositionType _genomeSize, 
-                            bool _useSiteRates, cmaple::RealNumType _wtPseudocount);
+                            bool _useSiteRates, cmaple::RealNumType _wtPseudocount, std::string _ratesFilename);
     virtual ~ModelDNARateVariation();
 
     void estimateRates(cmaple::Tree* tree);
@@ -84,6 +84,8 @@ private:
                                                 RealNumType distToRoot, RealNumType distToObserved,
                                                 RealNumType** waitingTimes, RealNumType** counts,
                                                 RealNumType weight = 1.);
+    
+    void readRatesFile();
 
     cmaple::PositionType genomeSize;
 
@@ -98,6 +100,8 @@ private:
     bool ratesEstimated = false;
 
     cmaple::RealNumType waitingTimePseudoCount;
+
+    std::string ratesFilename;
 
 };
 }
