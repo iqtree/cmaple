@@ -65,6 +65,9 @@ void ModelDNARateVariation::printCountsAndWaitingTimes(const RealNumType* counts
 }
 
 bool ModelDNARateVariation::updateMutationMatEmpirical() {
+    if(ratesFilename.length() > 0) {
+        return true;
+    }
     if(ratesEstimated) {
         std::cout << "[ModelDNARateVariation] Warning: Overwriting estimated rate matrices with single empirical mutation matrix." << std::endl;
     }
@@ -76,7 +79,6 @@ bool ModelDNARateVariation::updateMutationMatEmpirical() {
             freqiFreqjQijs[i * matSize + j] = freqi_freqj_qij[j];
             freqjTransposedijs[i * matSize + j] = freq_j_transposed_ij[j];
         }
-        //std::cout << std::endl;
         for(int j = 0; j < num_states_; j++) {
             diagonalMutationMatrices[i * num_states_ + j] = diagonal_mut_mat[j];
         }
@@ -88,8 +90,6 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
     ratesEstimated = true;
     if(useSiteRates) {
         estimateRatePerSite(tree);
-
-        //todo: write rates to file
 
     } else {
         if(ratesFilename.size() == 0) {
