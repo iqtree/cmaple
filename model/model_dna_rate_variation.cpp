@@ -23,6 +23,9 @@ ModelDNARateVariation::ModelDNARateVariation( const cmaple::ModelBase::SubModel 
     if(useSiteRates) {
         rates = new cmaple::RealNumType[genomeSize]();
     }
+    if(ratesFilename.length() > 0) {
+        this->readRatesFile();
+    }
 }
 
 ModelDNARateVariation::~ModelDNARateVariation() { 
@@ -98,8 +101,6 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
                 oldLK = newLK;
                 newLK = tree->computeLh();
             }  
-        } else {
-            this->readRatesFile();
         }
     }
 
