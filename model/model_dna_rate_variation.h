@@ -82,7 +82,7 @@ private:
     void updateCountsAndWaitingTimesAcrossRoot( PositionType start, PositionType end, 
                                                 StateType parentState, StateType childState,
                                                 RealNumType distToRoot, RealNumType distToObserved,
-                                                RealNumType** waitingTimes, RealNumType** counts,
+                                                RealNumType* waitingTimes, RealNumType* counts,
                                                 RealNumType weight = 1.);
     
     void readRatesFile();
