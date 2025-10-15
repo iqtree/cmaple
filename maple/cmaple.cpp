@@ -149,7 +149,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
         std::ostream null_stream(nullptr);
         std::ostream& out_stream = cmaple::verbose_mode >= cmaple::VB_MED ? std::cout : null_stream;
-        tree.infer(tree_search_type, params.shallow_tree_search, out_stream);
+        tree.infer(static_cast<int>(params.num_threads), tree_search_type, params.shallow_tree_search, out_stream);
         
         // Compute branch supports (if users want to do so)
         if (params.compute_aLRT_SH)

@@ -174,6 +174,7 @@ class Tree {
   void doPlacement(std::ostream& out_stream = std::cout);
 
   /*! \brief Apply SPR moves to optimize the tree.
+   * @param[in] num_threads The number of threads
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search
@@ -183,7 +184,7 @@ class Tree {
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  void applySPR(const TreeSearchType tree_search_type,
+  void applySPR(const int num_threads, const TreeSearchType tree_search_type,
                        const bool shallow_tree_search, std::ostream& out_stream = std::cout);
 
   /*! \brief Optimize the branch lengths of the tree
@@ -214,6 +215,7 @@ class Tree {
    * on all nodes, and optimize branch lengths, they can set tree_search_type
    * = EXHAUSTIVE
    *
+   * @param[in] num_threads The number of threads (optional)
    * @param[in] tree_search_type A type of tree search (optional)
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search (optional)
@@ -224,6 +226,7 @@ class Tree {
    * - unexpected values/behaviors found during the operations
    */
   void infer(
+      const int num_threads = 1,
       const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH,
       const bool shallow_tree_search = false, std::ostream& out_stream = std::cout);
 
@@ -468,7 +471,7 @@ class Tree {
   /**
       Pointer  to doInference method
    */
-  typedef void (Tree::*DoInferencePtrType)(const TreeSearchType,
+  typedef void (Tree::*DoInferencePtrType)(const int, const TreeSearchType,
                                                   const bool, std::ostream&);
   DoInferencePtrType doInferencePtr;
 
@@ -481,7 +484,7 @@ class Tree {
   /**
       Pointer  to applySPR method
    */
-  typedef void (Tree::*ApplySPRPtrType)(const TreeSearchType,
+  typedef void (Tree::*ApplySPRPtrType)(const int, const TreeSearchType,
                                                const bool, std::ostream&);
   ApplySPRPtrType applySPRPtr;
 
@@ -530,7 +533,7 @@ class Tree {
   /*! Template of doInference()
    */
   template <const cmaple::StateType num_states>
-  void doInferenceTemplate(const TreeSearchType tree_search_type,
+  void doInferenceTemplate(const int num_threads, const TreeSearchType tree_search_type,
                                   const bool shallow_tree_search, std::ostream& out_stream);
 
   /*! Template of doPlacement()
@@ -541,7 +544,7 @@ class Tree {
   /*! Template of applySPR()
    */
   template <const cmaple::StateType num_states>
-  void applySPRTemplate(const TreeSearchType tree_search_type,
+  void applySPRTemplate(const int num_threads, const TreeSearchType tree_search_type,
                                const bool shallow_tree_search, std::ostream& out_stream);
 
   /*! Template of optimizeBranch()
@@ -606,7 +609,8 @@ class Tree {
    operations
    */
   template <const cmaple::StateType num_states>
-  void optimizeTreeTopology(const TreeSearchType tree_search_type,
+  void optimizeTreeTopology(const int num_threads,
+                            const TreeSearchType tree_search_type,
                             bool short_range_search = false);
 
   /**
@@ -632,7 +636,9 @@ class Tree {
   cmaple::RealNumType improveSubTree(const cmaple::Index index,
                                      PhyloNode& node,
                                      const TreeSearchType tree_search_type,
-                                     bool short_range_search);
+                                     bool short_range_search,
+                                     std::vector<std::pair<cmaple::Index, double>>& SPR_found_vec,
+                                     bool SPR_search_only = false);
 
   /**
    Calculate derivative starting from coefficients.
@@ -1334,7 +1340,9 @@ bool isDiffFromOrigPlacement(
                         const cmaple::Index parent_node_index,
                         const bool is_mid_node,
                         cmaple::RealNumType& total_improvement,
-                        bool& topology_updated);
+                        bool& topology_updated,
+                        std::vector<std::pair<cmaple::Index, double>>& SPR_found_vec,
+                        bool SPR_search_only);
 
   /**
    Create a new internal phylonode
@@ -1927,6 +1935,16 @@ bool isDiffFromOrigPlacement(
   template <const cmaple::StateType num_states>
   cmaple::RealNumType improveEntireTree(const TreeSearchType tree_search_type,
                                         bool short_range_search);
+    
+    /**
+     The parallel version of improveEntireTree() - Try to improve the entire tree with SPR moves using multithreading
+     @return total improvement
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    cmaple::RealNumType improveEntireTreeParallel(const TreeSearchType tree_search_type,
+                                          bool short_range_search);
 
   /**
    Try to optimize branch lengths of the tree by one round of tree traversal
@@ -2171,9 +2189,10 @@ RealNumType cmaple::Tree::improveEntireTree(const TreeSearchType tree_search_typ
       // reCalculateAllGenomeLists(root,mutMatrix, checkExistingAreCorrect=True)
 
       // do SPR moves to improve the tree
+      std::vector<std::pair<cmaple::Index, double>> SPR_found_vec;
       RealNumType improvement =
           improveSubTree<num_states>(index, node,
-                                     tree_search_type, short_range_search);
+                                     tree_search_type, short_range_search, SPR_found_vec);
 
       // if checkEachSPR:
       //          #print(" apparent improvement "+str(improvement))
@@ -2211,6 +2230,114 @@ RealNumType cmaple::Tree::improveEntireTree(const TreeSearchType tree_search_typ
       }
     }
   }
+
+  return total_improvement;
+}
+
+template <const StateType num_states>
+RealNumType cmaple::Tree::improveEntireTreeParallel(const TreeSearchType tree_search_type,
+                                            bool short_range_search) {
+  assert(aln);
+  assert(model);
+  assert(cumulative_rate);
+  assert(nodes.size() > 0);
+    
+  // generate a vector/list of (outdated) nodes to search for SPR moves.
+  std::vector<Index> outdated_nodes;
+  outdated_nodes.reserve(nodes.size());
+    
+  // start from the root
+  std::stack<Index> node_stack;
+  node_stack.push(Index(root_vector_index, TOP));
+
+  // traverse downward the tree
+  while (!node_stack.empty()) {
+      // pick the top node from the stack
+      Index index = node_stack.top();
+      node_stack.pop();
+      PhyloNode& node = nodes[index.getVectorIndex()];
+
+      // add all children of the current nodes to the stack for further traversing
+      // later
+      assert(index.getMiniIndex() == TOP);
+      if (node.isInternal()) {
+        node_stack.push(node.getNeighborIndex(RIGHT));
+        node_stack.push(node.getNeighborIndex(LEFT));
+      }
+
+      // only process outdated node to avoid traversing the same part of the tree
+      // multiple times
+      if (node.isOutdated() && node.getSPRCount() <= 5) {
+          outdated_nodes.emplace_back(index);
+      }
+    }
+  
+    std::cout << "The number of all nodes: " << nodes.size() << std::endl;
+    std::cout << "The number of outdated nodes: " << outdated_nodes.size() << std::endl;
+    
+    // don't allow blengths change during parallel SPR search
+    const bool bk_fixed_blengths = fixed_blengths;
+    fixed_blengths = true;
+    
+    std::vector<std::pair<cmaple::Index, double>> all_SPR_found_vec;
+    #pragma omp parallel
+    {
+        std::vector<std::pair<cmaple::Index, double>> SPR_found_vec;
+        SPR_found_vec.reserve(outdated_nodes.size());
+        int thread_id = 0;
+        #ifdef _OPENMP
+        thread_id = omp_get_thread_num();
+        #endif
+        
+        #pragma omp for schedule(dynamic)
+        for (size_t i = 0; i < outdated_nodes.size(); ++i)
+        {
+            cmaple::Index& index = outdated_nodes[i];
+            PhyloNode& node = nodes[index.getVectorIndex()];
+            node.setOutdated(false);
+
+            // do SPR moves to improve the tree
+            improveSubTree<num_states>(index, node, tree_search_type,
+                                           short_range_search, SPR_found_vec, true);
+        }
+        
+        // Merge results safely at the end
+        #pragma omp critical
+        {
+            all_SPR_found_vec.insert(all_SPR_found_vec.end(), SPR_found_vec.begin(), SPR_found_vec.end());
+            std::cout << "Thread " << thread_id << " found " << SPR_found_vec.size() << " SPR moves." << std::endl;
+        }
+    }
+    
+    std::cout << "All threads found " << all_SPR_found_vec.size() << " SPR moves." << std::endl;
+    
+    // restore the fixed_blengths
+    fixed_blengths = bk_fixed_blengths;
+
+    
+    // dummy variables
+    RealNumType total_improvement = 0;
+    PositionType num_nodes = 0;
+    PositionType count_node_1K = 0;
+    
+
+    // only process outdated node to avoid traversing the same part of the tree
+    // multiple times
+   /* if (node.isOutdated() && node.getSPRCount() <= 5) {
+      
+
+      // update total_improvement
+      total_improvement += improvement;
+
+      // Show log every 1000 nodes
+      ++num_nodes;
+      if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000
+          && tree_search_type != FAST_TREE_SEARCH) {
+        std::cout << "Processed topology for " << convertIntToString(num_nodes)
+             << " nodes." << std::endl;
+        count_node_1K = num_nodes;
+      }
+    }*/
 
   return total_improvement;
 }
