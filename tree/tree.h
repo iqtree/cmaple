@@ -2272,8 +2272,11 @@ RealNumType cmaple::Tree::improveEntireTreeParallel(const TreeSearchType tree_se
       }
     }
   
-    std::cout << "The number of all nodes: " << nodes.size() << std::endl;
-    std::cout << "The number of outdated nodes: " << outdated_nodes.size() << std::endl;
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    {
+        std::cout << "The number of all nodes: " << nodes.size() << std::endl;
+        std::cout << "The number of outdated nodes: " << outdated_nodes.size() << std::endl;
+    }
     
     // don't allow blengths change during parallel SPR search
     const bool bk_fixed_blengths = fixed_blengths;
@@ -2305,11 +2308,17 @@ RealNumType cmaple::Tree::improveEntireTreeParallel(const TreeSearchType tree_se
         #pragma omp critical
         {
             all_SPR_found_vec.insert(all_SPR_found_vec.end(), SPR_found_vec.begin(), SPR_found_vec.end());
-            std::cout << "Thread " << thread_id << " found " << SPR_found_vec.size() << " SPR moves." << std::endl;
+            if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            {
+                std::cout << "Thread " << thread_id << " found " << SPR_found_vec.size() << " SPR moves." << std::endl;
+            }
         }
     }
     
-    std::cout << "All threads found " << all_SPR_found_vec.size() << " SPR moves." << std::endl;
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    {
+        std::cout << "All threads found " << all_SPR_found_vec.size() << " SPR moves." << std::endl;
+    }
     
     // sort all SPRs found in a descending order of the lh improvement
     std::sort(all_SPR_found_vec.begin(), all_SPR_found_vec.end(),
