@@ -2311,33 +2311,32 @@ RealNumType cmaple::Tree::improveEntireTreeParallel(const TreeSearchType tree_se
     
     std::cout << "All threads found " << all_SPR_found_vec.size() << " SPR moves." << std::endl;
     
+    // sort all SPRs found in a descending order of the lh improvement
+    std::sort(all_SPR_found_vec.begin(), all_SPR_found_vec.end(),
+              [](const auto &a, const auto &b) {
+                  return a.second > b.second;
+              });
+    
     // restore the fixed_blengths
     fixed_blengths = bk_fixed_blengths;
-
     
     // dummy variables
     RealNumType total_improvement = 0;
-    PositionType num_nodes = 0;
-    PositionType count_node_1K = 0;
     
-
-    // only process outdated node to avoid traversing the same part of the tree
-    // multiple times
-   /* if (node.isOutdated() && node.getSPRCount() <= 5) {
-      
-
-      // update total_improvement
-      total_improvement += improvement;
-
-      // Show log every 1000 nodes
-      ++num_nodes;
-      if (cmaple::verbose_mode >= cmaple::VB_MED && num_nodes - count_node_1K >= 1000
-          && tree_search_type != FAST_TREE_SEARCH) {
-        std::cout << "Processed topology for " << convertIntToString(num_nodes)
-             << " nodes." << std::endl;
-        count_node_1K = num_nodes;
-      }
-    }*/
+    // sequentially search and apply SPRs on nodes found in the above step
+    for (const auto &item : all_SPR_found_vec) {
+        const cmaple::Index& index = item.first;
+        PhyloNode& node = nodes[index.getVectorIndex()];
+        
+        // search and apply SPR on that node
+        std::vector<std::pair<cmaple::Index, double>> SPR_found_vec;
+        RealNumType improvement =
+            improveSubTree<num_states>(index, node,
+                                       tree_search_type, short_range_search, SPR_found_vec);
+        
+        // update total_improvement
+        total_improvement += improvement;
+    }
 
   return total_improvement;
 }
