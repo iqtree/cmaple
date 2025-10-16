@@ -1107,6 +1107,7 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
       }
 
     // traverse the tree from root to try improvements on the entire tree
+      // std::cout << "---------- Main loop ----------" << std::endl;
       RealNumType improvement;
       // run the sequential version
       if (num_threads == 1)
@@ -1134,6 +1135,7 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
       resetSPRFlags(false, true);
         
         // run the sequential version
+        // std::cout << "------- Sub loop " << j << " ----------" << std::endl;
         if (num_threads == 1)
             improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
         // run the parallel version
@@ -3494,14 +3496,14 @@ void cmaple::Tree::seekSubTreePlacement(
             { return alt_branch.lh < lower_bound_lhs; }),
             alt_branches.end());
         
+        // clear the vector of alternative SPRs
+        if (params->output_alternative_spr)
+            sprta_alt_branches[child_node_index.getVectorIndex()].clear();
+        
         // compute the SPRTA score
         if (!alt_branches.size())
         {
             sprta_scores[child_node_index.getVectorIndex()] = 1.0;
-            
-            // clear the vector of alternative SPRs
-            if (params->output_alternative_spr)
-                sprta_alt_branches[child_node_index.getVectorIndex()].clear();
         }
         else
         {
