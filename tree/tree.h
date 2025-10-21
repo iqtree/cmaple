@@ -2329,14 +2329,14 @@ RealNumType cmaple::Tree::improveEntireTreeParallel(const TreeSearchType tree_se
         #pragma omp critical
         {
             all_SPR_found_vec.insert(all_SPR_found_vec.end(), SPR_found_vec.begin(), SPR_found_vec.end());
-            if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+            if (cmaple::verbose_mode >= cmaple::VB_DEBUG && tree_search_type != FAST_TREE_SEARCH)
             {
                 std::cout << "Thread " << thread_id << " found " << SPR_found_vec.size() << " SPR moves." << std::endl;
             }
         }
     }
     
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG && tree_search_type != FAST_TREE_SEARCH)
     {
         std::cout << "All threads found " << all_SPR_found_vec.size() << " SPR moves." << std::endl;
     }
@@ -2354,19 +2354,23 @@ RealNumType cmaple::Tree::improveEntireTreeParallel(const TreeSearchType tree_se
     RealNumType total_improvement = 0;
     
     // sequentially search and apply SPRs on nodes found in the above step
-    for (const auto &item : all_SPR_found_vec) {
-        const cmaple::Index& index = item.first;
-        PhyloNode& node = nodes[index.getVectorIndex()];
-        
-        // search and apply SPR on that node
-        std::vector<std::pair<cmaple::Index, double>> SPR_found_vec;
-        RealNumType improvement =
+    if (tree_search_type != FAST_TREE_SEARCH)
+    {
+        for (const auto &item : all_SPR_found_vec) {
+            const cmaple::Index& index = item.first;
+            PhyloNode& node = nodes[index.getVectorIndex()];
+            
+            // search and apply SPR on that node
+            std::vector<std::pair<cmaple::Index, double>> SPR_found_vec;
+            RealNumType improvement =
             improveSubTree<num_states>(index, node,
                                        tree_search_type, short_range_search, SPR_found_vec);
-        
-        // update total_improvement
-        total_improvement += improvement;
+            
+            // update total_improvement
+            total_improvement += improvement;
+        }
     }
+    
 
   return total_improvement;
 }

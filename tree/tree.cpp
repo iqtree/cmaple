@@ -843,6 +843,14 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
                     // update model parameters after rerooting the tree
                     updateModelLhAfterLoading<num_states>();
                     
+                    // show info for debugging
+                    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                    {
+                        std::cout << std::setprecision(10)
+                        << "Tree log likelihood (after updating model parameters (post re-rooting)): "
+                        << computeLh() << std::endl;
+                    }
+                    
                     // need to re-seek a new root
                     need_seeking_new_root = true;
                 }
@@ -856,6 +864,14 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
     cout << " - Time spent on building an initial tree: "
          << std::setprecision(3) << end - start << endl;
   }
+    
+  
+    // output log-likelihood of the tree
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
+      std::cout << std::setprecision(10)
+                << "Tree log likelihood (of the initial tree): "
+                << computeLh() << std::endl;
+    }
 
   // Output the initial tree for debugging
   if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
