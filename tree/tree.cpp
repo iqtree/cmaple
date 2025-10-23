@@ -776,6 +776,14 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
     // resize the annotations to match the number of nodes
     annotations.resize(nodes.size());
     
+    // show the runtime for building an initial tree
+    auto end = getRealTime();
+    if (cmaple::verbose_mode >= cmaple::VB_MAX) {
+      cout << " - Time spent on building an initial tree: "
+           << std::setprecision(3) << end - start << endl;
+    }
+    start = getRealTime();
+    
     // don't keep the rooting position if users don't supply an input tree
     if (!from_input_tree && !params->allow_rerooting)
     {
@@ -856,14 +864,14 @@ void cmaple::Tree::doPlacementTemplate(std::ostream& out_stream) {
                 }
             }
         }
+        
+        // show the runtime for building an initial tree
+        end = getRealTime();
+        if (cmaple::verbose_mode >= cmaple::VB_MAX) {
+          cout << " - Time spent on seeking a better root: "
+               << std::setprecision(3) << end - start << endl;
+        }
     }
-
-  // show the runtime for building an initial tree
-  auto end = getRealTime();
-  if (cmaple::verbose_mode >= cmaple::VB_MAX) {
-    cout << " - Time spent on building an initial tree: "
-         << std::setprecision(3) << end - start << endl;
-  }
     
   
     // output log-likelihood of the tree
