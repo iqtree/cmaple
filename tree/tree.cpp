@@ -1162,12 +1162,17 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
     // traverse the tree from root to try improvements on the entire tree
       // std::cout << "---------- Main loop ----------" << std::endl;
       RealNumType improvement;
+#ifdef _OPENMP
       // run the sequential version
       if (num_threads == 1)
           improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
       // run the parallel version
       else
           improvement = improveEntireTreeParallel<num_states>(tree_search_type, short_range_search);
+#else
+      // run the sequential version
+      improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
+#endif
       
     // if only compute SPRTA (~ tree search type = FAST), stop searching further, one round is enough
     if (tree_search_type == FAST_TREE_SEARCH)
@@ -1187,6 +1192,7 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
       // forget SPR_applied flag to allow new SPR moves
       resetSPRFlags(false, true);
         
+#ifdef _OPENMP
         // run the sequential version
         // std::cout << "------- Sub loop " << j << " ----------" << std::endl;
         if (num_threads == 1)
@@ -1194,6 +1200,10 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
         // run the parallel version
         else
             improvement = improveEntireTreeParallel<num_states>(tree_search_type, short_range_search);
+#else
+        // run the sequential version
+        improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
+#endif
         
       if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
         cout << "Tree was improved by " + convertDoubleToString(improvement) +
