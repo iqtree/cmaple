@@ -537,6 +537,25 @@ class Params {
    * substitution rate matrix. Default: 25
    */
   PositionType mutation_update_period;
+    
+    /**
+     * The minimum number of taxa existing on the tree required to enable
+     * parallel placement search. Default: 1000
+     */
+    NumSeqsType min_taxa_parallel_placement;
+    
+    /**
+     * The number of samples are processed per threads
+     * when searching placements in parallel. Default: 5
+     */
+    NumSeqsType num_samples_per_thread;
+    
+    /**
+     * The number of steps moving upwards to extend the second (sequential)
+     * search of placement starting from the placement found from
+     * the first (parallel) search. Default: 2
+     */
+    NumSeqsType upward_search_extension;
 
   /**
   *  Name of the output alignment
