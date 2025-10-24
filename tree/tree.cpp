@@ -689,17 +689,18 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
     // update the number of threads according to user-specified parameter
     num_actual_threads = params->num_threads ? params->num_threads : countPhysicalCPUCores();
     // update the chunk size accordingly
-    chunk_size = 5 * num_actual_threads;
+    chunk_size = params->num_samples_per_thread * num_actual_threads;
 #endif
     // Vectors store the placements found
     std::vector<Index> selected_node_index_vec(chunk_size);
     std::vector<std::unique_ptr<SeqRegions>> lower_regions_vec(chunk_size);
 
   // iteratively place other samples (sequences)
-  for (; i < num_seqs; ++i, ++sequence) {
-      // check if we should perform a parallel search for placements of samples in the current chunk
-      // i.e., the number of taxa currently placed on the tree is > 1000 and we're running multithreading
-      const bool parallel_search = (i > 1000) && (num_actual_threads != 1);
+    for (; i < num_seqs; ++i, ++sequence) {
+        // check if we should perform a parallel search for placements of samples in the current chunk
+        // i.e., the number of taxa currently placed on the tree is > min_taxa_parallel_placement
+        // (default: 1000) and we're running multithreading
+      const bool parallel_search = (i > params->min_taxa_parallel_placement) && (num_actual_threads != 1);
       
       // run the parallel search for placements, if needed
       if (parallel_search)
@@ -737,7 +738,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                   
                   // record the placement found
                   // move upwards to extend the search later
-                  size_t upward_steps = 2;
+                  size_t upward_steps = params->upward_search_extension;
                   if (selected_node_index.getMiniIndex() != UNDEFINED)
                   {
                       while (selected_node_index.getVectorIndex() != root_vector_index)

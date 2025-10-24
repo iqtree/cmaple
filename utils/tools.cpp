@@ -574,6 +574,9 @@ cmaple::Params::Params() {
   overwrite_output = false;
   threshold_prob = 1e-8;
   mutation_update_period = 25;
+  min_taxa_parallel_placement = 1000;
+  num_samples_per_thread = 5;
+  upward_search_extension = 2;
   failure_limit_sample = 5;
   failure_limit_subtree = 4;
   failure_limit_subtree_short_search = 1;
@@ -1082,6 +1085,54 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--min-taxa-parallel") == 0 ||
+            strcmp(argv[cnt], "-min-taxa-parallel") == 0) {
+          ++cnt;
+
+          try {
+              params.min_taxa_parallel_placement = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.min_taxa_parallel_placement <= 0) {
+            outError("<NUMBER> must be positive!");
+          }
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--samples-per-thread") == 0 ||
+            strcmp(argv[cnt], "-samples-per-thread") == 0) {
+          ++cnt;
+
+          try {
+              params.num_samples_per_thread = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.num_samples_per_thread <= 0) {
+            outError("<NUMBER> must be positive!");
+          }
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--upward-search-extend") == 0 ||
+            strcmp(argv[cnt], "-upward-search-extend") == 0) {
+          ++cnt;
+
+          try {
+              params.upward_search_extension = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.upward_search_extension < 0) {
+            outError("<NUMBER> must be non-negative!");
+          }
+
+          continue;
+        }
       if (strcmp(argv[cnt], "--failure-limit") == 0 ||
           strcmp(argv[cnt], "-fail-limit") == 0) {
         ++cnt;
