@@ -764,6 +764,10 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
       
       // sequentially seek placement (again from the found placement if found or from the root) and place the sample
       const size_t current_chunk_size = parallel_search ? chunk_size : 1;
+      // update the threshold to stop the search earlier if starting from placements found from the parallel search
+      const int bk_failure_limit_sample = params->failure_limit_sample;
+      if (parallel_search)
+          params->failure_limit_sample = 2;
       for (size_t j = 0; j < current_chunk_size; ++j)
       {
           // increase i and move the sequence pointer
@@ -865,6 +869,10 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               }
           }
       }
+        
+      // restore the threshold for pleacement search, if it has been changed
+      if (parallel_search)
+          params->failure_limit_sample = bk_failure_limit_sample;
   }
 
   // flag denotes whether there is any new nodes added
