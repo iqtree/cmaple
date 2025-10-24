@@ -166,12 +166,13 @@ class Tree {
    * not existed in the input tree) from the alignment to the tree.
    * - If users already supplied a complete tree, this function does nothing.
    *
+   * @param[in] num_threads The number of threads
    * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
    * - unexpected values/behaviors found during the operations
    */
-  void doPlacement(std::ostream& out_stream = std::cout);
+  void doPlacement(const int num_threads, std::ostream& out_stream = std::cout);
 
   /*! \brief Apply SPR moves to optimize the tree.
    * @param[in] num_threads The number of threads
@@ -478,7 +479,7 @@ class Tree {
   /**
       Pointer  to doPlacement method
    */
-  typedef void (Tree::*DoPlacementPtrType)(std::ostream&);
+  typedef void (Tree::*DoPlacementPtrType)(const int, std::ostream&);
   DoPlacementPtrType doPlacementPtr;
 
   /**
@@ -539,7 +540,7 @@ class Tree {
   /*! Template of doPlacement()
    */
   template <const cmaple::StateType num_states>
-  void doPlacementTemplate(std::ostream& out_stream);
+  void doPlacementTemplate(const int num_threads, std::ostream& out_stream);
 
   /*! Template of applySPR()
    */
@@ -2427,6 +2428,9 @@ void cmaple::Tree::seekSamplePlacement(
         (current_node.getPartialLh(TOP)->compareWithSample(
              *sample_regions, seq_length, aln,
             collapse_only_ident_seqs) == 1)) {
+#ifdef _OPENMP
+#pragma omp critical
+#endif
       current_node.addLessInfoSeqs(seq_name_index);
       selected_node_index = Index();
       return;
