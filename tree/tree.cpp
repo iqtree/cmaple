@@ -683,20 +683,76 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
     
     // initialize the number of threads
     uint32_t num_actual_threads = 1;
-#ifdef _OPENMP
-    num_actual_threads = params->num_threads ? params->num_threads : countPhysicalCPUCores();
-#endif
     // Set the chunk size equals the number of threads (default)
-    size_t chunk_size = 5 * num_actual_threads;
+    size_t chunk_size = 1;
+#ifdef _OPENMP
+    // update the number of threads according to user-specified parameter
+    num_actual_threads = params->num_threads ? params->num_threads : countPhysicalCPUCores();
+    // update the chunk size accordingly
+    chunk_size = 5 * num_actual_threads;
+#endif
     // Vectors store the placements found
     std::vector<Index> selected_node_index_vec(chunk_size);
     std::vector<std::unique_ptr<SeqRegions>> lower_regions_vec(chunk_size);
 
   // iteratively place other samples (sequences)
   for (; i < num_seqs; ++i, ++sequence) {
-      // sequential implementation
-      if (i < 1000 || num_actual_threads == 1)
+      // check if we should perform a parallel search for placements of samples in the current chunk
+      // i.e., the number of taxa currently placed on the tree is > 1000 and we're running multithreading
+      const bool parallel_search = (i > 1000) && (num_actual_threads != 1);
+      
+      // run the parallel search for placements, if needed
+      if (parallel_search)
       {
+          // correct the chunk_size to make sure i + chunk_size < num_seqs
+          if (num_seqs - i < chunk_size)
+          {
+              chunk_size = num_seqs - i;
+          }
+          
+          #pragma omp parallel for
+          for (size_t j = 0; j < chunk_size; ++j)
+          {
+              // get the actual index of sequence
+              size_t index = i + j;
+              
+              // only seek a placement for a sequence that was NOT added in the input tree
+              if (!(from_input_tree && sequence_added[index]))
+              {
+                  // get the lower likelihood vector of the current sequence
+                  std::unique_ptr<SeqRegions> lower_regions =
+                  sequence[j].getLowerLhVector(seq_length, num_states, aln->getSeqType());
+                  
+                  // seek a position for new sample placement
+                  Index selected_node_index;
+                  RealNumType best_lh_diff = MIN_NEGATIVE;
+                  bool is_mid_branch = false;
+                  RealNumType best_up_lh_diff = MIN_NEGATIVE;
+                  RealNumType best_down_lh_diff = MIN_NEGATIVE;
+                  Index best_child_index;
+                  seekSamplePlacement<num_states>(
+                                                  Index(root_vector_index, TOP), static_cast<NumSeqsType>(index),
+                                                  lower_regions, selected_node_index, best_lh_diff, is_mid_branch,
+                                                  best_up_lh_diff, best_down_lh_diff, best_child_index);
+                  
+                  // record the placement found
+                  selected_node_index_vec[j] = selected_node_index;
+                  lower_regions_vec[j] = std::move(lower_regions);
+              }
+          }
+      }
+      
+      // sequentially seek placement (again from the found placement if found or from the root) and place the sample
+      const size_t current_chunk_size = parallel_search ? chunk_size : 1;
+      for (size_t j = 0; j < current_chunk_size; ++j)
+      {
+          // increase i and move the sequence pointer
+          if (j > 0)
+          {
+              ++i;
+              ++sequence;
+          }
+          
           // show progress
           if (cmaple::verbose_mode >= cmaple::VB_MED) {
               if (i + 1 - count_every_1K >= 1000)
@@ -715,185 +771,76 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
           else {
               sequence_added[i] = true;
           }
-            
-          // get the lower likelihood vector of the current sequence
-          std::unique_ptr<SeqRegions> lower_regions =
-          sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
-            
+          
           // update the mutation matrix from empirical number of mutations observed
           // from the recent sequences (if allowed)
           if (!(i % (static_cast<std::vector<cmaple::Sequence>
-                       ::size_type>(params->mutation_update_period)))) {
+                     ::size_type>(params->mutation_update_period)))) {
               if (model->updateMutationMatEmpirical()) {
                   computeCumulativeRate();
               }
           }
-            
-          // NHANLT: debug
-          // if ((*sequence)->seq_name == "39")
-          //    cout << "debug" <<endl;
-            
-          // seek a position for new sample placement
-          Index selected_node_index;
-          RealNumType best_lh_diff = MIN_NEGATIVE;
-          bool is_mid_branch = false;
-          RealNumType best_up_lh_diff = MIN_NEGATIVE;
-          RealNumType best_down_lh_diff = MIN_NEGATIVE;
-          Index best_child_index;
-          seekSamplePlacement<num_states>(
-                                          Index(root_vector_index, TOP), static_cast<NumSeqsType>(i),
-                                          lower_regions, selected_node_index, best_lh_diff, is_mid_branch,
-                                          best_up_lh_diff, best_down_lh_diff, best_child_index);
           
-          // if new sample is not less informative than existing nodes (~selected_node
-          // != NULL) -> place the new sample in the existing tree
-          if (selected_node_index.getMiniIndex() != UNDEFINED) {
-              // place new sample as a descendant of a mid-branch point
-              if (is_mid_branch) {
-                  placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions,
-                                                      static_cast<NumSeqsType>(i), best_lh_diff);
-                    // otherwise, best lk so far is for appending directly to existing
-                    // node
-                } else {
-                    placeNewSampleAtNode<num_states>(selected_node_index, lower_regions,
-                                                     static_cast<NumSeqsType>(i),
-                                                     best_lh_diff, best_up_lh_diff,
-                                                     best_down_lh_diff, best_child_index);
-                }
-            }
-            
-            // NHANLT: debug
-            // cout << "Added node " << (*sequence)->seq_name << endl;
-            // cout << (*sequence)->seq_name << endl;
-            // cout << tree.exportNewick() << endl;
-            
-            // if ((*sequence)->seq_name == "2219")
-            //{
-            // cout << tree.exportNewick() << endl;
-            // string output_file(tree.params->output_prefix);
-            // exportOutput(output_file + "_init.treefile");
-            // exit(0);
-            //}
-        }
-      // the parallel implementation
-      else
-      {
-          // correct the chunk_size to make sure i + chunk_size < num_seqs
-          if (num_seqs - i < chunk_size)
+          // retrieve the placement found if a parallel search is performed
+          Index found_placement_index;
+          std::unique_ptr<SeqRegions> lower_regions = nullptr;
+          if (parallel_search)
           {
-              chunk_size = num_seqs - i;
+              found_placement_index = selected_node_index_vec[j];
+              lower_regions = std::move(lower_regions_vec[j]);
+          }
+          // otherise, start from the root
+          else
+          {
+              found_placement_index = Index(root_vector_index, TOP);
+              
+              // get the lower likelihood vector of the current sequence
+              lower_regions =
+              sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
           }
           
-          
-          #pragma omp parallel
+          // seek a placement and place the sample
+          // found_placement_index.getMiniIndex() == UNDEFINED means the sample is less-informative
+          // than an existing sample in the tree and has been processed in the parallel search
+          if (found_placement_index.getMiniIndex() != UNDEFINED)
           {
-#pragma omp for
-              for (size_t j = 0; j < chunk_size; ++j)
+              // if the found placement became a polytomy after adding other samples,
+              // go upwards to the top of the polytomy
+              while (found_placement_index.getVectorIndex() != root_vector_index)
               {
-                  // get the actual index of sequence
-                  size_t index = i + j;
-                  
-                  // only seek a placement for a sequence that was NOT added in the input tree
-                  if (!(from_input_tree && sequence_added[index]))
-                  {
-                      // get the lower likelihood vector of the current sequence
-                      std::unique_ptr<SeqRegions> lower_regions =
-                      sequence[j].getLowerLhVector(seq_length, num_states, aln->getSeqType());
-                      
-                      // seek a position for new sample placement
-                      Index selected_node_index;
-                      RealNumType best_lh_diff = MIN_NEGATIVE;
-                      bool is_mid_branch = false;
-                      RealNumType best_up_lh_diff = MIN_NEGATIVE;
-                      RealNumType best_down_lh_diff = MIN_NEGATIVE;
-                      Index best_child_index;
-                      seekSamplePlacement<num_states>(
-                                                      Index(root_vector_index, TOP), static_cast<NumSeqsType>(index),
-                                                      lower_regions, selected_node_index, best_lh_diff, is_mid_branch,
-                                                      best_up_lh_diff, best_down_lh_diff, best_child_index);
-                      
-                      // record the placement found
-                      selected_node_index_vec[j] = selected_node_index;
-                      lower_regions_vec[j] = std::move(lower_regions);
-                  }
-              }
-          }
-              
-          // sequential tasks: show progress, update model params, update i and the sequence pointer
-          for (size_t j = 0; j < chunk_size; ++j, ++i, ++sequence)
-          {
-              // show progress
-              if (cmaple::verbose_mode >= cmaple::VB_MED) {
-                  if (i + 1 - count_every_1K >= 1000)
-                  {
-                      std::cout << "Processed " << i + 1 << " samples" << std::endl;
-                      count_every_1K = i + 1;
-                  }
+                  PhyloNode& found_placement_node = nodes[found_placement_index.getVectorIndex()];
+                  if (found_placement_node.getUpperLength() <= 0)
+                      found_placement_index = found_placement_node.getNeighborIndex(TOP);
+                  else
+                      break;
               }
               
-              // don't add sequence that was already added in the input tree
-              if (from_input_tree && sequence_added[i]) {
-                  --num_new_sequences;
-                  continue;
-              }
-              // otherwise, mark the current sequence as added
-              else {
-                  sequence_added[i] = true;
-              }
+              // seek a position for new sample placement again
+              Index selected_node_index;
+              RealNumType best_lh_diff = MIN_NEGATIVE;
+              bool is_mid_branch = false;
+              RealNumType best_up_lh_diff = MIN_NEGATIVE;
+              RealNumType best_down_lh_diff = MIN_NEGATIVE;
+              Index best_child_index;
+              seekSamplePlacement<num_states>(
+                                              Index(found_placement_index.getVectorIndex(), TOP), static_cast<NumSeqsType>(i),
+                                              lower_regions, selected_node_index, best_lh_diff, is_mid_branch,
+                                              best_up_lh_diff, best_down_lh_diff, best_child_index);
               
-              // update the mutation matrix from empirical number of mutations observed
-              // from the recent sequences (if allowed)
-              if (!(i % (static_cast<std::vector<cmaple::Sequence>
-                         ::size_type>(params->mutation_update_period)))) {
-                  if (model->updateMutationMatEmpirical()) {
-                      computeCumulativeRate();
-                  }
-              }
-              
-              // if the sample is not less-infomative than existing nodes, seek the placement for this sample again but starting from the placement found before
-              Index found_placement_index = selected_node_index_vec[j];
-              std::unique_ptr<SeqRegions> lower_regions = std::move(lower_regions_vec[j]);
-              
-              if (found_placement_index.getMiniIndex() != UNDEFINED)
-              {
-                  // if the found placement became a polytomy after adding other samples,
-                  // go upwards to the top of the polytomy
-                  while (found_placement_index.getVectorIndex() != root_vector_index)
-                  {
-                      PhyloNode& found_placement_node = nodes[found_placement_index.getVectorIndex()];
-                      if (found_placement_node.getUpperLength() <= 0)
-                          found_placement_index = found_placement_node.getNeighborIndex(TOP);
-                      else
-                          break;
-                  }
-                  
-                  // seek a position for new sample placement again
-                  Index selected_node_index;
-                  RealNumType best_lh_diff = MIN_NEGATIVE;
-                  bool is_mid_branch = false;
-                  RealNumType best_up_lh_diff = MIN_NEGATIVE;
-                  RealNumType best_down_lh_diff = MIN_NEGATIVE;
-                  Index best_child_index;
-                  seekSamplePlacement<num_states>(
-                                                  Index(found_placement_index.getVectorIndex(), TOP), static_cast<NumSeqsType>(i),
-                                                  lower_regions, selected_node_index, best_lh_diff, is_mid_branch,
-                                                  best_up_lh_diff, best_down_lh_diff, best_child_index);
-                  
-                  // if new sample is not less informative than existing nodes (~selected_node
-                  // != NULL) -> place the new sample in the existing tree
-                  if (selected_node_index.getMiniIndex() != UNDEFINED) {
-                      // place new sample as a descendant of a mid-branch point
-                      if (is_mid_branch) {
-                          placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions,
-                                                              static_cast<NumSeqsType>(i), best_lh_diff);
-                          // otherwise, best lk so far is for appending directly to existing
-                          // node
-                      } else {
-                          placeNewSampleAtNode<num_states>(selected_node_index, lower_regions,
-                                                           static_cast<NumSeqsType>(i),
-                                                           best_lh_diff, best_up_lh_diff,
-                                                           best_down_lh_diff, best_child_index);
-                      }
+              // if new sample is not less informative than existing nodes (~selected_node
+              // != NULL) -> place the new sample in the existing tree
+              if (selected_node_index.getMiniIndex() != UNDEFINED) {
+                  // place new sample as a descendant of a mid-branch point
+                  if (is_mid_branch) {
+                      placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions,
+                                                          static_cast<NumSeqsType>(i), best_lh_diff);
+                      // otherwise, best lk so far is for appending directly to existing
+                      // node
+                  } else {
+                      placeNewSampleAtNode<num_states>(selected_node_index, lower_regions,
+                                                       static_cast<NumSeqsType>(i),
+                                                       best_lh_diff, best_up_lh_diff,
+                                                       best_down_lh_diff, best_child_index);
                   }
               }
           }
