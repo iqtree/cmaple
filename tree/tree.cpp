@@ -718,6 +718,25 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                                                   best_up_lh_diff, best_down_lh_diff, best_child_index);
                   
                   // record the placement found
+                  // move upwards to extend the search later
+                  size_t upward_steps = 2;
+                  if (selected_node_index.getMiniIndex() != UNDEFINED)
+                  {
+                      while (selected_node_index.getVectorIndex() != root_vector_index)
+                      {
+                          PhyloNode& found_placement_node = nodes[selected_node_index.getVectorIndex()];
+                          if (found_placement_node.getUpperLength() <= 0 || upward_steps)
+                          {
+                              selected_node_index = found_placement_node.getNeighborIndex(TOP);
+                              
+                              // update the upward step
+                              if (found_placement_node.getUpperLength() > 0 && upward_steps)
+                                  --upward_steps;
+                          }
+                          else
+                              break;
+                      }
+                  }
                   selected_node_index_vec[j] = selected_node_index;
                   lower_regions_vec[j] = std::move(lower_regions);
               }
@@ -854,6 +873,11 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
     if (cmaple::verbose_mode >= cmaple::VB_MAX) {
       cout << " - Time spent on building an initial tree: "
            << std::setprecision(3) << end - start << endl;
+      
+      // output log-likelihood of the tree
+      std::cout << std::setprecision(10)
+           << "Tree log likelihood (of the initial tree): "
+           << computeLh() << std::endl;
     }
     start = getRealTime();
     
@@ -914,7 +938,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                     reroot<num_states>(best_root_vec_id);
                     
                     // show info for debugging
-                    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                    if (cmaple::verbose_mode >= cmaple::VB_MAX)
                     {
                         std::cout << std::setprecision(10)
                         << "Tree log likelihood (after re-rooting): "
@@ -925,7 +949,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                     updateModelLhAfterLoading<num_states>();
                     
                     // show info for debugging
-                    if (cmaple::verbose_mode >= cmaple::VB_DEBUG)
+                    if (cmaple::verbose_mode >= cmaple::VB_MAX)
                     {
                         std::cout << std::setprecision(10)
                         << "Tree log likelihood (after updating model parameters (post re-rooting)): "
@@ -944,14 +968,6 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
           cout << " - Time spent on seeking a better root: "
                << std::setprecision(3) << end - start << endl;
         }
-    }
-    
-  
-    // output log-likelihood of the tree
-    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
-      std::cout << std::setprecision(10)
-                << "Tree log likelihood (of the initial tree): "
-                << computeLh() << std::endl;
     }
 
   // Output the initial tree for debugging
