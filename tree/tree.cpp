@@ -767,7 +767,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
       // update the threshold to stop the search earlier if starting from placements found from the parallel search
       const int bk_failure_limit_sample = params->failure_limit_sample;
       if (parallel_search)
-          params->failure_limit_sample = 4;
+          params->failure_limit_sample = 3;
       for (size_t j = 0; j < current_chunk_size; ++j)
       {
           // increase i and move the sequence pointer
