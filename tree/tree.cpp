@@ -905,6 +905,19 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
       std::cout << std::setprecision(10)
            << "Tree log likelihood (of the initial tree): "
            << computeLh() << std::endl;
+        
+        // Output the initial tree for debugging
+        const std::string prefix =
+            params ? (params->output_prefix.length() ? params->output_prefix
+                                                     : params->aln_path)
+                   : "debug";
+        const cmaple::Tree::TreeType tree_format =
+            params ? cmaple::Tree::parseTreeType(params->tree_format_str)
+                   : BIN_TREE;
+
+        ofstream out = ofstream(prefix + "_init.treefile");
+        out << exportNewick(tree_format);
+        out.close();
     }
     start = getRealTime();
     
@@ -996,21 +1009,6 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                << std::setprecision(3) << end - start << endl;
         }
     }
-
-  // Output the initial tree for debugging
-  if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
-    const std::string prefix =
-        params ? (params->output_prefix.length() ? params->output_prefix
-                                                 : params->aln_path)
-               : "debug";
-    const cmaple::Tree::TreeType tree_format =
-        params ? cmaple::Tree::parseTreeType(params->tree_format_str)
-               : BIN_TREE;
-
-    ofstream out = ofstream(prefix + "_init.treefile");
-    out << exportNewick(tree_format);
-    out.close();
-  }
 
   // Restore the source cout
   cout.rdbuf(src_cout);
