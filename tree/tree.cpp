@@ -597,6 +597,26 @@ void cmaple::Tree::doInferenceTemplate(
   cout.rdbuf(src_cout);
 }
 
+/**
+ * \internal
+ * Helper class used for storing placements found for samples.
+ */
+class SamplePlacement {
+public:
+    
+    // the sample id
+    size_t _id;
+    
+    // the lower regions representing that sample
+    std::unique_ptr<SeqRegions> _lower_regions;
+    
+    // the placement
+    cmaple::Index _selected_node_index;
+    
+    // the estimated likelihood contribution of that placement
+    RealNumType _placement_lh;
+};
+
 template <const StateType num_states>
 void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_stream) {
   assert(cumulative_rate);
@@ -675,8 +695,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
     chunk_size = params->num_samples_per_thread * num_actual_threads;
 #endif
     // Vectors store the placements found
-    std::vector<Index> selected_node_index_vec(chunk_size);
-    std::vector<std::unique_ptr<SeqRegions>> lower_regions_vec(chunk_size);
+    std::vector<SamplePlacement> sample_placement_vec(chunk_size);
 
   // iteratively place other samples (sequences)
     for (; i < num_seqs; ++i, ++sequence) {
@@ -692,6 +711,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
           if (num_seqs - i < chunk_size)
           {
               chunk_size = num_seqs - i;
+              sample_placement_vec.resize(chunk_size);
           }
           
           #pragma omp parallel for
@@ -700,16 +720,19 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               // get the actual index of sequence
               size_t index = i + j;
               
+              // dummy variables
+              Index selected_node_index = Index(root_vector_index, UNDEFINED);
+              RealNumType best_lh_diff = MIN_NEGATIVE;
+              std::unique_ptr<SeqRegions> lower_regions = nullptr;
+              
               // only seek a placement for a sequence that was NOT added in the input tree
               if (!(from_input_tree && sequence_added[index]))
               {
                   // get the lower likelihood vector of the current sequence
-                  std::unique_ptr<SeqRegions> lower_regions =
+                  lower_regions =
                   sequence[j].getLowerLhVector(seq_length, num_states, aln->getSeqType());
                   
                   // seek a position for new sample placement
-                  Index selected_node_index;
-                  RealNumType best_lh_diff = MIN_NEGATIVE;
                   bool is_mid_branch = false;
                   RealNumType best_up_lh_diff = MIN_NEGATIVE;
                   RealNumType best_down_lh_diff = MIN_NEGATIVE;
@@ -739,10 +762,20 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                               break;
                       }
                   }
-                  selected_node_index_vec[j] = selected_node_index;
-                  lower_regions_vec[j] = std::move(lower_regions);
               }
+              
+              // record the placement
+              sample_placement_vec[j]._id = index;
+              sample_placement_vec[j]._lower_regions = std::move(lower_regions);
+              sample_placement_vec[j]._selected_node_index = selected_node_index;
+              sample_placement_vec[j]._placement_lh = best_lh_diff;
           }
+          
+          // sort the sample placements
+          std::sort(sample_placement_vec.begin(), sample_placement_vec.end(),
+                    [](const SamplePlacement& a, const SamplePlacement& b) {
+                        return a._placement_lh > b._placement_lh;
+                    });
       }
       
       // sequentially seek placement (again from the found placement if found or from the root) and place the sample
@@ -762,6 +795,9 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               ++sequence;
           }
           
+          // get the actual index of sequence
+          size_t index = parallel_search ? sample_placement_vec[j]._id : i;
+          
           // check to perform topology optimization
           if (params->num_samples_spr_during_inital_tree
               && i % (params->num_samples_spr_during_inital_tree) == 0
@@ -778,13 +814,13 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
           }
             
           // don't add sequence that was already added in the input tree
-          if (from_input_tree && sequence_added[i]) {
+          if (from_input_tree && sequence_added[index]) {
               --num_new_sequences;
               continue;
           }
           // otherwise, mark the current sequence as added
           else {
-              sequence_added[i] = true;
+              sequence_added[index] = true;
           }
           
           // update the mutation matrix from empirical number of mutations observed
@@ -801,8 +837,8 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
           std::unique_ptr<SeqRegions> lower_regions = nullptr;
           if (parallel_search)
           {
-              found_placement_index = selected_node_index_vec[j];
-              lower_regions = std::move(lower_regions_vec[j]);
+              found_placement_index = sample_placement_vec[j]._selected_node_index;
+              lower_regions = std::move(sample_placement_vec[j]._lower_regions);
           }
           // otherise, start from the root
           else
@@ -838,7 +874,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               RealNumType best_down_lh_diff = MIN_NEGATIVE;
               Index best_child_index;
               seekSamplePlacement<num_states>(
-                                              Index(found_placement_index.getVectorIndex(), TOP), static_cast<NumSeqsType>(i),
+                                              Index(found_placement_index.getVectorIndex(), TOP), static_cast<NumSeqsType>(index),
                                               lower_regions, selected_node_index, best_lh_diff, is_mid_branch,
                                               best_up_lh_diff, best_down_lh_diff, best_child_index);
               
@@ -848,12 +884,12 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                   // place new sample as a descendant of a mid-branch point
                   if (is_mid_branch) {
                       placeNewSampleMidBranch<num_states>(selected_node_index, lower_regions,
-                                                          static_cast<NumSeqsType>(i), best_lh_diff);
+                                                          static_cast<NumSeqsType>(index), best_lh_diff);
                       // otherwise, best lk so far is for appending directly to existing
                       // node
                   } else {
                       placeNewSampleAtNode<num_states>(selected_node_index, lower_regions,
-                                                       static_cast<NumSeqsType>(i),
+                                                       static_cast<NumSeqsType>(index),
                                                        best_lh_diff, best_up_lh_diff,
                                                        best_down_lh_diff, best_child_index);
                   }
