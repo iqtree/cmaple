@@ -576,6 +576,7 @@ cmaple::Params::Params() {
   mutation_update_period = 25;
   min_taxa_parallel_placement = 1000;
   num_samples_per_thread = 5;
+  num_samples_spr_during_inital_tree = 0;
   upward_search_extension = 5;
   failure_limit_sample = 5;
   failure_limit_subtree = 4;
@@ -1108,6 +1109,22 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
           if (params.num_samples_per_thread <= 0) {
             outError("<NUMBER> must be positive!");
+          }
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--samples-spr-initial") == 0 ||
+            strcmp(argv[cnt], "-samples-spr-initial") == 0) {
+          ++cnt;
+
+          try {
+              params.num_samples_spr_during_inital_tree = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.num_samples_spr_during_inital_tree < 0) {
+            outError("<NUMBER> must be non-negative!");
           }
 
           continue;

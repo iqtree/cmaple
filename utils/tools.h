@@ -556,6 +556,12 @@ class Params {
      * the first (parallel) search. Default: 2
      */
     NumSeqsType upward_search_extension;
+    
+    /**
+     * The number of samples added to perform an SPR search
+     * during the step of building an initial tree. Default: 10000
+     */
+    NumSeqsType num_samples_spr_during_inital_tree;
 
   /**
   *  Name of the output alignment

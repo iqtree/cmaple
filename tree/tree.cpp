@@ -644,6 +644,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
     nodes.reserve(num_seqs + num_seqs);
   std::vector<cmaple::Sequence>::size_type i = 0;
   std::vector<cmaple::Sequence>::size_type count_every_1K = 0;
+  const TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params->tree_search_type_str);
 
   // if users don't input a tree -> create the root from the first sequence
   if (!from_input_tree) {
@@ -750,6 +751,8 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
       const int bk_failure_limit_sample = params->failure_limit_sample;
       if (parallel_search)
           params->failure_limit_sample = 3;
+      // perform topology optimization
+      bool perform_topo_optimization = false;
       for (size_t j = 0; j < current_chunk_size; ++j)
       {
           // increase i and move the sequence pointer
@@ -758,6 +761,12 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               ++i;
               ++sequence;
           }
+          
+          // check to perform topology optimization
+          if (params->num_samples_spr_during_inital_tree
+              && i % (params->num_samples_spr_during_inital_tree) == 0
+              && i + params->num_samples_spr_during_inital_tree <= num_seqs)
+              perform_topo_optimization = true;
           
           // show progress
           if (cmaple::verbose_mode >= cmaple::VB_MED) {
@@ -855,6 +864,20 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
       // restore the threshold for pleacement search, if it has been changed
       if (parallel_search)
           params->failure_limit_sample = bk_failure_limit_sample;
+        
+        // perform topology optimization if needed
+        if (perform_topo_optimization)
+        {
+            if (cmaple::verbose_mode >= cmaple::VB_MAX) {
+                cout << "Perform topology optimization after processing " << i << " samples" << endl;
+            }
+            
+            if (tree_search_type != FAST_TREE_SEARCH) {
+              // apply short-range SPR search
+              optimizeTreeTopology<num_states>(num_threads, tree_search_type, true);
+
+            }
+        }
   }
 
   // flag denotes whether there is any new nodes added
