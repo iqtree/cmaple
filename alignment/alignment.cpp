@@ -88,6 +88,12 @@ void cmaple::Alignment::read(std::istream& aln_stream,
       }
       readMaple(aln_stream);
     }
+      
+    // print alignment information
+      if (cmaple::verbose_mode >= cmaple::VB_MED) {
+          cout << "- Number of sequences: " <<  data.size() << endl;
+          cout << "- Sequence length: " <<  ref_seq.size() << endl;
+      }
 
     // sort sequences by their distances to the reference sequence
     sortSeqsByDistances();
