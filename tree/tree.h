@@ -386,6 +386,12 @@ class Tree {
     std::vector<NumSeqsType> num_descendants;
     
     /**
+     Vector of corrected number of descendants of nodes
+     "corrected" means only counting descendants with non-zero branch lengths
+     */
+    std::vector<NumSeqsType> corrected_num_descendants;
+    
+    /**
      Vector of internal node names
      */
     std::vector<NumSeqsType> internal_names;

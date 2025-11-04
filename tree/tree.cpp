@@ -346,6 +346,7 @@ void cmaple::Tree::attachAlnModel(Alignment* n_aln, ModelBase* n_model) {
   // reserve spaces for nodes
   const std::vector<cmaple::Sequence>::size_type num_seqs = aln->data.size();
   nodes.reserve(num_seqs + num_seqs);
+  corrected_num_descendants.reserve(num_seqs + num_seqs);
 
   // Initialize sequence_added -> all sequences has yet added to the tree
   resetSeqAdded();
@@ -392,6 +393,7 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
   // reset nodes
   nodes.clear();
   nodes.reserve(num_seqs + num_seqs);
+  corrected_num_descendants.reserve(num_seqs + num_seqs);
   // reset node_lhs
   aLRT_SH_computed = false;
   node_lhs.clear();
@@ -659,7 +661,11 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
   Sequence* sequence = &aln->data.front();
   // make sure we allocate enough space to store all nodes
   if (nodes.capacity() < num_seqs + num_seqs)
-    nodes.reserve(num_seqs + num_seqs);
+  {
+      nodes.reserve(num_seqs + num_seqs);
+      corrected_num_descendants.reserve(num_seqs + num_seqs);
+  }
+    
   std::vector<cmaple::Sequence>::size_type i = 0;
   std::vector<cmaple::Sequence>::size_type count_every_1K = 0;
 
@@ -10169,6 +10175,8 @@ void cmaple::Tree::collapseAllZeroLeave() {
 
   // update the capacity of nodes
   nodes.reserve(nodes.capacity() + num_collapsed_nodes + num_collapsed_nodes);
+  corrected_num_descendants.reserve(corrected_num_descendants.capacity()
+                                    + num_collapsed_nodes + num_collapsed_nodes);
 }
 
 void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node,
