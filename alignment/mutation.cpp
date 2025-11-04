@@ -8,17 +8,19 @@
 #include "mutation.h"
 using namespace cmaple;
 
-cmaple::Mutation::Mutation(StateType n_type, PositionType n_position)
+cmaple::Mutation::Mutation(StateType n_type, PositionType n_position, cmaple::StateType n_prev_state)
     : type(n_type),
-    position(n_position)
+    position(n_position),
+    prev_state(n_prev_state)
 {
     // do nothing else
 }
 
-cmaple::Mutation::Mutation(StateType n_type, PositionType n_position, LengthTypeLarge n_length)
+cmaple::Mutation::Mutation(StateType n_type, PositionType n_position, LengthTypeLarge n_length, cmaple::StateType n_prev_state)
  : type(n_type),
    position(n_position),
-   length_(n_length)
+   length_(n_length),
+   prev_state(n_prev_state)
 {
   assert(n_length > 0);
   assert(n_position >= 0);
