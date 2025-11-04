@@ -392,6 +392,11 @@ class Tree {
     std::vector<NumSeqsType> corrected_num_descendants;
     
     /**
+     Vector of mutations at nodes (local references)
+     */
+    std::vector<std::unique_ptr<SeqRegions>> node_mutations;
+    
+    /**
      Vector of internal node names
      */
     std::vector<NumSeqsType> internal_names;
