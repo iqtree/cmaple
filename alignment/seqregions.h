@@ -119,6 +119,22 @@ class SeqRegions : public std::vector<SeqRegion> {
                    cmaple::PositionType seq_length,
                    cmaple::StateType num_states,
                    const cmaple::Params& params) const;
+    
+    /**
+     Integrate mutations at a branch to a likelihood vector
+     This regions is the input  likelihood vector
+     @param output_regions the output regions
+     @param mutations the vector of mutations
+     @param aln the alignment
+     @param inverse True to inverse the mutations
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    void integrateMutations(std::unique_ptr<SeqRegions>& output_regions,
+                         const SeqRegions& mutations,
+                         const Alignment* aln,
+                         const bool inverse = false) const;
 
   /**
    Merge two likelihood vectors, one from above and one from below
@@ -615,6 +631,141 @@ auto updateMultLHwithMat(const RealNumType* mat_row,
     sum_lh += posterior[i];
   }
   return sum_lh;
+}
+
+template <const StateType num_states>
+void SeqRegions::integrateMutations(std::unique_ptr<SeqRegions>& output_regions,
+                                    const SeqRegions& mutations,
+                                    const Alignment* aln,
+                                    const bool inverse) const {
+    assert(mutations.size() > 0);
+    assert(aln);
+    
+  // init variables
+  PositionType pos = 0;
+  const SeqRegions& seq_regions = *this;
+  const SeqRegions& mutation_regions = mutations;
+  size_t iseq = 0;
+  size_t imut = 0;
+  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+
+  // init merged_regions
+  if (output_regions) {
+      output_regions->clear();
+  } else {
+      output_regions = cmaple::make_unique<SeqRegions>();
+  }
+
+  // avoid realloc of vector data (minimize memory footprint)
+    output_regions->reserve(countSharedSegments(
+        mutation_regions, static_cast<size_t>(seq_length)));
+    
+#ifdef DEBUG
+  // remember capacity (may be more than we 'reserved')
+  const size_t max_elements = output_regions->capacity();
+#endif
+
+  while (pos < seq_length) {
+    PositionType end_pos;
+
+    // get the next shared segment in the two sequences
+    cmaple::SeqRegions::getNextSharedSegment(pos, seq_regions, mutation_regions,
+                                             iseq, imut, end_pos);
+    const auto* const seq_region = &seq_regions[iseq];
+    const auto* const mutation = &mutation_regions[imut];
+      
+      // extract the new state of the mutation
+      // according to the direction
+      cmaple::StateType mut_new_state = inverse ?
+        mutation->prev_state : mutation->type;
+      
+      // first add seq_region to the output lh vector
+      output_regions->push_back(SeqRegion::clone(*seq_region));
+      // extract the newly added seq_region
+      SeqRegion& last_region = output_regions->back();
+      
+      // case 1: seq_region = N
+      if (seq_region->type == TYPE_N)
+      {
+          // force moving to the end of this region
+          while (end_pos < seq_region->position)
+          {
+              // update pos
+              pos = end_pos + 1;
+              
+              // move to the next share segment
+              cmaple::SeqRegions::getNextSharedSegment(
+                    pos, seq_regions, mutation_regions,
+                    iseq, imut, end_pos);
+          }
+          assert(end_pos == seq_region->position);
+      }
+      // case 2: seq_region = A/C/G/T
+      else if (seq_region->type < num_states)
+      {
+          // if a mutation occurs at this position,
+          // modify the type (i.e., current state) and the previous state
+          if (mutation->type < num_states)
+          {
+              // if the current state is identical to the new state of the mutation
+              // change it to R
+              if (last_region.type == mut_new_state)
+              {
+                  last_region.type = TYPE_R;
+                  last_region.prev_state = TYPE_N;
+              }
+              // otherwise, keep the current state but update the previous state
+              else
+              {
+                  last_region.prev_state = mut_new_state;
+              }
+          }
+      }
+      // case 3: seq_region = R
+      else if (seq_region->type == TYPE_R)
+      {
+          // if a mutation occurs at this position,
+          // modify the type (i.e., current state) and the previous state
+          if (mutation->type < num_states)
+          {
+              // set the previous state of the newly-added region
+              // as the new state of the mutation
+              last_region.prev_state = mut_new_state;
+              
+              // extract the previous state of the mutation
+              // according to the direction
+              cmaple::StateType mut_prev_state = inverse ?
+                mutation->type : mutation->prev_state;
+              
+              // the new state of the newly-added region
+              // is R which is also the previous state of the mutation
+              last_region.type = mut_prev_state;
+          }
+          // otherwise, update the last position of the newly-added R region
+          {
+              last_region.position = end_pos;
+          }
+      }
+      // case 4: seq_region = O
+      else
+      {
+          // if a mutation occurs at this position,
+          // modify the previous state
+          if (mutation->type < num_states)
+          {
+              last_region.prev_state = mut_new_state;
+          }
+      }
+
+    // update pos
+    pos = end_pos + 1;
+  }
+
+#ifdef DEBUG
+  // ensure we did the correct reserve, otherwise it was
+  // a pessimization
+  assert(output_regions->capacity() == max_elements);
+#endif
 }
 
 template <const StateType num_states>
