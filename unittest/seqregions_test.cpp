@@ -2619,6 +2619,150 @@ void genTestData(std::unique_ptr<SeqRegions>& seqregions1,
 }
 
 /*
+ Test integrateMutations(std::unique_ptr<SeqRegions>& output_regions,
+ const SeqRegions& mutations,
+ const Alignment* aln,
+ const bool inverse) const
+ */
+TEST(SeqRegions, integrateMutations)
+{
+    Alignment aln = loadAln5K();
+    Model model(cmaple::ModelBase::GTR);
+    Tree tree(&aln, &model);
+    std::unique_ptr<Params>& params = tree.params;
+    const PositionType seq_length = aln.ref_seq.size();
+    const StateType num_states = aln.num_states;
+    
+    std::unique_ptr<SeqRegions> seqregions1 = nullptr;
+    std::unique_ptr<SeqRegions> mutations = nullptr;
+    std::unique_ptr<SeqRegions> output_regions_ptr = nullptr;
+    
+    // dummy variables
+    const RealNumType threshold_prob = params->threshold_prob;
+    
+    // ----- Test 1 -----
+    genTestData(seqregions1, mutations, tree, threshold_prob, 1);
+    
+    seqregions1->integrateMutations<4>(output_regions_ptr,
+            *mutations, tree.aln, false);
+    
+    std::string output = "";
+    for (auto i = 0; i < output_regions_ptr->size(); ++i)
+    {
+        output += "State: " + convertIntToString(output_regions_ptr->at(i).type) + " ; Prev_state: " + convertIntToString(output_regions_ptr->at(i).prev_state) + " ; Position: " + convertIntToString(output_regions_ptr->at(i).position) + "; ";
+    }
+    
+    std::string expected_output = "State: 250 ; Prev_state: 252 ; Position: 239; State: 250 ; Prev_state: 252 ; Position: 240; State: 250 ; Prev_state: 252 ; Position: 377; State: 250 ; Prev_state: 252 ; Position: 378; State: 250 ; Prev_state: 252 ; Position: 1705; State: 251 ; Prev_state: 252 ; Position: 1706; State: 250 ; Prev_state: 252 ; Position: 3035; State: 250 ; Prev_state: 252 ; Position: 3036; State: 250 ; Prev_state: 252 ; Position: 14406; State: 250 ; Prev_state: 252 ; Position: 14407; State: 250 ; Prev_state: 252 ; Position: 23401; State: 250 ; Prev_state: 252 ; Position: 23402; State: 250 ; Prev_state: 252 ; Position: 26445; State: 250 ; Prev_state: 252 ; Position: 26446; State: 250 ; Prev_state: 252 ; Position: 28142; State: 250 ; Prev_state: 252 ; Position: 28143; State: 250 ; Prev_state: 252 ; Position: 28248; State: 250 ; Prev_state: 252 ; Position: 28249; State: 250 ; Prev_state: 252 ; Position: 28252; State: 250 ; Prev_state: 252 ; Position: 28253; State: 250 ; Prev_state: 252 ; Position: 29890; ";
+    
+    EXPECT_EQ(output, expected_output);
+    // ----- Test 1 -----
+    
+    // ----- Test 2 -----
+    genTestData(seqregions1, mutations, tree, threshold_prob, 2);
+    
+    seqregions1->integrateMutations<4>(output_regions_ptr,
+            *mutations, tree.aln, false);
+    
+    output = "";
+    for (auto i = 0; i < output_regions_ptr->size(); ++i)
+    {
+        output += "State: " + convertIntToString(output_regions_ptr->at(i).type) + " ; Prev_state: " + convertIntToString(output_regions_ptr->at(i).prev_state) + " ; Position: " + convertIntToString(output_regions_ptr->at(i).position) + "; ";
+    }
+    
+    expected_output = "State: 250 ; Prev_state: 252 ; Position: 14; State: 250 ; Prev_state: 252 ; Position: 239; State: 250 ; Prev_state: 252 ; Position: 240; State: 250 ; Prev_state: 252 ; Position: 3035; State: 250 ; Prev_state: 252 ; Position: 3036; State: 250 ; Prev_state: 252 ; Position: 8780; State: 251 ; Prev_state: 3 ; Position: 8781; State: 250 ; Prev_state: 252 ; Position: 14406; State: 250 ; Prev_state: 252 ; Position: 14407; State: 250 ; Prev_state: 252 ; Position: 17745; State: 250 ; Prev_state: 252 ; Position: 17746; State: 250 ; Prev_state: 252 ; Position: 17856; State: 250 ; Prev_state: 252 ; Position: 17857; State: 250 ; Prev_state: 252 ; Position: 18058; State: 250 ; Prev_state: 252 ; Position: 18059; State: 250 ; Prev_state: 252 ; Position: 23401; State: 250 ; Prev_state: 252 ; Position: 23402; State: 250 ; Prev_state: 252 ; Position: 28142; State: 250 ; Prev_state: 252 ; Position: 28143; State: 250 ; Prev_state: 252 ; Position: 29887; State: 251 ; Prev_state: 252 ; Position: 29888; State: 250 ; Prev_state: 252 ; Position: 29890; ";
+    
+    EXPECT_EQ(output, expected_output);
+    // ----- Test 2 -----
+    
+    // ----- Test 3 -----
+    genTestData(seqregions1, mutations, tree, threshold_prob, 3);
+    seqregions1->at(0).type = TYPE_N;
+    seqregions1->at(1).type = 3;
+    seqregions1->at(4).type = TYPE_N;
+    
+    seqregions1->integrateMutations<4>(output_regions_ptr,
+            *mutations, tree.aln, false);
+    
+    output = "";
+    for (auto i = 0; i < output_regions_ptr->size(); ++i)
+    {
+        output += "State: " + convertIntToString(output_regions_ptr->at(i).type) + " ; Prev_state: " + convertIntToString(output_regions_ptr->at(i).prev_state) + " ; Position: " + convertIntToString(output_regions_ptr->at(i).position) + "; ";
+    }
+    
+    expected_output = "State: 252 ; Prev_state: 252 ; Position: 239; State: 3 ; Prev_state: 1 ; Position: 240; State: 250 ; Prev_state: 252 ; Position: 3035; State: 250 ; Prev_state: 252 ; Position: 3036; State: 252 ; Prev_state: 252 ; Position: 14406; State: 250 ; Prev_state: 252 ; Position: 14407; State: 250 ; Prev_state: 252 ; Position: 18623; State: 251 ; Prev_state: 252 ; Position: 18624; State: 250 ; Prev_state: 252 ; Position: 23401; State: 250 ; Prev_state: 252 ; Position: 23402; State: 250 ; Prev_state: 252 ; Position: 24032; State: 251 ; Prev_state: 252 ; Position: 24033; State: 250 ; Prev_state: 252 ; Position: 28075; State: 251 ; Prev_state: 252 ; Position: 28076; State: 250 ; Prev_state: 252 ; Position: 28142; State: 250 ; Prev_state: 252 ; Position: 28143; State: 250 ; Prev_state: 252 ; Position: 29843; State: 250 ; Prev_state: 252 ; Position: 29890; ";
+    
+    EXPECT_EQ(output, expected_output);
+    // ----- Test 3 -----
+    
+    // ----- Test 4 -----
+    genTestData(seqregions1, mutations, tree, threshold_prob, 4);
+    seqregions1->at(1).type = TYPE_N;
+    seqregions1->at(2).type = 3;
+    seqregions1->at(2).prev_state = 2;
+    seqregions1->at(4).type = TYPE_O;
+    seqregions1->at(8).type = 2;
+    seqregions1->at(9).type = TYPE_N;
+    
+    seqregions1->integrateMutations<4>(output_regions_ptr,
+            *mutations, tree.aln, true);
+    
+    output = "";
+    for (auto i = 0; i < output_regions_ptr->size(); ++i)
+    {
+        output += "State: " + convertIntToString(output_regions_ptr->at(i).type) + " ; Prev_state: " + convertIntToString(output_regions_ptr->at(i).prev_state) + " ; Position: " + convertIntToString(output_regions_ptr->at(i).position) + "; ";
+    }
+    
+    expected_output = "State: 250 ; Prev_state: 252 ; Position: 0; State: 252 ; Prev_state: 252 ; Position: 239; State: 3 ; Prev_state: 252 ; Position: 240; State: 250 ; Prev_state: 252 ; Position: 3035; State: 251 ; Prev_state: 252 ; Position: 3036; State: 250 ; Prev_state: 252 ; Position: 8780; State: 251 ; Prev_state: 252 ; Position: 8781; State: 250 ; Prev_state: 252 ; Position: 14406; State: 2 ; Prev_state: 252 ; Position: 14407; State: 252 ; Prev_state: 252 ; Position: 23401; State: 0 ; Prev_state: 252 ; Position: 23402; State: 250 ; Prev_state: 252 ; Position: 28142; State: 1 ; Prev_state: 252 ; Position: 28143; State: 250 ; Prev_state: 252 ; Position: 29882; State: 250 ; Prev_state: 252 ; Position: 29890; ";
+    
+    EXPECT_EQ(output, expected_output);
+    
+    // ----- Test 4 -----
+    
+    // ----- Test 5 -----
+    genTestData(seqregions1, mutations, tree, threshold_prob, 5);
+    seqregions1->at(9).type = TYPE_N;
+    seqregions1->at(2).type = TYPE_O;
+    seqregions1->at(2).prev_state = 2;
+    mutations->at(5).type = 3;
+    mutations->at(5).type = 2;
+    
+    /*std::cout << "seqregions1: " << std::endl;
+    for (auto i = 0; i < seqregions1->size(); ++i)
+    {
+        std::cout << "State: " << seqregions1->at(i).type <<" ; Prev_state: " << seqregions1->at(i).prev_state << " ; Position: " << seqregions1->at(i).position << std::endl;
+    }
+    
+    std::cout << "mutations: " << std::endl;
+    for (auto i = 0; i < mutations->size(); ++i)
+    {
+        std::cout << "State: " << mutations->at(i).type <<" ; Prev_state: " << mutations->at(i).prev_state << " ; Position: " << mutations->at(i).position << std::endl;
+    }*/
+    
+    seqregions1->integrateMutations<4>(output_regions_ptr,
+            *mutations, tree.aln, true);
+    
+    /*std::cout << "output_regions_ptr: " << std::endl;
+    for (auto i = 0; i < output_regions_ptr->size(); ++i)
+    {
+        std::cout << "State: " << output_regions_ptr->at(i).type <<" ; Prev_state: " << output_regions_ptr->at(i).prev_state << " ; Position: " << output_regions_ptr->at(i).position << std::endl;
+    }*/
+    
+    output = "";
+    for (auto i = 0; i < output_regions_ptr->size(); ++i)
+    {
+        output += "State: " + convertIntToString(output_regions_ptr->at(i).type) + " ; Prev_state: " + convertIntToString(output_regions_ptr->at(i).prev_state) + " ; Position: " + convertIntToString(output_regions_ptr->at(i).position) + "; ";
+    }
+    
+    // std::cout << std::endl << std::endl << output << std::endl;
+    
+    expected_output = "State: 250 ; Prev_state: 252 ; Position: 1; State: 250 ; Prev_state: 252 ; Position: 16; State: 250 ; Prev_state: 252 ; Position: 239; State: 251 ; Prev_state: 252 ; Position: 240; State: 250 ; Prev_state: 252 ; Position: 3035; State: 1 ; Prev_state: 252 ; Position: 3036; State: 250 ; Prev_state: 252 ; Position: 8780; State: 251 ; Prev_state: 252 ; Position: 8781; State: 250 ; Prev_state: 252 ; Position: 14406; State: 1 ; Prev_state: 252 ; Position: 14407; State: 252 ; Prev_state: 252 ; Position: 23401; State: 0 ; Prev_state: 252 ; Position: 23402; State: 250 ; Prev_state: 252 ; Position: 28142; State: 1 ; Prev_state: 252 ; Position: 28143; State: 250 ; Prev_state: 252 ; Position: 29869; State: 250 ; Prev_state: 252 ; Position: 29875; State: 250 ; Prev_state: 252 ; Position: 29890; ";
+    
+    EXPECT_EQ(output, expected_output);
+    
+    // ----- Test 5 -----
+}
+
+/*
  Test mergeUpperLower<4>(SeqRegions* &merged_regions, RealNumType upper_plength,
  const SeqRegions& lower_regions, RealNumType lower_plength, const
  Alignment& aln, const ModelBase* model, RealNumType threshold) const
