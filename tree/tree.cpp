@@ -338,7 +338,7 @@ void cmaple::Tree::attachAlnModel(Alignment* n_aln, ModelBase* n_model) {
   const std::vector<cmaple::Sequence>::size_type num_seqs = aln->data.size();
   nodes.reserve(num_seqs + num_seqs);
   corrected_num_descendants.reserve(num_seqs + num_seqs);
-  node_mutations.reserve(num_seqs + num_seqs);
+  node_mutations.resize(num_seqs + num_seqs);
 
   // Initialize sequence_added -> all sequences has yet added to the tree
   resetSeqAdded();
@@ -386,7 +386,7 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
   nodes.clear();
   nodes.reserve(num_seqs + num_seqs);
   corrected_num_descendants.reserve(num_seqs + num_seqs);
-  node_mutations.reserve(num_seqs + num_seqs);
+  node_mutations.resize(num_seqs + num_seqs);
   // reset node_lhs
   aLRT_SH_computed = false;
   node_lhs.clear();
@@ -648,7 +648,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
   {
       nodes.reserve(num_seqs + num_seqs);
       corrected_num_descendants.reserve(num_seqs + num_seqs);
-      node_mutations.reserve(num_seqs + num_seqs);
+      node_mutations.resize(num_seqs + num_seqs);
   }
     
   std::vector<cmaple::Sequence>::size_type i = 0;
@@ -2268,7 +2268,8 @@ void cmaple::Tree::examineSamplePlacementMidBranch(
     bool& is_mid_branch,
     RealNumType& lh_diff_mid_branch,
     TraversingNode& current_extended_node,
-    const std::unique_ptr<SeqRegions>& sample_regions) {
+    const std::unique_ptr<SeqRegions>& sample_regions,
+    std::unique_ptr<SeqRegions>& best_sample_regions) {
     
   // compute the placement cost
   lh_diff_mid_branch = calculateSamplePlacementCost<num_states>(
@@ -2281,6 +2282,7 @@ void cmaple::Tree::examineSamplePlacementMidBranch(
     selected_node_index = current_extended_node.getIndex();
     current_extended_node.setFailureCount(0);
     is_mid_branch = true;
+    best_sample_regions = cmaple::make_unique<SeqRegions>(sample_regions);
   }
 }
 
@@ -2296,7 +2298,8 @@ void cmaple::Tree::examineSamplePlacementAtNode(
     RealNumType& best_down_lh_diff,
     Index& best_child_index,
     TraversingNode& current_extended_node,
-    const std::unique_ptr<SeqRegions>& sample_regions) {
+    const std::unique_ptr<SeqRegions>& sample_regions,
+    std::unique_ptr<SeqRegions>& best_sample_regions) {
     
   // compute the placement cost
   lh_diff_at_node = calculateSamplePlacementCost<num_states>(
@@ -2310,6 +2313,7 @@ void cmaple::Tree::examineSamplePlacementAtNode(
     current_extended_node.setFailureCount(0);
     is_mid_branch = false;
     best_up_lh_diff = lh_diff_mid_branch;
+    best_sample_regions = cmaple::make_unique<SeqRegions>(sample_regions);
   } else if (lh_diff_mid_branch >= (best_lh_diff - params->threshold_prob)) {
     best_up_lh_diff = current_extended_node.getLhDiff();
     best_down_lh_diff = lh_diff_at_node;
@@ -2329,39 +2333,64 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
     const PhyloNode& selected_node,
     RealNumType& best_down_lh_diff,
     Index& best_child_index,
-    const std::unique_ptr<SeqRegions>& sample_regions) {
+    std::unique_ptr<SeqRegions>& sample_regions) {
 
   // current node might be part of a polytomy (represented by 0 branch lengths)
   // so we want to explore all the children of the current node to find out if
   // the best placement is actually in any of the branches below the current
   // node. Node* neighbor_node;
-  stack<Index> node_stack;
+  stack<TraversingExtNode> extended_node_stack;
   /*for (Index
      neighbor_index:nodes[selected_node_index.getVectorIndex()].getNeighborIndexes(selected_node_index.getMiniIndex()))
       node_stack.push(neighbor_index);*/
   // assert(selected_node_index.getMiniIndex() == TOP);
   if (selected_node.isInternal()) {
-    node_stack.push(selected_node.getNeighborIndex(RIGHT));
-    node_stack.push(selected_node.getNeighborIndex(LEFT));
+    // integrate the branch-mutations to the sample regions
+    std::unique_ptr<SeqRegions> sample_regions_at_child =
+      sample_regions->integrateMutations<num_states>(
+            node_mutations[selected_node.getNeighborIndex(RIGHT).getVectorIndex()], aln);
+    extended_node_stack.push(TraversingExtNode(selected_node.getNeighborIndex(RIGHT),
+                                      0, 0, std::move(sample_regions_at_child)));
+      
+    // integrate the branch-mutations to the sample regions
+    sample_regions_at_child =
+      sample_regions->integrateMutations<num_states>(
+              node_mutations[selected_node.getNeighborIndex(LEFT).getVectorIndex()], aln);
+    extended_node_stack.push(TraversingExtNode(selected_node.getNeighborIndex(LEFT),
+                                      0, 0, std::move(sample_regions_at_child)));
   }
 
-  while (!node_stack.empty()) {
-    Index node_index = node_stack.top();
+  while (!extended_node_stack.empty()) {
+    TraversingExtNode current_extended_node = std::move(extended_node_stack.top());
+    extended_node_stack.pop();
+    Index node_index = current_extended_node.getIndex();
     // MiniIndex node_mini_index = node_index.getMiniIndex();
-    node_stack.pop();
     assert(node_index.getMiniIndex() == TOP);
     PhyloNode& node = nodes[node_index.getVectorIndex()];
     // const RealNumType current_blength =
     // node.getCorrespondingLength(node_mini_index, nodes);
     const RealNumType current_blength = node.getUpperLength();
+    // extract the sample regions represented at this node
+    std::unique_ptr<SeqRegions>& sample_regions_at_node = current_extended_node.getSampleRegions();
 
     if (current_blength <= 0) {
       /*for (Index
          neighbor_index:node.getNeighborIndexes(node_index.getMiniIndex()))
           node_stack.push(neighbor_index);*/
       if (node.isInternal()) {
-        node_stack.push(node.getNeighborIndex(RIGHT));
-        node_stack.push(node.getNeighborIndex(LEFT));
+          // integrate the branch-mutations to the sample regions
+          std::unique_ptr<SeqRegions> sample_regions_at_child =
+            sample_regions_at_node->integrateMutations<num_states>(
+                  node_mutations[node.getNeighborIndex(RIGHT).getVectorIndex()], aln);
+          extended_node_stack.push(TraversingExtNode(node.getNeighborIndex(RIGHT),
+                                            0, 0, std::move(sample_regions_at_child)));
+          
+          // integrate the branch-mutations to the sample regions
+          sample_regions_at_child =
+            sample_regions_at_node->integrateMutations<num_states>(
+                  node_mutations[node.getNeighborIndex(LEFT).getVectorIndex()], aln);
+          extended_node_stack.push(TraversingExtNode(node.getNeighborIndex(LEFT),
+                                            0, 0, std::move(sample_regions_at_child)));
       }
     } else {
       // now try to place on the current branch below the best node, at an
@@ -2379,7 +2408,7 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
       //  node.getPartialLh(node_mini_index);
       const std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
       RealNumType new_lh_mid_branch = calculateSamplePlacementCost<num_states>(
-          node.getMidBranchLh(), sample_regions, default_blength);
+            node.getMidBranchLh(), sample_regions_at_node, default_blength);
       std::unique_ptr<SeqRegions> mid_branch_regions = nullptr;
 
       // try to place new sample along the upper half of the current branch
@@ -2407,13 +2436,14 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
 
         // compute the placement cost
         new_lh_mid_branch = calculateSamplePlacementCost<num_states>(
-            mid_branch_regions, sample_regions, default_blength);
+            mid_branch_regions, sample_regions_at_node, default_blength);
       }
 
       // record new best_down_lh_diff
       if (new_best_lh_mid_branch > best_down_lh_diff) {
         best_down_lh_diff = new_best_lh_mid_branch;
         best_child_index = node_index;
+        sample_regions = cmaple::make_unique<SeqRegions>(sample_regions_at_node);
       }
     }
   }
@@ -10130,8 +10160,6 @@ void cmaple::Tree::collapseAllZeroLeave() {
   nodes.reserve(nodes.capacity() + num_collapsed_nodes + num_collapsed_nodes);
   corrected_num_descendants.reserve(corrected_num_descendants.capacity()
                                     + num_collapsed_nodes + num_collapsed_nodes);
-  node_mutations.reserve(node_mutations.capacity()
-                        + num_collapsed_nodes + num_collapsed_nodes);
 }
 
 void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node,

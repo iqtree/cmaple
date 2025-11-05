@@ -23,3 +23,7 @@ void cmaple::TraversingNode::increaseFailureCount()
 auto cmaple::TraversingNode::getLhDiff() const -> const RealNumType {
   return likelihood_diff_;
 }
+
+auto cmaple::TraversingExtNode::getSampleRegions() -> std::unique_ptr<SeqRegions>& {
+    return sample_regions_;
+}
