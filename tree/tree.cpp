@@ -6420,12 +6420,12 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
                                        opt_mid_bottom_blength); 
 
       // validate the new placement cost
-      if (best_lh_diff < -1e50) {
+      /*if (best_lh_diff < -1e50) {
         throw std::logic_error(
             "Likelihood cost is very heavy, this might mean that the "
             "reference used is not the same used to generate the input "
             "MAPLE file");
-      }
+      }*/
 
       if (best_lh_diff + thresh_placement_cost > best_lh && tree_search_type != FAST_TREE_SEARCH) {
         // check and apply SPR move
