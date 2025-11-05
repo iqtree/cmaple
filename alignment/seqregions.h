@@ -46,6 +46,19 @@ class SeqRegions : public std::vector<SeqRegion> {
   SeqRegions(SeqRegions&& regions) = default;
   /// Move Assignment
   SeqRegions& operator=(SeqRegions&& regions) = default;
+    
+    /**
+     Clone a SeqRegions instance
+     */
+    static inline SeqRegions clone(const SeqRegions& from) {
+        // clone regions one by one
+        SeqRegions new_seq_regions;
+        new_seq_regions.reserve(from.size());
+        for (const auto& region : from) {
+            new_seq_regions.push_back(SeqRegion::clone(region));
+        }
+        return new_seq_regions;
+    }
 
   /**
    Add a new region and automatically merged consecutive R regions
@@ -123,18 +136,19 @@ class SeqRegions : public std::vector<SeqRegion> {
     /**
      Integrate mutations at a branch to a likelihood vector
      This regions is the input  likelihood vector
-     @param output_regions the output regions
      @param mutations the vector of mutations
      @param aln the alignment
      @param inverse True to inverse the mutations
+     @return the output regions
      @throw std::logic\_error if unexpected values/behaviors found during the
      operations
      */
     template <const cmaple::StateType num_states>
-    void integrateMutations(std::unique_ptr<SeqRegions>& output_regions,
-                         const SeqRegions& mutations,
+    auto integrateMutations(
+                         std::unique_ptr<SeqRegions>& mutations,
                          const Alignment* aln,
-                         const bool inverse = false) const;
+                         const bool inverse = false) const
+        -> std::unique_ptr<SeqRegions>;
 
   /**
    Merge two likelihood vectors, one from above and one from below
@@ -634,27 +648,31 @@ auto updateMultLHwithMat(const RealNumType* mat_row,
 }
 
 template <const StateType num_states>
-void SeqRegions::integrateMutations(std::unique_ptr<SeqRegions>& output_regions,
-                                    const SeqRegions& mutations,
+auto SeqRegions::integrateMutations(
+                                    std::unique_ptr<SeqRegions>& mutations,
                                     const Alignment* aln,
-                                    const bool inverse) const {
-    assert(mutations.size() > 0);
+                                    const bool inverse) const
+        -> std::unique_ptr<SeqRegions>
+{
+    // if there is no mutations clone and return the original likelihood vector
+    if (!mutations || !mutations->size())
+    {
+        return cmaple::make_unique<SeqRegions>(SeqRegions::clone(*this));
+    }
+            
+    // init merged_regions
+    std::unique_ptr<SeqRegions> output_regions = cmaple::make_unique<SeqRegions>();
+    
+    assert(mutations->size() > 0);
     assert(aln);
     
   // init variables
   PositionType pos = 0;
   const SeqRegions& seq_regions = *this;
-  const SeqRegions& mutation_regions = mutations;
+  const SeqRegions& mutation_regions = *mutations;
   size_t iseq = 0;
   size_t imut = 0;
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
-
-  // init merged_regions
-  if (output_regions) {
-      output_regions->clear();
-  } else {
-      output_regions = cmaple::make_unique<SeqRegions>();
-  }
 
   // avoid realloc of vector data (minimize memory footprint)
     output_regions->reserve(countSharedSegments(
@@ -766,6 +784,7 @@ void SeqRegions::integrateMutations(std::unique_ptr<SeqRegions>& output_regions,
   // a pessimization
   assert(output_regions->capacity() == max_elements);
 #endif
+    return output_regions;
 }
 
 template <const StateType num_states>

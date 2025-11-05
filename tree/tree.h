@@ -697,7 +697,8 @@ class Tree {
       bool& is_mid_branch,
       cmaple::RealNumType& lh_diff_mid_branch,
       TraversingNode& current_extended_node,
-      const std::unique_ptr<SeqRegions>& sample_regions);
+      const std::unique_ptr<SeqRegions>& sample_regions,
+      std::unique_ptr<SeqRegions>& best_sample_regions);
 
   /**
    Examine placing a sample as a descendant of an existing node
@@ -714,7 +715,8 @@ class Tree {
       cmaple::RealNumType& best_down_lh_diff,
       cmaple::Index& best_child_index,
       TraversingNode& current_extended_node,
-      const std::unique_ptr<SeqRegions>& sample_regions);
+      const std::unique_ptr<SeqRegions>& sample_regions,
+      std::unique_ptr<SeqRegions>& best_sample_regions);
 
   /**
    Traverse downwards polytomy for more fine-grained placement
@@ -726,7 +728,7 @@ class Tree {
       const PhyloNode& selected_node,
       cmaple::RealNumType& best_down_lh_diff,
       cmaple::Index& best_child_index,
-      const std::unique_ptr<SeqRegions>& sample_regions);
+      std::unique_ptr<SeqRegions>& sample_regions);
     
 /**
  Check if the new placement is sufficiently different from the original one
@@ -1854,7 +1856,7 @@ bool isDiffFromOrigPlacement(
   template <const cmaple::StateType num_states>
   void seekSamplePlacement(const cmaple::Index start_node_index,
                            const cmaple::NumSeqsType seq_name_index,
-                           const std::unique_ptr<SeqRegions>& sample_regions,
+                           std::unique_ptr<SeqRegions>& sample_regions,
                            cmaple::Index& selected_node_index,
                            cmaple::RealNumType& best_lh_diff,
                            bool& is_mid_branch,
@@ -2409,7 +2411,7 @@ template <const StateType num_states>
 void cmaple::Tree::seekSamplePlacement(
     const Index start_node_index,
     const NumSeqsType seq_name_index,
-    const std::unique_ptr<SeqRegions>& sample_regions,
+    std::unique_ptr<SeqRegions>& sample_regions,
     Index& selected_node_index,
     RealNumType& best_lh_diff,
     bool& is_mid_branch,
@@ -2432,17 +2434,27 @@ void cmaple::Tree::seekSamplePlacement(
   RealNumType lh_diff_at_node = 0;
   PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
   // stack of nodes to examine positions
-  std::stack<TraversingNode> extended_node_stack;
-  extended_node_stack.push(TraversingNode(start_node_index, 0, MIN_NEGATIVE));
+  std::stack<TraversingExtNode> extended_node_stack;
+  
+    // integrate the branch-mutations to the sample regions
+    std::unique_ptr<SeqRegions> mut_integrated_sample_regions =
+        sample_regions->integrateMutations<num_states>(
+        node_mutations[start_node_index.getVectorIndex()], aln);
+    sample_regions = cmaple::make_unique<SeqRegions>(mut_integrated_sample_regions);
+    
+  extended_node_stack.push(TraversingExtNode(start_node_index, 0, MIN_NEGATIVE,
+                            std::move(mut_integrated_sample_regions)));
 
   // recursively examine positions for placing the new sample
   while (!extended_node_stack.empty()) {
-    TraversingNode current_extended_node = std::move(extended_node_stack.top());
+    TraversingExtNode current_extended_node = std::move(extended_node_stack.top());
     extended_node_stack.pop();
     const NumSeqsType current_node_vec =
         current_extended_node.getIndex().getVectorIndex();
     PhyloNode& current_node = nodes[current_node_vec];
     const bool& is_internal = current_node.isInternal();
+      // extract the sample regions represented at this node
+      std::unique_ptr<SeqRegions>& sample_regions_at_node = current_extended_node.getSampleRegions();
 
     // NHANLT: debug
     // if (current_node->next && ((current_node->next->neighbor &&
@@ -2458,7 +2470,7 @@ void cmaple::Tree::seekSamplePlacement(
     // node + stop seeking the placement
     if ((!is_internal) &&
         (current_node.getPartialLh(TOP)->compareWithSample(
-             *sample_regions, seq_length, aln,
+             *sample_regions_at_node, seq_length, aln,
             collapse_only_ident_seqs) == 1)) {
 #ifdef _OPENMP
 #pragma omp critical
@@ -2476,7 +2488,7 @@ void cmaple::Tree::seekSamplePlacement(
       examineSamplePlacementMidBranch<num_states>(
           selected_node_index, current_node.getMidBranchLh(), best_lh_diff,
           is_mid_branch, lh_diff_mid_branch, current_extended_node,
-          sample_regions);
+          sample_regions_at_node, sample_regions);
     }
     // otherwise, don't consider mid-branch point
     else {
@@ -2490,7 +2502,7 @@ void cmaple::Tree::seekSamplePlacement(
           selected_node_index, current_node.getTotalLh(), best_lh_diff,
           is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
           best_down_lh_diff, best_child_index, current_extended_node,
-          sample_regions);
+          sample_regions_at_node, sample_regions);
     } else {
       lh_diff_at_node = current_extended_node.getLhDiff();
     }
@@ -2508,12 +2520,21 @@ void cmaple::Tree::seekSamplePlacement(
           extended_node_stack.push(TraversingNode(neighbor_index,
          current_extended_node.getFailureCount(), lh_diff_at_node));*/
       if (is_internal) {
+        // integrate the branch-mutations to the sample regions
+        std::unique_ptr<SeqRegions> sample_regions_at_child =
+          sample_regions_at_node->integrateMutations<num_states>(
+              node_mutations[current_node.getNeighborIndex(RIGHT).getVectorIndex()], aln);
         extended_node_stack.push(
-            TraversingNode(current_node.getNeighborIndex(RIGHT), failure_count,
-                           lh_diff_at_node));
+            TraversingExtNode(current_node.getNeighborIndex(RIGHT), failure_count,
+                           lh_diff_at_node, std::move(sample_regions_at_child)));
+          
+        // integrate the branch-mutations to the sample regions
+        sample_regions_at_child =
+          sample_regions_at_node->integrateMutations<num_states>(
+              node_mutations[current_node.getNeighborIndex(LEFT).getVectorIndex()], aln);
         extended_node_stack.push(
-            TraversingNode(current_node.getNeighborIndex(LEFT), failure_count,
-                           lh_diff_at_node));
+            TraversingExtNode(current_node.getNeighborIndex(LEFT), failure_count,
+                           lh_diff_at_node, std::move(sample_regions_at_child)));
       }
     }
   }
