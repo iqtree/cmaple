@@ -187,7 +187,7 @@ typedef uint32_t NumSeqsType;
 /**
     Type of segment lengths
  */
-typedef int16_t LengthType;
+typedef int32_t LengthType;
 /**
     Type of segment lengths (to check if 16 bit is sufficient)
  */
