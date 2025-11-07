@@ -2350,9 +2350,9 @@ auto cmaple::SeqRegions::containAtLeastNMuts(const int min_mut) const
     // loop over the vector of regions
     for (auto i = 0; i < size(); ++i)
     {
-        const auto* const seq_region = &(at(i));
+        const SeqRegion& seq_region = at(i);
         
-        if (seq_region->type < num_states)
+        if (seq_region.type < num_states)
         {
             ++count_mutations;
             
