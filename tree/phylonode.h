@@ -264,6 +264,15 @@ class PhyloNode {
    Set the index of the node likelihood
    */
   void setNodeLhIndex(const cmaple::NumSeqsType node_lh_index);
+    
+    /**
+     Integrate mutations (local ref) to all lh vectors
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    auto integrateMutAllRegions(std::unique_ptr<SeqRegions>& mutations,
+        const Alignment* aln, const bool inverse = false) -> void;
 
   /**
    Get a vector of the indexes of neighbors
@@ -380,6 +389,29 @@ void cmaple::PhyloNode::computeTotalLhAtNode(
                                       *lower_regions, blength, aln, model,
                                       threshold_prob);
   }
+}
+
+template <const StateType num_states>
+auto cmaple::PhyloNode::integrateMutAllRegions(
+    std::unique_ptr<SeqRegions>& mutations,
+    const Alignment* aln, const bool inverse) -> void
+{
+    // lower regions
+    setPartialLh(TOP, getPartialLh(TOP)->integrateMutations<num_states>(mutations, aln, inverse));
+    
+    // upper left/right regions
+    if (isInternal())
+    {
+        setPartialLh(LEFT, getPartialLh(LEFT)->integrateMutations<num_states>(mutations, aln, inverse));
+        setPartialLh(RIGHT, getPartialLh(RIGHT)->integrateMutations<num_states>(mutations, aln, inverse));
+    }
+    
+    // mid-branch regions
+    if (getMidBranchLh())
+    {
+        assert(getUpperLength() > 0);
+        setMidBranchLh(getMidBranchLh()->integrateMutations<num_states>(mutations, aln, inverse));
+    }
 }
 
 }  // namespace cmaple

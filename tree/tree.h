@@ -2117,6 +2117,13 @@ bool isDiffFromOrigPlacement(
 
   // NHANLT: Debug aLRT
   // void log_current(std::stack<cmaple::Index>& node_stack_aLRT);
+    
+    /**
+     Make a local reference at a node
+     */
+    template <const StateType num_states>
+    auto makeReferenceNode(PhyloNode& node, const cmaple::Index node_index,
+            const int old_num_desc) -> void;
 };
 
 /*!
