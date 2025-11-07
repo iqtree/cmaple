@@ -764,6 +764,19 @@ class Params {
    * the mean number of substitution per sites that CMAPLE is effective
   */
   RealNumType mean_subs_per_site;
+    
+    /**
+     * The maximum number of positive-branch descendants for
+     * a subtree with a local reference
+     * Default: 50
+     */
+    NumSeqsType max_desc_ref;
+    
+    /**
+     * Minimum number of mutations required for a local reference
+     * Default: 2
+     */
+    int min_mut_ref;
 
   /*
       TRUE to log debugging
