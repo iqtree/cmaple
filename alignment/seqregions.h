@@ -149,6 +149,15 @@ class SeqRegions : public std::vector<SeqRegion> {
                          const Alignment* aln,
                          const bool inverse = false) const
         -> std::unique_ptr<SeqRegions>;
+    
+    /**
+     Check if this likelihood vector contains at least N mutations
+     @param min_mut the number of mutations
+     @return TRUE if this likelihood vector contains at least N mutations
+     */
+    template <const cmaple::StateType num_states>
+    auto containAtLeastNMuts(const int min_mut) const
+        -> bool;
 
   /**
    Merge two likelihood vectors, one from above and one from below
@@ -2340,6 +2349,30 @@ RealNumType SeqRegions::calculateSiteLhContributions(
   // a pessimization
 
   return log_lh;
+}
+
+template <const StateType num_states>
+auto cmaple::SeqRegions::containAtLeastNMuts(const int min_mut) const
+    -> bool
+{
+    int count_mutations = 0;
+    
+    // loop over the vector of regions
+    for (auto i = 0; i < size(); ++i)
+    {
+        const auto* const seq_region = &(at(i));
+        
+        if (seq_region->type < num_states)
+        {
+            ++count_mutations;
+            
+            // check if it meets the requirement
+            if (count_mutations >= min_mut)
+                return true;
+        }
+    }
+    
+    return false;
 }
 
 }  // namespace cmaple
