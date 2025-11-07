@@ -624,6 +624,8 @@ cmaple::Params::Params() {
   output_alternative_spr = false;
   min_support_alt_branches = 0.01;
   thresh_loglh_optimal_diff_fac = 1.0;
+  max_desc_ref = 50;
+  min_mut_ref = 2;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1196,6 +1198,42 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--max-desc-ref") == 0 ||
+            strcmp(argv[cnt], "-max-desc-ref") == 0) {
+          ++cnt;
+          if (cnt >= argc) {
+            outError("Use -max-desc-ref <NUM_DESCENDANTS>");
+          }
+
+          try {
+              params.max_desc_ref = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.max_desc_ref <= 0) {
+            outError("<NUM_DESCENDANTS> must be positive!");
+          }
+          continue;
+        }
+        if (strcmp(argv[cnt], "--min-mut-ref") == 0 ||
+            strcmp(argv[cnt], "-min-mut-ref") == 0) {
+          ++cnt;
+          if (cnt >= argc) {
+            outError("Use -min-mut-ref <NUM_MUTATIONS>");
+          }
+
+          try {
+              params.min_mut_ref = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.min_mut_ref <= 0) {
+            outError("<NUM_MUTATIONS> must be positive!");
+          }
+          continue;
+        }
       if (strcmp(argv[cnt], "--branch-support") == 0 ||
           strcmp(argv[cnt], "-branch-support") == 0
           || strcmp(argv[cnt], "--alrt") == 0
