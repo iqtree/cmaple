@@ -2437,10 +2437,15 @@ void cmaple::Tree::seekSamplePlacement(
   std::stack<TraversingExtNode> extended_node_stack;
   
     // integrate the branch-mutations to the sample regions
+    std::unique_ptr<SeqRegions>& start_node_mutations =
+        node_mutations[start_node_index.getVectorIndex()];
     std::unique_ptr<SeqRegions> mut_integrated_sample_regions =
         sample_regions->integrateMutations<num_states>(
-        node_mutations[start_node_index.getVectorIndex()], aln);
-    sample_regions = cmaple::make_unique<SeqRegions>(mut_integrated_sample_regions);
+            start_node_mutations, aln);
+    
+    // record the updated sample_regions (with mutations integrated, if any)
+    if (start_node_mutations && start_node_mutations->size())
+        sample_regions = cmaple::make_unique<SeqRegions>(mut_integrated_sample_regions);
     
   extended_node_stack.push(TraversingExtNode(start_node_index, 0, MIN_NEGATIVE,
                             std::move(mut_integrated_sample_regions)));
@@ -2841,8 +2846,25 @@ void cmaple::Tree::placeNewSampleMidBranch(const Index& selected_node_index,
         estimateBranchLength<num_states>(selected_node.getMidBranchLh(), sample);
         
     // optimize the mid_top blength
-    const std::unique_ptr<SeqRegions>& upper_lr_regions =
-        getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
+    // extract the upper left/right regions at the selected node
+    // integrate mutations at this node, if any
+    // 0. extract the mutations at the selected node
+    std::unique_ptr<SeqRegions>& selected_node_mutations =
+        node_mutations[selected_node_index.getVectorIndex()];
+    // 1. create a new upper_lr_regions that integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+        (selected_node_mutations && selected_node_mutations->size())
+        ? getPartialLhAtNode(selected_node.getNeighborIndex(TOP))
+          ->integrateMutations<num_states>(selected_node_mutations, aln)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate upper_lr_regions
+    const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+        (selected_node_mutations && selected_node_mutations->size())
+        ? &(mut_integrated_upper_lr_regions)
+        : &(getPartialLhAtNode(selected_node.getNeighborIndex(TOP)));
+    // 3. create a reference from that pointer
+    auto& upper_lr_regions = *upper_lr_regions_ptr;
+    
     const std::unique_ptr<SeqRegions>& lower_regions =
         selected_node.getPartialLh(TOP);
     const RealNumType mid_branch_length =
