@@ -5124,22 +5124,16 @@ void cmaple::Tree::connectNewSample2Branch(
                 ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
         }
         
-        // lower lh vec at the new internal node
-        internal.setPartialLh(TOP, std::move(internal.getPartialLh(TOP)
-            ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        // all lh vectors/regions at the internal node
+        internal.integrateMutAllRegions<num_states>(sibling_node_mutations, aln, true);
         
-        // upper left/right lh vec at the internal node
-        internal.setPartialLh(LEFT, std::move(internal.getPartialLh(LEFT)
-            ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
-        internal.setPartialLh(RIGHT, std::move(internal.getPartialLh(RIGHT)
-            ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        // NHAN added: total lh at the new internal node
+        // recompute the total lh vec
+        internal.computeTotalLhAtNode<num_states>(internal.getTotalLh(), parent_node, aln,
+            model, threshold_prob, root_vector_index == internal_vec_index);
         
-        // mid-branch lh vec at the internal node
-        if (internal.getMidBranchLh())
-        {
-            internal.setMidBranchLh(std::move(internal.getMidBranchLh()
-                ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
-        }
+        // don't need to de-integrate the mutations since it's has been
+        // recomputed on the correct lh vectors
         
         // NHAN added: total lh vec must be computed after others
         // total lh vec at the new sample
@@ -5152,13 +5146,45 @@ void cmaple::Tree::connectNewSample2Branch(
             // don't need to de-integrate the mutations since it's has been
             // recomputed on the correct lh vectors
         }
-        // total lh vec at the new internal node
-        // recompute the total lh vec
-        internal.computeTotalLhAtNode<num_states>(
-            internal.getTotalLh(), parent_node, aln, model, threshold_prob,
-            root_vector_index == internal_vec_index);
-        // don't need to de-integrate the mutations since it's has been
-        // recomputed on the correct lh vectors
+    }
+    
+    // traverse upward to update the number of descendants
+    assert(num_new_descendant >= 0);
+    if (num_new_descendant)
+    {
+        Index traverse_parent_index = internal.getNeighborIndex(TOP);
+        NumSeqsType traverse_parent_vec_index = traverse_parent_index.getVectorIndex();
+        
+        // traverse upward until going beyond the root
+        while (traverse_parent_index.getMiniIndex() != UNDEFINED)
+        {
+            // we still process the root and the nearest local reference here
+            // update the number of descendants
+            corrected_num_descendants[traverse_parent_vec_index] += num_new_descendant;
+            
+            // stop if reaching the nearest local reference
+            if (node_mutations[traverse_parent_vec_index])
+                break;
+            
+            PhyloNode& traverse_node = nodes[traverse_parent_vec_index];
+            
+            // make the internal node a new new local ref node, if it meets the requirements
+            if (corrected_num_descendants[traverse_parent_vec_index] >= params->max_desc_ref
+                && traverse_node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
+            {
+                // make the internal node a new new local ref node
+                
+                // stop traversing further
+                break;
+            }
+            
+            
+            // move upward
+            traverse_parent_index = traverse_node.getNeighborIndex(TOP);
+            traverse_parent_vec_index = traverse_parent_index.getVectorIndex();
+            
+            
+        }
     }
 
   // NHANLT: LOGS FOR DEBUGGING
@@ -11429,4 +11455,110 @@ void Tree::expandVectorsAfterTreeExpansion()
     root_supports.resize(num_nodes, -1);
     sprta_alt_branches.resize(num_nodes);
     sprta_support_list.resize(num_nodes);
+}
+
+template <const StateType num_states>
+auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_index, const int old_num_desc) -> void
+{
+    // dummy variables
+    const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+    const RealNumType threshold_prob = params->threshold_prob;
+    
+    // 1. traverse upward, reduce the number of descendants
+    cmaple::Index traverse_parent_index = node.getNeighborIndex(TOP);
+    while (traverse_parent_index.getMiniIndex() != UNDEFINED)
+    {
+        const NumSeqsType& traverse_parent_vec_index = traverse_parent_index.getVectorIndex();
+        corrected_num_descendants[traverse_parent_vec_index] -= old_num_desc;
+        
+        // stop if reaching a local reference
+        if (node_mutations[traverse_parent_vec_index])
+            break;
+        
+        // move upward
+        PhyloNode& traverse_parent_node = nodes[traverse_parent_vec_index];
+        traverse_parent_index = traverse_parent_node.getNeighborIndex(TOP);
+    }
+    
+    // 2. define mutations at node
+    const NumSeqsType& node_vec_index = node_index.getVectorIndex();
+    node_mutations[node_vec_index] = cmaple::make_unique<SeqRegions>();
+    std::unique_ptr<SeqRegions>& this_node_mutations = node_mutations[node_vec_index];
+    std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
+    // loop over the lower regions of this node
+    // extract mutations and at R regions if needed
+    // loop over the vector of regions
+    for (auto i = 0; i < lower_regions->size(); ++i)
+    {
+        const SeqRegion& seq_region = lower_regions->at(i);
+        
+        // only handle mutations
+        if (seq_region.type < num_states)
+        {
+            // add an R region if needed
+            PositionType prev_region_pos = seq_region.position;
+            if (prev_region_pos > 0)
+            {
+                --prev_region_pos;
+                
+                if (!this_node_mutations->size()
+                    || this_node_mutations->back().position < prev_region_pos)
+                {
+                    this_node_mutations->push_back(SeqRegion(TYPE_R, prev_region_pos));
+                }
+            }
+            
+            // add this mutation
+            this_node_mutations->push_back(SeqRegion::clone(seq_region));
+        }
+    }
+    // add the last R region if needed
+    if (!this_node_mutations->size()
+        || this_node_mutations->back().position < seq_length - 1)
+    {
+        this_node_mutations->push_back(SeqRegion(TYPE_R, seq_length - 1));
+    }
+    
+    // 3. update the lh vectors of this node
+    node.integrateMutAllRegions<num_states>(this_node_mutations, aln);
+    // NHAN added: total lh at the new internal node
+    // recompute the total lh vec
+    const NumSeqsType parent_vec_index = node.getNeighborIndex(TOP).getVectorIndex();
+    node.computeTotalLhAtNode<num_states>(node.getTotalLh(), nodes[parent_vec_index], aln,
+        model, threshold_prob, root_vector_index == node_vec_index);
+    
+    // 4. Traverse downward to integrate the mutations to descendant nodes
+    assert(node.isInternal());
+    stack<NumSeqsType> node_stack;
+    node_stack.push(node.getNeighborIndex(LEFT).getVectorIndex());
+    node_stack.push(node.getNeighborIndex(RIGHT).getVectorIndex());
+    while (!node_stack.empty()) {
+        // extract the corresponding node
+        const NumSeqsType child_node_vec_index = node_stack.top();
+        node_stack.pop();
+        PhyloNode& child_node = nodes[child_node_vec_index];
+        
+        // if child node is also a local reference node
+        if (node_mutations[child_node_vec_index])
+        {
+            // TODO merge these two lists of mutations
+            
+        }
+        // otherwise, simply integrate the mutations from the new reference node
+        else
+        {
+            // update the lh vectors of this child node
+            child_node.integrateMutAllRegions<num_states>(this_node_mutations, aln);
+            // NHAN added: total lh at the new internal node
+            // recompute the total lh vec
+            const NumSeqsType parent_child_vec_index = child_node.getNeighborIndex(TOP).getVectorIndex();
+            child_node.computeTotalLhAtNode<num_states>(child_node.getTotalLh(),
+                nodes[parent_child_vec_index], aln, model, threshold_prob,
+                root_vector_index == child_node_vec_index);
+            
+            // keep traversing downward
+            node_stack.push(child_node.getNeighborIndex(LEFT).getVectorIndex());
+            node_stack.push(child_node.getNeighborIndex(RIGHT).getVectorIndex());
+        }
+    }
 }
