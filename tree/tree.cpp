@@ -346,7 +346,7 @@ void cmaple::Tree::attachAlnModel(Alignment* n_aln, ModelBase* n_model) {
   // reserve spaces for nodes
   const std::vector<cmaple::Sequence>::size_type num_seqs = aln->data.size();
   nodes.reserve(num_seqs + num_seqs);
-  corrected_num_descendants.reserve(num_seqs + num_seqs);
+  corrected_num_descendants.resize(num_seqs + num_seqs, 0);
   node_mutations.resize(num_seqs + num_seqs);
 
   // Initialize sequence_added -> all sequences has yet added to the tree
@@ -394,7 +394,8 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
   // reset nodes
   nodes.clear();
   nodes.reserve(num_seqs + num_seqs);
-  corrected_num_descendants.reserve(num_seqs + num_seqs);
+  corrected_num_descendants.assign(num_seqs + num_seqs, 0);
+  node_mutations.clear();
   node_mutations.resize(num_seqs + num_seqs);
   // reset node_lhs
   aLRT_SH_computed = false;
@@ -665,7 +666,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
   if (nodes.capacity() < num_seqs + num_seqs)
   {
       nodes.reserve(num_seqs + num_seqs);
-      corrected_num_descendants.reserve(num_seqs + num_seqs);
+      corrected_num_descendants.resize(num_seqs + num_seqs, 0);
       node_mutations.resize(num_seqs + num_seqs);
   }
     
@@ -4976,6 +4977,89 @@ void cmaple::Tree::connectNewSample2Branch(
   upper_left_right_regions->mergeUpperLower<num_states>(new_internal_node->mid_branch_lh,
   half_branch_length, *new_internal_node->partial_lh, half_branch_length, aln,
   model, threshold_prob);*/
+    
+    // record the actual number of descendants added to pass upwards
+    // later, we must traverse upwards to update the number of descendants
+    NumSeqsType num_new_descendant = 0;
+    
+    // determine whether we need to de-integrate the mutations at the node
+    // from the sample regions
+    const NumSeqsType sibling_vec_index = sibling_node_index.getVectorIndex();
+    bool deintegrate_mutations = false;
+    std::unique_ptr<SeqRegions>& sibling_node_mutations =
+        node_mutations[sibling_vec_index];
+    const bool is_sibling_local_ref = sibling_node_mutations
+                    && sibling_node_mutations->size();
+    // if the selected placement node (i.e., the sibling node) is a local reference node
+    // and the new placement forms a polytomy
+    // => move the local reference to the new internal node
+    if (is_sibling_local_ref && down_distance <= 0)
+    {
+        node_mutations[internal_vec_index] = std::move(sibling_node_mutations);
+        
+        // set the number of descendants for the ne internal node
+        corrected_num_descendants[internal_vec_index] =
+            corrected_num_descendants[sibling_vec_index];
+        if (best_blength > 0)
+            ++corrected_num_descendants[internal_vec_index];
+        
+        // NOTES: however, I still think we should count the new sample
+        num_new_descendant = 0;
+    }
+    else
+    {
+        // if the selected placement node is a local reference node
+        if (is_sibling_local_ref)
+        {
+            // after placing the new sample, we must de-integrate
+            // the mutations at the selected placement node because
+            // because the new sample and the internal node is above
+            // the selected placement node
+            deintegrate_mutations = true;
+            
+            // restart the count of the number of descendant
+            corrected_num_descendants[internal_vec_index] = 1;
+            
+            // later, we must traverse upwards to update the number of descendants
+            // by adding one
+            num_new_descendant = 1;
+        }
+        // otherwise, the most common case
+        // if the selected placement node is NOT a local reference node
+        else
+        {
+            // init the count of the number of descendant
+            // by clone that of the selected placement node
+            corrected_num_descendants[internal_vec_index] =
+                corrected_num_descendants[sibling_vec_index];
+            
+            // init the number new of descendants to pass upwards
+            num_new_descendant = 0;
+            
+            // count the selected placement node if it does NOT form a polytomy
+            // with the internal node
+            if (down_distance > 0)
+            {
+                ++corrected_num_descendants[internal_vec_index];
+                ++num_new_descendant;
+            }
+        }
+        
+        // the new internal node is not a reference node
+        node_mutations[internal_vec_index] = nullptr;
+        
+        // count the new sample
+        if (best_blength > 0)
+        {
+            ++corrected_num_descendants[internal_vec_index];
+            ++num_new_descendant;
+        }
+        
+        // correction: if the new internal node forms a polytomy with
+        // the parent node => don't count it
+        if (down_distance > 0 && top_distance <= 0)
+            --num_new_descendant;
+    }
 
   leaf.setPartialLh(TOP, std::move(sample));
   SeqRegions& leaf_lower_regions = *leaf.getPartialLh(TOP);
@@ -5022,6 +5106,60 @@ void cmaple::Tree::connectNewSample2Branch(
         leaf.getMidBranchLh(), half_leaf_blength, leaf_lower_regions,
         half_leaf_blength, aln, model, threshold_prob);
   }
+    
+    // no reference mutation at new sample node
+    node_mutations[leaf_vec_index] = nullptr;
+    
+    // de-integrate mutations from the selected placement node, if needed
+    if (deintegrate_mutations)
+    {
+        // lower lh vec at the new sample
+        leaf.setPartialLh(TOP, std::move(leaf.getPartialLh(TOP)
+            ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        
+        // mid-branch lh vec at the new sample
+        if (leaf.getMidBranchLh())
+        {
+            leaf.setMidBranchLh(std::move(leaf.getMidBranchLh()
+                ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        }
+        
+        // lower lh vec at the new internal node
+        internal.setPartialLh(TOP, std::move(internal.getPartialLh(TOP)
+            ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        
+        // upper left/right lh vec at the internal node
+        internal.setPartialLh(LEFT, std::move(internal.getPartialLh(LEFT)
+            ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        internal.setPartialLh(RIGHT, std::move(internal.getPartialLh(RIGHT)
+            ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        
+        // mid-branch lh vec at the internal node
+        if (internal.getMidBranchLh())
+        {
+            internal.setMidBranchLh(std::move(internal.getMidBranchLh()
+                ->integrateMutations<num_states>(sibling_node_mutations, aln, true)));
+        }
+        
+        // NHAN added: total lh vec must be computed after others
+        // total lh vec at the new sample
+        if (best_blength > 0)
+        {
+            // recompute the total lh vec
+            leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), internal, aln,
+                model, threshold_prob, root_vector_index == leaf_vec_index);
+            
+            // don't need to de-integrate the mutations since it's has been
+            // recomputed on the correct lh vectors
+        }
+        // total lh vec at the new internal node
+        // recompute the total lh vec
+        internal.computeTotalLhAtNode<num_states>(
+            internal.getTotalLh(), parent_node, aln, model, threshold_prob,
+            root_vector_index == internal_vec_index);
+        // don't need to de-integrate the mutations since it's has been
+        // recomputed on the correct lh vectors
+    }
 
   // NHANLT: LOGS FOR DEBUGGING
   /*if (params->debug)
@@ -10208,8 +10346,6 @@ void cmaple::Tree::collapseAllZeroLeave() {
 
   // update the capacity of nodes
   nodes.reserve(nodes.capacity() + num_collapsed_nodes + num_collapsed_nodes);
-  corrected_num_descendants.reserve(corrected_num_descendants.capacity()
-                                    + num_collapsed_nodes + num_collapsed_nodes);
 }
 
 void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node,
@@ -10263,7 +10399,17 @@ void cmaple::Tree::updatePesudoCountModel(PhyloNode& node,
       getPartialLhAtNode(parent_index);
   std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
   if (node.getUpperLength() > 0 && upper_lr_regions && lower_regions) {
-    model->updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
+      // de-integrate mutations at node, if any
+      if (node_mutations[node_index.getVectorIndex()])
+      {
+          model->updatePesudoCount(aln, *upper_lr_regions,
+            *(lower_regions->integrateMutations<num_states>(node_mutations[node_index.getVectorIndex()], aln)));
+      }
+      // otherwise, normally update the pseudo count
+      else
+      {
+          model->updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
+      }
   }
 }
 
