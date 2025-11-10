@@ -12,7 +12,7 @@ TEST(SeqRegions, constructor)
 {
     SeqRegions seqregions1;
     seqregions1.resize(8);
-    seqregions1.emplace_back(TYPE_R, 3500, 0, 0.1321);
+    seqregions1.emplace_back(TYPE_R, 3500, TYPE_N, 0, 0.1321);
     
     SeqRegions seqregions2(std::move(seqregions1));
     EXPECT_EQ(seqregions2.size(), 9);
@@ -139,11 +139,11 @@ void genTestData1(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqR
     Tree tree(&aln, &model);
     
     std::unique_ptr<SeqRegions> seqregions_1 = aln.data[0]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions_2 = aln.data[10]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions_3 = aln.data[100]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     
     seqregions_1->mergeTwoLowers<4>(seqregions1, 1e-5, *seqregions_2, 123e-3,
                 tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
@@ -288,16 +288,16 @@ TEST(SeqRegions, compareWithSample)
 {
     Alignment aln = loadAln5K();
     std::unique_ptr<SeqRegions> seqregions1 = aln.data[0]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions2 = aln.data[10]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::vector<int> expected_results{1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
     std::vector<int> results(20);
     
     // compare the first 20 sequences with the first one
     for (int i = 0; i < results.size(); ++i)
         results[i] = seqregions1->compareWithSample(*aln.data[i]
-                            .getLowerLhVector(aln.ref_seq.size(), aln.num_states,
+                            .getLowerLhVector(aln.ref_seq, aln.num_states,
                             aln.getSeqType()), aln.ref_seq.size(), &aln);
     EXPECT_EQ(expected_results, results);
     
@@ -442,11 +442,11 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     std::unique_ptr<SeqRegions> seqregions_1 = aln.data[0]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions_2 = aln.data[10]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions_3 = aln.data[100]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     
     seqregions_1->mergeTwoLowers<4>(seqregions1, 1e-5, *seqregions_2, 123e-3, \
             tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
@@ -492,11 +492,11 @@ TEST(SeqRegions, computeTotalLhAtRoot)
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
     std::unique_ptr<SeqRegions> seqregions_1 = aln.data[20]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions_2 = aln.data[200]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions_3 = aln.data[2000]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     
     seqregions_1->mergeTwoLowers<4>(seqregions1, 1073e-6, *seqregions_2, 13e-8,
                     tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
@@ -2665,11 +2665,11 @@ void genTestData(std::unique_ptr<SeqRegions>& seqregions1,
     
     // pick a few sequences
     std::unique_ptr<SeqRegions> seqregions_1 =
-    tree.aln->data[test_case].getLowerLhVector(seq_length, num_states, tree.aln->getSeqType());
+    tree.aln->data[test_case].getLowerLhVector(tree.aln->ref_seq, num_states, tree.aln->getSeqType());
     std::unique_ptr<SeqRegions> seqregions_2 =
-    tree.aln->data[test_case * 10].getLowerLhVector(seq_length, num_states, tree.aln->getSeqType());
+    tree.aln->data[test_case * 10].getLowerLhVector(tree.aln->ref_seq, num_states, tree.aln->getSeqType());
     std::unique_ptr<SeqRegions> seqregions_3 =
-    tree.aln->data[test_case * 100].getLowerLhVector(seq_length, num_states, tree.aln->getSeqType());
+    tree.aln->data[test_case * 100].getLowerLhVector(tree.aln->ref_seq, num_states, tree.aln->getSeqType());
     
     // compute the output regions
     seqregions_1->mergeTwoLowers<4>(seqregions1, 1e-5,
