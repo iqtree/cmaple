@@ -11504,16 +11504,8 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_i
                 if (!this_node_mutations->size()
                     || this_node_mutations->back().position < prev_region_pos)
                 {
-                    // if the last region is an R -> just update its last position
-                    if (this_node_mutations->size() && this_node_mutations->back().type == TYPE_R)
-                    {
-                        this_node_mutations->back().position = prev_region_pos;
-                    }
-                    // otherwise, add a new R
-                    else
-                    {
-                        this_node_mutations->push_back(SeqRegion(TYPE_R, prev_region_pos));
-                    }
+                    cmaple::SeqRegions::addNonConsecutiveRRegion(*this_node_mutations, TYPE_R,
+                                            -1, -1, prev_region_pos, threshold_prob);
                 }
             }
             
@@ -11525,16 +11517,8 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_i
     if (!this_node_mutations->size()
         || this_node_mutations->back().position < seq_length - 1)
     {
-        // if the last region is an R -> just update its last position
-        if (this_node_mutations->size() && this_node_mutations->back().type == TYPE_R)
-        {
-            this_node_mutations->back().position = seq_length - 1;
-        }
-        // otherwise, add a new R
-        else
-        {
-            this_node_mutations->push_back(SeqRegion(TYPE_R, seq_length - 1));
-        }
+        cmaple::SeqRegions::addNonConsecutiveRRegion(*this_node_mutations, TYPE_R,
+                                -1, -1, seq_length - 1, threshold_prob);
     }
     
     // 3. update the lh vectors of this node
