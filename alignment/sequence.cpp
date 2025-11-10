@@ -17,9 +17,11 @@ cmaple::Sequence::Sequence(string&& n_seq_name, vector<Mutation>&& n_mutations)
       seq_name(std::move(n_seq_name)) {}
 
 std::unique_ptr<SeqRegions> cmaple::Sequence::getLowerLhVector(
-    const PositionType sequence_length,
+    const std::vector<cmaple::StateType>& ref_seq,
     const StateType num_states,
     const cmaple::SeqRegion::SeqType seq_type) {
+    const PositionType sequence_length = static_cast<PositionType>(ref_seq.size());
+    
   assert(sequence_length > 0);
   assert(num_states > 0);
     
@@ -48,17 +50,22 @@ std::unique_ptr<SeqRegions> cmaple::Sequence::getLowerLhVector(
   for (auto& mutation : (*this)) {
     // insert Region of type R (if necessary)
     if (mutation.position > pos) {
-      regions->emplace_back(TYPE_R, mutation.position - 1);
+      regions->emplace_back(TYPE_R, mutation.position - 1, TYPE_N);
     }
 
     // convert the current mutation
     pos = mutation.position + mutation.getLength();
+    // record the previous state of mutations
+    if (mutation.type < num_states)
+    {
+        mutation.prev_state = ref_seq[mutation.position];
+    }
     regions->emplace_back(&mutation, seq_type, num_states);
   }
 
   // insert the last Region of type R (if necessary)
   if (pos < sequence_length) {
-    regions->emplace_back(TYPE_R, sequence_length - 1);
+    regions->emplace_back(TYPE_R, sequence_length - 1, TYPE_N);
   }
 
   return regions;
