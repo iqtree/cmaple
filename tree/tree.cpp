@@ -5145,17 +5145,16 @@ void cmaple::Tree::connectNewSample2Branch(
                 && traverse_node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
             {
                 // make the internal node a new new local ref node
+                makeReferenceNode<num_states>(traverse_node, traverse_parent_index,
+                    corrected_num_descendants[traverse_parent_vec_index] - num_new_descendant);
                 
                 // stop traversing further
                 break;
             }
             
-            
             // move upward
             traverse_parent_index = traverse_node.getNeighborIndex(TOP);
             traverse_parent_vec_index = traverse_parent_index.getVectorIndex();
-            
-            
         }
     }
 
@@ -11494,7 +11493,9 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_i
         if (node_mutations[child_node_vec_index])
         {
             // TODO merge these two lists of mutations
-            
+            node_mutations[child_node_vec_index] = this_node_mutations
+                ->mergeTwoRefs<num_states>(node_mutations[child_node_vec_index],
+                    aln, threshold_prob, true);
         }
         // otherwise, simply integrate the mutations from the new reference node
         else
