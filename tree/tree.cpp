@@ -680,7 +680,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
     nodes.emplace_back(LeafNode(0));
     PhyloNode& root = nodes[0];
     root.setPartialLh(TOP, std::move(sequence->getLowerLhVector(
-                               seq_length, num_states, aln->getSeqType())));
+        aln->ref_seq, num_states, aln->getSeqType())));
     root.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(root.getTotalLh(),
                                                              model);
     root.setUpperLength(0);
@@ -732,7 +732,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               {
                   // get the lower likelihood vector of the current sequence
                   std::unique_ptr<SeqRegions> lower_regions =
-                  sequence[j].getLowerLhVector(seq_length, num_states, aln->getSeqType());
+                  sequence[j].getLowerLhVector(aln->ref_seq, num_states, aln->getSeqType());
                   
                   // seek a position for new sample placement
                   Index selected_node_index;
@@ -830,7 +830,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               
               // get the lower likelihood vector of the current sequence
               lower_regions =
-              sequence->getLowerLhVector(seq_length, num_states, aln->getSeqType());
+              sequence->getLowerLhVector(aln->ref_seq, num_states, aln->getSeqType());
           }
           
           // seek a placement and place the sample
@@ -9994,7 +9994,7 @@ NumSeqsType cmaple::Tree::parseFile(
       const NumSeqsType sequence_index = it->second;
       tmp_root.setSeqNameIndex(sequence_index);
       tmp_root.setPartialLh(TOP, aln->data[sequence_index]
-                .getLowerLhVector(static_cast<PositionType>(aln->ref_seq.size()),
+                .getLowerLhVector(aln->ref_seq,
                                   aln->num_states, aln->getSeqType()));
 
       // mark the sequece as added (to the tree)
@@ -10596,7 +10596,7 @@ void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
 
   // dummy variables
   std::unique_ptr<SeqRegions> lower_regions =
-      aln->data[seq_name_index].getLowerLhVector(static_cast<PositionType>(aln->ref_seq.size()),
+      aln->data[seq_name_index].getLowerLhVector(aln->ref_seq,
                                                  num_states, aln->getSeqType());
   const std::unique_ptr<SeqRegions>& upper_left_right_regions =
       getPartialLhAtNode(parent_index);

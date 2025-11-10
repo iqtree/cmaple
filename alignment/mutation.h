@@ -31,7 +31,7 @@ namespace cmaple
         /**
          *  Mutation constructor
          */
-        Mutation(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::StateType n_prev_state = cmaple::TYPE_N);
+        Mutation(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::StateType n_prev_state);
         
         /**
          *  Mutation constructor
@@ -39,7 +39,7 @@ namespace cmaple
          *  - n_type is invalid
          *  - n_length is greater than the maximum value of the LengthType
          */
-        Mutation(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::LengthTypeLarge n_length, cmaple::StateType n_prev_state = cmaple::TYPE_N);
+        Mutation(cmaple::StateType n_type, cmaple::PositionType n_position, cmaple::LengthTypeLarge n_length, cmaple::StateType n_prev_state);
         
         /**
          *  Return the length of the mutation

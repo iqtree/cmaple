@@ -513,7 +513,7 @@ void cmaple::SeqRegions::addNonConsecutiveRRegion(
   }
 
   // if we cannot merge new region into existing R region => just add a new one
-  regions.emplace_back(new_region_type, end_pos, plength_observation2node,
+  regions.emplace_back(new_region_type, end_pos, TYPE_N, plength_observation2node,
                        plength_observation2root);
 }
 
@@ -573,7 +573,7 @@ void cmaple::SeqRegions::addSimplifiedO(
                                     ::size_type>(end_pos)], aln->num_states, threshold_prob);
 
   if (new_state == cmaple::TYPE_O) {
-    merged_regions.emplace_back(cmaple::TYPE_O, end_pos, 0, 0,
+    merged_regions.emplace_back(cmaple::TYPE_O, end_pos, TYPE_N, 0, 0,
                                 std::move(new_lh));
   } else {
     // add a new region and try to merge consecutive R regions together

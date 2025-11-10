@@ -954,7 +954,7 @@ void merge_N_O(const RealNumType lower_plength,
   normalize_arr(new_lh->data(), num_states, sum_lh);
 
   // add merged region into merged_regions
-  merged_target.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+  merged_target.emplace_back(TYPE_O, end_pos, TYPE_N, 0, 0, std::move(new_lh));
 }
 
 template <const StateType num_states>
@@ -994,10 +994,10 @@ void merge_O_N(const SeqRegion& reg_o,
     normalize_arr(new_lh->data(), num_states, sum_lh);
 
     // add merged region into merged_regions
-    merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+    merged_regions.emplace_back(TYPE_O, end_pos, TYPE_N, 0, 0, std::move(new_lh));
   } else {
     // add merged region into merged_regions
-    merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, *(reg_o.likelihood));
+    merged_regions.emplace_back(TYPE_O, end_pos, TYPE_N, 0, 0, *(reg_o.likelihood));
   }
 }
 
@@ -1126,7 +1126,7 @@ void merge_RACGT_RACGT(const SeqRegion& seq2_region,
   normalize_arr(new_lh.data(), num_states, sum_new_lh);
 
   // add new region into the merged regions
-  merged_regions.emplace_back(TYPE_O, end_pos, 0, 0, std::move(new_lh));
+  merged_regions.emplace_back(TYPE_O, end_pos, TYPE_N, 0, 0, std::move(new_lh));
 }
 
 template <const StateType num_states>
@@ -1248,7 +1248,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
     // seq1_entry = 'N'
     // seq1_entry = 'N' and seq2_entry = 'N'
     if (s1s2 == NN) {
-      merged_regions->emplace_back(TYPE_N, end_pos);
+      merged_regions->emplace_back(TYPE_N, end_pos, TYPE_N);
       // seq1_entry = 'N' and seq2_entry = O/R/ACGT
       // seq1_entry = 'N' and seq2_entry = O
     } else if (s1s2 == NO) {
@@ -1739,7 +1739,7 @@ RealNumType SeqRegions::mergeTwoLowers(
     // seq1_entry = 'N'
     // seq1_entry = 'N' and seq2_entry = 'N'
     if (s1s2 == NN) {
-      merged_regions->emplace_back(TYPE_N, end_pos);
+      merged_regions->emplace_back(TYPE_N, end_pos, TYPE_N);
       // seq1_entry = 'N' and seq2_entry = O/R/ACGT
       // seq1_entry = 'N' and seq2_entry = O
     } else if (s1s2 == NO) {
@@ -1946,7 +1946,7 @@ void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh,
     const auto* const region = &elem;
     // type N
     if (region->type == TYPE_N) {
-      total_lh->emplace_back(region->type, region->position,
+      total_lh->emplace_back(region->type, region->position, TYPE_N,
                              region->plength_observation2node,
                              region->plength_observation2root);
     } else {
@@ -1971,7 +1971,7 @@ void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh,
 
         // add new region to the total_lh_regions
         total_lh->emplace_back(
-            region->type, region->position, region->plength_observation2node,
+            region->type, region->position, TYPE_N, region->plength_observation2node,
             region->plength_observation2root, std::move(new_lh));
       }
       // other types: R or A/C/G/T
@@ -1979,11 +1979,11 @@ void SeqRegions::computeTotalLhAtRoot(std::unique_ptr<SeqRegions>& total_lh,
         // add new region to the total_lh_regions
 #if __cplusplus >= 201703L
         SeqRegion& new_region = total_lh->emplace_back(
-            region->type, region->position, region->plength_observation2node,
+            region->type, region->position, TYPE_N, region->plength_observation2node,
             region->plength_observation2root);
 #else
           total_lh->emplace_back(
-              region->type, region->position, region->plength_observation2node,
+              region->type, region->position, TYPE_N, region->plength_observation2node,
               region->plength_observation2root);
           SeqRegion& new_region = total_lh->at(total_lh->size() - 1);
 #endif
@@ -2417,7 +2417,7 @@ RealNumType SeqRegions::calculateSiteLhContributions(
     // seq1_entry = 'N'
     // seq1_entry = 'N' and seq2_entry = 'N'
     if (s1s2 == NN) {
-      merged_regions->emplace_back(TYPE_N, end_pos);
+      merged_regions->emplace_back(TYPE_N, end_pos, TYPE_N);
       // seq1_entry = 'N' and seq2_entry = O/R/ACGT
       // seq1_entry = 'N' and seq2_entry = O
     } else if (s1s2 == NO) {

@@ -11,10 +11,11 @@ using namespace cmaple;
 
 cmaple::SeqRegion::SeqRegion(StateType n_type,
                              PositionType n_position,
+                             cmaple::StateType n_prev_state,
                              RealNumType n_plength_observation,
                              RealNumType n_plength_from_root,
                              LHPtrType n_likelihood)
-    : Mutation(n_type, n_position),
+      : Mutation(n_type, n_position, n_prev_state),
       plength_observation2node(n_plength_observation),
       plength_observation2root(n_plength_from_root) {
   if (n_likelihood) {
@@ -24,19 +25,21 @@ cmaple::SeqRegion::SeqRegion(StateType n_type,
 
 cmaple::SeqRegion::SeqRegion(StateType n_type,
                              PositionType n_position,
+                             cmaple::StateType n_prev_state,
                              RealNumType n_plength_observation,
                              RealNumType n_plength_from_root,
                              const LHType& n_likelihood)
-    : Mutation(n_type, n_position),
+      : Mutation(n_type, n_position, n_prev_state),
       plength_observation2node(n_plength_observation),
       plength_observation2root(n_plength_from_root),
       likelihood(cmaple::make_unique<LHType>(n_likelihood)) {}
 
 cmaple::SeqRegion::SeqRegion(StateType n_type,
                              PositionType n_position,
+                             cmaple::StateType n_prev_state,
                              SeqType seq_type,
                              int max_num_states)
-    : Mutation(n_type, n_position) {
+    : Mutation(n_type, n_position, n_prev_state) {
   convertAmbiguiousState(seq_type, max_num_states);
 }
 
@@ -44,7 +47,7 @@ cmaple::SeqRegion::SeqRegion(Mutation* n_mutation,
                              SeqType seq_type,
                              int max_num_states)
     : Mutation(n_mutation->type,
-               n_mutation->position + n_mutation->getLength() - 1) {
+               n_mutation->position + n_mutation->getLength() - 1, n_mutation->prev_state) {
   convertAmbiguiousState(seq_type, max_num_states);
 }
 

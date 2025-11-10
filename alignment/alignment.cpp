@@ -615,9 +615,9 @@ void cmaple::Alignment::addMutation(Sequence* sequence,
     
   // add the mutation into sequence
   if (length == -1) {
-    sequence->emplace_back(convertChar2State(state_char), pos);
+    sequence->emplace_back(convertChar2State(state_char), pos, TYPE_N);
   } else {
-    sequence->emplace_back(convertChar2State(state_char), pos, length);
+    sequence->emplace_back(convertChar2State(state_char), pos, length, TYPE_N);
   }
 }
 
@@ -925,7 +925,7 @@ void cmaple::Alignment::readMaple(std::istream& aln_stream) {
 
       // add a new mutation into mutations
       if (state == TYPE_N || state == TYPE_DEL) {
-        mutations.emplace_back(state, pos - 1, length);
+        mutations.emplace_back(state, pos - 1, length, TYPE_N);
       } else {
         StateType refState = ref_seq[pos - 1];
         if(refState == state)
@@ -935,7 +935,7 @@ void cmaple::Alignment::readMaple(std::istream& aln_stream) {
                 " in sequence " + seq_name + 
                 " is equal to reference nucleotide. Check reference and alignment are correct.");
         }
-        mutations.emplace_back(state, pos - 1);
+        mutations.emplace_back(state, pos - 1, TYPE_N);
       }
     }
   }
