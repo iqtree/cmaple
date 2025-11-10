@@ -248,6 +248,7 @@ class PhyloNode {
    */
   template <const cmaple::StateType num_states>
   void computeTotalLhAtNode(std::unique_ptr<SeqRegions>& total_lh,
+                            std::unique_ptr<SeqRegions>& this_node_mutations,
                             PhyloNode& neighbor,
                             const Alignment* aln,
                             const ModelBase* model,
@@ -368,6 +369,7 @@ struct NodeLh {
 template <const StateType num_states>
 void cmaple::PhyloNode::computeTotalLhAtNode(
     std::unique_ptr<SeqRegions>& total_lh,
+    std::unique_ptr<SeqRegions>& this_node_mutations,
     PhyloNode& neighbor,
     const Alignment* aln,
     const ModelBase* model,
@@ -383,9 +385,24 @@ void cmaple::PhyloNode::computeTotalLhAtNode(
                                                         blength);
     // if node is normal nodes
   } else {
+      std::unique_ptr<SeqRegions>& ori_upper_lr_regions =
+        neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex());
+      // 1. create a new upper_lr_regions that integrate the mutations, if any
+      std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+          (this_node_mutations && this_node_mutations->size())
+          ? ori_upper_lr_regions
+            ->integrateMutations<num_states>(this_node_mutations, aln)
+          : nullptr;
+      // 2. create the pointer that points to the appropriate upper_lr_regions
+      const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+          (this_node_mutations && this_node_mutations->size())
+          ? &mut_integrated_upper_lr_regions
+          : &ori_upper_lr_regions;
+      // 3. create a reference from that pointer
+      auto& upper_lr_regions = *upper_lr_regions_ptr;
+      
     std::unique_ptr<SeqRegions>& lower_regions = getPartialLh(TOP);
-    neighbor.getPartialLh(getNeighborIndex(TOP).getMiniIndex())
-        ->mergeUpperLower<num_states>(total_lh, getUpperLength(),
+    upper_lr_regions->mergeUpperLower<num_states>(total_lh, getUpperLength(),
                                       *lower_regions, blength, aln, model,
                                       threshold_prob);
   }

@@ -2029,9 +2029,10 @@ void cmaple::Tree::updatePartialLhFromParent(
     const std::unique_ptr<SeqRegions>& ori_parent_upper_regions,
     const PositionType seq_length) {
     
+    const NumSeqsType& node_vec_index = index.getVectorIndex();
     // 0. extract the mutations at the node
     std::unique_ptr<SeqRegions>& current_node_mutations =
-        node_mutations[index.getVectorIndex()];
+        node_mutations[node_vec_index];
     // 1. create a new parent_upper_regions that integrate the mutations, if any
     std::unique_ptr<SeqRegions> mut_integrated_parent_upper_regions =
         (current_node_mutations && current_node_mutations->size())
@@ -2058,9 +2059,9 @@ void cmaple::Tree::updatePartialLhFromParent(
       // node->computeTotalLhAtNode(aln, model, params->threshold_prob, node ==
       // root);
       node.computeTotalLhAtNode<num_states>(
-          node.getTotalLh(), nodes[node.getNeighborIndex(TOP).getVectorIndex()],
+          node.getTotalLh(), node_mutations[node_vec_index], nodes[node.getNeighborIndex(TOP).getVectorIndex()],
           aln, model, params->threshold_prob,
-          root_vector_index == index.getVectorIndex());
+          root_vector_index == node_vec_index);
 
       if (!node.getTotalLh() || node.getTotalLh()->size() == 0) {
         throw std::logic_error(
@@ -2241,7 +2242,7 @@ void cmaple::Tree::updatePartialLhFromChildren(
       // model, params->threshold_prob, top_node == root, false);
       std::unique_ptr<SeqRegions> new_total_lh_regions = nullptr;
       node.computeTotalLhAtNode<num_states>(
-          new_total_lh_regions,
+          new_total_lh_regions, node_mutations[node_vec_index],
           nodes[node.getNeighborIndex(TOP).getVectorIndex()], aln, model,
           params->threshold_prob, root_vector_index == node_vec_index);
 
@@ -4254,7 +4255,7 @@ void cmaple::Tree::connectSubTree2Branch(
   // new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob,
   // new_internal_node == root);
   internal.computeTotalLhAtNode<num_states>(
-      internal.getTotalLh(), nodes[parent_vec], aln, model, threshold_prob,
+      internal.getTotalLh(), node_mutations[internal_vec], nodes[parent_vec], aln, model, threshold_prob,
       root_vector_index == internal_vec);
 
   if (!internal.getTotalLh()) {  //->total_lh ||
@@ -5169,7 +5170,7 @@ void cmaple::Tree::connectNewSample2Branch(
   // new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob,
   // new_internal_node == root);
   internal.computeTotalLhAtNode<num_states>(
-      internal.getTotalLh(), parent_node, aln, model, threshold_prob,
+      internal.getTotalLh(), node_mutations[internal_vec_index], parent_node, aln, model, threshold_prob,
       root_vector_index == internal_vec_index);
 
   // if (!internal.getTotalLh() || internal.getTotalLh()->empty())
@@ -5181,7 +5182,7 @@ void cmaple::Tree::connectNewSample2Branch(
   if (best_blength > 0) {
     // new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob,
     // new_sample_node == root);
-    leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), internal, aln,
+    leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), node_mutations[leaf_vec_index], internal, aln,
                                           model, threshold_prob,
                                           root_vector_index == leaf_vec_index);
 
@@ -5218,7 +5219,7 @@ void cmaple::Tree::connectNewSample2Branch(
         
         // NHAN added: total lh at the new internal node
         // recompute the total lh vec
-        internal.computeTotalLhAtNode<num_states>(internal.getTotalLh(), parent_node, aln,
+        internal.computeTotalLhAtNode<num_states>(internal.getTotalLh(), node_mutations[internal_vec_index], parent_node, aln,
             model, threshold_prob, root_vector_index == internal_vec_index);
         
         // don't need to de-integrate the mutations since it's has been
@@ -5229,7 +5230,7 @@ void cmaple::Tree::connectNewSample2Branch(
         if (best_blength > 0)
         {
             // recompute the total lh vec
-            leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), internal, aln,
+            leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), node_mutations[leaf_vec_index], internal, aln,
                 model, threshold_prob, root_vector_index == leaf_vec_index);
             
             // don't need to de-integrate the mutations since it's has been
@@ -5583,7 +5584,7 @@ void cmaple::Tree::connectNewSample2Root(
   if (best_length2 > 0) {
     // new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob,
     // new_sample_node == root);
-    leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), new_root, aln,
+    leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), node_mutations[leaf_vec_index], new_root, aln,
                                           model, threshold_prob,
                                           root_vector_index == leaf_vec_index);
 
@@ -5776,7 +5777,7 @@ void cmaple::Tree::refreshNonLowerLhsFromParent(Index& node_index,
     // update the total lh
     // node->computeTotalLhAtNode(aln, model, threshold_prob, node == root);
     node.computeTotalLhAtNode<num_states>(
-        node.getTotalLh(), parent_node, aln, model, threshold_prob,
+        node.getTotalLh(), node_mutations[node_index.getVectorIndex()], parent_node, aln, model, threshold_prob,
         root_vector_index == node_index.getVectorIndex());
 
     if (!node.getTotalLh()) {
@@ -11632,7 +11633,7 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_i
     // NHAN added: total lh at the new internal node
     // recompute the total lh vec
     const NumSeqsType parent_vec_index = node.getNeighborIndex(TOP).getVectorIndex();
-    node.computeTotalLhAtNode<num_states>(node.getTotalLh(), nodes[parent_vec_index], aln,
+    node.computeTotalLhAtNode<num_states>(node.getTotalLh(), node_mutations[node_vec_index], nodes[parent_vec_index], aln,
         model, threshold_prob, root_vector_index == node_vec_index);
     
     // 4. Traverse downward to integrate the mutations to descendant nodes
@@ -11662,7 +11663,7 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_i
             // NHAN added: total lh at the new internal node
             // recompute the total lh vec
             const NumSeqsType parent_child_vec_index = child_node.getNeighborIndex(TOP).getVectorIndex();
-            child_node.computeTotalLhAtNode<num_states>(child_node.getTotalLh(),
+            child_node.computeTotalLhAtNode<num_states>(child_node.getTotalLh(), node_mutations[child_node_vec_index],
                 nodes[parent_child_vec_index], aln, model, threshold_prob,
                 root_vector_index == child_node_vec_index);
             
