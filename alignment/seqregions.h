@@ -151,6 +151,22 @@ class SeqRegions : public std::vector<SeqRegion> {
         -> std::unique_ptr<SeqRegions>;
     
     /**
+     Merge two local references
+     This regions is the top/new one
+     @param mutations_2 the second local reference
+     @param aln the alignment
+     @param downward True if merging different sides
+     @return the output regions
+     @throw std::logic\_error if unexpected values/behaviors found during the
+     operations
+     */
+    template <const cmaple::StateType num_states>
+    auto mergeTwoRefs(std::unique_ptr<SeqRegions>& mutations_2,
+                      const Alignment* aln, const cmaple::RealNumType threshold_prob,
+                      const bool downward = false) const
+        -> std::unique_ptr<SeqRegions>;
+    
+    /**
      Check if this likelihood vector contains at least N mutations
      @param min_mut the number of mutations
      @return TRUE if this likelihood vector contains at least N mutations
@@ -786,6 +802,125 @@ auto SeqRegions::integrateMutations(
               last_region.prev_state = mut_new_state;
           }
       }
+
+    // update pos
+    pos = end_pos + 1;
+  }
+
+#ifdef DEBUG
+  // ensure we did the correct reserve, otherwise it was
+  // a pessimization
+  assert(output_regions->capacity() == max_elements);
+#endif
+    return output_regions;
+}
+
+template <const StateType num_states>
+auto SeqRegions::mergeTwoRefs(std::unique_ptr<SeqRegions>& mutations_2,
+                            const Alignment* aln, const cmaple::RealNumType threshold_prob,
+                            const bool downward) const -> std::unique_ptr<SeqRegions>
+{
+    assert(aln);
+    assert(size());
+    assert(mutations_2 && mutations_2->size());
+            
+    // init merged_regions
+    std::unique_ptr<SeqRegions> output_regions = cmaple::make_unique<SeqRegions>();
+    
+  // init variables
+  PositionType pos = 0;
+  const SeqRegions& seq_regions_1 = *this;
+  const SeqRegions& seq_regions_2 = *mutations_2;
+  size_t iseq = 0;
+  size_t imut = 0;
+  const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+
+  // avoid realloc of vector data (minimize memory footprint)
+    output_regions->reserve(countSharedSegments(
+        seq_regions_2, static_cast<size_t>(seq_length)));
+    
+#ifdef DEBUG
+  // remember capacity (may be more than we 'reserved')
+  const size_t max_elements = output_regions->capacity();
+#endif
+
+  while (pos < seq_length) {
+    PositionType end_pos;
+
+    // get the next shared segment in the two sequences
+    cmaple::SeqRegions::getNextSharedSegment(pos, seq_regions_1, seq_regions_2,
+                                             iseq, imut, end_pos);
+    const auto* const seq_region_1 = &seq_regions_1[iseq];
+    const auto* const seq_region_2 = &seq_regions_2[imut];
+      
+    // if seq_region_2 is a mutation
+    if (seq_region_2->type < num_states)
+    {
+        // if seq_region_1 is also a mutation
+        if (seq_region_1->type < num_states)
+        {
+            StateType from_state = seq_region_1->prev_state;
+            StateType to_state = seq_region_1->type;
+            if (downward)
+            {
+                from_state = seq_region_1->type;
+                to_state = seq_region_1->prev_state;
+            }
+            
+            // validate the two mutations
+            if (to_state != seq_region_2->prev_state)
+            {
+                std::cout << "WARNING: inconsistent mutations " << std::endl;
+            }
+            
+            // if the two mutations don't cancel out each other
+            // record them
+            if (from_state != seq_region_2->type)
+            {
+                // clone the mutation from the ref 2
+                output_regions->push_back(SeqRegion::clone(*seq_region_2));
+                
+                // update the previous state of the newly added mutation
+                SeqRegion& last_region = output_regions->back();
+                last_region.prev_state = from_state;
+            }
+            // otherwise, add an R to make sure continue regions
+            else
+            {
+                cmaple::SeqRegions::addNonConsecutiveRRegion(*output_regions, TYPE_R,
+                                        -1, -1, end_pos, threshold_prob);
+            }
+        }
+        // otherwise, simply add seq_region_2
+        else
+        {
+            output_regions->push_back(SeqRegion::clone(*seq_region_2));
+        }
+    }
+    else
+    {
+        // if seq_region_1 is a mutation
+        if (seq_region_1->type < num_states)
+        {
+            // add mutation from the reference 1
+            output_regions->push_back(SeqRegion::clone(*seq_region_1));
+            // swap the direction if needed
+            if (downward)
+            {
+                SeqRegion& last_region = output_regions->back();
+                const StateType ori_state = last_region.type;
+                last_region.type = last_region.prev_state;
+                last_region.prev_state = ori_state;
+            }
+        }
+        // otherwise, both are not mutations
+        // add an R region
+        else
+        {
+            cmaple::SeqRegions::addNonConsecutiveRRegion(*output_regions, TYPE_R,
+                                    -1, -1, end_pos, threshold_prob);
+        }
+    }
 
     // update pos
     pos = end_pos + 1;
