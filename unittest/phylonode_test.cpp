@@ -288,7 +288,7 @@ TEST(PhyloNode, TestGetSetPartialLh)
     
     // set partial lh for an internal
     SeqRegions seqregions2;
-    seqregions2.emplace_back(TYPE_R, 382, -1, 0.321);
+    seqregions2.emplace_back(TYPE_R, 382, TYPE_N, -1, 0.321);
     node2.setPartialLh(TOP, cmaple::make_unique<SeqRegions>(std::move(seqregions2)));
     EXPECT_EQ(node2.getPartialLh(TOP)->size(), 1);
     EXPECT_EQ(node2.getPartialLh(LEFT), nullptr);
@@ -357,11 +357,11 @@ TEST(PhyloNode, TestComputeTotalLhAtNode)
     std::unique_ptr<Params> params = ParamsBuilder().build();
     
     std::unique_ptr<SeqRegions> seqregions1 = aln.data[0]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions2 = aln.data[10]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     std::unique_ptr<SeqRegions> seqregions3 = aln.data[100]
-        .getLowerLhVector(aln.ref_seq.size(), aln.num_states, aln.getSeqType());
+        .getLowerLhVector(aln.ref_seq, aln.num_states, aln.getSeqType());
     
     // test on a root
     std::unique_ptr<SeqRegions> merge_regions1 = nullptr;
