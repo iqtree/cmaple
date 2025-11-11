@@ -626,6 +626,7 @@ cmaple::Params::Params() {
   thresh_loglh_optimal_diff_fac = 1.0;
   max_desc_ref = 50;
   min_mut_ref = 2;
+  local_refs = true;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1232,6 +1233,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           if (params.min_mut_ref <= 0) {
             outError("<NUM_MUTATIONS> must be positive!");
           }
+          continue;
+        }
+        if (strcmp(argv[cnt], "--disable-local-ref") == 0 ||
+            strcmp(argv[cnt], "-disable-local-ref") == 0) {
+            params.local_refs = false;
+
           continue;
         }
       if (strcmp(argv[cnt], "--branch-support") == 0 ||

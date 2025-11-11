@@ -750,6 +750,12 @@ class Params {
      * Default: 2
      */
     int min_mut_ref;
+    
+    /**
+     * FALSE to turn off local references
+     * Default: TRUE
+     */
+    bool local_refs;
 
   /*
       TRUE to log debugging
