@@ -10508,21 +10508,27 @@ template <const StateType num_states>
 void cmaple::Tree::updatePesudoCountModel(PhyloNode& node,
                                           const Index node_index,
                                           const Index parent_index) {
-  std::unique_ptr<SeqRegions>& upper_lr_regions =
-      getPartialLhAtNode(parent_index);
+    
   std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);
-  if (node.getUpperLength() > 0 && upper_lr_regions && lower_regions) {
-      // de-integrate mutations at node, if any
-      if (node_mutations[node_index.getVectorIndex()])
-      {
-          model->updatePesudoCount(aln, *upper_lr_regions,
-            *(lower_regions->integrateMutations<num_states>(node_mutations[node_index.getVectorIndex()], aln)));
-      }
-      // otherwise, normally update the pseudo count
-      else
-      {
-          model->updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
-      }
+  if (node.getUpperLength() > 0 && getPartialLhAtNode(parent_index) && lower_regions) {
+      // 0. extract the mutations at the current node
+      std::unique_ptr<SeqRegions>& this_node_mutations =
+          node_mutations[node_index.getVectorIndex()];
+      // 1. create a new upper_lr_regions that integrate the mutations, if any
+      std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+          (this_node_mutations && this_node_mutations->size())
+          ? getPartialLhAtNode(parent_index)
+            ->integrateMutations<num_states>(this_node_mutations, aln)
+          : nullptr;
+      // 2. create the pointer that points to the appropriate upper_lr_regions
+      const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+          (this_node_mutations && this_node_mutations->size())
+          ? &(mut_integrated_upper_lr_regions)
+          : &(getPartialLhAtNode(parent_index));
+      // 3. create a reference from that pointer
+      auto& upper_lr_regions = *upper_lr_regions_ptr;
+      
+      model->updatePesudoCount(aln, *upper_lr_regions, *lower_regions);
   }
 }
 
