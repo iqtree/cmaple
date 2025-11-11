@@ -268,6 +268,8 @@ class SeqRegions : public std::vector<SeqRegion> {
    */
   template <const cmaple::StateType num_states>
   cmaple::RealNumType computeAbsoluteLhAtRoot(
+      std::unique_ptr<SeqRegions>& node_mutations,
+      Alignment* aln,
       const ModelBase* model,
       const std::vector<std::vector<PositionType>>& cumulative_base);
 
@@ -1803,17 +1805,25 @@ RealNumType SeqRegions::mergeTwoLowers(
 
 template <const StateType num_states>
 auto SeqRegions::computeAbsoluteLhAtRoot(
+    std::unique_ptr<SeqRegions>& node_mutations,
+    Alignment* aln,
     const ModelBase* model,
     const std::vector<std::vector<PositionType>>& cumulative_base)
     -> RealNumType {
   assert(model);
   assert(size() > 0);
         
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_regions =
+        (node_mutations && node_mutations->size())
+        ? integrateMutations<num_states>(node_mutations, aln, true)
+        : nullptr;
+        
   // dummy variables
   RealNumType log_lh = 0;
   RealNumType log_factor = 1;
   PositionType start_pos = 0;
-  const SeqRegions& regions = *this;
+  const SeqRegions& regions = (node_mutations && node_mutations->size()) ? *mut_integrated_regions : *this;
 
   // browse regions one by one to compute the likelihood of each region
   for (const SeqRegion& region : regions) {

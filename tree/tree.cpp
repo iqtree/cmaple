@@ -1435,7 +1435,8 @@ RealNumType cmaple::Tree::computeLhTemplate() {
   RealNumType total_lh =
       nodes[root_vector_index]
           .getPartialLh(TOP)
-          ->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
+    ->computeAbsoluteLhAtRoot<num_states>(node_mutations[root_vector_index], aln,
+                                          model, cumulative_base);
 
   // perform a DFS to add likelihood contributions from each internal nodes
   total_lh += performDFS<&cmaple::Tree::computeLhContribution<num_states>>();
@@ -4636,7 +4637,7 @@ void cmaple::Tree::placeSubTreeAtNode(
         selected_node.getPartialLh(
             TOP);  // ->getPartialLhAtNode(aln, model, threshold_prob);
     old_root_lh = lower_regions->computeAbsoluteLhAtRoot<num_states>(
-        model, cumulative_base);
+                    node_mutations[root_vector_index], aln, model, cumulative_base);
 
     // merge 2 lower vector into one
     best_parent_lh = lower_regions->mergeTwoLowers<num_states>(
@@ -4644,7 +4645,7 @@ void cmaple::Tree::placeSubTreeAtNode(
         new_branch_length, aln, model, cumulative_rate, threshold_prob, true);
 
     best_parent_lh += best_parent_regions->computeAbsoluteLhAtRoot<num_states>(
-        model, cumulative_base);
+                        node_mutations[root_vector_index], aln, model, cumulative_base);
 
     // Try shorter branch lengths at root
     best_root_blength = default_blength;
@@ -5293,7 +5294,7 @@ void cmaple::Tree::tryShorterBranchAtRoot(
         model, cumulative_rate, params->threshold_prob, true);
     new_root_lh +=
         merged_root_sample_regions->computeAbsoluteLhAtRoot<num_states>(
-            model, cumulative_base);
+            node_mutations[root_vector_index], aln, model, cumulative_base);
 
     if (new_root_lh > best_parent_lh) {
       best_parent_lh = new_root_lh;
@@ -5331,7 +5332,7 @@ bool cmaple::Tree::tryShorterNewBranchAtRoot(
         new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model,
         cumulative_rate, params->threshold_prob, true);
     new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
-        model, cumulative_base);
+        node_mutations[root_vector_index], aln, model, cumulative_base);
 
     if (new_root_lh > best_parent_lh) {
       best_parent_lh = new_root_lh;
@@ -5371,7 +5372,7 @@ bool cmaple::Tree::tryLongerNewBranchAtRoot(
         new_root_lower_regions, fixed_blength, *sample, new_blength, aln, model,
         cumulative_rate, params->threshold_prob, true);
     new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
-        model, cumulative_base);
+        node_mutations[root_vector_index], aln, model, cumulative_base);
 
     if (new_root_lh > best_parent_lh) {
       best_parent_lh = new_root_lh;
@@ -5410,7 +5411,7 @@ void cmaple::Tree::estimateLengthNewBranchAtRoot(
 
     best_parent_lh +=
         new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
-            model, cumulative_base);
+            node_mutations[root_vector_index], aln, model, cumulative_base);
 
     // replacePartialLH(best_parent_regions, new_root_lower_regions);
     best_parent_regions = std::move(new_root_lower_regions);
@@ -5442,7 +5443,7 @@ void cmaple::Tree::estimateLengthNewBranchAtRoot(
       if (new_root_lower_regions != nullptr)
       {
           new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
-                                                                                     model, cumulative_base);
+                            node_mutations[root_vector_index], aln, model, cumulative_base);
           
           if (new_root_lh > best_parent_lh) {
               best_length = -1;
@@ -7896,7 +7897,8 @@ void cmaple::Tree::calculate_aRLT(const bool allow_replacing_ML_tree) {
   RealNumType lh_at_root =
       nodes[root_vector_index]
           .getPartialLh(TOP)
-          ->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
+          ->computeAbsoluteLhAtRoot<num_states>(node_mutations[root_vector_index], aln,
+                                                model, cumulative_base);
 
   // LT1 = tree_total_lh = likelihood at root + total likelihood contribution at
   // all internal nodes
@@ -8028,7 +8030,7 @@ void cmaple::Tree::calSiteLhDiffRoot(
       child_1_blength, aln, model, cumulative_rate, threshold_prob, true);
   best_parent_lh +=
       new_parent_new_lower_lh->computeAbsoluteLhAtRoot<num_states>(
-          model, cumulative_base);
+        node_mutations[root_vector_index], aln, model, cumulative_base);
   // Try shorter branch lengths at root
   tryShorterBranchAtRoot<num_states>(
       child_1_lower_regions, parent_new_lower_lh, new_parent_new_lower_lh,
@@ -8740,7 +8742,7 @@ bool cmaple::Tree::calculateNNILhRoot(
       child_1_blength, aln, model, cumulative_rate, threshold_prob, true);
   best_parent_lh +=
       new_parent_new_lower_lh->computeAbsoluteLhAtRoot<num_states>(
-          model, cumulative_base);
+        node_mutations[root_vector_index], aln, model, cumulative_base);
   // Try shorter branch lengths at root
   tryShorterBranchAtRoot<num_states>(
       child_1_lower_regions, parent_new_lower_lh, new_parent_new_lower_lh,
@@ -8826,8 +8828,8 @@ bool cmaple::Tree::calculateNNILhRoot(
              node_lhs[parent.getNodelhIndex()].getLhContribution();
   // 7.3 the absolute likelihood at root
   lh_diff += new_parent_new_lower_lh->computeAbsoluteLhAtRoot<num_states>(
-                 model, cumulative_base) -
-             lh_at_root;
+                node_mutations[root_vector_index], aln, model, cumulative_base)
+    - lh_at_root;
 
   // if we found an NNI neighbor with higher lh => replace the ML tree
   if (lh_diff > 0) {
@@ -9170,7 +9172,7 @@ bool cmaple::Tree::calculateNNILhNonRoot(
         // re-calculate likelihood at root
         // std::cout << "lh at root (before): " << lh_at_root << std::endl;
         lh_diff += new_lower_lh->computeAbsoluteLhAtRoot<num_states>(
-                       model, cumulative_base) -
+                        node_mutations[root_vector_index], aln, model, cumulative_base) -
                    lh_at_root;
         // std::cout << "lh at root (after): " <<
         // new_lower_lh->computeAbsoluteLhAtRoot(num_states, model) <<
@@ -9351,7 +9353,7 @@ void cmaple::Tree::replaceMLTreebyNNIRoot(
           true));
   // update the absolute likelihood at root
   lh_at_root = parent_new_lower->computeAbsoluteLhAtRoot<num_states>(
-      model, cumulative_base);
+    node_mutations[root_vector_index], aln, model, cumulative_base);
 
   // traverse downward to update the upper_left/right_region until the changes
   // is insignificant
@@ -9587,7 +9589,7 @@ void cmaple::Tree::replaceMLTreebyNNINonRoot(
         // std::cout << "lh at root (before): " << lh_at_root << std::endl;
         lh_at_root =
             node.getPartialLh(TOP)->computeAbsoluteLhAtRoot<num_states>(
-                model, cumulative_base);
+                node_mutations[root_vector_index], aln, model, cumulative_base);
         // std::cout << "lh at root (after): " << lh_at_root << std::endl;
 
         // stop traversing further
@@ -11187,7 +11189,8 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         if (lower_regions_merged)
         {
             lh_contribution_at_root = lower_regions_merged
-            ->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
+            ->computeAbsoluteLhAtRoot<num_states>(node_mutations[root_vector_index],
+                                                  aln, model, cumulative_base);
         }
         
         // compute the total score, taking into account the likelihood deduction and contribution
@@ -11275,7 +11278,8 @@ void cmaple::Tree::addStartingRootCandidate(
     // compute the current likelihood contribution by merging likelihood
     // at root with the state frequencies
     RealNumType lh_contribution_at_root =
-        node.getPartialLh(TOP)->computeAbsoluteLhAtRoot<num_states>(model, cumulative_base);
+        node.getPartialLh(TOP)->computeAbsoluteLhAtRoot<num_states>(
+            node_mutations[root_vector_index], aln, model, cumulative_base);
     
     // compute the likelihood contribution
     // by merging two lower regions from the two children
