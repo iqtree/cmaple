@@ -10,7 +10,7 @@ cmaple::Model::Model( cmaple::PositionType ref_genome_size,
                       bool _rate_variation,
                       bool _siteRates,
                       cmaple::RealNumType wt_pseudocount,
-                      const std::string _ratesFilename,
+                      const std::string _rates_filename,
                       const cmaple::ModelBase::SubModel sub_model,
                       const cmaple::SeqRegion::SeqType seqtype)
     : model_base(nullptr) {
@@ -67,7 +67,7 @@ cmaple::Model::Model( cmaple::PositionType ref_genome_size,
     }
     case cmaple::SeqRegion::SEQ_DNA: {
       if(rate_variation){
-        model_base = new ModelDNARateVariation(n_sub_model, ref_genome_size, _siteRates, wt_pseudocount, _ratesFilename);
+        model_base = new ModelDNARateVariation(n_sub_model, ref_genome_size, _siteRates, wt_pseudocount, _rates_filename);
       } else {
         model_base = new ModelDNA(n_sub_model);
       }

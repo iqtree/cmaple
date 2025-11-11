@@ -50,7 +50,7 @@ class Model {
       bool _rate_variation,
       bool _siteRates,
       cmaple::RealNumType wt_pseudocount,
-      const std::string _ratesFilename,
+      const std::string _rates_filename,
       const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::DEFAULT,
       const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
 
