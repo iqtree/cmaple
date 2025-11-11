@@ -2677,22 +2677,30 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
   // if node is root, try to place as sibling of the current root.
   RealNumType old_root_lh = MIN_NEGATIVE;
   if (root_vector_index == selected_node_vec_index) {
+      // extract the mutations at the selected node
+      std::unique_ptr<SeqRegions>& selected_node_mutations =
+          node_mutations[selected_node_vec_index];
+      
     /*old_root_lh = selected_node->getPartialLhAtNode(aln, model,
     threshold_prob)->computeAbsoluteLhAtRoot(num_states, model); SeqRegions*
     lower_regions = selected_node->getPartialLhAtNode(aln, model,
     threshold_prob);*/
     const std::unique_ptr<SeqRegions>& lower_regions =
         selected_node.getPartialLh(TOP);
+      
+    // compute the absolute lh
     old_root_lh = lower_regions->computeAbsoluteLhAtRoot<num_states>(
-        model, cumulative_base);
+       selected_node_mutations, aln, model, cumulative_base);
 
     // merge 2 lower vector into one
     RealNumType new_root_lh = lower_regions->mergeTwoLowers<num_states>(
         best_parent_regions, default_blength, *sample, default_blength, aln,
         model, cumulative_rate, threshold_prob, true);
-
+    
+    // compute the absolute lh
     new_root_lh += best_parent_regions->computeAbsoluteLhAtRoot<num_states>(
-        model, cumulative_base);
+                    selected_node_mutations, aln, model, cumulative_base);
+      
     best_parent_lh = new_root_lh;
 
     // try shorter branch lengths

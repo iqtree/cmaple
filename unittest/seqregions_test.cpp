@@ -457,18 +457,20 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
     seqregions_3->mergeTwoLowers<4>(seqregions3, 5421e-8, *seqregions_1, 1073e-6,
             tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
     
+    std::unique_ptr<SeqRegions> node_mutations = nullptr;
+    
     // ----- Test 1 on a more complex seqregions -----
-    EXPECT_DOUBLE_EQ(seqregions_1->computeAbsoluteLhAtRoot<4>(tree.model,
+    EXPECT_DOUBLE_EQ(seqregions_1->computeAbsoluteLhAtRoot<4>(node_mutations, tree.aln, tree.model,
                 tree.cumulative_base), -40549.6785849070511176250874996185302734375);
     // ----- Test 1 on a more complex seqregions -----
     
     // ----- Test 2 on a more complex seqregions -----
-    EXPECT_DOUBLE_EQ(seqregions_2->computeAbsoluteLhAtRoot<4>(tree.model,
+    EXPECT_DOUBLE_EQ(seqregions_2->computeAbsoluteLhAtRoot<4>(node_mutations, tree.aln, tree.model,
                 tree.cumulative_base), -40549.19068355686613358557224273681640625);
     // ----- Test 2 on a more complex seqregions -----
     
     // ----- Test 3 on a more complex seqregions -----
-    EXPECT_DOUBLE_EQ(seqregions_3->computeAbsoluteLhAtRoot<4>(tree.model,
+    EXPECT_DOUBLE_EQ(seqregions_3->computeAbsoluteLhAtRoot<4>(node_mutations, tree.aln, tree.model,
                 tree.cumulative_base), -40548.41030627492000348865985870361328125);
     // ----- Test 3 on a more complex seqregions -----
 }
