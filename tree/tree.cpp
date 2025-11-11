@@ -5261,7 +5261,8 @@ void cmaple::Tree::connectNewSample2Branch(
             PhyloNode& traverse_node = nodes[traverse_parent_vec_index];
             
             // make the internal node a new new local ref node, if it meets the requirements
-            if (corrected_num_descendants[traverse_parent_vec_index] >= params->max_desc_ref
+            if (params->local_refs
+                && corrected_num_descendants[traverse_parent_vec_index] >= params->max_desc_ref
                 && traverse_node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
             {
                 // make the internal node a new new local ref node
@@ -5636,7 +5637,8 @@ void cmaple::Tree::connectNewSample2Root(
 
     
     // make the new root a new new local ref node, if it meets the requirements
-    if ((!node_mutations[new_root_vec_index] || !node_mutations[new_root_vec_index]->size())
+    if (params->local_refs
+        && (!node_mutations[new_root_vec_index] || !node_mutations[new_root_vec_index]->size())
         && corrected_num_descendants[new_root_vec_index] >= params->max_desc_ref
         && new_root.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
     {
