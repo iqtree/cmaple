@@ -2092,7 +2092,8 @@ void cmaple::Tree::updatePartialLhFromChildren(
         node_mutations[index.getVectorIndex()];
     // 1. create a new parent_upper_regions that integrate the mutations, if any
     std::unique_ptr<SeqRegions> mut_integrated_parent_upper_regions =
-        (current_node_mutations && current_node_mutations->size())
+        (is_non_root
+         && current_node_mutations && current_node_mutations->size())
         ? ori_parent_upper_regions->integrateMutations<num_states>(current_node_mutations, aln)
         : nullptr;
     // 2. create the pointer that points to the appropriate parent_upper_regions
@@ -5236,7 +5237,7 @@ void cmaple::Tree::connectNewSample2Branch(
                 && traverse_node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
             {
                 // make the internal node a new new local ref node
-                makeReferenceNode<num_states>(traverse_node, traverse_parent_index,
+                makeReferenceNode<num_states>(traverse_node, traverse_parent_vec_index,
                     corrected_num_descendants[traverse_parent_vec_index] - num_new_descendant);
                 
                 // stop traversing further
@@ -5587,9 +5588,34 @@ void cmaple::Tree::connectNewSample2Root(
   std::setprecision(20) << new_root.getCorrespondingLength(RIGHT, nodes) << " "
   << new_root.getCorrespondingLength(LEFT, nodes) << std::endl;
   }*/
+    
+    // update the descendant count
+    // inherit the number of descendant from the old root
+    corrected_num_descendants[new_root_vec_index] = corrected_num_descendants[root_vector_index];
+    // count the old root
+    if (best_root_blength > 0)
+        ++corrected_num_descendants[new_root_vec_index];
+    // count the new sample
+    if (best_length2 > 0)
+        ++corrected_num_descendants[new_root_vec_index];
 
+  // take over the local reference, if any
+  node_mutations[new_root_vec_index] = std::move(node_mutations[root_vector_index]);
+  node_mutations[root_vector_index] = nullptr; // this line may redundant;
+    
   // update tree->root;
   root_vector_index = new_root_vec_index;
+
+    
+    // make the new root a new new local ref node, if it meets the requirements
+    if ((!node_mutations[new_root_vec_index] || !node_mutations[new_root_vec_index]->size())
+        && corrected_num_descendants[new_root_vec_index] >= params->max_desc_ref
+        && new_root.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
+    {
+        // make the internal node a new new local ref node
+        makeReferenceNode<num_states>(new_root, new_root_vec_index,
+                                      corrected_num_descendants[sibling_node_index.getVectorIndex()]);
+    }
 
   // iteratively traverse the tree to update partials from the current node
   stack<Index> node_stack;
@@ -11519,7 +11545,8 @@ void Tree::expandVectorsAfterTreeExpansion()
 }
 
 template <const StateType num_states>
-auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_index, const int old_num_desc) -> void
+auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const NumSeqsType& node_vec_index,
+                                     const int old_num_desc) -> void
 {
     // dummy variables
     const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
@@ -11542,7 +11569,6 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const cmaple::Index node_i
     }
     
     // 2. define mutations at node
-    const NumSeqsType& node_vec_index = node_index.getVectorIndex();
     node_mutations[node_vec_index] = cmaple::make_unique<SeqRegions>();
     std::unique_ptr<SeqRegions>& this_node_mutations = node_mutations[node_vec_index];
     std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(TOP);

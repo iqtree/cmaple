@@ -2122,7 +2122,7 @@ bool isDiffFromOrigPlacement(
      Make a local reference at a node
      */
     template <const StateType num_states>
-    auto makeReferenceNode(PhyloNode& node, const cmaple::Index node_index,
+    auto makeReferenceNode(PhyloNode& node, const NumSeqsType& node_vec_index,
             const int old_num_desc) -> void;
 };
 
