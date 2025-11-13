@@ -256,7 +256,7 @@ void cmaple::merge_N_RACGT(const SeqRegion& reg_racgt,
 
   // add a new region and try to merge consecutive R regions together
   cmaple::SeqRegions::addNonConsecutiveRRegion(
-      merged_regions, reg_racgt.type, plength_observation2node,
+      merged_regions, reg_racgt.type, reg_racgt.prev_state, plength_observation2node,
       plength_observation2root, end_pos, threshold_prob);
 }
 
@@ -292,7 +292,7 @@ void cmaple::merge_RACGT_N(const SeqRegion& reg_n,
 
   // add a new region and try to merge consecutive R regions together
   cmaple::SeqRegions::addNonConsecutiveRRegion(
-      merged_regions, reg_n.type, plength_observation2node,
+      merged_regions, reg_n.type, reg_n.prev_state, plength_observation2node,
       plength_observation2root, end_pos, threshold_prob);
 }
 
@@ -323,7 +323,8 @@ auto cmaple::merge_Zero_Distance(const SeqRegion& seq1_region,
 
     // add a new region and try to merge consecutive R regions together
     cmaple::SeqRegions::addNonConsecutiveRRegion(
-        *merged_regions, seq2_region.type, -1, -1, end_pos, threshold_prob);
+        *merged_regions, seq2_region.type, seq2_region.prev_state,
+        -1, -1, end_pos, threshold_prob);
     return true;
   }
   // due to 0 distance, the entry will be of same type as entry1
@@ -331,7 +332,8 @@ auto cmaple::merge_Zero_Distance(const SeqRegion& seq1_region,
            total_blength_1 <= 0) {
     // add a new region and try to merge consecutive R regions together
     cmaple::SeqRegions::addNonConsecutiveRRegion(
-        *merged_regions, seq1_region.type, -1, -1, end_pos, threshold_prob);
+        *merged_regions, seq1_region.type, seq1_region.prev_state,
+        -1, -1, end_pos, threshold_prob);
     return true;
   }
 
@@ -381,8 +383,7 @@ void cmaple::merge_N_RACGT_TwoLowers(const SeqRegion& seq2_region,
 
   // add a new region and try to merge consecutive R regions together
   cmaple::SeqRegions::addNonConsecutiveRRegion(merged_regions, seq2_region.type,
-                                               plength_observation2node, -1,
-                                               end_pos, threshold_prob);
+    seq2_region.prev_state, plength_observation2node, -1, end_pos, threshold_prob);
 }
 
 void cmaple::merge_identicalRACGT_TwoLowers(
@@ -390,6 +391,8 @@ void cmaple::merge_identicalRACGT_TwoLowers(
     const PositionType end_pos,
     RealNumType total_blength_1,
     RealNumType total_blength_2,
+    const cmaple::RealNumType blength_1,
+    const cmaple::RealNumType blength_2,
     const PositionType pos,
     const RealNumType threshold_prob,
     const ModelBase* model,
@@ -403,7 +406,7 @@ void cmaple::merge_identicalRACGT_TwoLowers(
     
   // add a new region and try to merge consecutive R regions together
   cmaple::SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type,
-                                               -1, -1, end_pos, threshold_prob);
+    seq1_region.prev_state, -1, -1, end_pos, threshold_prob);
 
   if (return_log_lh) {
     // convert total_blength_1 and total_blength_2 to zero if they are -1
@@ -415,8 +418,14 @@ void cmaple::merge_identicalRACGT_TwoLowers(
     }
 
     if (seq1_region.type == TYPE_R) {
-      log_lh += (total_blength_1 + total_blength_2) *
-                (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+        const RealNumType tmp_blength_1 = blength_1 > 0 ? blength_1 : 0;
+        const RealNumType tmp_blength_2 = blength_2 > 0 ? blength_2 : 0;
+        
+        if (total_blength_1 > tmp_blength_1 || total_blength_2 > tmp_blength_2)
+        {
+            log_lh += (total_blength_1 - tmp_blength_1 + total_blength_2 - tmp_blength_2) *
+            (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+        }
     } else {
       log_lh += model->diagonal_mut_mat[seq1_region.type] *
                 (total_blength_1 + total_blength_2);
@@ -441,7 +450,7 @@ void cmaple::calSiteLhs_identicalRACGT(std::vector<RealNumType>&site_lh_contribu
     
   // add a new region and try to merge consecutive R regions together
   cmaple::SeqRegions::addNonConsecutiveRRegion(merged_regions, seq1_region.type,
-                                               -1, -1, end_pos, threshold_prob);
+    seq1_region.prev_state, -1, -1, end_pos, threshold_prob);
 
   // compute the (site) lh contributions
   // convert total_blength_1 and total_blength_2 to zero if they are -1
@@ -490,6 +499,7 @@ auto cmaple::SeqRegions::operator==(const SeqRegions& seqregions_1) const
 void cmaple::SeqRegions::addNonConsecutiveRRegion(
     SeqRegions& regions,
     const cmaple::StateType new_region_type,
+    const cmaple::StateType new_region_prev_state,
     const cmaple::RealNumType plength_observation2node,
     const cmaple::RealNumType plength_observation2root,
     const cmaple::PositionType end_pos,
@@ -512,8 +522,8 @@ void cmaple::SeqRegions::addNonConsecutiveRRegion(
   }
 
   // if we cannot merge new region into existing R region => just add a new one
-  regions.emplace_back(new_region_type, end_pos, TYPE_N, plength_observation2node,
-                       plength_observation2root);
+  regions.emplace_back(new_region_type, end_pos, new_region_prev_state,
+                       plength_observation2node, plength_observation2root);
 }
 
 auto cmaple::SeqRegions::simplifyO(cmaple::RealNumType* const partial_lh,
@@ -560,6 +570,7 @@ auto cmaple::SeqRegions::simplifyO(cmaple::RealNumType* const partial_lh,
 }
 
 void cmaple::SeqRegions::addSimplifiedO(
+    const StateType ref_state,
     const cmaple::PositionType end_pos,
     SeqRegion::LHType& new_lh,
     const Alignment* aln,
@@ -572,11 +583,11 @@ void cmaple::SeqRegions::addSimplifiedO(
                                     ::size_type>(end_pos)], aln->num_states, threshold_prob);
 
   if (new_state == cmaple::TYPE_O) {
-    merged_regions.emplace_back(cmaple::TYPE_O, end_pos, TYPE_N, 0, 0,
+    merged_regions.emplace_back(cmaple::TYPE_O, end_pos, ref_state, 0, 0,
                                 std::move(new_lh));
   } else {
     // add a new region and try to merge consecutive R regions together
-    SeqRegions::addNonConsecutiveRRegion(merged_regions, new_state, -1, -1,
+    SeqRegions::addNonConsecutiveRRegion(merged_regions, new_state, ref_state, -1, -1,
                                          end_pos, threshold_prob);
   }
 }

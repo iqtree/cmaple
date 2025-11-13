@@ -11600,7 +11600,7 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const NumSeqsType& node_ve
                     || this_node_mutations->back().position < prev_region_pos)
                 {
                     cmaple::SeqRegions::addNonConsecutiveRRegion(*this_node_mutations, TYPE_R,
-                                            -1, -1, prev_region_pos, threshold_prob);
+                                            TYPE_N, -1, -1, prev_region_pos, threshold_prob);
                 }
             }
             
@@ -11613,7 +11613,7 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const NumSeqsType& node_ve
         || this_node_mutations->back().position < seq_length - 1)
     {
         cmaple::SeqRegions::addNonConsecutiveRRegion(*this_node_mutations, TYPE_R,
-                                -1, -1, seq_length - 1, threshold_prob);
+                                TYPE_N, -1, -1, seq_length - 1, threshold_prob);
     }
     
     // 3. update the lh vectors of this node
