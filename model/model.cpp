@@ -62,7 +62,15 @@ cmaple::Model::Model( cmaple::PositionType ref_genome_size,
   // Init model from the corresponding seqtype and sub_model
   switch (n_seqtype) {
     case cmaple::SeqRegion::SEQ_PROTEIN: {
-      model_base = new ModelAA(n_sub_model);
+        if (rate_variation)
+        {
+            throw std::invalid_argument("Sorry! We don't support rate variation "
+            "for protein models yet. Please rerun without rate variation models.");
+        }
+        else
+        {
+            model_base = new ModelAA(n_sub_model);
+        }
       break;
     }
     case cmaple::SeqRegion::SEQ_DNA: {
