@@ -1,13 +1,20 @@
 #include "model.h"
 #include "model_aa.h"
 #include "model_dna.h"
+#include "model_dna_rate_variation.h"
 
 using namespace std;
 using namespace cmaple;
 
-cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model,
-                     const cmaple::SeqRegion::SeqType seqtype)
+cmaple::Model::Model( cmaple::PositionType ref_genome_size,
+                      bool _rate_variation,
+                      bool _siteRates,
+                      cmaple::RealNumType wt_pseudocount,
+                      const std::string _rates_filename,
+                      const cmaple::ModelBase::SubModel sub_model,
+                      const cmaple::SeqRegion::SeqType seqtype)
     : model_base(nullptr) {
+  rate_variation = _rate_variation;
   cmaple::ModelBase::SubModel n_sub_model = sub_model;
   cmaple::SeqRegion::SeqType n_seqtype = seqtype;
   assert(n_sub_model != ModelBase::DEFAULT || n_seqtype != SeqRegion::SEQ_AUTO);
@@ -59,7 +66,11 @@ cmaple::Model::Model(const cmaple::ModelBase::SubModel sub_model,
       break;
     }
     case cmaple::SeqRegion::SEQ_DNA: {
-      model_base = new ModelDNA(n_sub_model);
+      if(rate_variation){
+        model_base = new ModelDNARateVariation(n_sub_model, ref_genome_size, _siteRates, wt_pseudocount, _rates_filename);
+      } else {
+        model_base = new ModelDNA(n_sub_model);
+      }
       break;
     }
     case SeqRegion::SEQ_AUTO:

@@ -46,6 +46,11 @@ class Model {
    * - sub_model is DEFAULT and seqtype is SEQ_AUTO
    */
   Model(
+      cmaple::PositionType ref_genome_size,
+      bool _rate_variation,
+      bool _siteRates,
+      cmaple::RealNumType wt_pseudocount,
+      const std::string _rates_filename,
       const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::DEFAULT,
       const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO);
 
@@ -77,5 +82,11 @@ class Model {
    A base instance of Model
    */
   ModelBase* model_base;
+
+  /**
+   Using rate variation.
+   Currently only for DNA model.
+   */
+  bool rate_variation = false;
 };
 }  // namespace cmaple

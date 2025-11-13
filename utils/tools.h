@@ -521,6 +521,11 @@ class Params {
   RealNumType min_blength_mid_factor;
 
   /**
+  *  The value by which to rescale branch lengths on input trees. Default 1.0
+  */
+  RealNumType blength_scaling_factor;
+
+  /**
   *  Threshold to determine whether a changed partial is different from its
   former value
   */
@@ -646,7 +651,29 @@ class Params {
    * TRUE to make the processes of outputting->re-inputting a tree consistent
    */
   bool make_consistent;
-    
+
+  /**
+   * TRUE to allow a rate multiplier for each genomic site.
+   */
+  bool rate_variation;
+
+  /**
+   * Pseudocount used for waiting times when estimating site-specific rate matrices.
+   */
+  RealNumType wt_pseudocount;
+
+   /**
+   * TRUE to allow an independent rate matrix for each genomic site.
+   */ 
+  bool site_specific_rates;
+
+   /**
+   * Name of file containing rates for each genomic site.
+   * Only used when site_specific_rates is true.
+   * Rates for tree inference will be those specified in the file and not inferred from data.
+   */ 
+  std::string rates_filename;
+
     /**
      * TRUE to ignore annotations from the input tree
      */

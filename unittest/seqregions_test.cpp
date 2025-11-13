@@ -134,7 +134,7 @@ cmaple::Alignment loadAln5K()
 void genTestData1(std::unique_ptr<SeqRegions>& seqregions1, std::unique_ptr<SeqRegions>& seqregions2)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Tree tree(&aln, &model);
     
@@ -314,7 +314,7 @@ TEST(SeqRegions, compareWithSample)
 TEST(SeqRegions, areDiffFrom)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -430,7 +430,7 @@ TEST(SeqRegions, simplifyO)
 TEST(SeqRegions, computeAbsoluteLhAtRoot)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Tree tree(&aln, &model);
     
@@ -458,17 +458,17 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
             tree.aln, tree.model, tree.cumulative_rate, params->threshold_prob);
     
     // ----- Test 1 on a more complex seqregions -----
-    EXPECT_EQ(seqregions_1->computeAbsoluteLhAtRoot<4>(tree.model,
+    EXPECT_DOUBLE_EQ(seqregions_1->computeAbsoluteLhAtRoot<4>(tree.model,
                 tree.cumulative_base), -40549.6785849070511176250874996185302734375);
     // ----- Test 1 on a more complex seqregions -----
     
     // ----- Test 2 on a more complex seqregions -----
-    EXPECT_EQ(seqregions_2->computeAbsoluteLhAtRoot<4>(tree.model,
+    EXPECT_DOUBLE_EQ(seqregions_2->computeAbsoluteLhAtRoot<4>(tree.model,
                 tree.cumulative_base), -40549.19068355686613358557224273681640625);
     // ----- Test 2 on a more complex seqregions -----
     
     // ----- Test 3 on a more complex seqregions -----
-    EXPECT_EQ(seqregions_3->computeAbsoluteLhAtRoot<4>(tree.model,
+    EXPECT_DOUBLE_EQ(seqregions_3->computeAbsoluteLhAtRoot<4>(tree.model,
                 tree.cumulative_base), -40548.41030627492000348865985870361328125);
     // ----- Test 3 on a more complex seqregions -----
 }
@@ -479,7 +479,7 @@ TEST(SeqRegions, computeAbsoluteLhAtRoot)
 TEST(SeqRegions, computeTotalLhAtRoot)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     
@@ -514,22 +514,30 @@ TEST(SeqRegions, computeTotalLhAtRoot)
         0.00012093455079658274576269449962495627914904616773129,
         5.7783014021321174033127313583984435707563420692168e-09,
         0.99987905894904904879894047553534619510173797607422};
-    EXPECT_EQ(*seqregions_total_lh->at(10).likelihood, lh_value1_10);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*seqregions_total_lh->at(10).likelihood)[i], lh_value1_10[i]);
+    }
     SeqRegion::LHType lh_value1_12{0.00012109700727777851427414274043670161518093664199114,
         3.7920254781824222995438774532709486075887639344728e-09,
         0.99987887895812166405562493309844285249710083007812,
         2.0242575103081267528512744062821337998059334495338e-08};
-    EXPECT_EQ(*seqregions_total_lh->at(12).likelihood, lh_value1_12);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*seqregions_total_lh->at(12).likelihood)[i], lh_value1_12[i]);
+    }
     SeqRegion::LHType lh_value1_14{7.2185298165439574223086912192976286051226963991212e-10,
         0.00012093455079658274576269449962495627914904616773129,
         5.7783014021321174033127313583984435707563420692168e-09,
         0.99987905894904904879894047553534619510173797607422};
-    EXPECT_EQ(*seqregions_total_lh->at(14).likelihood, lh_value1_14);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*seqregions_total_lh->at(14).likelihood)[i], lh_value1_14[i]);
+    }
     SeqRegion::LHType lh_value1_20{0.999878969078505264178602374158799648284912109375,
         3.79202547818242147236326490024327373618007186451e-09,
         0.00012100688689399335864343987267943703045602887868881,
         2.0242575103081260911067843638599939026789797935635e-08};
-    EXPECT_EQ(*seqregions_total_lh->at(20).likelihood, lh_value1_20);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*seqregions_total_lh->at(20).likelihood)[i], lh_value1_20[i]);
+    }
     // ----- Test 1 on a more complex seqregions -----
     
     // ----- Test 2 on a more complex seqregions -----
@@ -539,12 +547,16 @@ TEST(SeqRegions, computeTotalLhAtRoot)
         0.00036249067899242780116039752691392550332238897681236,
         6.3013501138813336668181852573411561024840921163559e-06,
         0.99963016534670312562838034864398650825023651123047};
-    EXPECT_EQ(*seqregions_total_lh->at(17).likelihood, lh_value2_17);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*seqregions_total_lh->at(17).likelihood)[i], lh_value2_17[i]);
+    }
     SeqRegion::LHType lh_value2_21{0.00042526525345440798929128045635650323674781247973442,
         2.4910168754262691925165963680033343052855343557894e-06,
         0.99955743551688391868026428710436448454856872558594,
         1.4808212786277890710097057680449950112233636900783e-05};
-    EXPECT_EQ(*seqregions_total_lh->at(21).likelihood, lh_value2_21);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*seqregions_total_lh->at(21).likelihood)[i], lh_value2_21[i]);
+    }
     // ----- Test 2 on a more complex seqregions -----
     
     // ----- Test 3 on a more complex seqregions -----
@@ -554,7 +566,9 @@ TEST(SeqRegions, computeTotalLhAtRoot)
         0.93983378575187570547200266446452587842941284179688,
         0.0036637083625175163349718676641941783600486814975739,
         0.052844553828508410153741436943164444528520107269287};
-    EXPECT_EQ(*seqregions_total_lh->at(10).likelihood, lh_value3_10);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*seqregions_total_lh->at(10).likelihood)[i], lh_value3_10[i]);
+    }
     // ----- Test 3 on a more complex seqregions -----
 }
 
@@ -568,7 +582,7 @@ TEST(SeqRegions, merge_N_O)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -591,7 +605,9 @@ TEST(SeqRegions, merge_N_O)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge{0.3675361745020691,0.0000068532680661245309,
         0.63243117236202639,0.000025799867838435163};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 1 -----
     
     // ----- Test 2 -----
@@ -602,7 +618,9 @@ TEST(SeqRegions, merge_N_O)
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 2 -----
     
     // ----- Test 3 -----
@@ -613,7 +631,9 @@ TEST(SeqRegions, merge_N_O)
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -626,7 +646,9 @@ TEST(SeqRegions, merge_N_O)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge1{0.37599425541307963,0.0099624992407331657,
         0.55990605200203047,0.054137193344156891};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge1[i]);
+    }
     // ----- Test 4 -----
     
     // ----- Test 5 -----
@@ -636,7 +658,9 @@ TEST(SeqRegions, merge_N_O)
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge1[i]);
+    }
     // ----- Test 5 -----
     
     /*// ----- Test 6 -----
@@ -706,7 +730,7 @@ TEST(SeqRegions, merge_N_O)
 TEST(SeqRegions, merge_N_RACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree(&aln, &model);
     
     // dummy variables
@@ -1046,7 +1070,7 @@ TEST(SeqRegions, merge_O_N)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1068,7 +1092,9 @@ TEST(SeqRegions, merge_O_N)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge{0.0000074346402191731948,0.66666418845326025,
         0.0000074346402191731948,0.33332094226630138};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 1 -----
     
     // ----- Test 2 -----
@@ -1078,7 +1104,9 @@ TEST(SeqRegions, merge_O_N)
     EXPECT_EQ(merged_regions.size(), 2);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 2 -----
     
     // ----- Test 3 -----
@@ -1088,7 +1116,9 @@ TEST(SeqRegions, merge_O_N)
     EXPECT_EQ(merged_regions.size(), 3);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -1100,7 +1130,9 @@ TEST(SeqRegions, merge_O_N)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge1{0.011218665480774669,0.5673625983091064,
         0.024370520108437949,0.39704821610168095};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
+    for(int i = 0; i < 4; ++i) { 
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge1[i]);
+    }
     // ----- Test 4 -----
     
     // ----- Test 5 -----
@@ -1109,7 +1141,9 @@ TEST(SeqRegions, merge_O_N)
     EXPECT_EQ(merged_regions.size(), 5);
     EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge1[i]);
+    }
     // ----- Test 5 -----
     
     /*// ----- Test 6 -----
@@ -1176,7 +1210,7 @@ TEST(SeqRegions, merge_RACGT_N)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1516,7 +1550,7 @@ TEST(SeqRegions, merge_Zero_Distance)
 {
     std::unique_ptr<Params> params = ParamsBuilder().build();
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     const PositionType seq_length = aln.ref_seq.size();
     const StateType num_states = aln.num_states;
@@ -1642,7 +1676,7 @@ TEST(SeqRegions, merge_Zero_Distance)
 TEST(SeqRegions, merge_O_ORACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -1676,7 +1710,9 @@ TEST(SeqRegions, merge_O_ORACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge{0.12684687976595482,1.1702018350525203E-10,
         0.87315311957450514,5.425200212298543E-10};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 1 -----
     
     // ----- Test 2 -----
@@ -1690,7 +1726,9 @@ TEST(SeqRegions, merge_O_ORACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);*/
     SeqRegion::LHType new_lh_value_merge1{0.12684809781766063,1.3059895886789165E-10,
         0.87315190141833243,6.3340794416577515E-10};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge1[i]);
+    }
     // ----- Test 2 -----
     
     // ----- Test 3 -----
@@ -1704,7 +1742,9 @@ TEST(SeqRegions, merge_O_ORACGT)
     EXPECT_FALSE(merged_regions.back().plength_observation2node != 0);
     SeqRegion::LHType new_lh_value_merge2{0.12842468075362262,1.1709109654051516E-8,
         0.87157516057518813,1.4696207956334386E-7};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge2);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge2[i]);
+    }
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -1718,7 +1758,9 @@ TEST(SeqRegions, merge_O_ORACGT)
     EXPECT_TRUE(merged_regions.back().plength_observation2node == 0);
     SeqRegion::LHType new_lh_value_merge3{0.12875794255340739,1.6716816801441426E-7,
         0.87123893271963804,0.0000029575587865296985};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge3);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge3[i]);
+    }
     // ----- Test 4 -----
     
     /*// ----- Test 5 -----
@@ -1793,7 +1835,7 @@ TEST(SeqRegions, merge_O_ORACGT)
 TEST(SeqRegions, merge_RACGT_O)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -1905,7 +1947,7 @@ TEST(SeqRegions, merge_RACGT_O)
 TEST(SeqRegions, merge_RACGT_RACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -2091,7 +2133,7 @@ TEST(SeqRegions, merge_RACGT_RACGT)
 TEST(SeqRegions, merge_RACGT_ORACGT)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -2137,7 +2179,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     EXPECT_LE(merged_regions.back().plength_observation2root, 0);
     EXPECT_GE(merged_regions.back().plength_observation2root, 0);
     SeqRegion::LHType new_lh_value_merge{1,0,0,0};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge[i]);
+    }
     // ----- Test 2 -----
     
     // ----- Test 3 -----
@@ -2158,7 +2202,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     // EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge1{0.0000043308850656905248,
         0.11650995967890213,0.067956494829030142,0.81552921460700212};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge1);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge1[i]);
+    }
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -2179,7 +2225,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);*/
     SeqRegion::LHType new_lh_value_merge2{3.7896075858290732E-7,
         0.0000019907504571924796,0.00022095280891100915,0.99977667747987319};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge2);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge2[i]);
+    }
     // ----- Test 4 -----
     
     // ----- Test 5 -----
@@ -2199,7 +2247,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     EXPECT_LE(merged_regions.back().plength_observation2node, 0);
     EXPECT_GE(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge3{1,0,0,0};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge3);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge3[i]);
+    }
     // ----- Test 5 -----
     
     // ----- Test 6 -----
@@ -2220,7 +2270,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     // EXPECT_EQ(merged_regions.back().plength_observation2node, 0);
     SeqRegion::LHType new_lh_value_merge4{1.8321558474427985E-7,
         2.6859491508084263E-8,0.99999903717347061,7.5275145311095654E-7};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge4);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge4[i]);
+    }
     // ----- Test 6 -----
     
     // ----- Test 7 -----
@@ -2240,7 +2292,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     // EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_TRUE(merged_regions.back().plength_observation2node == 0);
     SeqRegion::LHType new_lh_value_merge5{0,0,0.99999999999999988,0};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge5);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge5[i]);
+    }
     // ----- Test 7 -----
     
     // ----- Test 8 -----
@@ -2260,7 +2314,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     EXPECT_TRUE(merged_regions.back().plength_observation2root == 0);
     EXPECT_FALSE(merged_regions.back().plength_observation2node != 0);
     SeqRegion::LHType new_lh_value_merge6{0,1,0,0};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge6);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge6[i]);
+    }
     // ----- Test 8 -----
     
     // ----- Test 9 -----
@@ -2282,7 +2338,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);*/
     SeqRegion::LHType new_lh_value_merge7{3.8512118129099356E-7,0.50512531494378898,
         3.852643996135802E-7,0.49487391467062997};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge7);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge7[i]);
+    }
     // ----- Test 9 -----
     
     // ----- Test 10 -----
@@ -2304,7 +2362,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT)
     /*EXPECT_EQ(merged_regions.back().plength_observation2root, 0);
     EXPECT_EQ(merged_regions.back().plength_observation2node, 0);*/
     SeqRegion::LHType new_lh_value_merge8{0,0,0,1};
-    EXPECT_EQ(*merged_regions.back().likelihood, new_lh_value_merge8);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions.back().likelihood)[i], new_lh_value_merge8[i]);
+    }
     // ----- Test 10 -----
     
     /*// ----- Test 11 -----
@@ -2626,7 +2686,7 @@ void genTestData(std::unique_ptr<SeqRegions>& seqregions1,
 TEST(SeqRegions, mergeUpperLower)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -2651,17 +2711,23 @@ TEST(SeqRegions, mergeUpperLower)
         0.74606825145303112822858793151681311428546905517578,
         1.527175265677545701275923378109622419174229435157e-08,
         4.6855460255815036350456482400206326133229595143348e-07};
-    EXPECT_EQ(*merged_regions_ptr->at(3).likelihood, lh_value1_3);
+    for(int i =0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(3).likelihood)[i], lh_value1_3[i]);
+    }
     SeqRegion::LHType lh_value1_11{5.7966916545679062813751932197858102169263361247431e-09,
         0.65834591260301689175093997619114816188812255859375,
         0.34165191092383423443479273373668547719717025756836,
         2.1706764573211083553527789291592853260226547718048e-06};
-    EXPECT_EQ(*merged_regions_ptr->at(11).likelihood, lh_value1_11);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(11).likelihood)[i], lh_value1_11[i]);
+    }
     SeqRegion::LHType lh_value1_15{4.819386899248702337066236070712340472388390821834e-10,
         4.4331834594549051557597359836046524428354587143986e-08,
         0.78291399129324290573350708655198104679584503173828,
         0.21708596389298387419053426583559485152363777160645};
-    EXPECT_EQ(*merged_regions_ptr->at(15).likelihood, lh_value1_15);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(15).likelihood)[i], lh_value1_15[i]);
+    }
     // ----- Test 1 -----
     
     // ----- Test 2 -----
@@ -2677,22 +2743,30 @@ TEST(SeqRegions, mergeUpperLower)
         0.11305893785257446759739963226820691488683223724365,
         1.199119918869713445909431191738203636987236677669e-06,
         0.88693971571313168222872036494663916528224945068359};
-    EXPECT_EQ(*merged_regions_ptr->at(5).likelihood, lh_value2_5);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(5).likelihood)[i], lh_value2_5[i]);
+    }
     SeqRegion::LHType lh_value2_9{1.582745833551237004852788731179558112671656999737e-07,
         0.14837879648413093702785658933862578123807907104492,
         1.2671446230282412341420789775314759140201203990728e-06,
         0.85161977809666267180688237203867174685001373291016};
-    EXPECT_EQ(*merged_regions_ptr->at(9).likelihood, lh_value2_9);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(9).likelihood)[i], lh_value2_9[i]);
+    }
     SeqRegion::LHType lh_value2_11{0.18548170160962187957842672858532750979065895080566,
         7.9596768357620026274810943675563912336201610742137e-07,
         0.81451325466009993903071517706848680973052978515625,
         4.2477625948362153376989397424168259931320790201426e-06};
-    EXPECT_EQ(*merged_regions_ptr->at(11).likelihood, lh_value2_11);
+    for(int i = 0; i < 4; ++i) {    
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(11).likelihood)[i], lh_value2_11[i]);
+    }
     SeqRegion::LHType lh_value2_13{1.582745833551237004852788731179558112671656999737e-07,
         0.14837879648413093702785658933862578123807907104492,
         1.2671446230282412341420789775314759140201203990728e-06,
         0.85161977809666267180688237203867174685001373291016};
-    EXPECT_EQ(*merged_regions_ptr->at(13).likelihood, lh_value2_13);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(13).likelihood)[i], lh_value2_13[i]);
+    }
     // ----- Test 2 -----
     
     // ----- Test 3 -----
@@ -2708,22 +2782,30 @@ TEST(SeqRegions, mergeUpperLower)
         2.1517430823900132296627729644455939705949276685715e-06,
         0.44910173316225798778589251014636829495429992675781,
         1.1503233829685540224869837178101050767509150318801e-05};
-    EXPECT_EQ(*merged_regions_ptr->at(5).likelihood, lh_value3_5);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(5).likelihood)[i], lh_value3_5[i]);
+    }
     SeqRegion::LHType lh_value3_7{4.3642717210825648466670069816619736968732468085364e-07,
         0.41287703560443073103058964079536963254213333129883,
         3.4936313425953077532650631331634372145344968885183e-06,
         0.58711903433705459054436914811958558857440948486328};
-    EXPECT_EQ(*merged_regions_ptr->at(7).likelihood, lh_value3_7);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(7).likelihood)[i], lh_value3_7[i]);
+    }
     SeqRegion::LHType lh_value3_9{4.3642717210825648466670069816619736968732468085364e-07,
         0.41287703560443073103058964079536963254213333129883,
         3.4936313425953077532650631331634372145344968885183e-06,
         0.58711903433705459054436914811958558857440948486328};
-    EXPECT_EQ(*merged_regions_ptr->at(9).likelihood, lh_value3_9);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(9).likelihood)[i], lh_value3_9[i]);
+    }
     SeqRegion::LHType lh_value3_15{1.5630903977336201439418812298435190397127847461434e-10,
         0.99999996446600269983662201411789283156394958496094,
         2.4311281533080620387737091640171886719468119508747e-10,
         3.5134575447755886574289406693374915313654582860181e-08};
-    EXPECT_EQ(*merged_regions_ptr->at(15).likelihood, lh_value3_15);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(15).likelihood)[i], lh_value3_15[i]);
+    }
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -2893,7 +2975,7 @@ TEST(SeqRegions, mergeUpperLower)
 TEST(SeqRegions, merge_N_O_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3011,7 +3093,7 @@ TEST(SeqRegions, merge_N_O_TwoLowers)
 TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3352,7 +3434,7 @@ TEST(SeqRegions, merge_N_RACGT_TwoLowers)
 TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3447,7 +3529,7 @@ TEST(SeqRegions, merge_identicalRACGT_TwoLowers)
 TEST(SeqRegions, merge_O_O_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3633,7 +3715,7 @@ TEST(SeqRegions, merge_O_O_TwoLowers)
 TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3791,7 +3873,7 @@ TEST(SeqRegions, merge_O_RACGT_TwoLowers)
 TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -3828,7 +3910,9 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     SeqRegion::LHType new_lh_value_merge{0.99963572952385693,
         3.4820599267114684E-9,0.00031223631362821728,
         0.000052030680454886103};
-    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions->back().likelihood)[i], new_lh_value_merge[i]);
+    }
     EXPECT_EQ(log_lh, -2.5901247759055703);
     // ----- Test 1 -----
     
@@ -3847,8 +3931,10 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     SeqRegion::LHType new_lh_value_merge1{0.9993205977222771,
         2.4282817638871146E-9,0.00067939799763484592,
         1.851806273068163E-9};
-    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge1);
-    EXPECT_EQ(log_lh, -2.0790653485332990513256845588330179452896118164062);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions->back().likelihood)[i], new_lh_value_merge1[i]);
+    }
+    EXPECT_DOUBLE_EQ(log_lh, -2.0790653485332990513256845588330179452896118164062);
     // ----- Test 2 -----
     
     // ----- Test 3 -----
@@ -3866,7 +3952,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
                 threshold_prob, log_lh, merged_regions, true));
     EXPECT_FALSE(merged_regions->size() != 3);
     EXPECT_FALSE(merged_regions->back().type != 0);
-    EXPECT_EQ(log_lh, -12.484754332344007110577877028845250606536865234375);
+    EXPECT_DOUBLE_EQ(log_lh, -12.484754332344007110577877028845250606536865234375);
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -3903,8 +3989,10 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
     SeqRegion::LHType new_lh_value_merge5{0.016447471276376950805,
         0.29913069287409010943,4.9917991548751474806e-05,
         0.68437191785798412447};
-    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge5);
-    EXPECT_EQ(log_lh, -7.5008336555086989);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions->back().likelihood)[i], new_lh_value_merge5[i]);
+    }
+    EXPECT_DOUBLE_EQ(log_lh, -7.5008336555086989);
     // ----- Test 5 -----
     
     /*// ----- Test 6 -----
@@ -4020,7 +4108,7 @@ TEST(SeqRegions, merge_O_ORACGT_TwoLowers)
 TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -4253,7 +4341,7 @@ TEST(SeqRegions, merge_RACGT_O_TwoLowers)
 TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -4499,7 +4587,7 @@ TEST(SeqRegions, merge_RACGT_RACGT_TwoLowers)
 TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -4532,7 +4620,9 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
         0.455403998389659003809271098362,
         9.50936657505749543661116574e-05,
         0.520971102623241977269685776264};
-    EXPECT_EQ(*merged_regions->back().likelihood, new_lh_value_merge1);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions->back().likelihood)[i], new_lh_value_merge1[i]);
+    }
     // ----- Test 1 -----
     
     // ----- Test 2 -----
@@ -4562,7 +4652,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
     EXPECT_TRUE(merged_regions->size() == 3);
     EXPECT_FALSE(merged_regions->back().type != 1);
     EXPECT_TRUE(merged_regions->back().plength_observation2node == -1);
-    EXPECT_EQ(log_lh, -13.485791369259754191034517134539783000946044921875);
+    EXPECT_DOUBLE_EQ(log_lh, -13.485791369259754191034517134539783000946044921875);
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -4703,7 +4793,7 @@ TEST(SeqRegions, merge_RACGT_ORACGT_TwoLowers)
 TEST(SeqRegions, merge_notN_notN_TwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -5060,7 +5150,7 @@ TEST(SeqRegions, merge_notN_notN_TwoLowers)
 TEST(SeqRegions, mergeTwoLowers)
 {
     Alignment aln = loadAln5K();
-    Model model(cmaple::ModelBase::GTR);
+    Model model(aln.ref_seq.size(), false, false, cmaple::ModelBase::GTR);
     Tree tree(&aln, &model);
     std::unique_ptr<Params>& params = tree.params;
     const PositionType seq_length = aln.ref_seq.size();
@@ -5085,17 +5175,23 @@ TEST(SeqRegions, mergeTwoLowers)
         0.82716302666692920197988314612302929162979125976562,
         1.5848957658592456808424066543733443879204969562124e-08,
         2.9711905061841446462557632390844020164877292700112e-07};
-    EXPECT_EQ(*merged_regions_ptr->at(3).likelihood, lh_value1_3);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(3).likelihood)[i], lh_value1_3[i]);
+    }
     SeqRegion::LHType lh_value1_11{3.6381584796761232511871668248793279532016242683312e-09,
         0.67305169363907879631625519323279149830341339111328,
         0.32694703347294445938686635599879082292318344116211,
         1.2692498181937419931533585909511074873989855404943e-06};
-    EXPECT_EQ(*merged_regions_ptr->at(11).likelihood, lh_value1_11);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(11).likelihood)[i], lh_value1_11[i]);
+    }
     SeqRegion::LHType lh_value1_15{3.4523387458227984010396742980226678088051528447977e-10,
         5.1728534876242736031974253901183358195225991948973e-08,
         0.855121443561348115736109321005642414093017578125,
         0.14487850436488311500760062244808068498969078063965};
-    EXPECT_EQ(*merged_regions_ptr->at(15).likelihood, lh_value1_15);
+    for(int i = 0; i < 4; ++i) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(15).likelihood)[i], lh_value1_15[i]);
+    }
     // ----- Test 1 -----
     
     // ----- Test 2 -----
@@ -5112,22 +5208,30 @@ TEST(SeqRegions, mergeTwoLowers)
         0.17101029958656552287799001987878000363707542419434,
         1.7000484440343382920856089499106467144429188920185e-06,
         0.82898786343851404989635511810774914920330047607422};
-    EXPECT_EQ(*merged_regions_ptr->at(5).likelihood, lh_value2_5);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(5).likelihood)[i],  lh_value2_5[i]);
+    }
     SeqRegion::LHType lh_value2_9{1.5290708402721638054255510075912782852469717909116e-07,
         0.23349690888349838857607210229616612195968627929688,
         1.8665290161198829580602295483138242104814708000049e-06,
         0.76650107168040160221522683059447444975376129150391};
-    EXPECT_EQ(*merged_regions_ptr->at(9).likelihood, lh_value2_9);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(9).likelihood)[i],  lh_value2_9[i]);
+    }
     SeqRegion::LHType lh_value2_11{0.12994397914766378510087463382660644128918647766113,
         9.0832943898191744596797318408998300753864896250889e-07,
         0.87005234005882758907546303817071020603179931640625,
         2.772464069444146518881666799161145320340438047424e-06};
-    EXPECT_EQ(*merged_regions_ptr->at(11).likelihood, lh_value2_11);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(11).likelihood)[i], lh_value2_11[i]);
+    }
     SeqRegion::LHType lh_value2_13{1.5290708402721638054255510075912782852469717909116e-07,
         0.23349690888349838857607210229616612195968627929688,
         1.8665290161198829580602295483138242104814708000049e-06,
         0.76650107168040160221522683059447444975376129150391};
-    EXPECT_EQ(*merged_regions_ptr->at(13).likelihood, lh_value2_13);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(13).likelihood)[i], lh_value2_13[i]);
+    }
     // ----- Test 2 -----
     
     // ----- Test 3 -----
@@ -5145,22 +5249,30 @@ TEST(SeqRegions, mergeTwoLowers)
         2.8365179941736863494035521260361321083109942264855e-06,
         0.55416504423022705516643782175378873944282531738281,
         8.6730691981839275818714704580081331641849828884006e-06};
-    EXPECT_EQ(*merged_regions_ptr->at(5).likelihood, lh_value3_5);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(5).likelihood)[i], lh_value3_5[i]);
+    }
     SeqRegion::LHType lh_value3_7{3.5786639314319516086646010867566847224452430964448e-07,
         0.55147105941417706720386604501982219517230987548828,
         4.3679568805966345593672257863193664206846733577549e-06,
         0.44852421476254927812377104601182509213685989379883};
-    EXPECT_EQ(*merged_regions_ptr->at(7).likelihood, lh_value3_7);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(7).likelihood)[i], lh_value3_7[i]);
+    }
     SeqRegion::LHType lh_value3_9{3.5786639314319516086646010867566847224452430964448e-07,
         0.55147105941417706720386604501982219517230987548828,
         4.3679568805966345593672257863193664206846733577549e-06,
         0.44852421476254927812377104601182509213685989379883};
-    EXPECT_EQ(*merged_regions_ptr->at(9).likelihood, lh_value3_9);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(9).likelihood)[i], lh_value3_9[i]);
+    }
     SeqRegion::LHType lh_value3_15{9.6067589567314981142138672126824273933554110271871e-11,
         0.99999997772928284067717186189838685095310211181641,
         2.279165015439628010410746761585116387793803482964e-10,
         2.1946733076957723211148276395987544162835547467694e-08};
-    EXPECT_EQ(*merged_regions_ptr->at(15).likelihood, lh_value3_15);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(15).likelihood)[i], lh_value3_15[i]);
+    }
     // ----- Test 3 -----
     
     // ----- Test 4 -----
@@ -5176,22 +5288,30 @@ TEST(SeqRegions, mergeTwoLowers)
         0.27781484807075007559262758149998262524604797363281,
         7.7989680049056750533218225230345024834299749727506e-10,
         0.72218515110744463392222769471118226647377014160156};
-    EXPECT_EQ(*merged_regions_ptr->at(2).likelihood, lh_value4_2);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(2).likelihood)[i], lh_value4_2[i]);
+    }
     SeqRegion::LHType lh_value4_12{4.1908434264100559969947870306712341473276417502802e-11,
         0.27781484807075007559262758149998262524604797363281,
         7.7989680049056750533218225230345024834299749727506e-10,
         0.72218515110744463392222769471118226647377014160156};
-    EXPECT_EQ(*merged_regions_ptr->at(12).likelihood, lh_value4_12);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(12).likelihood)[i], lh_value4_12[i]);
+    }
     SeqRegion::LHType lh_value4_14{0.28039696642765232770244665516656823456287384033203,
         9.3441446340325357839424550836790808738818725487363e-10,
         0.71960303046228701884245992914657108485698699951172,
         2.1756462036521902336810207540711628593221860228368e-09};
-    EXPECT_EQ(*merged_regions_ptr->at(14).likelihood, lh_value4_14);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(14).likelihood)[i], lh_value4_14[i]);
+    }
     SeqRegion::LHType lh_value4_16{4.1908434264100559969947870306712341473276417502802e-11,
         0.27781484807075007559262758149998262524604797363281,
         7.7989680049056750533218225230345024834299749727506e-10,
         0.72218515110744463392222769471118226647377014160156};
-    EXPECT_EQ(*merged_regions_ptr->at(16).likelihood, lh_value4_16);
+    for(int i =  0; i < 4; i++) {
+        EXPECT_DOUBLE_EQ((*merged_regions_ptr->at(16).likelihood)[i], lh_value4_16[i]);
+    }
     // ----- Test 4 -----
     
     /*// ----- Test 5 -----

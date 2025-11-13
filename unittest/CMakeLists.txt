@@ -10,6 +10,7 @@ add_executable(
   model_test.cpp
   alignment_test.cpp
   matrix_test.cpp
+  ratevariation_test.cpp
   sequence_test.cpp
   seqregion_test.cpp
   mutation_test.cpp
