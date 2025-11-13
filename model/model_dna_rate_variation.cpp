@@ -219,7 +219,7 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
     RealNumType average_rate = rate_count / genome_size;
     for(int i = 0; i < genome_size; i++) {
         rates[i] /= average_rate;
-        rates[i] = MIN(100.0, MAX(0.0001, rates[i])); 
+        rates[i] = std::min(100.0, std::max(0.0001, rates[i]));
         for(int stateA = 0; stateA < num_states_; stateA++) {
             RealNumType row_sum = 0;
             for(int stateB = 0; stateB < num_states_; stateB++) {
@@ -611,7 +611,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType val = mutation_matrices[i * mat_size + (stateB + row_index[stateA])];
                     //val /= average_rate;
                     val /= total_rate;
-                    val = MIN(250.0, MAX(0.001, val)); 
+                    val = std::min(250.0, std::max(0.001, val));
 
                     mutation_matrices[i * mat_size + (stateB + row_index[stateA])] = val;
                     transposed_mutation_matrices[i * mat_size + (stateA + row_index[stateB])] = val;
