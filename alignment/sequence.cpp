@@ -56,10 +56,7 @@ std::unique_ptr<SeqRegions> cmaple::Sequence::getLowerLhVector(
     // convert the current mutation
     pos = mutation.position + mutation.getLength();
     // record the previous state of mutations
-    if (mutation.type < num_states)
-    {
-        mutation.prev_state = ref_seq[mutation.position];
-    }
+    mutation.prev_state = ref_seq[mutation.position];
     regions->emplace_back(&mutation, seq_type, num_states);
   }
 
