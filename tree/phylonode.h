@@ -426,8 +426,14 @@ auto cmaple::PhyloNode::integrateMutAllRegions(
     // mid-branch regions
     if (getMidBranchLh())
     {
-        assert(getUpperLength() > 0);
-        setMidBranchLh(getMidBranchLh()->integrateMutations<num_states>(mutations, aln, inverse));
+        if (getUpperLength() > 0)
+        {
+            setMidBranchLh(getMidBranchLh()->integrateMutations<num_states>(mutations, aln, inverse));
+        }
+        else
+        {
+            setMidBranchLh(nullptr);
+        }
     }
 }
 
