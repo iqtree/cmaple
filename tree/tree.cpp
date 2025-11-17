@@ -5766,11 +5766,23 @@ void cmaple::Tree::refreshNonLowerLhsFromParent(Index& node_index,
   const RealNumType threshold_prob = params->threshold_prob;
   const Index parent_index = node.getNeighborIndex(TOP);
   PhyloNode& parent_node = nodes[parent_index.getVectorIndex()];
-  const std::unique_ptr<SeqRegions>& parent_upper_lr_lh =
-      parent_node.getPartialLh(
-          parent_index
-              .getMiniIndex());  // node->neighbor->getPartialLhAtNode(aln,
-                                 // model, threshold_prob);
+    
+    // 0. extract the mutations at the selected node
+    std::unique_ptr<SeqRegions>& selected_node_mutations =
+        node_mutations[node_index.getVectorIndex()];
+    // 1. create a new parent_upper_lr_lh that integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_parent_upper_lr_lh =
+        (selected_node_mutations && selected_node_mutations->size())
+        ? parent_node.getPartialLh(parent_index.getMiniIndex())
+          ->integrateMutations<num_states>(selected_node_mutations, aln)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate upper_lr_regions
+    const std::unique_ptr<SeqRegions>* parent_upper_lr_lh_ptr =
+        (selected_node_mutations && selected_node_mutations->size())
+        ? &(mut_integrated_parent_upper_lr_lh)
+        : &(parent_node.getPartialLh(parent_index.getMiniIndex()));
+    // 3. create a reference from that pointer
+    auto& parent_upper_lr_lh = *parent_upper_lr_lh_ptr;
 
   // update the total lh, total lh at the mid-branch point of the current node
   if (node.getUpperLength() > 0)  // node->length > 0)
@@ -7681,13 +7693,48 @@ template <const StateType num_states>
 void cmaple::Tree::updateLowerLh(RealNumType& total_lh,
                                  std::unique_ptr<SeqRegions>& new_lower_lh,
                                  PhyloNode& node,
-                                 const std::unique_ptr<SeqRegions>& lower_lh_1,
-                                 const std::unique_ptr<SeqRegions>& lower_lh_2,
+                                 const std::unique_ptr<SeqRegions>& ori_lower_lh_1,
+                                 const std::unique_ptr<SeqRegions>& ori_lower_lh_2,
                                  const Index neighbor_1_index,
                                  PhyloNode& neighbor_1,
                                  const Index neighbor_2_index,
                                  PhyloNode& neighbor_2,
                                  const PositionType& seq_length) {
+    
+    // 0. extract the mutations at neighbor_1
+    std::unique_ptr<SeqRegions>& neighbor_1_mutations =
+        node_mutations[neighbor_1_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
+        (neighbor_1_mutations && neighbor_1_mutations->size())
+        ? ori_lower_lh_1
+          ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
+        (neighbor_1_mutations && neighbor_1_mutations->size())
+        ? &(mut_integrated_neighbor_1_regions)
+        : &(ori_lower_lh_1);
+    // 3. create a reference from that pointer
+    auto& lower_lh_1 = *neighbor_1_regions_ptr;
+    
+    // 0. extract the mutations at neighbor_2
+    std::unique_ptr<SeqRegions>& neighbor_2_mutations =
+        node_mutations[neighbor_2_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
+        (neighbor_2_mutations && neighbor_2_mutations->size())
+        ? ori_lower_lh_2
+          ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
+        (neighbor_2_mutations && neighbor_2_mutations->size())
+        ? &(mut_integrated_neighbor_2_regions)
+        : &(ori_lower_lh_2);
+    // 3. create a reference from that pointer
+    auto& lower_lh_2 = *neighbor_2_regions_ptr;
+    
   lower_lh_1->mergeTwoLowers<num_states>(
       new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2,
       neighbor_2.getUpperLength(), aln, model, cumulative_rate,
@@ -7736,13 +7783,48 @@ void cmaple::Tree::updateLowerLhAvoidUsingUpperLRLh(
     RealNumType& total_lh,
     std::unique_ptr<SeqRegions>& new_lower_lh,
     PhyloNode& node,
-    const std::unique_ptr<SeqRegions>& lower_lh_1,
-    const std::unique_ptr<SeqRegions>& lower_lh_2,
+    const std::unique_ptr<SeqRegions>& ori_lower_lh_1,
+    const std::unique_ptr<SeqRegions>& ori_lower_lh_2,
     const Index neighbor_1_index,
     PhyloNode& neighbor_1,
     const Index neighbor_2_index,
     PhyloNode& neighbor_2,
     const PositionType& seq_length) {
+    
+    // 0. extract the mutations at neighbor_1
+    std::unique_ptr<SeqRegions>& neighbor_1_mutations =
+        node_mutations[neighbor_1_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
+        (neighbor_1_mutations && neighbor_1_mutations->size())
+        ? ori_lower_lh_1
+          ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
+        (neighbor_1_mutations && neighbor_1_mutations->size())
+        ? &(mut_integrated_neighbor_1_regions)
+        : &(ori_lower_lh_1);
+    // 3. create a reference from that pointer
+    auto& lower_lh_1 = *neighbor_1_regions_ptr;
+    
+    // 0. extract the mutations at neighbor_2
+    std::unique_ptr<SeqRegions>& neighbor_2_mutations =
+        node_mutations[neighbor_2_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
+        (neighbor_2_mutations && neighbor_2_mutations->size())
+        ? ori_lower_lh_2
+          ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
+        (neighbor_2_mutations && neighbor_2_mutations->size())
+        ? &(mut_integrated_neighbor_2_regions)
+        : &(ori_lower_lh_2);
+    // 3. create a reference from that pointer
+    auto& lower_lh_2 = *neighbor_2_regions_ptr;
+    
   lower_lh_1->mergeTwoLowers<num_states>(
       new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2,
       neighbor_2.getUpperLength(), aln, model, cumulative_rate,
@@ -7787,18 +7869,57 @@ void cmaple::Tree::computeLhContribution(
     RealNumType& total_lh,
     std::unique_ptr<SeqRegions>& new_lower_lh,
     PhyloNode& node,
-    const std::unique_ptr<SeqRegions>& lower_lh_1,
-    const std::unique_ptr<SeqRegions>& lower_lh_2,
+    const std::unique_ptr<SeqRegions>& ori_lower_lh_1,
+    const std::unique_ptr<SeqRegions>& ori_lower_lh_2,
     const Index neighbor_1_index,
     PhyloNode& neighbor_1,
     const Index neighbor_2_index,
     PhyloNode& neighbor_2,
     const PositionType& seq_length) {
+    
+    // 0. extract the mutations at neighbor_1
+    std::unique_ptr<SeqRegions>& neighbor_1_mutations =
+        node_mutations[neighbor_1_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
+        (neighbor_1_mutations && neighbor_1_mutations->size())
+        ? ori_lower_lh_1
+          ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
+        (neighbor_1_mutations && neighbor_1_mutations->size())
+        ? &(mut_integrated_neighbor_1_regions)
+        : &(ori_lower_lh_1);
+    // 3. create a reference from that pointer
+    auto& lower_lh_1 = *neighbor_1_regions_ptr;
+    
+    // 0. extract the mutations at neighbor_2
+    std::unique_ptr<SeqRegions>& neighbor_2_mutations =
+        node_mutations[neighbor_2_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
+        (neighbor_2_mutations && neighbor_2_mutations->size())
+        ? ori_lower_lh_2
+          ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
+        (neighbor_2_mutations && neighbor_2_mutations->size())
+        ? &(mut_integrated_neighbor_2_regions)
+        : &(ori_lower_lh_2);
+    // 3. create a reference from that pointer
+    auto& lower_lh_2 = *neighbor_2_regions_ptr;
+    
   RealNumType lh_contribution = lower_lh_1->mergeTwoLowers<num_states>(
       new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2,
       neighbor_2.getUpperLength(), aln, model, cumulative_rate,
       params->threshold_prob, true);
   total_lh += lh_contribution;
+    
+    /*std::cout << "lh_contribution " << neighbor_1_index.getVectorIndex()
+     << " " << neighbor_2_index.getVectorIndex() <<": "
+     << lh_contribution << std::endl;*/
 
   // record the likelihood contribution at this node
   // if likelihood contribution of this node has not yet existed -> add a new
@@ -11560,6 +11681,11 @@ template <const StateType num_states>
 auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const NumSeqsType& node_vec_index,
                                      const int old_num_desc) -> void
 {
+    // Show debug info
+    if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
+      std::cout << "Make a local reference at node " << node_vec_index << std::endl;
+    }
+    
     // dummy variables
     const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
     const RealNumType threshold_prob = params->threshold_prob;
