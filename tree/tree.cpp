@@ -7402,8 +7402,7 @@ void calculateSampleCost_O_RACGT(const SeqRegion& seq1_region,
 
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                ::size_type>(end_pos)];
+    seq2_state = seq1_region.prev_state;
   }
   const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq2_state, end_pos);
   RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region.likelihood)[0]));;
@@ -7489,8 +7488,7 @@ void calculateSampleCost_ACGT_RACGT(const SeqRegion& seq1_region,
   StateType seq1_state = seq1_region.type;
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                ::size_type>(end_pos)];
+    seq2_state = seq1_region.prev_state;
   }
 
   if (seq1_region.plength_observation2root >= 0) {
@@ -7555,6 +7553,7 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     blength = 0;
   }
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+  lh_cost = blength * (-seq_length);
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -7582,21 +7581,23 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     // 2. e1.type = R
     // 2.1. e1.type = R and e2.type = R
     if (s1s2 == RR) [[likely]] {
-      calculateSampleCost_R_R(*seq1_region, cumulative_rate, blength, pos,
-                              end_pos, lh_cost);
+        // update MAPLE 0.7.5 => do nothing
+        pos = end_pos + 1;
+        continue;
+        
+        // calculateSampleCost_R_R(*seq1_region, cumulative_rate, blength, pos,
+                                // end_pos, lh_cost);
     }
     // 2.2. e1.type = R and e2.type = O
     else if (s1s2 == RO) {
       calculateSampleCost_R_O<num_states>(*seq1_region, *seq2_region, blength,
-                                          aln->ref_seq[static_cast<
-                            std::vector<cmaple::StateType>::size_type>(end_pos)],
+                                          seq2_region->prev_state,
                                           lh_cost, total_factor, model);
     }
     // 2.3. e1.type = R and e2.type = A/C/G/T
     else if (seq1_region->type == TYPE_R) {
       calculateSampleCost_R_ACGT(*seq1_region, *seq2_region, blength,
-                                 aln->ref_seq[static_cast<
-                    std::vector<cmaple::StateType>::size_type>(end_pos)],
+                                 seq2_region->prev_state,
                                  seq2_region->type, total_factor, model);
     }
     // 3. e1.type = O
@@ -7614,7 +7615,10 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     // 4. e1.type = A/C/G/T
     // 4.1. e1.type =  e2.type
     else if (seq1_region->type == seq2_region->type) {
-      calculateSampleCost_identicalACGT(*seq1_region, blength, end_pos, lh_cost, model);
+        // update MAPLE 0.7.5 => do nothing
+        pos = end_pos + 1;
+        continue;
+        // calculateSampleCost_identicalACGT(*seq1_region, blength, end_pos, lh_cost, model);
     }
     // e1.type = A/C/G/T and e2.type = O/A/C/G/T
     // 4.2. e1.type = A/C/G/T and e2.type = O
