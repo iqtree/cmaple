@@ -768,6 +768,7 @@ auto SeqRegions::integrateMutations(
   size_t iseq = 0;
   size_t imut = 0;
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
+  const RealNumType threshold_prob = 1e-8;
 
   // avoid realloc of vector data (minimize memory footprint)
     output_regions->reserve(countSharedSegments(
@@ -792,13 +793,12 @@ auto SeqRegions::integrateMutations(
       cmaple::StateType mut_new_state = inverse ?
         mutation->prev_state : mutation->type;
       
-      // first add seq_region to the output lh vector
-      output_regions->push_back(SeqRegion::clone(*seq_region));
-      // extract the newly added seq_region
-      SeqRegion& last_region = output_regions->back();
+      // extract states of seq_region
+      StateType region_type = seq_region->type;
+      StateType region_prev_state = seq_region->prev_state;
       
       // case 1: seq_region = N
-      if (seq_region->type == TYPE_N)
+      if (region_type == TYPE_N)
       {
           // force moving to the end of this region
           while (end_pos < seq_region->position)
@@ -814,7 +814,7 @@ auto SeqRegions::integrateMutations(
           assert(end_pos == seq_region->position);
       }
       // case 2: seq_region = A/C/G/T
-      else if (seq_region->type < num_states)
+      else if (region_type < num_states)
       {
           // if a mutation occurs at this position,
           // modify the type (i.e., current state) and the previous state
@@ -822,20 +822,20 @@ auto SeqRegions::integrateMutations(
           {
               // if the current state is identical to the new state of the mutation
               // change it to R
-              if (last_region.type == mut_new_state)
+              if (region_type == mut_new_state)
               {
-                  last_region.type = TYPE_R;
-                  last_region.prev_state = TYPE_N;
+                  region_type = TYPE_R;
+                  region_prev_state = TYPE_N;
               }
               // otherwise, keep the current state but update the previous state
               else
               {
-                  last_region.prev_state = mut_new_state;
+                  region_prev_state = mut_new_state;
               }
           }
       }
       // case 3: seq_region = R
-      else if (seq_region->type == TYPE_R)
+      else if (region_type == TYPE_R)
       {
           // if a mutation occurs at this position,
           // modify the type (i.e., current state) and the previous state
@@ -843,7 +843,7 @@ auto SeqRegions::integrateMutations(
           {
               // set the previous state of the newly-added region
               // as the new state of the mutation
-              last_region.prev_state = mut_new_state;
+              region_prev_state = mut_new_state;
               
               // extract the previous state of the mutation
               // according to the direction
@@ -852,11 +852,7 @@ auto SeqRegions::integrateMutations(
               
               // the new state of the newly-added region
               // is R which is also the previous state of the mutation
-              last_region.type = mut_prev_state;
-          }
-          // otherwise, update the last position of the newly-added R region
-          {
-              last_region.position = end_pos;
+              region_type = mut_prev_state;
           }
       }
       // case 4: seq_region = O
@@ -864,10 +860,24 @@ auto SeqRegions::integrateMutations(
       {
           // if a mutation occurs at this position,
           // modify the previous state
-          if (mutation->type < num_states)
+          if (region_type < num_states)
           {
-              last_region.prev_state = mut_new_state;
+              region_prev_state = mut_new_state;
           }
+      }
+      
+      // add the region the the output
+      if (region_type == cmaple::TYPE_O) {
+          // first add seq_region to the output lh vector
+          output_regions->push_back(SeqRegion::clone(*seq_region));
+          // extract the newly added seq_region
+          SeqRegion& last_region = output_regions->back();
+          last_region.prev_state = region_prev_state;
+      } else {
+        // add a new region and try to merge consecutive R regions together
+          cmaple::SeqRegions::addNonConsecutiveRRegion(*output_regions, region_type,
+                region_prev_state, seq_region->plength_observation2node,
+                seq_region->plength_observation2root, end_pos, threshold_prob);
       }
 
     // update pos
