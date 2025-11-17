@@ -579,8 +579,7 @@ void cmaple::SeqRegions::addSimplifiedO(
   assert(aln);
     
   cmaple::StateType new_state = SeqRegions::simplifyO(
-      new_lh.data(), aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                    ::size_type>(end_pos)], aln->num_states, threshold_prob);
+      new_lh.data(), ref_state, aln->num_states, threshold_prob);
 
   if (new_state == cmaple::TYPE_O) {
     merged_regions.emplace_back(cmaple::TYPE_O, end_pos, ref_state, 0, 0,
