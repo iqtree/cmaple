@@ -11422,9 +11422,26 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         const RealNumType half_blength = candidate_node.getUpperLength() >= 0 ?
             (candidate_node.getUpperLength() * 0.5) : -1;
         
+        // 0. extract the mutations at the candidate node
+        std::unique_ptr<SeqRegions>& candidate_node_mutations =
+            node_mutations[candidate_vec_id];
+        // 1. create a new regions that de-integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_candidate_regions =
+            (candidate_node_mutations && candidate_node_mutations->size())
+            ? candidate_node.getPartialLh(TOP)
+              ->integrateMutations<num_states>(candidate_node_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate regions
+        const std::unique_ptr<SeqRegions>* candidate_regions_ptr =
+            (candidate_node_mutations && candidate_node_mutations->size())
+            ? &(mut_integrated_candidate_regions)
+            : &(candidate_node.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& candidate_lower_regions = *candidate_regions_ptr;
+        
         // compute the likelihood contribution when merging this node and the passing subtree
         std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
-        const RealNumType lh_contribution_by_merging = candidate_node.getPartialLh(TOP)
+        const RealNumType lh_contribution_by_merging = candidate_lower_regions
             ->mergeTwoLowers<num_states>(lower_regions_merged, half_blength,
                 *(root_candidate->getIncomingRegions()), half_blength, aln,
                 model, cumulative_rate, threshold_prob, true);
@@ -11475,7 +11492,8 @@ NumSeqsType cmaple::Tree::seekBestRoot()
         {
             addChildrenAsRootCandidate<num_states>(root_candidate->getIncomingRegions(),
                             candidate_node.getUpperLength(), root_candidate->getLhDeducted(),
-                            score, root_candidate->getFailureCount(), candidate_node, node_stack);
+                            score, root_candidate->getFailureCount(), candidate_node,
+                                                   candidate_vec_id, node_stack);
         }
         
         // Show log every 1000 nodes
@@ -11515,12 +11533,43 @@ void cmaple::Tree::addStartingRootCandidate(
     const Index child_2_index = node.getNeighborIndex(RIGHT);
     PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
     PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
-    std::unique_ptr<SeqRegions>& lower_regions_child_1 =
-        child_1.getPartialLh(TOP);
-    std::unique_ptr<SeqRegions>& lower_regions_child_2 =
-        child_2.getPartialLh(TOP);
     const RealNumType total_blength = child_1.getUpperLength()
         + child_2.getUpperLength();
+    
+    // 0. extract the mutations at child_1
+    std::unique_ptr<SeqRegions>& child_1_mutations =
+        node_mutations[child_1_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_child_1_regions =
+        (child_1_mutations && child_1_mutations->size())
+        ? child_1.getPartialLh(TOP)
+          ->integrateMutations<num_states>(child_1_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* child_1_regions_ptr =
+        (child_1_mutations && child_1_mutations->size())
+        ? &(mut_integrated_child_1_regions)
+        : &(child_1.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& lower_regions_child_1 = *child_1_regions_ptr;
+    
+    
+    // 0. extract the mutations at child_2
+    std::unique_ptr<SeqRegions>& child_2_mutations =
+        node_mutations[child_2_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_child_2_regions =
+        (child_2_mutations && child_2_mutations->size())
+        ? child_2.getPartialLh(TOP)
+          ->integrateMutations<num_states>(child_2_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* child_2_regions_ptr =
+        (child_2_mutations && child_2_mutations->size())
+        ? &(mut_integrated_child_2_regions)
+        : &(child_2.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& lower_regions_child_2 = *child_2_regions_ptr;
     
     // compute the current likelihood contribution by merging likelihood
     // at root with the state frequencies
@@ -11543,7 +11592,7 @@ void cmaple::Tree::addStartingRootCandidate(
     {
         addChildrenAsRootCandidate<num_states>(lower_regions_child_2,
                          total_blength, lh_contribution_at_root,
-                         0, 0, child_1, node_stack);
+                         0, 0, child_1, child_1_index.getVectorIndex(), node_stack);
     }
     
     // add child 2 (if it's an internal node)
@@ -11551,32 +11600,83 @@ void cmaple::Tree::addStartingRootCandidate(
     {
         addChildrenAsRootCandidate<num_states>(lower_regions_child_1,
                          total_blength, lh_contribution_at_root,
-                         0, 0, child_2, node_stack);
+                        0, 0, child_2, child_2_index.getVectorIndex(), node_stack);
     }
 }
 
 template <const StateType num_states>
 void cmaple::Tree::addChildrenAsRootCandidate(
-    const std::unique_ptr<SeqRegions>& incoming_regions_ref,
+    const std::unique_ptr<SeqRegions>& ori_incoming_regions_ref,
     const cmaple::RealNumType branch_length,
     const cmaple::RealNumType lh_deducted,
     const cmaple::RealNumType last_lh,
     const short int failure_count,
     PhyloNode& parent_node,
+    const NumSeqsType parent_vec_index,
     std::stack<std::unique_ptr<RootCandidate>>& node_stack)
 {
     // only consider adding children if the current parent node is an internal
     if (parent_node.isInternal())
     {
+        // integrate the mutations at the parent node (if any)
+        // into the incoming_regions_ref
+        // 0. extract the mutations at the parent node
+        std::unique_ptr<SeqRegions>& parent_node_mutations =
+            node_mutations[parent_vec_index];
+        // 1. create a new regions that integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_incoming_regions =
+            (parent_node_mutations && parent_node_mutations->size())
+            ? ori_incoming_regions_ref
+              ->integrateMutations<num_states>(parent_node_mutations, aln)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate regions
+        const std::unique_ptr<SeqRegions>* incoming_regions_ptr =
+            (parent_node_mutations && parent_node_mutations->size())
+            ? &(mut_integrated_incoming_regions)
+            : &(ori_incoming_regions_ref);
+        // 3. create a reference from that pointer
+        auto& incoming_regions_ref = *incoming_regions_ptr;
+        
         // extract the two children
         const Index child_1_index = parent_node.getNeighborIndex(LEFT);
         const Index child_2_index = parent_node.getNeighborIndex(RIGHT);
         PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
         PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
-        std::unique_ptr<SeqRegions>& lower_regions_child_1 =
-            child_1.getPartialLh(TOP);
-        std::unique_ptr<SeqRegions>& lower_regions_child_2 =
-            child_2.getPartialLh(TOP);
+        
+        // 0. extract the mutations at child_1
+        std::unique_ptr<SeqRegions>& child_1_mutations =
+            node_mutations[child_1_index.getVectorIndex()];
+        // 1. create a new regions that de-integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_child_1_regions =
+            (child_1_mutations && child_1_mutations->size())
+            ? child_1.getPartialLh(TOP)
+              ->integrateMutations<num_states>(child_1_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate regions
+        const std::unique_ptr<SeqRegions>* child_1_regions_ptr =
+            (child_1_mutations && child_1_mutations->size())
+            ? &(mut_integrated_child_1_regions)
+            : &(child_1.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& lower_regions_child_1 = *child_1_regions_ptr;
+        
+        
+        // 0. extract the mutations at child_2
+        std::unique_ptr<SeqRegions>& child_2_mutations =
+            node_mutations[child_2_index.getVectorIndex()];
+        // 1. create a new regions that de-integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_child_2_regions =
+            (child_2_mutations && child_2_mutations->size())
+            ? child_2.getPartialLh(TOP)
+              ->integrateMutations<num_states>(child_2_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate regions
+        const std::unique_ptr<SeqRegions>* child_2_regions_ptr =
+            (child_2_mutations && child_2_mutations->size())
+            ? &(mut_integrated_child_2_regions)
+            : &(child_2.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& lower_regions_child_2 = *child_2_regions_ptr;
         
         // compute the likelihood we need to deduct when we un-merge the two children
         std::unique_ptr<SeqRegions> lower_regions_merged = nullptr;
