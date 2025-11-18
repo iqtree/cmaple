@@ -2145,6 +2145,14 @@ bool isDiffFromOrigPlacement(
     template <const StateType num_states>
     auto makeReferenceNode(PhyloNode& node, const NumSeqsType& node_vec_index,
             const int old_num_desc) -> void;
+    
+    /**
+     Compute the absolute likelihood at root, de-integrating all local references
+     */
+    template <const StateType num_states>
+    auto computeAbsLhAtRootDeintegratedAllMuts(
+        const std::unique_ptr<SeqRegions>& regions,
+        cmaple::Index node_index) -> RealNumType;
 };
 
 /*!
@@ -2689,8 +2697,10 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
         selected_node.getPartialLh(TOP);
       
     // compute the absolute lh
-    old_root_lh = lower_regions->computeAbsoluteLhAtRoot<num_states>(
-       selected_node_mutations, aln, model, cumulative_base);
+    /* old_root_lh = lower_regions->computeAbsoluteLhAtRoot<num_states>(
+       selected_node_mutations, aln, model, cumulative_base);*/
+    old_root_lh = computeAbsLhAtRootDeintegratedAllMuts<num_states>(
+                    lower_regions, selected_node_index);
 
     // merge 2 lower vector into one
     RealNumType new_root_lh = lower_regions->mergeTwoLowers<num_states>(
@@ -2698,8 +2708,10 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
         model, cumulative_rate, threshold_prob, true);
     
     // compute the absolute lh
-    new_root_lh += best_parent_regions->computeAbsoluteLhAtRoot<num_states>(
-                    selected_node_mutations, aln, model, cumulative_base);
+    /*new_root_lh += best_parent_regions->computeAbsoluteLhAtRoot<num_states>(
+                    selected_node_mutations, aln, model, cumulative_base);*/
+      new_root_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
+                        best_parent_regions, selected_node_index);
       
     best_parent_lh = new_root_lh;
 
