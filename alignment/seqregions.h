@@ -168,6 +168,12 @@ class SeqRegions : public std::vector<SeqRegion> {
         -> std::unique_ptr<SeqRegions>;
     
     /**
+     Flip all mutations
+     */
+    template <const cmaple::StateType num_states>
+    void flipMutations();
+    
+    /**
      Check if this likelihood vector contains at least N mutations
      @param min_mut the number of mutations
      @return TRUE if this likelihood vector contains at least N mutations
@@ -2889,6 +2895,21 @@ auto cmaple::SeqRegions::containAtLeastNMuts(const int min_mut) const
     }
     
     return false;
+}
+
+template <const cmaple::StateType num_states>
+void cmaple::SeqRegions::flipMutations()
+{
+    for (SeqRegion& region : *this)
+    {
+        // only flip mutations
+        if (region.type < num_states)
+        {
+            const StateType prev_state = region.prev_state;
+            region.prev_state = region.type;
+            region.type = prev_state;
+        }
+    }
 }
 
 }  // namespace cmaple

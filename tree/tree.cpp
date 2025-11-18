@@ -11712,6 +11712,9 @@ void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
     // only reroot if the selected node is not the current root
     if (new_root_vec_id != root_vector_index)
     {
+        // dummy variable
+        const cmaple::RealNumType threshold_prob = params->threshold_prob;
+        
         // transfer the annotations from affected children to their parents
         transferAnnotations(new_root_vec_id);
         
@@ -11724,6 +11727,80 @@ void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
         // don't reroot if the selected node is a child of the current root
         if (parent_selected_node_index.getVectorIndex() == root_vector_index)
             return;
+        
+        // build the local reference for the new root
+        // get all nodes in the path from the parent of the selected node
+        // to the root
+        std::vector<NumSeqsType> nodes_in_path;
+        NumSeqsType traversal_node_vec_index = new_root_vec_id;
+        while (traversal_node_vec_index != root_vector_index)
+        {
+            PhyloNode& traversal_node = nodes[traversal_node_vec_index];
+            
+            // move upward
+            traversal_node_vec_index = traversal_node.getNeighborIndex(TOP)
+                                                        .getVectorIndex();
+            
+            // record the node, don't record the root
+            if (traversal_node_vec_index != root_vector_index)
+                nodes_in_path.push_back(traversal_node_vec_index);
+        }
+        // merge all local references in the path between the parent of
+        // the selected node and the root
+        std::unique_ptr<SeqRegions> new_root_mutations =
+            std::move(node_mutations[root_vector_index]);
+        for (auto i = nodes_in_path.size() - 1; i >= 0; --i)
+        {
+            // extract the local reference, if any
+            std::unique_ptr<SeqRegions>& other_mutations =
+                node_mutations[nodes_in_path[i]];
+            
+            // only process if it's a local reference
+            if (other_mutations && other_mutations->size())
+            {
+                // if new_root_mutations is empty -> replace it
+                if (!new_root_mutations || !new_root_mutations->size())
+                {
+                    new_root_mutations = cmaple::make_unique<SeqRegions>(other_mutations);
+                }
+                // otherwise, merge two local references
+                else
+                {
+                    new_root_mutations = new_root_mutations->mergeTwoRefs<num_states>(
+                                            other_mutations, aln, threshold_prob);
+                }
+            }
+        }
+        
+        // traverse upward on the path between the parent of
+        // the selected node and the root
+        // flip the mutations in local references
+        // and pass the flipped mutations to their parent nodes
+        std::unique_ptr<SeqRegions> flipped_mutations = nullptr;
+        for (auto i = 0; i < nodes_in_path.size(); ++i)
+        {
+            // extract the current node vec index
+            const NumSeqsType& current_node_vec_index = nodes_in_path[i];
+            
+            // extract the mutation at the current node
+            std::unique_ptr<SeqRegions> current_node_mutations =
+                std::move(node_mutations[current_node_vec_index]);
+            
+            // set the flipped mutations passed from its child, if any
+            if (flipped_mutations && flipped_mutations->size())
+            {
+                node_mutations[current_node_vec_index] = std::move(flipped_mutations);
+            }
+            
+            // flip and record the old mutations at the current node
+            // to pass upward later, if any
+            if (current_node_mutations && current_node_mutations->size())
+            {
+                // flip the mutations
+                current_node_mutations->flipMutations<num_states>();
+                flipped_mutations = std::move(current_node_mutations);
+            }
+        }
         
         // start from the parent of the selected node
         Index node_index = parent_selected_node_index;
@@ -11778,6 +11855,23 @@ void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
         sibling_node.setNeighborIndex(TOP, node_index);
         sibling_node.setUpperLength(sibling_node.getUpperLength() + upper_blength);
         
+        // merge the flipped mutations (if any) with the mutations at the sibling
+        if (flipped_mutations && flipped_mutations->size())
+        {
+            // merge with the existing mutations at the sibling, if any
+            std::unique_ptr<SeqRegions>& sibling_mutations =
+                node_mutations[sibling_vec_id];
+            if (sibling_mutations && sibling_mutations->size())
+            {
+                flipped_mutations = flipped_mutations->mergeTwoRefs<num_states>(sibling_mutations, aln, threshold_prob);
+            }
+            
+            // set the mutations to the sibling
+            node_mutations[sibling_vec_id] = std::move(flipped_mutations);
+        }
+        // set the new (merged) local reference to the new root
+        node_mutations[root_vector_index] = std::move(new_root_mutations);
+        
         // finally, connect the selected node and its parent to the root
         // now the selected node and its parent becomes siblings
         // get the root node
@@ -11800,6 +11894,56 @@ void cmaple::Tree::reroot(const NumSeqsType& new_root_vec_id)
         old_parent_selected_node.setNeighborIndex(TOP,
                                     Index(root_vector_index, old_parent_selected_side));
         old_parent_selected_node.setUpperLength(half_rooted_blength);
+        
+        // traverse upward from the sibling node to root to update the corrected_num_descendants
+        cmaple::Index travesal_node_index = sibling_index;
+        // reset corrected_num_descendants if the sibling node is a local reference node
+        if (node_mutations[sibling_vec_id])
+            corrected_num_descendants[sibling_vec_id] = 0;
+        while (travesal_node_index.getVectorIndex() != root_vector_index)
+        {
+            // current node
+            const NumSeqsType& current_node_vec_id = travesal_node_index.getVectorIndex();
+            PhyloNode& current_node = nodes[current_node_vec_id];
+            
+            // parent node
+            const cmaple::Index& parent_node_index = current_node.getNeighborIndex(TOP);
+            const NumSeqsType& parent_node_vec_id = parent_node_index.getVectorIndex();
+            PhyloNode& parent_node = nodes[parent_node_vec_id];
+            
+            // sibling node
+            const NumSeqsType& sibling_vec_id = parent_node.getNeighborIndex(
+                parent_node_index.getFlipMiniIndex()).getVectorIndex();
+            PhyloNode& sibling_node = nodes[sibling_vec_id];
+            
+            // update the corrected_num_descendants of the parent
+            // if parent node is a local reference node
+            // reset the corrected_num_descendants
+            if (node_mutations[parent_node_vec_id])
+            {
+                corrected_num_descendants[parent_node_vec_id] = 0;
+            }
+            // otherwise count the total from its two children
+            else
+            {
+                NumSeqsType total_descendants = corrected_num_descendants[current_node_vec_id];
+                total_descendants += corrected_num_descendants[sibling_vec_id];
+                
+                // count the current node
+                if (current_node.getUpperLength() > 0)
+                    ++total_descendants;
+                
+                // count the sibling node
+                if (sibling_node.getUpperLength() > 0)
+                    ++total_descendants;
+                
+                // update the parent node
+                corrected_num_descendants[parent_node_vec_id] = total_descendants;
+            }
+            
+            // move upward
+            travesal_node_index = parent_node_index;
+        }
         
         // refresh the likelihoods of the tree
         refreshAllLhs<num_states>();
