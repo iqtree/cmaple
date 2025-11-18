@@ -748,6 +748,7 @@ bool isDiffFromOrigPlacement(
                           const cmaple::RealNumType lh_diff,
                           const short int failure_count,
                           PhyloNode& parent_node,
+                          const NumSeqsType parent_vec_index,
                           std::stack<std::unique_ptr<RootCandidate>>& node_stack);
     
     /**
