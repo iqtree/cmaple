@@ -1019,6 +1019,17 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                << std::setprecision(3) << end - start << endl;
         }
     }
+    
+    // show info: the number of local references
+    if (cmaple::verbose_mode >= cmaple::VB_MAX) {
+        size_t num_local_refs = 0;
+        for (auto i = 0; i < node_mutations.size(); ++i)
+        {
+            if (node_mutations[i])
+                ++num_local_refs;
+        }
+        cout << "#local refrences: " << num_local_refs << endl;
+    }
 
   // Restore the source cout
   cout.rdbuf(src_cout);
