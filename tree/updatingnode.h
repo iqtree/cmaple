@@ -5,7 +5,7 @@
 namespace cmaple {
 /** An extension of node storing more dummy data used for updating nodes in the
  * tree  */
-class UpdatingNode : public cmaple::TraversingNode {
+class UpdatingNode : public cmaple::TraversingExtNode {
  private:
   /**
    an updated regions from the direction where we come from (taking into account
@@ -38,13 +38,14 @@ class UpdatingNode : public cmaple::TraversingNode {
    Constructor
    */
   UpdatingNode(const cmaple::Index node_index,
+               std::unique_ptr<SeqRegions>&& subtree_regions,
                std::unique_ptr<SeqRegions>&& incoming_regions,
                std::unique_ptr<SeqRegions>& incoming_regions_ref,
                const cmaple::RealNumType branch_length,
                const bool need_updating,
                const cmaple::RealNumType lh_diff,
                const short int failure_count)
-      : TraversingNode(node_index, failure_count, lh_diff),
+      : TraversingExtNode(node_index, failure_count, lh_diff, std::move(subtree_regions)),
         incoming_regions_(std::move(incoming_regions)),
         incoming_regions_ref_(incoming_regions_ref),
         branch_length_(branch_length),

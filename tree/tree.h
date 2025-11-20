@@ -721,7 +721,8 @@ bool isDiffFromOrigPlacement(
    operations
    */
   template <const cmaple::StateType num_states>
-  void addStartingNodes(const cmaple::Index& node_index,
+  void addStartingNodes(const std::unique_ptr<SeqRegions>& subtree_regions,
+                        const cmaple::Index& node_index,
                         PhyloNode& node,
                         const cmaple::Index& other_child_node_index,
                         const cmaple::RealNumType best_lh_diff,
@@ -1860,6 +1861,7 @@ bool isDiffFromOrigPlacement(
       cmaple::Index& best_child_index,
       const bool short_range_search,
       const cmaple::Index child_node_index,
+      std::unique_ptr<SeqRegions>& best_subtree_regions,
       cmaple::RealNumType& removed_blength,
       cmaple::RealNumType& opt_appending_blength,
       cmaple::RealNumType& opt_mid_top_blength,
