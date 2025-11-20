@@ -1295,7 +1295,7 @@ bool isDiffFromOrigPlacement(
    */
   void estimateBlength_R_ACGT(
       const SeqRegion& seq1_region,
-      const cmaple::StateType seq2_state,
+      const SeqRegion& seq2_region,
       const cmaple::RealNumType total_blength,
       const cmaple::PositionType end_pos,
       std::vector<cmaple::RealNumType>& coefficient_vec);
