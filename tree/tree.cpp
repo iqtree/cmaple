@@ -6007,9 +6007,23 @@ PositionType cmaple::Tree::optimizeBranchIter() {
     PhyloNode& node = nodes[node_index.getVectorIndex()];
 
     const Index parent_index = node.getNeighborIndex(TOP);
-    const std::unique_ptr<SeqRegions>& upper_lr_regions = getPartialLhAtNode(
-        parent_index);  // node->neighbor->getPartialLhAtNode(aln,
-                        // model, threshold_prob);
+      // 0. extract the mutations at this node
+      std::unique_ptr<SeqRegions>& this_node_mutations =
+          node_mutations[node_index.getVectorIndex()];
+      // 1. create a new upper_lr_regions that integrate the mutations, if any
+      std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+          (this_node_mutations && this_node_mutations->size())
+          ? getPartialLhAtNode(parent_index)
+            ->integrateMutations<num_states>(this_node_mutations, aln)
+          : nullptr;
+      // 2. create the pointer that points to the appropriate upper_lr_regions
+      const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+          (this_node_mutations && this_node_mutations->size())
+          ? &(mut_integrated_upper_lr_regions)
+          : &(getPartialLhAtNode(parent_index));
+      // 3. create a reference from that pointer
+      auto& upper_lr_regions = *upper_lr_regions_ptr;
+      
     const std::unique_ptr<SeqRegions>& lower_regions = node.getPartialLh(
         TOP);  // node->getPartialLhAtNode(aln, model, threshold_prob);
 
