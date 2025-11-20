@@ -733,12 +733,34 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                   size_t upward_steps = params->upward_search_extension;
                   if (selected_node_index.getMiniIndex() != UNDEFINED)
                   {
+                      // de-integrate mutations, if any
+                      // 0. extract the mutations at the selected node
+                      std::unique_ptr<SeqRegions>& selected_node_mutations =
+                          node_mutations[selected_node_index.getVectorIndex()];
+                      // 1. de-integrate mutations, if any
+                      if (selected_node_mutations && selected_node_mutations->size())
+                      {
+                          lower_regions = lower_regions->integrateMutations<num_states>
+                                            (selected_node_mutations, aln, true);
+                      }
+                      
                       while (selected_node_index.getVectorIndex() != root_vector_index)
                       {
                           PhyloNode& found_placement_node = nodes[selected_node_index.getVectorIndex()];
                           if (found_placement_node.getUpperLength() <= 0 || upward_steps)
                           {
                               selected_node_index = found_placement_node.getNeighborIndex(TOP);
+                              
+                              // de-integrate mutations, if any
+                              // 0. extract the mutations at the selected node
+                              std::unique_ptr<SeqRegions>& selected_node_mutations =
+                                  node_mutations[selected_node_index.getVectorIndex()];
+                              // 1. de-integrate mutations, if any
+                              if (selected_node_mutations && selected_node_mutations->size())
+                              {
+                                  lower_regions = lower_regions->integrateMutations<num_states>
+                                                    (selected_node_mutations, aln, true);
+                              }
                               
                               // update the upward step
                               if (found_placement_node.getUpperLength() > 0 && upward_steps)
