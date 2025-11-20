@@ -2608,6 +2608,7 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
 
 template <const StateType num_states>
 void cmaple::Tree::addStartingNodes(
+    const std::unique_ptr<SeqRegions>& subtree_regions,
     const Index& node_index,
     PhyloNode& node,
     const Index& other_child_node_index,
@@ -2617,6 +2618,11 @@ void cmaple::Tree::addStartingNodes(
   // dummy variables
   const NumSeqsType vec_index = node_index.getVectorIndex();
   PhyloNode& other_child_node = nodes[other_child_node_index.getVectorIndex()];
+  const RealNumType threshold_prob = params->threshold_prob;
+
+  // extract the mutations at the other child node
+  std::unique_ptr<SeqRegions>& other_child_mutations =
+    node_mutations[other_child_node_index.getVectorIndex()];
 
   // node is not the root
   if (root_vector_index != vec_index) {
@@ -2638,19 +2644,73 @@ void cmaple::Tree::addStartingNodes(
       branch_length = branch_length > 0 ? branch_length + node.getUpperLength()
                                         : node.getUpperLength();
     }
+  
+  // extract the mutations at this node
+  std::unique_ptr<SeqRegions>& this_node_mutations =
+      node_mutations[vec_index];
+  // init merged mutations between this node and the other child node
+  std::unique_ptr<SeqRegions> tmp_merged_this_node_other_child_mut =
+    (this_node_mutations && other_child_mutations)
+    ? this_node_mutations
+      ->mergeTwoRefs<num_states>(other_child_mutations, aln, threshold_prob)
+      : nullptr;
+  // create the pointer that points to the appropriate object of mutations
+  std::unique_ptr<SeqRegions>* merged_this_node_other_child_mut_ptr =
+    (this_node_mutations && other_child_mutations)
+    ? &(tmp_merged_this_node_other_child_mut)
+    : (this_node_mutations)
+      ? &(this_node_mutations)
+      : &(other_child_mutations);
+  // create a reference from that pointer
+  auto& merged_this_node_other_child_mut = *merged_this_node_other_child_mut_ptr;
+      
+  // integrate mutations from other child into subtree regions, if any
+  std::unique_ptr<SeqRegions> child_mut_integrated_subtree_regions
+      = subtree_regions->integrateMutations<num_states>(other_child_mutations, aln);
+  // de-integrate mutations from this node into subtree regions, if any
+  std::unique_ptr<SeqRegions> this_node_mut_deintegrated_subtree_regions
+      = subtree_regions->integrateMutations<num_states>(this_node_mutations, aln, true);
 
     /*node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions,
     branch_length, true, best_lh_diff, 0, false)); node_stack.push(new
     UpdatingNode(other_child_node, parent_upper_lr_regions, branch_length, true,
     best_lh_diff, 0, false));*/
     std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
-    node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
-        parent_index, std::move(null_seqregions_ptr1), other_child_node_regions,
-        branch_length, true, best_lh_diff, 0)));
     std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
-    node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
-        other_child_node_index, std::move(null_seqregions_ptr2),
-        parent_upper_lr_regions, branch_length, true, best_lh_diff, 0)));
+      if (merged_this_node_other_child_mut && merged_this_node_other_child_mut->size())
+      {
+          // add the parent node
+          // de-integrate mutations at the other child (if any)
+          // to use the same local reference as the parent node
+          node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
+                            parent_index, std::move(this_node_mut_deintegrated_subtree_regions),
+                            other_child_node_regions
+                            ->integrateMutations<num_states>(merged_this_node_other_child_mut, aln, true),
+                            null_seqregions_ptr1, branch_length, true, best_lh_diff, 0)));
+          
+          // add the other child node
+          // integrate mutations at the other child (if any)
+          // to use the same local reference as the other child
+          node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
+                            other_child_node_index, std::move(child_mut_integrated_subtree_regions),
+                            parent_upper_lr_regions
+                            ->integrateMutations<num_states>(merged_this_node_other_child_mut, aln),
+                            null_seqregions_ptr2, branch_length, true, best_lh_diff, 0)));
+      }
+      else
+      {
+          // add the parent node
+          node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
+                            parent_index, std::move(this_node_mut_deintegrated_subtree_regions),
+                            std::move(null_seqregions_ptr1),
+                            other_child_node_regions, branch_length, true, best_lh_diff, 0)));
+          
+          // add the other child node
+          node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
+                            other_child_node_index, std::move(child_mut_integrated_subtree_regions),
+                            std::move(null_seqregions_ptr2),
+                            parent_upper_lr_regions, branch_length, true, best_lh_diff, 0)));
+      }
   }
   // node is root
   else {
@@ -2670,6 +2730,44 @@ void cmaple::Tree::addStartingNodes(
       PhyloNode& grand_child_2 = nodes
           [grand_child_2_index
                .getVectorIndex()];  // other_child_node->next->next->neighbor;
+    
+    // extract the mutations at grand child 1
+    std::unique_ptr<SeqRegions>& grand_child_1_mutations =
+        node_mutations[grand_child_1_index.getVectorIndex()];
+    // init merged mutations between the other child node and grand child 1
+    std::unique_ptr<SeqRegions> tmp_merged_other_child_grand_1_mut =
+      (other_child_mutations && grand_child_1_mutations)
+      ? other_child_mutations
+        ->mergeTwoRefs<num_states>(grand_child_1_mutations, aln, threshold_prob)
+        : nullptr;
+    // create the pointer that points to the appropriate object of mutations
+    std::unique_ptr<SeqRegions>* merged_other_child_grand_1_mut_ptr =
+      (other_child_mutations && grand_child_1_mutations)
+      ? &(tmp_merged_other_child_grand_1_mut)
+      : (other_child_mutations)
+        ? &(other_child_mutations)
+        : &(grand_child_1_mutations);
+    // create a reference from that pointer
+    auto& merged_other_child_grand_1_mut = *merged_other_child_grand_1_mut_ptr;
+        
+    // extract the mutations at grand child 2
+    std::unique_ptr<SeqRegions>& grand_child_2_mutations =
+        node_mutations[grand_child_2_index.getVectorIndex()];
+    // init merged mutations between the other child node and grand child 2
+    std::unique_ptr<SeqRegions> tmp_merged_other_child_grand_2_mut =
+      (other_child_mutations && grand_child_2_mutations)
+      ? other_child_mutations
+        ->mergeTwoRefs<num_states>(grand_child_2_mutations, aln, threshold_prob)
+        : nullptr;
+    // create the pointer that points to the appropriate object of mutations
+    std::unique_ptr<SeqRegions>* merged_other_child_grand_2_mut_ptr =
+      (other_child_mutations && grand_child_2_mutations)
+      ? &(tmp_merged_other_child_grand_2_mut)
+      : (other_child_mutations)
+        ? &(other_child_mutations)
+        : &(grand_child_2_mutations);
+    // create a reference from that pointer
+    auto& merged_other_child_grand_2_mut = *merged_other_child_grand_2_mut_ptr;
 
       // always unique_ptr<SeqRegions>& -> always automatically delete
       // SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln,
@@ -2678,27 +2776,71 @@ void cmaple::Tree::addStartingNodes(
       // grand_child_2.computeTotalLhAtNode(other_child_node, aln, model,
       // threshold_prob, true, grand_child_2.getUpperLength());
       std::unique_ptr<SeqRegions> up_lr_regions_1 = nullptr;
-      grand_child_2.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(
-          up_lr_regions_1, model, grand_child_2.getUpperLength());
+        if (grand_child_2_mutations && grand_child_2_mutations->size())
+        {
+            // deintergrate mutations at grand-child 2, if any
+            // to use the same local reference as the other child node
+            std::unique_ptr<SeqRegions> mut_deintegrated_grand_2_lower_regions
+                = grand_child_2.getPartialLh(TOP)
+                    ->integrateMutations<num_states>(grand_child_2_mutations, aln, true);
+            
+            mut_deintegrated_grand_2_lower_regions->computeTotalLhAtRoot<num_states>(
+                    up_lr_regions_1, model, grand_child_2.getUpperLength());
+        }
+        else
+        {
+            grand_child_2.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(
+                up_lr_regions_1, model, grand_child_2.getUpperLength());
+        }
+        // integrate mutations at grand-child 1, if any
+        // to use the same local ref as grand-child 1
+        if (grand_child_1_mutations && grand_child_1_mutations->size())
+        {
+            up_lr_regions_1 = up_lr_regions_1->integrateMutations<num_states>(
+                                grand_child_1_mutations, aln);
+        }
 
       // node_stack.push(new UpdatingNode(grand_child_1, up_lr_regions_1,
       // grand_child_1->length, true, best_lh_diff, 0, true));
       std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
-      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
-          grand_child_1_index, std::move(up_lr_regions_1), null_seqregions_ptr1,
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(grand_child_1_index,
+          subtree_regions->integrateMutations<num_states>(merged_other_child_grand_1_mut, aln),
+          std::move(up_lr_regions_1), null_seqregions_ptr1,
           grand_child_1.getUpperLength(), true, best_lh_diff, 0)));
 
       // SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln,
       // model, threshold_prob, true, false, grand_child_1->length);
       std::unique_ptr<SeqRegions> up_lr_regions_2 = nullptr;
-      grand_child_1.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(
-          up_lr_regions_2, model, grand_child_1.getUpperLength());
+        if (grand_child_1_mutations && grand_child_1_mutations->size())
+        {
+            // deintergrate mutations at grand-child 1, if any
+            // to use the same local reference as the other child node
+            std::unique_ptr<SeqRegions> mut_deintegrated_grand_1_lower_regions
+                = grand_child_1.getPartialLh(TOP)
+                    ->integrateMutations<num_states>(grand_child_1_mutations, aln, true);
+            
+            mut_deintegrated_grand_1_lower_regions->computeTotalLhAtRoot<num_states>(
+                up_lr_regions_2, model, grand_child_1.getUpperLength());
+        }
+        else
+        {
+            grand_child_1.getPartialLh(TOP)->computeTotalLhAtRoot<num_states>(
+                up_lr_regions_2, model, grand_child_1.getUpperLength());
+        }
+        // integrate mutations at grand-child 2, if any
+        // to use the same local ref as grand-child 2
+        if (grand_child_2_mutations && grand_child_2_mutations->size())
+        {
+            up_lr_regions_2 = up_lr_regions_2->integrateMutations<num_states>(
+                                grand_child_2_mutations, aln);
+        }
 
       // node_stack.push(new UpdatingNode(grand_child_2, up_lr_regions_2,
       // grand_child_2->length, true, best_lh_diff, 0, true));
       std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
-      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
-          grand_child_2_index, std::move(up_lr_regions_2), null_seqregions_ptr2,
+      node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(grand_child_2_index,
+          subtree_regions->integrateMutations<num_states>(merged_other_child_grand_2_mut, aln),
+          std::move(up_lr_regions_2), null_seqregions_ptr2,
           grand_child_2.getUpperLength(), true, best_lh_diff, 0)));
     }
   }
@@ -3531,6 +3673,7 @@ void cmaple::Tree::seekSubTreePlacement(
     Index& best_child_index,
     const bool short_range_search,
     const Index child_node_index,
+    std::unique_ptr<SeqRegions>& best_subtree_regions,
     RealNumType& removed_blength,
     RealNumType& opt_appending_blength,
     RealNumType& opt_mid_top_blength,
@@ -3552,9 +3695,23 @@ void cmaple::Tree::seekSubTreePlacement(
       node_index
           .getFlipMiniIndex());  // child_node->neighbor->getOtherNextNode()->neighbor;
   best_node_index = node_index;
-  const std::unique_ptr<SeqRegions>& subtree_regions =
-      child_node.getPartialLh(TOP);  // child_node->getPartialLhAtNode(aln,
-                                     // model, threshold_prob); nullptr;
+    // 0. extract the mutations at the child node (root of the subtree)
+    std::unique_ptr<SeqRegions>& child_node_mutations =
+        node_mutations[child_node_index.getVectorIndex()];
+    // 1. create a new regions that de-integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_subtree_regions =
+        (child_node_mutations && child_node_mutations->size())
+        ? child_node.getPartialLh(TOP)
+          ->integrateMutations<num_states>(child_node_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* subtree_regions_ptr =
+        (child_node_mutations && child_node_mutations->size())
+        ? &(mut_integrated_subtree_regions)
+        : &(child_node.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& subtree_regions = *subtree_regions_ptr;
+    
   // stack of nodes to examine positions
   stack<std::unique_ptr<UpdatingNode>> node_stack;
   // dummy variables
@@ -3596,8 +3753,8 @@ void cmaple::Tree::seekSubTreePlacement(
   // threshold_prob);
 
   // add starting nodes to start seek placement for the subtree
-  addStartingNodes<num_states>(node_index, node, other_child_node_index,
-                               best_lh_diff, node_stack);
+  addStartingNodes<num_states>(subtree_regions, node_index, node,
+                               other_child_node_index, best_lh_diff, node_stack);
 
   //}
   // search a placement for a new sample
@@ -6795,6 +6952,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       RealNumType opt_appending_blength = -1;
       RealNumType opt_mid_top_blength = -1;
       RealNumType opt_mid_bottom_blength = -1;
+      std::unique_ptr<SeqRegions> best_subtree_regions = nullptr;
         
         // debug
         /*if (node_index.getVectorIndex() == 594)
@@ -6804,8 +6962,8 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       seekSubTreePlacement<num_states>(
           best_node_index, best_lh_diff, is_mid_node, best_up_lh_diff,
           best_down_lh_diff, best_child_index, short_range_search, node_index,
-          best_blength, opt_appending_blength, opt_mid_top_blength,
-                                       opt_mid_bottom_blength); 
+          best_subtree_regions, best_blength, opt_appending_blength, opt_mid_top_blength,
+                                       opt_mid_bottom_blength);
 
       // validate the new placement cost
       /*if (best_lh_diff < -1e50) {
