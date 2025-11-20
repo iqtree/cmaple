@@ -6747,9 +6747,23 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
   // we avoid the root node since it cannot be re-placed with SPR moves
   if (root_vector_index != vec_index) {
     // evaluate current placement
-    const std::unique_ptr<SeqRegions>& parent_upper_lr_lh = getPartialLhAtNode(
-        node.getNeighborIndex(TOP));  // node->neighbor->getPartialLhAtNode(aln,
-                                      // model, threshold_prob);
+      // 0. extract the mutations at the selected node
+      std::unique_ptr<SeqRegions>& this_node_mutations =
+          node_mutations[vec_index];
+      // 1. create a new upper_lr_regions that integrate the mutations, if any
+      std::unique_ptr<SeqRegions> mut_integrated_parent_upper_lr =
+          (this_node_mutations && this_node_mutations->size())
+          ? getPartialLhAtNode(node.getNeighborIndex(TOP))
+            ->integrateMutations<num_states>(this_node_mutations, aln)
+          : nullptr;
+      // 2. create the pointer that points to the appropriate upper_lr_regions
+      const std::unique_ptr<SeqRegions>* parent_upper_lr_lh_ptr =
+          (this_node_mutations && this_node_mutations->size())
+          ? &(mut_integrated_parent_upper_lr)
+          : &(getPartialLhAtNode(node.getNeighborIndex(TOP)));
+      // 3. create a reference from that pointer
+      auto& parent_upper_lr_lh = *parent_upper_lr_lh_ptr;
+      
     const std::unique_ptr<SeqRegions>& lower_lh = node.getPartialLh(
         TOP);  // node->getPartialLhAtNode(aln, model, threshold_prob);
     RealNumType best_blength = node.getUpperLength();  // node->length;
@@ -7009,8 +7023,7 @@ void calculateSubtreeCost_O_RACGT(const SeqRegion& seq1_region,
                                   const ModelBase* model) {
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                ::size_type>(end_pos)];
+      seq2_state = seq1_region.prev_state;
   }
 
   if (total_blength > 0) {
@@ -7091,8 +7104,7 @@ bool calculateSubtreeCost_ACGT_RACGT(const SeqRegion& seq1_region,
     std::cout << "[calculateSubtreeCost_ACGT_RACGT] Warning: START total_factor negative!" << std::endl;
   }
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                ::size_type>(end_pos)];
+    seq2_state = seq1_region.prev_state;
   }
 
   /*if(seq1_region.position != seq2_region.position) {
@@ -7238,15 +7250,13 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
     else if (s1s2 == RO) {
       calculateSubtreeCost_R_O<num_states>(*seq1_region, *seq2_region,
                                            total_blength,
-                                           aln->ref_seq[static_cast<
-                std::vector<cmaple::StateType>::size_type>(end_pos)],
+                                           seq2_region->prev_state,
                                            total_factor, model);
     }
     // 2.3. e1.type = R and e2.type = A/C/G/T
     else if (seq1_region->type == TYPE_R) {
       if (!calculateSubtreeCost_R_ACGT(*seq1_region, *seq2_region, total_blength,
-                                       aln->ref_seq[static_cast<
-                std::vector<cmaple::StateType>::size_type>(end_pos)],
+                                       seq2_region->prev_state,
                                        seq2_region->type,
                                        total_factor, model)) {
         return MIN_NEGATIVE;
@@ -7267,7 +7277,9 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
     // 4. e1.type = A/C/G/T
     // 4.1. e1.type =  e2.type
     else if (seq1_region->type == seq2_region->type) {
-      calculateSubtreeCost_identicalACGT(*seq1_region, *seq2_region, total_blength, lh_cost, model);
+        // update to match MAPLE v0.7.5 -> do nothing
+      /* calculateSubtreeCost_identicalACGT(*seq1_region, *seq2_region, total_blength, lh_cost,
+                                         model);*/
     }
     // e1.type = A/C/G/T and e2.type = O/A/C/G/T
     // 4.2. e1.type = A/C/G/T and e2.type = O
