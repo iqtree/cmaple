@@ -6076,8 +6076,7 @@ void cmaple::Tree::estimateBlength_R_O(
     const PositionType end_pos,
     RealNumType& coefficient,
     std::vector<RealNumType>& coefficient_vec) {
-  const StateType seq1_state = aln->ref_seq[static_cast<std::vector<
-                                cmaple::StateType>::size_type>(end_pos)];
+  const StateType seq1_state = seq2_region.prev_state;
   RealNumType* mutation_mat_row =
       model->mutation_mat + model->row_index[seq1_state];
   RealNumType coeff0 = seq2_region.getLH(seq1_state);
@@ -6124,13 +6123,13 @@ void cmaple::Tree::estimateBlength_R_O(
 
 void cmaple::Tree::estimateBlength_R_ACGT(
     const SeqRegion& seq1_region,
-    const StateType seq2_state,
+    const SeqRegion& seq2_region,
     const RealNumType total_blength,
     const PositionType end_pos,
     std::vector<RealNumType>& coefficient_vec) {
+    const StateType seq2_state = seq2_region.type;
   if (seq1_region.plength_observation2root >= 0) {
-    StateType seq1_state = aln->ref_seq[static_cast<std::vector<
-                            cmaple::StateType>::size_type>(end_pos)];
+    StateType seq1_state = seq2_region.prev_state;
 
     RealNumType coeff1 =
         model->root_freqs[seq1_state] *
@@ -6190,8 +6189,7 @@ void cmaple::Tree::estimateBlength_O_X(
   else {
     StateType seq2_state = seq2_region.type;
     if (seq2_state == TYPE_R) {
-      seq2_state = aln->ref_seq[static_cast<std::vector<
-                    cmaple::StateType>::size_type>(end_pos)];
+        seq2_state = seq1_region.prev_state;
     }
 
     coeff0 = seq1_region.getLH(seq2_state);
@@ -6284,8 +6282,7 @@ void cmaple::Tree::estimateBlength_ACGT_RACGT(
   StateType seq1_state = seq1_region.type;
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                ::size_type>(end_pos)];
+      seq2_state = seq1_region.prev_state;
   }
 
   if (seq1_region.plength_observation2root >= 0) {
@@ -6482,7 +6479,7 @@ RealNumType cmaple::Tree::estimateBranchLength(
     }
     // 2.3. e1.type = R and e2.type = A/C/G/T
     else if (seq1_region->type == TYPE_R) {
-      estimateBlength_R_ACGT(*seq1_region, seq2_region->type, total_blength,
+      estimateBlength_R_ACGT(*seq1_region, *seq2_region, total_blength,
                              end_pos, coefficient_vec);
     }
     // 3. e1.type = O
