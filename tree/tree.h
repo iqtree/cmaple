@@ -1013,7 +1013,7 @@ bool isDiffFromOrigPlacement(
   void placeSubTreeAtNode(const cmaple::Index selected_node_index,
                           const cmaple::Index subtree_index,
                           PhyloNode& subtree,
-                          const std::unique_ptr<SeqRegions>&& subtree_regions,
+                          std::unique_ptr<SeqRegions>&& subtree_regions,
                           const cmaple::RealNumType new_branch_length,
                           const cmaple::RealNumType new_lh);
 
@@ -1026,7 +1026,7 @@ bool isDiffFromOrigPlacement(
   void placeSubTreeMidBranch(const cmaple::Index selected_node_index,
                              const cmaple::Index subtree_index,
                              PhyloNode& subtree,
-                             const std::unique_ptr<SeqRegions>&& subtree_regions,
+                             std::unique_ptr<SeqRegions>&& subtree_regions,
                              const cmaple::RealNumType new_branch_length,
                              const cmaple::RealNumType opt_appending_blength,
                              const cmaple::RealNumType opt_mid_top_blength,
@@ -1049,7 +1049,7 @@ bool isDiffFromOrigPlacement(
                                          const std::unique_ptr<SeqRegions>&,
                                          cmaple::RealNumType&)>
   void connectSubTree2Branch(
-      const std::unique_ptr<SeqRegions>&& subtree_regions,
+      std::unique_ptr<SeqRegions>&& subtree_regions,
       const std::unique_ptr<SeqRegions>& lower_regions,
       const cmaple::Index subtree_index,
       PhyloNode& subtree,
@@ -1345,7 +1345,7 @@ bool isDiffFromOrigPlacement(
    operations
    */
   template <const cmaple::StateType num_states>
-  void checkAndApplySPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+  void checkAndApplySPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
                         const cmaple::RealNumType best_lh_diff,
                         const cmaple::RealNumType best_blength,
                         const cmaple::RealNumType opt_appending_blength,
@@ -1918,7 +1918,7 @@ bool isDiffFromOrigPlacement(
    operations
    */
   template <const cmaple::StateType num_states>
-  void applyOneSPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+  void applyOneSPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
                    const cmaple::Index subtree_index,
                    PhyloNode& subtree,
                    const cmaple::Index best_node_index,
