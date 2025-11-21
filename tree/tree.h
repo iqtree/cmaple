@@ -1026,7 +1026,7 @@ bool isDiffFromOrigPlacement(
   void placeSubTreeMidBranch(const cmaple::Index selected_node_index,
                              const cmaple::Index subtree_index,
                              PhyloNode& subtree,
-                             const std::unique_ptr<SeqRegions>& subtree_regions,
+                             const std::unique_ptr<SeqRegions>&& subtree_regions,
                              const cmaple::RealNumType new_branch_length,
                              const cmaple::RealNumType opt_appending_blength,
                              const cmaple::RealNumType opt_mid_top_blength,
@@ -1345,7 +1345,8 @@ bool isDiffFromOrigPlacement(
    operations
    */
   template <const cmaple::StateType num_states>
-  void checkAndApplySPR(const cmaple::RealNumType best_lh_diff,
+  void checkAndApplySPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                        const cmaple::RealNumType best_lh_diff,
                         const cmaple::RealNumType best_blength,
                         const cmaple::RealNumType opt_appending_blength,
                         const cmaple::RealNumType opt_mid_top_blength,
@@ -1917,7 +1918,8 @@ bool isDiffFromOrigPlacement(
    operations
    */
   template <const cmaple::StateType num_states>
-  void applyOneSPR(const cmaple::Index subtree_index,
+  void applyOneSPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                   const cmaple::Index subtree_index,
                    PhyloNode& subtree,
                    const cmaple::Index best_node_index,
                    const bool is_mid_branch,
