@@ -4375,7 +4375,7 @@ void cmaple::Tree::seekSubTreePlacement(
 }
 
 template <const StateType num_states>
-void cmaple::Tree::applyOneSPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+void cmaple::Tree::applyOneSPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
                                const Index subtree_index,
                                PhyloNode& subtree,
                                const Index best_node_index,
@@ -4654,7 +4654,7 @@ template <const StateType num_states,
               const std::unique_ptr<SeqRegions>&,
               RealNumType&)>
 void cmaple::Tree::connectSubTree2Branch(
-    const std::unique_ptr<SeqRegions>&& subtree_regions,
+    std::unique_ptr<SeqRegions>&& subtree_regions,
     const std::unique_ptr<SeqRegions>& lower_regions,
     const Index subtree_index,
     PhyloNode& subtree,
@@ -4736,6 +4736,37 @@ void cmaple::Tree::connectSubTree2Branch(
   upper_left_right_regions->mergeUpperLower<num_states>(
       internal.getMidBranchLh(), mid_branch_length, *internal.getPartialLh(TOP),
       mid_branch_length, aln, model, threshold_prob);
+    
+    // extract the mutations at the sibling node
+    std::unique_ptr<SeqRegions>& sibling_node_mutations =
+        node_mutations[sibling_node_index.getVectorIndex()];
+    
+    // process the subtree regions
+    // de-integrate mutations at siblings, if any
+    if (sibling_node_mutations && sibling_node_mutations->size())
+    {
+        subtree_regions = subtree_regions
+            ->integrateMutations<num_states>(sibling_node_mutations, aln, true);
+    }
+    // integrate mutations at the subtree to itself, if any
+    // extract the mutations at the selected node
+    std::unique_ptr<SeqRegions>& subtree_mutations =
+        node_mutations[subtree_index.getVectorIndex()];
+    if (subtree_mutations && subtree_mutations->size())
+    {
+        subtree_regions = subtree_regions
+            ->integrateMutations<num_states>(subtree_mutations, aln);
+    }
+    // set the correct subtree regions at subtree
+    subtree.setPartialLh(TOP, std::move(subtree_regions));
+    
+    // de-integrate mutations at siblings, if any
+    // in all lh regions at the internal node
+    if (sibling_node_mutations && sibling_node_mutations->size())
+    {
+        // all lh vectors/regions at the internal node
+        internal.integrateMutAllRegions<num_states>(sibling_node_mutations, aln, true);
+    }
 
   // new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob,
   // new_internal_node == root);
@@ -4781,7 +4812,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
     const Index selected_node_index,
     const Index subtree_index,
     PhyloNode& subtree,
-    const std::unique_ptr<SeqRegions>&& subtree_regions,
+    std::unique_ptr<SeqRegions>&& subtree_regions,
     const RealNumType new_branch_length,
     const cmaple::RealNumType opt_appending_blength,
     const cmaple::RealNumType opt_mid_top_blength,
@@ -5109,7 +5140,7 @@ void cmaple::Tree::placeSubTreeAtNode(
     const Index selected_node_index,
     const Index subtree_index,
     PhyloNode& subtree,
-    const std::unique_ptr<SeqRegions>&& subtree_regions,
+    std::unique_ptr<SeqRegions>&& subtree_regions,
     const RealNumType new_branch_length,
     const RealNumType new_lh) {
   // dummy variables
@@ -7092,7 +7123,7 @@ void cmaple::Tree::optimizeBlengthBeforeSeekingSPR(
 }
 
 template <const StateType num_states>
-void cmaple::Tree::checkAndApplySPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+void cmaple::Tree::checkAndApplySPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
                                     const RealNumType best_lh_diff,
                                     const RealNumType best_blength,
                                     const cmaple::RealNumType opt_appending_blength,
