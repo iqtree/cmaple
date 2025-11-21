@@ -784,7 +784,7 @@ bool isDiffFromOrigPlacement(
       cmaple::RealNumType& best_up_lh_diff,
       cmaple::RealNumType& best_down_lh_diff,
       std::unique_ptr<UpdatingNode>& updating_node,
-      const std::unique_ptr<SeqRegions>& subtree_regions,
+      std::unique_ptr<SeqRegions>& best_subtree_regions,
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
       const cmaple::Index top_node_index,
