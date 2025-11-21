@@ -852,6 +852,7 @@ bool isDiffFromOrigPlacement(
   void addChildSeekSubtreePlacement(
       const cmaple::Index child_1_index,
       PhyloNode& child_1,
+      const Index child_2_index,
       PhyloNode& child_2,
       const cmaple::RealNumType& lh_diff_at_node,
       const std::unique_ptr<UpdatingNode>& updating_node,
