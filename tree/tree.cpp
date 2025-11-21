@@ -4626,7 +4626,7 @@ template <const StateType num_states,
               const std::unique_ptr<SeqRegions>&,
               RealNumType&)>
 void cmaple::Tree::connectSubTree2Branch(
-    const std::unique_ptr<SeqRegions>& subtree_regions,
+    const std::unique_ptr<SeqRegions>&& subtree_regions,
     const std::unique_ptr<SeqRegions>& lower_regions,
     const Index subtree_index,
     PhyloNode& subtree,
@@ -4764,8 +4764,24 @@ void cmaple::Tree::placeSubTreeMidBranch(
     PhyloNode& selected_node = nodes[selected_node_index.getVectorIndex()];
     const std::unique_ptr<SeqRegions>& lower_regions =
     selected_node.getPartialLh(TOP);
-    const std::unique_ptr<SeqRegions>& upper_left_right_regions =
-    getPartialLhAtNode(selected_node.getNeighborIndex(TOP));
+    
+    // 0. extract the mutations at the selected node
+    std::unique_ptr<SeqRegions>& selected_node_mutations =
+        node_mutations[selected_node_index.getVectorIndex()];
+    // 1. create a new upper_lr_regions that integrate the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+        (selected_node_mutations && selected_node_mutations->size())
+        ? getPartialLhAtNode(selected_node.getNeighborIndex(TOP))
+          ->integrateMutations<num_states>(selected_node_mutations, aln)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate upper_lr_regions
+    const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+        (selected_node_mutations && selected_node_mutations->size())
+        ? &(mut_integrated_upper_lr_regions)
+        : &(getPartialLhAtNode(selected_node.getNeighborIndex(TOP)));
+    // 3. create a reference from that pointer
+    auto& upper_left_right_regions = *upper_lr_regions_ptr;
+    
     std::unique_ptr<SeqRegions> best_child_regions = nullptr;
     
     // don't need to optimize blengths if they're already optmized when computing SPRTA
@@ -4781,7 +4797,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
         // attach subtree to the branch above the selected node
         RealNumType best_blength = opt_appending_blength;
         connectSubTree2Branch<num_states, &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
-            subtree_regions, nullptr, subtree_index, subtree, selected_node_index,
+            std::move(subtree_regions), nullptr, subtree_index, subtree, selected_node_index,
             selected_node, opt_mid_top_blength,
             opt_mid_bottom_blength, best_blength,
             std::move(best_child_regions), upper_left_right_regions);
@@ -4828,7 +4844,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
         // attach subtree to the branch above the selected node
         connectSubTree2Branch<num_states,
         &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
-            subtree_regions, nullptr, subtree_index, subtree, selected_node_index,
+            std::move(subtree_regions), nullptr, subtree_index, subtree, selected_node_index,
             selected_node, best_blength_split,
             selected_node.getUpperLength() - best_blength_split, best_blength,
             std::move(best_child_regions), upper_left_right_regions);
@@ -5065,7 +5081,7 @@ void cmaple::Tree::placeSubTreeAtNode(
     const Index selected_node_index,
     const Index subtree_index,
     PhyloNode& subtree,
-    const std::unique_ptr<SeqRegions>& subtree_regions,
+    const std::unique_ptr<SeqRegions>&& subtree_regions,
     const RealNumType new_branch_length,
     const RealNumType new_lh) {
   // dummy variables
@@ -5199,7 +5215,7 @@ void cmaple::Tree::placeSubTreeAtNode(
     // the child node)
     connectSubTree2Branch<num_states,
                           &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
-        subtree_regions, nullptr, subtree_index, subtree, best_child_index,
+        std::move(subtree_regions), nullptr, subtree_index, subtree, best_child_index,
         best_child, best_child_blength_split,
         best_child.getUpperLength() - best_child_blength_split, best_length,
         std::move(best_child_regions), upper_left_right_regions);
@@ -5291,7 +5307,7 @@ void cmaple::Tree::placeSubTreeAtNode(
       connectSubTree2Branch<
           num_states,
           &cmaple::Tree::updateRegionsPlaceSubTreeAbove<num_states>>(
-          subtree_regions, lower_regions, subtree_index, subtree,
+          std::move(subtree_regions), lower_regions, subtree_index, subtree,
           selected_node_index, selected_node, top_distance, down_distance,
           best_length, std::move(best_child_regions), upper_left_right_regions);
     }

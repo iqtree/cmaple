@@ -1013,7 +1013,7 @@ bool isDiffFromOrigPlacement(
   void placeSubTreeAtNode(const cmaple::Index selected_node_index,
                           const cmaple::Index subtree_index,
                           PhyloNode& subtree,
-                          const std::unique_ptr<SeqRegions>& subtree_regions,
+                          const std::unique_ptr<SeqRegions>&& subtree_regions,
                           const cmaple::RealNumType new_branch_length,
                           const cmaple::RealNumType new_lh);
 
@@ -1049,7 +1049,7 @@ bool isDiffFromOrigPlacement(
                                          const std::unique_ptr<SeqRegions>&,
                                          cmaple::RealNumType&)>
   void connectSubTree2Branch(
-      const std::unique_ptr<SeqRegions>& subtree_regions,
+      const std::unique_ptr<SeqRegions>&& subtree_regions,
       const std::unique_ptr<SeqRegions>& lower_regions,
       const cmaple::Index subtree_index,
       PhyloNode& subtree,
