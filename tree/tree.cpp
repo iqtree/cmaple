@@ -4375,7 +4375,8 @@ void cmaple::Tree::seekSubTreePlacement(
 }
 
 template <const StateType num_states>
-void cmaple::Tree::applyOneSPR(const Index subtree_index,
+void cmaple::Tree::applyOneSPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                               const Index subtree_index,
                                PhyloNode& subtree,
                                const Index best_node_index,
                                const bool is_mid_branch,
@@ -4395,6 +4396,30 @@ void cmaple::Tree::applyOneSPR(const Index subtree_index,
   PhyloNode& sibling_subtree = nodes
       [sibling_index
            .getVectorIndex()];  // subtree->neighbor->getOtherNextNode()->neighbor;
+    
+    // handover the local ref at the parent node to the sibling, if any
+    // extract the mutations at the parent node
+    std::unique_ptr<SeqRegions>& parent_node_mutations =
+            node_mutations[parent_index.getVectorIndex()];
+    // extract the mutations at the sibling node
+    std::unique_ptr<SeqRegions>& sibling_node_mutations =
+            node_mutations[sibling_index.getVectorIndex()];
+    if (parent_node_mutations)
+    {
+        // merge two local refs, if needed
+        if (sibling_node_mutations)
+        {
+            node_mutations[sibling_index.getVectorIndex()] = parent_node_mutations
+            ->mergeTwoRefs<num_states>(sibling_node_mutations, aln, params->threshold_prob);
+        }
+        // otherwise, simply handover the local ref from the parent
+        else
+        {
+            node_mutations[sibling_index.getVectorIndex()] = std::move(parent_node_mutations);
+        }
+        
+        node_mutations[parent_index.getVectorIndex()] = nullptr;
+    }
 
   // connect grandparent to sibling
   const Index grandparent_index = parent_subtree.getNeighborIndex(TOP);
@@ -4458,10 +4483,24 @@ void cmaple::Tree::applyOneSPR(const Index subtree_index,
       PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
 
       // if (next_node_1->partial_lh) delete next_node_1->partial_lh;
-      const std::unique_ptr<SeqRegions>& lower_regions_2 =
-          neighbor_2.getPartialLh(
-              TOP);  // next_node_2->neighbor->getPartialLhAtNode(aln,
-                     // model, threshold_prob);
+        // use the the same local ref as the sibling node
+        // 0. extract the mutations at neighbor_2
+        std::unique_ptr<SeqRegions>& neighbor_2_mutations =
+            node_mutations[neighbor_2_index.getVectorIndex()];
+        // 1. create a new regions that de-integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
+            (neighbor_2_mutations && neighbor_2_mutations->size())
+            ? neighbor_2.getPartialLh(TOP)
+              ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate regions
+        const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
+            (neighbor_2_mutations && neighbor_2_mutations->size())
+            ? &(mut_integrated_neighbor_2_regions)
+            : &(neighbor_2.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& lower_regions_2 = *neighbor_2_regions_ptr;
+        
       // next_node_1->partial_lh =
       // lower_reions->computeTotalLhAtRoot(num_states, model,
       // next_node_2->length);
@@ -4474,8 +4513,23 @@ void cmaple::Tree::applyOneSPR(const Index subtree_index,
       threshold_prob); next_node_2->partial_lh =
       lower_reions->computeTotalLhAtRoot(num_states, model,
       next_node_1->length);*/
-      const std::unique_ptr<SeqRegions>& lower_regions_1 =
-          neighbor_1.getPartialLh(TOP);
+        // use the the same local ref as the sibling node
+        // 0. extract the mutations at neighbor_1
+        std::unique_ptr<SeqRegions>& neighbor_1_mutations =
+            node_mutations[neighbor_1_index.getVectorIndex()];
+        // 1. create a new regions that de-integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
+            (neighbor_1_mutations && neighbor_1_mutations->size())
+            ? neighbor_1.getPartialLh(TOP)
+              ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate regions
+        const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
+            (neighbor_1_mutations && neighbor_1_mutations->size())
+            ? &(mut_integrated_neighbor_1_regions)
+            : &(neighbor_1.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& lower_regions_1 = *neighbor_1_regions_ptr;
       lower_regions_1->computeTotalLhAtRoot<num_states>(
           sibling_subtree.getPartialLh(LEFT), model,
           neighbor_1.getUpperLength());
@@ -4501,21 +4555,21 @@ void cmaple::Tree::applyOneSPR(const Index subtree_index,
     updatePartialLh<num_states>(node_stack);
   }
 
+  // in the new version, we only consider placing at mid-branch
+  assert(is_mid_branch && root_vector_index != best_node_index.getVectorIndex());
+    
   // replace the node and re-update the vector lists
-  const std::unique_ptr<SeqRegions>& subtree_lower_regions =
-      subtree.getPartialLh(
-          TOP);  // ->getPartialLhAtNode(aln, model, threshold_prob);
   // try to place the new sample as a descendant of a mid-branch point
-  if (is_mid_branch && root_vector_index != best_node_index.getVectorIndex()) {
+  // if (is_mid_branch && root_vector_index != best_node_index.getVectorIndex()) {
     placeSubTreeMidBranch<num_states>(best_node_index, subtree_index, subtree,
-        subtree_lower_regions, branch_length, opt_appending_blength,
+        std::move(best_subtree_regions), branch_length, opt_appending_blength,
         opt_mid_top_blength, opt_mid_bottom_blength, best_lh_diff);
     // otherwise, best lk so far is for appending directly to existing node
-  } else {
+  /* } else {
     placeSubTreeAtNode<num_states>(best_node_index, subtree_index, subtree,
                                    subtree_lower_regions, branch_length,
                                    best_lh_diff);
-  }
+  }*/
 }
 
 template <const StateType num_states>
@@ -4727,7 +4781,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
     const Index selected_node_index,
     const Index subtree_index,
     PhyloNode& subtree,
-    const std::unique_ptr<SeqRegions>& subtree_regions,
+    const std::unique_ptr<SeqRegions>&& subtree_regions,
     const RealNumType new_branch_length,
     const cmaple::RealNumType opt_appending_blength,
     const cmaple::RealNumType opt_mid_top_blength,
@@ -7022,7 +7076,8 @@ void cmaple::Tree::optimizeBlengthBeforeSeekingSPR(
 }
 
 template <const StateType num_states>
-void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
+void cmaple::Tree::checkAndApplySPR(const std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                                    const RealNumType best_lh_diff,
                                     const RealNumType best_blength,
                                     const cmaple::RealNumType opt_appending_blength,
                                     const cmaple::RealNumType opt_mid_top_blength,
@@ -7106,7 +7161,8 @@ void cmaple::Tree::checkAndApplySPR(const RealNumType best_lh_diff,
         // otherwise, apply an SPR move
         else
         {
-            applyOneSPR<num_states>(node_index, node, best_node_index, is_mid_node,
+            applyOneSPR<num_states>(std::move(best_subtree_regions), node_index,
+                                    node, best_node_index, is_mid_node,
                                     best_blength, opt_appending_blength, opt_mid_top_blength,
                                     opt_mid_bottom_blength, best_lh_diff);
             
@@ -7211,7 +7267,8 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
 
       if (best_lh_diff + thresh_placement_cost > best_lh && tree_search_type != FAST_TREE_SEARCH) {
         // check and apply SPR move
-        checkAndApplySPR<num_states>(best_lh_diff, best_blength,
+          checkAndApplySPR<num_states>(std::move(best_subtree_regions),
+            best_lh_diff, best_blength,
             opt_appending_blength, opt_mid_top_blength,
             opt_mid_bottom_blength, best_lh, node_index, node,
             best_node_index, parent_index, is_mid_node,
