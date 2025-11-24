@@ -2164,6 +2164,12 @@ bool isDiffFromOrigPlacement(
      Update the non-zero-blength number of descendants
      */
     auto refreshCorNumDescendants() -> void;
+    
+    /**
+     Initialize local references on an input tree
+     */
+    template <const StateType num_states>
+    auto initLocalReferences() -> void;
 };
 
 /*!

@@ -453,6 +453,10 @@ void cmaple::Tree::loadTreeTemplate(std::istream& tree_stream,
     
     // record the number of existing nodes
     num_exiting_nodes = (NumSeqsType) nodes.size();
+    
+    // initialize local refereces, if needed
+    if (params->local_refs)
+        initLocalReferences<num_states>();
 }
 
 template <const cmaple::StateType num_states>
@@ -12823,4 +12827,47 @@ auto cmaple::Tree::refreshCorNumDescendants() -> void {
       }
     }
   }
+}
+
+template <const StateType num_states>
+auto cmaple::Tree::initLocalReferences() -> void {
+    assert(params->local_refs);
+    
+    // init number of non-zero-blength descendants
+    refreshCorNumDescendants();
+    
+    // reset all local references
+    std::fill(node_mutations.begin(), node_mutations.end(), nullptr);
+
+    // start from root
+    stack<NumSeqsType> node_stack;
+    node_stack.push(root_vector_index);
+
+    // traverse the tree downward
+    while (!node_stack.empty()) {
+        // extract the corresponding node
+        const NumSeqsType node_vec_index = node_stack.top();
+        node_stack.pop();
+        PhyloNode& node = nodes[node_vec_index];
+        
+        // make this node a local ref, if it meets the requirements
+        assert(!node_mutations[node_vec_index]);
+        if (corrected_num_descendants[node_vec_index] >= params->max_desc_ref
+            && node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
+        {
+            makeReferenceNode<num_states>(node, node_vec_index,
+                corrected_num_descendants[node_vec_index]);
+        }
+        
+        // traverse downward if this is an internal node
+        if (node.isInternal())
+        {
+            // add its children to node_stack for further traversal
+            node_stack.push(node.getNeighborIndex(RIGHT).getVectorIndex());
+            node_stack.push(node.getNeighborIndex(LEFT).getVectorIndex());
+        }
+    }
+    
+    // refresh all lhs
+    refreshAllLhs<num_states>();
 }
