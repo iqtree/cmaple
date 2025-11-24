@@ -1191,6 +1191,10 @@ void cmaple::Tree::applySPRTemplate(
   // traverse the tree from root to re-calculate all likelihoods after
   // optimizing the tree topology
   refreshAllLhs<num_states>();
+    
+  // update the non-zero-blength number of descendants
+  // it's used for now, so being disable
+  // refreshCorNumDescendants();
 
   // output log-likelihood of the tree
   if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
@@ -12748,4 +12752,75 @@ auto cmaple::Tree::computeAbsLhAtRootDeintegratedAllMuts(
     // compute the absolute lh value after de-integrating all local references
     return mut_deintegrated_regions->computeAbsoluteLhAtRoot<num_states>(
                                         aln, model, cumulative_base);
+}
+
+auto cmaple::Tree::refreshCorNumDescendants() -> void {
+  // reset all number of descendants
+  std::fill(corrected_num_descendants.begin(), corrected_num_descendants.end(), 0);
+
+  // start from root
+  Index node_index = Index(root_vector_index, TOP);
+  Index last_node_index;
+
+  // traverse to the deepest tip
+  while (node_index.getMiniIndex() != UNDEFINED)
+  {
+    NumSeqsType node_vec_index = node_index.getVectorIndex();
+    PhyloNode& node = nodes[node_vec_index];
+    // we reach a top node by a downward traversing
+    if (node_index.getMiniIndex() == TOP)  // node->is_top)
+    {
+      // if the current node is a leaf -> we reach the deepest tip
+      // -> traversing upward
+      if (!node.isInternal())
+      {
+        last_node_index = node_index;
+        node_index = node.getNeighborIndex(TOP);
+      }
+      // otherwise, keep traversing downward to find the deepest tip
+      else {
+        node_index = node.getNeighborIndex(RIGHT);
+      }
+    }
+    // we reach the current node by an upward traversing from its children
+    else {
+      // if we reach the current node by an upward traversing from its first
+      // children -> traversing downward to its second children
+      if (node.getNeighborIndex(RIGHT) ==
+          last_node_index)
+      {
+        node_index = node.getNeighborIndex(LEFT);
+      }
+      // otherwise, all children of the current node are updated
+      // -> update the current node
+      else {
+        NumSeqsType num_descentdants = 0;
+          
+        // only count the number of descendant for non-local ref node
+        if (!node_mutations[node_vec_index])
+        {
+            NumSeqsType neighbor_1_vec_index = node.getNeighborIndex(RIGHT).getVectorIndex();
+            NumSeqsType neighbor_2_vec_index = node.getNeighborIndex(LEFT).getVectorIndex();
+            PhyloNode& neighbor_1 = nodes[neighbor_1_vec_index];
+            PhyloNode& neighbor_2 = nodes[neighbor_2_vec_index];
+            
+            // inherit the number descendant
+            num_descentdants = corrected_num_descendants[neighbor_1_vec_index]
+                + corrected_num_descendants[neighbor_2_vec_index];
+            
+            // count neighbor_1
+            if (neighbor_1.getUpperLength() > 0) ++num_descentdants;
+            
+            // count neighbor_2
+            if (neighbor_2.getUpperLength() > 0) ++num_descentdants;
+        }
+        
+        // set num_descendants for the current node
+        corrected_num_descendants[node_vec_index] = num_descentdants;
+          
+        last_node_index = Index(node_index.getVectorIndex(), TOP);
+        node_index = node.getNeighborIndex(TOP);
+      }
+    }
+  }
 }

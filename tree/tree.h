@@ -2159,6 +2159,11 @@ bool isDiffFromOrigPlacement(
     auto computeAbsLhAtRootDeintegratedAllMuts(
         const std::unique_ptr<SeqRegions>& regions,
         cmaple::Index node_index) -> RealNumType;
+    
+    /**
+     Update the non-zero-blength number of descendants
+     */
+    auto refreshCorNumDescendants() -> void;
 };
 
 /*!
