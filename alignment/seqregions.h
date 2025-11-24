@@ -2461,6 +2461,7 @@ bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions,
 template <const StateType num_states>
 bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions,
                         const SeqRegion& seq2_region,
+                        const StateType& ref_state,
                         RealNumType total_blength_2,
                         const PositionType end_pos,
                         const Alignment* aln,
@@ -2476,7 +2477,7 @@ bool calSiteLhs_O_RACGT(std::vector<RealNumType>& site_lh_contributions,
     
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+    seq2_state = ref_state;
   }
 
   if (total_blength_2 > 0) {
@@ -2550,8 +2551,8 @@ bool calSiteLhs_O_ORACGT(std::vector<RealNumType>& site_lh_contributions,
   // seq1_entry = O and seq2_entry = R/ACGT
   else {
     return calSiteLhs_O_RACGT<num_states>(
-        site_lh_contributions, seq2_region, total_blength_2, end_pos, aln,
-        model, threshold_prob, log_lh, *new_lh, sum_lh, merged_regions);
+        site_lh_contributions, seq2_region, seq1_region.prev_state, total_blength_2,
+        end_pos, aln, model, threshold_prob, log_lh, *new_lh, sum_lh, merged_regions);
   }
 
   // no error
@@ -2594,6 +2595,7 @@ bool calSiteLhs_RACGT_O(std::vector<RealNumType>& site_lh_contributions,
 template <const StateType num_states>
 bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions,
                             const SeqRegion& seq2_region,
+                            const StateType& ref_state,
                             RealNumType total_blength_2,
                             const PositionType end_pos,
                             const Alignment* aln,
@@ -2609,7 +2611,7 @@ bool calSiteLhs_RACGT_RACGT(std::vector<RealNumType>& site_lh_contributions,
     
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+    seq2_state = ref_state;
   }
 
   if (total_blength_2 > 0) {
@@ -2659,7 +2661,7 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions,
     
   StateType seq1_state = seq1_region.type;
   if (seq1_state == TYPE_R) {
-    seq1_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+      seq1_state = seq2_region.prev_state;
   }
 
   auto new_lh =
@@ -2685,8 +2687,8 @@ bool calSiteLhs_RACGT_ORACGT(std::vector<RealNumType>& site_lh_contributions,
 
   // otherwise, seq1_entry = R/ACGT and seq2_entry = R/ACGT
   return calSiteLhs_RACGT_RACGT<num_states>(
-      site_lh_contributions, seq2_region, total_blength_2, end_pos, aln, model,
-      threshold_prob, *new_lh, sum_lh, log_lh, merged_regions);
+      site_lh_contributions, seq2_region, seq1_region.prev_state, total_blength_2,
+      end_pos, aln, model, threshold_prob, *new_lh, sum_lh, log_lh, merged_regions);
 }
 
 template <const StateType num_states>

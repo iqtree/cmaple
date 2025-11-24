@@ -67,8 +67,7 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
       } else if (seq1_region->type == TYPE_O) {
         StateType seq2_state = seq2_region->type;
         if (seq2_state == TYPE_R)
-            seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                        ::size_type>(end_pos)];
+            seq2_state = seq1_region->prev_state;
           
         if (seq1_region->getLH(seq2_state) > 0.1)
               seq2_more_info = true;
@@ -78,8 +77,7 @@ auto cmaple::SeqRegions::compareWithSample(const SeqRegions& sequence2,
       } else if (seq2_region->type == TYPE_O) {
         StateType seq1_state = seq1_region->type;
         if (seq1_state == TYPE_R)
-            seq1_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>
-                                        ::size_type>(end_pos)];
+            seq1_state = seq2_region->prev_state;
           
         if (seq2_region->getLH(seq1_state) > 0.1)
               seq1_more_info = true;
