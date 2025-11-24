@@ -852,7 +852,20 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               {
                   PhyloNode& found_placement_node = nodes[found_placement_index.getVectorIndex()];
                   if (found_placement_node.getUpperLength() <= 0)
+                  {
                       found_placement_index = found_placement_node.getNeighborIndex(TOP);
+                      
+                      // de-integrate mutations, if any
+                      // 0. extract the mutations at the placement node
+                      std::unique_ptr<SeqRegions>& found_placement_mutations =
+                          node_mutations[found_placement_index.getVectorIndex()];
+                      // 1. de-integrate mutations, if any
+                      if (found_placement_mutations && found_placement_mutations->size())
+                      {
+                          lower_regions = lower_regions->integrateMutations<num_states>
+                                            (found_placement_mutations, aln, true);
+                      }
+                  }
                   else
                       break;
               }
