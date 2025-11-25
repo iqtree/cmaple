@@ -436,6 +436,8 @@ void cmaple::calSiteLhs_identicalRACGT(std::vector<RealNumType>&site_lh_contribu
                                const PositionType end_pos,
                                RealNumType total_blength_1,
                                RealNumType total_blength_2,
+                               const cmaple::RealNumType blength_1,
+                               const cmaple::RealNumType blength_2,
                                const PositionType pos,
                                const RealNumType threshold_prob,
                                const ModelBase* model,
@@ -459,23 +461,32 @@ void cmaple::calSiteLhs_identicalRACGT(std::vector<RealNumType>&site_lh_contribu
     total_blength_2 = 0;
   }
 
-  RealNumType total_blength = total_blength_1 + total_blength_2;
   if (seq1_region.type == TYPE_R) {
-    log_lh +=
-        total_blength * (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-
-    // compute site lh contributions
-    for (PositionType i = pos; i < end_pos + 1; ++i) {
-      site_lh_contributions[static_cast<std::vector<RealNumType>
-                            ::size_type>(i)] += total_blength
-        * (cumulative_rate[i + 1] - cumulative_rate[i]);
-    }
+      const RealNumType tmp_blength_1 = blength_1 > 0 ? blength_1 : 0;
+      const RealNumType tmp_blength_2 = blength_2 > 0 ? blength_2 : 0;
+      
+      if (total_blength_1 > tmp_blength_1 || total_blength_2 > tmp_blength_2)
+      {
+          const RealNumType adjusted_blength = total_blength_1 - tmp_blength_1
+                                            + total_blength_2 - tmp_blength_2;
+          log_lh += adjusted_blength *
+                (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
+          
+          // compute site lh contributions
+          for (PositionType i = pos; i < end_pos + 1; ++i) {
+            site_lh_contributions[static_cast<std::vector<RealNumType>
+                                  ::size_type>(i)] += adjusted_blength
+              * (cumulative_rate[i + 1] - cumulative_rate[i]);
+          }
+      }
   } else {
-    log_lh += model->diagonal_mut_mat[seq1_region.type] * total_blength;
+    const RealNumType log_lh_change = model->diagonal_mut_mat[seq1_region.type]
+                                      * (total_blength_1 + total_blength_2);
+    log_lh += log_lh_change;
 
     // compute site lh contributions
     site_lh_contributions[static_cast<std::vector<RealNumType>::size_type>(pos)] +=
-        model->diagonal_mut_mat[seq1_region.type] * total_blength;
+      log_lh_change;
   }
 }
 

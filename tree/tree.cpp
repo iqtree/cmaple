@@ -5128,7 +5128,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
   }
 }
 
-template <const StateType num_states>
+/*template <const StateType num_states>
 void cmaple::Tree::placeSubTreeAtNode(
     const Index selected_node_index,
     const Index subtree_index,
@@ -5190,7 +5190,7 @@ void cmaple::Tree::placeSubTreeAtNode(
             TOP);  // ->getPartialLhAtNode(aln, model, threshold_prob);
     /*old_root_lh = lower_regions->computeAbsoluteLhAtRoot<num_states>(
                     node_mutations[root_vector_index], aln, model, cumulative_base);*/
-      old_root_lh = computeAbsLhAtRootDeintegratedAllMuts<num_states>(
+     /*old_root_lh = computeAbsLhAtRootDeintegratedAllMuts<num_states>(
                         lower_regions, cmaple::Index(selected_node_vec, TOP));
 
     // merge 2 lower vector into one
@@ -5200,7 +5200,7 @@ void cmaple::Tree::placeSubTreeAtNode(
 
     /*best_parent_lh += best_parent_regions->computeAbsoluteLhAtRoot<num_states>(
                         node_mutations[root_vector_index], aln, model, cumulative_base);*/
-      best_parent_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
+      /*best_parent_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
                             best_parent_regions, cmaple::Index(selected_node_vec, TOP));
 
     // Try shorter branch lengths at root
@@ -5287,7 +5287,7 @@ void cmaple::Tree::placeSubTreeAtNode(
       best_parent_lh = new_lh;
       /*if (best_parent_regions) delete best_parent_regions;
       best_parent_regions = NULL;*/
-      best_parent_regions = nullptr;
+      /*best_parent_regions = nullptr;
 
       if (root_vector_index == selected_node_vec) {
         lower_regions->mergeTwoLowers<num_states>(
@@ -5349,11 +5349,11 @@ void cmaple::Tree::placeSubTreeAtNode(
 
         /*if (selected_node->total_lh) delete selected_node->total_lh;
         selected_node->total_lh = NULL;*/
-        selected_node.setTotalLh(nullptr);
+        /*selected_node.setTotalLh(nullptr);
 
         /*if (selected_node->mid_branch_lh) delete selected_node->mid_branch_lh;
         selected_node->mid_branch_lh = NULL;*/
-        selected_node.setMidBranchLh(nullptr);
+        /*selected_node.setMidBranchLh(nullptr);
       }
 
       connectSubTree2Branch<
@@ -5370,7 +5370,7 @@ void cmaple::Tree::placeSubTreeAtNode(
       delete best_parent_regions;
   if (best_child_regions)
       delete best_child_regions;*/
-}
+/*}*/
 
 template <const StateType num_states,
           RealNumType (cmaple::Tree::*calculatePlacementCost)(
@@ -5839,7 +5839,8 @@ void cmaple::Tree::tryShorterBranchAtRoot(
     std::unique_ptr<SeqRegions>& best_parent_regions,
     RealNumType& best_root_blength,
     RealNumType& best_parent_lh,
-    const RealNumType fixed_blength) {
+    const RealNumType fixed_blength,
+    const cmaple::Index& local_ref_node_index) {
   std::unique_ptr<SeqRegions> merged_root_sample_regions = nullptr;
   RealNumType new_blength = 0.5 * best_root_blength;
   RealNumType new_root_lh;
@@ -5853,7 +5854,7 @@ void cmaple::Tree::tryShorterBranchAtRoot(
         merged_root_sample_regions->computeAbsoluteLhAtRoot<num_states>(
             node_mutations[root_vector_index], aln, model, cumulative_base);*/
       new_root_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
-                        merged_root_sample_regions, cmaple::Index(root_vector_index, TOP));
+                        merged_root_sample_regions, local_ref_node_index);
 
     if (new_root_lh > best_parent_lh) {
       best_parent_lh = new_root_lh;
@@ -5878,7 +5879,8 @@ bool cmaple::Tree::tryShorterNewBranchAtRoot(
     std::unique_ptr<SeqRegions>& best_parent_regions,
     RealNumType& best_length,
     RealNumType& best_parent_lh,
-    const RealNumType fixed_blength) {
+    const RealNumType fixed_blength,
+    const cmaple::Index& local_ref_node_index) {
   std::unique_ptr<SeqRegions> new_root_lower_regions = nullptr;
   bool found_new_split = false;
   RealNumType new_blength = best_length;
@@ -5893,7 +5895,7 @@ bool cmaple::Tree::tryShorterNewBranchAtRoot(
     /*new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
         node_mutations[root_vector_index], aln, model, cumulative_base);*/
       new_root_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
-                        new_root_lower_regions, cmaple::Index(root_vector_index, TOP));
+                        new_root_lower_regions, local_ref_node_index);
 
     if (new_root_lh > best_parent_lh) {
       best_parent_lh = new_root_lh;
@@ -5920,7 +5922,8 @@ bool cmaple::Tree::tryLongerNewBranchAtRoot(
     std::unique_ptr<SeqRegions>& best_parent_regions,
     RealNumType& best_length,
     RealNumType& best_parent_lh,
-    const RealNumType fixed_blength) {
+    const RealNumType fixed_blength,
+    const cmaple::Index& local_ref_node_index) {
   std::unique_ptr<SeqRegions> new_root_lower_regions = nullptr;
   bool found_new_split = false;
   RealNumType new_blength = best_length;
@@ -5935,7 +5938,7 @@ bool cmaple::Tree::tryLongerNewBranchAtRoot(
     /*new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
         node_mutations[root_vector_index], aln, model, cumulative_base);*/
       new_root_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
-                        new_root_lower_regions, cmaple::Index(root_vector_index, TOP));
+                        new_root_lower_regions, local_ref_node_index);
 
     if (new_root_lh > best_parent_lh) {
       best_parent_lh = new_root_lh;
@@ -5964,7 +5967,8 @@ void cmaple::Tree::estimateLengthNewBranchAtRoot(
     RealNumType& best_parent_lh,
     const RealNumType fixed_blength,
     const RealNumType short_blength_thresh,
-    const bool optional_check) {
+    const bool optional_check,
+    const cmaple::Index& local_ref_node_index) {
   if (optional_check) {
     std::unique_ptr<SeqRegions> new_root_lower_regions = nullptr;
     best_length = min_blength;
@@ -5976,7 +5980,7 @@ void cmaple::Tree::estimateLengthNewBranchAtRoot(
         new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
             node_mutations[root_vector_index], aln, model, cumulative_base);*/
       best_parent_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
-                            new_root_lower_regions, cmaple::Index(root_vector_index, TOP));
+                            new_root_lower_regions, local_ref_node_index);
 
     // replacePartialLH(best_parent_regions, new_root_lower_regions);
     best_parent_regions = std::move(new_root_lower_regions);
@@ -5985,13 +5989,14 @@ void cmaple::Tree::estimateLengthNewBranchAtRoot(
   // try shorter lengths
   bool found_new_split = tryShorterNewBranchAtRoot<num_states>(
       sample, lower_regions, best_parent_regions, best_length, best_parent_lh,
-      fixed_blength);
+      fixed_blength, local_ref_node_index);
 
   // try longer lengths
   if (optional_check || !found_new_split) {
     tryLongerNewBranchAtRoot<num_states>(sample, lower_regions,
                                          best_parent_regions, best_length,
-                                         best_parent_lh, fixed_blength);
+                                         best_parent_lh, fixed_blength,
+                                         local_ref_node_index);
   }
 
   // try with length zero
@@ -6010,7 +6015,7 @@ void cmaple::Tree::estimateLengthNewBranchAtRoot(
           /*new_root_lh += new_root_lower_regions->computeAbsoluteLhAtRoot<num_states>(
                             node_mutations[root_vector_index], aln, model, cumulative_base);*/
           new_root_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
-                            new_root_lower_regions, cmaple::Index(root_vector_index, TOP));
+                            new_root_lower_regions, local_ref_node_index);
           
           if (new_root_lh > best_parent_lh) {
               best_length = -1;
@@ -8781,18 +8786,47 @@ void cmaple::Tree::calSiteLhDiffRoot(
     PhyloNode& current_node,
     PhyloNode& child_1,
     PhyloNode& child_2,
+    std::unique_ptr<SeqRegions>& child_2_lower_lh,
     PhyloNode& sibling,
+    std::unique_ptr<SeqRegions>& sibling_lower_lh,
     PhyloNode& parent,
-    const Index parent_index) {
+    const Index parent_index,
+    const NumSeqsType current_node_vec_index,
+    const NumSeqsType sibling_vec_index,
+    const NumSeqsType child_1_vec_index,
+    const NumSeqsType child_2_vec_index) {
+    
+    // use the same local ref as the current node
+    // extract the mutations at the current node
+    std::unique_ptr<SeqRegions>& current_node_mutations =
+        node_mutations[current_node_vec_index];
+    // extract the mutations at the parent node
+    std::unique_ptr<SeqRegions>& parent_mutations =
+        node_mutations[parent_index.getVectorIndex()];
+    // extract the mutations at child 1
+    std::unique_ptr<SeqRegions>& child_1_mutations =
+        node_mutations[child_1_vec_index];
+    
+  // dummy variables
   const RealNumType threshold_prob = params->threshold_prob;
   const RealNumType child_1_blength =
       child_1.getUpperLength();  // ~new_branch_length
-  const std::unique_ptr<SeqRegions>& child_1_lower_regions =
-      child_1.getPartialLh(TOP);  // ~subtree_regions
-  const std::unique_ptr<SeqRegions>& sibling_lower_lh =
-      sibling.getPartialLh(TOP);
-  const std::unique_ptr<SeqRegions>& child_2_lower_lh =
-      child_2.getPartialLh(TOP);
+  
+    // 1. create a new lower_regions (for child 1)
+    // that deintegrates the mutations at child 1, if any
+    std::unique_ptr<SeqRegions> mut_deintegrated_child_1_lower_regions =
+        (child_1_mutations && child_1_mutations->size())
+        ? child_1.getPartialLh(TOP)
+          ->integrateMutations<num_states>(child_1_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* child_1_lower_regions_ptr =
+        (child_1_mutations && child_1_mutations->size())
+        ? &(mut_deintegrated_child_1_lower_regions)
+        : &(child_1.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& child_1_lower_regions = *child_1_lower_regions_ptr;
+    
   std::unique_ptr<SeqRegions> new_parent_new_lower_lh = nullptr;
   std::unique_ptr<SeqRegions> tmp_lower_lh = nullptr;
   const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
@@ -8813,13 +8847,16 @@ void cmaple::Tree::calSiteLhDiffRoot(
   /*best_parent_lh +=
       new_parent_new_lower_lh->computeAbsoluteLhAtRoot<num_states>(
         node_mutations[root_vector_index], aln, model, cumulative_base);*/
+    const cmaple::Index tmp_current_node_index =
+        cmaple::Index(current_node_vec_index, TOP);
     best_parent_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
                                     new_parent_new_lower_lh,
-                                    cmaple::Index(root_vector_index, TOP));
+                                    tmp_current_node_index);
   // Try shorter branch lengths at root
   tryShorterBranchAtRoot<num_states>(
       child_1_lower_regions, parent_new_lower_lh, new_parent_new_lower_lh,
-      parent_new_blength, best_parent_lh, child_1_blength);
+      parent_new_blength, best_parent_lh, child_1_blength,
+      tmp_current_node_index);
 
   // 3. estimate the length of the new branch connecting child_1 to the
   // new_parent node
@@ -8827,7 +8864,7 @@ void cmaple::Tree::calSiteLhDiffRoot(
   estimateLengthNewBranchAtRoot<num_states>(
       child_1_lower_regions, parent_new_lower_lh, new_parent_new_lower_lh,
       child_1_new_blength, best_parent_lh, parent_new_blength,
-      double_min_blength, child_1_blength <= 0);
+      double_min_blength, child_1_blength <= 0, tmp_current_node_index);
 
   // 4. compute the new lower_lh of the new_parent node
   parent_new_lower_lh->mergeTwoLowers<num_states>(
@@ -8901,8 +8938,10 @@ void cmaple::Tree::calSiteLhDiffRoot(
       *sibling_lower_lh, sibling.getUpperLength(), aln, model, cumulative_rate,
       threshold_prob);
   // 7.3 the absolute likelihood at root
-  new_parent_new_lower_lh->computeSiteLhAtRoot<num_states>(
-      site_lh_root_diff, model, cumulative_base);
+  /* new_parent_new_lower_lh->computeSiteLhAtRoot<num_states>(
+      site_lh_root_diff, model, cumulative_base);*/
+  computeSiteLhAtRootDeintegratedAllMuts<num_states>(site_lh_root_diff,
+        new_parent_new_lower_lh, tmp_current_node_index);
   // update site_lh_root_diff
   for (std::vector<cmaple::StateType>::size_type j = 0; j < seq_length; ++j) {
     site_lh_root_diff[j] -= site_lh_root[j];
@@ -8924,26 +8963,87 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
     PhyloNode& current_node,
     PhyloNode& child_1,
     PhyloNode& child_2,
+    std::unique_ptr<SeqRegions>& child_2_lower_lh,
     PhyloNode& sibling,
+    std::unique_ptr<SeqRegions>& sibling_lower_lh,
     PhyloNode& parent,
-    const Index parent_index) {
+    const Index parent_index,
+    const NumSeqsType current_node_vec_index,
+    const NumSeqsType sibling_vec_index,
+    const NumSeqsType child_1_vec_index,
+    const NumSeqsType child_2_vec_index) {
+    
+    // use the same local ref as the current node
+    // extract the mutations at the current node
+    std::unique_ptr<SeqRegions>& current_node_mutations =
+        node_mutations[current_node_vec_index];
+    // extract the mutations at the parent node
+    std::unique_ptr<SeqRegions>& parent_mutations =
+        node_mutations[parent_index.getVectorIndex()];
+    // extract the mutations at child 1
+    std::unique_ptr<SeqRegions>& child_1_mutations =
+        node_mutations[child_1_vec_index];
+    
+    // compute the merged mutations that integrates mutations
+    // at the parent and the current node
+    std::unique_ptr<SeqRegions> merged_parent_current_node_mutations = nullptr;
+    if (parent_mutations && current_node_mutations)
+    {
+        merged_parent_current_node_mutations =  parent_mutations
+            ->mergeTwoRefs<num_states>(current_node_mutations,
+                                       aln, params->threshold_prob);
+    } else if (parent_mutations)
+    {
+        merged_parent_current_node_mutations =
+            cmaple::make_unique<SeqRegions>(parent_mutations);
+    } else if (current_node_mutations)
+    {
+        merged_parent_current_node_mutations =
+            cmaple::make_unique<SeqRegions>(current_node_mutations);
+    }
+    
   // dummy variables
   const RealNumType threshold_prob = params->threshold_prob;
   const RealNumType child_1_blength =
       child_1.getUpperLength();  // ~new_branch_length
-  const std::unique_ptr<SeqRegions>& child_1_lower_regions =
-      child_1.getPartialLh(TOP);  // ~subtree_regions
-  const std::unique_ptr<SeqRegions>& sibling_lower_lh =
-      sibling.getPartialLh(TOP);
-  const std::unique_ptr<SeqRegions>& child_2_lower_lh =
-      child_2.getPartialLh(TOP);
+  
+    // 1. create a new lower_regions (for child 1)
+    // that deintegrates the mutations at child 1, if any
+    std::unique_ptr<SeqRegions> mut_deintegrated_child_1_lower_regions =
+        (child_1_mutations && child_1_mutations->size())
+        ? child_1.getPartialLh(TOP)
+          ->integrateMutations<num_states>(child_1_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* child_1_lower_regions_ptr =
+        (child_1_mutations && child_1_mutations->size())
+        ? &(mut_deintegrated_child_1_lower_regions)
+        : &(child_1.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& child_1_lower_regions = *child_1_lower_regions_ptr;
+
   std::unique_ptr<SeqRegions> new_parent_new_lower_lh = nullptr;
   std::unique_ptr<SeqRegions> tmp_lower_lh = nullptr;
   const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
   std::vector<RealNumType> site_lh_diff_old(seq_length, 0);
 
-  const std::unique_ptr<SeqRegions>& grand_parent_upper_lr =
-      getPartialLhAtNode(parent.getNeighborIndex(TOP));
+    // 1. create a new upper_lr (for the grand parent)
+    // that integrates the mutations at the parent and the current nodes, if any
+    std::unique_ptr<SeqRegions> mut_integrated_grand_upper_lr =
+    (merged_parent_current_node_mutations
+     && merged_parent_current_node_mutations->size())
+        ? getPartialLhAtNode(parent.getNeighborIndex(TOP))
+          ->integrateMutations<num_states>(merged_parent_current_node_mutations, aln)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* grand_upper_lr_ptr =
+        (merged_parent_current_node_mutations
+         && merged_parent_current_node_mutations->size())
+        ? &(mut_integrated_grand_upper_lr)
+        : &(getPartialLhAtNode(parent.getNeighborIndex(TOP)));
+    // 3. create a reference from that pointer
+    auto& grand_parent_upper_lr = *grand_upper_lr_ptr;
+    
   std::unique_ptr<SeqRegions> best_parent_regions = nullptr;
   RealNumType parent_blength = parent.getUpperLength();
   // update parent_blength if it's <= 0
@@ -9109,6 +9209,18 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
   std::unique_ptr<SeqRegions> new_lower_lh = std::move(new_parent_new_lower_lh);
   std::unique_ptr<SeqRegions> tmp_new_lower_lh = nullptr;
   RealNumType tmp_blength = new_parent_best_blength;
+  
+  // now switch to use the same local ref as the parent node
+  // de-integrate mutations at the current node, if any
+  if (current_node_mutations && current_node_mutations->size())
+  {
+      bk_new_lower_lh = bk_new_lower_lh
+        ->integrateMutations<num_states>(current_node_mutations, aln, true);
+    
+      new_lower_lh = new_lower_lh
+        ->integrateMutations<num_states>(current_node_mutations, aln, true);
+  }
+    
   while (true) {
     // NHANLT: avoid null
     if (!new_lower_lh) {
@@ -9125,13 +9237,52 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
                                             num_states, *params) ||
         fabs(prev_lh_diff) > threshold_prob) {
       // update lh_diff
+      const NumSeqsType tmp_child_1_vec_index =
+        node.getNeighborIndex(RIGHT).getVectorIndex();
+      const NumSeqsType tmp_child_2_vec_index =
+        node.getNeighborIndex(LEFT).getVectorIndex();
       PhyloNode& tmp_child_1 =
-          nodes[node.getNeighborIndex(RIGHT).getVectorIndex()];
+        nodes[tmp_child_1_vec_index];
       PhyloNode& tmp_child_2 =
-          nodes[node.getNeighborIndex(LEFT).getVectorIndex()];
-      tmp_child_1.getPartialLh(TOP)->calculateSiteLhContributions<num_states>(
+          nodes[tmp_child_2_vec_index];
+        
+        // 0. extract the mutations at the tmp child 1
+        std::unique_ptr<SeqRegions>& tmp_child_1_mutations =
+            node_mutations[tmp_child_1_vec_index];
+        // 1. create a new regions that deintegrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_tmp_child_1_regions =
+            (tmp_child_1_mutations && tmp_child_1_mutations->size())
+            ? tmp_child_1.getPartialLh(TOP)
+              ->integrateMutations<num_states>(tmp_child_1_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate upper_lr_regions
+        const std::unique_ptr<SeqRegions>* tmp_child_1_regions_ptr =
+            (tmp_child_1_mutations && tmp_child_1_mutations->size())
+            ? &(mut_integrated_tmp_child_1_regions)
+            : &(tmp_child_1.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& tmp_child_1_regions = *tmp_child_1_regions_ptr;
+        
+        // 0. extract the mutations at the tmp child 2
+        std::unique_ptr<SeqRegions>& tmp_child_2_mutations =
+            node_mutations[tmp_child_2_vec_index];
+        // 1. create a new regions that deintegrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_tmp_child_2_regions =
+            (tmp_child_2_mutations && tmp_child_2_mutations->size())
+            ? tmp_child_2.getPartialLh(TOP)
+              ->integrateMutations<num_states>(tmp_child_2_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate upper_lr_regions
+        const std::unique_ptr<SeqRegions>* tmp_child_2_regions_ptr =
+            (tmp_child_2_mutations && tmp_child_2_mutations->size())
+            ? &(mut_integrated_tmp_child_2_regions)
+            : &(tmp_child_2.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& tmp_child_2_regions = *tmp_child_2_regions_ptr;
+        
+        tmp_child_1_regions->calculateSiteLhContributions<num_states>(
           site_lh_diff_old, tmp_lower_lh, tmp_child_1.getUpperLength(),
-          *tmp_child_2.getPartialLh(TOP), tmp_child_2.getUpperLength(), aln,
+          *tmp_child_2_regions, tmp_child_2.getUpperLength(), aln,
           model, cumulative_rate, threshold_prob);
 
       // cases when node is non-root
@@ -9145,11 +9296,62 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
             tmp_parent.getNeighborIndex(tmp_parent_index.getFlipMiniIndex())
                 .getVectorIndex();
         PhyloNode& tmp_sibling = nodes[tmp_sibling_vec];
+          
+          // extract the mutations at the tmp current node
+          std::unique_ptr<SeqRegions>& tmp_node_mutations =
+              node_mutations[node_vec];
+          // extract the mutations at the tmp sibling node
+          std::unique_ptr<SeqRegions>& tmp_sibling_mutations =
+              node_mutations[tmp_sibling_vec];
+              
+          // compute the merged mutations that deintegrates mutations at tmp sibling
+          // and integrates mutations at the tmp current node
+          std::unique_ptr<SeqRegions> merged_tmp_sibling_current_mutations = nullptr;
+          if (tmp_sibling_mutations)
+          {
+              merged_tmp_sibling_current_mutations =
+                  cmaple::make_unique<SeqRegions>(tmp_sibling_mutations);
+              // inverse mutations at the sibling node
+              merged_tmp_sibling_current_mutations->flipMutations<num_states>();
+          }
+          if (tmp_node_mutations)
+          {
+              if (merged_tmp_sibling_current_mutations)
+              {
+                  merged_tmp_sibling_current_mutations =
+                  merged_tmp_sibling_current_mutations
+                      ->mergeTwoRefs<num_states>(tmp_node_mutations,
+                                                 aln, params->threshold_prob);
+              }
+              else
+              {
+                  merged_tmp_sibling_current_mutations =
+                      cmaple::make_unique<SeqRegions>(tmp_node_mutations);
+              }
+          }
+          
+          // 1. create a new lower_regions (for the tmp sibling)
+          // that deintegrates the mutations at sibling, if any
+          // and integrates the mutations at the current node, if any
+          std::unique_ptr<SeqRegions> mut_integrated_tmp_sibling_lower =
+          (merged_tmp_sibling_current_mutations
+           && merged_tmp_sibling_current_mutations->size())
+              ? tmp_sibling.getPartialLh(TOP)
+                ->integrateMutations<num_states>(merged_tmp_sibling_current_mutations, aln)
+              : nullptr;
+          // 2. create the pointer that points to the appropriate regions
+          std::unique_ptr<SeqRegions>* tmp_sibling_lower_lh_ptr =
+              (merged_tmp_sibling_current_mutations
+               && merged_tmp_sibling_current_mutations->size())
+              ? &(mut_integrated_tmp_sibling_lower)
+              : &(tmp_sibling.getPartialLh(TOP));
+          // 3. create a reference from that pointer
+          auto& tmp_sibling_lower_lh = *tmp_sibling_lower_lh_ptr;
 
         prev_lh_diff =
             new_lower_lh->calculateSiteLhContributions<num_states>(
                 site_lh_diff, tmp_new_lower_lh, tmp_blength,
-                *(tmp_sibling.getPartialLh(TOP)), tmp_sibling.getUpperLength(),
+                *tmp_sibling_lower_lh, tmp_sibling.getUpperLength(),
                 aln, model, cumulative_rate, params->threshold_prob) -
             node_lhs[tmp_parent.getNodelhIndex()].getLhContribution();
 
@@ -9161,12 +9363,25 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
         tmp_blength = tmp_parent.getUpperLength();
         bk_new_lower_lh = std::move(new_lower_lh);
         new_lower_lh = std::move(tmp_new_lower_lh);
+          
+          // now switch to use the same local ref as the tmp parent node
+          // de-integrate mutations at the tmp current node, if any
+          if (tmp_node_mutations && tmp_node_mutations->size())
+          {
+              bk_new_lower_lh = bk_new_lower_lh
+                ->integrateMutations<num_states>(tmp_node_mutations, aln, true);
+            
+              new_lower_lh = new_lower_lh
+                ->integrateMutations<num_states>(tmp_node_mutations, aln, true);
+          }
       }
       // case when node is root
       else {
         // re-calculate likelihood at root
-        new_lower_lh->computeSiteLhAtRoot<num_states>(site_lh_root_diff, model,
-                                                      cumulative_base);
+        /*new_lower_lh->computeSiteLhAtRoot<num_states>(site_lh_root_diff, model,
+                                                      cumulative_base);*/
+        computeSiteLhAtRootDeintegratedAllMuts<num_states>(
+            site_lh_root_diff, new_lower_lh, node_index);
 
         // update site_lh_root_diff
         for (std::vector<cmaple::StateType>::size_type j = 0; j < seq_length; ++j) {
@@ -9182,9 +9397,30 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
       // cancel the contribution of the last merging in site_lh_diff by adding
       // it into site_lh_diff_old
       PhyloNode& tmp_sibling = nodes[bk_sibling_vec];
+        
+        // we're now using the same local ref as the current node,
+        // which is the parent of the backup sibling
+        // so, we only need to de-integrate mutations at the bk sibling, if any
+        // 0. extract the mutations at the bk_sibling
+        std::unique_ptr<SeqRegions>& bk_sibling_mutations =
+            node_mutations[bk_sibling_vec];
+        // 1. create a new regions that deintegrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_bk_sibling_regions =
+            (bk_sibling_mutations && bk_sibling_mutations->size())
+            ? tmp_sibling.getPartialLh(TOP)
+              ->integrateMutations<num_states>(bk_sibling_mutations, aln, true)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate upper_lr_regions
+        const std::unique_ptr<SeqRegions>* bk_sibling_regions_ptr =
+            (bk_sibling_mutations && bk_sibling_mutations->size())
+            ? &(mut_integrated_bk_sibling_regions)
+            : &(tmp_sibling.getPartialLh(TOP));
+        // 3. create a reference from that pointer
+        auto& bk_sibling_regions = *bk_sibling_regions_ptr;
+        
       bk_new_lower_lh->calculateSiteLhContributions<num_states>(
           site_lh_diff_old, tmp_new_lower_lh, bk_tmp_blength,
-          *(tmp_sibling.getPartialLh(TOP)), bk_tmp_sibling_blength, aln, model,
+          *bk_sibling_regions, bk_tmp_sibling_blength, aln, model,
           cumulative_rate, params->threshold_prob);
       break;
     }
@@ -9205,7 +9441,11 @@ void cmaple::Tree::calSiteLhDiff(std::vector<RealNumType>& site_lh_diff,
                                  PhyloNode& child_2,
                                  PhyloNode& sibling,
                                  PhyloNode& parent,
-                                 const Index parent_index) {
+                                 const Index parent_index,
+                                 const NumSeqsType current_node_vec_index,
+                                 const NumSeqsType sibling_vec_index,
+                                 const NumSeqsType child_1_vec_index,
+                                 const NumSeqsType child_2_vec_index) {
   // 1. recompute the lowerlh at the parent node after swaping child_1 and
   // sibling
   std::unique_ptr<SeqRegions> parent_new_lower_lh = nullptr;
@@ -9218,8 +9458,78 @@ void cmaple::Tree::calSiteLhDiff(std::vector<RealNumType>& site_lh_diff,
   } else {
     child_2_new_blength = current_node.getUpperLength();
   }
-  child_2.getPartialLh(TOP)->mergeTwoLowers<num_states>(
-      parent_new_lower_lh, child_2_new_blength, *(sibling.getPartialLh(TOP)),
+    
+    // use the same local ref as the current node
+    // extract the mutations at the current node
+    std::unique_ptr<SeqRegions>& current_node_mutations =
+        node_mutations[current_node_vec_index];
+    // extract the mutations at the sibling node
+    std::unique_ptr<SeqRegions>& sibling_mutations =
+        node_mutations[sibling_vec_index];
+    // extract the mutations at child 2
+    std::unique_ptr<SeqRegions>& child_2_mutations =
+        node_mutations[child_2_vec_index];
+    // compute the merged mutations that deintegrates mutations at sibling
+    // and integrates mutations at the current node
+    std::unique_ptr<SeqRegions> merged_sibling_current_node_mutations = nullptr;
+    if (sibling_mutations)
+    {
+        merged_sibling_current_node_mutations =
+            cmaple::make_unique<SeqRegions>(sibling_mutations);
+        // inverse mutations at the sibling node
+        merged_sibling_current_node_mutations->flipMutations<num_states>();
+    }
+    if (current_node_mutations)
+    {
+        if (merged_sibling_current_node_mutations)
+        {
+            merged_sibling_current_node_mutations =
+                merged_sibling_current_node_mutations
+                ->mergeTwoRefs<num_states>(current_node_mutations,
+                                           aln, params->threshold_prob);
+        }
+        else
+        {
+            merged_sibling_current_node_mutations =
+                cmaple::make_unique<SeqRegions>(current_node_mutations);
+        }
+    }
+    
+    // 1. create a new lower_regions (for child 2)
+    // that deintegrates the mutations at child 2, if any
+    std::unique_ptr<SeqRegions> mut_deintegrated_child_2_lower_regions =
+        (child_2_mutations && child_2_mutations->size())
+        ? child_2.getPartialLh(TOP)
+          ->integrateMutations<num_states>(child_2_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    std::unique_ptr<SeqRegions>* child_2_lower_regions_ptr =
+        (child_2_mutations && child_2_mutations->size())
+        ? &(mut_deintegrated_child_2_lower_regions)
+        : &(child_2.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& child_2_lower_regions = *child_2_lower_regions_ptr;
+    
+    // 1. create a new lower_regions (for the sibling)
+    // that deintegrates the mutations at sibling, if any
+    // and integrates the mutations at the current node, if any
+    std::unique_ptr<SeqRegions> mut_integrated_sibling_lower_regions =
+    (merged_sibling_current_node_mutations
+     && merged_sibling_current_node_mutations->size())
+        ? sibling.getPartialLh(TOP)
+          ->integrateMutations<num_states>(merged_sibling_current_node_mutations, aln)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    std::unique_ptr<SeqRegions>* sibling_lower_lh_ptr =
+        (merged_sibling_current_node_mutations
+         && merged_sibling_current_node_mutations->size())
+        ? &(mut_integrated_sibling_lower_regions)
+        : &(sibling.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& sibling_lower_lh = *sibling_lower_lh_ptr;
+    
+    child_2_lower_regions->mergeTwoLowers<num_states>(
+      parent_new_lower_lh, child_2_new_blength, *sibling_lower_lh,
       sibling.getUpperLength(), aln, model, cumulative_rate,
       params->threshold_prob, false);
 
@@ -9228,15 +9538,20 @@ void cmaple::Tree::calSiteLhDiff(std::vector<RealNumType>& site_lh_diff,
   if (root_vector_index == parent_index.getVectorIndex()) {
     calSiteLhDiffRoot<num_states>(site_lh_diff, site_lh_root_diff, site_lh_root,
                                   parent_new_lower_lh, child_2_new_blength,
-                                  current_node, child_1, child_2, sibling,
-                                  parent, parent_index);
+                                  current_node, child_1, child_2,
+                                  child_2_lower_regions, sibling, sibling_lower_lh,
+                                  parent, parent_index, current_node_vec_index,
+                                  sibling_vec_index, child_1_vec_index, child_2_vec_index);
     // otherwise, the (old) parent node is non-root
     // for more information, pls see https://tinyurl.com/ymr49jy8
   } else {
     calSiteLhDiffNonRoot<num_states>(site_lh_diff, site_lh_root_diff,
                                      site_lh_root, parent_new_lower_lh,
                                      child_2_new_blength, current_node, child_1,
-                                     child_2, sibling, parent, parent_index);
+                                     child_2, child_2_lower_regions, sibling,
+                                     sibling_lower_lh, parent, parent_index,
+                                     current_node_vec_index, sibling_vec_index,
+                                     child_1_vec_index, child_2_vec_index);
   }
 }
 
@@ -9272,13 +9587,19 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
   // caculate aLRT
   const Index child_1_index = node.getNeighborIndex(RIGHT);
   const Index child_2_index = node.getNeighborIndex(LEFT);
-  PhyloNode& child_1 = nodes[child_1_index.getVectorIndex()];
-  PhyloNode& child_2 = nodes[child_2_index.getVectorIndex()];
+  const NumSeqsType child_1_vec_index = child_1_index.getVectorIndex();
+  const NumSeqsType child_2_vec_index = child_2_index.getVectorIndex();
+  PhyloNode& child_1 = nodes[child_1_vec_index];
+  PhyloNode& child_2 = nodes[child_2_vec_index];
   const Index parent_index = node.getNeighborIndex(TOP);
-  PhyloNode& parent = nodes[parent_index.getVectorIndex()];
+  const NumSeqsType parent_vec_index = parent_index.getVectorIndex();
+  PhyloNode& parent = nodes[parent_vec_index];
   const Index sibling_index =
       parent.getNeighborIndex(parent_index.getFlipMiniIndex());
-  PhyloNode& sibling = nodes[sibling_index.getVectorIndex()];
+  const NumSeqsType sibling_vec_index = sibling_index.getVectorIndex();
+  PhyloNode& sibling = nodes[sibling_vec_index];
+  const NumSeqsType current_node_vec_index =
+      parent.getNeighborIndex(parent_index.getMiniIndex()).getVectorIndex();
   PositionType sh_count{0};
   const std::vector<cmaple::StateType>::size_type seq_length = aln->ref_seq.size();
   const NodeLh& nodelh = node_lhs[node.getNodelhIndex()];
@@ -9298,13 +9619,15 @@ PositionType cmaple::Tree::count_aRLT_SH_branch(
   std::vector<RealNumType> site_lh_root_diff_2(seq_length, 0);
   calSiteLhDiff<num_states>(site_lh_diff_2, site_lh_root_diff_2, site_lh_root,
                             node, child_1, child_2, sibling, parent,
-                            parent_index);
+                            parent_index, current_node_vec_index, sibling_vec_index,
+                            child_1_vec_index, child_2_vec_index);
   // neighbor 3
   std::vector<RealNumType> site_lh_diff_3(seq_length, 0);
   std::vector<RealNumType> site_lh_root_diff_3(seq_length, 0);
   calSiteLhDiff<num_states>(site_lh_diff_3, site_lh_root_diff_3, site_lh_root,
                             node, child_2, child_1, sibling, parent,
-                            parent_index);
+                            parent_index, current_node_vec_index, sibling_vec_index,
+                            child_2_vec_index, child_1_vec_index);
 
   // validate the results
   RealNumType lh_diff_2{0};
@@ -9522,6 +9845,7 @@ bool cmaple::Tree::calculateNNILhRoot(
     lh_diff = MIN_NEGATIVE;
     return true;
   }
+  const cmaple::Index tmp_root_index = cmaple::Index(root_vector_index, TOP);
   RealNumType best_parent_lh = parent_new_lower_lh->mergeTwoLowers<num_states>(
       new_parent_new_lower_lh, parent_new_blength, *child_1_lower_regions,
       child_1_blength, aln, model, cumulative_rate, threshold_prob, true);
@@ -9530,11 +9854,12 @@ bool cmaple::Tree::calculateNNILhRoot(
         node_mutations[root_vector_index], aln, model, cumulative_base);*/
     best_parent_lh += computeAbsLhAtRootDeintegratedAllMuts<num_states>(
                                         new_parent_new_lower_lh,
-                                        cmaple::Index(root_vector_index, TOP));
+                                        tmp_root_index);
   // Try shorter branch lengths at root
   tryShorterBranchAtRoot<num_states>(
       child_1_lower_regions, parent_new_lower_lh, new_parent_new_lower_lh,
-      parent_new_blength, best_parent_lh, child_1_blength);
+      parent_new_blength, best_parent_lh, child_1_blength,
+      tmp_root_index);
 
   // 3. estimate the length of the new branch connecting child_1 to the
   // new_parent node
@@ -9542,7 +9867,7 @@ bool cmaple::Tree::calculateNNILhRoot(
   estimateLengthNewBranchAtRoot<num_states>(
       child_1_lower_regions, parent_new_lower_lh, new_parent_new_lower_lh,
       child_1_new_blength, best_parent_lh, parent_new_blength,
-      double_min_blength, child_1_blength <= 0);
+      double_min_blength, child_1_blength <= 0, tmp_root_index);
 
   // 4. compute the new lower_lh of the new_parent node
   parent_new_lower_lh->mergeTwoLowers<num_states>(
@@ -10506,10 +10831,13 @@ RealNumType cmaple::Tree::calculateSiteLhs(
     site_lh_contributions.resize(seq_length, 0);
     site_lh_root.resize(seq_length, 0);
   }
-  RealNumType total_lh = nodes[root_vector_index]
+  /*RealNumType total_lh = nodes[root_vector_index]
                              .getPartialLh(TOP)
                              ->computeSiteLhAtRoot<num_states>(
-                                 site_lh_root, model, cumulative_base);
+                                 site_lh_root, model, cumulative_base);*/
+  RealNumType total_lh = computeSiteLhAtRootDeintegratedAllMuts<num_states>(
+                            site_lh_root, nodes[root_vector_index].getPartialLh(TOP),
+                            Index(root_vector_index, TOP));
 
   // start from root
   Index node_index = Index(root_vector_index, TOP);
@@ -12740,9 +13068,9 @@ auto cmaple::Tree::makeReferenceNode(PhyloNode& node, const NumSeqsType& node_ve
 }
 
 template <const StateType num_states>
-auto cmaple::Tree::computeAbsLhAtRootDeintegratedAllMuts(
-    const std::unique_ptr<SeqRegions>& regions,
-    cmaple::Index node_index) -> RealNumType
+auto cmaple::Tree::deintegrateAllLocalRefs(
+     const std::unique_ptr<SeqRegions>& regions,
+     cmaple::Index node_index) -> std::unique_ptr<SeqRegions>
 {
     // clone the original regions
     std::unique_ptr<SeqRegions> mut_deintegrated_regions =
@@ -12768,9 +13096,36 @@ auto cmaple::Tree::computeAbsLhAtRootDeintegratedAllMuts(
         node_index = node.getNeighborIndex(TOP);
     }
     
+    return mut_deintegrated_regions;
+}
+
+template <const StateType num_states>
+auto cmaple::Tree::computeAbsLhAtRootDeintegratedAllMuts(
+    const std::unique_ptr<SeqRegions>& regions,
+    cmaple::Index node_index) -> RealNumType
+{
+    // traverse upward, deintegrate all local references
+    std::unique_ptr<SeqRegions> mut_deintegrated_regions =
+        deintegrateAllLocalRefs<num_states>(regions, node_index);
+    
     // compute the absolute lh value after de-integrating all local references
     return mut_deintegrated_regions->computeAbsoluteLhAtRoot<num_states>(
                                         aln, model, cumulative_base);
+}
+
+template <const StateType num_states>
+auto cmaple::Tree::computeSiteLhAtRootDeintegratedAllMuts(
+    std::vector<cmaple::RealNumType>& site_lh_contributions,
+    const std::unique_ptr<SeqRegions>& regions,
+    cmaple::Index node_index) -> RealNumType
+{
+    // traverse upward, deintegrate all local references
+    std::unique_ptr<SeqRegions> mut_deintegrated_regions =
+        deintegrateAllLocalRefs<num_states>(regions, node_index);
+    
+    // compute the site lh after de-integrating all local references
+    return mut_deintegrated_regions->computeSiteLhAtRoot<num_states>(
+                site_lh_contributions, model, cumulative_base);
 }
 
 auto cmaple::Tree::refreshCorNumDescendants() -> void {

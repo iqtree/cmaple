@@ -882,7 +882,8 @@ bool isDiffFromOrigPlacement(
                               std::unique_ptr<SeqRegions>& best_parent_regions,
                               cmaple::RealNumType& best_root_blength,
                               cmaple::RealNumType& best_parent_lh,
-                              const cmaple::RealNumType fixed_blength);
+                              const cmaple::RealNumType fixed_blength,
+                              const cmaple::Index& local_ref_node_index);
 
   /**
    Check whether we can obtain a higher likelihood with a shorter length for the
@@ -895,7 +896,8 @@ bool isDiffFromOrigPlacement(
       std::unique_ptr<SeqRegions>& best_parent_regions,
       cmaple::RealNumType& best_length,
       cmaple::RealNumType& best_parent_lh,
-      const cmaple::RealNumType fixed_blength);
+      const cmaple::RealNumType fixed_blength,
+      const cmaple::Index& local_ref_node_index);
 
   /**
    Check whether we can obtain a higher likelihood with a longer length for the
@@ -910,7 +912,8 @@ bool isDiffFromOrigPlacement(
       std::unique_ptr<SeqRegions>& best_parent_regions,
       cmaple::RealNumType& best_length,
       cmaple::RealNumType& best_parent_lh,
-      const cmaple::RealNumType fixed_blength);
+      const cmaple::RealNumType fixed_blength,
+      const cmaple::Index& local_ref_node_index);
 
   /**
    Estimate the length for a new branch at root
@@ -926,7 +929,8 @@ bool isDiffFromOrigPlacement(
       cmaple::RealNumType& best_parent_lh,
       const cmaple::RealNumType fixed_blength,
       const cmaple::RealNumType short_blength_thresh,
-      const bool optional_check);
+      const bool optional_check,
+      const cmaple::Index& local_ref_node_index);
 
   /**
    Check whether we can obtain a higher likelihood with a shorter length for the
@@ -1009,13 +1013,13 @@ bool isDiffFromOrigPlacement(
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  template <const cmaple::StateType num_states>
+  /*template <const cmaple::StateType num_states>
   void placeSubTreeAtNode(const cmaple::Index selected_node_index,
                           const cmaple::Index subtree_index,
                           PhyloNode& subtree,
                           std::unique_ptr<SeqRegions>&& subtree_regions,
                           const cmaple::RealNumType new_branch_length,
-                          const cmaple::RealNumType new_lh);
+                          const cmaple::RealNumType new_lh);*/
 
   /**
    Place a subtree at a mid-branch point
@@ -1553,9 +1557,15 @@ bool isDiffFromOrigPlacement(
                          PhyloNode& current_node,
                          PhyloNode& child_1,
                          PhyloNode& child_2,
+                         std::unique_ptr<SeqRegions>& child_2_lower_regions,
                          PhyloNode& sibling,
+                         std::unique_ptr<SeqRegions>& sibling_lower_regions,
                          PhyloNode& parent,
-                         const cmaple::Index parent_index);
+                         const cmaple::Index parent_index,
+                         const NumSeqsType current_node_vec_index,
+                         const NumSeqsType sibling_vec_index,
+                         const NumSeqsType child_1_vec_index,
+                         const NumSeqsType child_2_vec_index);
 
   /**
    Calculate the site-lh differences  between an NNI neighbor on the branch
@@ -1565,17 +1575,23 @@ bool isDiffFromOrigPlacement(
    */
   template <const cmaple::StateType num_states>
   void calSiteLhDiffNonRoot(
-      std::vector<cmaple::RealNumType>& site_lh_diff,
-      std::vector<cmaple::RealNumType>& site_lh_root_diff,
-      const std::vector<cmaple::RealNumType>& site_lh_root,
-      std::unique_ptr<SeqRegions>& parent_new_lower_lh,
-      const cmaple::RealNumType& child_2_new_blength,
-      PhyloNode& current_node,
-      PhyloNode& child_1,
-      PhyloNode& child_2,
-      PhyloNode& sibling,
-      PhyloNode& parent,
-      const cmaple::Index parent_index);
+            std::vector<RealNumType>& site_lh_diff,
+            std::vector<RealNumType>& site_lh_root_diff,
+            const std::vector<RealNumType>& site_lh_root,
+            std::unique_ptr<SeqRegions>& parent_new_lower_lh,
+            const RealNumType& child_2_new_blength,
+            PhyloNode& current_node,
+            PhyloNode& child_1,
+            PhyloNode& child_2,
+            std::unique_ptr<SeqRegions>& child_2_lower_lh,
+            PhyloNode& sibling,
+            std::unique_ptr<SeqRegions>& sibling_lower_lh,
+            PhyloNode& parent,
+            const Index parent_index,
+            const NumSeqsType current_node_vec_index,
+            const NumSeqsType sibling_vec_index,
+            const NumSeqsType child_1_vec_index,
+            const NumSeqsType child_2_vec_index);
 
   /**
    Calculate the site-lh differences  between an NNI neighbor and the ML tree
@@ -1591,7 +1607,11 @@ bool isDiffFromOrigPlacement(
                      PhyloNode& child_2,
                      PhyloNode& sibling,
                      PhyloNode& parent,
-                     const cmaple::Index parent_index);
+                     const cmaple::Index parent_index,
+                     const NumSeqsType current_node_vec_index,
+                     const NumSeqsType sibling_vec_index,
+                     const NumSeqsType child_1_vec_index,
+                     const NumSeqsType child_2_vec_index);
 
   /**
    Read the next character from the treefile
@@ -2132,10 +2152,28 @@ bool isDiffFromOrigPlacement(
             const int old_num_desc) -> void;
     
     /**
+     Traverse upward and deintegrate all local references
+     */
+    template <const StateType num_states>
+    auto deintegrateAllLocalRefs(
+         const std::unique_ptr<SeqRegions>& regions,
+         cmaple::Index node_index) -> std::unique_ptr<SeqRegions>;
+    
+    /**
      Compute the absolute likelihood at root, de-integrating all local references
      */
     template <const StateType num_states>
     auto computeAbsLhAtRootDeintegratedAllMuts(
+        const std::unique_ptr<SeqRegions>& regions,
+        cmaple::Index node_index) -> RealNumType;
+    
+    /**
+     Compute the site likelihood at root by merging the lower lh with root
+     frequencies (after deintegrating all local refs)
+     */
+    template <const StateType num_states>
+    auto computeSiteLhAtRootDeintegratedAllMuts(
+        std::vector<cmaple::RealNumType>& site_lh_contributions,
         const std::unique_ptr<SeqRegions>& regions,
         cmaple::Index node_index) -> RealNumType;
     
@@ -2715,7 +2753,8 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
     best_root_blength = default_blength;
     tryShorterBranchAtRoot<num_states>(sample, lower_regions,
                                        best_parent_regions, best_root_blength,
-                                       best_parent_lh, default_blength);
+                                       best_parent_lh, default_blength,
+                                       selected_node_index);
 
     // update best_parent_lh (taking into account old_root_lh)
     best_parent_lh -= old_root_lh;
@@ -2850,7 +2889,8 @@ void cmaple::Tree::placeNewSampleAtNode(const Index selected_node_index,
 
       estimateLengthNewBranchAtRoot<num_states>(
           sample, lower_regions, best_parent_regions, best_length2,
-          best_parent_lh, best_root_blength, min_blength, false);
+          best_parent_lh, best_root_blength, min_blength, false,
+          selected_node_index);
 
       // update best_parent_lh (taking into account old_root_lh)
       best_parent_lh -= old_root_lh;
