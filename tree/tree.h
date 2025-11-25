@@ -1397,7 +1397,11 @@ bool isDiffFromOrigPlacement(
                       PhyloNode& child_2,
                       PhyloNode& sibling,
                       PhyloNode& parent,
-                      const cmaple::Index parent_index,
+                      const cmaple::Index& parent_index,
+                      const NumSeqsType current_node_vec_index,
+                      const NumSeqsType sibling_vec_index,
+                      const NumSeqsType child_1_vec_index,
+                      const NumSeqsType child_2_vec_index,
                       cmaple::RealNumType& lh_at_root,
                       const bool allow_replacing_ML_tree);
 
@@ -1414,9 +1418,16 @@ bool isDiffFromOrigPlacement(
                           PhyloNode& current_node,
                           PhyloNode& child_1,
                           PhyloNode& child_2,
+                          std::unique_ptr<SeqRegions>& child_2_lower_lh,
                           PhyloNode& sibling,
+                          std::unique_ptr<SeqRegions>& sibling_lower_lh,
                           PhyloNode& parent,
                           const cmaple::Index parent_index,
+                          const Index& parent_index,
+                          const NumSeqsType current_node_vec_index,
+                          const NumSeqsType sibling_vec_index,
+                          const NumSeqsType child_1_vec_index,
+                          const NumSeqsType child_2_vec_index,
                           cmaple::RealNumType& lh_at_root,
                           const bool allow_replacing_ML_tree);
 
@@ -1434,9 +1445,16 @@ bool isDiffFromOrigPlacement(
                              PhyloNode& current_node,
                              PhyloNode& child_1,
                              PhyloNode& child_2,
+                             std::unique_ptr<SeqRegions>& child_2_lower_lh,
                              PhyloNode& sibling,
+                             std::unique_ptr<SeqRegions>& sibling_lower_lh,
                              PhyloNode& parent,
                              const cmaple::Index parent_index,
+                             const Index& parent_index,
+                             const NumSeqsType current_node_vec_index,
+                             const NumSeqsType sibling_vec_index,
+                             const NumSeqsType child_1_vec_index,
+                             const NumSeqsType child_2_vec_index,
                              cmaple::RealNumType& lh_at_root,
                              const bool allow_replacing_ML_tree);
 
