@@ -567,12 +567,10 @@ void cmaple::ModelBase::updatePesudoCount(const Alignment* aln,
           (seq1_region->type < num_states_ || seq1_region->type == TYPE_R) &&
           (seq2_region->type < num_states_ || seq2_region->type == TYPE_R)) {
         if (seq1_region->type == TYPE_R) {
-          pseu_mutation_count[row_index[ref_seq[static_cast<std::vector<cmaple
-                ::StateType>::size_type>(end_pos)]] + seq2_region->type] += 1;
+            pseu_mutation_count[row_index[seq2_region->prev_state] + seq2_region->type] += 1;
         } else if (seq2_region->type == TYPE_R) {
           pseu_mutation_count[row_index[seq1_region->type] +
-                              ref_seq[static_cast<std::vector<cmaple::StateType>
-                                        ::size_type>(end_pos)]] += 1;
+                              seq1_region->prev_state] += 1;
         } else {
           pseu_mutation_count[row_index[seq1_region->type] +
                               seq2_region->type] += 1;
