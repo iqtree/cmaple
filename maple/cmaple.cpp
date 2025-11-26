@@ -9,7 +9,9 @@ std::string cmaple::getVersion()
 
 std::string cmaple::getCitations()
 {
-    return "To be updated...";
+    return "Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh (2024) "
+    "CMAPLE: Efficient phylogenetic inference in the pandemic era. "
+    "Mol. Biol. Evol., 41:msae134. https://doi.org/10.1093/molbev/msae134";
 }
 
 auto cmaple::isEffective(const Alignment &aln,
