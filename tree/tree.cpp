@@ -4607,6 +4607,10 @@ void cmaple::Tree::updateRegionsPlaceSubTree(
   // replacePartialLH(next_node_1->partial_lh, best_child_regions);
   internal.setPartialLh(LEFT, std::move(best_child_regions));
 
+  // we're now using the same local ref as the sibling
+  // we'll deintegrate the mutations at siblings
+  // from all lhs at the internal node later
+    
   // update new_internal_node->partial_lh
   // sibling_node.getPartialLhAtNode(aln, model,
   // params->threshold_prob)->mergeTwoLowers<num_states>(new_internal_node->partial_lh,
@@ -4618,7 +4622,7 @@ void cmaple::Tree::updateRegionsPlaceSubTree(
       params->threshold_prob);
 }
 
-template <const StateType num_states>
+/*template <const StateType num_states>
 void cmaple::Tree::updateRegionsPlaceSubTreeAbove(
     PhyloNode& subtree,
     PhyloNode& sibling_node,
@@ -4647,7 +4651,7 @@ void cmaple::Tree::updateRegionsPlaceSubTreeAbove(
     best_length = min_blength;
     /*subtree->length = best_length;
     subtree->neighbor->length = best_length;*/
-    subtree.setUpperLength(best_length);
+    /*subtree.setUpperLength(best_length);
     // lower_regions->mergeTwoLowers<num_states>(new_internal_node->partial_lh,
     // sibling_node->length, *subtree_regions, best_length, aln, model,
     // params->threshold_prob);
@@ -4662,7 +4666,7 @@ void cmaple::Tree::updateRegionsPlaceSubTreeAbove(
   upper_left_right_regions->mergeUpperLower<num_states>(
       internal.getPartialLh(LEFT), internal.getUpperLength(), *lower_regions,
       sibling_node.getUpperLength(), aln, model, params->threshold_prob);
-}
+}*/
 
 template <const StateType num_states,
           void (cmaple::Tree::*updateRegionsSubTree)(
