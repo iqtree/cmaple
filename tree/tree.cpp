@@ -6208,9 +6208,24 @@ void cmaple::Tree::refreshUpperLR(const Index node_index,
   // recalculate the upper left/right lh of the current node
   std::unique_ptr<SeqRegions> new_upper_lr_lh = nullptr;
   PhyloNode& neighbor = nodes[neighbor_index.getVectorIndex()];
-  const std::unique_ptr<SeqRegions>& lower_lh = neighbor.getPartialLh(
-      TOP);  // next_node->neighbor->getPartialLhAtNode(aln,
-             // model, threshold_prob);
+    
+    // 0. extract the mutations at the neighbor node
+    std::unique_ptr<SeqRegions>& neighbor_mutations =
+        node_mutations[neighbor_index.getVectorIndex()];
+    // 1. create a new lower_regions that deintegrates the mutations, if any
+    std::unique_ptr<SeqRegions> mut_integrated_neighbor_lower_regions =
+        (neighbor_mutations && neighbor_mutations->size())
+        ? neighbor.getPartialLh(TOP)
+          ->integrateMutations<num_states>(neighbor_mutations, aln, true)
+        : nullptr;
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* neighbor_lower_regions_ptr =
+        (neighbor_mutations && neighbor_mutations->size())
+        ? &(mut_integrated_neighbor_lower_regions)
+        : &(neighbor.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& lower_lh = *neighbor_lower_regions_ptr;
+    
   // parent_upper_lr_lh.mergeUpperLower<num_states>(new_upper_lr_lh,
   // node->length, *lower_lh, next_node->length, aln, model, threshold_prob);
   parent_upper_lr_lh->mergeUpperLower<num_states>(
@@ -6275,8 +6290,24 @@ void cmaple::Tree::refreshUpperLR(const Index node_index,
                   // update partial lh up left/right of the current node which becomes outdated because the branch length of this node has changed
                   const Index other_neighbor_index = node.getNeighborIndex(LEFT);
                   PhyloNode& other_neighbor = nodes[other_neighbor_index.getVectorIndex()];
-                  const std::unique_ptr<SeqRegions>& other_neighbor_lower_lh = other_neighbor.getPartialLh(
-                      TOP);
+                  
+                  // 0. extract the mutations at the other neighbor node
+                  std::unique_ptr<SeqRegions>& other_neighbor_mutations =
+                      node_mutations[other_neighbor_index.getVectorIndex()];
+                  // 1. create a new lower_regions that deintegrates the mutations, if any
+                  std::unique_ptr<SeqRegions> mut_integrated_other_neighbor_lower_regions =
+                      (other_neighbor_mutations && other_neighbor_mutations->size())
+                      ? other_neighbor.getPartialLh(TOP)
+                        ->integrateMutations<num_states>(other_neighbor_mutations, aln, true)
+                      : nullptr;
+                  // 2. create the pointer that points to the appropriate regions
+                  const std::unique_ptr<SeqRegions>* other_neighbor_lower_regions_ptr =
+                      (other_neighbor_mutations && other_neighbor_mutations->size())
+                      ? &(mut_integrated_other_neighbor_lower_regions)
+                      : &(other_neighbor.getPartialLh(TOP));
+                  // 3. create a reference from that pointer
+                  auto& other_neighbor_lower_lh = *other_neighbor_lower_regions_ptr;
+                  
                   parent_upper_lr_lh->mergeUpperLower<num_states>(
                       node.getPartialLh(RIGHT), node.getUpperLength(), *other_neighbor_lower_lh,
                       other_neighbor.getUpperLength(), aln, model, params->threshold_prob);
