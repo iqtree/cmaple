@@ -4911,7 +4911,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
     }
 }
 
-template <const StateType num_states>
+/*template <const StateType num_states>
 void cmaple::Tree::connectSubTree2Root(
     const Index subtree_index,
     PhyloNode& subtree,
@@ -4942,7 +4942,7 @@ void cmaple::Tree::connectSubTree2Root(
   new_root->neighbor = sibling_node->neighbor; // actually NULL since
   selected_node is root new_root->length = 0;*/
 
-  new_root.setOutdated(true);
+  /*new_root.setOutdated(true);
   new_root.setNeighborIndex(TOP, Index());
   new_root.setUpperLength(0);
 
@@ -4952,7 +4952,7 @@ void cmaple::Tree::connectSubTree2Root(
   sibling_node->length = best_root_blength;
   sibling_node->neighbor->length = best_root_blength;*/
 
-  sibling_node.setNeighborIndex(TOP, Index(new_root_vec, RIGHT));
+  /*sibling_node.setNeighborIndex(TOP, Index(new_root_vec, RIGHT));
   new_root.setNeighborIndex(RIGHT, sibling_node_index);
   sibling_node.setUpperLength(best_root_blength);
 
@@ -4963,7 +4963,7 @@ void cmaple::Tree::connectSubTree2Root(
     if (sibling_node->mid_branch_lh) delete sibling_node->mid_branch_lh;
     sibling_node->mid_branch_lh = NULL;*/
 
-    sibling_node.setTotalLh(nullptr);
+    /*sibling_node.setTotalLh(nullptr);
     sibling_node.setMidBranchLh(nullptr);
 
     // selected_node.furtherMidNodes=None
@@ -4973,7 +4973,7 @@ void cmaple::Tree::connectSubTree2Root(
   /*subtree->length = best_length2;
   subtree->neighbor->length = best_length2;*/
 
-  subtree.setNeighborIndex(TOP, Index(new_root_vec, LEFT));
+  /*subtree.setNeighborIndex(TOP, Index(new_root_vec, LEFT));
   new_root.setNeighborIndex(LEFT, subtree_index);
   subtree.setUpperLength(best_length2);
 
@@ -4982,7 +4982,7 @@ void cmaple::Tree::connectSubTree2Root(
   if (new_root->mid_branch_lh) delete new_root->mid_branch_lh;
   new_root->mid_branch_lh = NULL;*/
 
-  new_root.setPartialLh(TOP, std::move(best_parent_regions));
+  /*new_root.setPartialLh(TOP, std::move(best_parent_regions));
   new_root.setMidBranchLh(nullptr);
 
   // new_root->computeTotalLhAtNode(aln, model, params->threshold_prob, true);
@@ -4992,13 +4992,13 @@ void cmaple::Tree::connectSubTree2Root(
   /*if (next_node_1->partial_lh) delete next_node_1->partial_lh;
   next_node_1->partial_lh = lower_regions->computeTotalLhAtRoot(aln->num_states,
   model, best_root_blength);*/
-  lower_regions->computeTotalLhAtRoot<num_states>(new_root.getPartialLh(LEFT),
+  /*lower_regions->computeTotalLhAtRoot<num_states>(new_root.getPartialLh(LEFT),
                                                   model, best_root_blength);
 
   /*if (next_node_2->partial_lh) delete next_node_2->partial_lh;
   next_node_2->partial_lh =
   subtree_regions->computeTotalLhAtRoot(aln->num_states, model, best_length2);*/
-  subtree_regions->computeTotalLhAtRoot<num_states>(
+  /*subtree_regions->computeTotalLhAtRoot<num_states>(
       new_root.getPartialLh(RIGHT), model, best_length2);
 
   if (!new_root.getTotalLh() &&
@@ -5022,14 +5022,14 @@ void cmaple::Tree::connectSubTree2Root(
   }*/
 
   // update tree->root;
-  root_vector_index = new_root_vec;
+  /*root_vector_index = new_root_vec;
 
   // iteratively traverse the tree to update partials from the current node
   stack<Index> node_stack;
   node_stack.push(sibling_node_index);
   node_stack.push(subtree_index);
   updatePartialLh<num_states>(node_stack);
-}
+}*/
 
 template <const StateType num_states>
 void cmaple::Tree::handlePolytomyPlaceSubTree(
