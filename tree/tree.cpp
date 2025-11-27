@@ -3324,7 +3324,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
 
 // NOTE: top_node != null <=> case when crawling up from child to parent
 // otherwise, top_node == null <=> case we are moving from a parent to a child
-template <const StateType num_states>
+/*template <const StateType num_states>
 bool cmaple::Tree::examineSubTreePlacementAtNode(
     Index& best_node_index,
     PhyloNode& current_node,
@@ -3384,7 +3384,7 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
                                           num_states, *params)) {
       updating_node->setUpdate(false);
     }*/
-  }
+/*}
   // else
   const std::unique_ptr<SeqRegions>& at_node_regions =
       need_updating ? new_at_node_regions : at_node.getTotalLh();
@@ -3428,7 +3428,7 @@ bool cmaple::Tree::examineSubTreePlacementAtNode(
 
   // no error
   return true;
-}
+}*/
 
 bool cmaple::Tree::keepTraversing(const RealNumType& best_lh_diff,
                     const RealNumType& lh_diff_at_node,

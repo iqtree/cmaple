@@ -801,7 +801,7 @@ bool isDiffFromOrigPlacement(
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  template <const cmaple::StateType num_states>
+  /*template <const cmaple::StateType num_states>
   bool examineSubTreePlacementAtNode(
       cmaple::Index& best_node_index,
       PhyloNode& current_node,
@@ -815,7 +815,7 @@ bool isDiffFromOrigPlacement(
       const std::unique_ptr<SeqRegions>& subtree_regions,
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
-      const cmaple::Index top_node_index);
+      const cmaple::Index top_node_index);*/
 
   /**
    Add a child node for downwards traversal when seeking a new subtree placement
