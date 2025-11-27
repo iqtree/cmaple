@@ -12359,6 +12359,10 @@ void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node,
     neighbor_1.setUpperLength(new_blength);
   }
     
+    // handover the total and mid-branch regions from the current node to child 1
+    neighbor_1.setTotalLh(std::move(node.getTotalLh()));
+    neighbor_1.setMidBranchLh(std::move(node.getMidBranchLh()));
+    
     // here we remove the current (internal) node
     // if it's a local ref, we need to de-integrate its mutations
     // from child 1
@@ -12369,16 +12373,31 @@ void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node,
     {
         // all lh vectors/regions at the internal node
         if (aln && aln->num_states == 20)
+        {
             neighbor_1.integrateMutAllRegions<20>(current_node_mutations, aln, true);
+            
+            // total lh
+            if (neighbor_1.getTotalLh())
+            {
+                neighbor_1.setTotalLh(neighbor_1.getTotalLh()
+                    ->integrateMutations<20>(current_node_mutations, aln, true));
+            }
+        }
         else
+        {
             neighbor_1.integrateMutAllRegions<4>(current_node_mutations, aln, true);
+            
+            // total lh
+            if (neighbor_1.getTotalLh())
+            {
+                neighbor_1.setTotalLh(neighbor_1.getTotalLh()
+                    ->integrateMutations<4>(current_node_mutations, aln, true));
+            }
+        }
         
         // remove the local ref
         node_mutations[node_index.getVectorIndex()] = nullptr;
     }
-    // handover the total and mid-branch regions from the current node to child 1
-    neighbor_1.setTotalLh(std::move(node.getTotalLh()));
-    neighbor_1.setMidBranchLh(std::move(node.getMidBranchLh()));
 
   node_index = neighbor_1_index;
 }
