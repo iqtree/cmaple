@@ -1264,7 +1264,7 @@ void cmaple::Tree::makeTreeInOutConsistentTemplate() {
   }
 
   // traverse the tree from root to re-calculate all lower likelihoods
-  performDFS<&Tree::updateLowerLh<num_states>>();
+  performDFS<num_states, &Tree::updateLowerLh<num_states>>();
 }
 
 template <const StateType num_states>
@@ -1496,7 +1496,7 @@ RealNumType cmaple::Tree::computeLhTemplate() {
                             cmaple::Index(root_vector_index, TOP));
 
   // perform a DFS to add likelihood contributions from each internal nodes
-  total_lh += performDFS<&cmaple::Tree::computeLhContribution<num_states>>();
+  total_lh += performDFS<num_states, &cmaple::Tree::computeLhContribution<num_states>>();
 
   // return total_lh
   return total_lh;
@@ -8359,47 +8359,13 @@ template <const StateType num_states>
 void cmaple::Tree::updateLowerLh(RealNumType& total_lh,
                                  std::unique_ptr<SeqRegions>& new_lower_lh,
                                  PhyloNode& node,
-                                 const std::unique_ptr<SeqRegions>& ori_lower_lh_1,
-                                 const std::unique_ptr<SeqRegions>& ori_lower_lh_2,
+                                 const std::unique_ptr<SeqRegions>& lower_lh_1,
+                                 const std::unique_ptr<SeqRegions>& lower_lh_2,
                                  const Index neighbor_1_index,
                                  PhyloNode& neighbor_1,
                                  const Index neighbor_2_index,
                                  PhyloNode& neighbor_2,
                                  const PositionType& seq_length) {
-    
-    // 0. extract the mutations at neighbor_1
-    std::unique_ptr<SeqRegions>& neighbor_1_mutations =
-        node_mutations[neighbor_1_index.getVectorIndex()];
-    // 1. create a new regions that de-integrate the mutations, if any
-    std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
-        (neighbor_1_mutations && neighbor_1_mutations->size())
-        ? ori_lower_lh_1
-          ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
-        : nullptr;
-    // 2. create the pointer that points to the appropriate regions
-    const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
-        (neighbor_1_mutations && neighbor_1_mutations->size())
-        ? &(mut_integrated_neighbor_1_regions)
-        : &(ori_lower_lh_1);
-    // 3. create a reference from that pointer
-    auto& lower_lh_1 = *neighbor_1_regions_ptr;
-    
-    // 0. extract the mutations at neighbor_2
-    std::unique_ptr<SeqRegions>& neighbor_2_mutations =
-        node_mutations[neighbor_2_index.getVectorIndex()];
-    // 1. create a new regions that de-integrate the mutations, if any
-    std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
-        (neighbor_2_mutations && neighbor_2_mutations->size())
-        ? ori_lower_lh_2
-          ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
-        : nullptr;
-    // 2. create the pointer that points to the appropriate regions
-    const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
-        (neighbor_2_mutations && neighbor_2_mutations->size())
-        ? &(mut_integrated_neighbor_2_regions)
-        : &(ori_lower_lh_2);
-    // 3. create a reference from that pointer
-    auto& lower_lh_2 = *neighbor_2_regions_ptr;
     
   lower_lh_1->mergeTwoLowers<num_states>(
       new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2,
@@ -8449,47 +8415,13 @@ void cmaple::Tree::updateLowerLhAvoidUsingUpperLRLh(
     RealNumType& total_lh,
     std::unique_ptr<SeqRegions>& new_lower_lh,
     PhyloNode& node,
-    const std::unique_ptr<SeqRegions>& ori_lower_lh_1,
-    const std::unique_ptr<SeqRegions>& ori_lower_lh_2,
+    const std::unique_ptr<SeqRegions>& lower_lh_1,
+    const std::unique_ptr<SeqRegions>& lower_lh_2,
     const Index neighbor_1_index,
     PhyloNode& neighbor_1,
     const Index neighbor_2_index,
     PhyloNode& neighbor_2,
     const PositionType& seq_length) {
-    
-    // 0. extract the mutations at neighbor_1
-    std::unique_ptr<SeqRegions>& neighbor_1_mutations =
-        node_mutations[neighbor_1_index.getVectorIndex()];
-    // 1. create a new regions that de-integrate the mutations, if any
-    std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
-        (neighbor_1_mutations && neighbor_1_mutations->size())
-        ? ori_lower_lh_1
-          ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
-        : nullptr;
-    // 2. create the pointer that points to the appropriate regions
-    const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
-        (neighbor_1_mutations && neighbor_1_mutations->size())
-        ? &(mut_integrated_neighbor_1_regions)
-        : &(ori_lower_lh_1);
-    // 3. create a reference from that pointer
-    auto& lower_lh_1 = *neighbor_1_regions_ptr;
-    
-    // 0. extract the mutations at neighbor_2
-    std::unique_ptr<SeqRegions>& neighbor_2_mutations =
-        node_mutations[neighbor_2_index.getVectorIndex()];
-    // 1. create a new regions that de-integrate the mutations, if any
-    std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
-        (neighbor_2_mutations && neighbor_2_mutations->size())
-        ? ori_lower_lh_2
-          ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
-        : nullptr;
-    // 2. create the pointer that points to the appropriate regions
-    const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
-        (neighbor_2_mutations && neighbor_2_mutations->size())
-        ? &(mut_integrated_neighbor_2_regions)
-        : &(ori_lower_lh_2);
-    // 3. create a reference from that pointer
-    auto& lower_lh_2 = *neighbor_2_regions_ptr;
     
   lower_lh_1->mergeTwoLowers<num_states>(
       new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2,
@@ -8535,47 +8467,13 @@ void cmaple::Tree::computeLhContribution(
     RealNumType& total_lh,
     std::unique_ptr<SeqRegions>& new_lower_lh,
     PhyloNode& node,
-    const std::unique_ptr<SeqRegions>& ori_lower_lh_1,
-    const std::unique_ptr<SeqRegions>& ori_lower_lh_2,
+    const std::unique_ptr<SeqRegions>& lower_lh_1,
+    const std::unique_ptr<SeqRegions>& lower_lh_2,
     const Index neighbor_1_index,
     PhyloNode& neighbor_1,
     const Index neighbor_2_index,
     PhyloNode& neighbor_2,
     const PositionType& seq_length) {
-    
-    // 0. extract the mutations at neighbor_1
-    std::unique_ptr<SeqRegions>& neighbor_1_mutations =
-        node_mutations[neighbor_1_index.getVectorIndex()];
-    // 1. create a new regions that de-integrate the mutations, if any
-    std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
-        (neighbor_1_mutations && neighbor_1_mutations->size())
-        ? ori_lower_lh_1
-          ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
-        : nullptr;
-    // 2. create the pointer that points to the appropriate regions
-    const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
-        (neighbor_1_mutations && neighbor_1_mutations->size())
-        ? &(mut_integrated_neighbor_1_regions)
-        : &(ori_lower_lh_1);
-    // 3. create a reference from that pointer
-    auto& lower_lh_1 = *neighbor_1_regions_ptr;
-    
-    // 0. extract the mutations at neighbor_2
-    std::unique_ptr<SeqRegions>& neighbor_2_mutations =
-        node_mutations[neighbor_2_index.getVectorIndex()];
-    // 1. create a new regions that de-integrate the mutations, if any
-    std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
-        (neighbor_2_mutations && neighbor_2_mutations->size())
-        ? ori_lower_lh_2
-          ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
-        : nullptr;
-    // 2. create the pointer that points to the appropriate regions
-    const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
-        (neighbor_2_mutations && neighbor_2_mutations->size())
-        ? &(mut_integrated_neighbor_2_regions)
-        : &(ori_lower_lh_2);
-    // 3. create a reference from that pointer
-    auto& lower_lh_2 = *neighbor_2_regions_ptr;
     
   RealNumType lh_contribution = lower_lh_1->mergeTwoLowers<num_states>(
       new_lower_lh, neighbor_1.getUpperLength(), *lower_lh_2,
@@ -8617,7 +8515,8 @@ void cmaple::Tree::computeLhContribution(
   }
 }
 
-template <void (cmaple::Tree::*task)(RealNumType&,
+template <const cmaple::StateType num_states,
+        void (cmaple::Tree::*task)(RealNumType&,
                                      std::unique_ptr<SeqRegions>&,
                                      PhyloNode&,
                                      const std::unique_ptr<SeqRegions>&,
@@ -8681,20 +8580,42 @@ RealNumType cmaple::Tree::performDFS() {
         PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
 
         std::unique_ptr<SeqRegions> new_lower_lh = nullptr;
-        const std::unique_ptr<SeqRegions>& ori_lower_lh_1 = neighbor_1.getPartialLh(
-            TOP);  // next_node_1->neighbor->getPartialLhAtNode(aln,
-                   // model, params->threshold_prob);
-        const std::unique_ptr<SeqRegions>& ori_lower_lh_2 = neighbor_2.getPartialLh(
-            TOP);  // next_node_2->neighbor->getPartialLhAtNode(aln,
-                   // model, params->threshold_prob);
-        // lower_lh_1->mergeTwoLowers<num_states>(new_lower_lh,
-        // next_node_1->length, *lower_lh_2, next_node_2->length, aln, model,
-        // params->threshold_prob);
           
-          // NOTE: the original lower lhs will be de-integrated mutations
-          // at local references later
+          // 0. extract the mutations at neighbor_1
+          std::unique_ptr<SeqRegions>& neighbor_1_mutations =
+              node_mutations[neighbor_1_index.getVectorIndex()];
+          // 1. create a new regions that de-integrate the mutations, if any
+          std::unique_ptr<SeqRegions> mut_integrated_neighbor_1_regions =
+              (neighbor_1_mutations && neighbor_1_mutations->size())
+              ? neighbor_1.getPartialLh(TOP)
+                ->integrateMutations<num_states>(neighbor_1_mutations, aln, true)
+              : nullptr;
+          // 2. create the pointer that points to the appropriate regions
+          const std::unique_ptr<SeqRegions>* neighbor_1_regions_ptr =
+              (neighbor_1_mutations && neighbor_1_mutations->size())
+              ? &(mut_integrated_neighbor_1_regions)
+              : &(neighbor_1.getPartialLh(TOP));
+          // 3. create a reference from that pointer
+          auto& lower_lh_1 = *neighbor_1_regions_ptr;
+          
+          // 0. extract the mutations at neighbor_2
+          std::unique_ptr<SeqRegions>& neighbor_2_mutations =
+              node_mutations[neighbor_2_index.getVectorIndex()];
+          // 1. create a new regions that de-integrate the mutations, if any
+          std::unique_ptr<SeqRegions> mut_integrated_neighbor_2_regions =
+              (neighbor_2_mutations && neighbor_2_mutations->size())
+              ? neighbor_2.getPartialLh(TOP)
+                ->integrateMutations<num_states>(neighbor_2_mutations, aln, true)
+              : nullptr;
+          // 2. create the pointer that points to the appropriate regions
+          const std::unique_ptr<SeqRegions>* neighbor_2_regions_ptr =
+              (neighbor_2_mutations && neighbor_2_mutations->size())
+              ? &(mut_integrated_neighbor_2_regions)
+              : &(neighbor_2.getPartialLh(TOP));
+          // 3. create a reference from that pointer
+          auto& lower_lh_2 = *neighbor_2_regions_ptr;
 
-        (this->*task)(total_lh, new_lower_lh, node, ori_lower_lh_1, ori_lower_lh_2,
+        (this->*task)(total_lh, new_lower_lh, node, lower_lh_1, lower_lh_2,
                       neighbor_1_index, neighbor_1, neighbor_2_index,
                       neighbor_2, seq_length);
 
@@ -8729,7 +8650,7 @@ void cmaple::Tree::calculate_aRLT(const bool allow_replacing_ML_tree) {
   // all internal nodes
   RealNumType tree_total_lh =
       lh_at_root +
-      performDFS<&cmaple::Tree::computeLhContribution<num_states>>();
+      performDFS<num_states, &cmaple::Tree::computeLhContribution<num_states>>();
 
   // traverse tree to calculate aLRT-SH for each internal branch
   PhyloNode& root = nodes[root_vector_index];
