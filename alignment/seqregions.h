@@ -2446,15 +2446,15 @@ void calSiteLhs_identicalRACGT(std::vector<RealNumType>& site_lh_contributions,
                                RealNumType& log_lh,
                                SeqRegions& merged_regions);
 
-template <const StateType num_states>
+/*template <const StateType num_states>
 inline void addSimplifyOAndCalSiteLh(std::vector<RealNumType>& site_lh_contributions,
     RealNumType& log_lh, SeqRegion::LHType& new_lh, RealNumType& sum_lh,
-    const PositionType end_pos, const Alignment* aln, const RealNumType threshold_prob,
-    std::unique_ptr<SeqRegions>& merged_regions)
+    const StateType ref_state, const PositionType end_pos, const Alignment* aln,
+    const RealNumType threshold_prob, std::unique_ptr<SeqRegions>& merged_regions)
 {
     // normalize the new partial likelihood
     normalize_arr(new_lh.data(), num_states, sum_lh);
-    cmaple::SeqRegions::addSimplifiedO(TYPE_N, end_pos, new_lh, aln, threshold_prob,
+    cmaple::SeqRegions::addSimplifiedO(ref_state, end_pos, new_lh, aln, threshold_prob,
                                        *merged_regions);
 
     // compute (site) lh contributions
@@ -2462,7 +2462,7 @@ inline void addSimplifyOAndCalSiteLh(std::vector<RealNumType>& site_lh_contribut
     log_lh += lh_contribution;
     site_lh_contributions[static_cast<std::vector<RealNumType>
                         ::size_type>(end_pos)] += lh_contribution;
-}
+}*/
 
 /*template <const StateType num_states>
 bool calSiteLhs_O_O(std::vector<RealNumType>& site_lh_contributions,
