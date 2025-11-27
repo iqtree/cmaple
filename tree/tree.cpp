@@ -12219,6 +12219,11 @@ void cmaple::Tree::collapseAllZeroLeave() {
           if (!neighbor_1.isInternal() && !neighbor_2.isInternal()) {
             /* if (root_vector_index == node_index.getVectorIndex() ||
                 node.getUpperLength() <= 0) { */
+              
+              // since both neighbors are leave, they should NOT be local refs
+              assert(!node_mutations[neighbor_1_index.getVectorIndex()]);
+              assert(!node_mutations[neighbor_2_index.getVectorIndex()]);
+              
               // compare two leaves
               int seq2_less_info = neighbor_1.getPartialLh(TOP)->compareWithSample(
                 *(neighbor_2.getPartialLh(TOP)), seq_length, aln, collapse_only_ident_seqs);
@@ -12303,6 +12308,27 @@ void cmaple::Tree::collapseOneZeroLeaf(PhyloNode& node,
     neighbor_1.setNeighborIndex(TOP, parent_index);
     neighbor_1.setUpperLength(new_blength);
   }
+    
+    // here we remove the current (internal) node
+    // if it's a local ref, we need to de-integrate its mutations
+    // from child 1
+    // extract the mutations at the current node
+    std::unique_ptr<SeqRegions>& current_node_mutations =
+        node_mutations[node_index.getVectorIndex()];
+    if (current_node_mutations && current_node_mutations->size())
+    {
+        // all lh vectors/regions at the internal node
+        if (aln && aln->num_states == 20)
+            neighbor_1.integrateMutAllRegions<20>(current_node_mutations, aln, true);
+        else
+            neighbor_1.integrateMutAllRegions<4>(current_node_mutations, aln, true);
+        
+        // remove the local ref
+        node_mutations[node_index.getVectorIndex()] = nullptr;
+    }
+    // handover the total and mid-branch regions from the current node to child 1
+    neighbor_1.setTotalLh(std::move(node.getTotalLh()));
+    neighbor_1.setMidBranchLh(std::move(node.getMidBranchLh()));
 
   node_index = neighbor_1_index;
 }
