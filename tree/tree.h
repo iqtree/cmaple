@@ -2128,7 +2128,8 @@ bool isDiffFromOrigPlacement(
   /**
    Employ Depth First Search to do a task at internal nodes
    */
-  template <void (Tree::*task)(cmaple::RealNumType&,
+  template <const cmaple::StateType num_states,
+            void (Tree::*task)(cmaple::RealNumType&,
                                std::unique_ptr<SeqRegions>&,
                                PhyloNode&,
                                const std::unique_ptr<SeqRegions>&,
@@ -2251,9 +2252,9 @@ void cmaple::Tree::refreshAllLhs(bool avoid_using_upper_lr_lhs) {
     
   // 1. update all the lower lhs along the tree
   if (avoid_using_upper_lr_lhs) {
-    performDFS<&cmaple::Tree::updateLowerLhAvoidUsingUpperLRLh<num_states>>();
+    performDFS<num_states, &cmaple::Tree::updateLowerLhAvoidUsingUpperLRLh<num_states>>();
   } else {
-    performDFS<&cmaple::Tree::updateLowerLh<num_states>>();
+    performDFS<num_states, &cmaple::Tree::updateLowerLh<num_states>>();
   }
 
   // 2. update all the non-lower lhs along the tree
