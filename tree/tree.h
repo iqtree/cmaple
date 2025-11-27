@@ -1148,7 +1148,7 @@ bool isDiffFromOrigPlacement(
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  template <const cmaple::StateType num_states>
+  /*template <const cmaple::StateType num_states>
   void handlePolytomyPlaceSubTree(
       const cmaple::Index selected_node_index,
       PhyloNode& selected_node,
@@ -1157,7 +1157,7 @@ bool isDiffFromOrigPlacement(
       cmaple::RealNumType& best_down_lh_diff,
       cmaple::Index& best_child_index,
       cmaple::RealNumType& best_child_blength_split,
-      std::unique_ptr<SeqRegions>& best_child_regions);
+      std::unique_ptr<SeqRegions>& best_child_regions);*/
 
   /**
    Update likelihood at mid-branch point

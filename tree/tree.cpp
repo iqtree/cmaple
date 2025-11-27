@@ -5059,7 +5059,7 @@ void cmaple::Tree::connectSubTree2Root(
   updatePartialLh<num_states>(node_stack);
 }*/
 
-template <const StateType num_states>
+/*template <const StateType num_states>
 void cmaple::Tree::handlePolytomyPlaceSubTree(
     const Index selected_node_index,
     PhyloNode& selected_node,
@@ -5078,7 +5078,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
   /*for (Index
      neighbor_index:nodes[selected_node_index.getVectorIndex()].getNeighborIndexes(TOP))
       new_node_stack.push(neighbor_index);*/
-  if (selected_node.isInternal()) {
+  /*if (selected_node.isInternal()) {
     new_node_stack.push(selected_node.getNeighborIndex(RIGHT));
     new_node_stack.push(selected_node.getNeighborIndex(LEFT));
   }
@@ -5095,7 +5095,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
           new_node_stack.push(neighbor_node);*/
       /*for (Index neighbor_index:node.getNeighborIndexes(TOP))
           new_node_stack.push(neighbor_index);*/
-      if (node.isInternal()) {
+     /* if (node.isInternal()) {
         new_node_stack.push(node.getNeighborIndex(RIGHT));
         new_node_stack.push(node.getNeighborIndex(LEFT));
       }
@@ -5158,7 +5158,7 @@ void cmaple::Tree::handlePolytomyPlaceSubTree(
       // if (mid_branch_regions) delete mid_branch_regions;
     }
   }
-}
+}*/
 
 /*template <const StateType num_states>
 void cmaple::Tree::placeSubTreeAtNode(
