@@ -1096,7 +1096,7 @@ bool isDiffFromOrigPlacement(
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  template <const cmaple::StateType num_states>
+  /*template <const cmaple::StateType num_states>
   void connectSubTree2Root(const cmaple::Index subtree_index,
                            PhyloNode& subtree,
                            const std::unique_ptr<SeqRegions>& subtree_regions,
@@ -1105,7 +1105,7 @@ bool isDiffFromOrigPlacement(
                            PhyloNode& sibling_node,
                            const cmaple::RealNumType best_root_blength,
                            const cmaple::RealNumType best_length2,
-                           std::unique_ptr<SeqRegions>&& best_parent_regions);
+                           std::unique_ptr<SeqRegions>&& best_parent_regions);*/
 
   /**
    Update next_node_1->partial_lh and new_internal_node->partial_lh after
