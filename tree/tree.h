@@ -1106,7 +1106,7 @@ bool isDiffFromOrigPlacement(
    @throw std::logic\_error if unexpected values/behaviors found during the
    operations
    */
-  template <const cmaple::StateType num_states>
+  /* template <const cmaple::StateType num_states>
   void updateRegionsPlaceSubTreeAbove(
       PhyloNode& subtree,
       PhyloNode& sibling_node,
@@ -1115,7 +1115,7 @@ bool isDiffFromOrigPlacement(
       const std::unique_ptr<SeqRegions>& subtree_regions,
       const std::unique_ptr<SeqRegions>& upper_left_right_regions,
       const std::unique_ptr<SeqRegions>& lower_regions,
-      cmaple::RealNumType& best_blength);
+      cmaple::RealNumType& best_blength);*/
 
   /**
    Handle polytomy when placing a subtree
