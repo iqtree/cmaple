@@ -8731,17 +8731,20 @@ RealNumType cmaple::Tree::performDFS() {
         PhyloNode& neighbor_2 = nodes[neighbor_2_index.getVectorIndex()];
 
         std::unique_ptr<SeqRegions> new_lower_lh = nullptr;
-        const std::unique_ptr<SeqRegions>& lower_lh_1 = neighbor_1.getPartialLh(
+        const std::unique_ptr<SeqRegions>& ori_lower_lh_1 = neighbor_1.getPartialLh(
             TOP);  // next_node_1->neighbor->getPartialLhAtNode(aln,
                    // model, params->threshold_prob);
-        const std::unique_ptr<SeqRegions>& lower_lh_2 = neighbor_2.getPartialLh(
+        const std::unique_ptr<SeqRegions>& ori_lower_lh_2 = neighbor_2.getPartialLh(
             TOP);  // next_node_2->neighbor->getPartialLhAtNode(aln,
                    // model, params->threshold_prob);
         // lower_lh_1->mergeTwoLowers<num_states>(new_lower_lh,
         // next_node_1->length, *lower_lh_2, next_node_2->length, aln, model,
         // params->threshold_prob);
+          
+          // NOTE: the original lower lhs will be de-integrated mutations
+          // at local references later
 
-        (this->*task)(total_lh, new_lower_lh, node, lower_lh_1, lower_lh_2,
+        (this->*task)(total_lh, new_lower_lh, node, ori_lower_lh_1, ori_lower_lh_2,
                       neighbor_1_index, neighbor_1, neighbor_2_index,
                       neighbor_2, seq_length);
 
