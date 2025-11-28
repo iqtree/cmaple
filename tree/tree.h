@@ -785,6 +785,7 @@ bool isDiffFromOrigPlacement(
       cmaple::RealNumType& best_down_lh_diff,
       std::unique_ptr<UpdatingNode>& updating_node,
       std::unique_ptr<SeqRegions>& best_subtree_regions,
+      std::vector<cmaple::Index>& best_local_ref_list,
       const cmaple::RealNumType threshold_prob,
       const cmaple::RealNumType removed_blength,
       const cmaple::Index top_node_index,
@@ -1031,6 +1032,7 @@ bool isDiffFromOrigPlacement(
                              const cmaple::Index subtree_index,
                              PhyloNode& subtree,
                              std::unique_ptr<SeqRegions>&& subtree_regions,
+                             std::unique_ptr<SeqRegions>& updated_local_ref,
                              const cmaple::RealNumType new_branch_length,
                              const cmaple::RealNumType opt_appending_blength,
                              const cmaple::RealNumType opt_mid_top_blength,
@@ -1054,6 +1056,7 @@ bool isDiffFromOrigPlacement(
                                          cmaple::RealNumType&)>
   void connectSubTree2Branch(
       std::unique_ptr<SeqRegions>&& subtree_regions,
+      std::unique_ptr<SeqRegions>& updated_local_ref,
       const std::unique_ptr<SeqRegions>& lower_regions,
       const cmaple::Index subtree_index,
       PhyloNode& subtree,
@@ -1350,6 +1353,7 @@ bool isDiffFromOrigPlacement(
    */
   template <const cmaple::StateType num_states>
   void checkAndApplySPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                        const std::vector<cmaple::Index>& best_local_ref_list,
                         const cmaple::RealNumType best_lh_diff,
                         const cmaple::RealNumType best_blength,
                         const cmaple::RealNumType opt_appending_blength,
@@ -1900,6 +1904,7 @@ bool isDiffFromOrigPlacement(
       const bool short_range_search,
       const cmaple::Index child_node_index,
       std::unique_ptr<SeqRegions>& best_subtree_regions,
+      std::vector<cmaple::Index>& best_local_ref_list,
       cmaple::RealNumType& removed_blength,
       cmaple::RealNumType& opt_appending_blength,
       cmaple::RealNumType& opt_mid_top_blength,
@@ -1955,6 +1960,7 @@ bool isDiffFromOrigPlacement(
    */
   template <const cmaple::StateType num_states>
   void applyOneSPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                   const std::vector<cmaple::Index>& best_local_ref_list,
                    const cmaple::Index subtree_index,
                    PhyloNode& subtree,
                    const cmaple::Index best_node_index,
@@ -2204,6 +2210,26 @@ bool isDiffFromOrigPlacement(
      */
     template <const StateType num_states>
     auto initLocalReferences() -> void;
+    
+    /**
+     Generate a merged local reference, that combines local refs
+     from the parent node of the subtree to the new placement
+     to update the subtree after applying an SPR
+     */
+    template <const StateType num_states>
+    auto buildChangedLocalRef(
+         const std::vector<cmaple::Index>& local_ref_list,
+         const NumSeqsType selected_node_vec_index)
+        -> std::unique_ptr<SeqRegions>;
+    
+    /**
+     Update subtree (due to local ref changed) after applying an SPR
+     */
+    template <const StateType num_states>
+    auto updateSubtreeAfterSPR(
+         const NumSeqsType& subtree_vec_index,
+         std::unique_ptr<SeqRegions>& updated_local_ref)
+        -> void;
 };
 
 /*!
@@ -2565,6 +2591,13 @@ void cmaple::Tree::seekSamplePlacement(
     else {
       lh_diff_mid_branch = MIN_NEGATIVE;
     }
+      
+      // debug
+      /*if (seq_name_index == 58)
+      {
+          std::cout << "After mid-branch. Sample " << seq_name_index <<". Examing " << current_node_vec << std::endl;
+          std::cout << (is_mid_branch?"mid-branch ":"node ") << selected_node_index.getVectorIndex() << ". Best lh_diff: "<< best_lh_diff<< std::endl;
+      }*/
 
     // 2. try to place as descendant of the current node (this is skipped if the
     // node has top branch length 0 and so is part of a polytomy).
@@ -2577,6 +2610,13 @@ void cmaple::Tree::seekSamplePlacement(
     } else {
       lh_diff_at_node = current_extended_node.getLhDiff();
     }
+      
+      // debug
+    /*if (seq_name_index == 98)
+    {
+        std::cout << "Sample " << seq_name_index <<". Examing " << current_node_vec << std::endl;
+        std::cout << (is_mid_branch?"mid-branch ":"node ") << selected_node_index.getVectorIndex() << ". Best lh_diff: "<< best_lh_diff<< std::endl;
+    }*/
 
     // keep trying to place at children nodes, unless the number of attempts has
     // reaches the failure limit

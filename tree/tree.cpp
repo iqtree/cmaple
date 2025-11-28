@@ -2671,6 +2671,21 @@ void cmaple::Tree::addStartingNodes(
   // de-integrate mutations from this node into subtree regions, if any
   std::unique_ptr<SeqRegions> this_node_mut_deintegrated_subtree_regions
       = subtree_regions->integrateMutations<num_states>(this_node_mutations, aln, true);
+      
+      // keep track of local ref list changes
+      // for the parent node
+      std::vector<cmaple::Index> local_ref_list_parent;
+      if (this_node_mutations)
+      {
+          local_ref_list_parent.push_back(node_index);
+      }
+      // for the other child node
+      std::vector<cmaple::Index> local_ref_list_other_child;
+      if (other_child_mutations)
+      {
+          local_ref_list_other_child.push_back(other_child_node_index);
+      }
+      
 
     /*node_stack.push(new UpdatingNode(node->neighbor, other_child_node_regions,
     branch_length, true, best_lh_diff, 0, false)); node_stack.push(new
@@ -2685,7 +2700,7 @@ void cmaple::Tree::addStartingNodes(
           // to use the same local reference as the parent node
           node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                             parent_index, std::move(this_node_mut_deintegrated_subtree_regions),
-                            other_child_node_regions
+                            std::move(local_ref_list_parent), other_child_node_regions
                             ->integrateMutations<num_states>(merged_this_node_other_child_mut, aln, true),
                             null_seqregions_ptr1, branch_length, true, best_lh_diff, 0)));
           
@@ -2694,7 +2709,7 @@ void cmaple::Tree::addStartingNodes(
           // to use the same local reference as the other child
           node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                             other_child_node_index, std::move(child_mut_integrated_subtree_regions),
-                            parent_upper_lr_regions
+                            std::move(local_ref_list_other_child), parent_upper_lr_regions
                             ->integrateMutations<num_states>(merged_this_node_other_child_mut, aln),
                             null_seqregions_ptr2, branch_length, true, best_lh_diff, 0)));
       }
@@ -2703,13 +2718,13 @@ void cmaple::Tree::addStartingNodes(
           // add the parent node
           node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                             parent_index, std::move(this_node_mut_deintegrated_subtree_regions),
-                            std::move(null_seqregions_ptr1),
+                            std::move(local_ref_list_parent), std::move(null_seqregions_ptr1),
                             other_child_node_regions, branch_length, true, best_lh_diff, 0)));
           
           // add the other child node
           node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                             other_child_node_index, std::move(child_mut_integrated_subtree_regions),
-                            std::move(null_seqregions_ptr2),
+                            std::move(local_ref_list_other_child), std::move(null_seqregions_ptr2),
                             parent_upper_lr_regions, branch_length, true, best_lh_diff, 0)));
       }
   }
@@ -2769,6 +2784,23 @@ void cmaple::Tree::addStartingNodes(
         : &(grand_child_2_mutations);
     // create a reference from that pointer
     auto& merged_other_child_grand_2_mut = *merged_other_child_grand_2_mut_ptr;
+        
+        // keep track of local ref list changes
+        std::vector<cmaple::Index> local_ref_list_grand_1;
+        std::vector<cmaple::Index> local_ref_list_grand_2;
+        if (other_child_mutations)
+        {
+            local_ref_list_grand_1.push_back(other_child_node_index);
+            local_ref_list_grand_2.push_back(other_child_node_index);
+        }
+        if (grand_child_1_mutations)
+        {
+            local_ref_list_grand_1.push_back(grand_child_1_index);
+        }
+        if (grand_child_2_mutations)
+        {
+            local_ref_list_grand_2.push_back(grand_child_2_index);
+        }
 
       // always unique_ptr<SeqRegions>& -> always automatically delete
       // SeqRegions* up_lr_regions_1 = grand_child_2->computeTotalLhAtNode(aln,
@@ -2806,7 +2838,7 @@ void cmaple::Tree::addStartingNodes(
       std::unique_ptr<SeqRegions> null_seqregions_ptr1 = nullptr;
       node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(grand_child_1_index,
           subtree_regions->integrateMutations<num_states>(merged_other_child_grand_1_mut, aln),
-          std::move(up_lr_regions_1), null_seqregions_ptr1,
+          std::move(local_ref_list_grand_1), std::move(up_lr_regions_1), null_seqregions_ptr1,
           grand_child_1.getUpperLength(), true, best_lh_diff, 0)));
 
       // SeqRegions* up_lr_regions_2 = grand_child_1->computeTotalLhAtNode(aln,
@@ -2841,7 +2873,7 @@ void cmaple::Tree::addStartingNodes(
       std::unique_ptr<SeqRegions> null_seqregions_ptr2 = nullptr;
       node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(grand_child_2_index,
           subtree_regions->integrateMutations<num_states>(merged_other_child_grand_2_mut, aln),
-          std::move(up_lr_regions_2), null_seqregions_ptr2,
+          std::move(local_ref_list_grand_2), std::move(up_lr_regions_2), null_seqregions_ptr2,
           grand_child_2.getUpperLength(), true, best_lh_diff, 0)));
     }
   }
@@ -2943,6 +2975,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     RealNumType& best_down_lh_diff,
     std::unique_ptr<UpdatingNode>& updating_node,
     std::unique_ptr<SeqRegions>& best_subtree_regions,
+    std::vector<cmaple::Index>& best_local_ref_list,
     const RealNumType threshold_prob,
     const RealNumType removed_blength,
     const Index top_node_index,
@@ -3307,6 +3340,9 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
               // under the same local ref as the current node
               best_subtree_regions = cmaple::make_unique<SeqRegions>(subtree_regions);
                 
+              // record the list of local ref change
+              best_local_ref_list = updating_node->getLocalRefList();
+                
               // record the optmized blengths
                 opt_appending_blength = best_appending_blength;
                 opt_mid_top_blength = best_mid_top_blength;
@@ -3497,6 +3533,12 @@ void cmaple::Tree::addChildSeekSubtreePlacement(
     // extract the mutations at child 1
     std::unique_ptr<SeqRegions>& child_1_mutations =
         node_mutations[child_1_index.getVectorIndex()];
+    // keep track of local ref list changes
+    std::vector<cmaple::Index> local_ref_list = updating_node->getLocalRefList();
+    if (child_1_mutations)
+    {
+        local_ref_list.push_back(child_1_index);
+    }
 
   // get or recompute the upper left/right regions of the children node
   if (updating_node->needUpdate()) {
@@ -3544,7 +3586,7 @@ void cmaple::Tree::addChildSeekSubtreePlacement(
       node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           child_1_index, updating_node->getSampleRegions()
             ->integrateMutations<num_states>(child_1_mutations, aln),
-          std::move(upper_lr_regions), null_seqregions_ptr,
+          std::move(local_ref_list), std::move(upper_lr_regions), null_seqregions_ptr,
           child_1.getUpperLength(), updating_node->needUpdate(),
           lh_diff_at_node, updating_node->getFailureCount())));
     }
@@ -3568,6 +3610,7 @@ void cmaple::Tree::addChildSeekSubtreePlacement(
           node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
              child_1_index, updating_node->getSampleRegions()
              ->integrateMutations<num_states>(child_1_mutations, aln),
+             std::move(local_ref_list),
              upper_lr_regions->integrateMutations<num_states>(
                 child_1_mutations, aln), null_seqregions_ptr,
              child_1.getUpperLength(), updating_node->needUpdate(),
@@ -3578,6 +3621,7 @@ void cmaple::Tree::addChildSeekSubtreePlacement(
           node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
              child_1_index, updating_node->getSampleRegions()
              ->integrateMutations<num_states>(child_1_mutations, aln),
+             std::move(local_ref_list),
              std::move(null_seqregions_ptr), upper_lr_regions,
              child_1.getUpperLength(), updating_node->needUpdate(),
              lh_diff_at_node, updating_node->getFailureCount())));
@@ -3607,6 +3651,15 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
   // extract the mutations at the other child
   std::unique_ptr<SeqRegions>& other_child_mutations =
     node_mutations[other_child_index.getVectorIndex()];
+    
+    // keep track of local ref list changes
+    // for the other child node
+    std::vector<cmaple::Index> local_ref_list_other_child =
+        updating_node->getLocalRefList();
+    if (other_child_mutations)
+    {
+        local_ref_list_other_child.push_back(other_child_index);
+    }
 
   // keep crawling up into parent and sibling node
   // case the node is not the root
@@ -3666,6 +3719,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
         node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
             other_child_index, updating_node->getSampleRegions()
             ->integrateMutations<num_states>(other_child_mutations, aln),
+            std::move(local_ref_list_other_child),
             std::move(upper_lr_regions), null_seqregions_ptr,
             other_child.getUpperLength(), updating_node->needUpdate(),
             lh_diff_at_node, updating_node->getFailureCount())));
@@ -3699,6 +3753,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
             node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                other_child_index, updating_node->getSampleRegions()
                ->integrateMutations<num_states>(other_child_mutations, aln),
+               std::move(local_ref_list_other_child),
                upper_lr_regions->integrateMutations<num_states>(
                other_child_mutations, aln), null_seqregions_ptr,
                other_child.getUpperLength(), updating_node->needUpdate(),
@@ -3709,6 +3764,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
             node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                other_child_index, updating_node->getSampleRegions()
                ->integrateMutations<num_states>(other_child_mutations, aln),
+               std::move(local_ref_list_other_child),
                std::move(null_seqregions_ptr), upper_lr_regions,
                other_child.getUpperLength(), updating_node->needUpdate(),
                lh_diff_at_node, updating_node->getFailureCount())));
@@ -3734,6 +3790,16 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
     updating_node->failure_count, updating_node->need_updating));*/
 
     // now pass the crawling up to the parent node
+      
+      // keep track of local ref list changes
+      // for the parent node
+      std::vector<cmaple::Index> local_ref_list_parent =
+        updating_node->getLocalRefList() ;
+      if (current_node_mutations)
+      {
+          local_ref_list_parent.push_back(updating_node_index);
+      }
+      
     const cmaple::Index parent_node_index = current_node.getNeighborIndex(TOP);
     // get or recompute the bottom regions (comming from 2 children) of the
     // parent node
@@ -3792,7 +3858,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
       node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           parent_node_index, updating_node->getSampleRegions()
           ->integrateMutations<num_states>(current_node_mutations, aln, true),
-          std::move(bottom_regions),
+          std::move(local_ref_list_parent), std::move(bottom_regions),
           null_seqregions_ptr, current_node.getUpperLength(),
           updating_node->needUpdate(), lh_diff_at_node,
           updating_node->getFailureCount())));
@@ -3814,6 +3880,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
             node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                parent_node_index, updating_node->getSampleRegions()
                ->integrateMutations<num_states>(current_node_mutations, aln, true),
+               std::move(local_ref_list_parent),
                bottom_regions_ref->integrateMutations<num_states>(
                                 current_node_mutations, aln, true),
                null_seqregions_ptr, current_node.getUpperLength(),
@@ -3825,6 +3892,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
             node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                parent_node_index, updating_node->getSampleRegions()
                ->integrateMutations<num_states>(current_node_mutations, aln, true),
+               std::move(local_ref_list_parent),
                std::move(null_seqregions_ptr),
                bottom_regions_ref, current_node.getUpperLength(),
                updating_node->needUpdate(), lh_diff_at_node,
@@ -3857,6 +3925,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
       node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
           other_child_index, updating_node->getSampleRegions()
           ->integrateMutations<num_states>(other_child_mutations, aln),
+          std::move(local_ref_list_other_child),
           std::move(upper_lr_regions), null_seqregions_ptr,
           other_child.getUpperLength(), updating_node->needUpdate(),
           lh_diff_at_node, updating_node->getFailureCount())));
@@ -3872,6 +3941,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
             node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                other_child_index, updating_node->getSampleRegions()
                ->integrateMutations<num_states>(other_child_mutations, aln),
+               std::move(local_ref_list_other_child),
                upper_lr_regions->integrateMutations<num_states>(
                other_child_mutations, aln), null_seqregions_ptr,
                other_child.getUpperLength(), updating_node->needUpdate(),
@@ -3882,6 +3952,7 @@ bool cmaple::Tree::addNeighborsSeekSubtreePlacement(
             node_stack.push(cmaple::make_unique<UpdatingNode>(UpdatingNode(
                other_child_index, updating_node->getSampleRegions()
                ->integrateMutations<num_states>(other_child_mutations, aln),
+               std::move(local_ref_list_other_child),
                std::move(null_seqregions_ptr), upper_lr_regions,
                other_child.getUpperLength(), updating_node->needUpdate(),
                lh_diff_at_node, updating_node->getFailureCount())));
@@ -3911,6 +3982,7 @@ void cmaple::Tree::seekSubTreePlacement(
     const bool short_range_search,
     const Index child_node_index,
     std::unique_ptr<SeqRegions>& best_subtree_regions,
+    std::vector<cmaple::Index>& best_local_ref_list,
     RealNumType& removed_blength,
     RealNumType& opt_appending_blength,
     RealNumType& opt_mid_top_blength,
@@ -4065,7 +4137,7 @@ void cmaple::Tree::seekSubTreePlacement(
           if (!examineSubtreePlacementMidBranch<num_states>(
                   best_node_index, current_node, best_lh_diff, best_lh_diff_before_bl_opt,
                   is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
-                  best_down_lh_diff, updating_node, best_subtree_regions,
+                  best_down_lh_diff, updating_node, best_subtree_regions, best_local_ref_list,
                   threshold_prob, removed_blength, Index(), node_index, bottom_regions,
                   opt_appending_blength, opt_mid_top_blength,
                   opt_mid_bottom_blength, alt_branches, is_root_considered))
@@ -4178,7 +4250,7 @@ void cmaple::Tree::seekSubTreePlacement(
         if (!examineSubtreePlacementMidBranch<num_states>(
                 best_node_index, current_node, best_lh_diff, best_lh_diff_before_bl_opt,
                 is_mid_branch, lh_diff_at_node, lh_diff_mid_branch, best_up_lh_diff,
-                best_down_lh_diff, updating_node, best_subtree_regions,
+                best_down_lh_diff, updating_node, best_subtree_regions, best_local_ref_list,
                 threshold_prob, removed_blength, top_node_index, node_index,
                 bottom_regions, opt_appending_blength, opt_mid_top_blength,
                 opt_mid_bottom_blength, alt_branches, is_root_considered)) {
@@ -4377,6 +4449,7 @@ void cmaple::Tree::seekSubTreePlacement(
 
 template <const StateType num_states>
 void cmaple::Tree::applyOneSPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                               const std::vector<cmaple::Index>& best_local_ref_list,
                                const Index subtree_index,
                                PhyloNode& subtree,
                                const Index best_node_index,
@@ -4386,6 +4459,13 @@ void cmaple::Tree::applyOneSPR(std::unique_ptr<SeqRegions>&& best_subtree_region
                                const RealNumType opt_mid_top_blength,
                                const RealNumType opt_mid_bottom_blength,
                                const RealNumType best_lh_diff) {
+    // Generate a merged local reference, that combines local refs
+    // from the parent node of the subtree to the new placement
+    // to update the subtree after applying an SPR (later)
+    std::unique_ptr<SeqRegions> updated_local_ref
+        = buildChangedLocalRef<num_states>(best_local_ref_list,
+        best_node_index.getVectorIndex());
+    
   // record the SPR applied at this subtree
   subtree.setSPRCount(subtree.getSPRCount() + 1);
   // remove subtree from the tree
@@ -4563,8 +4643,9 @@ void cmaple::Tree::applyOneSPR(std::unique_ptr<SeqRegions>&& best_subtree_region
   // try to place the new sample as a descendant of a mid-branch point
   // if (is_mid_branch && root_vector_index != best_node_index.getVectorIndex()) {
     placeSubTreeMidBranch<num_states>(best_node_index, subtree_index, subtree,
-        std::move(best_subtree_regions), branch_length, opt_appending_blength,
-        opt_mid_top_blength, opt_mid_bottom_blength, best_lh_diff);
+        std::move(best_subtree_regions), updated_local_ref, branch_length,
+        opt_appending_blength, opt_mid_top_blength,
+        opt_mid_bottom_blength, best_lh_diff);
     // otherwise, best lk so far is for appending directly to existing node
   /* } else {
     placeSubTreeAtNode<num_states>(best_node_index, subtree_index, subtree,
@@ -4660,6 +4741,7 @@ template <const StateType num_states,
               RealNumType&)>
 void cmaple::Tree::connectSubTree2Branch(
     std::unique_ptr<SeqRegions>&& subtree_regions,
+    std::unique_ptr<SeqRegions>& updated_local_ref,
     const std::unique_ptr<SeqRegions>& lower_regions,
     const Index subtree_index,
     PhyloNode& subtree,
@@ -4746,24 +4828,9 @@ void cmaple::Tree::connectSubTree2Branch(
     std::unique_ptr<SeqRegions>& sibling_node_mutations =
         node_mutations[sibling_node_index.getVectorIndex()];
     
-    // process the subtree regions
-    // de-integrate mutations at siblings, if any
-    if (sibling_node_mutations && sibling_node_mutations->size())
-    {
-        subtree_regions = subtree_regions
-            ->integrateMutations<num_states>(sibling_node_mutations, aln, true);
-    }
-    // integrate mutations at the subtree to itself, if any
-    // extract the mutations at the selected node
-    std::unique_ptr<SeqRegions>& subtree_mutations =
-        node_mutations[subtree_index.getVectorIndex()];
-    if (subtree_mutations && subtree_mutations->size())
-    {
-        subtree_regions = subtree_regions
-            ->integrateMutations<num_states>(subtree_mutations, aln);
-    }
-    // set the correct subtree regions at subtree
-    subtree.setPartialLh(TOP, std::move(subtree_regions));
+    // update subtree due to local ref change
+    updateSubtreeAfterSPR<num_states>(subtree_index.getVectorIndex(),
+                                      updated_local_ref);
     
     // de-integrate mutations at siblings, if any
     // in all lh regions at the internal node
@@ -4818,6 +4885,7 @@ void cmaple::Tree::placeSubTreeMidBranch(
     const Index subtree_index,
     PhyloNode& subtree,
     std::unique_ptr<SeqRegions>&& subtree_regions,
+    std::unique_ptr<SeqRegions>& updated_local_ref,
     const RealNumType new_branch_length,
     const cmaple::RealNumType opt_appending_blength,
     const cmaple::RealNumType opt_mid_top_blength,
@@ -4861,7 +4929,8 @@ void cmaple::Tree::placeSubTreeMidBranch(
         // attach subtree to the branch above the selected node
         RealNumType best_blength = opt_appending_blength;
         connectSubTree2Branch<num_states, &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
-            std::move(subtree_regions), nullptr, subtree_index, subtree, selected_node_index,
+            std::move(subtree_regions), updated_local_ref, nullptr,
+            subtree_index, subtree, selected_node_index,
             selected_node, opt_mid_top_blength,
             opt_mid_bottom_blength, best_blength,
             std::move(best_child_regions), upper_left_right_regions);
@@ -4908,7 +4977,8 @@ void cmaple::Tree::placeSubTreeMidBranch(
         // attach subtree to the branch above the selected node
         connectSubTree2Branch<num_states,
         &cmaple::Tree::updateRegionsPlaceSubTree<num_states>>(
-            std::move(subtree_regions), nullptr, subtree_index, subtree, selected_node_index,
+            std::move(subtree_regions), updated_local_ref, nullptr,
+            subtree_index, subtree, selected_node_index,
             selected_node, best_blength_split,
             selected_node.getUpperLength() - best_blength_split, best_blength,
             std::move(best_child_regions), upper_left_right_regions);
@@ -7211,6 +7281,7 @@ void cmaple::Tree::optimizeBlengthBeforeSeekingSPR(
 
 template <const StateType num_states>
 void cmaple::Tree::checkAndApplySPR(std::unique_ptr<SeqRegions>&& best_subtree_regions,
+                                    const std::vector<cmaple::Index>& best_local_ref_list,
                                     const RealNumType best_lh_diff,
                                     const RealNumType best_blength,
                                     const cmaple::RealNumType opt_appending_blength,
@@ -7293,8 +7364,8 @@ void cmaple::Tree::checkAndApplySPR(std::unique_ptr<SeqRegions>&& best_subtree_r
         // otherwise, apply an SPR move
         else
         {
-            applyOneSPR<num_states>(std::move(best_subtree_regions), node_index,
-                                    node, best_node_index, is_mid_node,
+            applyOneSPR<num_states>(std::move(best_subtree_regions), best_local_ref_list,
+                                    node_index, node, best_node_index, is_mid_node,
                                     best_blength, opt_appending_blength, opt_mid_top_blength,
                                     opt_mid_bottom_blength, best_lh_diff);
             
@@ -7377,6 +7448,8 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       RealNumType opt_mid_top_blength = -1;
       RealNumType opt_mid_bottom_blength = -1;
       std::unique_ptr<SeqRegions> best_subtree_regions = nullptr;
+      // record all local refs from the parent of the subtree to the new placement
+      std::vector<cmaple::Index> best_local_ref_list;
         
         // debug
         /*if (node_index.getVectorIndex() == 594)
@@ -7386,7 +7459,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       seekSubTreePlacement<num_states>(
           best_node_index, best_lh_diff, is_mid_node, best_up_lh_diff,
           best_down_lh_diff, best_child_index, short_range_search, node_index,
-          best_subtree_regions, best_blength, opt_appending_blength, opt_mid_top_blength,
+          best_subtree_regions, best_local_ref_list, best_blength, opt_appending_blength, opt_mid_top_blength,
                                        opt_mid_bottom_blength);
 
       // validate the new placement cost
@@ -7400,7 +7473,7 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
       if (best_lh_diff + thresh_placement_cost > best_lh && tree_search_type != FAST_TREE_SEARCH) {
         // check and apply SPR move
           checkAndApplySPR<num_states>(std::move(best_subtree_regions),
-            best_lh_diff, best_blength,
+            best_local_ref_list, best_lh_diff, best_blength,
             opt_appending_blength, opt_mid_top_blength,
             opt_mid_bottom_blength, best_lh, node_index, node,
             best_node_index, parent_index, is_mid_node,
@@ -13964,4 +14037,123 @@ auto cmaple::Tree::initLocalReferences() -> void {
     
     // refresh all lhs
     refreshAllLhs<num_states>();
+}
+
+template <const StateType num_states>
+auto cmaple::Tree::buildChangedLocalRef(
+     const std::vector<cmaple::Index>& local_ref_list,
+     const NumSeqsType selected_node_vec_index) -> std::unique_ptr<SeqRegions>
+{
+    // dummy variables
+    const RealNumType threshold_prob = params->threshold_prob;
+    std::unique_ptr<SeqRegions> updated_local_ref = nullptr;
+    
+    // integrate all local refs a the path between the parent
+    // of the subtree and the new placement
+    for (const cmaple::Index& index : local_ref_list)
+    {
+        assert(index.getMiniIndex() != UNDEFINED);
+        const NumSeqsType& vec_index = index.getVectorIndex();
+        
+        // if the updated_local_ref is not null,
+        // merge it with the local ref at the current node
+        if (updated_local_ref)
+        {
+            // if we're going upward, merge updated_local_ref
+            // with the inversed local ref at the current node
+            if (index.getMiniIndex() != TOP)
+            {
+                updated_local_ref = node_mutations[vec_index]->mergeTwoRefs<num_states>(updated_local_ref, aln, threshold_prob, true);
+            }
+            // otherwise, merge normally
+            else
+            {
+                updated_local_ref = updated_local_ref->mergeTwoRefs<num_states>(node_mutations[vec_index], aln, threshold_prob);
+            }
+        }
+        // otherwise, get the local ref at the current node
+        else
+        {
+            // clone the local ref
+            updated_local_ref = cmaple::make_unique<SeqRegions>(
+                node_mutations[vec_index]);
+            
+            // inverse that if we're going upward
+            if (index.getMiniIndex() != TOP)
+            {
+                updated_local_ref->flipMutations<num_states>();
+            }
+        }
+    }
+    
+    // de-integrate mutations (if any) from the selected node
+    // extract the mutations at the selected node
+    if (node_mutations[selected_node_vec_index])
+    {
+        // merge the existing updated_local_ref with
+        // the inversed local ref at the selected node
+        if (updated_local_ref)
+        {
+            updated_local_ref = node_mutations[selected_node_vec_index]->mergeTwoRefs<num_states>(updated_local_ref, aln, threshold_prob, true);
+        }
+        // otherwise, only get the inversed local ref at the selected node
+        else
+        {
+            updated_local_ref = cmaple::make_unique<SeqRegions>(node_mutations[selected_node_vec_index]);
+            updated_local_ref->flipMutations<num_states>();
+        }
+    }
+    
+    return updated_local_ref;
+}
+
+template <const StateType num_states>
+auto cmaple::Tree::updateSubtreeAfterSPR(
+     const NumSeqsType& subtree_vec_index,
+     std::unique_ptr<SeqRegions>& updated_local_ref)
+    -> void
+{
+    if (updated_local_ref)
+    {
+        const RealNumType& threshold_prob = params->threshold_prob;
+        
+        // Traverse downward to integrate updated local ref to descendant nodes
+        stack<NumSeqsType> node_stack;
+        node_stack.push(subtree_vec_index);
+        while (!node_stack.empty()) {
+            // extract the corresponding node
+            const NumSeqsType child_node_vec_index = node_stack.top();
+            node_stack.pop();
+            PhyloNode& child_node = nodes[child_node_vec_index];
+            
+            // if child node is also a local reference node
+            if (node_mutations[child_node_vec_index])
+            {
+                // TODO merge these two lists of mutations
+                node_mutations[child_node_vec_index] = updated_local_ref
+                    ->mergeTwoRefs<num_states>(node_mutations[child_node_vec_index],
+                        aln, threshold_prob, true);
+            }
+            // otherwise, simply integrate the mutations from the updated_local_ref
+            else
+            {
+                // update the lh vectors of this child node
+                child_node.integrateMutAllRegions<num_states>(updated_local_ref, aln);
+                // update total lh
+                if (child_node.getTotalLh())
+                {
+                    child_node.setTotalLh(child_node.getTotalLh()
+                        ->integrateMutations<num_states>(updated_local_ref, aln));
+                }
+
+                
+                // keep traversing downward
+                if (child_node.isInternal())
+                {
+                    node_stack.push(child_node.getNeighborIndex(LEFT).getVectorIndex());
+                    node_stack.push(child_node.getNeighborIndex(RIGHT).getVectorIndex());
+                }
+            }
+        }
+    }
 }
