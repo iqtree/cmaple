@@ -882,6 +882,12 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                                               lower_regions, selected_node_index, best_lh_diff, is_mid_branch,
                                               best_up_lh_diff, best_down_lh_diff, best_child_index);
               
+            // Debug
+            /*if (cmaple::verbose_mode >= cmaple::VB_DEBUG) {
+              std::cout << "Best placement sample " << i << " : " <<
+              (is_mid_branch? "mid-branch " : "node ") << selected_node_index.getVectorIndex() << std::endl;
+            }*/
+              
               // if new sample is not less informative than existing nodes (~selected_node
               // != NULL) -> place the new sample in the existing tree
               if (selected_node_index.getMiniIndex() != UNDEFINED) {
@@ -2326,12 +2332,14 @@ void cmaple::Tree::updatePartialLhFromChildren(
           new_upper_regions, node.getUpperLength(), *this_node_lower_regions,
           this_node_distance, aln, model, params->threshold_prob);
     else
-      // new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model,
-      // params->threshold_prob)->computeTotalLhAtRoot(aln->num_states, model,
-      // this_node_distance);
-      getPartialLhAtNode(neighbor_index)
-          ->computeTotalLhAtRoot<num_states>(new_upper_regions, model,
-                                             this_node_distance);
+    {
+        // new_upper_regions = node->neighbor->getPartialLhAtNode(aln, model,
+        // params->threshold_prob)->computeTotalLhAtRoot(aln->num_states, model,
+        // this_node_distance);
+        this_node_lower_regions
+        ->computeTotalLhAtRoot<num_states>(new_upper_regions, model,
+                                           this_node_distance);
+    }
 
     if (!new_upper_regions || new_upper_regions->size() == 0) {
       // handleNullNewRegions(top_node, (top_node->length <= 0 &&
