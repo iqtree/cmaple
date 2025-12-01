@@ -5831,7 +5831,7 @@ void cmaple::Tree::connectNewSample2Branch(
       root_vector_index == internal_vec_index);
 
   // if (!internal.getTotalLh() || internal.getTotalLh()->empty())
-  if (!internal.getTotalLh()) {
+  if (!internal.getTotalLh() && !deintegrate_mutations) {
     throw std::logic_error(
         "Problem, None vector when placing sample, below node");
   }
