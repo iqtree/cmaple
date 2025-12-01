@@ -2586,8 +2586,26 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
       // node->neighbor->getPartialLhAtNode(aln, model, params->threshold_prob);
       // const std::unique_ptr<SeqRegions>& upper_lr_regions =
       // getPartialLhAtNode(node.getNeighborIndex(node_mini_index));
-      const std::unique_ptr<SeqRegions>& upper_lr_regions =
-          getPartialLhAtNode(node.getNeighborIndex(TOP));
+      /* const std::unique_ptr<SeqRegions>& upper_lr_regions =
+          getPartialLhAtNode(node.getNeighborIndex(TOP));*/
+    
+        // 0. extract the mutations at the current node
+        std::unique_ptr<SeqRegions>& current_node_mutations =
+            node_mutations[node_index.getVectorIndex()];
+        // 1. create a new upper_lr_regions that integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+            (current_node_mutations && current_node_mutations->size())
+            ? getPartialLhAtNode(node.getNeighborIndex(TOP))
+              ->integrateMutations<num_states>(current_node_mutations, aln)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate upper_lr_regions
+        const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+            (current_node_mutations && current_node_mutations->size())
+            ? &(mut_integrated_upper_lr_regions)
+            : &(getPartialLhAtNode(node.getNeighborIndex(TOP)));
+        // 3. create a reference from that pointer
+        auto& upper_lr_regions = *upper_lr_regions_ptr;
+        
       // SeqRegions* lower_regions = node->getPartialLhAtNode(aln, model,
       // params->threshold_prob);
       //  const std::unique_ptr<SeqRegions>& lower_regions =
