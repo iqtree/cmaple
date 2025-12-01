@@ -8088,9 +8088,8 @@ void calculateSampleCost_R_ACGT(const SeqRegion& seq1_region,
       prob1 = 0.25;
     }
     RealNumType seq1_state_evolves_seq2_state =
-        model->getMutationMatrixEntry(seq1_state, seq2_state, pos) * 
-        blength *
-        prob1;
+        model->getMutationMatrixEntry(seq1_state, seq2_state, pos) *
+        (blength + seq1_region.plength_observation2root) * prob1;
 
     RealNumType prob2 = (1.0 + model->getDiagonalMutationMatrixEntry(seq2_state, pos) * (blength + seq1_region.plength_observation2root));
     if(prob2 < 0){
@@ -8296,6 +8295,8 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
   if (!parent_regions) {
     return MIN_NEGATIVE;
   }
+    // Debug
+    // bool test = false;
 
   // 10% of total runtime
   // init dummy variables
@@ -8402,6 +8403,13 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
       total_factor *= MAX_POSITIVE;
       lh_cost -= LOG_MAX_POSITIVE;
     }
+      
+    /*if (test)
+    {
+        std::cout << "pos: " << pos <<
+        "; en1: " << seq1_region->type << " prev: " << seq1_region->prev_state << "; en2: " << seq2_region->type << " prev: " << seq2_region->prev_state
+        <<" lh_cost: " << lh_cost << " total_factor: " << total_factor<< std::endl;
+    }*/
 
     // update pos
     pos = end_pos + 1;

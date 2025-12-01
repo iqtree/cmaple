@@ -2597,6 +2597,12 @@ void cmaple::Tree::seekSamplePlacement(
       selected_node_index = Index();
       return;
     }
+      
+      // debug
+      /*if (seq_name_index == 177 && current_node_vec == 243)
+      {
+          std::cout << "seq_name_index == 177 && current_node_vec == 243" << std::endl;
+      }*/
 
     const RealNumType current_node_blength = current_node.getUpperLength();
 
