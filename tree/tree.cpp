@@ -14090,7 +14090,15 @@ auto cmaple::Tree::buildChangedLocalRef(
             // with the inversed local ref at the current node
             if (index.getMiniIndex() != TOP)
             {
-                updated_local_ref = node_mutations[vec_index]->mergeTwoRefs<num_states>(updated_local_ref, aln, threshold_prob, true);
+                // clone the local ref at the current node
+                std::unique_ptr<SeqRegions> current_node_local_ref =
+                    cmaple::make_unique<SeqRegions>(node_mutations[vec_index]);
+                // inverse the mutations
+                current_node_local_ref->flipMutations<num_states>();
+                
+                // merge the two local refs
+                updated_local_ref = updated_local_ref->mergeTwoRefs<num_states>(
+                                    current_node_local_ref, aln, threshold_prob);
             }
             // otherwise, merge normally
             else
@@ -14117,17 +14125,24 @@ auto cmaple::Tree::buildChangedLocalRef(
     // extract the mutations at the selected node
     if (node_mutations[selected_node_vec_index])
     {
+        // clone the local ref at the selected node
+        std::unique_ptr<SeqRegions> selected_node_local_ref =
+            cmaple::make_unique<SeqRegions>(node_mutations[selected_node_vec_index]);
+        // inverse the mutations
+        selected_node_local_ref->flipMutations<num_states>();
+        
         // merge the existing updated_local_ref with
         // the inversed local ref at the selected node
         if (updated_local_ref)
         {
-            updated_local_ref = node_mutations[selected_node_vec_index]->mergeTwoRefs<num_states>(updated_local_ref, aln, threshold_prob, true);
+            // merge the two local refs
+            updated_local_ref = updated_local_ref->mergeTwoRefs<num_states>(
+                                selected_node_local_ref, aln, threshold_prob);
         }
         // otherwise, only get the inversed local ref at the selected node
         else
         {
-            updated_local_ref = cmaple::make_unique<SeqRegions>(node_mutations[selected_node_vec_index]);
-            updated_local_ref->flipMutations<num_states>();
+            updated_local_ref = std::move(selected_node_local_ref);
         }
     }
     
