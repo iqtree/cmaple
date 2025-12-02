@@ -32,8 +32,9 @@ cmaple::Mutation::Mutation(StateType n_type, PositionType n_position, LengthType
   }
   if (n_length > (std::numeric_limits<LengthType>::max)()) {
     throw std::invalid_argument(
-        "Invalid mutation. Length is larger than 2^15. Recompile with larger "
-        "'LengthType' at the cost of higher memory consumption.");
+        "The sequence is longer than the maximum supported by the current build."
+        " Recompile CMAPLE with a larger `LengthType` to handle longer sequences"
+        " (will increase memory use).");
   }
 }
 
