@@ -4163,6 +4163,11 @@ void cmaple::Tree::seekSubTreePlacement(
       // debug
       /*if (current_node_index.getVectorIndex() == 625)
           std::cout << "fsdfds" << std::endl;*/
+      /*if (child_node_index.getVectorIndex() == 1324
+          && (current_node_vec == 1513))
+          std::cout << "Subtree: " << child_node_index.getVectorIndex()
+          << "; consider node: " << current_node_vec << "; best node index: "
+          << best_node_index.getVectorIndex() << "; best_lh_diff: " << best_lh_diff << std::endl;*/
 
     // consider the case we are moving from a parent to a child
     if (current_node_index.getMiniIndex() == TOP)
@@ -4190,6 +4195,13 @@ void cmaple::Tree::seekSubTreePlacement(
           {
             continue;
           }
+            
+            // Debug
+            /* if (child_node_index.getVectorIndex() == 1324
+                && (current_node_vec == 1513 || current_node_vec == 1321))
+                std::cout << "Subtree: " << child_node_index.getVectorIndex()
+                << "; consider node: " << current_node_vec << "; best node index: "
+                << best_node_index.getVectorIndex() << "; best_lh_diff: " << best_lh_diff << std::endl;*/
         }
         // set the placement cost at the mid-branch position the most
         // negative value if branch length is zero -> we can't place the
@@ -4302,6 +4314,13 @@ void cmaple::Tree::seekSubTreePlacement(
                 opt_mid_bottom_blength, alt_branches, is_root_considered)) {
           continue;
         }
+          
+          // Debug
+          /* if (child_node_index.getVectorIndex() == 1324
+              && (current_node_vec == 1513 || current_node_vec == 1321))
+              std::cout << "Subtree: " << child_node_index.getVectorIndex()
+              << "; consider node: " << current_node_vec << "; best node index: "
+              << best_node_index.getVectorIndex() << "; best_lh_diff: " << best_lh_diff << std::endl;*/
       }
       // set the placement cost at the mid-branch position at the most negative
       // value if branch length is zero -> we can't place the subtree on that
@@ -5826,10 +5845,14 @@ void cmaple::Tree::connectNewSample2Branch(
 
   // new_internal_node->computeTotalLhAtNode(aln, model, threshold_prob,
   // new_internal_node == root);
-  internal.computeTotalLhAtNode<num_states>(
-      internal.getTotalLh(), node_mutations[internal_vec_index], parent_node, aln, model, threshold_prob,
-      root_vector_index == internal_vec_index);
-
+  if (!deintegrate_mutations)
+  {
+      internal.computeTotalLhAtNode<num_states>(
+            internal.getTotalLh(), node_mutations[internal_vec_index],
+            parent_node, aln, model, threshold_prob,
+            root_vector_index == internal_vec_index);
+  }
+    
   // if (!internal.getTotalLh() || internal.getTotalLh()->empty())
   if (!internal.getTotalLh() && !deintegrate_mutations) {
     throw std::logic_error(
@@ -5839,9 +5862,12 @@ void cmaple::Tree::connectNewSample2Branch(
   if (best_blength > 0) {
     // new_sample_node->computeTotalLhAtNode(aln, model, threshold_prob,
     // new_sample_node == root);
-    leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(), node_mutations[leaf_vec_index], internal, aln,
-                                          model, threshold_prob,
-                                          root_vector_index == leaf_vec_index);
+    if (!deintegrate_mutations)
+    {
+        leaf.computeTotalLhAtNode<num_states>(leaf.getTotalLh(),
+            node_mutations[leaf_vec_index], internal, aln,
+            model, threshold_prob, root_vector_index == leaf_vec_index);
+    }
 
     /*RealNumType half_branch_length = new_sample_node->length * 0.5;
     next_node_1->getPartialLhAtNode(aln, model,
@@ -7391,6 +7417,8 @@ void cmaple::Tree::checkAndApplySPR(std::unique_ptr<SeqRegions>&& best_subtree_r
               << "Tree log likelihood: " << computeLh() << std::endl;*/
           //std::cout << "New best likelihood: " << best_lh_diff << std::endl;
           //std::cout << "Old best likelihood: " << best_lh << std::endl;
+          /* std::cout << " Move subtree " << node_index.getVectorIndex() << " to branch "
+          << best_node_index.getVectorIndex() << std::endl;*/
       }
 
         // if we only want to search SPRs without applying it, record the SPR found
@@ -7498,6 +7526,14 @@ RealNumType cmaple::Tree::improveSubTree(const Index node_index,
           best_down_lh_diff, best_child_index, short_range_search, node_index,
           best_subtree_regions, best_local_ref_list, best_blength, opt_appending_blength, opt_mid_top_blength,
                                        opt_mid_bottom_blength);
+        
+        // Debug
+        /*if (node_index.getVectorIndex() == 1324 ||  node_index.getVectorIndex() == 3998)
+        {
+            std::cout << " Search SPR for subtree " << node_index.getVectorIndex() <<
+            " best placement at " << best_node_index.getVectorIndex() << " ; best_lh_diff: "
+            << best_lh_diff << " ; best_lh: " << best_lh << std::endl;
+        }*/
 
       // validate the new placement cost
       /*if (best_lh_diff < -1e50) {
@@ -7873,6 +7909,8 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
   if (!parent_regions) {
     return MIN_NEGATIVE;
   }
+    
+  // bool test = false;
 
   // 55% of runtime
   // init dummy variables
@@ -7996,6 +8034,13 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
       total_factor *= MAX_POSITIVE;
       lh_cost -= LOG_MAX_POSITIVE;
     }
+      
+      /* if (test)
+      {
+          std::cout << "pos: " << pos <<
+          "; en1: " << seq1_region->type << " prev: " << seq1_region->prev_state << "; en2: " << seq2_region->type << " prev: " << seq2_region->prev_state
+          <<" lh_cost: " << lh_cost << " total_factor: " << total_factor<< std::endl;
+      }*/
 
     // update pos
     pos = end_pos + 1;
