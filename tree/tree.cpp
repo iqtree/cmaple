@@ -755,6 +755,14 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                   size_t upward_steps = params->upward_search_extension;
                   if (selected_node_index.getMiniIndex() != UNDEFINED)
                   {
+                      // special case: if the best placement is at a child node
+                      // the lower regions is represented according to that node
+                      // we need to use it as the selected node here
+                      if (best_child_index.getMiniIndex() != UNDEFINED)
+                      {
+                          selected_node_index = best_child_index;
+                      }
+                      
                       // de-integrate mutations, if any
                       // 0. extract the mutations at the selected node
                       std::unique_ptr<SeqRegions>& selected_node_mutations =
@@ -3329,7 +3337,8 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             updating_node->getIncomingRegions()->mergeUpperLower<num_states>(
                 tmp_upper_lr_regions, best_mid_top_blength, *subtree_regions,
                 best_appending_blength, aln, model, threshold_prob);
-            best_mid_bottom_blength = estimateBranchLength<num_states>(tmp_upper_lr_regions, lower_regions);
+            best_mid_bottom_blength = estimateBranchLength<num_states>(
+                                            tmp_upper_lr_regions, lower_regions);
             
             // re-compute the mid-branch regions
             updating_node->getIncomingRegions()->mergeUpperLower<num_states>(
@@ -7417,8 +7426,8 @@ void cmaple::Tree::checkAndApplySPR(std::unique_ptr<SeqRegions>&& best_subtree_r
               << "Tree log likelihood: " << computeLh() << std::endl;*/
           //std::cout << "New best likelihood: " << best_lh_diff << std::endl;
           //std::cout << "Old best likelihood: " << best_lh << std::endl;
-          /* std::cout << " Move subtree " << node_index.getVectorIndex() << " to branch "
-          << best_node_index.getVectorIndex() << std::endl;*/
+          std::cout << " Move subtree " << node_index.getVectorIndex() << " to branch "
+          << best_node_index.getVectorIndex() << std::endl;
       }
 
         // if we only want to search SPRs without applying it, record the SPR found
