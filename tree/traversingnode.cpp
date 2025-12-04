@@ -27,3 +27,17 @@ auto cmaple::TraversingNode::getLhDiff() const -> const RealNumType {
 auto cmaple::TraversingExtNode::getSampleRegions() -> std::unique_ptr<SeqRegions>& {
     return sample_regions_;
 }
+
+/** TraversingExtNodev2 **/
+
+auto cmaple::TraversingExtNodev2::getSampleRegions()
+    -> std::unique_ptr<SeqRegions>&
+{
+    return sample_regions_w_count_->getSeqRegions();
+}
+
+auto cmaple::TraversingExtNodev2::getSampleRegionsCount()
+    -> SeqRegionsWithCount*
+{
+    return sample_regions_w_count_;
+}
