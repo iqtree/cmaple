@@ -2183,6 +2183,14 @@ bool isDiffFromOrigPlacement(
          cmaple::Index node_index) -> std::unique_ptr<SeqRegions>;
     
     /**
+     Integrate all local refs from the root to the parent of the given node
+     */
+    template <const StateType num_states>
+    auto integrateLocalRefsFromRoot(
+         std::unique_ptr<SeqRegions>& regions,
+        const NumSeqsType& node_vec_index) -> void;
+    
+    /**
      Compute the absolute likelihood at root, de-integrating all local references
      */
     template <const StateType num_states>
