@@ -755,24 +755,9 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                   size_t upward_steps = params->upward_search_extension;
                   if (selected_node_index.getMiniIndex() != UNDEFINED)
                   {
-                      // special case: if the best placement is at a child node
-                      // the lower regions is represented according to that node
-                      // we need to use it as the selected node here
-                      if (best_child_index.getMiniIndex() != UNDEFINED)
-                      {
-                          selected_node_index = best_child_index;
-                      }
-                      
-                      // de-integrate mutations, if any
-                      // 0. extract the mutations at the selected node
-                      std::unique_ptr<SeqRegions>& selected_node_mutations =
-                          node_mutations[selected_node_index.getVectorIndex()];
-                      // 1. de-integrate mutations, if any
-                      if (selected_node_mutations && selected_node_mutations->size())
-                      {
-                          lower_regions = lower_regions->integrateMutations<num_states>
-                                            (selected_node_mutations, aln, true);
-                      }
+                      // NOTE: if using local references -> we have to rebuild
+                      // lower_regions later in the second search because the tree will be updated
+                      // so lower_regions will become outdated
                       
                       while (selected_node_index.getVectorIndex() != root_vector_index)
                       {
@@ -780,17 +765,6 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
                           if (found_placement_node.getUpperLength() <= 0 || upward_steps)
                           {
                               selected_node_index = found_placement_node.getNeighborIndex(TOP);
-                              
-                              // de-integrate mutations, if any
-                              // 0. extract the mutations at the selected node
-                              std::unique_ptr<SeqRegions>& selected_node_mutations =
-                                  node_mutations[selected_node_index.getVectorIndex()];
-                              // 1. de-integrate mutations, if any
-                              if (selected_node_mutations && selected_node_mutations->size())
-                              {
-                                  lower_regions = lower_regions->integrateMutations<num_states>
-                                                    (selected_node_mutations, aln, true);
-                              }
                               
                               // update the upward step
                               if (found_placement_node.getUpperLength() > 0 && upward_steps)
@@ -855,7 +829,43 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
           if (parallel_search)
           {
               found_placement_index = selected_node_index_vec[j];
-              lower_regions = std::move(lower_regions_vec[j]);
+              
+              // seek a placement and place the sample
+              // found_placement_index.getMiniIndex() == UNDEFINED means the sample is less-informative
+              // than an existing sample in the tree and has been processed in the parallel search
+              if (found_placement_index.getMiniIndex() != UNDEFINED)
+              {
+                  // if the found placement became a polytomy after adding other samples,
+                  // go upwards to the top of the polytomy
+                  while (found_placement_index.getVectorIndex() != root_vector_index)
+                  {
+                      PhyloNode& found_placement_node =
+                        nodes[found_placement_index.getVectorIndex()];
+                      if (found_placement_node.getUpperLength() <= 0)
+                      {
+                          found_placement_index = found_placement_node.getNeighborIndex(TOP);
+                      }
+                      else
+                          break;
+                  }
+              }
+              
+              // if using local references, rebuild the lower regions
+              if (params->local_refs)
+              {
+                  // rebuild the lower regions
+                  lower_regions = sequence->getLowerLhVector(
+                        aln->ref_seq, num_states, aln->getSeqType());;
+                  
+                  // integrate all local refs from root to the parent of this node
+                  integrateLocalRefsFromRoot<num_states>(lower_regions,
+                                    found_placement_index.getVectorIndex());
+              }
+              // otherwise (using global ref), use the cached lower regions
+              else
+              {
+                  lower_regions = std::move(lower_regions_vec[j]);
+              }
           }
           // otherise, start from the root
           else
@@ -872,30 +882,6 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
           // than an existing sample in the tree and has been processed in the parallel search
           if (found_placement_index.getMiniIndex() != UNDEFINED)
           {
-              // if the found placement became a polytomy after adding other samples,
-              // go upwards to the top of the polytomy
-              while (found_placement_index.getVectorIndex() != root_vector_index)
-              {
-                  PhyloNode& found_placement_node = nodes[found_placement_index.getVectorIndex()];
-                  if (found_placement_node.getUpperLength() <= 0)
-                  {
-                      found_placement_index = found_placement_node.getNeighborIndex(TOP);
-                      
-                      // de-integrate mutations, if any
-                      // 0. extract the mutations at the placement node
-                      std::unique_ptr<SeqRegions>& found_placement_mutations =
-                          node_mutations[found_placement_index.getVectorIndex()];
-                      // 1. de-integrate mutations, if any
-                      if (found_placement_mutations && found_placement_mutations->size())
-                      {
-                          lower_regions = lower_regions->integrateMutations<num_states>
-                                            (found_placement_mutations, aln, true);
-                      }
-                  }
-                  else
-                      break;
-              }
-              
               // seek a position for new sample placement again
               Index selected_node_index;
               RealNumType best_lh_diff = MIN_NEGATIVE;
@@ -14024,6 +14010,43 @@ auto cmaple::Tree::deintegrateAllLocalRefs(
     }
     
     return mut_deintegrated_regions;
+}
+
+template <const StateType num_states>
+auto cmaple::Tree::integrateLocalRefsFromRoot(
+     std::unique_ptr<SeqRegions>& regions,
+     const NumSeqsType& node_vec_index) -> void
+{
+    // build a vector of local reference nodes
+    // from the root to the parent of the current node
+    std::vector<NumSeqsType> local_ref_vec;
+    // traverse upward extract all local reference nodes
+    NumSeqsType traversal_vec_index = node_vec_index;
+    while (traversal_vec_index != root_vector_index)
+    {
+        PhyloNode& node = nodes[traversal_vec_index];
+        
+        // move upward
+        traversal_vec_index = node.getNeighborIndex(TOP).getVectorIndex();
+        
+        // record the local ref node, if any
+        if (node_mutations[traversal_vec_index])
+        {
+            local_ref_vec.push_back(traversal_vec_index);
+        }
+    }
+    
+    // iteratively integrate mutations at each node
+    for (int i = local_ref_vec.size() - 1; i >= 0; --i)
+    {
+        // extract the mutations at the this node
+        std::unique_ptr<SeqRegions>& this_node_mutations =
+            node_mutations[local_ref_vec[i]];
+        
+        // integrate the mutations
+        assert(this_node_mutations);
+        regions = regions->integrateMutations<num_states>(this_node_mutations, aln);
+    }
 }
 
 template <const StateType num_states>
