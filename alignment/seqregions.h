@@ -3052,4 +3052,49 @@ void cmaple::SeqRegions::flipMutations()
     }
 }
 
+/** A class stores sequence regions and the number of times that regions are being used
+    This class is used to store the temporary lower regions of a sample or a subtree during their placement search
+    When considering a specific placement, this class stores the sample/subtree regions wrt the local ref at that placement
+ */
+
+    class SeqRegionsWithCount
+    {
+        private:
+            /**
+             The lower regions (with branch-mutations integrated)
+             */
+            std::unique_ptr<SeqRegions> lower_regions_;
+
+            /**
+             The number of times this lower regions is being used
+             */
+            NumSeqsType count_;
+        
+        public:
+            /**
+             Get count_
+             */
+            auto getCount() const -> const NumSeqsType&;
+            
+            /**
+             Increase count_ by 1
+             */
+            auto increaseCount() -> void;
+            
+            /**
+             Decrease count_ by 1
+             */
+            auto descreaseCount() -> void;
+            
+            /**
+             Get lower_regions_
+             */
+            auto getSeqRegions() -> std::unique_ptr<SeqRegions>&;
+            
+            /**
+             Set lower_regions_
+             */
+            auto setSeqRegions(std::unique_ptr<SeqRegions>&& lower_regions) -> void;
+    };
+
 }  // namespace cmaple

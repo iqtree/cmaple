@@ -599,3 +599,33 @@ void cmaple::SeqRegions::addSimplifiedO(
                                          end_pos, threshold_prob);
   }
 }
+
+/** SeqRegionsWithCount **/
+
+auto cmaple::SeqRegionsWithCount::getCount() const -> const NumSeqsType&
+{
+    return count_;
+}
+
+auto cmaple::SeqRegionsWithCount::increaseCount() -> void
+{
+    ++count_;
+}
+
+auto cmaple::SeqRegionsWithCount::descreaseCount() -> void
+{
+    assert(count_ >= 0);
+    --count_;
+}
+
+auto cmaple::SeqRegionsWithCount::getSeqRegions()
+    -> std::unique_ptr<SeqRegions>&
+{
+    return lower_regions_;
+}
+
+auto cmaple::SeqRegionsWithCount::setSeqRegions(
+    std::unique_ptr<SeqRegions>&& lower_regions) -> void
+{
+    lower_regions_ = std::move(lower_regions);
+}
