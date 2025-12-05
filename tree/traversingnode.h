@@ -62,33 +62,6 @@ namespace cmaple
     /** An extension of TraversingNode storing more dummy data used for browsing all nodes in a stack
      during sample placement searching
      */
-    class TraversingExtNode: public cmaple::TraversingNode {
-    private:
-        /**
-         The lower regions (with branch-mutations integrated) of the sample genome
-         */
-        std::unique_ptr<SeqRegions> sample_regions_;
-
-    public:
-     /**
-      Constructor
-      */
-    TraversingExtNode(const cmaple::Index node_index,
-                      const short int n_failure_count,
-                      const cmaple::RealNumType n_lh_diff,
-                      std::unique_ptr<SeqRegions>&& sample_regions)
-         : TraversingNode(node_index, n_failure_count, n_lh_diff),
-           sample_regions_(std::move(sample_regions)){}
-        
-        /**
-         The lower regions (with branch-mutations integrated) of the sample genome
-         */
-        auto getSampleRegions() -> std::unique_ptr<SeqRegions>&;
-   };
-
-    /** An extension of TraversingNode storing more dummy data used for browsing all nodes in a stack
-     during sample placement searching
-     */
     class TraversingExtNodev2: public cmaple::TraversingNode {
     private:
         // sample or subtree lower regions (with use count)
@@ -114,6 +87,11 @@ namespace cmaple
          get sample_regions_w_count_
          */
         auto getSampleRegionsCount() -> SeqRegionsWithCount*;
+        
+        /**
+         Decrease the use count_ by 1
+         */
+        auto descreaseCount() -> void;
     };
 }
 
