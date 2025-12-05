@@ -64,7 +64,7 @@ namespace cmaple {
 /** A dedicated memory class to store a vector of SeqRegionsWithCounts
  */
 
-    class SeqRegionsMem: public std::vector<SeqRegionsWithCount>
+    class SeqRegionsMem: public std::deque<SeqRegionsWithCount>
     {
         public:
         
