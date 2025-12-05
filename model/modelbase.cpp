@@ -452,7 +452,8 @@ void cmaple::ModelBase::normalizeQMatrix() {
 
 void cmaple::ModelBase::initPointers() {
   // init row_index
-  row_index = new StateType[num_states_ + 1];
+  if (!row_index)
+    row_index = new StateType[num_states_ + 1];
   uint16_t start_index = 0;
   for (StateType i = 0; i < num_states_ + 1; i++, start_index += num_states_) {
     row_index[i] = start_index;
@@ -472,11 +473,16 @@ void cmaple::ModelBase::initPointers() {
 
   // init mutation_mat, transposed_mut_mat, and diagonal_mut_mat
   uint16_t mat_size = row_index[num_states_];
-  mutation_mat = new RealNumType[mat_size];
-  transposed_mut_mat = new RealNumType[mat_size];
-  diagonal_mut_mat = new RealNumType[num_states_];
-  freqi_freqj_qij = new RealNumType[mat_size];
-  freq_j_transposed_ij = new RealNumType[mat_size];
+  if (!mutation_mat)
+      mutation_mat = new RealNumType[mat_size];
+  if (!transposed_mut_mat)
+      transposed_mut_mat = new RealNumType[mat_size];
+  if (!diagonal_mut_mat)
+      diagonal_mut_mat = new RealNumType[num_states_];
+  if (!freqi_freqj_qij)
+      freqi_freqj_qij = new RealNumType[mat_size];
+  if (!freq_j_transposed_ij)
+      freq_j_transposed_ij = new RealNumType[mat_size];
 }
 
 void cmaple::ModelBase::updateMutMatbyMutCount() {
