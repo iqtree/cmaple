@@ -2672,9 +2672,6 @@ void cmaple::Tree::seekSamplePlacement(
     // reduce the use count of the subtree regions in the dedicated memory
     current_extended_node.descreaseCount();
   }
-    
-  // release the memory of seqregionsmem
-  std::vector<SeqRegionsWithCount>().swap(seqregionmem);
 
   // exploration of the tree is finished, and we are left with the node found so
   // far with the best appending likelihood cost. Now we explore placement just
