@@ -29,6 +29,11 @@ auto cmaple::SeqRegionsWithCount::descreaseCount() -> void
     if (!count_)
     {
         lower_regions_ = nullptr;
+        
+        if (local_ref_vec_.size())
+        {
+            std::vector<cmaple::Index>().swap(local_ref_vec_);
+        }
     }
 }
 
@@ -42,4 +47,23 @@ auto cmaple::SeqRegionsWithCount::setSeqRegions(
     std::unique_ptr<SeqRegions>&& lower_regions) -> void
 {
     lower_regions_ = std::move(lower_regions);
+}
+
+
+auto cmaple::SeqRegionsWithCount::getLocalRefVec()
+    -> std::vector<cmaple::Index>&
+{
+    return local_ref_vec_;
+}
+
+auto cmaple::SeqRegionsWithCount::setLocalRefVec(
+    const std::vector<cmaple::Index>& local_ref_vec) -> void
+{
+    local_ref_vec_ = local_ref_vec;
+}
+
+auto cmaple::SeqRegionsWithCount::addLocalRefIndex(
+    const cmaple::Index& local_ref_index) -> void
+{
+    local_ref_vec_.push_back(local_ref_index);
 }
