@@ -22,6 +22,12 @@ namespace cmaple {
              */
             NumSeqsType count_ = 0;
         
+            /**
+             The vector of local refs were integrated to build
+             the current lower regions from its original regions
+             */
+            std::vector<cmaple::Index> local_ref_vec_;
+        
         public:
         
             /**
@@ -59,6 +65,22 @@ namespace cmaple {
              Set lower_regions_
              */
             auto setSeqRegions(std::unique_ptr<SeqRegions>&& lower_regions) -> void;
+        
+            /**
+             Get local_ref_vec_
+             */
+            auto getLocalRefVec() -> std::vector<cmaple::Index>&;
+        
+            /**
+             Set local_ref_vec_
+             */
+            auto setLocalRefVec(
+                const std::vector<cmaple::Index>& local_ref_vec) -> void;
+        
+            /**
+             Add a ref index into local_ref_vec_
+             */
+            auto addLocalRefIndex(const cmaple::Index& local_ref_index) -> void;
     };
 
 /** A dedicated memory class to store a vector of SeqRegionsWithCounts
@@ -83,6 +105,19 @@ namespace cmaple {
                 std::unique_ptr<SeqRegions>& mutations,
                 const bool inverse = false)
                 -> SeqRegionsWithCount*;
+        
+            /**
+             Same as the above but with a local ref index added
+             to keep track of the list of local refs are being used
+             */
+            template <const cmaple::StateType num_states>
+            auto getMutIntegratedSeqRegions(
+                SeqRegionsWithCount* const in_seqregions,
+                const Alignment* aln,
+                const cmaple::Index& local_ref_index,
+                std::unique_ptr<SeqRegions>& mutations,
+                const bool inverse = false)
+            -> SeqRegionsWithCount*;
     };
 
 template <const cmaple::StateType num_states>
@@ -132,7 +167,37 @@ auto cmaple::SeqRegionsMem::getMutIntegratedSeqRegions(
     out_seqregions->setSeqRegions(std::move(mut_integrated_seqregions));
     out_seqregions->increaseCount();
     
+    // inherit the local_ref_vec
+    if (in_seqregions->getLocalRefVec().size())
+    {
+        out_seqregions->setLocalRefVec(in_seqregions->getLocalRefVec());
+    }
+    
     return out_seqregions;
+}
+        
+template <const cmaple::StateType num_states>
+auto cmaple::SeqRegionsMem::getMutIntegratedSeqRegions(
+    SeqRegionsWithCount* const in_seqregions,
+    const Alignment* aln,
+    const cmaple::Index& local_ref_index,
+    std::unique_ptr<SeqRegions>& mutations,
+    const bool inverse)
+    -> SeqRegionsWithCount*
+{
+    // first call the simple version of this function first
+    SeqRegionsWithCount* out_seqregion_ptr =
+        getMutIntegratedSeqRegions<num_states>(
+        in_seqregions, aln, mutations, inverse);
+    
+    // if we integrate the mutations/local ref, record it
+    if (mutations)
+    {
+        assert(local_ref_index.getMiniIndex() != UNDEFINED);
+        out_seqregion_ptr->addLocalRefIndex(local_ref_index);
+    }
+    
+    return out_seqregion_ptr;
 }
 
 }  // namespace cmaple

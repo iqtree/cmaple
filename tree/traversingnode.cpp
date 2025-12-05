@@ -43,3 +43,9 @@ auto cmaple::TraversingExtNodev2::descreaseCount()
 {
     sample_regions_w_count_->descreaseCount();
 }
+
+auto cmaple::TraversingExtNodev2::getLocalRefList()
+    -> std::vector<cmaple::Index>&
+{
+    return sample_regions_w_count_->getLocalRefVec();
+}

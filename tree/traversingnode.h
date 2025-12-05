@@ -92,6 +92,11 @@ namespace cmaple
          Decrease the use count_ by 1
          */
         auto descreaseCount() -> void;
+        
+        /**
+         Get local_ref_vec_
+         */
+        auto getLocalRefList() -> std::vector<cmaple::Index>&;
     };
 }
 

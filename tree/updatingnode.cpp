@@ -13,12 +13,6 @@ const std::unique_ptr<SeqRegions>& cmaple::UpdatingNode::getIncomingRegions()
   return incoming_regions_ref_;
 }
 
-auto cmaple::UpdatingNode::getLocalRefList() const
-    -> const std::vector<cmaple::Index>&
-{
-    return local_ref_list_;
-}
-
 auto cmaple::UpdatingNode::getBranchLength() const -> const RealNumType {
   return branch_length_;
 }

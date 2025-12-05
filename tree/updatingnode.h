@@ -18,11 +18,6 @@ class UpdatingNode : public cmaple::TraversingExtNodev2 {
    (taking into account the removal of the given subtree),
    */
   std::unique_ptr<SeqRegions>& incoming_regions_ref_;
-    
-  /**
-   list of local refs for changes later
-  */
-  std::vector<cmaple::Index> local_ref_list_;
 
   /**
    a branch length separating the node from this updated regions (useful for the
@@ -44,7 +39,6 @@ class UpdatingNode : public cmaple::TraversingExtNodev2 {
    */
   UpdatingNode(const cmaple::Index node_index,
                SeqRegionsWithCount* subtree_regions_w_count,
-               std::vector<cmaple::Index>&& local_ref_list,
                std::unique_ptr<SeqRegions>&& incoming_regions,
                std::unique_ptr<SeqRegions>& incoming_regions_ref,
                const cmaple::RealNumType branch_length,
@@ -52,7 +46,6 @@ class UpdatingNode : public cmaple::TraversingExtNodev2 {
                const cmaple::RealNumType lh_diff,
                const short int failure_count)
       : TraversingExtNodev2(node_index, failure_count, lh_diff, subtree_regions_w_count),
-        local_ref_list_(std::move(local_ref_list)),
         incoming_regions_(std::move(incoming_regions)),
         incoming_regions_ref_(incoming_regions_ref),
         branch_length_(branch_length),
@@ -62,11 +55,6 @@ class UpdatingNode : public cmaple::TraversingExtNodev2 {
    Get Incoming_regions_[ref_]
    */
   const std::unique_ptr<SeqRegions>& getIncomingRegions() const;
-    
-  /**
-   Get local_ref_list_
-  */
-  const std::vector<cmaple::Index>& getLocalRefList() const;
 
   /**
    Get branch_length_
