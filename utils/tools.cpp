@@ -354,6 +354,7 @@ void cmaple::convert_real_numbers(RealNumType*& arr, string input_str) {
   int number_count = static_cast<int>(count(input_str.begin(), input_str.end(), ' ')) + 1;
 
   // init array
+  if (arr) delete arr;
   arr = new RealNumType[static_cast<unsigned long>(number_count)];
 
   // parse rates
