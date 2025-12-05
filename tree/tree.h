@@ -1,4 +1,5 @@
 #include "../alignment/alignment.h"
+#include "../alignment/seqregionsmem.h"
 #include "../model/model.h"
 #include "updatingnode.h"
 #include "rootcandidate.h"
@@ -752,7 +753,8 @@ bool isDiffFromOrigPlacement(
                         PhyloNode& node,
                         const cmaple::Index& other_child_node_index,
                         const cmaple::RealNumType best_lh_diff,
-                        std::stack<std::unique_ptr<UpdatingNode>>& node_stack);
+                        std::stack<std::unique_ptr<UpdatingNode>>& node_stack,
+                        SeqRegionsMem& seqregionmem);
     
     /**
      Add start nodes for root assessment
@@ -858,7 +860,8 @@ bool isDiffFromOrigPlacement(
       const cmaple::RealNumType& lh_diff_at_node,
       const std::unique_ptr<UpdatingNode>& updating_node,
       std::stack<std::unique_ptr<UpdatingNode>>& node_stack,
-      const cmaple::RealNumType threshold_prob);
+      const cmaple::RealNumType threshold_prob,
+      SeqRegionsMem& seqregionmem);
 
   /**
    Add neighbor nodes (parent/sibling) for traversal when seeking a new subtree
@@ -874,7 +877,8 @@ bool isDiffFromOrigPlacement(
       const cmaple::RealNumType& lh_diff_at_node,
       const std::unique_ptr<UpdatingNode>& updating_node,
       std::stack<std::unique_ptr<UpdatingNode>>& node_stack,
-      const cmaple::RealNumType threshold_prob);
+      const cmaple::RealNumType threshold_prob,
+      SeqRegionsMem& seqregionmem);
 
   /**
    Check whether we can obtain a higher likelihood with a shorter length for an
