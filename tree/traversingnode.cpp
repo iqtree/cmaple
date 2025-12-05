@@ -24,10 +24,6 @@ auto cmaple::TraversingNode::getLhDiff() const -> const RealNumType {
   return likelihood_diff_;
 }
 
-auto cmaple::TraversingExtNode::getSampleRegions() -> std::unique_ptr<SeqRegions>& {
-    return sample_regions_;
-}
-
 /** TraversingExtNodev2 **/
 
 auto cmaple::TraversingExtNodev2::getSampleRegions()
@@ -40,4 +36,10 @@ auto cmaple::TraversingExtNodev2::getSampleRegionsCount()
     -> SeqRegionsWithCount*
 {
     return sample_regions_w_count_;
+}
+
+auto cmaple::TraversingExtNodev2::descreaseCount()
+    -> void
+{
+    sample_regions_w_count_->descreaseCount();
 }

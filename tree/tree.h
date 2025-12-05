@@ -703,7 +703,8 @@ class Tree {
       const PhyloNode& selected_node,
       cmaple::RealNumType& best_down_lh_diff,
       cmaple::Index& best_child_index,
-      std::unique_ptr<SeqRegions>& sample_regions);
+      std::unique_ptr<SeqRegions>& sample_regions,
+      SeqRegionsMem& seqregionmem);
     
 /**
  Check if the new placement is sufficiently different from the original one
@@ -2538,7 +2539,8 @@ void cmaple::Tree::seekSamplePlacement(
   RealNumType lh_diff_at_node = 0;
   PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
   // stack of nodes to examine positions
-  std::stack<TraversingExtNode> extended_node_stack;
+  std::stack<TraversingExtNodev2> extended_node_stack;
+  SeqRegionsMem seqregionmem;
   
     // integrate the branch-mutations to the sample regions
     std::unique_ptr<SeqRegions>& start_node_mutations =
@@ -2550,13 +2552,17 @@ void cmaple::Tree::seekSamplePlacement(
     // record the updated sample_regions (with mutations integrated, if any)
     if (start_node_mutations && start_node_mutations->size())
         sample_regions = cmaple::make_unique<SeqRegions>(mut_integrated_sample_regions);
+  
+    // clone the sample regions and store it in the dedicated memory
+    seqregionmem.push_back(SeqRegionsWithCount(
+          std::move(mut_integrated_sample_regions), 1));
     
-  extended_node_stack.push(TraversingExtNode(start_node_index, 0, MIN_NEGATIVE,
-                            std::move(mut_integrated_sample_regions)));
+  extended_node_stack.push(TraversingExtNodev2(start_node_index, 0, MIN_NEGATIVE,
+                                             &seqregionmem.back()));
 
   // recursively examine positions for placing the new sample
   while (!extended_node_stack.empty()) {
-    TraversingExtNode current_extended_node = std::move(extended_node_stack.top());
+    TraversingExtNodev2 current_extended_node = std::move(extended_node_stack.top());
     extended_node_stack.pop();
     const NumSeqsType current_node_vec =
         current_extended_node.getIndex().getVectorIndex();
@@ -2649,24 +2655,26 @@ void cmaple::Tree::seekSamplePlacement(
           extended_node_stack.push(TraversingNode(neighbor_index,
          current_extended_node.getFailureCount(), lh_diff_at_node));*/
       if (is_internal) {
-        // integrate the branch-mutations to the sample regions
-        std::unique_ptr<SeqRegions> sample_regions_at_child =
-          sample_regions_at_node->integrateMutations<num_states>(
-              node_mutations[current_node.getNeighborIndex(RIGHT).getVectorIndex()], aln);
         extended_node_stack.push(
-            TraversingExtNode(current_node.getNeighborIndex(RIGHT), failure_count,
-                           lh_diff_at_node, std::move(sample_regions_at_child)));
+            TraversingExtNodev2(current_node.getNeighborIndex(RIGHT), failure_count,
+                lh_diff_at_node, seqregionmem.getMutIntegratedSeqRegions<num_states>(
+                current_extended_node.getSampleRegionsCount(), aln,
+                node_mutations[current_node.getNeighborIndex(RIGHT).getVectorIndex()])));
           
-        // integrate the branch-mutations to the sample regions
-        sample_regions_at_child =
-          sample_regions_at_node->integrateMutations<num_states>(
-              node_mutations[current_node.getNeighborIndex(LEFT).getVectorIndex()], aln);
         extended_node_stack.push(
-            TraversingExtNode(current_node.getNeighborIndex(LEFT), failure_count,
-                           lh_diff_at_node, std::move(sample_regions_at_child)));
+            TraversingExtNodev2(current_node.getNeighborIndex(LEFT), failure_count,
+                lh_diff_at_node, seqregionmem.getMutIntegratedSeqRegions<num_states>(
+                current_extended_node.getSampleRegionsCount(), aln,
+                node_mutations[current_node.getNeighborIndex(LEFT).getVectorIndex()])));
       }
     }
+      
+    // reduce the use count of the subtree regions in the dedicated memory
+    current_extended_node.descreaseCount();
   }
+    
+  // release the memory of seqregionsmem
+  std::vector<SeqRegionsWithCount>().swap(seqregionmem);
 
   // exploration of the tree is finished, and we are left with the node found so
   // far with the best appending likelihood cost. Now we explore placement just
@@ -2680,7 +2688,7 @@ void cmaple::Tree::seekSamplePlacement(
   if (!is_mid_branch) {
     finetuneSamplePlacementAtNode<num_states>(
         nodes[selected_node_index.getVectorIndex()], best_down_lh_diff,
-        best_child_index, sample_regions);
+        best_child_index, sample_regions, seqregionmem);
   }
 }
 

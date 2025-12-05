@@ -2485,35 +2485,41 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
     const PhyloNode& selected_node,
     RealNumType& best_down_lh_diff,
     Index& best_child_index,
-    std::unique_ptr<SeqRegions>& sample_regions) {
+    std::unique_ptr<SeqRegions>& sample_regions,
+    SeqRegionsMem& seqregionmem) {
 
   // current node might be part of a polytomy (represented by 0 branch lengths)
   // so we want to explore all the children of the current node to find out if
   // the best placement is actually in any of the branches below the current
   // node. Node* neighbor_node;
-  stack<TraversingExtNode> extended_node_stack;
+  stack<TraversingExtNodev2> extended_node_stack;
   /*for (Index
      neighbor_index:nodes[selected_node_index.getVectorIndex()].getNeighborIndexes(selected_node_index.getMiniIndex()))
       node_stack.push(neighbor_index);*/
   // assert(selected_node_index.getMiniIndex() == TOP);
   if (selected_node.isInternal()) {
-    // integrate the branch-mutations to the sample regions
-    std::unique_ptr<SeqRegions> sample_regions_at_child =
-      sample_regions->integrateMutations<num_states>(
-            node_mutations[selected_node.getNeighborIndex(RIGHT).getVectorIndex()], aln);
-    extended_node_stack.push(TraversingExtNode(selected_node.getNeighborIndex(RIGHT),
-                                      0, 0, std::move(sample_regions_at_child)));
+      // clone the sample regions and store it in the dedicated memory
+      // set the use count = 1 to avoid its being overwritten
+      seqregionmem.push_back(SeqRegionsWithCount(
+            cmaple::make_unique<SeqRegions>(sample_regions), 1));
+      SeqRegionsWithCount* ori_sample_regions_w_count = &seqregionmem.back();
       
-    // integrate the branch-mutations to the sample regions
-    sample_regions_at_child =
-      sample_regions->integrateMutations<num_states>(
-              node_mutations[selected_node.getNeighborIndex(LEFT).getVectorIndex()], aln);
-    extended_node_stack.push(TraversingExtNode(selected_node.getNeighborIndex(LEFT),
-                                      0, 0, std::move(sample_regions_at_child)));
+    extended_node_stack.push(TraversingExtNodev2(selected_node.getNeighborIndex(RIGHT),
+                            0, 0, seqregionmem.getMutIntegratedSeqRegions<num_states>(
+                            ori_sample_regions_w_count, aln,
+                            node_mutations[selected_node.getNeighborIndex(RIGHT).getVectorIndex()])));
+      
+    extended_node_stack.push(TraversingExtNodev2(selected_node.getNeighborIndex(LEFT),
+                            0, 0, seqregionmem.getMutIntegratedSeqRegions<num_states>(
+                            ori_sample_regions_w_count, aln,
+                            node_mutations[selected_node.getNeighborIndex(LEFT).getVectorIndex()])));
+      
+      // correct the use count of the ori_sample_regions_w_count
+      ori_sample_regions_w_count->descreaseCount();
   }
 
   while (!extended_node_stack.empty()) {
-    TraversingExtNode current_extended_node = std::move(extended_node_stack.top());
+    TraversingExtNodev2 current_extended_node = std::move(extended_node_stack.top());
     extended_node_stack.pop();
     Index node_index = current_extended_node.getIndex();
     // MiniIndex node_mini_index = node_index.getMiniIndex();
@@ -2530,19 +2536,15 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
          neighbor_index:node.getNeighborIndexes(node_index.getMiniIndex()))
           node_stack.push(neighbor_index);*/
       if (node.isInternal()) {
-          // integrate the branch-mutations to the sample regions
-          std::unique_ptr<SeqRegions> sample_regions_at_child =
-            sample_regions_at_node->integrateMutations<num_states>(
-                  node_mutations[node.getNeighborIndex(RIGHT).getVectorIndex()], aln);
-          extended_node_stack.push(TraversingExtNode(node.getNeighborIndex(RIGHT),
-                                            0, 0, std::move(sample_regions_at_child)));
+          extended_node_stack.push(TraversingExtNodev2(node.getNeighborIndex(RIGHT),
+                                    0, 0, seqregionmem.getMutIntegratedSeqRegions<num_states>(
+                                    current_extended_node.getSampleRegionsCount(), aln,
+                                    node_mutations[node.getNeighborIndex(RIGHT).getVectorIndex()])));
           
-          // integrate the branch-mutations to the sample regions
-          sample_regions_at_child =
-            sample_regions_at_node->integrateMutations<num_states>(
-                  node_mutations[node.getNeighborIndex(LEFT).getVectorIndex()], aln);
-          extended_node_stack.push(TraversingExtNode(node.getNeighborIndex(LEFT),
-                                            0, 0, std::move(sample_regions_at_child)));
+          extended_node_stack.push(TraversingExtNodev2(node.getNeighborIndex(LEFT),
+                                            0, 0, seqregionmem.getMutIntegratedSeqRegions<num_states>(
+                                            current_extended_node.getSampleRegionsCount(), aln,
+                                            node_mutations[node.getNeighborIndex(LEFT).getVectorIndex()])));
       }
     } else {
       // now try to place on the current branch below the best node, at an
@@ -2616,6 +2618,9 @@ void cmaple::Tree::finetuneSamplePlacementAtNode(
         sample_regions = cmaple::make_unique<SeqRegions>(sample_regions_at_node);
       }
     }
+      
+    // reduce the use count of the subtree regions in the dedicated memory
+    current_extended_node.descreaseCount();
   }
 }
 
@@ -4190,7 +4195,7 @@ void cmaple::Tree::seekSubTreePlacement(
                   opt_mid_bottom_blength, alt_branches, is_root_considered))
           {
             // reduce the use count of the subtree regions in the dedicated memory
-            updating_node->getSampleRegionsCount()->descreaseCount();
+            updating_node->descreaseCount();
             continue;
           }
             
@@ -4311,7 +4316,7 @@ void cmaple::Tree::seekSubTreePlacement(
                 bottom_regions, opt_appending_blength, opt_mid_top_blength,
                 opt_mid_bottom_blength, alt_branches, is_root_considered)) {
           // reduce the use count of the subtree regions in the dedicated memory
-          updating_node->getSampleRegionsCount()->descreaseCount();
+          updating_node->descreaseCount();
           continue;
         }
           
@@ -4348,7 +4353,7 @@ void cmaple::Tree::seekSubTreePlacement(
                     lh_diff_mid_branch, updating_node, node_stack, threshold_prob,
                     seqregionmem)) {
               // reduce the use count of the subtree regions in the dedicated memory
-              updating_node->getSampleRegionsCount()->descreaseCount();
+              updating_node->descreaseCount();
               continue;
             }
       }
@@ -4360,7 +4365,7 @@ void cmaple::Tree::seekSubTreePlacement(
     }
       
       // reduce the use count of the subtree regions in the dedicated memory
-      updating_node->getSampleRegionsCount()->descreaseCount();
+      updating_node->descreaseCount();
 
     // delete updating_node
     // delete updating_node;
