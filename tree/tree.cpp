@@ -8326,7 +8326,7 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     blength = 0;
   }
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
-  lh_cost = blength * (-seq_length);
+  // lh_cost = blength * (-seq_length);
 
   while (pos < seq_length) {
     PositionType end_pos;
@@ -8354,12 +8354,12 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     // 2. e1.type = R
     // 2.1. e1.type = R and e2.type = R
     if (s1s2 == RR) [[likely]] {
-        // update MAPLE 0.7.5 => do nothing
-        pos = end_pos + 1;
-        continue;
+        calculateSampleCost_R_R(*seq1_region, cumulative_rate, blength, pos,
+                                end_pos, lh_cost);
         
-        // calculateSampleCost_R_R(*seq1_region, cumulative_rate, blength, pos,
-                                // end_pos, lh_cost);
+        // update MAPLE 0.7.5 => do nothing
+        // pos = end_pos + 1;
+        // continue;
     }
     // 2.2. e1.type = R and e2.type = O
     else if (s1s2 == RO) {
@@ -8388,10 +8388,11 @@ RealNumType cmaple::Tree::calculateSamplePlacementCost(
     // 4. e1.type = A/C/G/T
     // 4.1. e1.type =  e2.type
     else if (seq1_region->type == seq2_region->type) {
+        calculateSampleCost_identicalACGT(*seq1_region, blength, lh_cost, model);
+        
         // update MAPLE 0.7.5 => do nothing
-        pos = end_pos + 1;
-        continue;
-        // calculateSampleCost_identicalACGT(*seq1_region, blength, lh_cost, model);
+        // pos = end_pos + 1;
+        // continue;
     }
     // e1.type = A/C/G/T and e2.type = O/A/C/G/T
     // 4.2. e1.type = A/C/G/T and e2.type = O
