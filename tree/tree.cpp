@@ -1042,7 +1042,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
     }
     
     // show info: the number of local references
-    if (cmaple::verbose_mode >= cmaple::VB_MAX) {
+    if (cmaple::verbose_mode >= cmaple::VB_MED) {
         size_t num_local_refs = 0;
         for (auto i = 0; i < node_mutations.size(); ++i)
         {
