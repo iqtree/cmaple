@@ -7965,6 +7965,9 @@ RealNumType cmaple::Tree::calculateSubTreePlacementCost(
     // 4. e1.type = A/C/G/T
     // 4.1. e1.type =  e2.type
     else if (seq1_region->type == seq2_region->type) {
+        calculateSubtreeCost_identicalACGT(*seq1_region, total_blength, lh_cost,
+                                           model);
+        
         // update to match MAPLE v0.7.5 -> do nothing
       /* calculateSubtreeCost_identicalACGT(*seq1_region, total_blength, lh_cost,
                                          model);*/
