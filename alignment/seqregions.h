@@ -475,8 +475,6 @@ void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region,
                                     const cmaple::PositionType end_pos,
                                     cmaple::RealNumType total_blength_1,
                                     cmaple::RealNumType total_blength_2,
-                                    const cmaple::RealNumType blength_1,
-                                    const cmaple::RealNumType blength_2,
                                     const cmaple::PositionType pos,
                                     const cmaple::RealNumType threshold_prob,
                                     const ModelBase* model,
@@ -491,7 +489,7 @@ void merge_identicalRACGT_TwoLowers(const SeqRegion& seq1_region,
  @throw std::logic\_error if unexpected values/behaviors found during the
  operations
  */
-/*template <const cmaple::StateType num_states>
+template <const cmaple::StateType num_states>
 bool merge_O_O_TwoLowers(const SeqRegion& seq2_region,
                          cmaple::RealNumType total_blength_2,
                          const cmaple::PositionType end_pos,
@@ -501,7 +499,7 @@ bool merge_O_O_TwoLowers(const SeqRegion& seq2_region,
                          cmaple::RealNumType& log_lh,
                          SeqRegion::LHType& new_lh,
                          std::unique_ptr<SeqRegions>& merged_regions,
-                         const bool return_log_lh);*/
+                         const bool return_log_lh);
 
 /**
  MergeTwoLowers case O_RACGT
@@ -509,8 +507,9 @@ bool merge_O_O_TwoLowers(const SeqRegion& seq2_region,
  @throw std::logic\_error if unexpected values/behaviors found during the
  operations
  */
-/*template <const cmaple::StateType num_states>
-bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
+template <const cmaple::StateType num_states>
+bool merge_O_RACGT_TwoLowers(const StateType& ref_state,
+                             const SeqRegion& seq2_region,
                              cmaple::RealNumType total_blength_2,
                              const cmaple::PositionType end_pos,
                              const Alignment* aln,
@@ -520,7 +519,7 @@ bool merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
                              SeqRegion::LHType& new_lh,
                              cmaple::RealNumType& sum_lh,
                              std::unique_ptr<SeqRegions>& merged_regions,
-                             const bool return_log_lh);*/
+                             const bool return_log_lh);
 
 /**
  * Initialize partial lh vector when merging two regions
@@ -543,7 +542,7 @@ SeqRegion::LHType initLhVecMerge(
  @throw std::logic\_error if unexpected values/behaviors found during the
  operations
  */
-/*template <const cmaple::StateType num_states>
+template <const cmaple::StateType num_states>
 bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region,
                               const SeqRegion& seq2_region,
                               cmaple::RealNumType total_blength_1,
@@ -554,7 +553,7 @@ bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region,
                               const cmaple::RealNumType threshold_prob,
                               cmaple::RealNumType& log_lh,
                               std::unique_ptr<SeqRegions>& merged_regions,
-                              const bool return_log_lh);*/
+                              const bool return_log_lh);
 
 /**
  MergeTwoLowers case RACGT_O
@@ -562,7 +561,7 @@ bool merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region,
  @throw std::logic\_error if unexpected values/behaviors found during the
  operations
  */
-/*template <const cmaple::StateType num_states>
+template <const cmaple::StateType num_states>
 bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
                              cmaple::RealNumType total_blength_2,
                              const cmaple::PositionType end_pos,
@@ -572,7 +571,7 @@ bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
                              SeqRegion::LHType& new_lh,
                              cmaple::RealNumType& log_lh,
                              std::unique_ptr<SeqRegions>& merged_regions,
-                             const bool return_log_lh);*/
+                             const bool return_log_lh);
 
 /**
  MergeTwoLowers case RACGT_RACGT
@@ -580,8 +579,9 @@ bool merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
  @throw std::logic\_error if unexpected values/behaviors found during the
  operations
  */
-/*template <const cmaple::StateType num_states>
-bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
+template <const cmaple::StateType num_states>
+bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq1_region,
+                                 const SeqRegion& seq2_region,
                                  cmaple::RealNumType total_blength_2,
                                  const cmaple::PositionType end_pos,
                                  const Alignment* aln,
@@ -591,7 +591,7 @@ bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
                                  cmaple::RealNumType& sum_lh,
                                  cmaple::RealNumType& log_lh,
                                  std::unique_ptr<SeqRegions>& merged_regions,
-                                 const bool return_log_lh);*/
+                                 const bool return_log_lh);
 
 /**
  MergeTwoLowers case RACGT_ORACGT
@@ -599,7 +599,7 @@ bool merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
  @throw std::logic\_error if unexpected values/behaviors found during the
  operations
  */
-/*template <const cmaple::StateType num_states>
+template <const cmaple::StateType num_states>
 bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
                                   const SeqRegion& seq2_region,
                                   cmaple::RealNumType total_blength_1,
@@ -610,7 +610,7 @@ bool merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
                                   const cmaple::RealNumType threshold_prob,
                                   cmaple::RealNumType& log_lh,
                                   std::unique_ptr<SeqRegions>& merged_regions,
-                                  const bool return_log_lh);*/
+                                  const bool return_log_lh);
 
 /**
  MergeTwoLowers case ORACGT_ORACGT
@@ -672,7 +672,6 @@ bool merge_notN_notN_TwoLowers(const SeqRegion& seq1_region,
                                const RealNumType* const cumulative_rate,
                                const cmaple::RealNumType threshold_prob,
                                cmaple::RealNumType& log_lh,
-                               cmaple::RealNumType& total_factor,
                                std::unique_ptr<SeqRegions>& merged_regions,
                                const bool return_log_lh);
 
@@ -1461,7 +1460,7 @@ void SeqRegions::mergeUpperLower(std::unique_ptr<SeqRegions>& merged_regions,
 #endif
 }
 
-/*template <const StateType num_states>
+template <const StateType num_states>
 auto merge_O_O_TwoLowers(const SeqRegion& seq2_region,
                          RealNumType total_blength_2,
                          const PositionType end_pos,
@@ -1486,7 +1485,7 @@ auto merge_O_O_TwoLowers(const SeqRegion& seq2_region,
 
   // normalize the new partial likelihood
   normalize_arr(new_lh.data(), num_states, sum_lh);
-  cmaple::SeqRegions::addSimplifiedO(TYPE_N, end_pos, new_lh, aln, threshold_prob,
+  cmaple::SeqRegions::addSimplifiedO(seq2_region.prev_state, end_pos, new_lh, aln, threshold_prob,
                                      *merged_regions);
 
   if (return_log_lh) {
@@ -1495,10 +1494,11 @@ auto merge_O_O_TwoLowers(const SeqRegion& seq2_region,
 
   // no error
   return true;
-}*/
+}
 
-/*template <const StateType num_states>
-auto merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
+template <const StateType num_states>
+auto merge_O_RACGT_TwoLowers(const StateType& ref_state,
+                             const SeqRegion& seq2_region,
                              RealNumType total_blength_2,
                              const PositionType end_pos,
                              const Alignment* aln,
@@ -1514,7 +1514,7 @@ auto merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
   assert(aln);
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+    seq2_state = ref_state;
   }
 
   if (total_blength_2 > 0) {
@@ -1526,7 +1526,7 @@ auto merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
     // normalize new partial lh
     // normalize the new partial likelihood
     normalize_arr(new_lh.data(), num_states, sum_lh);
-    cmaple::SeqRegions::addSimplifiedO(TYPE_N, end_pos, new_lh, aln, threshold_prob,
+    cmaple::SeqRegions::addSimplifiedO(ref_state, end_pos, new_lh, aln, threshold_prob,
                                        *merged_regions);
 
     if (return_log_lh) {
@@ -1549,7 +1549,7 @@ auto merge_O_RACGT_TwoLowers(const SeqRegion& seq2_region,
   }
   // no error
   return true;
-}*/
+}
 
 template <const cmaple::StateType num_states>
 auto initLhVecMerge(
@@ -1626,7 +1626,7 @@ auto initLhVecMerge(
 }
 
 
-/*template <const StateType num_states>
+template <const StateType num_states>
 auto merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region,
                               const SeqRegion& seq2_region,
                               RealNumType total_blength_1,
@@ -1656,24 +1656,24 @@ auto merge_O_ORACGT_TwoLowers(const SeqRegion& seq1_region,
 
   // seq1_entry = O and seq2_entry = O
   if (seq2_region.type == TYPE_O) {
-    auto ret = merge_O_O_TwoLowers<num_states>(
+    assert(seq1_region.prev_state == seq2_region.prev_state);
+    return merge_O_O_TwoLowers<num_states>(
         seq2_region, total_blength_2, end_pos, aln, model, threshold_prob,
         log_lh, *new_lh, merged_regions, return_log_lh);
-    return ret;
   }
   // seq1_entry = O and seq2_entry = R/ACGT
   else {
-    auto ret = merge_O_RACGT_TwoLowers<num_states>(
-        seq2_region, total_blength_2, end_pos, aln, model, threshold_prob,
+    return merge_O_RACGT_TwoLowers<num_states>(
+        seq1_region.prev_state, seq2_region, total_blength_2,
+        end_pos, aln, model, threshold_prob,
         log_lh, *new_lh, sum_lh, merged_regions, return_log_lh);
-    return ret;
   }
 
   // no error
   return true;
-}*/
+}
 
-/*template <const StateType num_states>
+template <const StateType num_states>
 auto merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
                              RealNumType total_blength_2,
                              const PositionType end_pos,
@@ -1698,7 +1698,7 @@ auto merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
 
   // normalize the new partial likelihood
   normalize_arr(new_lh.data(), num_states, sum_lh);
-  cmaple::SeqRegions::addSimplifiedO(TYPE_N, end_pos, new_lh, aln, threshold_prob,
+  cmaple::SeqRegions::addSimplifiedO(seq2_region.prev_state, end_pos, new_lh, aln, threshold_prob,
                                      *merged_regions);
 
   if (return_log_lh) {
@@ -1707,10 +1707,11 @@ auto merge_RACGT_O_TwoLowers(const SeqRegion& seq2_region,
 
   // no error
   return true;
-}*/
+}
 
-/*template <const StateType num_states>
-auto merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
+template <const StateType num_states>
+auto merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq1_region,
+                                 const SeqRegion& seq2_region,
                                  RealNumType total_blength_2,
                                  const PositionType end_pos,
                                  const Alignment* aln,
@@ -1724,10 +1725,12 @@ auto merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
   assert(seq2_region.type != TYPE_N && seq2_region.type != TYPE_O);
   assert(model);
   assert(aln);
-    
+  
+  StateType ref_state = seq2_region.prev_state;
   StateType seq2_state = seq2_region.type;
   if (seq2_state == TYPE_R) {
-    seq2_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+    seq2_state = seq1_region.prev_state;
+    ref_state = seq1_region.prev_state;
   }
 
   if (total_blength_2 > 0) {
@@ -1738,7 +1741,7 @@ auto merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
 
     // normalize the new partial likelihood
     normalize_arr(new_lh.data(), num_states, sum_lh);
-    cmaple::SeqRegions::addSimplifiedO(TYPE_N, end_pos, new_lh, aln, threshold_prob,
+    cmaple::SeqRegions::addSimplifiedO(ref_state, end_pos, new_lh, aln, threshold_prob,
                                        *merged_regions);
 
     if (return_log_lh) {
@@ -1757,9 +1760,9 @@ auto merge_RACGT_RACGT_TwoLowers(const SeqRegion& seq2_region,
 
   // no error
   return true;
-}*/
+}
 
-/*template <const StateType num_states>
+template <const StateType num_states>
 auto merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
                                   const SeqRegion& seq2_region,
                                   RealNumType total_blength_1,
@@ -1778,7 +1781,7 @@ auto merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
     
   StateType seq1_state = seq1_region.type;
   if (seq1_state == TYPE_R) {
-    seq1_state = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+      seq1_state = seq2_region.prev_state;
   }
 
   auto new_lh =
@@ -1803,9 +1806,10 @@ auto merge_RACGT_ORACGT_TwoLowers(const SeqRegion& seq1_region,
 
   // otherwise, seq1_entry = R/ACGT and seq2_entry = R/ACGT
   return merge_RACGT_RACGT_TwoLowers<num_states>(
-      seq2_region, total_blength_2, end_pos, aln, model, threshold_prob,
+      seq1_region, seq2_region, total_blength_2,
+      end_pos, aln, model, threshold_prob,
       *new_lh, sum_lh, log_lh, merged_regions, return_log_lh);
-}*/
+}
 
 template <const cmaple::StateType num_states>
 auto do_merge_ORACGT_ORACGT(
@@ -1999,7 +2003,6 @@ auto merge_notN_notN_TwoLowers(const SeqRegion& seq1_region,
                                const RealNumType* const cumulative_rate,
                                const RealNumType threshold_prob,
                                RealNumType& log_lh,
-                               cmaple::RealNumType& total_factor,
                                std::unique_ptr<SeqRegions>& merged_regions,
                                const bool return_log_lh) -> bool {
   assert(seq1_region.type != TYPE_N);
@@ -2028,8 +2031,7 @@ auto merge_notN_notN_TwoLowers(const SeqRegion& seq1_region,
   if (seq1_region.type == seq2_region.type &&
       (seq1_region.type == TYPE_R || seq1_region.type < num_states)) {
     merge_identicalRACGT_TwoLowers(seq1_region, end_pos, total_blength_1,
-                                   total_blength_2, plength1, plength2,
-                                   pos, threshold_prob, model,
+                                   total_blength_2, pos, threshold_prob, model,
                                    cumulative_rate, log_lh, *merged_regions,
                                    return_log_lh);
   }
@@ -2040,29 +2042,19 @@ auto merge_notN_notN_TwoLowers(const SeqRegion& seq1_region,
     merged_regions = nullptr;
     return false;
   }
- // seq1 and seq2 are ORACGT
- else
- {
-     return merge_ORACGT_ORACGT<num_states>(seq1_region, seq2_region,
-        total_blength_1, total_blength_2, plength1, end_pos, aln, model,
-        threshold_prob, merged_regions, false, return_log_lh, total_factor);
- }
-/* ------ OLD-CODE REMOVED AFTER UPDATING TO MAPLE 0.7.5 --------------
   // seq1_entry = O
   else if (seq1_region.type == TYPE_O) {
-    auto ret = merge_O_ORACGT_TwoLowers<num_states>(
+    return merge_O_ORACGT_TwoLowers<num_states>(
         seq1_region, seq2_region, total_blength_1, total_blength_2, end_pos,
         aln, model, threshold_prob, log_lh, merged_regions, return_log_lh);
-    return ret;
   }
   // seq1_entry = R/ACGT
   else {
-    auto ret = merge_RACGT_ORACGT_TwoLowers<num_states>(
+    return merge_RACGT_ORACGT_TwoLowers<num_states>(
         seq1_region, seq2_region, total_blength_1, total_blength_2, end_pos,
         aln, model, threshold_prob, log_lh, merged_regions, return_log_lh);
-    return ret;
   }
-*/
+    
   // no error
   return true;
 }
@@ -2084,7 +2076,6 @@ RealNumType SeqRegions::mergeTwoLowers(
   assert(cumulative_rate);
 
   // init variables
-  RealNumType total_factor = 1.0;
   RealNumType log_lh = 0;
   PositionType pos = 0;
   const SeqRegions& seq1_regions = *this;
@@ -2092,11 +2083,6 @@ RealNumType SeqRegions::mergeTwoLowers(
   size_t iseq1 = 0;
   size_t iseq2 = 0;
   const PositionType seq_length = static_cast<PositionType>(aln->ref_seq.size());
-  // contribution to non-mutation for the whole genome
-  const RealNumType global_total_rate = -seq_length;
-  const RealNumType total_blength = ((plength1 > 0 ? plength1 : 0) + (plength2 > 0 ? plength2 : 0));
-  if (return_log_lh)
-      log_lh = total_blength * global_total_rate;
 
   // init merged_regions
   if (merged_regions) {
@@ -2152,31 +2138,12 @@ RealNumType SeqRegions::mergeTwoLowers(
     }
     // neither seq1_entry nor seq2_entry = N
     else {
-        // compute lh, if needed
-        // removing pre-calculated overall contributions to the likelihood
-        // from this position if they're not both R
-        if (return_log_lh
-            && !(seq1_region->type == TYPE_R && seq2_region->type == TYPE_R))
-        {
-            const StateType ref_state = seq1_region->type != TYPE_R ?
-                                    seq1_region->prev_state : seq2_region->prev_state;
-            log_lh -= model->diagonal_mut_mat[ref_state] * total_blength;
+        if (!merge_notN_notN_TwoLowers<num_states>(
+                *seq1_region, *seq2_region, plength1, plength2, end_pos, pos, aln,
+                model, cumulative_rate, threshold_prob, log_lh, merged_regions,
+                return_log_lh)) {
+          return MIN_NEGATIVE;
         }
-        
-      if (!merge_notN_notN_TwoLowers<num_states>(
-              *seq1_region, *seq2_region, plength1, plength2, end_pos, pos, aln,
-              model, cumulative_rate, threshold_prob, log_lh, total_factor, merged_regions,
-              return_log_lh)) {
-        return MIN_NEGATIVE;
-      }
-    }
-      
-    // calculate lh if needed
-    if (return_log_lh
-        && (seq1_region->type == TYPE_N || seq2_region->type == TYPE_N))
-    {
-        // removing pre-calculated overall contributions to the likelihood from these positions?
-        log_lh += total_blength * (cumulative_rate[pos] - cumulative_rate[end_pos + 1]);
     }
 
     // NHANLT: LOGS FOR DEBUGGING
@@ -2188,19 +2155,6 @@ RealNumType SeqRegions::mergeTwoLowers(
     "merge2Low " << pos << " " << std::setprecision(20) << lh[0] << " " << lh[1]
     << " " << lh[2] << " " << lh[3] << " " << std::endl;
     }*/
-      
-    // avoid underflow on total_factor
-    // approximately update lh_cost and total_factor
-    if (return_log_lh && total_factor <= MIN_CARRY_OVER) {
-        if (total_factor < MIN_POSITIVE) {
-           return MIN_NEGATIVE;
-        }
-
-        // lh_cost += log(total_factor);
-        // total_factor = 1.0;
-        total_factor *= MAX_POSITIVE;
-        log_lh -= LOG_MAX_POSITIVE;
-    }
 
     // update pos
     pos = end_pos + 1;
@@ -2211,9 +2165,6 @@ RealNumType SeqRegions::mergeTwoLowers(
          max_elements);  // ensure we did the correct reserve, otherwise it was
   // a pessimization
 #endif
-        
-  // update log_lh
-  log_lh += log(total_factor);
 
   return log_lh;
 }
