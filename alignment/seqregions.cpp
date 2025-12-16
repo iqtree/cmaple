@@ -389,8 +389,6 @@ void cmaple::merge_identicalRACGT_TwoLowers(
     const PositionType end_pos,
     RealNumType total_blength_1,
     RealNumType total_blength_2,
-    const cmaple::RealNumType blength_1,
-    const cmaple::RealNumType blength_2,
     const PositionType pos,
     const RealNumType threshold_prob,
     const ModelBase* model,
@@ -416,14 +414,8 @@ void cmaple::merge_identicalRACGT_TwoLowers(
     }
 
     if (seq1_region.type == TYPE_R) {
-        const RealNumType tmp_blength_1 = blength_1 > 0 ? blength_1 : 0;
-        const RealNumType tmp_blength_2 = blength_2 > 0 ? blength_2 : 0;
-        
-        if (total_blength_1 > tmp_blength_1 || total_blength_2 > tmp_blength_2)
-        {
-            log_lh += (total_blength_1 - tmp_blength_1 + total_blength_2 - tmp_blength_2) *
-            (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
-        }
+      log_lh += (total_blength_1 + total_blength_2) *
+                  (cumulative_rate[end_pos + 1] - cumulative_rate[pos]);
     } else {
       log_lh += model->diagonal_mut_mat[seq1_region.type] *
                 (total_blength_1 + total_blength_2);
