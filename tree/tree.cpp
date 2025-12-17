@@ -1277,7 +1277,7 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
   // record the start time
   auto start = getRealTime();
   int num_tree_improvement =
-      short_range_search ? 1 : params->num_tree_improvement;
+    short_range_search ? 1 : ((num_threads == 1?0:1) + params->num_tree_improvement);
 
   for (int i = 0; i < num_tree_improvement; ++i) {
     // first, set all nodes outdated
