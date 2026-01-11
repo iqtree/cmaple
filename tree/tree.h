@@ -799,6 +799,16 @@ bool isDiffFromOrigPlacement(
       RealNumType& opt_mid_bottom_blength,
       std::vector<AltBranch>& alt_branches,
       bool& is_root_considered);
+    
+    /**
+     Reset blengths when we fail to optimize them
+     */
+    void resetOptBlengths(
+        RealNumType& best_appending_blength,
+        RealNumType& best_mid_top_blength,
+        RealNumType& best_mid_bottom_blength,
+        const RealNumType removed_blength,
+        const RealNumType mid_branch_length);
 
   /**
    Examine placing a subtree as a descendant of an existing node

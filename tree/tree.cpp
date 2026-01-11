@@ -3232,9 +3232,9 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             
             // if bottom_regions is null (inconsistent) -> we can't optimize blengths
             if (!bottom_regions) {
-                best_appending_blength = removed_blength;
-                best_mid_top_blength = at_node.getUpperLength() * 0.5;
-                best_mid_bottom_blength = best_mid_top_blength;
+                resetOptBlengths(best_appending_blength, best_mid_top_blength,
+                                 best_mid_bottom_blength, removed_blength,
+                                 at_node.getUpperLength() * 0.5);
             }
             // otherwise, optimize blengths
             else
@@ -3257,20 +3257,46 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
                 // 3. create a reference from that pointer
                 auto& upper_lr_regions = *upper_lr_regions_ptr;
                 
+                bool reset_blengths = false;
                 std::unique_ptr<SeqRegions> two_lower_regions = nullptr;
                 const RealNumType mid_branch_length = at_node.getUpperLength() * 0.5;
                 bottom_regions->mergeTwoLowers<num_states>(two_lower_regions,
                     mid_branch_length, *subtree_regions, best_appending_blength,
                     aln, model, cumulative_rate, threshold_prob);
-                best_mid_top_blength = estimateBranchLength<num_states>(upper_lr_regions, two_lower_regions);
+                // optimize best_mid_top_blength
+                if (two_lower_regions) {
+                    best_mid_top_blength = estimateBranchLength<num_states>
+                        (upper_lr_regions, two_lower_regions);
+                }
+                // otherwise, reset blengths
+                else
+                {
+                    reset_blengths = true;
+                }
                 
                 // optimize the mid_bottom blength
                 std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
                 upper_lr_regions->mergeUpperLower<num_states>(
                     tmp_upper_lr_regions, best_mid_top_blength, *subtree_regions,
                     best_appending_blength, aln, model, threshold_prob);
-                best_mid_bottom_blength = estimateBranchLength<num_states>
-                    (tmp_upper_lr_regions, bottom_regions);
+                // optimize best_mid_bottom_blength
+                if (tmp_upper_lr_regions) {
+                    best_mid_bottom_blength = estimateBranchLength<num_states>
+                        (tmp_upper_lr_regions, bottom_regions);
+                }
+                // otherwise, reset blengths
+                else
+                {
+                    reset_blengths = true;
+                }
+                
+                // reset all blengths (if needed)
+                if (reset_blengths)
+                {
+                    resetOptBlengths(best_appending_blength, best_mid_top_blength,
+                                     best_mid_bottom_blength, removed_blength,
+                                     mid_branch_length);
+                }
                 
                 // re-compute the mid-branch regions
                 upper_lr_regions->mergeUpperLower<num_states>(
@@ -3295,7 +3321,7 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
         }
         // case we are moving from a parent to a child
         else {
-            
+            bool reset_blengths = false;
             // optimize the mid_top blength
             const std::unique_ptr<SeqRegions>& lower_regions =
                 current_node.getPartialLh(TOP);
@@ -3303,16 +3329,41 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             const RealNumType mid_branch_length =
                 updating_node->getBranchLength() * 0.5;
             lower_regions->mergeTwoLowers<num_states>(two_lower_regions, mid_branch_length,
-                                                      *subtree_regions, best_appending_blength, aln, model, cumulative_rate, threshold_prob);
-            best_mid_top_blength = estimateBranchLength<num_states>(updating_node->getIncomingRegions(), two_lower_regions);
+                *subtree_regions, best_appending_blength, aln, model, cumulative_rate, threshold_prob);
+            // optimize best_mid_top_blength
+            if (two_lower_regions) {
+                best_mid_top_blength = estimateBranchLength<num_states>
+                    (updating_node->getIncomingRegions(), two_lower_regions);
+            }
+            // otherwise, reset blengths
+            else
+            {
+                reset_blengths = true;
+            }
             
             // optimize the mid_bottom blength
             std::unique_ptr<SeqRegions> tmp_upper_lr_regions = nullptr;
             updating_node->getIncomingRegions()->mergeUpperLower<num_states>(
                 tmp_upper_lr_regions, best_mid_top_blength, *subtree_regions,
                 best_appending_blength, aln, model, threshold_prob);
-            best_mid_bottom_blength = estimateBranchLength<num_states>(
-                                            tmp_upper_lr_regions, lower_regions);
+            // optimize best_mid_bottom_blength
+            if (tmp_upper_lr_regions) {
+                best_mid_bottom_blength = estimateBranchLength<num_states>(
+                    tmp_upper_lr_regions, lower_regions);
+            }
+            // otherwise, reset blengths
+            else
+            {
+                reset_blengths = true;
+            }
+            
+            // reset all blengths (if needed)
+            if (reset_blengths)
+            {
+                resetOptBlengths(best_appending_blength, best_mid_top_blength,
+                                 best_mid_bottom_blength, removed_blength,
+                                 mid_branch_length);
+            }
             
             // re-compute the mid-branch regions
             updating_node->getIncomingRegions()->mergeUpperLower<num_states>(
@@ -3393,6 +3444,17 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
 
   // no error
   return true;
+}
+
+void cmaple::Tree::resetOptBlengths(RealNumType& best_appending_blength,
+                                    RealNumType& best_mid_top_blength,
+                                    RealNumType& best_mid_bottom_blength,
+                                    const RealNumType removed_blength,
+                                    const RealNumType mid_branch_length)
+{
+    best_appending_blength = removed_blength;
+    best_mid_top_blength = mid_branch_length;
+    best_mid_bottom_blength = best_mid_top_blength;
 }
 
 // NOTE: top_node != null <=> case when crawling up from child to parent
