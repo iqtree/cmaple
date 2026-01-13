@@ -8146,7 +8146,9 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
                              RealNumType& total_factor,
                              const ModelBase* model) {
   PositionType pos = seq2_region.position;
-  assert(seq1_region.position == seq2_region.position);
+  // NHANLT: this assertion is not true for all cases
+  // as R could be a chunk of sites
+  // assert(seq1_region.position == seq2_region.position);
   if (seq1_region.plength_observation2root >= 0) {
     RealNumType total_blength = seq1_region.plength_observation2root + blength;
 
