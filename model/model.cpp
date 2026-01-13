@@ -6,15 +6,16 @@
 using namespace std;
 using namespace cmaple;
 
-cmaple::Model::Model( cmaple::PositionType ref_genome_size,
-                      bool _rate_variation,
-                      bool _siteRates,
-                      cmaple::RealNumType wt_pseudocount,
-                      const std::string _rates_filename,
+cmaple::Model::Model(
                       const cmaple::ModelBase::SubModel sub_model,
-                      const cmaple::SeqRegion::SeqType seqtype)
+                      const cmaple::SeqRegion::SeqType seqtype,
+                      const bool n_rate_variation,
+                      const bool site_specific_rates,
+                      const cmaple::PositionType seq_length,
+                      const cmaple::RealNumType wt_pseudocount,
+                      const std::string& rates_filename)
     : model_base(nullptr) {
-  rate_variation = _rate_variation;
+  rate_variation = n_rate_variation;
   cmaple::ModelBase::SubModel n_sub_model = sub_model;
   cmaple::SeqRegion::SeqType n_seqtype = seqtype;
   assert(n_sub_model != ModelBase::DEFAULT || n_seqtype != SeqRegion::SEQ_AUTO);
@@ -75,7 +76,7 @@ cmaple::Model::Model( cmaple::PositionType ref_genome_size,
     }
     case cmaple::SeqRegion::SEQ_DNA: {
       if(rate_variation){
-        model_base = new ModelDNARateVariation(n_sub_model, ref_genome_size, _siteRates, wt_pseudocount, _rates_filename);
+        model_base = new ModelDNARateVariation(n_sub_model, seq_length, site_specific_rates, wt_pseudocount, rates_filename);
       } else {
         model_base = new ModelDNA(n_sub_model);
       }
