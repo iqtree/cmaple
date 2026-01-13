@@ -855,7 +855,7 @@ void cmaple::Tree::doPlacementTemplate(const int num_threads, std::ostream& out_
               {
                   // rebuild the lower regions
                   lower_regions = sequence->getLowerLhVector(
-                        aln->ref_seq, num_states, aln->getSeqType());;
+                        aln->ref_seq, num_states, aln->getSeqType());
                   
                   // integrate all local refs from root to the parent of this node
                   integrateLocalRefsFromRoot<num_states>(lower_regions,
@@ -8292,7 +8292,7 @@ void calculateSampleCost_O_RACGT(const SeqRegion& seq1_region,
     seq2_state = seq1_region.prev_state;
   }
   const RealNumType* transposed_mut_mat_row = model->getTransposedMutationMatrixRow(seq2_state, end_pos);
-  RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region.likelihood)[0]));;
+  RealNumType tot2 = dotProduct<num_states>(transposed_mut_mat_row, &((*seq1_region.likelihood)[0]));
   total_factor *= seq1_region.getLH(seq2_state) + blength13 * tot2;
 }
 
