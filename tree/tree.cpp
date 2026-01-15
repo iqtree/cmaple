@@ -12682,6 +12682,11 @@ void cmaple::Tree::expandTreeByOneLessInfoSeq(PhyloNode& node,
         static_cast<PositionType>(aln->ref_seq.size()), aln, true) == 1)
          new_min_blength = 0;
     
+  // expand node_mutations by 2 nodes,
+  // which will be added to the tree during the expansion
+    node_mutations.resize(nodes.size() + 2);
+    corrected_num_descendants.resize(nodes.size() + 2);
+    
   // connect the new node to the tree
   connectNewSample2Branch<num_states>(
       lower_regions, seq_name_index, node_index, node, top_distance, 0,
