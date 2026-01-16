@@ -9551,7 +9551,7 @@ void cmaple::Tree::calSiteLhDiffNonRoot(
           
           // now switch to use the same local ref as the tmp parent node
           // de-integrate mutations at the tmp current node, if any
-          if (tmp_node_mutations && tmp_node_mutations->size())
+          if (new_lower_lh && tmp_node_mutations && tmp_node_mutations->size())
           {
               bk_new_lower_lh = bk_new_lower_lh
                 ->integrateMutations<num_states>(tmp_node_mutations, aln, true);
@@ -10697,7 +10697,7 @@ bool cmaple::Tree::calculateNNILhNonRoot(
           
           // now switch to use the same local ref as the tmp parent node
           // de-integrate mutations at the tmp current node, if any
-          if (tmp_node_mutations && tmp_node_mutations->size())
+          if (new_lower_lh && tmp_node_mutations && tmp_node_mutations->size())
           {
               new_lower_lh = new_lower_lh
                 ->integrateMutations<num_states>(tmp_node_mutations, aln, true);
