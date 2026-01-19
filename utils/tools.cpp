@@ -1614,7 +1614,7 @@ void cmaple::print_backtrace(ostream &out, unsigned int max_frames) {}
 void cmaple::print_backtrace(ostream &out, unsigned int max_frames)
 {
 #ifdef _OPENMP
-#pragma omp master
+#pragma omp critical
 {
 #endif
     out << "STACK TRACE FOR DEBUGGING:" << endl;
