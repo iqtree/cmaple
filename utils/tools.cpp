@@ -1619,116 +1619,12 @@ void cmaple::print_backtrace(ostream &out, unsigned int max_frames)
 #endif
     out << "STACK TRACE FOR DEBUGGING:" << endl;
 
-    // storage array for stack trace address data
-    void* addrlist[max_frames+1];
-
-    // retrieve current stack addresses
-    int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
-
-//    if (addrlen == 0) {
-//        out << "  <empty, possibly corrupt>" << endl;
-//        return;
-//    }
-
-    // resolve addresses into strings containing "filename(function+address)",
-    // this array must be free()-ed
-    char** symbollist = backtrace_symbols(addrlist, addrlen);
-
-    // allocate string which will be filled with the demangled function name
-    size_t funcnamesize = 256;
-    char* funcname = (char*)malloc(funcnamesize);
-
-    // iterate over the returned symbol lines. skip the first, it is the
-    // address of this function.
-    for (int i = 1; i < addrlen; i++)
-    {
-    char *begin_name = 0, *begin_offset = 0;
-
-    // find parentheses and +address offset surrounding the mangled name:
-#ifdef __clang__
-      // OSX style stack trace
-      for ( char *p = symbollist[i]; *p; ++p )
-      {
-         if (( *p == '_' ) && ( *(p-1) == ' ' ))
-            begin_name = p-1;
-         else if ( *p == '+' )
-            begin_offset = p-1;
-      }
-
-      if ( begin_name && begin_offset && ( begin_name < begin_offset ))
-      {
-         *begin_name++ = '\0';
-         *begin_offset++ = '\0';
-
-         // mangled name is now in [begin_name, begin_offset) and caller
-         // offset in [begin_offset, end_offset). now apply
-         // __cxa_demangle():
-         int status;
-         char* ret = abi::__cxa_demangle( begin_name, &funcname[0],
-                                          &funcnamesize, &status );
-         if ( status == 0 )
-         {
-            funcname = ret; // use possibly realloc()-ed string
-//            out << "  " << symbollist[i] << " : " << funcname << "+"<< begin_offset << endl;
-            out << i << "   "  << funcname << endl;
-         } else {
-            // demangling failed. Output function name as a C function with
-            // no arguments.
-//             out << "  " << symbollist[i] << " : " << begin_name << "()+"<< begin_offset << endl;
-            out << i << "   " << begin_name << "()" << endl;
-         }
-
-#else // !DARWIN - but is posix
-         // ./module(function+0x15c) [0x8048a6d]
-    char *end_offset = 0;
-    for (char *p = symbollist[i]; *p; ++p)
-    {
-        if (*p == '(')
-        begin_name = p;
-        else if (*p == '+')
-        begin_offset = p;
-        else if (*p == ')' && begin_offset) {
-        end_offset = p;
-        break;
-        }
-    }
-
-    if (begin_name && begin_offset && end_offset
-        && begin_name < begin_offset)
-    {
-        *begin_name++ = '\0';
-        *begin_offset++ = '\0';
-        *end_offset = '\0';
-
-        // mangled name is now in [begin_name, begin_offset) and caller
-        // offset in [begin_offset, end_offset). now apply
-        // __cxa_demangle():
-
-        int status;
-        char* ret = abi::__cxa_demangle(begin_name,
-                        funcname, &funcnamesize, &status);
-        if (status == 0) {
-            funcname = ret; // use possibly realloc()-ed string
-//            out << "  " << symbollist[i] << " : " << funcname << "+"<< begin_offset << endl;
-            out << i << "   " << funcname << endl;
-        }
-        else {
-            // demangling failed. Output function name as a C function with
-            // no arguments.
-//            out << "  " << symbollist[i] << " : " << begin_name << "()+"<< begin_offset << endl;
-            out << i << "   " << begin_name << "()" << endl;
-        }
-#endif
-    }
-    else
-    {
-        // couldn't parse the line? print the whole line.
-//        out << i << ". " << symbollist[i] << endl;
-    }
-    }
-
-    free(funcname);
-    free(symbollist);
+    const size_t stack_depth = 100;
+    void* array[stack_depth];
+    size_t size = backtrace(array, stack_depth);
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
+    _exit(1);
+    
 #ifdef _OPENMP
 }
 #endif
