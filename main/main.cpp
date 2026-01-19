@@ -54,7 +54,7 @@ void funcAbort(int signal_number) {
    */
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(WIN32) && \
     !defined(WIN64) && !defined(__CYGWIN__)
-  // print_stacktrace(cerr);
+    print_backtrace(cerr);
 #endif
 
   cerr << endl << "*** CMAPLE CRASHES WITH SIGNAL ";
