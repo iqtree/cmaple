@@ -52,6 +52,11 @@
 #include <omp.h> /* OpenMP */
 #endif
 
+#if defined(Backtrace_FOUND)
+#include <execinfo.h>
+#include <cxxabi.h>
+#endif
+
 /*#ifdef NDEBUG
 #define ASSERT(EXPRESSION) ((void)0)
 #else
@@ -1318,4 +1323,9 @@ std::unique_ptr<T> make_unique(Args&&... args) {
  * @param instream the input stream
  */
 void resetStream(std::istream& instream);
+
+/**
+ * Print backtrace
+ */
+void print_backtrace(std::ostream &out, unsigned int max_frames = 63);
 }  // namespace cmaple
