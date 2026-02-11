@@ -256,7 +256,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
         for(int j = 0; j < num_states_; j++) {
             W[i * num_states_ + j] = 0;
             for(int k = 0; k < num_states_; k++) {
-                C[i * num_states_ + row_index[j] + k] = 0;
+                C[i * mat_size + row_index[j] + k] = 0;
             }
         }
     }
