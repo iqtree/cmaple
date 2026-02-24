@@ -201,6 +201,16 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             out << tree.exportTSV();
             out.close();
         }
+
+        // export MAT if selected
+        if(params.output_MAT)
+        {
+            std::string filename = params.output_prefix + "_MAT.nex";
+            std::cout << "Writing MAT to file " << filename << std::endl;
+            ofstream out = ofstream(filename);
+            out << tree.exportNexus(tree_format, false, true);
+            out.close();
+        }
         
         // output log-likelihood of the tree
         if (cmaple::verbose_mode > cmaple::VB_QUIET) {
@@ -222,10 +232,12 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         // Show information about output files
         std::cout << "Analysis results written to:" << std::endl;
         std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
+        if (params.output_MAT)
+            std::cout << "Estimated mutation-annotated tree (MAT): " << output_treefile + "_MAT.nwk" << std::endl;
         if (params.output_NEXUS || params.compute_SPRTA)
-            std::cout << "Tree in NEXUS format:          " << output_treefile + ".nex" << std::endl;
+            std::cout << "Tree in NEXUS format:                    " << output_treefile + ".nex" << std::endl;
         if (params.compute_SPRTA && params.output_alternative_spr)
-            std::cout << "Meta data in TSV format:       " << output_treefile + ".tsv" << std::endl;
+            std::cout << "Meta data in TSV format:                 " << output_treefile + ".tsv" << std::endl;
         /*if (params.compute_aLRT_SH) {
           std::cout << "Tree with aLRT-SH values:      "
                     << prefix + ".aLRT_SH.treefile" << std::endl;

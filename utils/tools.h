@@ -714,6 +714,11 @@ class Params {
     bool output_NEXUS;
     
     /**
+     * TRUE to also output MAT in nexus format
+     */
+    bool output_MAT;
+
+    /**
      * TRUE to compute the SPRTA branch supports
      */
     bool compute_SPRTA;

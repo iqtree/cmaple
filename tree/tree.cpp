@@ -198,7 +198,8 @@ std::string cmaple::Tree::exportNewick(const TreeType tree_type,
 }
 
 std::string cmaple::Tree::exportNexus(const TreeType tree_type,
-                                       const bool show_branch_supports) {
+                                      const bool show_branch_supports,
+                                      const bool show_mutations) {
   assert(aln);
   assert(model);
     
@@ -210,10 +211,10 @@ std::string cmaple::Tree::exportNexus(const TreeType tree_type,
   // output the tree according to its type
   switch (tree_type) {
     case BIN_TREE:
-      return exportNexus(true, show_branch_supports_checked);
+      return exportNexus(true, show_branch_supports_checked, show_mutations);
       // break;
     case MUL_TREE:
-      return exportNexus(false, show_branch_supports_checked);
+      return exportNexus(false, show_branch_supports_checked, show_mutations);
       // break;
     case UNKNOWN_TREE:
     default:
@@ -1659,7 +1660,8 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
                                            const bool binary,
                                            const NumSeqsType node_vec_index,
                                            const bool print_internal_id,
-                                           const bool show_branch_supports) {
+                                           const bool show_branch_supports,
+                                           const bool show_mutations) {
   string internal_name = "";
   PhyloNode& node = nodes[node_vec_index];
   string output = "(";
@@ -1740,6 +1742,15 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
                 }
             }
         }
+
+        if(show_mutations) 
+        {
+          std::string mutation_string = getMutationStringForNode(node);
+          if(mutation_string.size() > 0)
+          {
+            annotation_vec.push_back("mutationsInf={" + mutation_string + "}");
+          }
+        }
         
         if (sh_alrt_str.length() > 0)
         {
@@ -1805,11 +1816,11 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
       
     output +=
         exportNodeString(is_newick_format, binary, node.getNeighborIndex(RIGHT).getVectorIndex(),
-                         print_internal_id, show_branch_supports);
+                         print_internal_id, show_branch_supports, show_mutations);
     output += ",";
     output +=
         exportNodeString(is_newick_format, binary, node.getNeighborIndex(LEFT).getVectorIndex(),
-                         print_internal_id, show_branch_supports);
+                         print_internal_id, show_branch_supports, show_mutations);
   }
    
     // output SH-aLRT in newick string
@@ -1829,6 +1840,205 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
   output += ")" + internal_name + branch_support + ":" + length + annotation_str;
 
   return output;
+}
+
+std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
+{
+
+  std::string mutation_string = "";
+  RealNumType blength = node.getUpperLength();
+  if(blength <= 0.) {
+    return mutation_string;
+  }
+
+  PositionType genome_size = aln->ref_seq.size();
+  SeqRegion::SeqType seq_type = aln->getSeqType();
+  StateType num_states = aln->num_states;
+
+  Index parent_index = node.getNeighborIndex(TOP);
+  PhyloNode& parent_node = nodes[parent_index.getVectorIndex()];
+  const std::unique_ptr<SeqRegions>& parent_regions = parent_node.getPartialLh(parent_index.getMiniIndex());
+  // Note: getPartialLh is not const so cannot const cmaple::PhyloNode& node
+  const std::unique_ptr<SeqRegions>& child_regions = node.getPartialLh(TOP);
+
+  PositionType pos = 0;
+  const SeqRegions& seqP_regions = *parent_regions;
+  const SeqRegions& seqC_regions = *child_regions;
+  size_t iseq1 = 0;
+  size_t iseq2 = 0;
+
+  while(pos < genome_size) 
+  {
+    PositionType end_pos = 0;
+    SeqRegions::getNextSharedSegment(pos, seqP_regions, seqC_regions, iseq1, iseq2, end_pos);
+    const auto* seqP_region = &seqP_regions[iseq1];
+    const auto* seqC_region = &seqC_regions[iseq2];
+
+    // if the child of this branch does not observe its state directly then 
+    // skip this branch.
+    if(seqC_region->plength_observation2node > 0) {
+        pos = end_pos + 1;
+        continue;
+    }
+
+    // distance to last observation or root if last observation was across the root.
+    RealNumType branch_length_to_observation = blength;
+    if(seqP_region->plength_observation2node > 0 && seqP_region->plength_observation2root <= 0) {
+        branch_length_to_observation = blength + seqP_region->plength_observation2node;
+    }
+    else if(seqP_region->plength_observation2root > 0) {
+        branch_length_to_observation = blength + seqP_region->plength_observation2root;
+    }
+
+    if(seqP_region->type != seqC_region->type &&
+        seqP_region->type <= TYPE_R &&
+        seqC_region->type <= TYPE_R) 
+    {
+        StateType stateA = seqP_region->type;
+        StateType stateB = seqC_region->type;
+        if(seqP_region->type == TYPE_R) 
+        {
+            stateA = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+        }
+        if(seqC_region->type == TYPE_R) 
+        {
+            stateB = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+        }
+        mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                            std::to_string(pos+1) + 
+                            aln->convertState2Char(stateB, seq_type) + ":1.0,";
+    }
+    else if(seqP_region->type <= TYPE_R && seqC_region->type == TYPE_O) 
+    {
+      StateType stateA = seqP_region->type;
+      if(seqP_region->type == TYPE_R) 
+      {
+          stateA = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+      }
+      // Calculate a weight vector giving the relative probabilities of observing
+      // each state at the O node.
+      std::vector<RealNumType> weight_vector(num_states);
+      RealNumType sum = 0.0;
+      for(StateType stateB = 0; stateB < num_states; stateB++) 
+      {
+          RealNumType likelihoodB = seqC_region->getLH(stateB);
+          RealNumType prob = 0.;
+          if(stateB != stateA) 
+          {
+            prob = likelihoodB * branch_length_to_observation 
+                                * model->getMutationMatrixEntry(stateA, stateB, end_pos);
+          } else {
+            prob = likelihoodB * (1 - branch_length_to_observation 
+                                * model->getMutationMatrixEntry(stateB, stateB, end_pos));
+          }
+          weight_vector[stateB] = prob;
+          sum += prob;
+      }
+      // Normalise weight vector 
+      normalize_arr(weight_vector.data(), num_states, sum);
+
+      // write out mutations
+      for(StateType stateB = 0; stateB < num_states; stateB++) 
+      {
+        if (stateB != stateA && weight_vector[stateB] > 0.01)
+        {
+          mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                              std::to_string(pos+1) + 
+                              aln->convertState2Char(stateB, seq_type) + ":" +
+                              std::to_string(weight_vector[stateB]) + "," ;
+        }
+      }
+    }
+    else if(seqP_region->type == TYPE_O && seqC_region->type <= TYPE_R) 
+    {
+      StateType stateB = seqC_region->type;
+      if(seqC_region->type == TYPE_R) 
+      {
+          stateB = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+      }
+      // Calculate a weight vector giving the relative probabilities of observing
+      // each state at the O node.
+      std::vector<RealNumType> weight_vector(num_states);
+      RealNumType sum = 0.0;
+      for(StateType stateA = 0; stateA < num_states; stateA++) 
+      {
+          RealNumType likelihoodA = seqP_region->getLH(stateA);
+          RealNumType prob = 0;
+          if(stateA != stateB) 
+          {
+            prob = likelihoodA * branch_length_to_observation 
+                                * model->getMutationMatrixEntry(stateA, stateB, end_pos);
+          } else {
+            prob = likelihoodA * (1 - branch_length_to_observation 
+                                * model->getMutationMatrixEntry(stateA, stateA, end_pos));
+          }
+          weight_vector[stateA] = prob;
+          sum += prob;
+      }
+      // Normalise weight vector 
+      normalize_arr(weight_vector.data(), num_states, sum);
+
+      // write out mutations
+      for(StateType stateA = 0; stateA < num_states; stateA++) 
+      {
+        if (stateA != stateB && weight_vector[stateA] > 0.01)
+        {
+          mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                              std::to_string(pos + 1) + 
+                              aln->convertState2Char(stateB, seq_type) + ":" +
+                              std::to_string(weight_vector[stateA]) + "," ;
+        }
+      }
+    }
+    else if(seqP_region->type == TYPE_O && seqC_region->type == TYPE_O) 
+    {
+      // Calculate a weight vector giving the relative probabilities of observing
+      // each state at each of the O nodes.
+      std::vector<RealNumType> weight_vector(num_states * num_states);
+      RealNumType sum = 0.0;
+      for(StateType stateA = 0; stateA < num_states; stateA++) {
+          RealNumType likelihoodA = seqP_region->getLH(stateA);
+          for(StateType stateB = 0; stateB < num_states; stateB++) {
+              RealNumType likelihoodB = seqC_region->getLH(stateB);
+              RealNumType prob = 0.;
+              if(stateA != stateB) {
+                prob = likelihoodA * likelihoodB * branch_length_to_observation 
+                                    * model->getMutationMatrixEntry(stateA, stateB, end_pos);
+              } else {
+                prob = likelihoodA * likelihoodB * (1 - branch_length_to_observation 
+                                    * model->getMutationMatrixEntry(stateA, stateA, end_pos));
+              }
+              weight_vector[model->row_index[stateA] + stateB] = prob;
+              sum += prob;
+          }
+      }
+      // Normalise weight vector 
+      normalize_arr(weight_vector.data(), num_states * num_states, sum);
+
+      // write out mutations
+      for(StateType stateA = 0; stateA < num_states; stateA++) 
+      {
+        for(StateType stateB =0; stateB < num_states; stateB++)
+        {
+          if (stateA != stateB && weight_vector[model->row_index[stateA] + stateB] > 0.01)
+          {
+            mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                                std::to_string(pos + 1) + 
+                                aln->convertState2Char(stateB, seq_type) + ":" +
+                                std::to_string(weight_vector[model->row_index[stateA] + stateB]) + "," ;
+          }
+        }
+      }
+    }
+    pos = end_pos + 1;
+  }
+
+  if(mutation_string.size() > 0) 
+  {
+    // remove trailing comma
+    mutation_string = mutation_string.substr(0, mutation_string.size()-1);
+  }
+  return mutation_string;
 }
 
 std::string cmaple::Tree::exportNewick(const bool binary,
@@ -1852,7 +2062,8 @@ std::string cmaple::Tree::exportNewick(const bool binary,
 }
 
 std::string cmaple::Tree::exportNexus(const bool binary,
-                                       const bool show_branch_supports) {
+                                      const bool show_branch_supports,
+                                      const bool show_mutations) {
     assert(annotations.size() == nodes.size());
     
   // make sure tree is not empty
@@ -1931,7 +2142,7 @@ std::string cmaple::Tree::exportNexus(const bool binary,
     
     return pre_output + convertIntToString(seq_names.size()) + mid_output_1
       + list_leaf_names + mid_output_2
-      + exportNodeString(false, binary, root_vector_index, true, show_branch_supports)
+      + exportNodeString(false, binary, root_vector_index, true, show_branch_supports, show_mutations)
       + ";" + post_output;
 }
 
@@ -8146,9 +8357,6 @@ void calculateSampleCost_R_O(const SeqRegion& seq1_region,
                              RealNumType& total_factor,
                              const ModelBase* model) {
   PositionType pos = seq2_region.position;
-  // NHANLT: this assertion is not true for all cases
-  // as R could be a chunk of sites
-  // assert(seq1_region.position == seq2_region.position);
   if (seq1_region.plength_observation2root >= 0) {
     RealNumType total_blength = seq1_region.plength_observation2root + blength;
 
