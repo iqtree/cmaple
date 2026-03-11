@@ -205,7 +205,7 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         // export MAT if selected
         if(params.output_MAT)
         {
-            std::string filename = params.output_prefix + "_MAT.nex";
+            std::string filename = prefix + ".mat.nex";
             std::cout << "Writing MAT to file " << filename << std::endl;
             ofstream out = ofstream(filename);
             out << tree.exportNexus(tree_format, false, true);
@@ -231,18 +231,18 @@ void cmaple::runCMAPLE(cmaple::Params &params)
             
         // Show information about output files
         std::cout << "Analysis results written to:" << std::endl;
-        std::cout << "Maximum-likelihood tree:       " << output_treefile << std::endl;
+        std::cout << "Maximum-likelihood tree:     " << output_treefile << std::endl;
         if (params.output_MAT)
-            std::cout << "Estimated mutation-annotated tree (MAT): " << output_treefile + "_MAT.nwk" << std::endl;
+            std::cout << "Estimated MAT:               " << prefix + ".mat.nex" << std::endl;
         if (params.output_NEXUS || params.compute_SPRTA)
-            std::cout << "Tree in NEXUS format:                    " << output_treefile + ".nex" << std::endl;
+            std::cout << "Tree in NEXUS format:        " << output_treefile + ".nex" << std::endl;
         if (params.compute_SPRTA && params.output_alternative_spr)
-            std::cout << "Meta data in TSV format:                 " << output_treefile + ".tsv" << std::endl;
+            std::cout << "Meta data in TSV format:     " << output_treefile + ".tsv" << std::endl;
         /*if (params.compute_aLRT_SH) {
           std::cout << "Tree with aLRT-SH values:      "
                     << prefix + ".aLRT_SH.treefile" << std::endl;
         }*/
-        std::cout << "Screen log file:               " << prefix + ".log" << std::endl << std::endl;
+        std::cout << "Screen log file:             " << prefix + ".log" << std::endl << std::endl;
         
         // show runtime
         auto end = getRealTime();
