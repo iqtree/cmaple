@@ -1857,9 +1857,42 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
 
   Index parent_index = node.getNeighborIndex(TOP);
   PhyloNode& parent_node = nodes[parent_index.getVectorIndex()];
-  const std::unique_ptr<SeqRegions>& parent_regions = parent_node.getPartialLh(parent_index.getMiniIndex());
+  const std::unique_ptr<SeqRegions>& parent_regions =
+    parent_node.getPartialLh(parent_index.getMiniIndex());
   // Note: getPartialLh is not const so cannot const cmaple::PhyloNode& node
-  const std::unique_ptr<SeqRegions>& child_regions = node.getPartialLh(TOP);
+    
+    // use the same local ref as the parent node
+    // extract the mutations at the current node
+    std::unique_ptr<SeqRegions>& child_mutations =
+        node_mutations[parent_node.getNeighborIndex(
+        parent_index.getMiniIndex()).getVectorIndex()];
+  
+    // 1. create a new lower_regions (for the child node)
+    // that deintegrates the mutations at the child node, if any
+    std::unique_ptr<SeqRegions> mut_deintegrated_child_lower_regions = nullptr;
+    if (child_mutations && child_mutations->size())
+    {
+        // NOTES: hard code the number of state here
+        // but it can be changed to template
+        if (seq_type == SeqRegion::SEQ_PROTEIN)
+        {
+            mut_deintegrated_child_lower_regions = node.getPartialLh(TOP)
+            ->integrateMutations<20>(child_mutations, aln, true);
+        }
+        // default is DNA
+        else
+        {
+            mut_deintegrated_child_lower_regions = node.getPartialLh(TOP)
+            ->integrateMutations<4>(child_mutations, aln, true);
+        }
+    }
+    // 2. create the pointer that points to the appropriate regions
+    const std::unique_ptr<SeqRegions>* child_lower_regions_ptr =
+        (child_mutations && child_mutations->size())
+        ? &(mut_deintegrated_child_lower_regions)
+        : &(node.getPartialLh(TOP));
+    // 3. create a reference from that pointer
+    auto& child_regions = *child_lower_regions_ptr;
 
   PositionType pos = 0;
   const SeqRegions& seqP_regions = *parent_regions;
@@ -1898,11 +1931,11 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
         StateType stateB = seqC_region->type;
         if(seqP_region->type == TYPE_R) 
         {
-            stateA = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+            stateA = seqC_region->prev_state;
         }
         if(seqC_region->type == TYPE_R) 
         {
-            stateB = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+            stateB = seqP_region->prev_state;
         }
         mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
                             std::to_string(pos+1) + 
@@ -1913,7 +1946,7 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
       StateType stateA = seqP_region->type;
       if(seqP_region->type == TYPE_R) 
       {
-          stateA = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+          stateA = seqC_region->prev_state;
       }
       // Calculate a weight vector giving the relative probabilities of observing
       // each state at the O node.
@@ -1954,7 +1987,7 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
       StateType stateB = seqC_region->type;
       if(seqC_region->type == TYPE_R) 
       {
-          stateB = aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+          stateB = seqP_region->prev_state;
       }
       // Calculate a weight vector giving the relative probabilities of observing
       // each state at the O node.
