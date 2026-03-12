@@ -30,7 +30,7 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -m1 'project(cmaple' CMakeLists.txt | sed 's/.*VERSION[[:space:]]\+\([0-9.]*\).*/\1/')
+          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
           TARBALL="cmaple-${VERSION}-Linux-intel.tar.gz"
           tar -czf "$TARBALL" -C build cmaple cmaple-aa
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
@@ -65,7 +65,7 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -m1 'project(cmaple' CMakeLists.txt | sed 's/.*VERSION[[:space:]]\+\([0-9.]*\).*/\1/')
+          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
           TARBALL="cmaple-${VERSION}-Linux-arm.tar.gz"
           tar -czf "$TARBALL" -C build cmaple cmaple-aa
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
@@ -212,7 +212,7 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -m1 'project(cmaple' CMakeLists.txt | sed 's/.*VERSION[[:space:]]\+\([0-9.]*\).*/\1/')
+          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
           ZIPFILE="cmaple-${VERSION}-macOS.zip"
           zip -j "$ZIPFILE" universal/cmaple universal/cmaple-aa
           echo "zipfile=$ZIPFILE" >> "$GITHUB_OUTPUT"
@@ -245,7 +245,7 @@ jobs:
         id: package
         shell: bash
         run: |
-          VERSION=$(grep -m1 'project(cmaple' CMakeLists.txt | sed 's/.*VERSION[[:space:]]\+\([0-9.]*\).*/\1/')
+          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
           ZIPFILE="cmaple-${VERSION}-Windows.zip"
           7z a "$ZIPFILE" ./build/cmaple.exe ./build/cmaple-aa.exe
           echo "zipfile=$ZIPFILE" >> "$GITHUB_OUTPUT"
