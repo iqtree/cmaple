@@ -32,35 +32,29 @@ jobs:
           path: |
             build/cmaple
             build/cmaple-aa
+
   build-ubuntu-aarch64:
     runs-on: ubuntu-22.04-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Build on Linux ARM64
-        uses: uraimo/run-on-arch-action@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q -y
+          sudo apt-get install -q -y cmake gcc g++ file ninja-build
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
         with:
-          arch: aarch64
-          distro: ubuntu20.04
-          githubToken: ${{ github.token }}
-          dockerRunArgs: |
-            --volume "${PWD}:/cmaple"
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y cmake gcc g++ file ninja-build
-          run: |
-            cd /cmaple
-            mkdir build
-            cd build
-            cmake .. -DCMAPLE_FLAGS=static -DUSE_CMAPLE_AA=ON
-            make -j
-            ls -alht
-            for exe in "./cmaple" "./cmaple-aa"; do
-              chmod +x $exe
-              file $exe
-              $exe
-              $exe --help
-            done
+          generator: Ninja
+          options: CMAPLE_FLAGS=static USE_CMAPLE_AA=ON
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
+            file $exe
+            $exe
+            $exe --help
+          done
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -68,6 +62,7 @@ jobs:
           path: |
             build/cmaple
             build/cmaple-aa
+
   build-macos-14:
     runs-on: macos-14
     steps:
@@ -110,6 +105,7 @@ jobs:
           path: |
             build/cmaple
             build/cmaple-aa
+
   build-windows:
     runs-on: windows-2022
     steps:
