@@ -121,7 +121,7 @@ jobs:
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
-          options: USE_CMAPLE_AA=ON
+          options: USE_CMAPLE_AA=ON BUILD_TESTING=OFF
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
