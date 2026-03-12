@@ -82,17 +82,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: |
-          brew update && brew install libomp ninja
+        run: brew update && brew install libomp ninja
       - name: Construct flags
-        id: libomp-prefix
+        id: flags
         run: |
           PREFIX=$(brew --prefix libomp)
-          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
-            echo $var=${!var}
-            echo $var=${!var} >> "$GITHUB_OUTPUT"
+          # -static-openmp links libomp.a directly into the binary so users
+          # don't need libomp installed at runtime.
+          CMAKE_C_FLAGS="-I${PREFIX}/include"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include"
+          CMAKE_EXE_LINKER_FLAGS="${PREFIX}/lib/libomp.a"
+          for var in CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS; do
+            echo "$var=${!var}"
+            echo "$var=${!var}" >> "$GITHUB_OUTPUT"
           done
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
@@ -101,13 +103,16 @@ jobs:
           options: USE_CMAPLE_AA=ON
           c-compiler: clang
           cxx-compiler: clang++
-          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
-          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
+          c-flags: ${{ steps.flags.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.flags.outputs.CMAKE_CXX_FLAGS }}
+          args: -DCMAKE_EXE_LINKER_FLAGS="${{ steps.flags.outputs.CMAKE_EXE_LINKER_FLAGS }}"
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
             chmod +x $exe
             file $exe
+            # Verify no dynamic libomp dependency remains
+            otool -L $exe | grep libomp && echo "WARNING: dynamic libomp found" || echo "OK: no dynamic libomp"
             $exe
             $exe --help
           done
@@ -126,18 +131,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: |
-          brew update && brew install libomp ninja
+        run: brew update && brew install libomp ninja
       - name: Construct flags
-        id: libomp-prefix
+        id: flags
         run: |
-          # On Intel Macs, Homebrew installs to /usr/local
-          PREFIX=/usr/local/opt/libomp
-          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
-            echo $var=${!var}
-            echo $var=${!var} >> "$GITHUB_OUTPUT"
+          PREFIX=$(brew --prefix libomp)
+          # -static-openmp links libomp.a directly into the binary so users
+          # don't need libomp installed at runtime.
+          CMAKE_C_FLAGS="-I${PREFIX}/include"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include"
+          CMAKE_EXE_LINKER_FLAGS="${PREFIX}/lib/libomp.a"
+          for var in CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS; do
+            echo "$var=${!var}"
+            echo "$var=${!var}" >> "$GITHUB_OUTPUT"
           done
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
@@ -146,13 +152,16 @@ jobs:
           options: USE_CMAPLE_AA=ON
           c-compiler: clang
           cxx-compiler: clang++
-          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
-          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
+          c-flags: ${{ steps.flags.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.flags.outputs.CMAKE_CXX_FLAGS }}
+          args: -DCMAKE_EXE_LINKER_FLAGS="${{ steps.flags.outputs.CMAKE_EXE_LINKER_FLAGS }}"
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
             chmod +x $exe
             file $exe
+            # Verify no dynamic libomp dependency remains
+            otool -L $exe | grep libomp && echo "WARNING: dynamic libomp found" || echo "OK: no dynamic libomp"
             $exe
             $exe --help
           done
