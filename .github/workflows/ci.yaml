@@ -30,7 +30,8 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
+          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' build/CMakeCache.txt | cut -d= -f2)
+          echo "Detected version: $VERSION"
           TARBALL="cmaple-${VERSION}-Linux-intel.tar.gz"
           tar -czf "$TARBALL" -C build cmaple cmaple-aa
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
@@ -65,7 +66,8 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
+          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' build/CMakeCache.txt | cut -d= -f2)
+          echo "Detected version: $VERSION"
           TARBALL="cmaple-${VERSION}-Linux-arm.tar.gz"
           tar -czf "$TARBALL" -C build cmaple cmaple-aa
           echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
@@ -212,7 +214,10 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
+          cmake -S . -B _ver_tmp -N > /dev/null 2>&1 || true
+          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' _ver_tmp/CMakeCache.txt | cut -d= -f2)
+          rm -rf _ver_tmp
+          echo "Detected version: $VERSION"
           ZIPFILE="cmaple-${VERSION}-macOS.zip"
           zip -j "$ZIPFILE" universal/cmaple universal/cmaple-aa
           echo "zipfile=$ZIPFILE" >> "$GITHUB_OUTPUT"
@@ -245,7 +250,8 @@ jobs:
         id: package
         shell: bash
         run: |
-          VERSION=$(grep -A5 'project(cmaple' CMakeLists.txt | grep -oP '(?<=VERSION )[0-9.]+' | head -1)
+          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' build/CMakeCache.txt | cut -d= -f2)
+          echo "Detected version: $VERSION"
           ZIPFILE="cmaple-${VERSION}-Windows.zip"
           7z a "$ZIPFILE" ./build/cmaple.exe ./build/cmaple-aa.exe
           echo "zipfile=$ZIPFILE" >> "$GITHUB_OUTPUT"
