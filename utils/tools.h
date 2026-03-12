@@ -794,6 +794,21 @@ class Params {
      */
     bool local_refs;
 
+    /**
+     * TRUE to always run full branch-length optimization when placing on
+     * branches longer than deep_long_bl_search_thresh. This improves
+     * accuracy for long branches at the cost of extra computation.
+     * Default: FALSE
+     */
+    bool deep_long_bl_search;
+
+    /**
+     * Branch length threshold above which deep_long_bl_search triggers full
+     * optimization. Computed from genome size as (log(lRef) + 5) / lRef.
+     * Only used when deep_long_bl_search is TRUE.
+     */
+    RealNumType deep_long_bl_search_thresh;
+
   /*
       TRUE to log debugging
    */

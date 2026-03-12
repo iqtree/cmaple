@@ -634,6 +634,8 @@ cmaple::Params::Params() {
   max_desc_ref = 50;
   min_mut_ref = 2;
   local_refs = true;
+  deep_long_bl_search = false;
+  deep_long_bl_search_thresh = 0;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1426,6 +1428,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           }
 
           continue;
+      }
+
+      if (strcmp(argv[cnt], "--deep-long-bl-search") == 0 ||
+          strcmp(argv[cnt], "-deep-long-bl-search") == 0) {
+        params.deep_long_bl_search = true;
+        continue;
       }
 
       // return invalid option

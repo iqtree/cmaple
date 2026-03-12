@@ -306,7 +306,13 @@ void cmaple::Tree::setupBlengthThresh() {
     
     // initialize the threshold for determining close2zero blength
     params->thresh_zero_blength = 0.1 * default_blength;
-    
+
+    // compute the branch length threshold for deep long-branch search:
+    // (log(lRef) + 5) / lRef  (mirrors BLenThresholdDeeperSearch in MAPLE)
+    if (params->deep_long_bl_search) {
+        params->deep_long_bl_search_thresh = (log_seq_length + 5.0) / static_cast<RealNumType>(aln->ref_seq.size());
+    }
+
 }
 
 void cmaple::Tree::resetSeqAdded() {
@@ -3457,8 +3463,18 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
     RealNumType best_appending_blength;
     RealNumType best_mid_top_blength;
     RealNumType best_mid_bottom_blength;
-    if (lh_diff_mid_branch
-        >= best_lh_diff_before_bl_opt - params->thresh_loglh_optimal_diff)
+    // For long branches, the naive midpoint split can yield a much worse
+    // initial likelihood, causing the filter below to incorrectly skip full
+    // optimization. With --deep-long-bl-search we bypass that filter for any
+    // branch longer than deep_long_bl_search_thresh.
+    const RealNumType examined_branch_length = top_node_exists
+        ? at_node.getUpperLength()
+        : updating_node->getBranchLength();
+    const bool force_deep_search = params->deep_long_bl_search
+        && (examined_branch_length > params->deep_long_bl_search_thresh);
+    if (force_deep_search
+        || lh_diff_mid_branch
+           >= best_lh_diff_before_bl_opt - params->thresh_loglh_optimal_diff)
     {
         // compensate for the likelihood changes due to blength change
         RealNumType lh_compensation = 0;
@@ -3679,7 +3695,13 @@ bool cmaple::Tree::examineSubtreePlacementMidBranch(
             }
             
             if (params->compute_SPRTA)
-                alt_branches.push_back(AltBranch(lh_diff_mid_branch, new_placement_index));
+            {
+                // exclude SPRs on long branches with low lh improvements
+                if (!(force_deep_search
+                    && lh_diff_mid_branch
+                       < best_lh_diff_before_bl_opt - params->thresh_loglh_optimal_diff))
+                    alt_branches.push_back(AltBranch(lh_diff_mid_branch, new_placement_index));
+            }
             
             // if this position is better than the best position found so far -> record it
             if (lh_diff_mid_branch > best_lh_diff) {
