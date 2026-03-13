@@ -30,7 +30,10 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' build/CMakeCache.txt | cut -d= -f2)
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
           echo "Detected version: $VERSION"
           TARBALL="cmaple-${VERSION}-Linux-intel.tar.gz"
           tar -czf "$TARBALL" -C build cmaple cmaple-aa
@@ -66,7 +69,10 @@ jobs:
       - name: Package
         id: package
         run: |
-          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' build/CMakeCache.txt | cut -d= -f2)
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
           echo "Detected version: $VERSION"
           TARBALL="cmaple-${VERSION}-Linux-arm.tar.gz"
           tar -czf "$TARBALL" -C build cmaple cmaple-aa
@@ -214,9 +220,10 @@ jobs:
       - name: Package
         id: package
         run: |
-          cmake -S . -B _ver_tmp -N > /dev/null 2>&1 || true
-          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' _ver_tmp/CMakeCache.txt | cut -d= -f2)
-          rm -rf _ver_tmp
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
           echo "Detected version: $VERSION"
           ZIPFILE="cmaple-${VERSION}-macOS.zip"
           zip -j "$ZIPFILE" universal/cmaple universal/cmaple-aa
@@ -250,7 +257,10 @@ jobs:
         id: package
         shell: bash
         run: |
-          VERSION=$(grep -m1 'CMAKE_PROJECT_VERSION:' build/CMakeCache.txt | cut -d= -f2)
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
           echo "Detected version: $VERSION"
           ZIPFILE="cmaple-${VERSION}-Windows.zip"
           7z a "$ZIPFILE" ./build/cmaple.exe ./build/cmaple-aa.exe
