@@ -5150,6 +5150,23 @@ void cmaple::Tree::connectSubTree2Branch(
   const NumSeqsType internal_vec =
       subtree.getNeighborIndex(TOP).getVectorIndex();
   PhyloNode& internal = nodes[internal_vec];
+    
+      // Bug fix: check sensitive case where best_blength <= 0
+      // and down_distance <= 0 but subtree's lower region and
+      // sibling's lower region contain mutations => cannot merge
+      if (best_blength <= 0 && down_distance <= 0)
+      {
+          // check if they could merge or not
+          std::unique_ptr<SeqRegions> test_internal_lower_region = nullptr;
+          sibling_node.getPartialLh(TOP)->mergeTwoLowers<num_states>(
+              test_internal_lower_region, down_distance,
+              *subtree_regions, best_blength, aln, model, cumulative_rate,
+              params->threshold_prob);
+          
+          // if the two lower regions cannot merge => don't apply this SPR
+          if (!test_internal_lower_region)
+              return;
+      }
 
   // re-use internal nodes
   /*Node* next_node_1 = subtree->neighbor;
