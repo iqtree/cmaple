@@ -3207,7 +3207,7 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
         return false;
     
     // placement in a polytomy
-    if (best_mid_bottom_blength <= 0)
+    if (best_mid_bottom_blength <= thresh_zero_blength)
     {
         // move to the top of the polytomy
         while (parent_vec != root_vector_index)
@@ -3230,9 +3230,9 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
         return false;
     
     // redundant placement:
-    // if (best_mid_top_blength <= 0),
+    // if (best_mid_top_blength <= thresh_zero_blength),
     // if the new placement is not at root, it can be represented by another placement
-    if (best_mid_top_blength <= 0)
+    if (best_mid_top_blength <= thresh_zero_blength)
     {
         // check if it is the placement at root
         if (!is_root_considered)
