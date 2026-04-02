@@ -1529,15 +1529,19 @@ void cmaple::quickStartGuide() {
       << "3. Specify an input tree (e.g., tree.nwk):" << endl
       << "     cmaple -aln example.maple -t tree.nwk" << endl
       << endl
-      << "4. Assess branch supports with aLRT-SH (with, e.g., 4 threads):"
+      << "4. Use multiple CPU cores to speed up the analyses:"
+      << endl
+      << "     cmaple -aln example.maple -nt 4" << endl
+      << endl
+      << "5. Assess branch supports with aLRT-SH:"
       << endl
       << "     cmaple -aln example.maple --alrt -nt 4" << endl
       << endl
-      << "5. Assess branch supports with SPRTA scores:"
+      << "6. Assess branch supports with SPRTA scores:"
       << endl
-      << "     cmaple -aln example.maple --sprta" << endl
+      << "     cmaple -aln example.maple --sprta -nt 4" << endl
       << endl
-      << "6. Convert an alignment (aln.phy) to a different format (e.g., "
+      << "7. Convert an alignment (aln.phy) to a different format (e.g., "
          "FASTA format):"
       << endl
       << "     cmaple -aln aln.phy --out-aln aln.fa --out-format FASTA" << endl
@@ -1577,6 +1581,9 @@ void cmaple::usage_cmaple() {
       << endl
       << "  --shallow-search     Perform a shallow tree search" << endl
       << "                       before a deeper tree search." << endl
+      << "  -nt <NUM_THREADS>    Set the number of threads. Use `-nt AUTO` "
+      << endl
+      << "                       to employ all available CPU cores." << endl
       << "  --prefix <PREFIX>    Specify a prefix for all output files." << endl
       << "  --replace-intree     Allow CMAPLE to replace the input tree" << endl
       << "                       when computing branch supports." << endl
@@ -1618,10 +1625,6 @@ void cmaple::usage_cmaple() {
       << "                       branch supports (aLRT-SH)." << endl
       << "  --epsilon <NUM>      Set the epsilon value for computing" << endl
       << "                       branch supports (aLRT-SH)." << endl
-      << "  -nt <NUM_THREADS>    Set the number of threads for computing"
-      << endl
-      << "                       branch supports. Use `-nt AUTO` " << endl
-      << "                       to employ all available CPU cores." << endl
       << endl
       << "ASSESSING SPRTA BRANCH SUPPORTS:" << endl
       << "  --sprta               Compute SPRTA supports."
