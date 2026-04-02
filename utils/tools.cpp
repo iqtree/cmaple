@@ -354,6 +354,7 @@ void cmaple::convert_real_numbers(RealNumType*& arr, string input_str) {
   int number_count = static_cast<int>(count(input_str.begin(), input_str.end(), ' ')) + 1;
 
   // init array
+  if (arr) delete arr;
   arr = new RealNumType[static_cast<unsigned long>(number_count)];
 
   // parse rates
@@ -574,6 +575,9 @@ cmaple::Params::Params() {
   overwrite_output = false;
   threshold_prob = 1e-8;
   mutation_update_period = 25;
+  min_taxa_parallel_placement = 1000;
+  num_samples_per_thread = 5;
+  upward_search_extension = 5;
   failure_limit_sample = 5;
   failure_limit_subtree = 4;
   failure_limit_subtree_short_search = 1;
@@ -629,6 +633,11 @@ cmaple::Params::Params() {
   estimate_rates_during_SPR = false;
   wt_pseudocount = 0.1;
   rates_filename = "";
+  max_desc_ref = 50;
+  min_mut_ref = 2;
+  local_refs = true;
+  deep_long_bl_search = false;
+  deep_long_bl_search_thresh = 0;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1092,6 +1101,54 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--min-taxa-parallel") == 0 ||
+            strcmp(argv[cnt], "-min-taxa-parallel") == 0) {
+          ++cnt;
+
+          try {
+              params.min_taxa_parallel_placement = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.min_taxa_parallel_placement <= 0) {
+            outError("<NUMBER> must be positive!");
+          }
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--samples-per-thread") == 0 ||
+            strcmp(argv[cnt], "-samples-per-thread") == 0) {
+          ++cnt;
+
+          try {
+              params.num_samples_per_thread = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.num_samples_per_thread <= 0) {
+            outError("<NUMBER> must be positive!");
+          }
+
+          continue;
+        }
+        if (strcmp(argv[cnt], "--upward-search-extend") == 0 ||
+            strcmp(argv[cnt], "-upward-search-extend") == 0) {
+          ++cnt;
+
+          try {
+              params.upward_search_extension = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.upward_search_extension < 0) {
+            outError("<NUMBER> must be non-negative!");
+          }
+
+          continue;
+        }
       if (strcmp(argv[cnt], "--failure-limit") == 0 ||
           strcmp(argv[cnt], "-fail-limit") == 0) {
         ++cnt;
@@ -1160,6 +1217,48 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
+        if (strcmp(argv[cnt], "--max-desc-ref") == 0 ||
+            strcmp(argv[cnt], "-max-desc-ref") == 0) {
+          ++cnt;
+          if (cnt >= argc) {
+            outError("Use -max-desc-ref <NUM_DESCENDANTS>");
+          }
+
+          try {
+              params.max_desc_ref = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.max_desc_ref <= 0) {
+            outError("<NUM_DESCENDANTS> must be positive!");
+          }
+          continue;
+        }
+        if (strcmp(argv[cnt], "--min-mut-ref") == 0 ||
+            strcmp(argv[cnt], "-min-mut-ref") == 0) {
+          ++cnt;
+          if (cnt >= argc) {
+            outError("Use -min-mut-ref <NUM_MUTATIONS>");
+          }
+
+          try {
+              params.min_mut_ref = convert_int(argv[cnt]);
+          } catch (std::invalid_argument e) {
+            outError(e.what());
+          }
+
+          if (params.min_mut_ref <= 0) {
+            outError("<NUM_MUTATIONS> must be positive!");
+          }
+          continue;
+        }
+        if (strcmp(argv[cnt], "--disable-local-ref") == 0 ||
+            strcmp(argv[cnt], "-disable-local-ref") == 0) {
+            params.local_refs = false;
+
+          continue;
+        }
       if (strcmp(argv[cnt], "--branch-support") == 0 ||
           strcmp(argv[cnt], "-branch-support") == 0
           || strcmp(argv[cnt], "--alrt") == 0
@@ -1351,6 +1450,12 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
           }
 
           continue;
+      }
+
+      if (strcmp(argv[cnt], "--deep-long-bl-search") == 0 ||
+          strcmp(argv[cnt], "-deep-long-bl-search") == 0) {
+        params.deep_long_bl_search = true;
+        continue;
       }
 
       // return invalid option
@@ -1610,3 +1715,34 @@ void cmaple::resetStream(std::istream& instream) {
   instream.clear();
   instream.seekg(0, ios::beg);
 }
+
+/** Print a demangled stack backtrace of the caller function to FILE* out. */
+
+#if  !defined(Backtrace_FOUND)
+
+// donothing for WIN32
+void cmaple::print_backtrace(ostream &out, unsigned int max_frames) {}
+
+#else
+
+void cmaple::print_backtrace(ostream &out, unsigned int max_frames)
+{
+#ifdef _OPENMP
+#pragma omp critical
+{
+#endif
+    out << "STACK TRACE FOR DEBUGGING:" << endl;
+
+    const size_t stack_depth = 100;
+    void* array[stack_depth];
+    size_t size = backtrace(array, stack_depth);
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
+    _exit(1);
+    
+#ifdef _OPENMP
+}
+#endif
+
+}
+
+#endif // Backtrace_FOUND

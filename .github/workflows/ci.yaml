@@ -1,10 +1,12 @@
 name: Build and test
+
 on:
   push:
   workflow_dispatch:
+
 jobs:
   build-ubuntu-x86-64:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,76 +27,37 @@ jobs:
             $exe
             $exe --help
           done
+      - name: Package
+        id: package
+        run: |
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
+          echo "Detected version: $VERSION"
+          TARBALL="cmaple-${VERSION}-Linux-intel.tar.gz"
+          tar -czf "$TARBALL" -C build cmaple cmaple-aa
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: |
-            build/cmaple
-            build/cmaple-aa
+          name: cmaple-Linux-intel
+          path: ${{ steps.package.outputs.tarball }}
+
   build-ubuntu-aarch64:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Build on Linux ARM64
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          arch: aarch64
-          distro: ubuntu20.04
-          githubToken: ${{ github.token }}
-          dockerRunArgs: |
-            --volume "${PWD}:/cmaple"
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y cmake gcc g++ file ninja-build
-          run: |
-            cd /cmaple
-            mkdir build
-            cd build
-            cmake .. -DCMAPLE_FLAGS=static -DUSE_CMAPLE_AA=ON
-            make -j
-            ls -alht
-            for exe in "./cmaple" "./cmaple-aa"; do
-              chmod +x $exe
-              file $exe
-              $exe
-              $exe --help
-            done
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-aarch64-build
-          path: |
-            build/cmaple
-            build/cmaple-aa
-  build-macos-14:
-    runs-on: macos-14
+    runs-on: ubuntu-22.04-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          brew update && brew install libomp ninja
-      - name: Construct flags
-        id: libomp-prefix
-        run: |
-          PREFIX=$(brew --prefix libomp)
-          CMAKE_C_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          CMAKE_CXX_FLAGS="-I${PREFIX}/include -L${PREFIX}/lib"
-          for var in PREFIX CMAKE_C_FLAGS CMAKE_CXX_FLAGS; do
-            echo $var=${!var}
-            echo $var=${!var} >> "$GITHUB_OUTPUT"
-          done
+          sudo apt-get update -q -y
+          sudo apt-get install -q -y cmake gcc g++ file ninja-build
       - name: Configure and Build Project
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
-          options: USE_CMAPLE_AA=ON
-          c-compiler: clang
-          cxx-compiler: clang++
-          c-flags: ${{ steps.libomp-prefix.outputs.CMAKE_C_FLAGS }}
-          cxx-flags: ${{ steps.libomp-prefix.outputs.CMAKE_CXX_FLAGS }}
+          options: CMAPLE_FLAGS=static USE_CMAPLE_AA=ON
       - name: Simple test
         run: |
           for exe in "./build/cmaple" "./build/cmaple-aa"; do
@@ -103,15 +66,176 @@ jobs:
             $exe
             $exe --help
           done
+      - name: Package
+        id: package
+        run: |
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
+          echo "Detected version: $VERSION"
+          TARBALL="cmaple-${VERSION}-Linux-arm.tar.gz"
+          tar -czf "$TARBALL" -C build cmaple cmaple-aa
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-${{ runner.arch }}-build
+          name: cmaple-Linux-arm
+          path: ${{ steps.package.outputs.tarball }}
+
+  build-macos-14:
+    name: macOS ARM64 (Apple Silicon)
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew update && brew install libomp ninja
+      - name: Construct flags
+        id: flags
+        run: |
+          PREFIX=$(brew --prefix libomp)
+          # -static-openmp links libomp.a directly into the binary so users
+          # don't need libomp installed at runtime.
+          CMAKE_C_FLAGS="-I${PREFIX}/include"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include"
+          CMAKE_EXE_LINKER_FLAGS="${PREFIX}/lib/libomp.a"
+          for var in CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS; do
+            echo "$var=${!var}"
+            echo "$var=${!var}" >> "$GITHUB_OUTPUT"
+          done
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+          options: USE_CMAPLE_AA=ON
+          c-compiler: clang
+          cxx-compiler: clang++
+          c-flags: ${{ steps.flags.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.flags.outputs.CMAKE_CXX_FLAGS }}
+          args: -DCMAKE_EXE_LINKER_FLAGS="${{ steps.flags.outputs.CMAKE_EXE_LINKER_FLAGS }}"
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
+            file $exe
+            # Verify no dynamic libomp dependency remains
+            otool -L $exe | grep libomp && echo "WARNING: dynamic libomp found" || echo "OK: no dynamic libomp"
+            $exe
+            $exe --help
+          done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-ARM64-build
           path: |
             build/cmaple
             build/cmaple-aa
+
+  build-macos-intel:
+    name: macOS Intel (x86-64)
+    runs-on: macos-15-intel
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew update && brew install libomp ninja
+      - name: Construct flags
+        id: flags
+        run: |
+          PREFIX=$(brew --prefix libomp)
+          # -static-openmp links libomp.a directly into the binary so users
+          # don't need libomp installed at runtime.
+          CMAKE_C_FLAGS="-I${PREFIX}/include"
+          CMAKE_CXX_FLAGS="-I${PREFIX}/include"
+          CMAKE_EXE_LINKER_FLAGS="${PREFIX}/lib/libomp.a"
+          for var in CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS; do
+            echo "$var=${!var}"
+            echo "$var=${!var}" >> "$GITHUB_OUTPUT"
+          done
+      - name: Configure and Build Project
+        uses: threeal/cmake-action@main
+        with:
+          generator: Ninja
+          options: USE_CMAPLE_AA=ON
+          c-compiler: clang
+          cxx-compiler: clang++
+          c-flags: ${{ steps.flags.outputs.CMAKE_C_FLAGS }}
+          cxx-flags: ${{ steps.flags.outputs.CMAKE_CXX_FLAGS }}
+          args: -DCMAKE_EXE_LINKER_FLAGS="${{ steps.flags.outputs.CMAKE_EXE_LINKER_FLAGS }}"
+      - name: Simple test
+        run: |
+          for exe in "./build/cmaple" "./build/cmaple-aa"; do
+            chmod +x $exe
+            file $exe
+            # Verify no dynamic libomp dependency remains
+            otool -L $exe | grep libomp && echo "WARNING: dynamic libomp found" || echo "OK: no dynamic libomp"
+            $exe
+            $exe --help
+          done
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-x86_64-build
+          path: |
+            build/cmaple
+            build/cmaple-aa
+
+  build-macos-universal:
+    name: macOS Universal (ARM64 + x86-64)
+    runs-on: macos-14
+    needs:
+      - build-macos-14
+      - build-macos-intel
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download ARM64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macOS-ARM64-build
+          path: arm64
+      - name: Download Intel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macOS-x86_64-build
+          path: x86_64
+      - name: Create universal binaries with lipo
+        run: |
+          mkdir -p universal
+          for bin in cmaple cmaple-aa; do
+            lipo -create \
+              "arm64/${bin}" \
+              "x86_64/${bin}" \
+              -output "universal/${bin}"
+            chmod +x "universal/${bin}"
+            file "universal/${bin}"
+          done
+      - name: Simple test (native ARM slice)
+        run: |
+          for exe in "universal/cmaple" "universal/cmaple-aa"; do
+            $exe
+            $exe --help
+          done
+      - name: Package
+        id: package
+        run: |
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
+          echo "Detected version: $VERSION"
+          ZIPFILE="cmaple-${VERSION}-macOS.zip"
+          zip -j "$ZIPFILE" universal/cmaple universal/cmaple-aa
+          echo "zipfile=$ZIPFILE" >> "$GITHUB_OUTPUT"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmaple-macOS-universal
+          path: ${{ steps.package.outputs.zipfile }}
+
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -121,14 +245,7 @@ jobs:
         uses: threeal/cmake-action@main
         with:
           generator: Ninja
-          options: USE_CMAPLE_AA=ON
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-${{ runner.arch }}-build
-          path: |
-            build\cmaple.exe
-            build\cmaple-aa.exe
+          options: USE_CMAPLE_AA=ON BUILD_TESTING=OFF
       - name: Simple test
         run: |-
           ls build
@@ -136,3 +253,20 @@ jobs:
           build\cmaple --help
           build\cmaple-aa
           build\cmaple-aa --help
+      - name: Package
+        id: package
+        shell: bash
+        run: |
+          MAJOR=$(grep -m1 'cmaple_VERSION_MAJOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          MINOR=$(grep -m1 'cmaple_VERSION_MINOR' CMakeLists.txt | grep -oE '[0-9]+' | tail -1)
+          PATCH=$(grep -m1 'cmaple_VERSION_PATCH' CMakeLists.txt | grep -oE '[.0-9]+' | tr -d '"')
+          VERSION="${MAJOR}.${MINOR}${PATCH}"
+          echo "Detected version: $VERSION"
+          ZIPFILE="cmaple-${VERSION}-Windows.zip"
+          7z a "$ZIPFILE" ./build/cmaple.exe ./build/cmaple-aa.exe
+          echo "zipfile=$ZIPFILE" >> "$GITHUB_OUTPUT"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmaple-Windows
+          path: ${{ steps.package.outputs.zipfile }}

@@ -52,6 +52,11 @@
 #include <omp.h> /* OpenMP */
 #endif
 
+#if defined(Backtrace_FOUND)
+#include <execinfo.h>
+#include <cxxabi.h>
+#endif
+
 /*#ifdef NDEBUG
 #define ASSERT(EXPRESSION) ((void)0)
 #else
@@ -542,6 +547,25 @@ class Params {
    * substitution rate matrix. Default: 25
    */
   PositionType mutation_update_period;
+    
+    /**
+     * The minimum number of taxa existing on the tree required to enable
+     * parallel placement search. Default: 1000
+     */
+    NumSeqsType min_taxa_parallel_placement;
+    
+    /**
+     * The number of samples are processed per threads
+     * when searching placements in parallel. Default: 5
+     */
+    NumSeqsType num_samples_per_thread;
+    
+    /**
+     * The number of steps moving upwards to extend the second (sequential)
+     * search of placement starting from the placement found from
+     * the first (parallel) search. Default: 2
+     */
+    NumSeqsType upward_search_extension;
 
   /**
   *  Name of the output alignment
@@ -763,6 +787,40 @@ class Params {
    * the mean number of substitution per sites that CMAPLE is effective
   */
   RealNumType mean_subs_per_site;
+    
+    /**
+     * The maximum number of positive-branch descendants for
+     * a subtree with a local reference
+     * Default: 50
+     */
+    NumSeqsType max_desc_ref;
+    
+    /**
+     * Minimum number of mutations required for a local reference
+     * Default: 2
+     */
+    int min_mut_ref;
+    
+    /**
+     * FALSE to turn off local references
+     * Default: TRUE
+     */
+    bool local_refs;
+
+    /**
+     * TRUE to always run full branch-length optimization when placing on
+     * branches longer than deep_long_bl_search_thresh. This improves
+     * accuracy for long branches at the cost of extra computation.
+     * Default: FALSE
+     */
+    bool deep_long_bl_search;
+
+    /**
+     * Branch length threshold above which deep_long_bl_search triggers full
+     * optimization. Computed from genome size as (log(lRef) + 5) / lRef.
+     * Only used when deep_long_bl_search is TRUE.
+     */
+    RealNumType deep_long_bl_search_thresh;
 
   /*
       TRUE to log debugging
@@ -1298,4 +1356,9 @@ std::unique_ptr<T> make_unique(Args&&... args) {
  * @param instream the input stream
  */
 void resetStream(std::istream& instream);
+
+/**
+ * Print backtrace
+ */
+void print_backtrace(std::ostream &out, unsigned int max_frames = 63);
 }  // namespace cmaple

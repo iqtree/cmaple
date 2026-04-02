@@ -8,9 +8,9 @@ ModelDNARateVariation::ModelDNARateVariation(
     const cmaple::ModelBase::SubModel sub_model, 
     PositionType _genome_size, 
     bool _scalar_rate_model, 
-    cmaple::RealNumType _wt_pseudocount, 
-    std::string _rates_filename, 
-    int _max_num_EM_steps)
+    cmaple::RealNumType _wt_pseudocount,
+    int _max_num_EM_steps,
+    std::string _rates_filename)
     : ModelDNA(sub_model) {
     
     genome_size = _genome_size;
@@ -192,7 +192,26 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
 
         Index parent_index = node.getNeighborIndex(TOP);
         PhyloNode& parent_node = tree->nodes[parent_index.getVectorIndex()];
-        const std::unique_ptr<SeqRegions>& parent_regions = parent_node.getPartialLh(parent_index.getMiniIndex());
+        // const std::unique_ptr<SeqRegions>& parent_regions = parent_node.getPartialLh(parent_index.getMiniIndex());
+        
+        // use the same local ref as the current/child node
+        // 0. extract the mutations at the selected node
+        std::unique_ptr<SeqRegions>& selected_node_mutations =
+            tree->node_mutations[index.getVectorIndex()];
+        // 1. create a new upper_lr_regions that integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+            (selected_node_mutations && selected_node_mutations->size())
+            ? parent_node.getPartialLh(parent_index.getMiniIndex())
+              ->integrateMutations<4>(selected_node_mutations, tree->aln)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate upper_lr_regions
+        const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+            (selected_node_mutations && selected_node_mutations->size())
+            ? &(mut_integrated_upper_lr_regions)
+            : &(parent_node.getPartialLh(parent_index.getMiniIndex()));
+        // 3. create a reference from that pointer
+        auto& parent_regions = *upper_lr_regions_ptr;
+        
         const std::unique_ptr<SeqRegions>& child_regions = node.getPartialLh(TOP);
 
         PositionType pos = 0;
@@ -365,10 +384,11 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
         rate_count += rates[i];
     }
 
-    // normalise so average rate is 1.
-    RealNumType average_rate = rate_count / genome_size;
+    // RealNumType average_rate = rate_count / genome_size;
+    RealNumType inverse_average_rate = genome_size / rate_count;
     for(int i = 0; i < genome_size; i++) {
-        rates[i] /= average_rate; 
+        // rates[i] /= average_rate;
+        rates[i] *= inverse_average_rate;
         rates[i] = std::min(250.0, std::max(0.0001, rates[i]));
         for(int stateA = 0; stateA < num_states_; stateA++) {
             RealNumType row_sum = 0;
@@ -432,7 +452,26 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
 
         Index parent_index = node.getNeighborIndex(TOP);
         PhyloNode& parent_node = tree->nodes[parent_index.getVectorIndex()];
-        const std::unique_ptr<SeqRegions>& parent_regions = parent_node.getPartialLh(parent_index.getMiniIndex());
+        // const std::unique_ptr<SeqRegions>& parent_regions = parent_node.getPartialLh(parent_index.getMiniIndex());
+        
+        // use the same local ref as the current/child node
+        // 0. extract the mutations at the selected node
+        std::unique_ptr<SeqRegions>& selected_node_mutations =
+            tree->node_mutations[index.getVectorIndex()];
+        // 1. create a new upper_lr_regions that integrate the mutations, if any
+        std::unique_ptr<SeqRegions> mut_integrated_upper_lr_regions =
+            (selected_node_mutations && selected_node_mutations->size())
+            ? parent_node.getPartialLh(parent_index.getMiniIndex())
+              ->integrateMutations<4>(selected_node_mutations, tree->aln)
+            : nullptr;
+        // 2. create the pointer that points to the appropriate upper_lr_regions
+        const std::unique_ptr<SeqRegions>* upper_lr_regions_ptr =
+            (selected_node_mutations && selected_node_mutations->size())
+            ? &(mut_integrated_upper_lr_regions)
+            : &(parent_node.getPartialLh(parent_index.getMiniIndex()));
+        // 3. create a reference from that pointer
+        auto& parent_regions = *upper_lr_regions_ptr;
+        
         const std::unique_ptr<SeqRegions>& child_regions = node.getPartialLh(TOP);
 
         PositionType pos = 0;
@@ -477,10 +516,12 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                 StateType stateA = seqP_region->type;
                 StateType stateB = seqC_region->type;
                 if(seqP_region->type == TYPE_R) {
-                    stateA = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    // stateA = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    stateA = seqC_region->prev_state;
                 }
                 if(seqC_region->type == TYPE_R) {
-                    stateB = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    // stateB = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    stateB = seqP_region->prev_state;
                 }
                 // Case 1: Last observation was this side of the root node
                 if(seqP_region->plength_observation2root < 0) {
@@ -498,7 +539,8 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
             } else if(seqP_region->type <= TYPE_R && seqC_region->type == TYPE_O) {
                 StateType stateA = seqP_region->type;
                 if(seqP_region->type == TYPE_R) {
-                    stateA = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    // stateA = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    stateA = seqC_region->prev_state;
                 }
 
                 // Get weight vector giving the relative probabilities of observing
@@ -530,7 +572,8 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
             } else if(seqP_region->type == TYPE_O && seqC_region->type <= TYPE_R) {
                 StateType stateB = seqC_region->type;
                 if(seqC_region->type == TYPE_R) {
-                    stateB = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    // stateB = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    stateB = seqP_region->prev_state;
                 }
                 // Calculate a weight vector giving the relative probabilities of observing
                 // each state at the O node.
@@ -708,7 +751,7 @@ void ModelDNARateVariation::estimateRatesPerSitePerEntry(cmaple::Tree* tree) {
                     RealNumType val = mutation_matrices[i * mat_size + (stateB + row_index[stateA])];
                     //val /= average_rate;
                     val /= total_rate;
-                    val = std::min(250.0, std::max(0.001, val)); 
+                    val = std::min(250.0, std::max(0.001, val));
 
                     mutation_matrices[i * mat_size + (stateB + row_index[stateA])] = val;
                     transposed_mutation_matrices[i * mat_size + (stateA + row_index[stateB])] = val;
