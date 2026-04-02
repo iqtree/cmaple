@@ -1587,6 +1587,8 @@ void cmaple::usage_cmaple() {
       << "  --prefix <PREFIX>    Specify a prefix for all output files." << endl
       << "  --replace-intree     Allow CMAPLE to replace the input tree" << endl
       << "                       when computing branch supports." << endl
+      << "  --disable-local-ref  Use a global reference instead of" << endl
+      << "                       multiple local references." << endl
       << "  --out-mul-tree       Output the tree in multifurcating format."
       << endl
       << "  --out-internal       Output IDs of internal nodes."
