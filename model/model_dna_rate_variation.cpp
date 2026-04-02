@@ -257,10 +257,10 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
                 StateType parent_state = seqP_region->type;
                 StateType child_state = seqC_region->type;
                 if(seqP_region->type == TYPE_R) {
-                    parent_state = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    parent_state = seqC_region->prev_state;
                 }
                 if (seqC_region->type == TYPE_R) {
-                    child_state = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    child_state = seqP_region->prev_state;
                 }
                  // Case 1: Last observation was this side of the root node
                 if(seqP_region->plength_observation2root < 0) {
@@ -278,7 +278,7 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
             } else if(seqP_region->type <= TYPE_R && seqC_region->type == TYPE_O) {
                 StateType parent_state = seqP_region->type;
                 if(seqP_region->type == TYPE_R) {
-                    parent_state = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    parent_state = seqC_region->prev_state;
                 }
 
                 // Get weight vector giving the relative probabilities of observing
@@ -309,7 +309,7 @@ void ModelDNARateVariation::estimateRatePerSite(cmaple::Tree* tree){
             } else if(seqP_region->type == TYPE_O && seqC_region->type <= TYPE_R) {
                 StateType child_state = seqC_region->type;
                 if(seqC_region->type == TYPE_R) {
-                    child_state = tree->aln->ref_seq[static_cast<std::vector<cmaple::StateType>::size_type>(end_pos)];
+                    child_state = seqP_region->prev_state;
                 }
 
                 // Calculate a weight vector giving the relative probabilities of observing
