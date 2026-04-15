@@ -780,7 +780,7 @@ class Params {
      * a subtree with a local reference
      * Default: 50
      */
-    NumSeqsType max_desc_ref;
+    NumSeqsType min_desc_ref;
     
     /**
      * Minimum number of mutations required for a local reference

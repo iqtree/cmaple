@@ -6288,7 +6288,7 @@ void cmaple::Tree::connectNewSample2Branch(
             
             // make the internal node a new new local ref node, if it meets the requirements
             if (params->local_refs
-                && corrected_num_descendants[traverse_parent_vec_index] >= params->max_desc_ref
+                && corrected_num_descendants[traverse_parent_vec_index] >= params->min_desc_ref
                 && traverse_node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
             {
                 // make the internal node a new new local ref node
@@ -6680,7 +6680,7 @@ void cmaple::Tree::connectNewSample2Root(
     // make the new root a new new local ref node, if it meets the requirements
     if (params->local_refs
         && (!node_mutations[new_root_vec_index] || !node_mutations[new_root_vec_index]->size())
-        && corrected_num_descendants[new_root_vec_index] >= params->max_desc_ref
+        && corrected_num_descendants[new_root_vec_index] >= params->min_desc_ref
         && new_root.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
     {
         // make the internal node a new new local ref node
@@ -14530,7 +14530,7 @@ auto cmaple::Tree::initLocalReferences() -> void {
         
         // make this node a local ref, if it meets the requirements
         assert(!node_mutations[node_vec_index]);
-        if (corrected_num_descendants[node_vec_index] >= params->max_desc_ref
+        if (corrected_num_descendants[node_vec_index] >= params->min_desc_ref
             && node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
         {
             makeReferenceNode<num_states>(node, node_vec_index,

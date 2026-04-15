@@ -631,7 +631,7 @@ cmaple::Params::Params() {
   site_specific_rates = false;
   wt_pseudocount = 0.1;
   rates_filename = "";
-  max_desc_ref = 50;
+  min_desc_ref = 50;
   min_mut_ref = 2;
   local_refs = true;
   deep_long_bl_search = false;
@@ -1215,20 +1215,20 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
 
         continue;
       }
-        if (strcmp(argv[cnt], "--max-desc-ref") == 0 ||
-            strcmp(argv[cnt], "-max-desc-ref") == 0) {
+        if (strcmp(argv[cnt], "--min-desc-ref") == 0 ||
+            strcmp(argv[cnt], "-min-desc-ref") == 0) {
           ++cnt;
           if (cnt >= argc) {
-            outError("Use -max-desc-ref <NUM_DESCENDANTS>");
+            outError("Use -min-desc-ref <NUM_DESCENDANTS>");
           }
 
           try {
-              params.max_desc_ref = convert_int(argv[cnt]);
+              params.min_desc_ref = convert_int(argv[cnt]);
           } catch (std::invalid_argument e) {
             outError(e.what());
           }
 
-          if (params.max_desc_ref <= 0) {
+          if (params.min_desc_ref <= 0) {
             outError("<NUM_DESCENDANTS> must be positive!");
           }
           continue;
