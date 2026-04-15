@@ -298,6 +298,12 @@ class Tree {
    */
   std::unique_ptr<SeqRegions>& getPartialLhAtNode(const cmaple::Index index);
 
+  /**
+  Compute cumulative rate of the ref genome
+  @throw std::logic\_error if the reference genome is empty
+  */
+  void computeCumulativeRate();
+
   // ----------------- END OF PUBLIC APIs ------------------------------------
   // //
 
@@ -479,10 +485,26 @@ class Tree {
   /*! \endcond */
 
  private:
-  /**
-   * Get mutation string for MATs
-   */
-  std::string getMutationStringForNode(cmaple::PhyloNode& node);
+    /**
+     * Get mutation string for MATs
+     */
+    std::string getMutationStringForNode(cmaple::PhyloNode& node);
+    
+     /**
+     * Minimum support for writing a mutation to MAT
+     */   
+    RealNumType min_mutation_support = 0.01;
+    /**
+     * Helper function when last observation of state goes across the root.
+     */  
+    std::string getMutationStringAcrossRoot(
+        RealNumType dist_to_root, 
+        RealNumType dist_to_observed,
+        StateType parent_state, 
+        StateType child_state, 
+        PositionType pos, 
+        RealNumType weight,
+        SeqRegion::SeqType seq_type );
 
   /**
       Pointer  to LoadTree method
@@ -643,12 +665,6 @@ class Tree {
   void initTree(Alignment* aln,
                 Model* model,
                 std::unique_ptr<cmaple::Params>&& params);
-
-  /**
-   Compute cumulative rate of the ref genome
-   @throw std::logic\_error if the reference genome is empty
-   */
-  void computeCumulativeRate();
 
   /*! Optimize the tree topology
    @throw std::logic\_error if unexpected values/behaviors found during the

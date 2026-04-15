@@ -689,7 +689,20 @@ class Params {
    /**
    * TRUE to allow an independent rate matrix for each genomic site.
    */ 
-  bool site_specific_rates;
+  bool site_specific_rate_matrix;
+
+  /**
+   * Maximum number of EM iterations for estimating rates.
+   */ 
+  int rate_variation_max_num_EM_steps;
+
+  /**
+   * When to perform rate estimation for rate variation and
+   * site-specific matrix models.
+   * If true then estimate rates after each SPR tree traversal.
+   * Otherwise only estimate rates after initial sample placement.
+   */ 
+  bool estimate_rates_during_SPR;
 
    /**
    * Name of file containing rates for each genomic site.

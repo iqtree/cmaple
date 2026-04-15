@@ -628,7 +628,9 @@ cmaple::Params::Params() {
   min_support_alt_branches = 0.01;
   thresh_loglh_optimal_diff_fac = 1.0;
   rate_variation = false;
-  site_specific_rates = false;
+  site_specific_rate_matrix = false;
+  rate_variation_max_num_EM_steps = 20;
+  estimate_rates_during_SPR = false;
   wt_pseudocount = 0.1;
   rates_filename = "";
   min_desc_ref = 50;
@@ -1383,8 +1385,10 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         continue;
       }
       if (strcmp(argv[cnt], "--site-specific-rates") == 0 ||
+          strcmp(argv[cnt], "--site-specific-rate-matrix") == 0 ||
+          strcmp(argv[cnt], "--site-specific-matrix") == 0 ||
           strcmp(argv[cnt], "-ssr") == 0) {
-        params.site_specific_rates = true;
+        params.site_specific_rate_matrix = true;
         continue;
       }
 
@@ -1398,6 +1402,24 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         } catch (std::invalid_argument e) {
           outError(e.what());
         }
+        continue;
+      }
+
+      if (strcmp(argv[cnt], "--rv-max-EM-steps") == 0) {
+        cnt++;
+        if (cnt >= argc) {
+          outError("Use --rv-max-EM-steps <num_steps>");
+        }
+        try {
+          params.rate_variation_max_num_EM_steps = convert_int(argv[cnt]);
+        } catch (std::invalid_argument e) {
+          outError(e.what());
+        }
+        continue;
+      }
+
+      if (strcmp(argv[cnt], "--estimate-rates-during-SPR") == 0) {
+        params.estimate_rates_during_SPR = true;
         continue;
       }
 
@@ -1483,8 +1505,8 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
                 "if SPRTA is not computed. Please use "
                 "`--sprta` if you want to compute SPRTA.");
   }
-  if(params.rate_variation && params.site_specific_rates) {
-      outError("Unable to use rate variation and site-specific rate matrices.\n"
+  if(params.rate_variation && params.site_specific_rate_matrix) {
+      outError("Unable to use rate-variation and site-specific rate matrices.\n"
                 "Please choose either:\n\t \"--rate-variation\" for a rate multiplier at each genomic site, or \n"
                 "\t\"--site-specific-rates\" for an independent rate matrix at each genomic site.");    
   }
@@ -1507,15 +1529,19 @@ void cmaple::quickStartGuide() {
       << "3. Specify an input tree (e.g., tree.nwk):" << endl
       << "     cmaple -aln example.maple -t tree.nwk" << endl
       << endl
-      << "4. Assess branch supports with aLRT-SH (with, e.g., 4 threads):"
+      << "4. Use multiple CPU cores to speed up the analyses:"
+      << endl
+      << "     cmaple -aln example.maple -nt 4" << endl
+      << endl
+      << "5. Assess branch supports with aLRT-SH:"
       << endl
       << "     cmaple -aln example.maple --alrt -nt 4" << endl
       << endl
-      << "5. Assess branch supports with SPRTA scores:"
+      << "6. Assess branch supports with SPRTA scores:"
       << endl
-      << "     cmaple -aln example.maple --sprta" << endl
+      << "     cmaple -aln example.maple --sprta -nt 4" << endl
       << endl
-      << "6. Convert an alignment (aln.phy) to a different format (e.g., "
+      << "7. Convert an alignment (aln.phy) to a different format (e.g., "
          "FASTA format):"
       << endl
       << "     cmaple -aln aln.phy --out-aln aln.fa --out-format FASTA" << endl
@@ -1555,9 +1581,14 @@ void cmaple::usage_cmaple() {
       << endl
       << "  --shallow-search     Perform a shallow tree search" << endl
       << "                       before a deeper tree search." << endl
+      << "  -nt <NUM_THREADS>    Set the number of threads. Use `-nt AUTO` "
+      << endl
+      << "                       to employ all available CPU cores." << endl
       << "  --prefix <PREFIX>    Specify a prefix for all output files." << endl
       << "  --replace-intree     Allow CMAPLE to replace the input tree" << endl
       << "                       when computing branch supports." << endl
+      << "  --disable-local-ref  Use a global reference instead of" << endl
+      << "                       multiple local references." << endl
       << "  --out-mul-tree       Output the tree in multifurcating format."
       << endl
       << "  --out-internal       Output IDs of internal nodes."
@@ -1580,6 +1611,9 @@ void cmaple::usage_cmaple() {
       << "  --mean-subs <NUM>    Specify the mean #substitutions per site" << endl
       << "                       that CMAPLE is effective. Default: 0.02."
       << endl
+      << "  --estimate-MAT       Write a mutation-annotated tree (MAT) to " << endl
+      << "                       nexus file."
+      << endl
       << "  --seed <NUM>         Set a seed number for random generators."
       << endl
       << "  -v <MODE>            Set the verbose mode "
@@ -1593,10 +1627,6 @@ void cmaple::usage_cmaple() {
       << "                       branch supports (aLRT-SH)." << endl
       << "  --epsilon <NUM>      Set the epsilon value for computing" << endl
       << "                       branch supports (aLRT-SH)." << endl
-      << "  -nt <NUM_THREADS>    Set the number of threads for computing"
-      << endl
-      << "                       branch supports. Use `-nt AUTO` " << endl
-      << "                       to employ all available CPU cores." << endl
       << endl
       << "ASSESSING SPRTA BRANCH SUPPORTS:" << endl
       << "  --sprta               Compute SPRTA supports."
@@ -1613,6 +1643,17 @@ void cmaple::usage_cmaple() {
       << endl
       << "                        alternative SPRs."
       << endl
+      << "RATE VARIATION MODELS:" << endl
+      << "  --rate-variation                  Use a model of rate variation where each site " << endl
+      << "                                    has an independent scalar rate multiplier." << endl
+      << "  --site-specific-rate-matrix       Use a model of rate variation where each site " << endl
+      << "                                    has an independent rate matrix." << endl
+      << "  --estimate-rates-during-SPR       Re-estimate rates after every SPR tree traversal " << endl
+      << "                                    (default: only after initial tree construction)." << endl
+      << "  --waiting-time-pseudocount <NUM>  Set the waiting-time pseudocount (default: 1)." << endl
+      << "  --rv-max-EM-steps <NUM>.          Maximum number of steps to attempt for EM " << endl
+      << "                                    convergence when estimating rates with " << endl
+      << "                                    --site-specific-rate-matrix (default: 20)." << endl
       << endl;
 
   exit(0);

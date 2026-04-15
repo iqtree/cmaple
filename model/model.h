@@ -41,11 +41,12 @@ class Model {
    * those models.</em>
    * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide
    * data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
-   * @param[in] rate_variation True to use rate variation (optional). Default: False;
+   * @param[in] site_specific_q True to use site-specific exchangeability matrices (optional). Default: False;
    * @param[in] site_specific_rates True to use site-specific rates (optional). Default: False;
    * @param[in] seq_length Length of the genomes (optional). Default: 0;
    * @param[in] wt_pseudocount Pseudocount used for waiting times
-   * when estimating site-specific rate matrices (optional). Default: 0.1;
+   * when estimating site-specific exchangeability matrices (optional). Default: 0.1;
+   * @param[in] max_num_EM_steps Maximum number of EM iterations for estimating rates (optional). Default: 20;
    * @param[in] rates_filename Name of the file that contains rates (optional). Default: "";
    * @throw std::invalid\_argument if any of the following situations occur.
    * - sub\_model is unknown/unsupported
@@ -54,10 +55,11 @@ class Model {
   Model(
       const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::DEFAULT,
       const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO,
-      const bool rate_variation = false,
+      const bool site_specific_q = false,
       const bool site_specific_rates = false,
       const cmaple::PositionType seq_length = 0,
       const cmaple::RealNumType wt_pseudocount = 0.1,
+      const int max_num_EM_steps = 20,
       const std::string& rates_filename = "");
 
   /*! \brief Destructor
