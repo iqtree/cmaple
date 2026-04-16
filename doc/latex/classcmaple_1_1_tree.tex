@@ -38,13 +38,13 @@ void \mbox{\hyperlink{classcmaple_1_1_tree_aa4f982f45f38226193cd584bbe7e93ef}{ch
 void \mbox{\hyperlink{classcmaple_1_1_tree_a15e87b19c2d543d25dfe4ca20871c757}{do\+Placement}} (const int num\+\_\+threads, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Do placement (using stepwise addition) to build an initial tree. \doxylink{classcmaple_1_1_model}{Model} parameters (if not fixed) will be estimated during the placement process. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_a79b0a87ee81aef0c2fe3734a684fc8a6}{do\+Rate\+Estimation}} (std\+::ostream \&out\+\_\+stream=std\+::cout)
-\begin{DoxyCompactList}\small\item\em Do rate estimation either using EM or simple counting method. Currently only implemented for rate variation DNA model. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{classcmaple_1_1_tree_a967b8d1fce6c0505e353573e476eeff5}{apply\+SPR}} (const int num\+\_\+threads, const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type, const bool shallow\+\_\+tree\+\_\+search, std\+::ostream \&out\+\_\+stream=std\+::cout)
+\begin{DoxyCompactList}\small\item\em Estimate site-\/specific rates/substition matrices either using EM or simple counting method. This function is currently only supported for (DNA) rate variation models. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_tree_a4e5ebd549df90b66d1f64942ad955cce}{apply\+SPR}} (const int num\+\_\+threads, const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type, const bool shallow\+\_\+tree\+\_\+search, const bool compute\+\_\+\+SPRTA, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Apply SPR moves to optimize the tree. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch}} (std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Optimize the branch lengths of the tree. \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{classcmaple_1_1_tree_ac4446409e237741f0d716061bea35049}{infer}} (const int num\+\_\+threads=1, const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}, const bool shallow\+\_\+tree\+\_\+search=false, std\+::ostream \&out\+\_\+stream=std\+::cout)
-\begin{DoxyCompactList}\small\item\em Infer a maximum likelihood tree by executing \doxylink{classcmaple_1_1_tree_a15e87b19c2d543d25dfe4ca20871c757}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a967b8d1fce6c0505e353573e476eeff5}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classcmaple_1_1_tree_a8ac6ba7243bfdd3e93a2a793b3b4ca63}{infer}} (const int num\+\_\+threads=1, const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}} tree\+\_\+search\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}, const bool shallow\+\_\+tree\+\_\+search=false, const bool compute\+\_\+\+SPRTA=false, std\+::ostream \&out\+\_\+stream=std\+::cout)
+\begin{DoxyCompactList}\small\item\em Infer a maximum likelihood tree by executing \doxylink{classcmaple_1_1_tree_a15e87b19c2d543d25dfe4ca20871c757}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a4e5ebd549df90b66d1f64942ad955cce}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} \end{DoxyCompactList}\item 
 Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393c0704db}{compute\+Lh}} ()
 \begin{DoxyCompactList}\small\item\em Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{classcmaple_1_1_tree_a415d4e23f522c7ecb1f8363e27f6bafa}{compute\+Branch\+Support}} (const int num\+\_\+threads=1, const int num\+\_\+replicates=1000, const double epsilon=0.\+1, const bool allow\+\_\+replacing\+\_\+\+ML\+\_\+tree=true, std\+::ostream \&out\+\_\+stream=std\+::cout)
@@ -360,7 +360,7 @@ Do placement (using stepwise addition) to build an initial tree. \doxylink{class
 
 
 
-Do rate estimation either using EM or simple counting method. Currently only implemented for rate variation DNA model. 
+Estimate site-\/specific rates/substition matrices either using EM or simple counting method. This function is currently only supported for (DNA) rate variation models. 
 
 
 \begin{DoxyParams}[1]{Parameters}
@@ -376,11 +376,11 @@ Do rate estimation either using EM or simple counting method. Currently only imp
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_a967b8d1fce6c0505e353573e476eeff5}\label{classcmaple_1_1_tree_a967b8d1fce6c0505e353573e476eeff5} 
+\Hypertarget{classcmaple_1_1_tree_a4e5ebd549df90b66d1f64942ad955cce}\label{classcmaple_1_1_tree_a4e5ebd549df90b66d1f64942ad955cce} 
 \index{cmaple::Tree@{cmaple::Tree}!applySPR@{applySPR}}
 \index{applySPR@{applySPR}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{applySPR()}{applySPR()}}
-{\footnotesize\ttfamily void cmaple\+::\+Tree\+::apply\+SPR (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads,  }\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type,  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search,  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::apply\+SPR (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads,  }\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type,  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search,  }\item[{const bool}]{compute\+\_\+\+SPRTA,  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
 
 
@@ -393,6 +393,8 @@ Apply SPR moves to optimize the tree.
 \mbox{\texttt{ in}}  & {\em tree\+\_\+search\+\_\+type} & A type of tree search \\
 \hline
 \mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE to enable a shallow tree search before a deeper tree search \\
+\hline
+\mbox{\texttt{ in}}  & {\em compute\+\_\+\+SPRTA} & TRUE to compute \href{https://www.nature.com/articles/s41586-025-09567-x}{\texttt{ SPRTA}} supports \\
 \hline
 \mbox{\texttt{ out}}  & {\em out\+\_\+stream} & The output message stream (optional) \\
 \hline
@@ -432,15 +434,15 @@ Optimize the branch lengths of the tree.
 \end{DoxyItemize}\\
 \hline
 \end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_ac4446409e237741f0d716061bea35049}\label{classcmaple_1_1_tree_ac4446409e237741f0d716061bea35049} 
+\Hypertarget{classcmaple_1_1_tree_a8ac6ba7243bfdd3e93a2a793b3b4ca63}\label{classcmaple_1_1_tree_a8ac6ba7243bfdd3e93a2a793b3b4ca63} 
 \index{cmaple::Tree@{cmaple::Tree}!infer@{infer}}
 \index{infer@{infer}!cmaple::Tree@{cmaple::Tree}}
 \doxysubsubsection{\texorpdfstring{infer()}{infer()}}
-{\footnotesize\ttfamily void cmaple\+::\+Tree\+::infer (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads = {\ttfamily 1},  }\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type = {\ttfamily \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}},  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search = {\ttfamily false},  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void cmaple\+::\+Tree\+::infer (\begin{DoxyParamCaption}\item[{const int}]{num\+\_\+threads = {\ttfamily 1},  }\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{Tree\+Search\+Type}}}]{tree\+\_\+search\+\_\+type = {\ttfamily \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1}{NORMAL\+\_\+\+TREE\+\_\+\+SEARCH}}},  }\item[{const bool}]{shallow\+\_\+tree\+\_\+search = {\ttfamily false},  }\item[{const bool}]{compute\+\_\+\+SPRTA = {\ttfamily false},  }\item[{std\+::ostream \&}]{out\+\_\+stream = {\ttfamily std\+:\+:cout} }\end{DoxyParamCaption})}
 
 
 
-Infer a maximum likelihood tree by executing \doxylink{classcmaple_1_1_tree_a15e87b19c2d543d25dfe4ca20871c757}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a967b8d1fce6c0505e353573e476eeff5}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} 
+Infer a maximum likelihood tree by executing \doxylink{classcmaple_1_1_tree_a15e87b19c2d543d25dfe4ca20871c757}{do\+Placement()}, \doxylink{classcmaple_1_1_tree_a4e5ebd549df90b66d1f64942ad955cce}{apply\+SPR()}, and \doxylink{classcmaple_1_1_tree_afc947148cb44b753d7799b4df5fa83f8}{optimize\+Branch()} 
 
 
 \begin{DoxyItemize}
@@ -461,6 +463,8 @@ Infer a maximum likelihood tree by executing \doxylink{classcmaple_1_1_tree_a15e
 \mbox{\texttt{ in}}  & {\em tree\+\_\+search\+\_\+type} & A type of tree search (optional) \\
 \hline
 \mbox{\texttt{ in}}  & {\em shallow\+\_\+tree\+\_\+search} & TRUE to enable a shallow tree search before a deeper tree search (optional) \\
+\hline
+\mbox{\texttt{ in}}  & {\em compute\+\_\+\+SPRTA} & TRUE to compute \href{https://www.nature.com/articles/s41586-025-09567-x}{\texttt{ SPRTA}} supports (optional) \\
 \hline
 \mbox{\texttt{ out}}  & {\em out\+\_\+stream} & The output message stream (optional) \\
 \hline

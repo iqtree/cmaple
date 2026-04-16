@@ -190,7 +190,8 @@ class Tree {
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search
-   * @param[in] compute_SPRTA TRUE to compute SPRTA supports
+   * @param[in] compute_SPRTA TRUE to compute
+   * [SPRTA](https://www.nature.com/articles/s41586-025-09567-x) supports
    * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the tree is empty
@@ -233,7 +234,8 @@ class Tree {
    * @param[in] tree_search_type A type of tree search (optional)
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search (optional)
-   * @param[in] compute_SPRTA TRUE to compute SPRTA supports (optional)
+   * @param[in] compute_SPRTA TRUE to compute
+   * [SPRTA](https://www.nature.com/articles/s41586-025-09567-x) supports (optional)
    * @param[out] out_stream The output message stream (optional)
    * @throw std::invalid\_argument if tree\_search\_type is unknown
    * @throw std::logic\_error if any of the following situations occur.

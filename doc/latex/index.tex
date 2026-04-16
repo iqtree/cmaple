@@ -5,7 +5,7 @@
  CMAPLE is a C++ reimplementation of \href{https://www.nature.com/articles/s41588-023-01368-0}{\texttt{ MAPLE}} -\/ a novel likelihood-\/based phylogenetic inference method for pandemic-\/scale epidemiological genomic data. CMAPLE is highly optimized for performance and scalability with many new features.
 
 CMAPLE library provides a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods.\hypertarget{index_autotoc_md1}{}\doxysection{\texorpdfstring{How to use?}{How to use?}}\label{index_autotoc_md1}
-In the following, we give an instruction of how to include CMAPLE library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we\textquotesingle{}ll take \href{https://github.com/iqtree/iqtree2}{\texttt{ IQ-\/\+TREE}} as an example.\hypertarget{index_autotoc_md2}{}\doxysubsection{\texorpdfstring{Include CMAPLE as a submodule of your project}{Include CMAPLE as a submodule of your project}}\label{index_autotoc_md2}
+In the following, we give an instruction of how to include CMAPLE library into a project using CMake build system. Here, we\textquotesingle{}ll take \href{https://github.com/iqtree/iqtree3}{\texttt{ IQ-\/\+TREE}} as an example.\hypertarget{index_autotoc_md2}{}\doxysubsection{\texorpdfstring{Include CMAPLE as a submodule of your project}{Include CMAPLE as a submodule of your project}}\label{index_autotoc_md2}
 In your project directory, run \begin{DoxyVerb}    git submodule add https://github.com/iqtree/cmaple.git
 \end{DoxyVerb}
 \hypertarget{index_autotoc_md3}{}\doxysubsection{\texorpdfstring{Update CMake\+List to include CMAPLE}{Update CMakeList to include CMAPLE}}\label{index_autotoc_md3}
@@ -18,11 +18,11 @@ In your project directory, run \begin{DoxyVerb}    git submodule add https://git
 
     # Step 2: Build two executables for DNA and protein data
     # build an executable for DNA data
-    add_executable(iqtree2
+    add_executable(iqtree3
         main.cpp main.h
     )
     # build another executable for protein data
-    add_executable(iqtree2-aa
+    add_executable(iqtree3-aa
         main.cpp main.h
     )
 
@@ -30,8 +30,8 @@ In your project directory, run \begin{DoxyVerb}    git submodule add https://git
     include_directories("${PROJECT_BINARY_DIR}/cmaple")
 
     # Step 4: Add linking libraries
-    target_link_libraries(iqtree2 main maple)
-    target_link_libraries(iqtree2-aa main maple-aa)
+    target_link_libraries(iqtree3 main maple)
+    target_link_libraries(iqtree3-aa main maple-aa)
 \end{DoxyVerb}
  \hypertarget{index_autotoc_md4}{}\doxysubsection{\texorpdfstring{An example of APIs usage}{An example of APIs usage}}\label{index_autotoc_md4}
 \begin{DoxyVerb}    #include “cmaple.h”
@@ -81,4 +81,8 @@ CMAPLE APIs are exposed in the following. ~\newline
 
 ~\newline
  \hypertarget{index_autotoc_md7}{}\doxysection{\texorpdfstring{How to cite CMAPLE?}{How to cite CMAPLE?}}\label{index_autotoc_md7}
-To be updated... 
+
+\begin{DoxyItemize}
+\item CMAPLE 2\+: to be updated...
+\item CMAPLE\+: Nhan Ly-\/\+Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh (2024), CMAPLE\+: Efficient phylogenetic inference in the pandemic era. Mol. Biol. Evol., 41\+:msae134. \href{https://doi.org/10.1093/molbev/msae134}{\texttt{ https\+://doi.\+org/10.\+1093/molbev/msae134}} 
+\end{DoxyItemize}

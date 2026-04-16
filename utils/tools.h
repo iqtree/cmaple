@@ -929,22 +929,26 @@ class ParamsBuilder {
    */
   ParamsBuilder& withStopTreeSearchThresh(const double& stop_search_thresh);
     
-    /*! \brief Set the flag to compute SPRTA support. Default: FALSE
+    /*! \brief Set the flag to compute
+     * [SPRTA](https://www.nature.com/articles/s41586-025-09567-x)
+     * support. Default: FALSE
      * @param[in] compute_SPRTA TRUE to compute SPRTA supports
      * @return A reference to the ParamsBuilder instance
      */
     ParamsBuilder& withComputeSPRTA(const bool& compute_SPRTA);
     
-    /*! \brief Set the flag to compute SPRTA supports
-     * for zero-length branches. Default: FALSE
+    /*! \brief Set the flag to compute
+     * [SPRTA](https://www.nature.com/articles/s41586-025-09567-x)
+     * supports for zero-length branches. Default: FALSE
      * @param[in] compute_zero_branches TRUE to compute SPRTA supports
      * for zero-length branches
      * @return A reference to the ParamsBuilder instance
      */
     ParamsBuilder& withComputeSPRTAZeroBranches(const bool& compute_zero_branches);
     
-    /*! \brief Set the flag to output alternative SPRs
-     * and their SPRTA supports. Defaut: FALSE
+    /*! \brief Set the flag to output alternative SPRs and their
+     * [SPRTA](https://www.nature.com/articles/s41586-025-09567-x)
+     * supports. Defaut: FALSE
      * @param[in] out_alter_spr TRUE to output alternative SPRs
      * and their SPRTA supports
      * @return A reference to the ParamsBuilder instance
