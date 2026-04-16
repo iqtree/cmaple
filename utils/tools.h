@@ -928,6 +928,28 @@ class ParamsBuilder {
    * @throw std::invalid\_argument if stop\_search\_thresh is non-positive
    */
   ParamsBuilder& withStopTreeSearchThresh(const double& stop_search_thresh);
+    
+    /*! \brief Set the flag to compute SPRTA support. Default: FALSE
+     * @param[in] compute_SPRTA TRUE to compute SPRTA supports
+     * @return A reference to the ParamsBuilder instance
+     */
+    ParamsBuilder& withComputeSPRTA(const bool& compute_SPRTA);
+    
+    /*! \brief Set the flag to compute SPRTA supports
+     * for zero-length branches. Default: FALSE
+     * @param[in] compute_zero_branches TRUE to compute SPRTA supports
+     * for zero-length branches
+     * @return A reference to the ParamsBuilder instance
+     */
+    ParamsBuilder& withComputeSPRTAZeroBranches(const bool& compute_zero_branches);
+    
+    /*! \brief Set the flag to output alternative SPRs
+     * and their SPRTA supports. Defaut: FALSE
+     * @param[in] out_alter_spr TRUE to output alternative SPRs
+     * and their SPRTA supports
+     * @return A reference to the ParamsBuilder instance
+     */
+    ParamsBuilder& withOutAlterSPR(const bool& out_alter_spr);
 
   /*! \brief Build the Params object after initializing parameters
    * @return a unique pointer to an instance of Params

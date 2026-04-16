@@ -753,6 +753,31 @@ auto cmaple::ParamsBuilder::withStopTreeSearchThresh(
   return *this;
 }
 
+auto cmaple::ParamsBuilder::withComputeSPRTA(
+    const bool& compute_SPRTA) -> cmaple::ParamsBuilder& {
+    params_ptr->compute_SPRTA = compute_SPRTA;
+    
+    // return
+    return *this;
+}
+
+auto cmaple::ParamsBuilder::withComputeSPRTAZeroBranches(
+    const bool& compute_zero_branches) -> cmaple::ParamsBuilder& {
+    params_ptr->compute_SPRTA_zero_length_branches = compute_zero_branches;
+    params_ptr->print_SPRTA_less_info_seqs = compute_zero_branches;
+    
+    // return
+    return *this;
+}
+
+auto cmaple::ParamsBuilder::withOutAlterSPR(
+    const bool& out_alter_spr) -> cmaple::ParamsBuilder& {
+    params_ptr->output_alternative_spr = out_alter_spr;
+    
+    // return
+    return *this;
+}
+
 std::unique_ptr<cmaple::Params> cmaple::ParamsBuilder::build() {
   return std::move(params_ptr);
 }
