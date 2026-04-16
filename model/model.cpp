@@ -9,14 +9,14 @@ using namespace cmaple;
 cmaple::Model::Model(
                       const cmaple::ModelBase::SubModel sub_model,
                       const cmaple::SeqRegion::SeqType seqtype,
-                      const bool n_site_specific_q,
-                      const bool site_specific_rates,
+                      const bool n_site_specific_matrix,
+                      const bool site_specific_rate,
                       const cmaple::PositionType seq_length,
                       const cmaple::RealNumType wt_pseudocount,
                       const int max_num_EM_steps,
                       const std::string& rates_filename)
     : model_base(nullptr) {
-  rate_variation = n_site_specific_q;
+  rate_variation = n_site_specific_matrix;
   cmaple::ModelBase::SubModel n_sub_model = sub_model;
   cmaple::SeqRegion::SeqType n_seqtype = seqtype;
   assert(n_sub_model != ModelBase::DEFAULT || n_seqtype != SeqRegion::SEQ_AUTO);
@@ -77,7 +77,7 @@ cmaple::Model::Model(
     }
     case cmaple::SeqRegion::SEQ_DNA: {
       if(rate_variation){
-        model_base = new ModelDNARateVariation(n_sub_model, seq_length, site_specific_rates, wt_pseudocount, max_num_EM_steps, rates_filename);
+        model_base = new ModelDNARateVariation(n_sub_model, seq_length, site_specific_rate, wt_pseudocount, max_num_EM_steps, rates_filename);
       } else {
         model_base = new ModelDNA(n_sub_model);
       }
