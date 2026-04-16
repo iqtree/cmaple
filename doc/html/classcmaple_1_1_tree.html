@@ -144,10 +144,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8793d1bd23d185258a68a01bcc279f4e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a8793d1bd23d185258a68a01bcc279f4e">exportNewick</a> (const <a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> tree_type=<a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a>, const bool print_internal_id=false, const bool show_branch_supports=true)</td></tr>
 <tr class="memdesc:a8793d1bd23d185258a68a01bcc279f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the phylogenetic tree to a string in NEWICK format.  <br /></td></tr>
 <tr class="separator:a8793d1bd23d185258a68a01bcc279f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d2d52ac6be14104493a7ab0fed62b5a"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; SeqRegions &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a8d2d52ac6be14104493a7ab0fed62b5a">getPartialLhAtNode</a> (const cmaple::Index index)</td></tr>
-<tr class="separator:a8d2d52ac6be14104493a7ab0fed62b5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad853a55f8a80cb3bac52caf65ef27b8b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#ad853a55f8a80cb3bac52caf65ef27b8b">computeCumulativeRate</a> ()</td></tr>
-<tr class="separator:ad853a55f8a80cb3bac52caf65ef27b8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The structure of a phylogenetic tree </p>
@@ -975,48 +971,6 @@ Public Member Functions</h2></td></tr>
 <li>tree_type is unknown </li>
 </ul>
 </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a8d2d52ac6be14104493a7ab0fed62b5a" name="a8d2d52ac6be14104493a7ab0fed62b5a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d2d52ac6be14104493a7ab0fed62b5a">&#9670;&#160;</a></span>getPartialLhAtNode()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::unique_ptr&lt; SeqRegions &gt; &amp; cmaple::Tree::getPartialLhAtNode </td>
-          <td>(</td>
-          <td class="paramtype">const cmaple::Index&#160;</td>
-          <td class="paramname"><em>index</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Get partial_lh at a node by its index </p>
-
-</div>
-</div>
-<a id="ad853a55f8a80cb3bac52caf65ef27b8b" name="ad853a55f8a80cb3bac52caf65ef27b8b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad853a55f8a80cb3bac52caf65ef27b8b">&#9670;&#160;</a></span>computeCumulativeRate()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cmaple::Tree::computeCumulativeRate </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Compute cumulative rate of the ref genome </p><dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::logic_error</td><td>if the reference genome is empty </td></tr>
   </table>
   </dd>
 </dl>

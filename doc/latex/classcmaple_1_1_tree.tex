@@ -50,11 +50,7 @@ Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393
 void \mbox{\hyperlink{classcmaple_1_1_tree_a415d4e23f522c7ecb1f8363e27f6bafa}{compute\+Branch\+Support}} (const int num\+\_\+threads=1, const int num\+\_\+replicates=1000, const double epsilon=0.\+1, const bool allow\+\_\+replacing\+\_\+\+ML\+\_\+tree=true, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Compute branch supports (\href{https://academic.oup.com/sysbio/article/59/3/307/1702850}{\texttt{ a\+LRT-\/\+SH}}) of the current tree, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
 std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a8793d1bd23d185258a68a01bcc279f4e}{export\+Newick}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{Tree\+Type}} tree\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da}{BIN\+\_\+\+TREE}}, const bool print\+\_\+internal\+\_\+id=false, const bool show\+\_\+branch\+\_\+supports=true)
-\begin{DoxyCompactList}\small\item\em Export the phylogenetic tree to a string in NEWICK format. \end{DoxyCompactList}\item 
-std\+::unique\+\_\+ptr$<$ Seq\+Regions $>$ \& \mbox{\hyperlink{classcmaple_1_1_tree_a8d2d52ac6be14104493a7ab0fed62b5a}{get\+Partial\+Lh\+At\+Node}} (const cmaple\+::\+Index index)
-\item 
-void \mbox{\hyperlink{classcmaple_1_1_tree_ad853a55f8a80cb3bac52caf65ef27b8b}{compute\+Cumulative\+Rate}} ()
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Export the phylogenetic tree to a string in NEWICK format. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -571,23 +567,6 @@ A tree string in NEWICK format
 \begin{DoxyItemize}
 \item tree\+\_\+type is unknown 
 \end{DoxyItemize}\\
-\hline
-\end{DoxyExceptions}
-\Hypertarget{classcmaple_1_1_tree_a8d2d52ac6be14104493a7ab0fed62b5a}\label{classcmaple_1_1_tree_a8d2d52ac6be14104493a7ab0fed62b5a} 
-\index{cmaple::Tree@{cmaple::Tree}!getPartialLhAtNode@{getPartialLhAtNode}}
-\index{getPartialLhAtNode@{getPartialLhAtNode}!cmaple::Tree@{cmaple::Tree}}
-\doxysubsubsection{\texorpdfstring{getPartialLhAtNode()}{getPartialLhAtNode()}}
-{\footnotesize\ttfamily std\+::unique\+\_\+ptr$<$ Seq\+Regions $>$ \& cmaple\+::\+Tree\+::get\+Partial\+Lh\+At\+Node (\begin{DoxyParamCaption}\item[{const cmaple\+::\+Index}]{index }\end{DoxyParamCaption})}
-
-Get partial\+\_\+lh at a node by its index \Hypertarget{classcmaple_1_1_tree_ad853a55f8a80cb3bac52caf65ef27b8b}\label{classcmaple_1_1_tree_ad853a55f8a80cb3bac52caf65ef27b8b} 
-\index{cmaple::Tree@{cmaple::Tree}!computeCumulativeRate@{computeCumulativeRate}}
-\index{computeCumulativeRate@{computeCumulativeRate}!cmaple::Tree@{cmaple::Tree}}
-\doxysubsubsection{\texorpdfstring{computeCumulativeRate()}{computeCumulativeRate()}}
-{\footnotesize\ttfamily void cmaple\+::\+Tree\+::compute\+Cumulative\+Rate (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
-
-Compute cumulative rate of the ref genome 
-\begin{DoxyExceptions}{Exceptions}
-{\em std\+::logic\+\_\+error} & if the reference genome is empty \\
 \hline
 \end{DoxyExceptions}
 

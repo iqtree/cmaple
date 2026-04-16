@@ -300,6 +300,11 @@ class Tree {
   std::string exportNewick(const TreeType tree_type = BIN_TREE,
                            const bool print_internal_id = false,
                            const bool show_branch_supports = true);
+    
+    // ----------------- END OF PUBLIC APIs ------------------------------------
+    // //
+
+    /*! \cond PRIVATE */
 
   /**
    Get partial_lh at a node by its index
@@ -312,10 +317,6 @@ class Tree {
   */
   void computeCumulativeRate();
 
-  // ----------------- END OF PUBLIC APIs ------------------------------------
-  // //
-
-  /*! \cond PRIVATE */
   /**
    TRUE to keep the branch lengths fixed
    */

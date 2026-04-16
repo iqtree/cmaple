@@ -4,7 +4,6 @@ var searchData=
   ['changemodel_1',['changeModel',['../classcmaple_1_1_tree.html#aa4f982f45f38226193cd584bbe7e93ef',1,'cmaple::Tree']]],
   ['cmaple_2',['Cmaple',['../group__cmaple.html',1,'']]],
   ['computebranchsupport_3',['computeBranchSupport',['../classcmaple_1_1_tree.html#a415d4e23f522c7ecb1f8363e27f6bafa',1,'cmaple::Tree']]],
-  ['computecumulativerate_4',['computeCumulativeRate',['../classcmaple_1_1_tree.html#ad853a55f8a80cb3bac52caf65ef27b8b',1,'cmaple::Tree']]],
-  ['computelh_5',['computeLh',['../classcmaple_1_1_tree.html#a987c92b41faa1303b5b0c8393c0704db',1,'cmaple::Tree']]],
-  ['cprev_6',['CPREV',['../classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1a53f9d2344582a2c76a62836bb56d2777',1,'cmaple::ModelBase']]]
+  ['computelh_4',['computeLh',['../classcmaple_1_1_tree.html#a987c92b41faa1303b5b0c8393c0704db',1,'cmaple::Tree']]],
+  ['cprev_5',['CPREV',['../classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1a53f9d2344582a2c76a62836bb56d2777',1,'cmaple::ModelBase']]]
 ];
