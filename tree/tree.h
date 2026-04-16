@@ -175,8 +175,9 @@ class Tree {
    */
   void doPlacement(const int num_threads, std::ostream& out_stream = std::cout);
 
-  /*! \brief Do rate estimation either using EM or simple counting method.
-   * Currently only implemented for rate variation DNA model.
+  /*! \brief Estimate site-specific rates/substition matrices
+   * either using EM or simple counting method.
+   * This function is currently only supported for (DNA) rate variation models.
    * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
@@ -189,6 +190,7 @@ class Tree {
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search
+   * @param[in] compute_SPRTA TRUE to compute SPRTA supports
    * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the tree is empty
@@ -196,7 +198,8 @@ class Tree {
    * - unexpected values/behaviors found during the operations
    */
   void applySPR(const int num_threads, const TreeSearchType tree_search_type,
-                       const bool shallow_tree_search, std::ostream& out_stream = std::cout);
+                const bool shallow_tree_search, const bool compute_SPRTA,
+                std::ostream& out_stream = std::cout);
 
   /*! \brief Optimize the branch lengths of the tree
    * @param[out] out_stream The output message stream (optional)
@@ -230,6 +233,7 @@ class Tree {
    * @param[in] tree_search_type A type of tree search (optional)
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search (optional)
+   * @param[in] compute_SPRTA TRUE to compute SPRTA supports (optional)
    * @param[out] out_stream The output message stream (optional)
    * @throw std::invalid\_argument if tree\_search\_type is unknown
    * @throw std::logic\_error if any of the following situations occur.
@@ -239,7 +243,9 @@ class Tree {
   void infer(
       const int num_threads = 1,
       const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH,
-      const bool shallow_tree_search = false, std::ostream& out_stream = std::cout);
+      const bool shallow_tree_search = false,
+      const bool compute_SPRTA = false,
+      std::ostream& out_stream = std::cout);
 
   /*! \brief Compute the log likelihood of the current tree, which may or may
    * not contain all taxa in the alignment
@@ -528,7 +534,7 @@ class Tree {
       Pointer  to doInference method
    */
   typedef void (Tree::*DoInferencePtrType)(const int, const TreeSearchType,
-                                                  const bool, std::ostream&);
+                                           const bool, const bool, std::ostream&);
   DoInferencePtrType doInferencePtr;
 
   /**
@@ -547,7 +553,7 @@ class Tree {
       Pointer  to applySPR method
    */
   typedef void (Tree::*ApplySPRPtrType)(const int, const TreeSearchType,
-                                               const bool, std::ostream&);
+                                        const bool, const bool, std::ostream&);
   ApplySPRPtrType applySPRPtr;
 
   /**
@@ -596,7 +602,8 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void doInferenceTemplate(const int num_threads, const TreeSearchType tree_search_type,
-                                  const bool shallow_tree_search, std::ostream& out_stream);
+                           const bool shallow_tree_search, const bool compute_SPRTA,
+                           std::ostream& out_stream);
 
   /*! Template of doPlacement()
    */
@@ -613,7 +620,8 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void applySPRTemplate(const int num_threads, const TreeSearchType tree_search_type,
-                               const bool shallow_tree_search, std::ostream& out_stream);
+                        const bool shallow_tree_search, const bool compute_SPRTA,
+                        std::ostream& out_stream);
 
   /*! Template of optimizeBranch()
    */

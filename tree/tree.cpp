@@ -142,9 +142,12 @@ void cmaple::Tree::doRateEstimation(std::ostream& out_stream) {
 
 void cmaple::Tree::applySPR(const int num_threads,
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   assert(applySPRPtr);
-    (this->*applySPRPtr)(num_threads, tree_search_type, shallow_tree_search, out_stream);
+    (this->*applySPRPtr)(num_threads, tree_search_type,
+                         shallow_tree_search, compute_SPRTA, out_stream);
 }
 
 void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
@@ -155,9 +158,11 @@ void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
 void cmaple::Tree::infer(
     const int num_threads,
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   assert(doInferencePtr);
-  (this->*doInferencePtr)(num_threads, tree_search_type, shallow_tree_search, out_stream);
+  (this->*doInferencePtr)(num_threads, tree_search_type, shallow_tree_search, compute_SPRTA, out_stream);
 }
 
 RealNumType cmaple::Tree::computeLh() {
@@ -597,7 +602,9 @@ template <const StateType num_states>
 void cmaple::Tree::doInferenceTemplate(
     const int num_threads,
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   // validate input
   assert(aln && model);
   assert(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
@@ -613,7 +620,8 @@ void cmaple::Tree::doInferenceTemplate(
   doRateEstimation(out_stream);
 
   // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-  applySPR(num_threads, tree_search_type, shallow_tree_search, out_stream);
+  applySPR(num_threads, tree_search_type, shallow_tree_search,
+           compute_SPRTA, out_stream);
 
   // 3. Optimize branch lengths (if needed)
   if (!fixed_blengths) {
@@ -1085,7 +1093,9 @@ template <const StateType num_states>
 void cmaple::Tree::applySPRTemplate(
     const int num_threads,
     const TreeSearchType n_tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   assert(cumulative_base.size() > 0);
   assert(nodes.size() > 0);
     
@@ -1099,6 +1109,9 @@ void cmaple::Tree::applySPRTemplate(
   if (!nodes.size()) {
     throw std::logic_error("Tree is empty. Please build/infer a tree first!");
   }
+    
+    // update the compute_SPRTA flag
+    params->compute_SPRTA = compute_SPRTA;
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
