@@ -111,60 +111,60 @@
 \DoxyCodeLine{00300\ \ \ \textcolor{keywordtype}{void}\ readFastaOrPhylip(std::istream\&\ aln\_stream,}
 \DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ ref\_seq\ =\ \textcolor{stringliteral}{"{}"{}});}
 \DoxyCodeLine{00302\ }
-\DoxyCodeLine{00308\ \ \ \textcolor{keywordtype}{void}\ parseRefSeq(std::string\&\ ref\_sequence);}
-\DoxyCodeLine{00309\ }
-\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{void}\ readFasta(std::istream\&\ aln\_stream,}
-\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
-\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
-\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
-\DoxyCodeLine{00322\ }
-\DoxyCodeLine{00331\ \ \ \textcolor{keywordtype}{void}\ readPhylip(std::istream\&\ aln\_stream,}
-\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
-\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
-\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
-\DoxyCodeLine{00335\ }
-\DoxyCodeLine{00345\ \ \ \textcolor{keywordtype}{void}\ readSequences(std::istream\&\ aln\_stream,}
-\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
-\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
-\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ aln\_format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},}
-\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
-\DoxyCodeLine{00350\ }
-\DoxyCodeLine{00359\ \ \ std::string\ generateRef(cmaple::StrVector\&\ sequences);}
-\DoxyCodeLine{00360\ }
-\DoxyCodeLine{00365\ \ \ \textcolor{keywordtype}{void}\ processSeq(std::string\&\ sequence,}
-\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ line,}
-\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ line\_num);}
-\DoxyCodeLine{00368\ }
-\DoxyCodeLine{00373\ \ \ \textcolor{keywordtype}{void}\ addMutation(Sequence*\ sequence,}
-\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ state\_char,}
-\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ pos,}
-\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ length\ =\ -\/1);}
-\DoxyCodeLine{00377\ }
-\DoxyCodeLine{00382\ \ \ \textcolor{keywordtype}{void}\ writeMAPLE(std::ostream\&\ aln\_stream);}
-\DoxyCodeLine{00383\ }
-\DoxyCodeLine{00388\ \ \ \textcolor{keywordtype}{void}\ writeFASTA(std::ostream\&\ aln\_stream);}
-\DoxyCodeLine{00389\ }
-\DoxyCodeLine{00394\ \ \ \textcolor{keywordtype}{void}\ writePHYLIP(std::ostream\&\ aln\_stream);}
-\DoxyCodeLine{00395\ }
-\DoxyCodeLine{00399\ \ \ \textcolor{keyword}{auto}\ getRefSeqStr()\ -\/>\ std::string;}
-\DoxyCodeLine{00400\ }
-\DoxyCodeLine{00404\ \ \ \textcolor{keyword}{auto}\ getSeqString(\textcolor{keyword}{const}\ std::string\&\ ref\_seq\_str,\ Sequence*\ sequence)\ -\/>\ std::string;}
-\DoxyCodeLine{00405\ }
-\DoxyCodeLine{00413\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectMAPLEorFASTA(std::istream\&\ aln\_stream);}
-\DoxyCodeLine{00414\ }
-\DoxyCodeLine{00424\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectInputFile(std::istream\&\ aln\_stream);}
-\DoxyCodeLine{00425\ \ \ \ \ }
-\DoxyCodeLine{00427\ \};}
-\DoxyCodeLine{00428\ }
-\DoxyCodeLine{00437\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{group__cmaple_gabf49c77ec0934b4d8750f61dd3ac6d71}{operator<<}}(std::ostream\&\ out\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln)\ -\/>\ std::ostream\&;}
-\DoxyCodeLine{00438\ }
-\DoxyCodeLine{00441\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{group__cmaple_ga9f041909a438d7173dc9f15dcf20762d}{operator>>}}(std::istream\&\ in\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln)\ -\/>\ std::istream\&;}
-\DoxyCodeLine{00442\ }
-\DoxyCodeLine{00447\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_protein[];}
-\DoxyCodeLine{00448\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_dna[];}
-\DoxyCodeLine{00449\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_rna[];}
-\DoxyCodeLine{00450\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_morph[];}
-\DoxyCodeLine{00451\ \}\ \ \textcolor{comment}{//\ namespace\ cmaple}}
-\DoxyCodeLine{00452\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00309\ \ \ \textcolor{keywordtype}{void}\ parseRefSeq(std::string\&\ ref\_sequence,\ \textcolor{keywordtype}{bool}\ throw\_error);}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00319\ \ \ \textcolor{keywordtype}{void}\ readFasta(std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00332\ \ \ \textcolor{keywordtype}{void}\ readPhylip(std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00346\ \ \ \textcolor{keywordtype}{void}\ readSequences(std::istream\&\ aln\_stream,}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ sequences,}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::StrVector\&\ seq\_names,}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ aln\_format\ =\ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3ba5b481bc6c5d186f4e2912ab9636411f5}{IN\_AUTO}},}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ check\_min\_seqs\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00360\ \ \ std::string\ generateRef(cmaple::StrVector\&\ sequences);}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00366\ \ \ \textcolor{keywordtype}{void}\ processSeq(std::string\&\ sequence,}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ line,}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ line\_num);}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00374\ \ \ \textcolor{keywordtype}{void}\ addMutation(Sequence*\ sequence,}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ state\_char,}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ pos,}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmaple::PositionType\ length\ =\ -\/1);}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00383\ \ \ \textcolor{keywordtype}{void}\ writeMAPLE(std::ostream\&\ aln\_stream);}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00389\ \ \ \textcolor{keywordtype}{void}\ writeFASTA(std::ostream\&\ aln\_stream);}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordtype}{void}\ writePHYLIP(std::ostream\&\ aln\_stream);}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00400\ \ \ \textcolor{keyword}{auto}\ getRefSeqStr()\ -\/>\ std::string;}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00405\ \ \ \textcolor{keyword}{auto}\ getSeqString(\textcolor{keyword}{const}\ std::string\&\ ref\_seq\_str,\ Sequence*\ sequence)\ -\/>\ std::string;}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00414\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectMAPLEorFASTA(std::istream\&\ aln\_stream);}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00425\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment_aee3f54a67adb568735bbc1db96944e3b}{InputType}}\ detectInputFile(std::istream\&\ aln\_stream);}
+\DoxyCodeLine{00426\ \ \ \ \ }
+\DoxyCodeLine{00428\ \};}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00438\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{group__cmaple_gabf49c77ec0934b4d8750f61dd3ac6d71}{operator<<}}(std::ostream\&\ out\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln)\ -\/>\ std::ostream\&;}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00442\ \textcolor{keyword}{auto}\ \mbox{\hyperlink{group__cmaple_ga9f041909a438d7173dc9f15dcf20762d}{operator>>}}(std::istream\&\ in\_stream,\ \mbox{\hyperlink{classcmaple_1_1_alignment}{cmaple::Alignment}}\&\ aln)\ -\/>\ std::istream\&;}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00448\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_protein[];}
+\DoxyCodeLine{00449\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_dna[];}
+\DoxyCodeLine{00450\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_rna[];}
+\DoxyCodeLine{00451\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ symbols\_morph[];}
+\DoxyCodeLine{00452\ \}\ \ \textcolor{comment}{//\ namespace\ cmaple}}
+\DoxyCodeLine{00453\ \textcolor{preprocessor}{\#endif}}
 
 \end{DoxyCode}

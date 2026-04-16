@@ -21,9 +21,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">CMAPLE<span id="projectnumber">&#160;1</span>
+   <div id="projectname">CMAPLE<span id="projectnumber">&#160;1.0.0</span>
    </div>
-   <div id="projectbrief">CMaple phylogenetic software</div>
+   <div id="projectbrief">C++ MAximum Parsimonious Likelihood Estimation</div>
   </td>
  </tr>
  </tbody>
@@ -88,7 +88,7 @@ $(function() {
 Public Types</h2></td></tr>
 <tr class="memitem:a39bd3bfce400c9222e8b77c584d26d43"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> { <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43a782a94a0336018d3a43f5e71e76e0bc6">FAST_TREE_SEARCH</a>
 , <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1">NORMAL_TREE_SEARCH</a>
-, <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8">ACCURATE_TREE_SEARCH</a>
+, <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43a313f6f3990c2b8c7ab3f1f174b9e970e">EXHAUSTIVE_TREE_SEARCH</a>
 , <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5">UNKNOWN_TREE_SEARCH</a>
  }</td></tr>
 <tr class="separator:a39bd3bfce400c9222e8b77c584d26d43"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,27 +120,34 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa4f982f45f38226193cd584bbe7e93ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#aa4f982f45f38226193cd584bbe7e93ef">changeModel</a> (<a class="el" href="classcmaple_1_1_model.html">Model</a> *model)</td></tr>
 <tr class="memdesc:aa4f982f45f38226193cd584bbe7e93ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Change the substitution model.  <br /></td></tr>
 <tr class="separator:aa4f982f45f38226193cd584bbe7e93ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a072d5393798650a838dc7f4b067f7232"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232">doPlacement</a> (std::ostream &amp;out_stream=std::cout)</td></tr>
-<tr class="memdesc:a072d5393798650a838dc7f4b067f7232"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do placement (using stepwise addition) to build an initial tree. <a class="el" href="classcmaple_1_1_model.html">Model</a> parameters (if not fixed) will be estimated during the placement process.  <br /></td></tr>
-<tr class="separator:a072d5393798650a838dc7f4b067f7232"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8">applySPR</a> (const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type, const bool shallow_tree_search, std::ostream &amp;out_stream=std::cout)</td></tr>
-<tr class="memdesc:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply SPR moves to optimize the tree.  <br /></td></tr>
-<tr class="separator:a2c9dfd1f20162021c5431ebe29d57ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15e87b19c2d543d25dfe4ca20871c757"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a15e87b19c2d543d25dfe4ca20871c757">doPlacement</a> (const int num_threads, std::ostream &amp;out_stream=std::cout)</td></tr>
+<tr class="memdesc:a15e87b19c2d543d25dfe4ca20871c757"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do placement (using stepwise addition) to build an initial tree. <a class="el" href="classcmaple_1_1_model.html">Model</a> parameters (if not fixed) will be estimated during the placement process.  <br /></td></tr>
+<tr class="separator:a15e87b19c2d543d25dfe4ca20871c757"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79b0a87ee81aef0c2fe3734a684fc8a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a79b0a87ee81aef0c2fe3734a684fc8a6">doRateEstimation</a> (std::ostream &amp;out_stream=std::cout)</td></tr>
+<tr class="memdesc:a79b0a87ee81aef0c2fe3734a684fc8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do rate estimation either using EM or simple counting method. Currently only implemented for rate variation DNA model.  <br /></td></tr>
+<tr class="separator:a79b0a87ee81aef0c2fe3734a684fc8a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a967b8d1fce6c0505e353573e476eeff5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a967b8d1fce6c0505e353573e476eeff5">applySPR</a> (const int num_threads, const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type, const bool shallow_tree_search, std::ostream &amp;out_stream=std::cout)</td></tr>
+<tr class="memdesc:a967b8d1fce6c0505e353573e476eeff5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply SPR moves to optimize the tree.  <br /></td></tr>
+<tr class="separator:a967b8d1fce6c0505e353573e476eeff5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc947148cb44b753d7799b4df5fa83f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8">optimizeBranch</a> (std::ostream &amp;out_stream=std::cout)</td></tr>
 <tr class="memdesc:afc947148cb44b753d7799b4df5fa83f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optimize the branch lengths of the tree.  <br /></td></tr>
 <tr class="separator:afc947148cb44b753d7799b4df5fa83f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf42c58dd4db66c040386df9053f8ba9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#aaf42c58dd4db66c040386df9053f8ba9">autoProceedMAPLE</a> (const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type=<a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1">NORMAL_TREE_SEARCH</a>, const bool shallow_tree_search=false, std::ostream &amp;out_stream=std::cout)</td></tr>
-<tr class="memdesc:aaf42c58dd4db66c040386df9053f8ba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the tree.">optimizeBranch()</a>  <br /></td></tr>
-<tr class="separator:aaf42c58dd4db66c040386df9053f8ba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4446409e237741f0d716061bea35049"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#ac4446409e237741f0d716061bea35049">infer</a> (const int num_threads=1, const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type=<a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1">NORMAL_TREE_SEARCH</a>, const bool shallow_tree_search=false, std::ostream &amp;out_stream=std::cout)</td></tr>
+<tr class="memdesc:ac4446409e237741f0d716061bea35049"><td class="mdescLeft">&#160;</td><td class="mdescRight">Infer a maximum likelihood tree by executing <a class="el" href="classcmaple_1_1_tree.html#a15e87b19c2d543d25dfe4ca20871c757" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a967b8d1fce6c0505e353573e476eeff5" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the tree.">optimizeBranch()</a>  <br /></td></tr>
+<tr class="separator:ac4446409e237741f0d716061bea35049"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a987c92b41faa1303b5b0c8393c0704db"><td class="memItemLeft" align="right" valign="top">RealNumType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a987c92b41faa1303b5b0c8393c0704db">computeLh</a> ()</td></tr>
 <tr class="memdesc:a987c92b41faa1303b5b0c8393c0704db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the log likelihood of the current tree, which may or may not contain all taxa in the alignment.  <br /></td></tr>
 <tr class="separator:a987c92b41faa1303b5b0c8393c0704db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a415d4e23f522c7ecb1f8363e27f6bafa"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a415d4e23f522c7ecb1f8363e27f6bafa">computeBranchSupport</a> (const int num_threads=1, const int num_replicates=1000, const double epsilon=0.1, const bool allow_replacing_ML_tree=true, std::ostream &amp;out_stream=std::cout)</td></tr>
 <tr class="memdesc:a415d4e23f522c7ecb1f8363e27f6bafa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute branch supports (<a href="https://academic.oup.com/sysbio/article/59/3/307/1702850">aLRT-SH</a>) of the current tree, which may or may not contain all taxa in the alignment.  <br /></td></tr>
 <tr class="separator:a415d4e23f522c7ecb1f8363e27f6bafa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d1492f8a3291bd70af3a879b535f880"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a8d1492f8a3291bd70af3a879b535f880">exportNewick</a> (const <a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> tree_type=<a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a>, const bool show_branch_supports=false)</td></tr>
-<tr class="memdesc:a8d1492f8a3291bd70af3a879b535f880"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the phylogenetic tree to a string in NEWICK format.  <br /></td></tr>
-<tr class="separator:a8d1492f8a3291bd70af3a879b535f880"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8793d1bd23d185258a68a01bcc279f4e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a8793d1bd23d185258a68a01bcc279f4e">exportNewick</a> (const <a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> tree_type=<a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a>, const bool print_internal_id=false, const bool show_branch_supports=true)</td></tr>
+<tr class="memdesc:a8793d1bd23d185258a68a01bcc279f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the phylogenetic tree to a string in NEWICK format.  <br /></td></tr>
+<tr class="separator:a8793d1bd23d185258a68a01bcc279f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d2d52ac6be14104493a7ab0fed62b5a"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; SeqRegions &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a8d2d52ac6be14104493a7ab0fed62b5a">getPartialLhAtNode</a> (const cmaple::Index index)</td></tr>
+<tr class="separator:a8d2d52ac6be14104493a7ab0fed62b5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad853a55f8a80cb3bac52caf65ef27b8b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#ad853a55f8a80cb3bac52caf65ef27b8b">computeCumulativeRate</a> ()</td></tr>
+<tr class="separator:ad853a55f8a80cb3bac52caf65ef27b8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The structure of a phylogenetic tree </p>
@@ -162,7 +169,7 @@ Public Member Functions</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1" name="a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1"></a>NORMAL_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider pruning branches only at newly-added nodes when seeking SPR moves </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8" name="a39bd3bfce400c9222e8b77c584d26d43af65759e421e111ae8b476ab74b390ff8"></a>ACCURATE_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider all nodes when seeking SPR moves </p>
+<tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43a313f6f3990c2b8c7ab3f1f174b9e970e" name="a39bd3bfce400c9222e8b77c584d26d43a313f6f3990c2b8c7ab3f1f174b9e970e"></a>EXHAUSTIVE_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Consider all nodes when seeking SPR moves </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5" name="a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5"></a>UNKNOWN_TREE_SEARCH&#160;</td><td class="fielddoc"><p>Unknown (not specified) </p>
 </td></tr>
@@ -542,8 +549,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a072d5393798650a838dc7f4b067f7232" name="a072d5393798650a838dc7f4b067f7232"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a072d5393798650a838dc7f4b067f7232">&#9670;&#160;</a></span>doPlacement()</h2>
+<a id="a15e87b19c2d543d25dfe4ca20871c757" name="a15e87b19c2d543d25dfe4ca20871c757"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15e87b19c2d543d25dfe4ca20871c757">&#9670;&#160;</a></span>doPlacement()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -551,9 +558,19 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">void cmaple::Tree::doPlacement </td>
           <td>(</td>
-          <td class="paramtype">std::ostream &amp;&#160;</td>
-          <td class="paramname"><em>out_stream</em> = <code>std::cout</code></td><td>)</td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>num_threads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>out_stream</em> = <code>std::cout</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -563,6 +580,43 @@ Public Member Functions</h2></td></tr>
 <li>If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function will add new taxa (which are not existed in the input tree) from the alignment to the tree.</li>
 <li>If users already supplied a complete tree, this function does nothing.</li>
 </ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_threads</td><td>The number of threads </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::logic_error</td><td>if any of the following situations occur.<ul>
+<li>the attached substitution model is unknown/unsupported</li>
+<li>unexpected values/behaviors found during the operations </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a79b0a87ee81aef0c2fe3734a684fc8a6" name="a79b0a87ee81aef0c2fe3734a684fc8a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79b0a87ee81aef0c2fe3734a684fc8a6">&#9670;&#160;</a></span>doRateEstimation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cmaple::Tree::doRateEstimation </td>
+          <td>(</td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>out_stream</em> = <code>std::cout</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Do rate estimation either using EM or simple counting method. Currently only implemented for rate variation DNA model. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
@@ -582,8 +636,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a2c9dfd1f20162021c5431ebe29d57ef8" name="a2c9dfd1f20162021c5431ebe29d57ef8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c9dfd1f20162021c5431ebe29d57ef8">&#9670;&#160;</a></span>applySPR()</h2>
+<a id="a967b8d1fce6c0505e353573e476eeff5" name="a967b8d1fce6c0505e353573e476eeff5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a967b8d1fce6c0505e353573e476eeff5">&#9670;&#160;</a></span>applySPR()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -591,6 +645,12 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">void cmaple::Tree::applySPR </td>
           <td>(</td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>num_threads</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a>&#160;</td>
           <td class="paramname"><em>tree_search_type</em>, </td>
         </tr>
@@ -617,6 +677,7 @@ Public Member Functions</h2></td></tr>
 <p>Apply SPR moves to optimize the tree. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_threads</td><td>The number of threads </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>A type of tree search </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE to enable a shallow tree search before a deeper tree search </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
@@ -674,15 +735,21 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aaf42c58dd4db66c040386df9053f8ba9" name="aaf42c58dd4db66c040386df9053f8ba9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaf42c58dd4db66c040386df9053f8ba9">&#9670;&#160;</a></span>autoProceedMAPLE()</h2>
+<a id="ac4446409e237741f0d716061bea35049" name="ac4446409e237741f0d716061bea35049"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4446409e237741f0d716061bea35049">&#9670;&#160;</a></span>infer()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void cmaple::Tree::autoProceedMAPLE </td>
+          <td class="memname">void cmaple::Tree::infer </td>
           <td>(</td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>num_threads</em> = <code>1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const <a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a>&#160;</td>
           <td class="paramname"><em>tree_search_type</em> = <code><a class="el" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43ad597e07c0182b56b0bc3d67b8fdaf0c1">NORMAL_TREE_SEARCH</a></code>, </td>
         </tr>
@@ -706,7 +773,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Infer a phylogenetic tree by executing <a class="el" href="classcmaple_1_1_tree.html#a072d5393798650a838dc7f4b067f7232" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a2c9dfd1f20162021c5431ebe29d57ef8" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the tree.">optimizeBranch()</a> </p>
+<p>Infer a maximum likelihood tree by executing <a class="el" href="classcmaple_1_1_tree.html#a15e87b19c2d543d25dfe4ca20871c757" title="Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...">doPlacement()</a>, <a class="el" href="classcmaple_1_1_tree.html#a967b8d1fce6c0505e353573e476eeff5" title="Apply SPR moves to optimize the tree.">applySPR()</a>, and <a class="el" href="classcmaple_1_1_tree.html#afc947148cb44b753d7799b4df5fa83f8" title="Optimize the branch lengths of the tree.">optimizeBranch()</a> </p>
 <ul>
 <li>If users didn't supply an input tree or supplied an incomplete tree (which doesn't contain all the taxa in the alignment) when initializing the tree (by Tree() constructor), this function:<ul>
 <li>performs placement (i.e., adding missing taxa from the alignment to the tree)</li>
@@ -715,10 +782,11 @@ Public Member Functions</h2></td></tr>
 </ul>
 </li>
 <li>If users already supplied a complete tree, this function, by default, does neither placement nor tree search, but it optimizes all branch lengths. If users want to keep the branch lengths fixed, they should set fixed_blengths = true when initializing the tree (by Tree() constructor);</li>
-<li>If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree_search_type = ACCURATE</li>
+<li>If users want to use the input (complete/incomplete) tree as a starting tree to perform placement (for an incomplete tree), then consider SPR moves on all nodes, and optimize branch lengths, they can set tree_search_type = EXHAUSTIVE</li>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_threads</td><td>The number of threads (optional) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tree_search_type</td><td>A type of tree search (optional) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">shallow_tree_search</td><td>TRUE to enable a shallow tree search before a deeper tree search (optional) </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">out_stream</td><td>The output message stream (optional) </td></tr>
@@ -845,8 +913,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a8d1492f8a3291bd70af3a879b535f880" name="a8d1492f8a3291bd70af3a879b535f880"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d1492f8a3291bd70af3a879b535f880">&#9670;&#160;</a></span>exportNewick()</h2>
+<a id="a8793d1bd23d185258a68a01bcc279f4e" name="a8793d1bd23d185258a68a01bcc279f4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8793d1bd23d185258a68a01bcc279f4e">&#9670;&#160;</a></span>exportNewick()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -861,7 +929,13 @@ Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>show_branch_supports</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>print_internal_id</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>show_branch_supports</em> = <code>true</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -876,6 +950,7 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">tree_type</td><td>The type of the output tree (optional): BIN_TREE (bifurcating tree), MUL_TREE (multifurcating tree) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">show_branch_supports</td><td>TRUE to output the branch supports (aLRT-SH values) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">print_internal_id</td><td>TRUE to print the id of internal nodes </td></tr>
   </table>
   </dd>
 </dl>
@@ -883,10 +958,51 @@ Public Member Functions</h2></td></tr>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
-<li>tree_type is unknown</li>
-<li>show_branch_supports = true but branch support values have yet been computed </li>
+<li>tree_type is unknown </li>
 </ul>
 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a8d2d52ac6be14104493a7ab0fed62b5a" name="a8d2d52ac6be14104493a7ab0fed62b5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d2d52ac6be14104493a7ab0fed62b5a">&#9670;&#160;</a></span>getPartialLhAtNode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt; SeqRegions &gt; &amp; cmaple::Tree::getPartialLhAtNode </td>
+          <td>(</td>
+          <td class="paramtype">const cmaple::Index&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get partial_lh at a node by its index </p>
+
+</div>
+</div>
+<a id="ad853a55f8a80cb3bac52caf65ef27b8b" name="ad853a55f8a80cb3bac52caf65ef27b8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad853a55f8a80cb3bac52caf65ef27b8b">&#9670;&#160;</a></span>computeCumulativeRate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cmaple::Tree::computeCumulativeRate </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compute cumulative rate of the ref genome </p><dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::logic_error</td><td>if the reference genome is empty </td></tr>
   </table>
   </dd>
 </dl>

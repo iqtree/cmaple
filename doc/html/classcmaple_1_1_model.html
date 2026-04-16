@@ -21,9 +21,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">CMAPLE<span id="projectnumber">&#160;1</span>
+   <div id="projectname">CMAPLE<span id="projectnumber">&#160;1.0.0</span>
    </div>
-   <div id="projectbrief">CMaple phylogenetic software</div>
+   <div id="projectbrief">C++ MAximum Parsimonious Likelihood Estimation</div>
   </td>
  </tr>
  </tbody>
@@ -91,9 +91,9 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac9052bb9922fc0edceeaf0e1a3bc11d5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_model.html#ac9052bb9922fc0edceeaf0e1a3bc11d5">Model</a> (const <a class="el" href="classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1">cmaple::ModelBase::SubModel</a> sub_model=<a class="el" href="classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1a0b43d2e7ca2f40879f7f595f44d179c3">cmaple::ModelBase::DEFAULT</a>, const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a> seqtype=<a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a>)</td></tr>
-<tr class="memdesc:ac9052bb9922fc0edceeaf0e1a3bc11d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from a model name.  <br /></td></tr>
-<tr class="separator:ac9052bb9922fc0edceeaf0e1a3bc11d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7309d1ad0156914656f7e5174537ffd5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_model.html#a7309d1ad0156914656f7e5174537ffd5">Model</a> (const <a class="el" href="classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1">cmaple::ModelBase::SubModel</a> sub_model=<a class="el" href="classcmaple_1_1_model_base.html#aad9cb5622678fdf128b3ea016b475ee1a0b43d2e7ca2f40879f7f595f44d179c3">cmaple::ModelBase::DEFAULT</a>, const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a> seqtype=<a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a>, const bool site_specific_q=false, const bool site_specific_rates=false, const cmaple::PositionType seq_length=0, const cmaple::RealNumType wt_pseudocount=0.1, const int max_num_EM_steps=20, const std::string &amp;rates_filename=&quot;&quot;)</td></tr>
+<tr class="memdesc:a7309d1ad0156914656f7e5174537ffd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor from a model name.  <br /></td></tr>
+<tr class="separator:a7309d1ad0156914656f7e5174537ffd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a777b4d174b5d7dac04ecd84def4e4ee4"><td class="memItemLeft" align="right" valign="top"><a id="a777b4d174b5d7dac04ecd84def4e4ee4" name="a777b4d174b5d7dac04ecd84def4e4ee4"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>~Model</b> ()</td></tr>
 <tr class="memdesc:a777b4d174b5d7dac04ecd84def4e4ee4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor. <br /></td></tr>
@@ -108,8 +108,8 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class represents a substitution model </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ac9052bb9922fc0edceeaf0e1a3bc11d5" name="ac9052bb9922fc0edceeaf0e1a3bc11d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac9052bb9922fc0edceeaf0e1a3bc11d5">&#9670;&#160;</a></span>Model()</h2>
+<a id="a7309d1ad0156914656f7e5174537ffd5" name="a7309d1ad0156914656f7e5174537ffd5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7309d1ad0156914656f7e5174537ffd5">&#9670;&#160;</a></span>Model()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -124,7 +124,43 @@ Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5d">cmaple::SeqRegion::SeqType</a>&#160;</td>
-          <td class="paramname"><em>seqtype</em> = <code><a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a></code>&#160;</td>
+          <td class="paramname"><em>seqtype</em> = <code><a class="el" href="classcmaple_1_1_seq_region.html#abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5">cmaple::SeqRegion::SEQ_AUTO</a></code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>site_specific_q</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>site_specific_rates</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const cmaple::PositionType&#160;</td>
+          <td class="paramname"><em>seq_length</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const cmaple::RealNumType&#160;</td>
+          <td class="paramname"><em>wt_pseudocount</em> = <code>0.1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>max_num_EM_steps</em> = <code>20</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>rates_filename</em> = <code>&quot;&quot;</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -142,6 +178,12 @@ Public Member Functions</h2></td></tr>
 <b>Protein models</b>: GTR20, NONREV, LG, WAG, JTT, Q_PFAM, Q_BIRD, Q_MAMMAL, Q_INSECT, Q_PLANT, Q_YEAST, JTTDCMUT, DCMUT, VT, PMB, BLOSUM62, DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB, HIVW, FLU, RTREV, CPREV, NQ_PFAM, NQ_BIRD, NQ_MAMMAL, NQ_INSECT, NQ_PLANT, NQ_YEAST; <br  />
  <em> See <a href="http://www.iqtree.org/doc/Substitution-Models"><b>Substitution models</b></a> for references of those models.</em> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">seqtype</td><td>Data type of sequences (optional): SEQ_DNA (nucleotide data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">site_specific_q</td><td>True to use site-specific exchangeability matrices (optional). Default: False; </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">site_specific_rates</td><td>True to use site-specific rates (optional). Default: False; </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seq_length</td><td>Length of the genomes (optional). Default: 0; </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">wt_pseudocount</td><td>Pseudocount used for waiting times when estimating site-specific exchangeability matrices (optional). Default: 0.1; </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">max_num_EM_steps</td><td>Maximum number of EM iterations for estimating rates (optional). Default: 20; </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rates_filename</td><td>Name of the file that contains rates (optional). Default: ""; </td></tr>
   </table>
   </dd>
 </dl>

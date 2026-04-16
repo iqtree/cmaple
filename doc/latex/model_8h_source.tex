@@ -19,24 +19,32 @@
 \DoxyCodeLine{00028\ \ \ \ \ std::string\ \mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params_a19a0dee5539fa88dfaea1b8592f65f69}{mut\_rates}};}
 \DoxyCodeLine{00029\ \ \ \};}
 \DoxyCodeLine{00030\ }
-\DoxyCodeLine{00048\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_ac9052bb9922fc0edceeaf0e1a3bc11d5}{Model}}(}
-\DoxyCodeLine{00049\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1}{cmaple::ModelBase::SubModel}}\ sub\_model\ =\ \mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1a0b43d2e7ca2f40879f7f595f44d179c3}{cmaple::ModelBase::DEFAULT}},}
-\DoxyCodeLine{00050\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}});}
-\DoxyCodeLine{00051\ }
-\DoxyCodeLine{00054\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4}{\string~Model}}();}
-\DoxyCodeLine{00055\ }
-\DoxyCodeLine{00062\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_model_a3ee90312ac8a303f3c8cce9ca5766584}{fixParameters}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\&\ fixed\_model\_params);}
-\DoxyCodeLine{00063\ }
-\DoxyCodeLine{00068\ \ \ \mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params}{ModelParams}}\ \mbox{\hyperlink{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}{getParams}}();}
-\DoxyCodeLine{00069\ }
-\DoxyCodeLine{00070\ \ \ \textcolor{comment}{//\ TODO:\ allow\ users\ to\ specify\ model\ parameters}}
-\DoxyCodeLine{00071\ }
-\DoxyCodeLine{00072\ \ \ \textcolor{comment}{//\ declare\ Tree\ as\ a\ friend\ class}}
-\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcmaple_1_1_tree}{Tree}};}
-\DoxyCodeLine{00074\ }
-\DoxyCodeLine{00075\ \ \textcolor{keyword}{private}:}
-\DoxyCodeLine{00079\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_base}{ModelBase}}*\ model\_base;}
-\DoxyCodeLine{00080\ \};}
-\DoxyCodeLine{00081\ \}\ \ \textcolor{comment}{//\ namespace\ cmaple}}
+\DoxyCodeLine{00055\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_a7309d1ad0156914656f7e5174537ffd5}{Model}}(}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1}{cmaple::ModelBase::SubModel}}\ sub\_model\ =\ \mbox{\hyperlink{classcmaple_1_1_model_base_aad9cb5622678fdf128b3ea016b475ee1a0b43d2e7ca2f40879f7f595f44d179c3}{cmaple::ModelBase::DEFAULT}},}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5d}{cmaple::SeqRegion::SeqType}}\ seqtype\ =\ \mbox{\hyperlink{classcmaple_1_1_seq_region_abf1b0f9b15ce096626ce0a753540ea5daf242412da09240c41e37298e9fe157b5}{cmaple::SeqRegion::SEQ\_AUTO}},}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ site\_specific\_q\ =\ \textcolor{keyword}{false},}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ site\_specific\_rates\ =\ \textcolor{keyword}{false},}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \textcolor{keyword}{const}\ cmaple::PositionType\ seq\_length\ =\ 0,}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{keyword}{const}\ cmaple::RealNumType\ wt\_pseudocount\ =\ 0.1,}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ max\_num\_EM\_steps\ =\ 20,}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ rates\_filename\ =\ \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00067\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_a777b4d174b5d7dac04ecd84def4e4ee4}{\string~Model}}();}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00075\ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{classcmaple_1_1_model_a3ee90312ac8a303f3c8cce9ca5766584}{fixParameters}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\&\ fixed\_model\_params);}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00081\ \ \ \mbox{\hyperlink{structcmaple_1_1_model_1_1_model_params}{ModelParams}}\ \mbox{\hyperlink{classcmaple_1_1_model_a9050e8b392d2502af1e8fc8b50e44b96}{getParams}}();}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{//\ TODO:\ allow\ users\ to\ specify\ model\ parameters}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{//\ declare\ Tree\ as\ a\ friend\ class}}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classcmaple_1_1_tree}{Tree}};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00092\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_base}{ModelBase}}*\ model\_base;}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordtype}{bool}\ rate\_variation\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00099\ \};}
+\DoxyCodeLine{00100\ \}\ \ \textcolor{comment}{//\ namespace\ cmaple}}
 
 \end{DoxyCode}

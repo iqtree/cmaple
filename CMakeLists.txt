@@ -89,8 +89,8 @@ else()
 endif()
 
 # The version number.
-set (cmaple_VERSION_MAJOR 1)
-set (cmaple_VERSION_MINOR 1)
+set (cmaple_VERSION_MAJOR 2)
+set (cmaple_VERSION_MINOR 0)
 set (cmaple_VERSION_PATCH ".0")
 
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
