@@ -41,8 +41,8 @@ class Model {
    * those models.</em>
    * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide
    * data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
-   * @param[in] site_specific_matrix True to use site-specific exchangeability matrices (optional). Default: False;
-   * @param[in] site_specific_rate True to use site-specific rates (optional). Default: False;
+   * @param[in] site_spec_matrix True to use site-specific exchangeability matrices (optional). Default: False;
+   * @param[in] site_spec_scalar_rate True to use site-specific scalar rates (optional). Default: False;
    * @param[in] seq_length Length of the genomes (optional). Default: 0;
    * @param[in] wt_pseudocount Pseudocount used for waiting times
    * when estimating site-specific exchangeability matrices (optional). Default: 0.1;
@@ -55,8 +55,8 @@ class Model {
   Model(
       const cmaple::ModelBase::SubModel sub_model = cmaple::ModelBase::DEFAULT,
       const cmaple::SeqRegion::SeqType seqtype = cmaple::SeqRegion::SEQ_AUTO,
-      const bool site_specific_matrix = false,
-      const bool site_specific_rate = false,
+      const bool site_spec_matrix = false,
+      const bool site_spec_scalar_rate = false,
       const cmaple::PositionType seq_length = 0,
       const cmaple::RealNumType wt_pseudocount = 0.1,
       const int max_num_EM_steps = 20,
