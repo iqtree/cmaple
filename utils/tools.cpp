@@ -1404,18 +1404,36 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         }
         continue;
       }
-      if (strcmp(argv[cnt], "--site-spec-rate") == 0 ||
-          strcmp(argv[cnt], "--rate-variation") == 0 ||
+      if (strcmp(argv[cnt], "--rate-variation") == 0 ||
           strcmp(argv[cnt], "-rv") == 0) {
         params.rate_variation = true;
         continue;
       }
-      if (strcmp(argv[cnt], "--site-spec-matrix") == 0 ||
-          strcmp(argv[cnt], "--site-specific-rates") == 0 ||
+      if (strcmp(argv[cnt], "--site-specific-rates") == 0 ||
           strcmp(argv[cnt], "--site-specific-rate-matrix") == 0 ||
           strcmp(argv[cnt], "--site-specific-matrix") == 0 ||
           strcmp(argv[cnt], "-ssr") == 0) {
         params.site_specific_rate_matrix = true;
+        continue;
+      }
+      if (strcmp(argv[cnt], "--site-rate") == 0) {
+        cnt++;
+        if (cnt >= argc) {
+          outError("Use --site-rate NONE|SCALAR|MATRIX");
+        }
+        std::string site_rate_val(argv[cnt]);
+        std::transform(site_rate_val.begin(), site_rate_val.end(),
+                       site_rate_val.begin(), ::toupper);
+        if (site_rate_val == "NONE") {
+          params.rate_variation = false;
+          params.site_specific_rate_matrix = false;
+        } else if (site_rate_val == "SCALAR") {
+          params.rate_variation = true;
+        } else if (site_rate_val == "MATRIX") {
+          params.site_specific_rate_matrix = true;
+        } else {
+          outError("Invalid value for --site-rate. Use NONE, SCALAR, or MATRIX.");
+        }
         continue;
       }
 
@@ -1533,9 +1551,7 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
                 "`--sprta` if you want to compute SPRTA.");
   }
   if(params.rate_variation && params.site_specific_rate_matrix) {
-      outError("Unable to use both site-specific rates and site-specific matrices.\n"
-                "Please choose either:\n\t \"--site-spec-rate\" for a rate multiplier at each genomic site, or \n"
-                "\t\"--site-spec-matrix\" for an independent rate matrix at each genomic site.");
+      outError("Unable to use both site-specific rates and site-specific matrices.");
   }
 }
 
@@ -1671,16 +1687,16 @@ void cmaple::usage_cmaple() {
       << "                        alternative SPRs."
       << endl
       << "RATE VARIATION MODELS:" << endl
-      << "  --site-spec-rate                  Use a model of rate variation where each site " << endl
-      << "                                    has an independent scalar rate multiplier." << endl
-      << "  --site-spec-matrix                Use a model of rate variation where each site " << endl
-      << "                                    has an independent rate matrix." << endl
+      << "  --site-rate NONE|SCALAR|MATRIX    Specify site rate variation model." << endl
+      << "                                    NONE for no rate variation;" << endl
+      << "                                    SCALAR for site-specific scalar rates; " << endl
+      << "                                    MATRIX for site-specific exchangeability matrices." << endl
       << "  --estimate-rates-during-SPR       Re-estimate rates after every SPR tree traversal " << endl
       << "                                    (default: only after initial tree construction)." << endl
       << "  --waiting-time-pseudocount <NUM>  Set the waiting-time pseudocount (default: 1)." << endl
       << "  --rv-max-EM-steps <NUM>.          Maximum number of steps to attempt for EM " << endl
       << "                                    convergence when estimating rates with " << endl
-      << "                                    --site-spec-matrix (default: 20)." << endl
+      << "                                    --site-rate MATRIX (default: 20)." << endl
       << endl;
 
   exit(0);
