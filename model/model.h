@@ -37,7 +37,7 @@ class Model {
    * DAYHOFF, MTREV, MTART, MTZOA, MTMET, MTVER, MTINV, MTMAM, FLAVI, HIVB,
    * HIVW, FLU, RTREV, CPREV, NQ_PFAM, NQ_BIRD, NQ_MAMMAL, NQ_INSECT, NQ_PLANT,
    * NQ_YEAST; <br> <em> See [**Substitution
-   * models**](http://www.iqtree.org/doc/Substitution-Models) for references of
+   * models**](https://iqtree.github.io/doc/Substitution-Models) for references of
    * those models.</em>
    * @param[in] seqtype Data type of sequences (optional): SEQ_DNA (nucleotide
    * data), SEQ_PROTEIN (amino acid data), or SEQ_AUTO (auto detection)
