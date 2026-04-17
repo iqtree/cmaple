@@ -555,213 +555,216 @@ $(function() {
 <div class="line"><a id="l00947" name="l00947"></a><span class="lineno"><a class="line" href="classcmaple_1_1_params_builder.html#a5480f90b049ef3292104013bc93d0c3b">  947</a></span>    <a class="code hl_class" href="classcmaple_1_1_params_builder.html">ParamsBuilder</a>&amp; <a class="code hl_function" href="classcmaple_1_1_params_builder.html#a5480f90b049ef3292104013bc93d0c3b">withComputeSPRTAZeroBranches</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span>&amp; compute_zero_branches);</div>
 <div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span>    </div>
 <div class="line"><a id="l00956" name="l00956"></a><span class="lineno"><a class="line" href="classcmaple_1_1_params_builder.html#a1d5f4bb041e38743f4bb98f134905800">  956</a></span>    <a class="code hl_class" href="classcmaple_1_1_params_builder.html">ParamsBuilder</a>&amp; <a class="code hl_function" href="classcmaple_1_1_params_builder.html#a1d5f4bb041e38743f4bb98f134905800">withOutAlterSPR</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span>&amp; out_alter_spr);</div>
-<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span> </div>
-<div class="line"><a id="l00961" name="l00961"></a><span class="lineno"><a class="line" href="classcmaple_1_1_params_builder.html#a77ad01885d330623ea8475452549538e">  961</a></span>  std::unique_ptr&lt;cmaple::Params&gt; <a class="code hl_function" href="classcmaple_1_1_params_builder.html#a77ad01885d330623ea8475452549538e">build</a>();</div>
-<div class="line"><a id="l00962" name="l00962"></a><span class="lineno">  962</span> </div>
-<div class="line"><a id="l00963" name="l00963"></a><span class="lineno">  963</span> <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span>  std::unique_ptr&lt;Params&gt; params_ptr{};</div>
-<div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span>};</div>
+<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span>    </div>
+<div class="line"><a id="l00963" name="l00963"></a><span class="lineno"><a class="line" href="classcmaple_1_1_params_builder.html#a2699d36bc31fb95ad295ddf45251be18">  963</a></span>    <a class="code hl_class" href="classcmaple_1_1_params_builder.html">ParamsBuilder</a>&amp; <a class="code hl_function" href="classcmaple_1_1_params_builder.html#a2699d36bc31fb95ad295ddf45251be18">withLocalRef</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span>&amp; use_local_ref);</div>
+<div class="line"><a id="l00964" name="l00964"></a><span class="lineno">  964</span> </div>
+<div class="line"><a id="l00968" name="l00968"></a><span class="lineno"><a class="line" href="classcmaple_1_1_params_builder.html#a77ad01885d330623ea8475452549538e">  968</a></span>  std::unique_ptr&lt;cmaple::Params&gt; <a class="code hl_function" href="classcmaple_1_1_params_builder.html#a77ad01885d330623ea8475452549538e">build</a>();</div>
 <div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span> </div>
-<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span> </div>
-<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> <span class="keywordtype">char</span>* error, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
-<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span> </div>
-<div class="line"><a id="l00981" name="l00981"></a><span class="lineno">  981</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> std::string&amp; error, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
-<div class="line"><a id="l00982" name="l00982"></a><span class="lineno">  982</span> </div>
-<div class="line"><a id="l00983" name="l00983"></a><span class="lineno">  983</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l00984" name="l00984"></a><span class="lineno">  984</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l00985" name="l00985"></a><span class="lineno">  985</span> </div>
-<div class="line"><a id="l00989" name="l00989"></a><span class="lineno">  989</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> <span class="keywordtype">char</span>* error, <span class="keyword">const</span> <span class="keywordtype">char</span>* msg, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
-<div class="line"><a id="l00990" name="l00990"></a><span class="lineno">  990</span> </div>
-<div class="line"><a id="l00994" name="l00994"></a><span class="lineno">  994</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> <span class="keywordtype">char</span>* error, <span class="keyword">const</span> std::string&amp; msg, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
-<div class="line"><a id="l00995" name="l00995"></a><span class="lineno">  995</span> </div>
-<div class="line"><a id="l01000" name="l01000"></a><span class="lineno"> 1000</span><span class="keywordtype">void</span> outWarning(<span class="keyword">const</span> <span class="keywordtype">char</span>* warn);</div>
-<div class="line"><a id="l01001" name="l01001"></a><span class="lineno"> 1001</span><span class="keywordtype">void</span> outWarning(<span class="keyword">const</span> std::string&amp; warn);</div>
+<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span> <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span>  std::unique_ptr&lt;Params&gt; params_ptr{};</div>
+<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span>};</div>
+<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span> </div>
+<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l00978" name="l00978"></a><span class="lineno">  978</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l00979" name="l00979"></a><span class="lineno">  979</span> </div>
+<div class="line"><a id="l00983" name="l00983"></a><span class="lineno">  983</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> <span class="keywordtype">char</span>* error, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00984" name="l00984"></a><span class="lineno">  984</span> </div>
+<div class="line"><a id="l00988" name="l00988"></a><span class="lineno">  988</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> std::string&amp; error, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00989" name="l00989"></a><span class="lineno">  989</span> </div>
+<div class="line"><a id="l00990" name="l00990"></a><span class="lineno">  990</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l00991" name="l00991"></a><span class="lineno">  991</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l00992" name="l00992"></a><span class="lineno">  992</span> </div>
+<div class="line"><a id="l00996" name="l00996"></a><span class="lineno">  996</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> <span class="keywordtype">char</span>* error, <span class="keyword">const</span> <span class="keywordtype">char</span>* msg, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00997" name="l00997"></a><span class="lineno">  997</span> </div>
+<div class="line"><a id="l01001" name="l01001"></a><span class="lineno"> 1001</span><span class="keywordtype">void</span> outError(<span class="keyword">const</span> <span class="keywordtype">char</span>* error, <span class="keyword">const</span> std::string&amp; msg, <span class="keywordtype">bool</span> quit = <span class="keyword">true</span>);</div>
 <div class="line"><a id="l01002" name="l01002"></a><span class="lineno"> 1002</span> </div>
-<div class="line"><a id="l01004" name="l01004"></a><span class="lineno"> 1004</span>std::istream&amp; safeGetline(std::istream&amp; is, std::string&amp; t);</div>
-<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span> </div>
-<div class="line"><a id="l01009" name="l01009"></a><span class="lineno"> 1009</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> controlchar(<span class="keywordtype">char</span>&amp; ch) {</div>
-<div class="line"><a id="l01010" name="l01010"></a><span class="lineno"> 1010</span>  <span class="keywordflow">return</span> ch &lt;= 32;</div>
-<div class="line"><a id="l01011" name="l01011"></a><span class="lineno"> 1011</span>}</div>
+<div class="line"><a id="l01007" name="l01007"></a><span class="lineno"> 1007</span><span class="keywordtype">void</span> outWarning(<span class="keyword">const</span> <span class="keywordtype">char</span>* warn);</div>
+<div class="line"><a id="l01008" name="l01008"></a><span class="lineno"> 1008</span><span class="keywordtype">void</span> outWarning(<span class="keyword">const</span> std::string&amp; warn);</div>
+<div class="line"><a id="l01009" name="l01009"></a><span class="lineno"> 1009</span> </div>
+<div class="line"><a id="l01011" name="l01011"></a><span class="lineno"> 1011</span>std::istream&amp; safeGetline(std::istream&amp; is, std::string&amp; t);</div>
 <div class="line"><a id="l01012" name="l01012"></a><span class="lineno"> 1012</span> </div>
-<div class="line"><a id="l01013" name="l01013"></a><span class="lineno"> 1013</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> is_newick_token(<span class="keywordtype">char</span>&amp; ch) {</div>
-<div class="line"><a id="l01014" name="l01014"></a><span class="lineno"> 1014</span>  <span class="keywordflow">return</span> ch == <span class="charliteral">&#39;:&#39;</span> || ch == <span class="charliteral">&#39;;&#39;</span> || ch == <span class="charliteral">&#39;,&#39;</span> || ch == <span class="charliteral">&#39;)&#39;</span> || ch == <span class="charliteral">&#39;(&#39;</span> ||</div>
-<div class="line"><a id="l01015" name="l01015"></a><span class="lineno"> 1015</span>         ch == <span class="charliteral">&#39;[&#39;</span> || ch == <span class="charliteral">&#39;]&#39;</span>;</div>
-<div class="line"><a id="l01016" name="l01016"></a><span class="lineno"> 1016</span>}</div>
-<div class="line"><a id="l01017" name="l01017"></a><span class="lineno"> 1017</span> </div>
-<div class="line"><a id="l01023" name="l01023"></a><span class="lineno"> 1023</span><span class="keywordtype">bool</span> renameString(std::string&amp; name);</div>
+<div class="line"><a id="l01016" name="l01016"></a><span class="lineno"> 1016</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> controlchar(<span class="keywordtype">char</span>&amp; ch) {</div>
+<div class="line"><a id="l01017" name="l01017"></a><span class="lineno"> 1017</span>  <span class="keywordflow">return</span> ch &lt;= 32;</div>
+<div class="line"><a id="l01018" name="l01018"></a><span class="lineno"> 1018</span>}</div>
+<div class="line"><a id="l01019" name="l01019"></a><span class="lineno"> 1019</span> </div>
+<div class="line"><a id="l01020" name="l01020"></a><span class="lineno"> 1020</span><span class="keyword">inline</span> <span class="keywordtype">bool</span> is_newick_token(<span class="keywordtype">char</span>&amp; ch) {</div>
+<div class="line"><a id="l01021" name="l01021"></a><span class="lineno"> 1021</span>  <span class="keywordflow">return</span> ch == <span class="charliteral">&#39;:&#39;</span> || ch == <span class="charliteral">&#39;;&#39;</span> || ch == <span class="charliteral">&#39;,&#39;</span> || ch == <span class="charliteral">&#39;)&#39;</span> || ch == <span class="charliteral">&#39;(&#39;</span> ||</div>
+<div class="line"><a id="l01022" name="l01022"></a><span class="lineno"> 1022</span>         ch == <span class="charliteral">&#39;[&#39;</span> || ch == <span class="charliteral">&#39;]&#39;</span>;</div>
+<div class="line"><a id="l01023" name="l01023"></a><span class="lineno"> 1023</span>}</div>
 <div class="line"><a id="l01024" name="l01024"></a><span class="lineno"> 1024</span> </div>
-<div class="line"><a id="l01025" name="l01025"></a><span class="lineno"> 1025</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l01026" name="l01026"></a><span class="lineno"> 1026</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l01027" name="l01027"></a><span class="lineno"> 1027</span><span class="comment">/*</span></div>
-<div class="line"><a id="l01028" name="l01028"></a><span class="lineno"> 1028</span><span class="comment">        Error messages</span></div>
-<div class="line"><a id="l01029" name="l01029"></a><span class="lineno"> 1029</span><span class="comment"> */</span></div>
-<div class="line"><a id="l01030" name="l01030"></a><span class="lineno"> 1030</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NO_TAXON[] = <span class="stringliteral">&quot;Find no taxon with name &quot;</span>;</div>
-<div class="line"><a id="l01031" name="l01031"></a><span class="lineno"> 1031</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NO_AREA[] = <span class="stringliteral">&quot;Find no area with name &quot;</span>;</div>
-<div class="line"><a id="l01032" name="l01032"></a><span class="lineno"> 1032</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NO_MEMORY[] = <span class="stringliteral">&quot;Not enough memory!&quot;</span>;</div>
-<div class="line"><a id="l01033" name="l01033"></a><span class="lineno"> 1033</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NEG_BRANCH[] = <span class="stringliteral">&quot;Negative branch length not allowed.&quot;</span>;</div>
-<div class="line"><a id="l01034" name="l01034"></a><span class="lineno"> 1034</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_READ_INPUT[] =</div>
-<div class="line"><a id="l01035" name="l01035"></a><span class="lineno"> 1035</span>    <span class="stringliteral">&quot;File not found or incorrect input, pls check it again.&quot;</span>;</div>
-<div class="line"><a id="l01036" name="l01036"></a><span class="lineno"> 1036</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_READ_ANY[] =</div>
-<div class="line"><a id="l01037" name="l01037"></a><span class="lineno"> 1037</span>    <span class="stringliteral">&quot;Unidentified error while reading file, pls check it carefully again.&quot;</span>;</div>
-<div class="line"><a id="l01038" name="l01038"></a><span class="lineno"> 1038</span> </div>
-<div class="line"><a id="l01039" name="l01039"></a><span class="lineno"> 1039</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l01040" name="l01040"></a><span class="lineno"> 1040</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
-<div class="line"><a id="l01041" name="l01041"></a><span class="lineno"> 1041</span> </div>
-<div class="line"><a id="l01047" name="l01047"></a><span class="lineno"> 1047</span>std::string convertPosTypeToString(PositionType number);</div>
-<div class="line"><a id="l01048" name="l01048"></a><span class="lineno"> 1048</span>std::string convertIntToString(<span class="keywordtype">int</span> number);</div>
-<div class="line"><a id="l01049" name="l01049"></a><span class="lineno"> 1049</span>std::string convertInt64ToString(int64_t number);</div>
-<div class="line"><a id="l01050" name="l01050"></a><span class="lineno"> 1050</span> </div>
-<div class="line"><a id="l01051" name="l01051"></a><span class="lineno"> 1051</span>std::string convertDoubleToString(RealNumType number);</div>
-<div class="line"><a id="l01052" name="l01052"></a><span class="lineno"> 1052</span> </div>
-<div class="line"><a id="l01053" name="l01053"></a><span class="lineno"> 1053</span>std::string convertDoubleToString(RealNumType number, uint8_t precision);</div>
-<div class="line"><a id="l01054" name="l01054"></a><span class="lineno"> 1054</span> </div>
-<div class="line"><a id="l01058" name="l01058"></a><span class="lineno"> 1058</span><span class="keywordtype">void</span> replaceSubStr(std::string&amp; input_str,</div>
-<div class="line"><a id="l01059" name="l01059"></a><span class="lineno"> 1059</span>                   <span class="keyword">const</span> std::string&amp; old_sub_str,</div>
-<div class="line"><a id="l01060" name="l01060"></a><span class="lineno"> 1060</span>                   <span class="keyword">const</span> std::string&amp; new_sub_str);</div>
+<div class="line"><a id="l01030" name="l01030"></a><span class="lineno"> 1030</span><span class="keywordtype">bool</span> renameString(std::string&amp; name);</div>
+<div class="line"><a id="l01031" name="l01031"></a><span class="lineno"> 1031</span> </div>
+<div class="line"><a id="l01032" name="l01032"></a><span class="lineno"> 1032</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l01033" name="l01033"></a><span class="lineno"> 1033</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l01034" name="l01034"></a><span class="lineno"> 1034</span><span class="comment">/*</span></div>
+<div class="line"><a id="l01035" name="l01035"></a><span class="lineno"> 1035</span><span class="comment">        Error messages</span></div>
+<div class="line"><a id="l01036" name="l01036"></a><span class="lineno"> 1036</span><span class="comment"> */</span></div>
+<div class="line"><a id="l01037" name="l01037"></a><span class="lineno"> 1037</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NO_TAXON[] = <span class="stringliteral">&quot;Find no taxon with name &quot;</span>;</div>
+<div class="line"><a id="l01038" name="l01038"></a><span class="lineno"> 1038</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NO_AREA[] = <span class="stringliteral">&quot;Find no area with name &quot;</span>;</div>
+<div class="line"><a id="l01039" name="l01039"></a><span class="lineno"> 1039</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NO_MEMORY[] = <span class="stringliteral">&quot;Not enough memory!&quot;</span>;</div>
+<div class="line"><a id="l01040" name="l01040"></a><span class="lineno"> 1040</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_NEG_BRANCH[] = <span class="stringliteral">&quot;Negative branch length not allowed.&quot;</span>;</div>
+<div class="line"><a id="l01041" name="l01041"></a><span class="lineno"> 1041</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_READ_INPUT[] =</div>
+<div class="line"><a id="l01042" name="l01042"></a><span class="lineno"> 1042</span>    <span class="stringliteral">&quot;File not found or incorrect input, pls check it again.&quot;</span>;</div>
+<div class="line"><a id="l01043" name="l01043"></a><span class="lineno"> 1043</span><span class="keyword">const</span> <span class="keywordtype">char</span> ERR_READ_ANY[] =</div>
+<div class="line"><a id="l01044" name="l01044"></a><span class="lineno"> 1044</span>    <span class="stringliteral">&quot;Unidentified error while reading file, pls check it carefully again.&quot;</span>;</div>
+<div class="line"><a id="l01045" name="l01045"></a><span class="lineno"> 1045</span> </div>
+<div class="line"><a id="l01046" name="l01046"></a><span class="lineno"> 1046</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l01047" name="l01047"></a><span class="lineno"> 1047</span><span class="comment">/*--------------------------------------------------------------*/</span></div>
+<div class="line"><a id="l01048" name="l01048"></a><span class="lineno"> 1048</span> </div>
+<div class="line"><a id="l01054" name="l01054"></a><span class="lineno"> 1054</span>std::string convertPosTypeToString(PositionType number);</div>
+<div class="line"><a id="l01055" name="l01055"></a><span class="lineno"> 1055</span>std::string convertIntToString(<span class="keywordtype">int</span> number);</div>
+<div class="line"><a id="l01056" name="l01056"></a><span class="lineno"> 1056</span>std::string convertInt64ToString(int64_t number);</div>
+<div class="line"><a id="l01057" name="l01057"></a><span class="lineno"> 1057</span> </div>
+<div class="line"><a id="l01058" name="l01058"></a><span class="lineno"> 1058</span>std::string convertDoubleToString(RealNumType number);</div>
+<div class="line"><a id="l01059" name="l01059"></a><span class="lineno"> 1059</span> </div>
+<div class="line"><a id="l01060" name="l01060"></a><span class="lineno"> 1060</span>std::string convertDoubleToString(RealNumType number, uint8_t precision);</div>
 <div class="line"><a id="l01061" name="l01061"></a><span class="lineno"> 1061</span> </div>
-<div class="line"><a id="l01066" name="l01066"></a><span class="lineno"> 1066</span><span class="keywordtype">bool</span> iEquals(<span class="keyword">const</span> std::string&amp; a, <span class="keyword">const</span> std::string&amp; b);</div>
-<div class="line"><a id="l01067" name="l01067"></a><span class="lineno"> 1067</span> </div>
-<div class="line"><a id="l01074" name="l01074"></a><span class="lineno"> 1074</span><span class="keywordtype">bool</span> copyFile(<span class="keyword">const</span> <span class="keywordtype">char</span> SRC[], <span class="keyword">const</span> <span class="keywordtype">char</span> DEST[]);</div>
-<div class="line"><a id="l01075" name="l01075"></a><span class="lineno"> 1075</span> </div>
-<div class="line"><a id="l01081" name="l01081"></a><span class="lineno"> 1081</span><span class="keywordtype">bool</span> fileExists(<span class="keyword">const</span> std::string&amp; strFilename);</div>
+<div class="line"><a id="l01065" name="l01065"></a><span class="lineno"> 1065</span><span class="keywordtype">void</span> replaceSubStr(std::string&amp; input_str,</div>
+<div class="line"><a id="l01066" name="l01066"></a><span class="lineno"> 1066</span>                   <span class="keyword">const</span> std::string&amp; old_sub_str,</div>
+<div class="line"><a id="l01067" name="l01067"></a><span class="lineno"> 1067</span>                   <span class="keyword">const</span> std::string&amp; new_sub_str);</div>
+<div class="line"><a id="l01068" name="l01068"></a><span class="lineno"> 1068</span> </div>
+<div class="line"><a id="l01073" name="l01073"></a><span class="lineno"> 1073</span><span class="keywordtype">bool</span> iEquals(<span class="keyword">const</span> std::string&amp; a, <span class="keyword">const</span> std::string&amp; b);</div>
+<div class="line"><a id="l01074" name="l01074"></a><span class="lineno"> 1074</span> </div>
+<div class="line"><a id="l01081" name="l01081"></a><span class="lineno"> 1081</span><span class="keywordtype">bool</span> copyFile(<span class="keyword">const</span> <span class="keywordtype">char</span> SRC[], <span class="keyword">const</span> <span class="keywordtype">char</span> DEST[]);</div>
 <div class="line"><a id="l01082" name="l01082"></a><span class="lineno"> 1082</span> </div>
-<div class="line"><a id="l01086" name="l01086"></a><span class="lineno"> 1086</span><span class="keywordtype">int</span> isDirectory(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);</div>
-<div class="line"><a id="l01087" name="l01087"></a><span class="lineno"> 1087</span> </div>
-<div class="line"><a id="l01094" name="l01094"></a><span class="lineno"> 1094</span><span class="keywordtype">int</span> convert_int(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
-<div class="line"><a id="l01095" name="l01095"></a><span class="lineno"> 1095</span> </div>
-<div class="line"><a id="l01102" name="l01102"></a><span class="lineno"> 1102</span>int64_t convert_int64(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
-<div class="line"><a id="l01103" name="l01103"></a><span class="lineno"> 1103</span> </div>
-<div class="line"><a id="l01111" name="l01111"></a><span class="lineno"> 1111</span><span class="keywordtype">int</span> convert_int(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; end_pos);</div>
-<div class="line"><a id="l01112" name="l01112"></a><span class="lineno"> 1112</span> </div>
-<div class="line"><a id="l01119" name="l01119"></a><span class="lineno"> 1119</span><span class="keywordtype">void</span> convert_int_vec(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, IntVector&amp; vec);</div>
-<div class="line"><a id="l01120" name="l01120"></a><span class="lineno"> 1120</span> </div>
-<div class="line"><a id="l01127" name="l01127"></a><span class="lineno"> 1127</span>int64_t convert_int64(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
-<div class="line"><a id="l01128" name="l01128"></a><span class="lineno"> 1128</span> </div>
-<div class="line"><a id="l01136" name="l01136"></a><span class="lineno"> 1136</span>int64_t convert_int64(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; end_pos);</div>
-<div class="line"><a id="l01137" name="l01137"></a><span class="lineno"> 1137</span> </div>
-<div class="line"><a id="l01144" name="l01144"></a><span class="lineno"> 1144</span>RealNumType convert_real_number(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
-<div class="line"><a id="l01145" name="l01145"></a><span class="lineno"> 1145</span> </div>
-<div class="line"><a id="l01153" name="l01153"></a><span class="lineno"> 1153</span>RealNumType convert_real_number(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; end_pos);</div>
-<div class="line"><a id="l01154" name="l01154"></a><span class="lineno"> 1154</span> </div>
-<div class="line"><a id="l01161" name="l01161"></a><span class="lineno"> 1161</span><span class="keywordtype">void</span> convert_real_numbers(RealNumType*&amp; arr, std::string input_str);</div>
-<div class="line"><a id="l01162" name="l01162"></a><span class="lineno"> 1162</span> </div>
-<div class="line"><a id="l01170" name="l01170"></a><span class="lineno"> 1170</span><span class="keywordtype">void</span> convert_real_number_vec(<span class="keyword">const</span> <span class="keywordtype">char</span>* str,</div>
-<div class="line"><a id="l01171" name="l01171"></a><span class="lineno"> 1171</span>                             RealNumberVector&amp; vec,</div>
-<div class="line"><a id="l01172" name="l01172"></a><span class="lineno"> 1172</span>                             <span class="keywordtype">char</span> separator = <span class="charliteral">&#39;,&#39;</span>);</div>
-<div class="line"><a id="l01173" name="l01173"></a><span class="lineno"> 1173</span> </div>
-<div class="line"><a id="l01181" name="l01181"></a><span class="lineno"> 1181</span><span class="keywordtype">void</span> normalize_frequencies_from_index(RealNumType* freqs,</div>
-<div class="line"><a id="l01182" name="l01182"></a><span class="lineno"> 1182</span>                                      <span class="keywordtype">int</span> num_states,</div>
-<div class="line"><a id="l01183" name="l01183"></a><span class="lineno"> 1183</span>                                      <span class="keywordtype">int</span> starting_index);</div>
-<div class="line"><a id="l01184" name="l01184"></a><span class="lineno"> 1184</span> </div>
-<div class="line"><a id="l01191" name="l01191"></a><span class="lineno"> 1191</span><span class="keyword">inline</span> <span class="keywordtype">void</span> normalize_arr(RealNumType* <span class="keyword">const</span> entries,</div>
-<div class="line"><a id="l01192" name="l01192"></a><span class="lineno"> 1192</span>                          <span class="keyword">const</span> <span class="keywordtype">int</span> num_entries,</div>
-<div class="line"><a id="l01193" name="l01193"></a><span class="lineno"> 1193</span>                          RealNumType sum_entries) {</div>
-<div class="line"><a id="l01194" name="l01194"></a><span class="lineno"> 1194</span>  assert(num_entries &gt; 0);</div>
-<div class="line"><a id="l01195" name="l01195"></a><span class="lineno"> 1195</span> </div>
-<div class="line"><a id="l01196" name="l01196"></a><span class="lineno"> 1196</span><span class="preprocessor">#ifndef NDEBUG</span></div>
-<div class="line"><a id="l01197" name="l01197"></a><span class="lineno"> 1197</span>  <span class="comment">// if (fabs(sum_entries) &lt; 1e-5)</span></div>
-<div class="line"><a id="l01198" name="l01198"></a><span class="lineno"> 1198</span>  <span class="comment">//   outError(&quot;Sum of entries must be greater than zero!&quot;);</span></div>
-<div class="line"><a id="l01199" name="l01199"></a><span class="lineno"> 1199</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l01200" name="l01200"></a><span class="lineno"> 1200</span> </div>
-<div class="line"><a id="l01201" name="l01201"></a><span class="lineno"> 1201</span>  sum_entries = 1.0 / sum_entries;</div>
-<div class="line"><a id="l01202" name="l01202"></a><span class="lineno"> 1202</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; num_entries; ++i)</div>
-<div class="line"><a id="l01203" name="l01203"></a><span class="lineno"> 1203</span>    entries[i] *= sum_entries;</div>
-<div class="line"><a id="l01204" name="l01204"></a><span class="lineno"> 1204</span>    <span class="comment">// entries[i] /= sum_entries;</span></div>
-<div class="line"><a id="l01205" name="l01205"></a><span class="lineno"> 1205</span>}</div>
-<div class="line"><a id="l01206" name="l01206"></a><span class="lineno"> 1206</span> </div>
-<div class="line"><a id="l01212" name="l01212"></a><span class="lineno"> 1212</span><span class="keyword">inline</span> <span class="keywordtype">void</span> normalize_arr(RealNumType* <span class="keyword">const</span> entries, <span class="keyword">const</span> <span class="keywordtype">int</span> num_entries) {</div>
-<div class="line"><a id="l01213" name="l01213"></a><span class="lineno"> 1213</span>  RealNumType sum_entries = 0;</div>
-<div class="line"><a id="l01214" name="l01214"></a><span class="lineno"> 1214</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; num_entries; ++i)</div>
-<div class="line"><a id="l01215" name="l01215"></a><span class="lineno"> 1215</span>    sum_entries += entries[i];</div>
-<div class="line"><a id="l01216" name="l01216"></a><span class="lineno"> 1216</span>  normalize_arr(entries, num_entries, sum_entries);</div>
-<div class="line"><a id="l01217" name="l01217"></a><span class="lineno"> 1217</span>}</div>
-<div class="line"><a id="l01223" name="l01223"></a><span class="lineno"> 1223</span>std::string convert_time(<span class="keyword">const</span> RealNumType sec);</div>
-<div class="line"><a id="l01224" name="l01224"></a><span class="lineno"> 1224</span> </div>
-<div class="line"><a id="l01233" name="l01233"></a><span class="lineno"> 1233</span><span class="keywordtype">void</span> convert_range(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; lower, <span class="keywordtype">int</span>&amp; upper, <span class="keywordtype">int</span>&amp; step_size);</div>
-<div class="line"><a id="l01234" name="l01234"></a><span class="lineno"> 1234</span> </div>
-<div class="line"><a id="l01243" name="l01243"></a><span class="lineno"> 1243</span><span class="keywordtype">void</span> convert_range(<span class="keyword">const</span> <span class="keywordtype">char</span>* str,</div>
-<div class="line"><a id="l01244" name="l01244"></a><span class="lineno"> 1244</span>                   RealNumType&amp; lower,</div>
-<div class="line"><a id="l01245" name="l01245"></a><span class="lineno"> 1245</span>                   RealNumType&amp; upper,</div>
-<div class="line"><a id="l01246" name="l01246"></a><span class="lineno"> 1246</span>                   RealNumType&amp; step_size);</div>
-<div class="line"><a id="l01247" name="l01247"></a><span class="lineno"> 1247</span> </div>
-<div class="line"><a id="l01255" name="l01255"></a><span class="lineno"> 1255</span><span class="keywordtype">void</span> reinitDoubleArr(RealNumType*&amp; arr,</div>
-<div class="line"><a id="l01256" name="l01256"></a><span class="lineno"> 1256</span>                     StateType size,</div>
-<div class="line"><a id="l01257" name="l01257"></a><span class="lineno"> 1257</span>                     <span class="keywordtype">bool</span> delete_first = <span class="keyword">true</span>,</div>
-<div class="line"><a id="l01258" name="l01258"></a><span class="lineno"> 1258</span>                     <span class="keywordtype">bool</span> set_zero = <span class="keyword">true</span>);</div>
-<div class="line"><a id="l01259" name="l01259"></a><span class="lineno"> 1259</span> </div>
-<div class="line"><a id="l01263" name="l01263"></a><span class="lineno"> 1263</span><span class="keywordtype">void</span> convert_string_vec(<span class="keyword">const</span> <span class="keywordtype">char</span>* str,</div>
-<div class="line"><a id="l01264" name="l01264"></a><span class="lineno"> 1264</span>                        StrVector&amp; str_vec,</div>
-<div class="line"><a id="l01265" name="l01265"></a><span class="lineno"> 1265</span>                        <span class="keywordtype">char</span> separator = <span class="charliteral">&#39;,&#39;</span>);</div>
+<div class="line"><a id="l01088" name="l01088"></a><span class="lineno"> 1088</span><span class="keywordtype">bool</span> fileExists(<span class="keyword">const</span> std::string&amp; strFilename);</div>
+<div class="line"><a id="l01089" name="l01089"></a><span class="lineno"> 1089</span> </div>
+<div class="line"><a id="l01093" name="l01093"></a><span class="lineno"> 1093</span><span class="keywordtype">int</span> isDirectory(<span class="keyword">const</span> <span class="keywordtype">char</span>* path);</div>
+<div class="line"><a id="l01094" name="l01094"></a><span class="lineno"> 1094</span> </div>
+<div class="line"><a id="l01101" name="l01101"></a><span class="lineno"> 1101</span><span class="keywordtype">int</span> convert_int(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
+<div class="line"><a id="l01102" name="l01102"></a><span class="lineno"> 1102</span> </div>
+<div class="line"><a id="l01109" name="l01109"></a><span class="lineno"> 1109</span>int64_t convert_int64(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
+<div class="line"><a id="l01110" name="l01110"></a><span class="lineno"> 1110</span> </div>
+<div class="line"><a id="l01118" name="l01118"></a><span class="lineno"> 1118</span><span class="keywordtype">int</span> convert_int(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; end_pos);</div>
+<div class="line"><a id="l01119" name="l01119"></a><span class="lineno"> 1119</span> </div>
+<div class="line"><a id="l01126" name="l01126"></a><span class="lineno"> 1126</span><span class="keywordtype">void</span> convert_int_vec(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, IntVector&amp; vec);</div>
+<div class="line"><a id="l01127" name="l01127"></a><span class="lineno"> 1127</span> </div>
+<div class="line"><a id="l01134" name="l01134"></a><span class="lineno"> 1134</span>int64_t convert_int64(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
+<div class="line"><a id="l01135" name="l01135"></a><span class="lineno"> 1135</span> </div>
+<div class="line"><a id="l01143" name="l01143"></a><span class="lineno"> 1143</span>int64_t convert_int64(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; end_pos);</div>
+<div class="line"><a id="l01144" name="l01144"></a><span class="lineno"> 1144</span> </div>
+<div class="line"><a id="l01151" name="l01151"></a><span class="lineno"> 1151</span>RealNumType convert_real_number(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
+<div class="line"><a id="l01152" name="l01152"></a><span class="lineno"> 1152</span> </div>
+<div class="line"><a id="l01160" name="l01160"></a><span class="lineno"> 1160</span>RealNumType convert_real_number(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; end_pos);</div>
+<div class="line"><a id="l01161" name="l01161"></a><span class="lineno"> 1161</span> </div>
+<div class="line"><a id="l01168" name="l01168"></a><span class="lineno"> 1168</span><span class="keywordtype">void</span> convert_real_numbers(RealNumType*&amp; arr, std::string input_str);</div>
+<div class="line"><a id="l01169" name="l01169"></a><span class="lineno"> 1169</span> </div>
+<div class="line"><a id="l01177" name="l01177"></a><span class="lineno"> 1177</span><span class="keywordtype">void</span> convert_real_number_vec(<span class="keyword">const</span> <span class="keywordtype">char</span>* str,</div>
+<div class="line"><a id="l01178" name="l01178"></a><span class="lineno"> 1178</span>                             RealNumberVector&amp; vec,</div>
+<div class="line"><a id="l01179" name="l01179"></a><span class="lineno"> 1179</span>                             <span class="keywordtype">char</span> separator = <span class="charliteral">&#39;,&#39;</span>);</div>
+<div class="line"><a id="l01180" name="l01180"></a><span class="lineno"> 1180</span> </div>
+<div class="line"><a id="l01188" name="l01188"></a><span class="lineno"> 1188</span><span class="keywordtype">void</span> normalize_frequencies_from_index(RealNumType* freqs,</div>
+<div class="line"><a id="l01189" name="l01189"></a><span class="lineno"> 1189</span>                                      <span class="keywordtype">int</span> num_states,</div>
+<div class="line"><a id="l01190" name="l01190"></a><span class="lineno"> 1190</span>                                      <span class="keywordtype">int</span> starting_index);</div>
+<div class="line"><a id="l01191" name="l01191"></a><span class="lineno"> 1191</span> </div>
+<div class="line"><a id="l01198" name="l01198"></a><span class="lineno"> 1198</span><span class="keyword">inline</span> <span class="keywordtype">void</span> normalize_arr(RealNumType* <span class="keyword">const</span> entries,</div>
+<div class="line"><a id="l01199" name="l01199"></a><span class="lineno"> 1199</span>                          <span class="keyword">const</span> <span class="keywordtype">int</span> num_entries,</div>
+<div class="line"><a id="l01200" name="l01200"></a><span class="lineno"> 1200</span>                          RealNumType sum_entries) {</div>
+<div class="line"><a id="l01201" name="l01201"></a><span class="lineno"> 1201</span>  assert(num_entries &gt; 0);</div>
+<div class="line"><a id="l01202" name="l01202"></a><span class="lineno"> 1202</span> </div>
+<div class="line"><a id="l01203" name="l01203"></a><span class="lineno"> 1203</span><span class="preprocessor">#ifndef NDEBUG</span></div>
+<div class="line"><a id="l01204" name="l01204"></a><span class="lineno"> 1204</span>  <span class="comment">// if (fabs(sum_entries) &lt; 1e-5)</span></div>
+<div class="line"><a id="l01205" name="l01205"></a><span class="lineno"> 1205</span>  <span class="comment">//   outError(&quot;Sum of entries must be greater than zero!&quot;);</span></div>
+<div class="line"><a id="l01206" name="l01206"></a><span class="lineno"> 1206</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l01207" name="l01207"></a><span class="lineno"> 1207</span> </div>
+<div class="line"><a id="l01208" name="l01208"></a><span class="lineno"> 1208</span>  sum_entries = 1.0 / sum_entries;</div>
+<div class="line"><a id="l01209" name="l01209"></a><span class="lineno"> 1209</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; num_entries; ++i)</div>
+<div class="line"><a id="l01210" name="l01210"></a><span class="lineno"> 1210</span>    entries[i] *= sum_entries;</div>
+<div class="line"><a id="l01211" name="l01211"></a><span class="lineno"> 1211</span>    <span class="comment">// entries[i] /= sum_entries;</span></div>
+<div class="line"><a id="l01212" name="l01212"></a><span class="lineno"> 1212</span>}</div>
+<div class="line"><a id="l01213" name="l01213"></a><span class="lineno"> 1213</span> </div>
+<div class="line"><a id="l01219" name="l01219"></a><span class="lineno"> 1219</span><span class="keyword">inline</span> <span class="keywordtype">void</span> normalize_arr(RealNumType* <span class="keyword">const</span> entries, <span class="keyword">const</span> <span class="keywordtype">int</span> num_entries) {</div>
+<div class="line"><a id="l01220" name="l01220"></a><span class="lineno"> 1220</span>  RealNumType sum_entries = 0;</div>
+<div class="line"><a id="l01221" name="l01221"></a><span class="lineno"> 1221</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; num_entries; ++i)</div>
+<div class="line"><a id="l01222" name="l01222"></a><span class="lineno"> 1222</span>    sum_entries += entries[i];</div>
+<div class="line"><a id="l01223" name="l01223"></a><span class="lineno"> 1223</span>  normalize_arr(entries, num_entries, sum_entries);</div>
+<div class="line"><a id="l01224" name="l01224"></a><span class="lineno"> 1224</span>}</div>
+<div class="line"><a id="l01230" name="l01230"></a><span class="lineno"> 1230</span>std::string convert_time(<span class="keyword">const</span> RealNumType sec);</div>
+<div class="line"><a id="l01231" name="l01231"></a><span class="lineno"> 1231</span> </div>
+<div class="line"><a id="l01240" name="l01240"></a><span class="lineno"> 1240</span><span class="keywordtype">void</span> convert_range(<span class="keyword">const</span> <span class="keywordtype">char</span>* str, <span class="keywordtype">int</span>&amp; lower, <span class="keywordtype">int</span>&amp; upper, <span class="keywordtype">int</span>&amp; step_size);</div>
+<div class="line"><a id="l01241" name="l01241"></a><span class="lineno"> 1241</span> </div>
+<div class="line"><a id="l01250" name="l01250"></a><span class="lineno"> 1250</span><span class="keywordtype">void</span> convert_range(<span class="keyword">const</span> <span class="keywordtype">char</span>* str,</div>
+<div class="line"><a id="l01251" name="l01251"></a><span class="lineno"> 1251</span>                   RealNumType&amp; lower,</div>
+<div class="line"><a id="l01252" name="l01252"></a><span class="lineno"> 1252</span>                   RealNumType&amp; upper,</div>
+<div class="line"><a id="l01253" name="l01253"></a><span class="lineno"> 1253</span>                   RealNumType&amp; step_size);</div>
+<div class="line"><a id="l01254" name="l01254"></a><span class="lineno"> 1254</span> </div>
+<div class="line"><a id="l01262" name="l01262"></a><span class="lineno"> 1262</span><span class="keywordtype">void</span> reinitDoubleArr(RealNumType*&amp; arr,</div>
+<div class="line"><a id="l01263" name="l01263"></a><span class="lineno"> 1263</span>                     StateType size,</div>
+<div class="line"><a id="l01264" name="l01264"></a><span class="lineno"> 1264</span>                     <span class="keywordtype">bool</span> delete_first = <span class="keyword">true</span>,</div>
+<div class="line"><a id="l01265" name="l01265"></a><span class="lineno"> 1265</span>                     <span class="keywordtype">bool</span> set_zero = <span class="keyword">true</span>);</div>
 <div class="line"><a id="l01266" name="l01266"></a><span class="lineno"> 1266</span> </div>
-<div class="line"><a id="l01273" name="l01273"></a><span class="lineno"> 1273</span>PositionType convert_positiontype(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
-<div class="line"><a id="l01274" name="l01274"></a><span class="lineno"> 1274</span> </div>
-<div class="line"><a id="l01279" name="l01279"></a><span class="lineno"> 1279</span><span class="keywordtype">bool</span> is_number(<span class="keyword">const</span> std::string&amp; s);</div>
-<div class="line"><a id="l01280" name="l01280"></a><span class="lineno"> 1280</span> </div>
-<div class="line"><a id="l01287" name="l01287"></a><span class="lineno"> 1287</span><span class="keywordtype">void</span> parseArg(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[], Params&amp; params);</div>
-<div class="line"><a id="l01288" name="l01288"></a><span class="lineno"> 1288</span> </div>
-<div class="line"><a id="l01292" name="l01292"></a><span class="lineno"> 1292</span><span class="keywordtype">void</span> quickStartGuide();</div>
-<div class="line"><a id="l01293" name="l01293"></a><span class="lineno"> 1293</span> </div>
-<div class="line"><a id="l01297" name="l01297"></a><span class="lineno"> 1297</span><span class="keywordtype">void</span> usage_cmaple();</div>
-<div class="line"><a id="l01298" name="l01298"></a><span class="lineno"> 1298</span> </div>
-<div class="line"><a id="l01303" name="l01303"></a><span class="lineno"> 1303</span><span class="keywordtype">void</span> trimString(std::string&amp; str);</div>
-<div class="line"><a id="l01304" name="l01304"></a><span class="lineno"> 1304</span> </div>
-<div class="line"><a id="l01308" name="l01308"></a><span class="lineno"> 1308</span><span class="keywordtype">int</span> countPhysicalCPUCores();</div>
-<div class="line"><a id="l01309" name="l01309"></a><span class="lineno"> 1309</span> </div>
-<div class="line"><a id="l01317" name="l01317"></a><span class="lineno"> 1317</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;</div>
-<div class="line"><a id="l01318" name="l01318"></a><span class="lineno"> 1318</span><span class="keywordtype">void</span> quicksort(T1* arr, <span class="keywordtype">int</span> left, <span class="keywordtype">int</span> right, T2* arr2 = NULL) {</div>
-<div class="line"><a id="l01319" name="l01319"></a><span class="lineno"> 1319</span>  <span class="keywordflow">if</span> (left &gt; right)</div>
-<div class="line"><a id="l01320" name="l01320"></a><span class="lineno"> 1320</span>    <span class="keywordflow">return</span>;</div>
-<div class="line"><a id="l01321" name="l01321"></a><span class="lineno"> 1321</span>  assert(left &lt;= right);</div>
-<div class="line"><a id="l01322" name="l01322"></a><span class="lineno"> 1322</span>  <span class="keywordtype">int</span> i = left, j = right;</div>
-<div class="line"><a id="l01323" name="l01323"></a><span class="lineno"> 1323</span>  T1 pivot = arr[(left + right) / 2];</div>
-<div class="line"><a id="l01324" name="l01324"></a><span class="lineno"> 1324</span> </div>
-<div class="line"><a id="l01325" name="l01325"></a><span class="lineno"> 1325</span>  <span class="comment">/* partition */</span></div>
-<div class="line"><a id="l01326" name="l01326"></a><span class="lineno"> 1326</span>  <span class="keywordflow">while</span> (i &lt;= j) {</div>
-<div class="line"><a id="l01327" name="l01327"></a><span class="lineno"> 1327</span>    <span class="keywordflow">while</span> (arr[i] &lt; pivot)</div>
-<div class="line"><a id="l01328" name="l01328"></a><span class="lineno"> 1328</span>      ++i;</div>
-<div class="line"><a id="l01329" name="l01329"></a><span class="lineno"> 1329</span>    <span class="keywordflow">while</span> (arr[j] &gt; pivot)</div>
-<div class="line"><a id="l01330" name="l01330"></a><span class="lineno"> 1330</span>      --j;</div>
-<div class="line"><a id="l01331" name="l01331"></a><span class="lineno"> 1331</span>    <span class="keywordflow">if</span> (i &lt;= j) {</div>
-<div class="line"><a id="l01332" name="l01332"></a><span class="lineno"> 1332</span>      T1 tmp = arr[i];</div>
-<div class="line"><a id="l01333" name="l01333"></a><span class="lineno"> 1333</span>      arr[i] = arr[j];</div>
-<div class="line"><a id="l01334" name="l01334"></a><span class="lineno"> 1334</span>      arr[j] = tmp;</div>
-<div class="line"><a id="l01335" name="l01335"></a><span class="lineno"> 1335</span>      <span class="keywordflow">if</span> (arr2) {</div>
-<div class="line"><a id="l01336" name="l01336"></a><span class="lineno"> 1336</span>        T2 tmp2 = arr2[i];</div>
-<div class="line"><a id="l01337" name="l01337"></a><span class="lineno"> 1337</span>        arr2[i] = arr2[j];</div>
-<div class="line"><a id="l01338" name="l01338"></a><span class="lineno"> 1338</span>        arr2[j] = tmp2;</div>
-<div class="line"><a id="l01339" name="l01339"></a><span class="lineno"> 1339</span>      }</div>
-<div class="line"><a id="l01340" name="l01340"></a><span class="lineno"> 1340</span>      ++i;</div>
-<div class="line"><a id="l01341" name="l01341"></a><span class="lineno"> 1341</span>      --j;</div>
-<div class="line"><a id="l01342" name="l01342"></a><span class="lineno"> 1342</span>    }</div>
-<div class="line"><a id="l01343" name="l01343"></a><span class="lineno"> 1343</span>  };</div>
-<div class="line"><a id="l01344" name="l01344"></a><span class="lineno"> 1344</span> </div>
-<div class="line"><a id="l01345" name="l01345"></a><span class="lineno"> 1345</span>  <span class="comment">/* recursion */</span></div>
-<div class="line"><a id="l01346" name="l01346"></a><span class="lineno"> 1346</span>  <span class="keywordflow">if</span> (left &lt; j)</div>
-<div class="line"><a id="l01347" name="l01347"></a><span class="lineno"> 1347</span>    quicksort(arr, left, j, arr2);</div>
-<div class="line"><a id="l01348" name="l01348"></a><span class="lineno"> 1348</span>  <span class="keywordflow">if</span> (i &lt; right)</div>
-<div class="line"><a id="l01349" name="l01349"></a><span class="lineno"> 1349</span>    quicksort(arr, i, right, arr2);</div>
-<div class="line"><a id="l01350" name="l01350"></a><span class="lineno"> 1350</span>}</div>
+<div class="line"><a id="l01270" name="l01270"></a><span class="lineno"> 1270</span><span class="keywordtype">void</span> convert_string_vec(<span class="keyword">const</span> <span class="keywordtype">char</span>* str,</div>
+<div class="line"><a id="l01271" name="l01271"></a><span class="lineno"> 1271</span>                        StrVector&amp; str_vec,</div>
+<div class="line"><a id="l01272" name="l01272"></a><span class="lineno"> 1272</span>                        <span class="keywordtype">char</span> separator = <span class="charliteral">&#39;,&#39;</span>);</div>
+<div class="line"><a id="l01273" name="l01273"></a><span class="lineno"> 1273</span> </div>
+<div class="line"><a id="l01280" name="l01280"></a><span class="lineno"> 1280</span>PositionType convert_positiontype(<span class="keyword">const</span> <span class="keywordtype">char</span>* str);</div>
+<div class="line"><a id="l01281" name="l01281"></a><span class="lineno"> 1281</span> </div>
+<div class="line"><a id="l01286" name="l01286"></a><span class="lineno"> 1286</span><span class="keywordtype">bool</span> is_number(<span class="keyword">const</span> std::string&amp; s);</div>
+<div class="line"><a id="l01287" name="l01287"></a><span class="lineno"> 1287</span> </div>
+<div class="line"><a id="l01294" name="l01294"></a><span class="lineno"> 1294</span><span class="keywordtype">void</span> parseArg(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[], Params&amp; params);</div>
+<div class="line"><a id="l01295" name="l01295"></a><span class="lineno"> 1295</span> </div>
+<div class="line"><a id="l01299" name="l01299"></a><span class="lineno"> 1299</span><span class="keywordtype">void</span> quickStartGuide();</div>
+<div class="line"><a id="l01300" name="l01300"></a><span class="lineno"> 1300</span> </div>
+<div class="line"><a id="l01304" name="l01304"></a><span class="lineno"> 1304</span><span class="keywordtype">void</span> usage_cmaple();</div>
+<div class="line"><a id="l01305" name="l01305"></a><span class="lineno"> 1305</span> </div>
+<div class="line"><a id="l01310" name="l01310"></a><span class="lineno"> 1310</span><span class="keywordtype">void</span> trimString(std::string&amp; str);</div>
+<div class="line"><a id="l01311" name="l01311"></a><span class="lineno"> 1311</span> </div>
+<div class="line"><a id="l01315" name="l01315"></a><span class="lineno"> 1315</span><span class="keywordtype">int</span> countPhysicalCPUCores();</div>
+<div class="line"><a id="l01316" name="l01316"></a><span class="lineno"> 1316</span> </div>
+<div class="line"><a id="l01324" name="l01324"></a><span class="lineno"> 1324</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;</div>
+<div class="line"><a id="l01325" name="l01325"></a><span class="lineno"> 1325</span><span class="keywordtype">void</span> quicksort(T1* arr, <span class="keywordtype">int</span> left, <span class="keywordtype">int</span> right, T2* arr2 = NULL) {</div>
+<div class="line"><a id="l01326" name="l01326"></a><span class="lineno"> 1326</span>  <span class="keywordflow">if</span> (left &gt; right)</div>
+<div class="line"><a id="l01327" name="l01327"></a><span class="lineno"> 1327</span>    <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l01328" name="l01328"></a><span class="lineno"> 1328</span>  assert(left &lt;= right);</div>
+<div class="line"><a id="l01329" name="l01329"></a><span class="lineno"> 1329</span>  <span class="keywordtype">int</span> i = left, j = right;</div>
+<div class="line"><a id="l01330" name="l01330"></a><span class="lineno"> 1330</span>  T1 pivot = arr[(left + right) / 2];</div>
+<div class="line"><a id="l01331" name="l01331"></a><span class="lineno"> 1331</span> </div>
+<div class="line"><a id="l01332" name="l01332"></a><span class="lineno"> 1332</span>  <span class="comment">/* partition */</span></div>
+<div class="line"><a id="l01333" name="l01333"></a><span class="lineno"> 1333</span>  <span class="keywordflow">while</span> (i &lt;= j) {</div>
+<div class="line"><a id="l01334" name="l01334"></a><span class="lineno"> 1334</span>    <span class="keywordflow">while</span> (arr[i] &lt; pivot)</div>
+<div class="line"><a id="l01335" name="l01335"></a><span class="lineno"> 1335</span>      ++i;</div>
+<div class="line"><a id="l01336" name="l01336"></a><span class="lineno"> 1336</span>    <span class="keywordflow">while</span> (arr[j] &gt; pivot)</div>
+<div class="line"><a id="l01337" name="l01337"></a><span class="lineno"> 1337</span>      --j;</div>
+<div class="line"><a id="l01338" name="l01338"></a><span class="lineno"> 1338</span>    <span class="keywordflow">if</span> (i &lt;= j) {</div>
+<div class="line"><a id="l01339" name="l01339"></a><span class="lineno"> 1339</span>      T1 tmp = arr[i];</div>
+<div class="line"><a id="l01340" name="l01340"></a><span class="lineno"> 1340</span>      arr[i] = arr[j];</div>
+<div class="line"><a id="l01341" name="l01341"></a><span class="lineno"> 1341</span>      arr[j] = tmp;</div>
+<div class="line"><a id="l01342" name="l01342"></a><span class="lineno"> 1342</span>      <span class="keywordflow">if</span> (arr2) {</div>
+<div class="line"><a id="l01343" name="l01343"></a><span class="lineno"> 1343</span>        T2 tmp2 = arr2[i];</div>
+<div class="line"><a id="l01344" name="l01344"></a><span class="lineno"> 1344</span>        arr2[i] = arr2[j];</div>
+<div class="line"><a id="l01345" name="l01345"></a><span class="lineno"> 1345</span>        arr2[j] = tmp2;</div>
+<div class="line"><a id="l01346" name="l01346"></a><span class="lineno"> 1346</span>      }</div>
+<div class="line"><a id="l01347" name="l01347"></a><span class="lineno"> 1347</span>      ++i;</div>
+<div class="line"><a id="l01348" name="l01348"></a><span class="lineno"> 1348</span>      --j;</div>
+<div class="line"><a id="l01349" name="l01349"></a><span class="lineno"> 1349</span>    }</div>
+<div class="line"><a id="l01350" name="l01350"></a><span class="lineno"> 1350</span>  };</div>
 <div class="line"><a id="l01351" name="l01351"></a><span class="lineno"> 1351</span> </div>
-<div class="line"><a id="l01358" name="l01358"></a><span class="lineno"> 1358</span><span class="keywordtype">void</span> usage_cmaple(<span class="keywordtype">char</span>* argv[], <span class="keywordtype">bool</span> full_command);</div>
-<div class="line"><a id="l01359" name="l01359"></a><span class="lineno"> 1359</span> </div>
-<div class="line"><a id="l01363" name="l01363"></a><span class="lineno"> 1363</span><span class="keywordtype">void</span> printCopyright(std::ostream&amp; out);</div>
-<div class="line"><a id="l01364" name="l01364"></a><span class="lineno"> 1364</span> </div>
-<div class="line"><a id="l01370" name="l01370"></a><span class="lineno"> 1370</span><span class="keywordtype">void</span> setNumThreads(<span class="keyword">const</span> <span class="keywordtype">int</span> num_threads);</div>
+<div class="line"><a id="l01352" name="l01352"></a><span class="lineno"> 1352</span>  <span class="comment">/* recursion */</span></div>
+<div class="line"><a id="l01353" name="l01353"></a><span class="lineno"> 1353</span>  <span class="keywordflow">if</span> (left &lt; j)</div>
+<div class="line"><a id="l01354" name="l01354"></a><span class="lineno"> 1354</span>    quicksort(arr, left, j, arr2);</div>
+<div class="line"><a id="l01355" name="l01355"></a><span class="lineno"> 1355</span>  <span class="keywordflow">if</span> (i &lt; right)</div>
+<div class="line"><a id="l01356" name="l01356"></a><span class="lineno"> 1356</span>    quicksort(arr, i, right, arr2);</div>
+<div class="line"><a id="l01357" name="l01357"></a><span class="lineno"> 1357</span>}</div>
+<div class="line"><a id="l01358" name="l01358"></a><span class="lineno"> 1358</span> </div>
+<div class="line"><a id="l01365" name="l01365"></a><span class="lineno"> 1365</span><span class="keywordtype">void</span> usage_cmaple(<span class="keywordtype">char</span>* argv[], <span class="keywordtype">bool</span> full_command);</div>
+<div class="line"><a id="l01366" name="l01366"></a><span class="lineno"> 1366</span> </div>
+<div class="line"><a id="l01370" name="l01370"></a><span class="lineno"> 1370</span><span class="keywordtype">void</span> printCopyright(std::ostream&amp; out);</div>
 <div class="line"><a id="l01371" name="l01371"></a><span class="lineno"> 1371</span> </div>
-<div class="line"><a id="l01375" name="l01375"></a><span class="lineno"> 1375</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a id="l01376" name="l01376"></a><span class="lineno"> 1376</span>std::unique_ptr&lt;T&gt; make_unique(Args&amp;&amp;... args) {</div>
-<div class="line"><a id="l01377" name="l01377"></a><span class="lineno"> 1377</span>  <span class="keywordflow">return</span> std::unique_ptr&lt;T&gt;(<span class="keyword">new</span> T(std::forward&lt;Args&gt;(args)...));</div>
-<div class="line"><a id="l01378" name="l01378"></a><span class="lineno"> 1378</span>}</div>
-<div class="line"><a id="l01379" name="l01379"></a><span class="lineno"> 1379</span> </div>
-<div class="line"><a id="l01384" name="l01384"></a><span class="lineno"> 1384</span><span class="keywordtype">void</span> resetStream(std::istream&amp; instream);</div>
-<div class="line"><a id="l01385" name="l01385"></a><span class="lineno"> 1385</span> </div>
-<div class="line"><a id="l01389" name="l01389"></a><span class="lineno"> 1389</span><span class="keywordtype">void</span> print_backtrace(std::ostream &amp;out, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> max_frames = 63);</div>
-<div class="line"><a id="l01390" name="l01390"></a><span class="lineno"> 1390</span>}  <span class="comment">// namespace cmaple</span></div>
+<div class="line"><a id="l01377" name="l01377"></a><span class="lineno"> 1377</span><span class="keywordtype">void</span> setNumThreads(<span class="keyword">const</span> <span class="keywordtype">int</span> num_threads);</div>
+<div class="line"><a id="l01378" name="l01378"></a><span class="lineno"> 1378</span> </div>
+<div class="line"><a id="l01382" name="l01382"></a><span class="lineno"> 1382</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a id="l01383" name="l01383"></a><span class="lineno"> 1383</span>std::unique_ptr&lt;T&gt; make_unique(Args&amp;&amp;... args) {</div>
+<div class="line"><a id="l01384" name="l01384"></a><span class="lineno"> 1384</span>  <span class="keywordflow">return</span> std::unique_ptr&lt;T&gt;(<span class="keyword">new</span> T(std::forward&lt;Args&gt;(args)...));</div>
+<div class="line"><a id="l01385" name="l01385"></a><span class="lineno"> 1385</span>}</div>
+<div class="line"><a id="l01386" name="l01386"></a><span class="lineno"> 1386</span> </div>
+<div class="line"><a id="l01391" name="l01391"></a><span class="lineno"> 1391</span><span class="keywordtype">void</span> resetStream(std::istream&amp; instream);</div>
+<div class="line"><a id="l01392" name="l01392"></a><span class="lineno"> 1392</span> </div>
+<div class="line"><a id="l01396" name="l01396"></a><span class="lineno"> 1396</span><span class="keywordtype">void</span> print_backtrace(std::ostream &amp;out, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> max_frames = 63);</div>
+<div class="line"><a id="l01397" name="l01397"></a><span class="lineno"> 1397</span>}  <span class="comment">// namespace cmaple</span></div>
 <div class="ttc" id="aclasscmaple_1_1_params_builder_html"><div class="ttname"><a href="classcmaple_1_1_params_builder.html">cmaple::ParamsBuilder</a></div><div class="ttdef"><b>Definition</b> tools.h:838</div></div>
 <div class="ttc" id="aclasscmaple_1_1_params_builder_html_a048fb106e0756f7e039cdbc26aaf014a"><div class="ttname"><a href="classcmaple_1_1_params_builder.html#a048fb106e0756f7e039cdbc26aaf014a">cmaple::ParamsBuilder::withComputeSPRTA</a></div><div class="ttdeci">ParamsBuilder &amp; withComputeSPRTA(const bool &amp;compute_SPRTA)</div><div class="ttdoc">Set the flag to compute SPRTA support. Default: FALSE.</div></div>
 <div class="ttc" id="aclasscmaple_1_1_params_builder_html_a1d5f4bb041e38743f4bb98f134905800"><div class="ttname"><a href="classcmaple_1_1_params_builder.html#a1d5f4bb041e38743f4bb98f134905800">cmaple::ParamsBuilder::withOutAlterSPR</a></div><div class="ttdeci">ParamsBuilder &amp; withOutAlterSPR(const bool &amp;out_alter_spr)</div><div class="ttdoc">Set the flag to output alternative SPRs and their SPRTA supports. Defaut: FALSE.</div></div>
+<div class="ttc" id="aclasscmaple_1_1_params_builder_html_a2699d36bc31fb95ad295ddf45251be18"><div class="ttname"><a href="classcmaple_1_1_params_builder.html#a2699d36bc31fb95ad295ddf45251be18">cmaple::ParamsBuilder::withLocalRef</a></div><div class="ttdeci">ParamsBuilder &amp; withLocalRef(const bool &amp;use_local_ref)</div><div class="ttdoc">Set the flag to use multiple local references along the tree rather than a single global reference at...</div></div>
 <div class="ttc" id="aclasscmaple_1_1_params_builder_html_a3a2fdecd7fb1cc6485027fa6956df593"><div class="ttname"><a href="classcmaple_1_1_params_builder.html#a3a2fdecd7fb1cc6485027fa6956df593">cmaple::ParamsBuilder::withFixedMinBlength</a></div><div class="ttdeci">ParamsBuilder &amp; withFixedMinBlength(const double &amp;fixed_min_blength)</div><div class="ttdoc">Specify a minimum value of the branch lengths. Default: the minimum branch length is computed from 'm...</div></div>
 <div class="ttc" id="aclasscmaple_1_1_params_builder_html_a5480f90b049ef3292104013bc93d0c3b"><div class="ttname"><a href="classcmaple_1_1_params_builder.html#a5480f90b049ef3292104013bc93d0c3b">cmaple::ParamsBuilder::withComputeSPRTAZeroBranches</a></div><div class="ttdeci">ParamsBuilder &amp; withComputeSPRTAZeroBranches(const bool &amp;compute_zero_branches)</div><div class="ttdoc">Set the flag to compute SPRTA supports for zero-length branches. Default: FALSE.</div></div>
 <div class="ttc" id="aclasscmaple_1_1_params_builder_html_a747a16aa29aa8b93cd3cb795074e4d82"><div class="ttname"><a href="classcmaple_1_1_params_builder.html#a747a16aa29aa8b93cd3cb795074e4d82">cmaple::ParamsBuilder::withRandomSeed</a></div><div class="ttdeci">ParamsBuilder &amp; withRandomSeed(const uint64_t &amp;seed)</div><div class="ttdoc">Specify a seed number for random generators. Default: the clock of the PC. Be careful!...</div></div>

@@ -50,7 +50,9 @@ Real\+Num\+Type \mbox{\hyperlink{classcmaple_1_1_tree_a987c92b41faa1303b5b0c8393
 void \mbox{\hyperlink{classcmaple_1_1_tree_a415d4e23f522c7ecb1f8363e27f6bafa}{compute\+Branch\+Support}} (const int num\+\_\+threads=1, const int num\+\_\+replicates=1000, const double epsilon=0.\+1, const bool allow\+\_\+replacing\+\_\+\+ML\+\_\+tree=true, std\+::ostream \&out\+\_\+stream=std\+::cout)
 \begin{DoxyCompactList}\small\item\em Compute branch supports (\href{https://academic.oup.com/sysbio/article/59/3/307/1702850}{\texttt{ a\+LRT-\/\+SH}}) of the current tree, which may or may not contain all taxa in the alignment. \end{DoxyCompactList}\item 
 std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a8793d1bd23d185258a68a01bcc279f4e}{export\+Newick}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{Tree\+Type}} tree\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da}{BIN\+\_\+\+TREE}}, const bool print\+\_\+internal\+\_\+id=false, const bool show\+\_\+branch\+\_\+supports=true)
-\begin{DoxyCompactList}\small\item\em Export the phylogenetic tree to a string in NEWICK format. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Export the phylogenetic tree to a string in NEWICK format. \end{DoxyCompactList}\item 
+std\+::string \mbox{\hyperlink{classcmaple_1_1_tree_a1f8fd8e85e6230227d7c8f5af54f27d9}{export\+Nexus}} (const \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{Tree\+Type}} tree\+\_\+type=\mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da}{BIN\+\_\+\+TREE}}, const bool show\+\_\+branch\+\_\+supports=true, const bool show\+\_\+mutations=false)
+\begin{DoxyCompactList}\small\item\em Export the phylogenetic tree to a string in NEXUS format. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -560,6 +562,36 @@ Export the phylogenetic tree to a string in NEWICK format.
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 A tree string in NEWICK format 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if any of the following situations occur.
+\begin{DoxyItemize}
+\item tree\+\_\+type is unknown 
+\end{DoxyItemize}\\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{classcmaple_1_1_tree_a1f8fd8e85e6230227d7c8f5af54f27d9}\label{classcmaple_1_1_tree_a1f8fd8e85e6230227d7c8f5af54f27d9} 
+\index{cmaple::Tree@{cmaple::Tree}!exportNexus@{exportNexus}}
+\index{exportNexus@{exportNexus}!cmaple::Tree@{cmaple::Tree}}
+\doxysubsubsection{\texorpdfstring{exportNexus()}{exportNexus()}}
+{\footnotesize\ttfamily std\+::string cmaple\+::\+Tree\+::export\+Nexus (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{Tree\+Type}}}]{tree\+\_\+type = {\ttfamily \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da}{BIN\+\_\+\+TREE}}},  }\item[{const bool}]{show\+\_\+branch\+\_\+supports = {\ttfamily true},  }\item[{const bool}]{show\+\_\+mutations = {\ttfamily false} }\end{DoxyParamCaption})}
+
+
+
+Export the phylogenetic tree to a string in NEXUS format. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em tree\+\_\+type} & The type of the output tree (optional)\+: BIN\+\_\+\+TREE (bifurcating tree), MUL\+\_\+\+TREE (multifurcating tree) \\
+\hline
+\mbox{\texttt{ in}}  & {\em show\+\_\+branch\+\_\+supports} & TRUE to output the branch supports (a\+LRT-\/\+SH values) \\
+\hline
+\mbox{\texttt{ in}}  & {\em show\+\_\+mutations} & TRUE to output estimated mutations along tree \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A tree string in NEXUS format 
 \end{DoxyReturn}
 
 \begin{DoxyExceptions}{Exceptions}

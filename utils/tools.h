@@ -954,6 +954,13 @@ class ParamsBuilder {
      * @return A reference to the ParamsBuilder instance
      */
     ParamsBuilder& withOutAlterSPR(const bool& out_alter_spr);
+    
+    /*! \brief Set the flag to use multiple local references along the tree
+     * rather than a single global reference at root. Defaut: TRUE
+     * @param[in] use_local_ref TRUE to use local references
+     * @return A reference to the ParamsBuilder instance
+     */
+    ParamsBuilder& withLocalRef(const bool& use_local_ref);
 
   /*! \brief Build the Params object after initializing parameters
    * @return a unique pointer to an instance of Params

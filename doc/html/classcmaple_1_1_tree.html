@@ -144,6 +144,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8793d1bd23d185258a68a01bcc279f4e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a8793d1bd23d185258a68a01bcc279f4e">exportNewick</a> (const <a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> tree_type=<a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a>, const bool print_internal_id=false, const bool show_branch_supports=true)</td></tr>
 <tr class="memdesc:a8793d1bd23d185258a68a01bcc279f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the phylogenetic tree to a string in NEWICK format.  <br /></td></tr>
 <tr class="separator:a8793d1bd23d185258a68a01bcc279f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f8fd8e85e6230227d7c8f5af54f27d9"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcmaple_1_1_tree.html#a1f8fd8e85e6230227d7c8f5af54f27d9">exportNexus</a> (const <a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> tree_type=<a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a>, const bool show_branch_supports=true, const bool show_mutations=false)</td></tr>
+<tr class="memdesc:a1f8fd8e85e6230227d7c8f5af54f27d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export the phylogenetic tree to a string in NEXUS format.  <br /></td></tr>
+<tr class="separator:a1f8fd8e85e6230227d7c8f5af54f27d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The structure of a phylogenetic tree </p>
@@ -965,6 +968,60 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A tree string in NEWICK format </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>
+<li>tree_type is unknown </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1f8fd8e85e6230227d7c8f5af54f27d9" name="a1f8fd8e85e6230227d7c8f5af54f27d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f8fd8e85e6230227d7c8f5af54f27d9">&#9670;&#160;</a></span>exportNexus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string cmaple::Tree::exportNexus </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a>&#160;</td>
+          <td class="paramname"><em>tree_type</em> = <code><a class="el" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a></code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>show_branch_supports</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>show_mutations</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Export the phylogenetic tree to a string in NEXUS format. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree_type</td><td>The type of the output tree (optional): BIN_TREE (bifurcating tree), MUL_TREE (multifurcating tree) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">show_branch_supports</td><td>TRUE to output the branch supports (aLRT-SH values) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">show_mutations</td><td>TRUE to output estimated mutations along tree </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A tree string in NEXUS format </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::invalid_argument</td><td>if any of the following situations occur.<ul>

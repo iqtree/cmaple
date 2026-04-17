@@ -778,6 +778,14 @@ auto cmaple::ParamsBuilder::withOutAlterSPR(
     return *this;
 }
 
+auto cmaple::ParamsBuilder::withLocalRef(
+    const bool& use_local_ref) -> cmaple::ParamsBuilder& {
+    params_ptr->local_refs = use_local_ref;
+    
+    // return
+    return *this;
+}
+
 std::unique_ptr<cmaple::Params> cmaple::ParamsBuilder::build() {
   return std::move(params_ptr);
 }

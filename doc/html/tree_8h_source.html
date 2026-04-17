@@ -159,75 +159,75 @@ $(function() {
 <div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>                           <span class="keyword">const</span> <span class="keywordtype">bool</span> print_internal_id = <span class="keyword">false</span>,</div>
 <div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>                           <span class="keyword">const</span> <span class="keywordtype">bool</span> show_branch_supports = <span class="keyword">true</span>);</div>
 <div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    </div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>    <span class="comment">// ----------------- END OF PUBLIC APIs ------------------------------------</span></div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>    <span class="comment">// //</span></div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span> </div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>  std::unique_ptr&lt;SeqRegions&gt;&amp; getPartialLhAtNode(<span class="keyword">const</span> cmaple::Index index);</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span> </div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>  <span class="keywordtype">void</span> computeCumulativeRate();</div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span> </div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>  <span class="keywordtype">bool</span> fixed_blengths = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span> </div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>  cmaple::RealNumType default_blength, min_blength, max_blength,</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>      min_blength_mid, min_blength_sensitivity, half_max_blength,</div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>      half_min_blength_mid, double_min_blength;</div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>  <span class="comment">// std::optional&lt;cmaple::Params&gt; params;</span></div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>  std::unique_ptr&lt;cmaple::Params&gt; params = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span> </div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>  <a class="code hl_class" href="classcmaple_1_1_alignment.html">Alignment</a>* aln = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span> </div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>  <a class="code hl_class" href="classcmaple_1_1_model_base.html">ModelBase</a>* model = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span> </div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>  cmaple::RealNumType* cumulative_rate = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span> </div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>  std::vector&lt;std::vector&lt;cmaple::PositionType&gt;&gt; cumulative_base;</div>
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span> </div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>  std::vector&lt;PhyloNode&gt; nodes;</div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>    </div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>    NumSeqsType num_exiting_nodes;</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>  std::vector&lt;NodeLh&gt; node_lhs;</div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    </div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    std::vector&lt;std::string&gt; annotations;</div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    </div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>    std::vector&lt;RealNumType&gt; sprta_scores;</div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>    </div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    std::vector&lt;RealNumType&gt; root_supports;</div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>    </div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    std::vector&lt;std::vector&lt;cmaple::AltBranch&gt;&gt; sprta_alt_branches;</div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    </div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    std::vector&lt;std::vector&lt;cmaple::AltBranch&gt;&gt; sprta_support_list;</div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>    </div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>    std::vector&lt;NumSeqsType&gt; num_descendants;</div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>    </div>
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>    std::vector&lt;NumSeqsType&gt; corrected_num_descendants;</div>
-<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>    </div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>    std::vector&lt;std::unique_ptr&lt;SeqRegions&gt;&gt; node_mutations;</div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>    </div>
-<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>    std::vector&lt;NumSeqsType&gt; internal_names;</div>
-<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span> </div>
-<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>  cmaple::NumSeqsType root_vector_index;</div>
-<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span> </div>
-<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span>  std::vector&lt;std::string&gt; seq_names;</div>
-<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span> </div>
-<div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span>  std::vector&lt;bool&gt; sequence_added;</div>
-<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>    </div>
-<div class="line"><a id="l00441" name="l00441"></a><span class="lineno">  441</span>  <span class="keywordtype">bool</span> aLRT_SH_computed = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00442" name="l00442"></a><span class="lineno">  442</span> </div>
-<div class="line"><a id="l00443" name="l00443"></a><span class="lineno">  443</span> </div>
-<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span>  <span class="keywordtype">void</span> makeTreeInOutConsistent();</div>
-<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span> </div>
-<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>  <span class="keyword">static</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> parseTreeSearchType(</div>
-<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span>      <span class="keyword">const</span> std::string&amp; tree_search_type);</div>
-<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span> </div>
-<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>  <span class="keyword">static</span> std::string getTreeSearchStr(<span class="keyword">const</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type);</div>
-<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span> </div>
-<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span>  <span class="keyword">static</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> parseTreeType(<span class="keyword">const</span> std::string&amp; tree_type_str);</div>
-<div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span>    </div>
-<div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span>    std::string exportNexus(<span class="keyword">const</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> tree_type = <a class="code hl_enumvalue" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a>,</div>
-<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>                            <span class="keyword">const</span> <span class="keywordtype">bool</span> show_branch_supports = <span class="keyword">true</span>,</div>
-<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>                            <span class="keyword">const</span> <span class="keywordtype">bool</span> show_mutations = <span class="keyword">false</span>);</div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno"><a class="line" href="classcmaple_1_1_tree.html#a1f8fd8e85e6230227d7c8f5af54f27d9">  314</a></span>    std::string <a class="code hl_function" href="classcmaple_1_1_tree.html#a1f8fd8e85e6230227d7c8f5af54f27d9">exportNexus</a>(<span class="keyword">const</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> tree_type = <a class="code hl_enumvalue" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da">BIN_TREE</a>,</div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>                            <span class="keyword">const</span> <span class="keywordtype">bool</span> show_branch_supports = <span class="keyword">true</span>,</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>                            <span class="keyword">const</span> <span class="keywordtype">bool</span> show_mutations = <span class="keyword">false</span>);</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>    </div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>    <span class="comment">// ----------------- END OF PUBLIC APIs ------------------------------------</span></div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>    <span class="comment">// //</span></div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span> </div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>  std::unique_ptr&lt;SeqRegions&gt;&amp; getPartialLhAtNode(<span class="keyword">const</span> cmaple::Index index);</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span> </div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>  <span class="keywordtype">void</span> computeCumulativeRate();</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span> </div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>  <span class="keywordtype">bool</span> fixed_blengths = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span> </div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>  cmaple::RealNumType default_blength, min_blength, max_blength,</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>      min_blength_mid, min_blength_sensitivity, half_max_blength,</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>      half_min_blength_mid, double_min_blength;</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span> </div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>  <span class="comment">// std::optional&lt;cmaple::Params&gt; params;</span></div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>  std::unique_ptr&lt;cmaple::Params&gt; params = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span> </div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>  <a class="code hl_class" href="classcmaple_1_1_alignment.html">Alignment</a>* aln = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span> </div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>  <a class="code hl_class" href="classcmaple_1_1_model_base.html">ModelBase</a>* model = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span> </div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>  cmaple::RealNumType* cumulative_rate = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span> </div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>  std::vector&lt;std::vector&lt;cmaple::PositionType&gt;&gt; cumulative_base;</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span> </div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>  std::vector&lt;PhyloNode&gt; nodes;</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    </div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>    NumSeqsType num_exiting_nodes;</div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span> </div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>  std::vector&lt;NodeLh&gt; node_lhs;</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    </div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>    std::vector&lt;std::string&gt; annotations;</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    </div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>    std::vector&lt;RealNumType&gt; sprta_scores;</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>    </div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>    std::vector&lt;RealNumType&gt; root_supports;</div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>    </div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>    std::vector&lt;std::vector&lt;cmaple::AltBranch&gt;&gt; sprta_alt_branches;</div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>    </div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>    std::vector&lt;std::vector&lt;cmaple::AltBranch&gt;&gt; sprta_support_list;</div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>    </div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>    std::vector&lt;NumSeqsType&gt; num_descendants;</div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>    </div>
+<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>    std::vector&lt;NumSeqsType&gt; corrected_num_descendants;</div>
+<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>    </div>
+<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>    std::vector&lt;std::unique_ptr&lt;SeqRegions&gt;&gt; node_mutations;</div>
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>    </div>
+<div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span>    std::vector&lt;NumSeqsType&gt; internal_names;</div>
+<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span> </div>
+<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>  cmaple::NumSeqsType root_vector_index;</div>
+<div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span> </div>
+<div class="line"><a id="l00444" name="l00444"></a><span class="lineno">  444</span>  std::vector&lt;std::string&gt; seq_names;</div>
+<div class="line"><a id="l00445" name="l00445"></a><span class="lineno">  445</span> </div>
+<div class="line"><a id="l00450" name="l00450"></a><span class="lineno">  450</span>  std::vector&lt;bool&gt; sequence_added;</div>
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span>    </div>
+<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span>  <span class="keywordtype">bool</span> aLRT_SH_computed = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span> </div>
+<div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span> </div>
+<div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span>  <span class="keywordtype">void</span> makeTreeInOutConsistent();</div>
+<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span> </div>
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span>  <span class="keyword">static</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> parseTreeSearchType(</div>
+<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span>      <span class="keyword">const</span> std::string&amp; tree_search_type);</div>
+<div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span> </div>
+<div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span>  <span class="keyword">static</span> std::string getTreeSearchStr(<span class="keyword">const</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">TreeSearchType</a> tree_search_type);</div>
+<div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span> </div>
+<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>  <span class="keyword">static</span> <a class="code hl_enumeration" href="classcmaple_1_1_tree.html#a750c5e7c53559fbcc421020bad665376">TreeType</a> parseTreeType(<span class="keyword">const</span> std::string&amp; tree_type_str);</div>
 <div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span>    </div>
 <div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span>    std::string exportTSV();</div>
 <div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span>    </div>
@@ -1113,7 +1113,7 @@ $(function() {
 <div class="line"><a id="l01911" name="l01911"></a><span class="lineno"> 1911</span>  std::string <a class="code hl_function" href="classcmaple_1_1_tree.html#a8793d1bd23d185258a68a01bcc279f4e">exportNewick</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> binary, <span class="keyword">const</span> <span class="keywordtype">bool</span> print_internal_id,</div>
 <div class="line"><a id="l01912" name="l01912"></a><span class="lineno"> 1912</span>                           <span class="keyword">const</span> <span class="keywordtype">bool</span> show_branch_supports);</div>
 <div class="line"><a id="l01913" name="l01913"></a><span class="lineno"> 1913</span>    </div>
-<div class="line"><a id="l01917" name="l01917"></a><span class="lineno"> 1917</span>    std::string exportNexus(<span class="keyword">const</span> <span class="keywordtype">bool</span> binary,</div>
+<div class="line"><a id="l01917" name="l01917"></a><span class="lineno"> 1917</span>    std::string <a class="code hl_function" href="classcmaple_1_1_tree.html#a1f8fd8e85e6230227d7c8f5af54f27d9">exportNexus</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> binary,</div>
 <div class="line"><a id="l01918" name="l01918"></a><span class="lineno"> 1918</span>                            <span class="keyword">const</span> <span class="keywordtype">bool</span> show_branch_supports,</div>
 <div class="line"><a id="l01919" name="l01919"></a><span class="lineno"> 1919</span>                            <span class="keyword">const</span> <span class="keywordtype">bool</span> show_mutations);</div>
 <div class="line"><a id="l01920" name="l01920"></a><span class="lineno"> 1920</span>    </div>
@@ -2222,6 +2222,7 @@ $(function() {
 <div class="ttc" id="aclasscmaple_1_1_tree_html"><div class="ttname"><a href="classcmaple_1_1_tree.html">cmaple::Tree</a></div><div class="ttdef"><b>Definition</b> tree.h:15</div></div>
 <div class="ttc" id="aclasscmaple_1_1_tree_html_a15e87b19c2d543d25dfe4ca20871c757"><div class="ttname"><a href="classcmaple_1_1_tree.html#a15e87b19c2d543d25dfe4ca20871c757">cmaple::Tree::doPlacement</a></div><div class="ttdeci">void doPlacement(const int num_threads, std::ostream &amp;out_stream=std::cout)</div><div class="ttdoc">Do placement (using stepwise addition) to build an initial tree. Model parameters (if not fixed) will...</div></div>
 <div class="ttc" id="aclasscmaple_1_1_tree_html_a1b2479eb26d00469ee1040dd9bee18e5"><div class="ttname"><a href="classcmaple_1_1_tree.html#a1b2479eb26d00469ee1040dd9bee18e5">cmaple::Tree::load</a></div><div class="ttdeci">void load(const std::string &amp;tree_filename, const bool fixed_blengths=false)</div><div class="ttdoc">Load a tree from a (bifurcating or multifurcating) tree (with/without branch lengths) in NEWICK forma...</div></div>
+<div class="ttc" id="aclasscmaple_1_1_tree_html_a1f8fd8e85e6230227d7c8f5af54f27d9"><div class="ttname"><a href="classcmaple_1_1_tree.html#a1f8fd8e85e6230227d7c8f5af54f27d9">cmaple::Tree::exportNexus</a></div><div class="ttdeci">std::string exportNexus(const TreeType tree_type=BIN_TREE, const bool show_branch_supports=true, const bool show_mutations=false)</div><div class="ttdoc">Export the phylogenetic tree to a string in NEXUS format.</div></div>
 <div class="ttc" id="aclasscmaple_1_1_tree_html_a39bd3bfce400c9222e8b77c584d26d43"><div class="ttname"><a href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43">cmaple::Tree::TreeSearchType</a></div><div class="ttdeci">TreeSearchType</div><div class="ttdef"><b>Definition</b> tree.h:20</div></div>
 <div class="ttc" id="aclasscmaple_1_1_tree_html_a39bd3bfce400c9222e8b77c584d26d43a313f6f3990c2b8c7ab3f1f174b9e970e"><div class="ttname"><a href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43a313f6f3990c2b8c7ab3f1f174b9e970e">cmaple::Tree::EXHAUSTIVE_TREE_SEARCH</a></div><div class="ttdeci">@ EXHAUSTIVE_TREE_SEARCH</div><div class="ttdef"><b>Definition</b> tree.h:24</div></div>
 <div class="ttc" id="aclasscmaple_1_1_tree_html_a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5"><div class="ttname"><a href="classcmaple_1_1_tree.html#a39bd3bfce400c9222e8b77c584d26d43a5c358c56b2d42131093b6b5386d1d8f5">cmaple::Tree::UNKNOWN_TREE_SEARCH</a></div><div class="ttdeci">@ UNKNOWN_TREE_SEARCH</div><div class="ttdef"><b>Definition</b> tree.h:25</div></div>

@@ -84,75 +84,75 @@
 \DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ print\_internal\_id\ =\ \textcolor{keyword}{false},}
 \DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_branch\_supports\ =\ \textcolor{keyword}{true});}
 \DoxyCodeLine{00303\ \ \ \ \ }
-\DoxyCodeLine{00304\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ END\ OF\ PUBLIC\ APIs\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
-\DoxyCodeLine{00305\ \ \ \ \ \textcolor{comment}{//\ //}}
-\DoxyCodeLine{00306\ }
-\DoxyCodeLine{00312\ \ \ std::unique\_ptr<SeqRegions>\&\ getPartialLhAtNode(\textcolor{keyword}{const}\ cmaple::Index\ index);}
-\DoxyCodeLine{00313\ }
-\DoxyCodeLine{00318\ \ \ \textcolor{keywordtype}{void}\ computeCumulativeRate();}
-\DoxyCodeLine{00319\ }
-\DoxyCodeLine{00323\ \ \ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false};}
-\DoxyCodeLine{00324\ }
-\DoxyCodeLine{00328\ \ \ cmaple::RealNumType\ default\_blength,\ min\_blength,\ max\_blength,}
-\DoxyCodeLine{00329\ \ \ \ \ \ \ min\_blength\_mid,\ min\_blength\_sensitivity,\ half\_max\_blength,}
-\DoxyCodeLine{00330\ \ \ \ \ \ \ half\_min\_blength\_mid,\ double\_min\_blength;}
-\DoxyCodeLine{00331\ }
-\DoxyCodeLine{00335\ \ \ \textcolor{comment}{//\ std::optional<cmaple::Params>\ params;}}
-\DoxyCodeLine{00336\ \ \ std::unique\_ptr<cmaple::Params>\ params\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{00337\ }
-\DoxyCodeLine{00341\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}*\ aln\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{00342\ }
-\DoxyCodeLine{00346\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_base}{ModelBase}}*\ model\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{00347\ }
-\DoxyCodeLine{00351\ \ \ cmaple::RealNumType*\ cumulative\_rate\ =\ \textcolor{keyword}{nullptr};}
-\DoxyCodeLine{00352\ }
-\DoxyCodeLine{00356\ \ \ std::vector<std::vector<cmaple::PositionType>>\ cumulative\_base;}
-\DoxyCodeLine{00357\ }
-\DoxyCodeLine{00361\ \ \ std::vector<PhyloNode>\ nodes;}
-\DoxyCodeLine{00362\ \ \ \ \ }
-\DoxyCodeLine{00366\ \ \ \ \ NumSeqsType\ num\_exiting\_nodes;}
-\DoxyCodeLine{00367\ }
-\DoxyCodeLine{00371\ \ \ std::vector<NodeLh>\ node\_lhs;}
-\DoxyCodeLine{00372\ \ \ \ \ }
-\DoxyCodeLine{00376\ \ \ \ \ std::vector<std::string>\ annotations;}
-\DoxyCodeLine{00377\ \ \ \ \ }
-\DoxyCodeLine{00381\ \ \ \ \ std::vector<RealNumType>\ sprta\_scores;}
-\DoxyCodeLine{00382\ \ \ \ \ }
-\DoxyCodeLine{00386\ \ \ \ \ std::vector<RealNumType>\ root\_supports;}
-\DoxyCodeLine{00387\ \ \ \ \ }
-\DoxyCodeLine{00391\ \ \ \ \ std::vector<std::vector<cmaple::AltBranch>>\ sprta\_alt\_branches;}
-\DoxyCodeLine{00392\ \ \ \ \ }
-\DoxyCodeLine{00397\ \ \ \ \ std::vector<std::vector<cmaple::AltBranch>>\ sprta\_support\_list;}
-\DoxyCodeLine{00398\ \ \ \ \ }
-\DoxyCodeLine{00402\ \ \ \ \ std::vector<NumSeqsType>\ num\_descendants;}
-\DoxyCodeLine{00403\ \ \ \ \ }
-\DoxyCodeLine{00408\ \ \ \ \ std::vector<NumSeqsType>\ corrected\_num\_descendants;}
-\DoxyCodeLine{00409\ \ \ \ \ }
-\DoxyCodeLine{00413\ \ \ \ \ std::vector<std::unique\_ptr<SeqRegions>>\ node\_mutations;}
-\DoxyCodeLine{00414\ \ \ \ \ }
-\DoxyCodeLine{00418\ \ \ \ \ std::vector<NumSeqsType>\ internal\_names;}
-\DoxyCodeLine{00419\ }
-\DoxyCodeLine{00423\ \ \ cmaple::NumSeqsType\ root\_vector\_index;}
-\DoxyCodeLine{00424\ }
-\DoxyCodeLine{00430\ \ \ std::vector<std::string>\ seq\_names;}
-\DoxyCodeLine{00431\ }
-\DoxyCodeLine{00436\ \ \ std::vector<bool>\ sequence\_added;}
-\DoxyCodeLine{00437\ \ \ \ \ }
-\DoxyCodeLine{00441\ \ \ \textcolor{keywordtype}{bool}\ aLRT\_SH\_computed\ =\ \textcolor{keyword}{false};}
-\DoxyCodeLine{00442\ }
-\DoxyCodeLine{00443\ }
-\DoxyCodeLine{00451\ \ \ \textcolor{keywordtype}{void}\ makeTreeInOutConsistent();}
-\DoxyCodeLine{00452\ }
-\DoxyCodeLine{00458\ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{TreeSearchType}}\ parseTreeSearchType(}
-\DoxyCodeLine{00459\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ tree\_search\_type);}
-\DoxyCodeLine{00460\ }
-\DoxyCodeLine{00466\ \ \ \textcolor{keyword}{static}\ std::string\ getTreeSearchStr(\textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{TreeSearchType}}\ tree\_search\_type);}
-\DoxyCodeLine{00467\ }
-\DoxyCodeLine{00473\ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{TreeType}}\ parseTreeType(\textcolor{keyword}{const}\ std::string\&\ tree\_type\_str);}
-\DoxyCodeLine{00474\ \ \ \ \ }
-\DoxyCodeLine{00485\ \ \ \ \ std::string\ exportNexus(\textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{TreeType}}\ tree\_type\ =\ \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da}{BIN\_TREE}},}
-\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_branch\_supports\ =\ \textcolor{keyword}{true},}
-\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_mutations\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00314\ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_a1f8fd8e85e6230227d7c8f5af54f27d9}{exportNexus}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{TreeType}}\ tree\_type\ =\ \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376aed3efab1c9a9364074e767a772c132da}{BIN\_TREE}},}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_branch\_supports\ =\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_mutations\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00317\ \ \ \ \ }
+\DoxyCodeLine{00318\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ END\ OF\ PUBLIC\ APIs\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{comment}{//\ //}}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00326\ \ \ std::unique\_ptr<SeqRegions>\&\ getPartialLhAtNode(\textcolor{keyword}{const}\ cmaple::Index\ index);}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00332\ \ \ \textcolor{keywordtype}{void}\ computeCumulativeRate();}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordtype}{bool}\ fixed\_blengths\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00342\ \ \ cmaple::RealNumType\ default\_blength,\ min\_blength,\ max\_blength,}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ min\_blength\_mid,\ min\_blength\_sensitivity,\ half\_max\_blength,}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ half\_min\_blength\_mid,\ double\_min\_blength;}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00349\ \ \ \textcolor{comment}{//\ std::optional<cmaple::Params>\ params;}}
+\DoxyCodeLine{00350\ \ \ std::unique\_ptr<cmaple::Params>\ params\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00355\ \ \ \mbox{\hyperlink{classcmaple_1_1_alignment}{Alignment}}*\ aln\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00360\ \ \ \mbox{\hyperlink{classcmaple_1_1_model_base}{ModelBase}}*\ model\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00365\ \ \ cmaple::RealNumType*\ cumulative\_rate\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00370\ \ \ std::vector<std::vector<cmaple::PositionType>>\ cumulative\_base;}
+\DoxyCodeLine{00371\ }
+\DoxyCodeLine{00375\ \ \ std::vector<PhyloNode>\ nodes;}
+\DoxyCodeLine{00376\ \ \ \ \ }
+\DoxyCodeLine{00380\ \ \ \ \ NumSeqsType\ num\_exiting\_nodes;}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00385\ \ \ std::vector<NodeLh>\ node\_lhs;}
+\DoxyCodeLine{00386\ \ \ \ \ }
+\DoxyCodeLine{00390\ \ \ \ \ std::vector<std::string>\ annotations;}
+\DoxyCodeLine{00391\ \ \ \ \ }
+\DoxyCodeLine{00395\ \ \ \ \ std::vector<RealNumType>\ sprta\_scores;}
+\DoxyCodeLine{00396\ \ \ \ \ }
+\DoxyCodeLine{00400\ \ \ \ \ std::vector<RealNumType>\ root\_supports;}
+\DoxyCodeLine{00401\ \ \ \ \ }
+\DoxyCodeLine{00405\ \ \ \ \ std::vector<std::vector<cmaple::AltBranch>>\ sprta\_alt\_branches;}
+\DoxyCodeLine{00406\ \ \ \ \ }
+\DoxyCodeLine{00411\ \ \ \ \ std::vector<std::vector<cmaple::AltBranch>>\ sprta\_support\_list;}
+\DoxyCodeLine{00412\ \ \ \ \ }
+\DoxyCodeLine{00416\ \ \ \ \ std::vector<NumSeqsType>\ num\_descendants;}
+\DoxyCodeLine{00417\ \ \ \ \ }
+\DoxyCodeLine{00422\ \ \ \ \ std::vector<NumSeqsType>\ corrected\_num\_descendants;}
+\DoxyCodeLine{00423\ \ \ \ \ }
+\DoxyCodeLine{00427\ \ \ \ \ std::vector<std::unique\_ptr<SeqRegions>>\ node\_mutations;}
+\DoxyCodeLine{00428\ \ \ \ \ }
+\DoxyCodeLine{00432\ \ \ \ \ std::vector<NumSeqsType>\ internal\_names;}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00437\ \ \ cmaple::NumSeqsType\ root\_vector\_index;}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00444\ \ \ std::vector<std::string>\ seq\_names;}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00450\ \ \ std::vector<bool>\ sequence\_added;}
+\DoxyCodeLine{00451\ \ \ \ \ }
+\DoxyCodeLine{00455\ \ \ \textcolor{keywordtype}{bool}\ aLRT\_SH\_computed\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00465\ \ \ \textcolor{keywordtype}{void}\ makeTreeInOutConsistent();}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00472\ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{TreeSearchType}}\ parseTreeSearchType(}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ tree\_search\_type);}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00480\ \ \ \textcolor{keyword}{static}\ std::string\ getTreeSearchStr(\textcolor{keyword}{const}\ \mbox{\hyperlink{classcmaple_1_1_tree_a39bd3bfce400c9222e8b77c584d26d43}{TreeSearchType}}\ tree\_search\_type);}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00487\ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{classcmaple_1_1_tree_a750c5e7c53559fbcc421020bad665376}{TreeType}}\ parseTreeType(\textcolor{keyword}{const}\ std::string\&\ tree\_type\_str);}
 \DoxyCodeLine{00488\ \ \ \ \ }
 \DoxyCodeLine{00492\ \ \ \ \ std::string\ exportTSV();}
 \DoxyCodeLine{00493\ \ \ \ \ }
@@ -1038,7 +1038,7 @@
 \DoxyCodeLine{01911\ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_a8793d1bd23d185258a68a01bcc279f4e}{exportNewick}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ binary,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ print\_internal\_id,}
 \DoxyCodeLine{01912\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_branch\_supports);}
 \DoxyCodeLine{01913\ \ \ \ \ }
-\DoxyCodeLine{01917\ \ \ \ \ std::string\ exportNexus(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ binary,}
+\DoxyCodeLine{01917\ \ \ \ \ std::string\ \mbox{\hyperlink{classcmaple_1_1_tree_a1f8fd8e85e6230227d7c8f5af54f27d9}{exportNexus}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ binary,}
 \DoxyCodeLine{01918\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_branch\_supports,}
 \DoxyCodeLine{01919\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ show\_mutations);}
 \DoxyCodeLine{01920\ \ \ \ \ }

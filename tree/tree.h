@@ -301,6 +301,20 @@ class Tree {
                            const bool print_internal_id = false,
                            const bool show_branch_supports = true);
     
+    /*! \brief Export the phylogenetic tree  to a string in NEXUS format.
+     * @param[in] tree_type The type of the output tree (optional): BIN_TREE
+     * (bifurcating tree), MUL_TREE (multifurcating tree)
+     * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
+     * values)
+     * @param[in] show_mutations TRUE to output estimated mutations along tree
+     * @return A tree string in NEXUS format
+     * @throw std::invalid\_argument if any of the following situations occur.
+     * - tree\_type is unknown
+     */
+    std::string exportNexus(const TreeType tree_type = BIN_TREE,
+                            const bool show_branch_supports = true,
+                            const bool show_mutations = false);
+    
     // ----------------- END OF PUBLIC APIs ------------------------------------
     // //
 
@@ -471,20 +485,6 @@ class Tree {
    * @return a TreeType
    */
   static TreeType parseTreeType(const std::string& tree_type_str);
-    
-    /*! \brief Export the phylogenetic tree  to a string in NEXUS format.
-     * @param[in] tree_type The type of the output tree (optional): BIN_TREE
-     * (bifurcating tree), MUL_TREE (multifurcating tree)
-     * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
-     * values)
-     * @param[in] show_mutations TRUE to output estimated mutations along tree
-     * @return A tree string in NEXUS format
-     * @throw std::invalid\_argument if any of the following situations occur.
-     * - tree\_type is unknown
-     */
-    std::string exportNexus(const TreeType tree_type = BIN_TREE,
-                            const bool show_branch_supports = true,
-                            const bool show_mutations = false);
     
     /**
      Export a TSV file that contains useful information from SPRTA
