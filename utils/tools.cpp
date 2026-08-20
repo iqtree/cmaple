@@ -627,7 +627,7 @@ cmaple::Params::Params() {
   site_specific_rate_matrix = false;
   rate_variation_max_num_EM_steps = 20;
   estimate_rates_during_SPR = false;
-  wt_pseudocount = 0.1;
+  wt_pseudocount = 1.0;
   rates_filename = "";
 
   // initialize random seed based on current time
