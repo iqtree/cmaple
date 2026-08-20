@@ -629,6 +629,7 @@ cmaple::Params::Params() {
   estimate_rates_during_SPR = false;
   wt_pseudocount = 1.0;
   rates_filename = "";
+  fixed_SSM_EM_steps = 0;
 
   // initialize random seed based on current time
   struct timeval tv;
@@ -1300,6 +1301,19 @@ void cmaple::parseArg(int argc, char* argv[], Params& params) {
         }
         try {
           params.wt_pseudocount = convert_real_number(argv[cnt]);
+        } catch (std::invalid_argument e) {
+          outError(e.what());
+        }
+        continue;
+      }
+
+      if (strcmp(argv[cnt], "--fixed-SSM-EM-steps") == 0) {
+        cnt++;
+        if (cnt >= argc) {
+          outError("Use --fixed-SSM-EM-steps <num steps>");
+        }
+        try {
+          params.fixed_SSM_EM_steps = convert_int(argv[cnt]);
         } catch (std::invalid_argument e) {
           outError(e.what());
         }

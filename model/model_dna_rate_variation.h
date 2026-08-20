@@ -18,7 +18,8 @@ public:
         bool _use_site_rates, 
         cmaple::RealNumType _wt_pseudocount, 
         std::string _rates_filename,
-        int _max_num_EM_steps);
+        int _max_num_EM_steps,
+        int _fixed_num_SSM_EM_steps);
     
     virtual ~ModelDNARateVariation();
 
@@ -122,6 +123,6 @@ private:
 
     std::string rates_filename;
     int max_num_EM_steps;
-
+    int fixed_EM_steps;
 };
 }
