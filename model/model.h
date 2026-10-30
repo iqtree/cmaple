@@ -60,6 +60,7 @@ class Model {
       const cmaple::PositionType seq_length = 0,
       const cmaple::RealNumType wt_pseudocount = 0.1,
       const int max_num_EM_steps = 20,
+      const int fixed_SSM_EM_steps = 0,
       const std::string& rates_filename = "");
 
   /*! \brief Destructor

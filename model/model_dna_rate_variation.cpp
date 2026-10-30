@@ -10,6 +10,7 @@ ModelDNARateVariation::ModelDNARateVariation(
     bool _scalar_rate_model, 
     cmaple::RealNumType _wt_pseudocount,
     int _max_num_EM_steps,
+    int _fixed_num_SSM_EM_steps,
     std::string _rates_filename)
     : ModelDNA(sub_model) {
     
@@ -19,6 +20,7 @@ ModelDNARateVariation::ModelDNARateVariation(
     waiting_time_pseudocount = _wt_pseudocount;
     rates_filename = _rates_filename;
     max_num_EM_steps = _max_num_EM_steps;
+    fixed_EM_steps = _fixed_num_SSM_EM_steps;
 
     mutation_matrices = new RealNumType[mat_size * genome_size]();
     transposed_mutation_matrices = new RealNumType[mat_size * genome_size]();
@@ -101,7 +103,7 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
         if(cmaple::verbose_mode > VB_MIN) 
         {
             std::string model = scalar_rate_model ? "scalar rate variation" : "site-specific rate matrix";
-            std::cout << "Estimation mutation rates under " << model << " model..." << std::endl;
+            std::cout << "Estimating mutation rates under " << model << " model..." << std::endl;
             std::cout << "Starting log-LK: " << 
             std::setprecision(10) << new_LK << std::endl;
         }
@@ -118,19 +120,36 @@ void ModelDNARateVariation::estimateRates(cmaple::Tree* tree) {
         }
         else
         {
-            int num_steps = 0;
-            while(abs(new_LK - old_LK) > 1 && num_steps < max_num_EM_steps) 
+            if(fixed_EM_steps > 0) 
             {
-                estimateRatesPerSitePerEntry(tree);
-                old_LK = new_LK;
-                tree->computeCumulativeRate();
-                new_LK = tree->computeLh();
-                if(cmaple::verbose_mode > VB_MIN) 
+                for(int i = 0; i < fixed_EM_steps; i++)
                 {
-                    std::cout << "EM round " << num_steps + 1 << ": " << 
-                    std::setprecision(10) << new_LK << std::endl;
+                    estimateRatesPerSitePerEntry(tree);
+                    tree->computeCumulativeRate();
+                    new_LK = tree->computeLh();
+                    if(cmaple::verbose_mode > VB_MIN) 
+                    {
+                        std::cout << "\tEM step " << i + 1 << ": " << 
+                        std::setprecision(10) << new_LK << std::endl;
+                    }                  
                 }
-                num_steps++;
+            }
+            else
+            {
+                int num_steps = 0;
+                while(abs(new_LK - old_LK) > 1 && num_steps < max_num_EM_steps) 
+                {
+                    estimateRatesPerSitePerEntry(tree);
+                    old_LK = new_LK;
+                    tree->computeCumulativeRate();
+                    new_LK = tree->computeLh();
+                    if(cmaple::verbose_mode > VB_MIN) 
+                    {
+                        std::cout << "\tEM step " << num_steps + 1 << ": " << 
+                        std::setprecision(10) << new_LK << std::endl;
+                    }
+                    num_steps++;
+                }
             }
         } 
     }

@@ -711,6 +711,11 @@ class Params {
    */ 
   std::string rates_filename;
 
+  /**
+   * Perform a fixed number of EM rounds when estimating rates for SSM model.
+   */ 
+  int fixed_SSM_EM_steps;
+
     /**
      * TRUE to ignore annotations from the input tree
      */
