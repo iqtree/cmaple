@@ -5,7 +5,7 @@ CMAPLE is a C++ reimplementation of [MAPLE](https://www.nature.com/articles/s415
 CMAPLE library provides a set of APIs, which allow users to integrate CMAPLE into existing phylogenetic inference methods.
 
 # How to use?
-In the following, we give an instruction of how to include CMAPLE library into a project using CMake build system (instructions for other build systems will be updated soon). Here, we'll take [IQ-TREE](https://github.com/iqtree/iqtree2) as an example.
+In the following, we give an instruction of how to include CMAPLE library into a project using CMake build system. Here, we'll take [IQ-TREE](https://github.com/iqtree/iqtree3) as an example.
 
 ## Include CMAPLE as a submodule of your project
 
@@ -25,11 +25,11 @@ In your project directory, run
     	
     	# Step 2: Build two executables for DNA and protein data
     	# build an executable for DNA data
-    	add_executable(iqtree2
+    	add_executable(iqtree3
 			main.cpp main.h
 		)
 		# build another executable for protein data
-    	add_executable(iqtree2-aa
+    	add_executable(iqtree3-aa
 			main.cpp main.h
 		)
 		
@@ -37,8 +37,8 @@ In your project directory, run
     	include_directories("${PROJECT_BINARY_DIR}/cmaple")
     	
     	# Step 4: Add linking libraries
-    	target_link_libraries(iqtree2 main maple)
-    	target_link_libraries(iqtree2-aa main maple-aa)
+    	target_link_libraries(iqtree3 main maple)
+    	target_link_libraries(iqtree3-aa main maple-aa)
 
 ## An example of APIs usage
 
@@ -92,6 +92,7 @@ CMAPLE APIs are exposed in the following.
 <br>
 # How to cite CMAPLE?
 
-To be updated...
+- CMAPLE 2: to be updated...
+- CMAPLE: Nhan Ly-Trong, Chris Bielow, Nicola De Maio, Bui Quang Minh (2024), CMAPLE: Efficient phylogenetic inference in the pandemic era. Mol. Biol. Evol., 41:msae134. <https://doi.org/10.1093/molbev/msae134>
 
 

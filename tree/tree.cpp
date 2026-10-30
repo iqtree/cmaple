@@ -142,9 +142,12 @@ void cmaple::Tree::doRateEstimation(std::ostream& out_stream) {
 
 void cmaple::Tree::applySPR(const int num_threads,
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   assert(applySPRPtr);
-    (this->*applySPRPtr)(num_threads, tree_search_type, shallow_tree_search, out_stream);
+    (this->*applySPRPtr)(num_threads, tree_search_type,
+                         shallow_tree_search, compute_SPRTA, out_stream);
 }
 
 void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
@@ -155,9 +158,11 @@ void cmaple::Tree::optimizeBranch(std::ostream& out_stream) {
 void cmaple::Tree::infer(
     const int num_threads,
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   assert(doInferencePtr);
-  (this->*doInferencePtr)(num_threads, tree_search_type, shallow_tree_search, out_stream);
+  (this->*doInferencePtr)(num_threads, tree_search_type, shallow_tree_search, compute_SPRTA, out_stream);
 }
 
 RealNumType cmaple::Tree::computeLh() {
@@ -597,7 +602,9 @@ template <const StateType num_states>
 void cmaple::Tree::doInferenceTemplate(
     const int num_threads,
     const TreeSearchType tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   // validate input
   assert(aln && model);
   assert(aln->ref_seq.size() > 0 && "Reference sequence is not found!");
@@ -613,7 +620,8 @@ void cmaple::Tree::doInferenceTemplate(
   doRateEstimation(out_stream);
 
   // 2. Optimize the tree with SPR if there is any new nodes added to the tree
-  applySPR(num_threads, tree_search_type, shallow_tree_search, out_stream);
+  applySPR(num_threads, tree_search_type, shallow_tree_search,
+           compute_SPRTA, out_stream);
 
   // 3. Optimize branch lengths (if needed)
   if (!fixed_blengths) {
@@ -1085,7 +1093,9 @@ template <const StateType num_states>
 void cmaple::Tree::applySPRTemplate(
     const int num_threads,
     const TreeSearchType n_tree_search_type,
-    const bool shallow_tree_search, std::ostream& out_stream) {
+    const bool shallow_tree_search,
+    const bool compute_SPRTA,
+    std::ostream& out_stream) {
   assert(cumulative_base.size() > 0);
   assert(nodes.size() > 0);
     
@@ -1099,6 +1109,9 @@ void cmaple::Tree::applySPRTemplate(
   if (!nodes.size()) {
     throw std::logic_error("Tree is empty. Please build/infer a tree first!");
   }
+    
+    // update the compute_SPRTA flag
+    params->compute_SPRTA = compute_SPRTA;
 
   // Redirect the original src_cout to the target_cout
   streambuf* src_cout = cout.rdbuf();
@@ -1249,11 +1262,9 @@ void cmaple::Tree::applySPRTemplate(
 template <const StateType num_states>
 void cmaple::Tree::doRateEstimationTemplate(std::ostream& out_stream) {
 
-  if(params->rate_variation || params->site_specific_rates) {
+  if(params->rate_variation || params->site_specific_rate_matrix) {
     ModelDNARateVariation* rvModel = (ModelDNARateVariation*) model;
     rvModel->estimateRates(this);
-    //rvModel->setAllMatricesToDefault();
-    computeCumulativeRate();
   }
 }
 
@@ -1359,6 +1370,13 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
       improvement = improveEntireTree<num_states>(tree_search_type, short_range_search);
 #endif
       
+      if(params->estimate_rates_during_SPR &&
+         (params->rate_variation || params->site_specific_rate_matrix))
+      {
+        ModelDNARateVariation* rvModel = (ModelDNARateVariation*) model;
+        rvModel->estimateRates(this);
+      }
+      
     // if only compute SPRTA (~ tree search type = FAST), stop searching further, one round is enough
     if (tree_search_type == FAST_TREE_SEARCH)
         break;
@@ -1396,6 +1414,13 @@ void cmaple::Tree::optimizeTreeTopology(const int num_threads,
              << endl;
         std::cout << std::setprecision(10)
             << "Tree log likelihood: " << computeLh() << std::endl;
+      }
+
+      if(params->estimate_rates_during_SPR && 
+        (params->rate_variation || params->site_specific_rate_matrix))
+      {
+        ModelDNARateVariation* rvModel = (ModelDNARateVariation*) model;
+        rvModel->estimateRates(this);
       }
 
       // stop trying if the improvement is so small
@@ -1848,6 +1873,39 @@ std::string cmaple::Tree::exportNodeString(const bool is_newick_format,
   return output;
 }
 
+std::string cmaple::Tree::getMutationStringAcrossRoot(
+  RealNumType dist_to_root,
+  RealNumType dist_to_observed,
+  StateType parent_state,
+  StateType child_state,
+  PositionType pos,
+  RealNumType weight,
+  SeqRegion::SeqType seq_type 
+)
+{
+  assert(parent_state != child_state);
+  std::string mutation_string = "";
+  RealNumType p_root_is_state_parent = model->root_freqs[parent_state] * model->getMutationMatrixEntry(parent_state, child_state, pos) * dist_to_root;
+  RealNumType p_root_is_state_child = model->root_freqs[child_state] * model->getMutationMatrixEntry(child_state, parent_state, pos) * dist_to_observed;
+  RealNumType relative_root_is_state_parent = p_root_is_state_parent / (p_root_is_state_parent + p_root_is_state_child);
+  RealNumType parent_support = weight  * relative_root_is_state_parent;
+  RealNumType child_support = weight  * (1 - relative_root_is_state_parent);
+
+  if(parent_support >= min_mutation_support) {
+    mutation_string +=  aln->convertState2Char(parent_state, seq_type) + 
+                        std::to_string(pos+1) + 
+                        aln->convertState2Char(child_state, seq_type) +
+                        ":" + std::to_string(parent_support) + ",";
+  }
+  if(child_support >= min_mutation_support) {
+    mutation_string +=  aln->convertState2Char(child_state, seq_type) + 
+                std::to_string(pos+1) + 
+                aln->convertState2Char(parent_state, seq_type) +
+                ":" + std::to_string(child_support) + ",";
+  }
+  return mutation_string;
+}
+
 std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
 {
 
@@ -1913,39 +1971,44 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
     const auto* seqP_region = &seqP_regions[iseq1];
     const auto* seqC_region = &seqC_regions[iseq2];
 
-    // if the child of this branch does not observe its state directly then 
-    // skip this branch.
-    if(seqC_region->plength_observation2node > 0) {
-        pos = end_pos + 1;
-        continue;
-    }
-
     // distance to last observation or root if last observation was across the root.
     RealNumType branch_length_to_observation = blength;
-    if(seqP_region->plength_observation2node > 0 && seqP_region->plength_observation2root <= 0) {
-        branch_length_to_observation = blength + seqP_region->plength_observation2node;
+    if(seqP_region->plength_observation2node > 0 && seqP_region->plength_observation2root < 0) {
+        branch_length_to_observation += seqP_region->plength_observation2node;
     }
-    else if(seqP_region->plength_observation2root > 0) {
-        branch_length_to_observation = blength + seqP_region->plength_observation2root;
+    if(seqC_region->plength_observation2node > 0 && seqC_region->plength_observation2root < 0) {
+        branch_length_to_observation += seqC_region->plength_observation2node;
     }
+
+    RealNumType blength_weight = blength / branch_length_to_observation;
 
     if(seqP_region->type != seqC_region->type &&
         seqP_region->type <= TYPE_R &&
         seqC_region->type <= TYPE_R) 
     {
-        StateType stateA = seqP_region->type;
-        StateType stateB = seqC_region->type;
-        if(seqP_region->type == TYPE_R) 
-        {
-            stateA = seqC_region->prev_state;
+      StateType stateA = seqP_region->type;
+      StateType stateB = seqC_region->type;
+      if(seqP_region->type == TYPE_R) 
+      {
+          stateA = seqC_region->prev_state;
+      }
+      if(seqC_region->type == TYPE_R) 
+      {
+          stateB = seqP_region->prev_state;
+      }
+      if(seqP_region->plength_observation2root < 0)
+      {
+        if(blength_weight >= min_mutation_support) {
+          mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                              std::to_string(pos+1) + 
+                              aln->convertState2Char(stateB, seq_type) +
+                              ":" + std::to_string(blength_weight) + ",";
         }
-        if(seqC_region->type == TYPE_R) 
-        {
-            stateB = seqP_region->prev_state;
-        }
-        mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
-                            std::to_string(pos+1) + 
-                            aln->convertState2Char(stateB, seq_type) + ":1.0,";
+      }  else {
+        RealNumType dist_to_root = seqP_region->plength_observation2root + blength;
+        RealNumType dist_to_observed = seqP_region->plength_observation2node;
+        mutation_string += getMutationStringAcrossRoot(dist_to_root, dist_to_observed, stateA, stateB, pos, blength_weight, seq_type);
+      }
     }
     else if(seqP_region->type <= TYPE_R && seqC_region->type == TYPE_O) 
     {
@@ -1964,11 +2027,11 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
           RealNumType prob = 0.;
           if(stateB != stateA) 
           {
-            prob = likelihoodB * branch_length_to_observation 
-                                * model->getMutationMatrixEntry(stateA, stateB, end_pos);
+            prob = likelihoodB * branch_length_to_observation
+                                * model->getMutationMatrixEntry(stateA, stateB, pos);
           } else {
             prob = likelihoodB * (1 - branch_length_to_observation 
-                                * model->getMutationMatrixEntry(stateB, stateB, end_pos));
+                                * model->getMutationMatrixEntry(stateB, stateB, pos));
           }
           weight_vector[stateB] = prob;
           sum += prob;
@@ -1977,14 +2040,30 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
       normalize_arr(weight_vector.data(), num_states, sum);
 
       // write out mutations
-      for(StateType stateB = 0; stateB < num_states; stateB++) 
-      {
-        if (stateB != stateA && weight_vector[stateB] > 0.01)
+      if(seqP_region->plength_observation2root < 0) {
+        for(StateType stateB = 0; stateB < num_states; stateB++) 
         {
-          mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
-                              std::to_string(pos+1) + 
-                              aln->convertState2Char(stateB, seq_type) + ":" +
-                              std::to_string(weight_vector[stateB]) + "," ;
+          if (stateB != stateA)
+          {
+            RealNumType mutation_support = weight_vector[stateB] * blength_weight;
+            if(mutation_support >= min_mutation_support)
+            {
+              mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                                std::to_string(pos+1) + 
+                                aln->convertState2Char(stateB, seq_type) + ":" +
+                                std::to_string(mutation_support) + "," ;
+            }
+          }
+        }
+      } else {
+        RealNumType dist_to_root = seqP_region->plength_observation2root + blength;
+        RealNumType dist_to_observed = seqP_region->plength_observation2node;
+        for(StateType stateB = 0; stateB < num_states; stateB++) 
+        {
+          if(stateA != stateB) {
+            RealNumType relative_stateB = weight_vector[stateB];
+            mutation_string += getMutationStringAcrossRoot(dist_to_root, dist_to_observed, stateA, stateB, pos, relative_stateB * blength_weight, seq_type);
+          }
         }
       }
     }
@@ -2005,11 +2084,11 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
           RealNumType prob = 0;
           if(stateA != stateB) 
           {
-            prob = likelihoodA * branch_length_to_observation 
-                                * model->getMutationMatrixEntry(stateA, stateB, end_pos);
+            prob = likelihoodA * branch_length_to_observation
+                                * model->getMutationMatrixEntry(stateA, stateB, pos);
           } else {
             prob = likelihoodA * (1 - branch_length_to_observation 
-                                * model->getMutationMatrixEntry(stateA, stateA, end_pos));
+                                * model->getMutationMatrixEntry(stateA, stateA, pos));
           }
           weight_vector[stateA] = prob;
           sum += prob;
@@ -2018,14 +2097,31 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
       normalize_arr(weight_vector.data(), num_states, sum);
 
       // write out mutations
-      for(StateType stateA = 0; stateA < num_states; stateA++) 
-      {
-        if (stateA != stateB && weight_vector[stateA] > 0.01)
+      if(seqP_region->plength_observation2root < 0) 
+      {  
+        for(StateType stateA = 0; stateA < num_states; stateA++) 
         {
-          mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
-                              std::to_string(pos + 1) + 
-                              aln->convertState2Char(stateB, seq_type) + ":" +
-                              std::to_string(weight_vector[stateA]) + "," ;
+          if (stateA != stateB)
+          {
+            RealNumType mutation_support = weight_vector[stateA] * blength_weight;
+            if(mutation_support >= min_mutation_support)
+            {
+              mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                                  std::to_string(pos + 1) + 
+                                  aln->convertState2Char(stateB, seq_type) + ":" +
+                                  std::to_string(mutation_support) + "," ;
+            }
+          }
+        }
+      } else {
+        RealNumType dist_to_root = seqP_region->plength_observation2root + blength;
+        RealNumType dist_to_observed = seqP_region->plength_observation2node;
+        for(StateType stateA = 0; stateA < num_states; stateA++) 
+        {
+          if(stateA != stateB) {
+            RealNumType relative_stateA = weight_vector[stateA];
+            mutation_string += getMutationStringAcrossRoot(dist_to_root, dist_to_observed, stateA, stateB, pos, relative_stateA * blength_weight, seq_type);
+          }
         }
       }
     }
@@ -2035,17 +2131,19 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
       // each state at each of the O nodes.
       std::vector<RealNumType> weight_vector(num_states * num_states);
       RealNumType sum = 0.0;
-      for(StateType stateA = 0; stateA < num_states; stateA++) {
+      for(StateType stateA = 0; stateA < num_states; stateA++) 
+      {
           RealNumType likelihoodA = seqP_region->getLH(stateA);
-          for(StateType stateB = 0; stateB < num_states; stateB++) {
+          for(StateType stateB = 0; stateB < num_states; stateB++) 
+          {
               RealNumType likelihoodB = seqC_region->getLH(stateB);
               RealNumType prob = 0.;
               if(stateA != stateB) {
-                prob = likelihoodA * likelihoodB * branch_length_to_observation 
-                                    * model->getMutationMatrixEntry(stateA, stateB, end_pos);
+                prob = likelihoodA * likelihoodB * branch_length_to_observation
+                                    * model->getMutationMatrixEntry(stateA, stateB, pos);
               } else {
                 prob = likelihoodA * likelihoodB * (1 - branch_length_to_observation 
-                                    * model->getMutationMatrixEntry(stateA, stateA, end_pos));
+                                    * model->getMutationMatrixEntry(stateA, stateA, pos));
               }
               weight_vector[model->row_index[stateA] + stateB] = prob;
               sum += prob;
@@ -2055,16 +2153,35 @@ std::string cmaple::Tree::getMutationStringForNode(cmaple::PhyloNode& node)
       normalize_arr(weight_vector.data(), num_states * num_states, sum);
 
       // write out mutations
-      for(StateType stateA = 0; stateA < num_states; stateA++) 
-      {
-        for(StateType stateB =0; stateB < num_states; stateB++)
+      if(seqP_region->plength_observation2root < 0) {
+        for(StateType stateA = 0; stateA < num_states; stateA++) 
         {
-          if (stateA != stateB && weight_vector[model->row_index[stateA] + stateB] > 0.01)
+          for(StateType stateB = 0; stateB < num_states; stateB++)
           {
-            mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
-                                std::to_string(pos + 1) + 
-                                aln->convertState2Char(stateB, seq_type) + ":" +
-                                std::to_string(weight_vector[model->row_index[stateA] + stateB]) + "," ;
+            if (stateA != stateB)
+            {
+              RealNumType mutation_support = weight_vector[model->row_index[stateA] + stateB] * blength_weight;
+              if(mutation_support >= min_mutation_support)
+              {
+                mutation_string +=  aln->convertState2Char(stateA, seq_type) + 
+                                    std::to_string(pos + 1) + 
+                                    aln->convertState2Char(stateB, seq_type) + ":" +
+                                    std::to_string(mutation_support) + "," ;
+              }
+            }
+          }
+        }
+      } else {
+        RealNumType dist_to_root = seqP_region->plength_observation2root + blength;
+        RealNumType dist_to_observed = seqP_region->plength_observation2node;
+        for(StateType stateA = 0; stateA < num_states; stateA++) 
+        {
+          for(StateType stateB = 0; stateB < num_states; stateB++)
+          {
+            if(stateA != stateB) {
+              RealNumType relative_stateAB = weight_vector[model->row_index[stateA] + stateB];
+              mutation_string += getMutationStringAcrossRoot(dist_to_root, dist_to_observed, stateA, stateB, pos, relative_stateAB * blength_weight, seq_type);
+            }
           }
         }
       }
@@ -3207,7 +3324,7 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
         return false;
     
     // placement in a polytomy
-    if (best_mid_bottom_blength <= 0)
+    if (best_mid_bottom_blength <= thresh_zero_blength)
     {
         // move to the top of the polytomy
         while (parent_vec != root_vector_index)
@@ -3230,9 +3347,9 @@ bool cmaple::Tree::isDiffFromOrigPlacement(
         return false;
     
     // redundant placement:
-    // if (best_mid_top_blength <= 0),
+    // if (best_mid_top_blength <= thresh_zero_blength),
     // if the new placement is not at root, it can be represented by another placement
-    if (best_mid_top_blength <= 0)
+    if (best_mid_top_blength <= thresh_zero_blength)
     {
         // check if it is the placement at root
         if (!is_root_considered)
@@ -5150,6 +5267,23 @@ void cmaple::Tree::connectSubTree2Branch(
   const NumSeqsType internal_vec =
       subtree.getNeighborIndex(TOP).getVectorIndex();
   PhyloNode& internal = nodes[internal_vec];
+    
+      // Bug fix: check sensitive case where best_blength <= 0
+      // and down_distance <= 0 but subtree's lower region and
+      // sibling's lower region contain mutations => cannot merge
+      if (best_blength <= 0 && down_distance <= 0)
+      {
+          // check if they could merge or not
+          std::unique_ptr<SeqRegions> test_internal_lower_region = nullptr;
+          sibling_node.getPartialLh(TOP)->mergeTwoLowers<num_states>(
+              test_internal_lower_region, down_distance,
+              *subtree_regions, best_blength, aln, model, cumulative_rate,
+              params->threshold_prob);
+          
+          // if the two lower regions cannot merge => don't apply this SPR
+          if (!test_internal_lower_region)
+              return;
+      }
 
   // re-use internal nodes
   /*Node* next_node_1 = subtree->neighbor;
@@ -6271,7 +6405,7 @@ void cmaple::Tree::connectNewSample2Branch(
             
             // make the internal node a new new local ref node, if it meets the requirements
             if (params->local_refs
-                && corrected_num_descendants[traverse_parent_vec_index] >= params->max_desc_ref
+                && corrected_num_descendants[traverse_parent_vec_index] >= params->min_desc_ref
                 && traverse_node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
             {
                 // make the internal node a new new local ref node
@@ -6663,7 +6797,7 @@ void cmaple::Tree::connectNewSample2Root(
     // make the new root a new new local ref node, if it meets the requirements
     if (params->local_refs
         && (!node_mutations[new_root_vec_index] || !node_mutations[new_root_vec_index]->size())
-        && corrected_num_descendants[new_root_vec_index] >= params->max_desc_ref
+        && corrected_num_descendants[new_root_vec_index] >= params->min_desc_ref
         && new_root.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
     {
         // make the internal node a new new local ref node
@@ -14513,7 +14647,7 @@ auto cmaple::Tree::initLocalReferences() -> void {
         
         // make this node a local ref, if it meets the requirements
         assert(!node_mutations[node_vec_index]);
-        if (corrected_num_descendants[node_vec_index] >= params->max_desc_ref
+        if (corrected_num_descendants[node_vec_index] >= params->min_desc_ref
             && node.getPartialLh(TOP)->containAtLeastNMuts<num_states>(params->min_mut_ref))
         {
             makeReferenceNode<num_states>(node, node_vec_index,

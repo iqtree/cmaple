@@ -175,8 +175,9 @@ class Tree {
    */
   void doPlacement(const int num_threads, std::ostream& out_stream = std::cout);
 
-  /*! \brief Do rate estimation either using EM or simple counting method.
-   * Currently only implemented for rate variation DNA model.
+  /*! \brief Estimate site-specific rates/substition matrices
+   * either using EM or simple counting method.
+   * This function is currently only supported for (DNA) rate variation models.
    * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the attached substitution model is unknown/unsupported
@@ -189,6 +190,8 @@ class Tree {
    * @param[in] tree_search_type A type of tree search
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search
+   * @param[in] compute_SPRTA TRUE to compute
+   * [SPRTA](https://www.nature.com/articles/s41586-025-09567-x) supports
    * @param[out] out_stream The output message stream (optional)
    * @throw std::logic\_error if any of the following situations occur.
    * - the tree is empty
@@ -196,7 +199,8 @@ class Tree {
    * - unexpected values/behaviors found during the operations
    */
   void applySPR(const int num_threads, const TreeSearchType tree_search_type,
-                       const bool shallow_tree_search, std::ostream& out_stream = std::cout);
+                const bool shallow_tree_search, const bool compute_SPRTA,
+                std::ostream& out_stream = std::cout);
 
   /*! \brief Optimize the branch lengths of the tree
    * @param[out] out_stream The output message stream (optional)
@@ -230,6 +234,8 @@ class Tree {
    * @param[in] tree_search_type A type of tree search (optional)
    * @param[in] shallow_tree_search TRUE to enable a shallow tree search before
    * a deeper tree search (optional)
+   * @param[in] compute_SPRTA TRUE to compute
+   * [SPRTA](https://www.nature.com/articles/s41586-025-09567-x) supports (optional)
    * @param[out] out_stream The output message stream (optional)
    * @throw std::invalid\_argument if tree\_search\_type is unknown
    * @throw std::logic\_error if any of the following situations occur.
@@ -239,7 +245,9 @@ class Tree {
   void infer(
       const int num_threads = 1,
       const TreeSearchType tree_search_type = NORMAL_TREE_SEARCH,
-      const bool shallow_tree_search = false, std::ostream& out_stream = std::cout);
+      const bool shallow_tree_search = false,
+      const bool compute_SPRTA = false,
+      std::ostream& out_stream = std::cout);
 
   /*! \brief Compute the log likelihood of the current tree, which may or may
    * not contain all taxa in the alignment
@@ -292,16 +300,37 @@ class Tree {
   std::string exportNewick(const TreeType tree_type = BIN_TREE,
                            const bool print_internal_id = false,
                            const bool show_branch_supports = true);
+    
+    /*! \brief Export the phylogenetic tree  to a string in NEXUS format.
+     * @param[in] tree_type The type of the output tree (optional): BIN_TREE
+     * (bifurcating tree), MUL_TREE (multifurcating tree)
+     * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
+     * values)
+     * @param[in] show_mutations TRUE to output estimated mutations along tree
+     * @return A tree string in NEXUS format
+     * @throw std::invalid\_argument if any of the following situations occur.
+     * - tree\_type is unknown
+     */
+    std::string exportNexus(const TreeType tree_type = BIN_TREE,
+                            const bool show_branch_supports = true,
+                            const bool show_mutations = false);
+    
+    // ----------------- END OF PUBLIC APIs ------------------------------------
+    // //
+
+    /*! \cond PRIVATE */
 
   /**
    Get partial_lh at a node by its index
    */
   std::unique_ptr<SeqRegions>& getPartialLhAtNode(const cmaple::Index index);
 
-  // ----------------- END OF PUBLIC APIs ------------------------------------
-  // //
+  /**
+  Compute cumulative rate of the ref genome
+  @throw std::logic\_error if the reference genome is empty
+  */
+  void computeCumulativeRate();
 
-  /*! \cond PRIVATE */
   /**
    TRUE to keep the branch lengths fixed
    */
@@ -457,20 +486,6 @@ class Tree {
    */
   static TreeType parseTreeType(const std::string& tree_type_str);
     
-    /*! \brief Export the phylogenetic tree  to a string in NEXUS format.
-     * @param[in] tree_type The type of the output tree (optional): BIN_TREE
-     * (bifurcating tree), MUL_TREE (multifurcating tree)
-     * @param[in] show_branch_supports TRUE to output the branch supports (aLRT-SH
-     * values)
-     * @param[in] show_mutations TRUE to output estimated mutations along tree
-     * @return A tree string in NEXUS format
-     * @throw std::invalid\_argument if any of the following situations occur.
-     * - tree\_type is unknown
-     */
-    std::string exportNexus(const TreeType tree_type = BIN_TREE,
-                            const bool show_branch_supports = true,
-                            const bool show_mutations = false);
-    
     /**
      Export a TSV file that contains useful information from SPRTA
      */
@@ -479,10 +494,26 @@ class Tree {
   /*! \endcond */
 
  private:
-  /**
-   * Get mutation string for MATs
-   */
-  std::string getMutationStringForNode(cmaple::PhyloNode& node);
+    /**
+     * Get mutation string for MATs
+     */
+    std::string getMutationStringForNode(cmaple::PhyloNode& node);
+    
+     /**
+     * Minimum support for writing a mutation to MAT
+     */   
+    RealNumType min_mutation_support = 0.01;
+    /**
+     * Helper function when last observation of state goes across the root.
+     */  
+    std::string getMutationStringAcrossRoot(
+        RealNumType dist_to_root, 
+        RealNumType dist_to_observed,
+        StateType parent_state, 
+        StateType child_state, 
+        PositionType pos, 
+        RealNumType weight,
+        SeqRegion::SeqType seq_type );
 
   /**
       Pointer  to LoadTree method
@@ -506,7 +537,7 @@ class Tree {
       Pointer  to doInference method
    */
   typedef void (Tree::*DoInferencePtrType)(const int, const TreeSearchType,
-                                                  const bool, std::ostream&);
+                                           const bool, const bool, std::ostream&);
   DoInferencePtrType doInferencePtr;
 
   /**
@@ -525,7 +556,7 @@ class Tree {
       Pointer  to applySPR method
    */
   typedef void (Tree::*ApplySPRPtrType)(const int, const TreeSearchType,
-                                               const bool, std::ostream&);
+                                        const bool, const bool, std::ostream&);
   ApplySPRPtrType applySPRPtr;
 
   /**
@@ -574,7 +605,8 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void doInferenceTemplate(const int num_threads, const TreeSearchType tree_search_type,
-                                  const bool shallow_tree_search, std::ostream& out_stream);
+                           const bool shallow_tree_search, const bool compute_SPRTA,
+                           std::ostream& out_stream);
 
   /*! Template of doPlacement()
    */
@@ -591,7 +623,8 @@ class Tree {
    */
   template <const cmaple::StateType num_states>
   void applySPRTemplate(const int num_threads, const TreeSearchType tree_search_type,
-                               const bool shallow_tree_search, std::ostream& out_stream);
+                        const bool shallow_tree_search, const bool compute_SPRTA,
+                        std::ostream& out_stream);
 
   /*! Template of optimizeBranch()
    */
@@ -643,12 +676,6 @@ class Tree {
   void initTree(Alignment* aln,
                 Model* model,
                 std::unique_ptr<cmaple::Params>&& params);
-
-  /**
-   Compute cumulative rate of the ref genome
-   @throw std::logic\_error if the reference genome is empty
-   */
-  void computeCumulativeRate();
 
   /*! Optimize the tree topology
    @throw std::logic\_error if unexpected values/behaviors found during the

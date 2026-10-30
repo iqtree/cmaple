@@ -111,13 +111,13 @@ class ModelBase {
  public:
   /*!
    * List of substitution models. See [Substitution
-   * models](http://www.iqtree.org/doc/Substitution-Models) for references of
+   * models](https://iqtree.github.io/doc/Substitution-Models) for references of
    * those models.
    */
   enum SubModel {
     ///@{
     /// See [DNA
-    /// models](http://www.iqtree.org/doc/Substitution-Models#dna-model)
+    /// models](https://iqtree.github.io/doc/Substitution-Models#dna-model)
     JC,
     GTR,
     UNREST,
@@ -125,7 +125,7 @@ class ModelBase {
 
     ///@{
     /// See [Protein
-    /// models](http://www.iqtree.org/doc/Substitution-Models#protein-models)
+    /// models](https://iqtree.github.io/doc/Substitution-Models#protein-models)
     GTR20,
     NONREV,
     LG,

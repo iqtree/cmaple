@@ -1,5 +1,7 @@
 cmaple
 doc
+maple_update
+build_test
 softwipe_build
 unittest/cmake_install.cmake
 unittest/CMakeCache.txt

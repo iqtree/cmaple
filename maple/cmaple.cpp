@@ -124,11 +124,11 @@ void cmaple::runCMAPLE(cmaple::Params &params)
           throw std::invalid_argument("Unknown Model " + params.sub_model_str);
         }
         assert(sub_model != cmaple::ModelBase::UNKNOWN);
-        bool useRateVariationModel = params.rate_variation || params.site_specific_rates;
-        // Model model(aln.ref_seq.size(), useRateVariationModel, params.rate_variation, params.wt_pseudocount, params.rates_filename, sub_model, aln.getSeqType());
+        bool useRateVariationModel = params.rate_variation || params.site_specific_rate_matrix;
         Model model(sub_model, aln.getSeqType(), useRateVariationModel, params.rate_variation,
-                    aln.ref_seq.size(), params.wt_pseudocount, params.rates_filename);
-        
+                    aln.ref_seq.size(), params.wt_pseudocount,
+                    params.rate_variation_max_num_EM_steps ,  params.fixed_SSM_EM_steps, 
+                    params.rates_filename);
         // If users only want to convert the alignment to another format -> convert it and terminate
         if (params.output_aln.length())
         {
@@ -154,7 +154,8 @@ void cmaple::runCMAPLE(cmaple::Params &params)
         const cmaple::Tree::TreeSearchType tree_search_type = cmaple::Tree::parseTreeSearchType(params.tree_search_type_str);
         std::ostream null_stream(nullptr);
         std::ostream& out_stream = cmaple::verbose_mode >= cmaple::VB_MED ? std::cout : null_stream;
-        tree.infer(static_cast<int>(params.num_threads), tree_search_type, params.shallow_tree_search, out_stream);
+        tree.infer(static_cast<int>(params.num_threads), tree_search_type,
+                   params.shallow_tree_search, params.compute_SPRTA, out_stream);
         
         // Compute branch supports (if users want to do so)
         if (params.compute_aLRT_SH)
